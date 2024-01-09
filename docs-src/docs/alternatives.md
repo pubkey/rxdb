@@ -1,6 +1,7 @@
 ---
-title: Alternatives for realtime offline-first JavaScript applications
+title: Alternatives for realtime offline-first JavaScript applications and local databases
 slug: alternatives.html
+description: Explore real-time, offline-first JS alternatives to RxDB. Compare Firebase, Meteor, AWS, CouchDB, and more for robust, seamless web/mobile app development.
 ---
 
 
@@ -72,7 +73,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
 </p>
 
 WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** within an application with lots of data.
-In React Native, WatermelonDB uses the provided SQLite database. In a browser, LokiJS can be used to store and query data.
+In React Native, WatermelonDB uses the provided SQLite database. Also there is an Expo plugin for WatermelonDB. In a browser, WatermelonDB uses the LokiJS in-memory database to store and query data. WatermelonDB is one of the rare projects that support both Flow and Typescript at the same time.
 
 
 ### AWS Amplify

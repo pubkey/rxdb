@@ -1,6 +1,7 @@
 ---
 title: Using localStorage in Modern Applications - A Comprehensive Guide
 slug: localstorage.html
+description: This guide explores localStorage in JavaScript web apps, detailing its usage, limitations, and alternatives like IndexedDB and AsyncStorage.
 ---
 
 
@@ -71,7 +72,7 @@ Despite its convenience, localStorage does come with a set of limitations that d
 
 ### Is localStorage Slow?
 
-Contrary to concerns about performance, the localStorage API is surprisingly fast when compared to alternative storage solutions. It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option.
+Contrary to concerns about performance, the localStorage API in JavaScript is surprisingly fast when compared to alternative storage solutions like IndexedDB or OPFS. It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option.
 
 ## When Not to Use localStorage
 

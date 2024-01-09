@@ -1,5 +1,5 @@
 ---
-title: CRDT
+title: CRDT - Conflict-free replicated data type
 slug: crdt.html
 description: Explore the beta RxDB CRDT Plugin - A guide to conflict-free data handling in distributed systems with RxDB's novel CRDT approach
 ---
@@ -43,7 +43,6 @@ const myCRDTOperation = {
     }
 };
 ```
-
 
 ### Operators
 
@@ -136,7 +135,6 @@ await myDocument.updateCRDT({
 });
 ```
 
-
 ## Conditional CRDT operations
 
 By default, all CRDTs operations will be run to build the current document state. But in many cases, more granular operations are required to better reflect the desired business logic. For these cases, conditional CRDTs can be used.
@@ -193,7 +191,6 @@ await myDocument.updateCRDT([
 ]);
 ```
 
-
 ## CRDTs on inserts
 
 When CRDTs are enabled with the plugin, all insert operations are automatically mapped as CRDT operation with the `$set` operator.
@@ -240,8 +237,6 @@ await myRxCollection.insertCRDT({
 });
 ```
 
-
-
 ## Deleting documents
 
 You can delete a document with a CRDT operation by setting `_deleted` to true. Calling `RxDocument.remove()` will do exactly the same when CRDTs are activated.
@@ -257,7 +252,6 @@ await doc.updateCRDT({
 
 // OR
 await doc.remove();
-
 ```
 
 ## CRDTs with replication
@@ -272,8 +266,10 @@ When any instances makes a write to the document, it is required to update the C
 
 There are already CRDT libraries out there that have been considered to be used with RxDB. The biggest ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:
 
-- Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.
+- Users do not have to learn a new syntax but instead can use the NoSQL query operations which they already know to manipulate the JSON data of a document.
 - RxDB is often used to [replicate](./replication.md) data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.
+
+So instead of using YJS or Automerge with a database, you can use RxDB with the CRDT plugin to have a more database specific CRDT approach. This gives you additional features for free such as [schema validation](./schema-validation.md) or [data migration](./migration-schema.md).
 
 
 ## When to not use CRDTs
