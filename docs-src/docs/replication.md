@@ -90,8 +90,8 @@ To use the replication you first have to ensure that:
 
 For example if your documents look like this:
 
-```json
-{
+```ts
+const docData = {
     "id": "foobar",
     "name": "Alice",
     "lastName": "Wilson",
