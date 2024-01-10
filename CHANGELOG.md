@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- UPDATE dexie to version `4.0.1-beta.6` [#5469](https://github.com/pubkey/rxdb/pull/5469)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
