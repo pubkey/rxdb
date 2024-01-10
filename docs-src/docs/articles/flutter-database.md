@@ -183,7 +183,7 @@ query.$().listen((results) {
 ### Different RxStorage layers for RxDB
 RxDB offers multiple storage options, known as RxStorage layers, to store data locally. These options include:
 
-- [LokiJS RxStorage](../rx-storage-lokijs.md): LokiJS is an in-memory database that can be used as a storage layer for RxDB. It provides fast and efficient in-memory data management capabilities.
+- [LokiJS RxStorage](../rx-storage-lokijs.md): LokiJS is an in-memory database that can be used as a [storage](./browser-storage.md) layer for RxDB. It provides fast and efficient in-memory data management capabilities.
 - [SQLite RxStorage](../rx-storage-sqlite.md): SQLite is a popular and widely used [embedded database](./embedded-database.md) that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.
 - [Memory RxStorage](../rx-storage-memory.md): As the name suggests, Memory RxStorage stores data [in memory](./in-memory-nosql-database.md). While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
 By choosing the appropriate RxStorage layer based on the specific requirements of the application, developers can optimize performance and storage efficiency.

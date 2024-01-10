@@ -71,7 +71,7 @@ Server-side SQL databases typically come with a significant build size, which ca
 For example the SQLite Webassembly file alone has a size of over 0.8 Megabyte with an additional 0.2 Megabyte in JavaScript code for connection.
 
 ## Why RxDB is a good fit for the frontend
-RxDB is a powerful frontend JavaScript database that addresses the limitations of SQL databases and provides an optimal solution for frontend data storage. Let's explore why RxDB is an excellent fit for frontend applications:
+RxDB is a powerful frontend JavaScript database that addresses the limitations of SQL databases and provides an optimal solution for frontend [data storage](./browser-storage.md). Let's explore why RxDB is an excellent fit for frontend applications:
 
 ### Made in JavaScript, optimized for JavaScript applications
 RxDB is designed and optimized for JavaScript applications. Built using JavaScript itself, RxDB offers seamless integration with JavaScript frameworks and libraries, allowing developers to leverage their existing JavaScript knowledge and skills.

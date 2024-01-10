@@ -56,7 +56,7 @@ Integrating RxDB into a Progressive Web App, driven by technologies like React, 
 RxDB caters to diverse needs through its various RxStorage layers:
 
 - Dexie.js RxStorage: Leveraging the capabilities of the Dexie.js library for storage.
-- LokiJS RxStorage: Utilizing the strengths of the LokiJS library for storage.
+- LokiJS RxStorage: Utilizing the strengths of the LokiJS library for [storage](./browser-storage.md).
 - IndexedDB RxStorage: Tapping into the browser's IndexedDB for efficient data storage.
 - OPFS RxStorage: Interfacing with the Offline-First Persistence System for seamless persistence.
 - Memory RxStorage: Storing data in memory, ideal for temporary data requirements.

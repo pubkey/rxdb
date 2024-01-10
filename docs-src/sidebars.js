@@ -126,6 +126,7 @@ const sidebars = {
         'alternatives',
         'articles/angular-database',
         'articles/browser-database',
+        'articles/browser-storage',
         'articles/data-base',
         'articles/embedded-database',
         'articles/flutter-database',

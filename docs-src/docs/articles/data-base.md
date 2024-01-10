@@ -45,7 +45,7 @@ RxDB offers multi-tab support, allowing applications to function seamlessly acro
 When considering data base options for web applications, developers often encounter choices like Dexie.js, LokiJS, IndexedDB, OPFS, and Memory-based solutions. RxDB, while built on top of IndexedDB, stands out due to its reactive data handling capabilities and advanced synchronization features. Compared to other options, RxDB offers a more streamlined and powerful approach to managing data in web applications.
 
 ### Different RxStorage layers for RxDB
-RxDB provides various storage layers, known as RxStorage, that serve as interfaces to different underlying storage technologies. These layers include:
+RxDB provides various [storage layers](../rx-storage.md), known as RxStorage, that serve as interfaces to different underlying [storage](./browser-storage.md) technologies. These layers include:
 
 - [Dexie.js RxStorage](../rx-storage-dexie.md): Built on top of Dexie.js, this storage layer leverages IndexedDB as its backend.
 - [LokiJS RxStorage](../rx-storage-lokijs.md): Utilizing the in-memory data base LokiJS, this layer provides a lightweight alternative to persist data.

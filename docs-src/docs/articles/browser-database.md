@@ -1,5 +1,5 @@
 ---
-title: RxDB - The benefits of Browser Databases
+title: The benefits of Browser Databases and RxDB
 slug: browser-database.html
 ---
 
@@ -113,7 +113,7 @@ RxDB natively supports multi-tab applications, allowing data synchronization and
 RxDB excels in handling schema changes, even when data is stored on multiple client devices. It provides mechanisms to handle schema migrations seamlessly, ensuring data integrity and compatibility as the application evolves.
 
 ### Storing documents compressed
-To optimize storage space, RxDB allows the compression of documents. Storing compressed documents reduces storage requirements and improves overall performance, especially in scenarios with large data volumes.
+To optimize [storage](./browser-storage.md) space, RxDB allows the [compression](../key-compression.md) of documents. Storing compressed documents reduces storage requirements and improves overall performance, especially in scenarios with large data volumes.
 
 ### Flexible storage layer for various platforms
 RxDB offers a flexible storage layer, enabling code reuse across different platforms, including Electron.js, React Native, hybrid apps (e.g., Capacitor.js), and web browsers. This flexibility streamlines development efforts and ensures consistent data management across multiple platforms.
