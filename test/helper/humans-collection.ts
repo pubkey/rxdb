@@ -55,7 +55,8 @@ export async function create(
 export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema<RxDocumentType>,
     name = 'human',
-    storage = config.storage.getStorage()
+    storage = config.storage.getStorage(),
+    migrationStrategies?: MigrationStrategies
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType>; }>({
         name: randomCouchString(10),
@@ -67,7 +68,8 @@ export async function createBySchema<RxDocumentType = {}>(
 
     const collections = await db.addCollections({
         [name]: {
-            schema
+            schema,
+            migrationStrategies
         }
     });
 

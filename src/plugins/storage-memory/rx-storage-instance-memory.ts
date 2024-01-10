@@ -304,16 +304,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const indexName = getMemoryIndexName(index);
 
-        // console.log('in memory query:');
-        // console.dir({
-        //     queryPlan,
-        //     lowerBound,
-        //     upperBound,
-        //     lowerBoundString,
-        //     upperBoundString,
-        //     indexName
-        // });
-
         if (!this.internals.byIndex[indexName]) {
             throw new Error('index does not exist ' + indexName);
         }

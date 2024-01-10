@@ -3,6 +3,7 @@ import config, {
 } from './config.ts';
 
 import {
+    clone,
     randomCouchString
 } from '../../plugins/core/index.mjs';
 import {
@@ -14,6 +15,8 @@ import {
 import * as humansCollection from './../helper/humans-collection.ts';
 import { nextPort } from '../helper/port-manager.ts';
 import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
+import * as schemas from '../helper/schemas.ts';
+import { wait, waitUntil } from 'async-test-util';
 
 config.parallel('server.test.ts', () => {
     if (
@@ -67,9 +70,7 @@ config.parallel('server.test.ts', () => {
             console.log('--- 1.2');
             ensureReplicationHasNoErrors(replicationState);
 
-            console.log('--- 2');
             await replicationState.awaitInSync();
-            console.log('--- 3');
             const docsB = await clientCol.find().exec();
             assert.strictEqual(docsB.length, 10);
 
@@ -77,9 +78,49 @@ config.parallel('server.test.ts', () => {
             console.dir(ids);
 
             const docsA = await col.find().exec();
-            console.dir(docsA.map(d => d.toJSON()));
-            console.dir(col.storageInstance.internals);
             assert.strictEqual(docsA.length, 10);
+
+            await col.database.destroy();
+            await clientCol.database.destroy();
+        });
+        it('should give a 426 error on outdated versions', async () => {
+            const newestSchema = clone(schemas.human);
+            newestSchema.version = 1;
+            const col = await humansCollection.createBySchema(newestSchema, undefined, undefined, { 1: d => d });
+            const port = await nextPort();
+            const server = await startRxServer({
+                database: col.database,
+                authenticationHandler,
+                port,
+                hostname: 'localhost'
+            });
+            await server.addReplicationEndpoint({
+                collection: col
+            });
+
+            console.log('XX 1');
+            const clientCol = await humansCollection.createBySchema(schemas.human);
+            console.log('XX 2');
+            const replicationState = await replicateWithWebsocketServer({
+                collection: clientCol,
+                replicationIdentifier: randomCouchString(10),
+                url: 'ws://localhost:' + port + '/replication/human/0',
+                headers
+            });
+            console.log('XX 3');
+
+            const errors: any[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+
+            await wait(1000);
+            console.dir(errors);
+
+            await waitUntil(() => errors.length > 0);
+
+
+
+            process.exit();
+
 
             col.database.destroy();
             clientCol.database.destroy();

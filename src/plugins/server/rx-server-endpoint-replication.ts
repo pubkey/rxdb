@@ -51,8 +51,14 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
          * the clients know they must update.
          */
         let v = 0;
+        const outdatedUrls = new Set<string>();
         while (v < collection.schema.version) {
-            const version = v;
+            // const version = v;
+            // const outdatedUrl = '/' + [this.type, collection.name, v].join('/');
+            // const websocketServer = new WebSocket.Server({
+            //     noServer: true,
+            //     path: outdatedUrl,
+            // });
             // TODO
             // this.server.expressApp.get('/' + [this.type, collection.name, version].join('/'), { websocket: true }, connection => {
             //     closeConnection(connection, 426, 'Outdated version ' + version + ' (newest is ' + collection.schema.version + ')');
@@ -60,7 +66,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             v++;
         }
 
-        this.urlPath = [this.type, collection.name, collection.schema.version].join('/');
+        this.urlPath = [this.type, collection.name].join('/');
         const replicationHandler = getReplicationHandlerByCollection(this.server.database, collection.name);
         const authDataByWebsocket = new Map<WebSocket, RxServerAuthenticationData<AuthType>>();
 
@@ -77,7 +83,15 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             });
         });
         websocketServer.on('connection', async (connection, connectionRequest) => {
-            // console.log('S: GOT CONNECTION');
+            const requestUrl = ensureNotFalsy(connectionRequest.url);
+            console.log('S: GOT CONNECTION ' + requestUrl);
+            console.dir(Array.from(outdatedUrls));
+
+            if (outdatedUrls.has(requestUrl)) {
+                console.log('! IS OUTDAEDT');
+                closeConnection(connection, 426, 'Outdated version ' + requestUrl);
+                return;
+            }
             // console.log(JSON.stringify(connectionRequest.headers));
             // connection.on('error', () => {
             //     console.log('S: error');
@@ -188,7 +202,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                         connection.send(JSON.stringify(responseWrite));
                         break;
                     default:
-                        closeConnection(connection, 400, 'Bad Request');
+                        closeConnection(connection, 405, 'Method Not Allowed');
                         break;
                 }
             });

@@ -46,6 +46,12 @@ export class RxServer<AuthType> {
             this.httpServer.close((err) => {
                 if (err) { rej(err); } else { res(); }
             });
+            /**
+             * By default it will await all ongoing connections
+             * before it closes. So we have to close it directly.
+             * @link https://stackoverflow.com/a/36830072/3443137
+             */
+            setImmediate(() => this.httpServer.emit('close'));
         });
 
     }

@@ -62,6 +62,19 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
         }
     );
     const connected$ = new BehaviorSubject<boolean>(false);
+    const message$ = new Subject<any>();
+    const error$ = new Subject<any>();
+    wsClient.onerror = (err) => {
+
+        console.log('--- WAS CLIENT GOT ERROR:');
+        console.log(err.error.message);
+
+        const emitError = newRxError('RC_STREAM', {
+            errors: toArray(err).map((er: any) => errorToPlainJson(er)),
+            direction: 'pull'
+        });
+        error$.next(emitError);
+    };
     await new Promise<void>(res => {
         wsClient.onopen = () => {
 
@@ -83,21 +96,10 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
         connected$.next(false);
     };
 
-    const message$ = new Subject<any>();
     wsClient.onmessage = (messageObj) => {
         const message = JSON.parse(messageObj.data);
         message$.next(message);
     };
-
-    const error$ = new Subject<any>();
-    wsClient.onerror = (err) => {
-        const emitError = newRxError('RC_STREAM', {
-            errors: toArray(err).map((er: any) => errorToPlainJson(er)),
-            direction: 'pull'
-        });
-        error$.next(emitError);
-    };
-
 
     return {
         url: options.url,
