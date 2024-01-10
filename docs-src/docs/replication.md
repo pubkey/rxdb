@@ -358,12 +358,6 @@ By setting `waitForLeadership: false` you can enforce that each tab runs its own
 If used in a multi instance setting, so when at database creation `multiInstance: false` was not set,
 you need to import the [leader election plugin](./leader-election.md) so that RxDB can know how many instances exist and which browser tab should run the replication.
 
-
-## Limitations
-
- * At the moment it is not possible to replicate [attachments](./rx-attachment.md), make a pull request if you need this.
-
-
 ## Error handling
 
 When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
