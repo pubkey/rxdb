@@ -5,8 +5,6 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 ## Open Tasks
 
-- Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version.
-
 
 (This list will be regularly updated with new Tasks)
 
@@ -24,3 +22,4 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 ## Solved Tasks
 
 - Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage https://github.com/pubkey/rxdb/pull/5429https://github.com/pubkey/rxdb/pull/5429
+- Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version. https://github.com/pubkey/rxdb/pull/5469
