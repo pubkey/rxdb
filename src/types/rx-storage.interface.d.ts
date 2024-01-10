@@ -48,6 +48,14 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     readonly name: string;
 
     /**
+     * RxDB version is part of the storage
+     * so we can have fallbacks and stuff when
+     * multiple storages with different version are in use
+     * like in the storage migration plugin.
+     */
+    readonly rxdbVersion: string;
+
+    /**
      * Creates a storage instance
      * that can contain the NoSQL documents of a collection.
      */

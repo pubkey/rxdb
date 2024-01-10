@@ -23,3 +23,4 @@ docs
 docs-src/static/files/logo/js.build.js
 docs-src/_book/
 docs-src/build/
+docs-src/docusaurus-lunr-search-main

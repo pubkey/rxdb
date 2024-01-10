@@ -3,11 +3,18 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- UPDATE dexie to version `4.0.1-beta.6` [#5469](https://github.com/pubkey/rxdb/pull/5469)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.2.0 (5 January 2024)
+
+- FIX(dexie.js) migration from v14 to v15 not working.
+- ADD  initialCheckpoint for Couchdb [#5461](https://github.com/pubkey/rxdb/pull/5461)
 
 ### 15.1.0 (2 January 2024)
 

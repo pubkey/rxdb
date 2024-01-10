@@ -7,9 +7,11 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 import { RX_STORAGE_NAME_MONGODB } from './mongodb-helper.ts';
 import type { MongoDBDatabaseSettings, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
 import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 
 export class RxStorageMongoDB implements RxStorage<MongoDBStorageInternals, MongoDBSettings> {
     public name = RX_STORAGE_NAME_MONGODB;
+    public readonly rxdbVersion = RXDB_VERSION;
 
     constructor(
         public databaseSettings: MongoDBDatabaseSettings

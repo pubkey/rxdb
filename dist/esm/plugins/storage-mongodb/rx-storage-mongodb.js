@@ -1,9 +1,11 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 import { RX_STORAGE_NAME_MONGODB } from "./mongodb-helper.js";
 import { createMongoDBStorageInstance } from "./rx-storage-instance-mongodb.js";
+import { RXDB_VERSION } from "../utils/utils-rxdb-version.js";
 export var RxStorageMongoDB = /*#__PURE__*/function () {
   function RxStorageMongoDB(databaseSettings) {
     this.name = RX_STORAGE_NAME_MONGODB;
+    this.rxdbVersion = RXDB_VERSION;
     this.databaseSettings = databaseSettings;
   }
   var _proto = RxStorageMongoDB.prototype;

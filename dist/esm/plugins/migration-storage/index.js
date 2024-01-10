@@ -1,4 +1,4 @@
-import { createRevision, clone, randomCouchString, blobToBase64String, prepareQuery } from "../../index.js";
+import { createRevision, clone, randomCouchString, blobToBase64String, prepareQuery, ensureNotFalsy, toArray, arrayFilterNotEmpty } from "../../index.js";
 /**
  * Migrates collections of RxDB version A and puts them
  * into a RxDatabase that is created with version B.
@@ -28,6 +28,25 @@ logFunction) {
   var schema = collection.schema.jsonSchema;
   var primaryPath = collection.schema.primaryPath;
   var oldDatabaseInstanceToken = randomCouchString(10);
+
+  /**
+   * In RxDB v15 we changed how the indexes are created.
+   * Before (v14), the storage prepended the _deleted field
+   * to all indexes.
+   * In v15, RxDB will prepend the _deleted field BEFORE sending
+   * it to the storage. Therefore we have to strip these fields
+   * when crating v14 storage instances.
+   */
+  if (!oldStorage.rxdbVersion && schema.indexes) {
+    schema = clone(schema);
+    schema.indexes = ensureNotFalsy(schema.indexes).map(index => {
+      index = toArray(index).filter(field => field !== '_deleted');
+      if (index.includes('_meta.lwt')) {
+        return null;
+      }
+      return index;
+    }).filter(arrayFilterNotEmpty);
+  }
   var oldStorageInstance = await oldStorage.createStorageInstance({
     databaseName: oldDatabaseName,
     collectionName: collection.name,

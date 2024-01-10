@@ -7,7 +7,7 @@ description: Discover the RxDB Revolution for Angular Apps! 🚀 Learn how to su
 
 # RxDB as a Database in an Angular Application
 
-In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent storage and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
+In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
 
 <center>
     <a href="https://rxdb.info/">

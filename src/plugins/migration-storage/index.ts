@@ -10,7 +10,10 @@ import {
     blobToBase64String,
     prepareQuery,
     PreparedQuery,
-    FilledMangoQuery
+    FilledMangoQuery,
+    ensureNotFalsy,
+    toArray,
+    arrayFilterNotEmpty
 } from '../../index.ts';
 
 export type RxStorageOld<A, B> = RxStorage<A, B> | any;
@@ -94,15 +97,37 @@ export async function migrateCollection<RxDocType>(
         }
     }
     log('start migrateCollection()');
-    const schema = collection.schema.jsonSchema;
+    let schema = collection.schema.jsonSchema;
     const primaryPath = collection.schema.primaryPath;
     const oldDatabaseInstanceToken = randomCouchString(10);
+
+
+    /**
+     * In RxDB v15 we changed how the indexes are created.
+     * Before (v14), the storage prepended the _deleted field
+     * to all indexes.
+     * In v15, RxDB will prepend the _deleted field BEFORE sending
+     * it to the storage. Therefore we have to strip these fields
+     * when crating v14 storage instances.
+     */
+    if (!oldStorage.rxdbVersion && schema.indexes) {
+        schema = clone(schema);
+        schema.indexes = ensureNotFalsy(schema.indexes).map(index => {
+            index = toArray(index).filter(field => field !== '_deleted');
+            if (index.includes('_meta.lwt')) {
+                return null;
+            }
+            return index;
+        }).filter(arrayFilterNotEmpty);
+
+    }
+
     const oldStorageInstance = await oldStorage.createStorageInstance({
         databaseName: oldDatabaseName,
         collectionName: collection.name,
         multiInstance: false,
         options: {},
-        schema: schema as any,
+        schema: schema,
         databaseInstanceToken: oldDatabaseInstanceToken,
         devMode: false
     });

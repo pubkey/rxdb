@@ -34,6 +34,7 @@ import type {
 } from './types/index.d.ts';
 import {
     PROMISE_RESOLVE_TRUE,
+    RXDB_VERSION,
     RX_META_LWT_MINIMUM,
     appendToArray,
     createRevision,
@@ -958,6 +959,7 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
 
     const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
         name: 'random-delay-' + input.storage.name,
+        rxdbVersion: RXDB_VERSION,
         async createStorageInstance(params) {
             await promiseWait(input.delayTimeBefore());
             const storageInstance = await input.storage.createStorageInstance(params);

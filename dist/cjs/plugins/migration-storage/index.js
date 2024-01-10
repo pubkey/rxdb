@@ -35,6 +35,25 @@ logFunction) {
   var schema = collection.schema.jsonSchema;
   var primaryPath = collection.schema.primaryPath;
   var oldDatabaseInstanceToken = (0, _index.randomCouchString)(10);
+
+  /**
+   * In RxDB v15 we changed how the indexes are created.
+   * Before (v14), the storage prepended the _deleted field
+   * to all indexes.
+   * In v15, RxDB will prepend the _deleted field BEFORE sending
+   * it to the storage. Therefore we have to strip these fields
+   * when crating v14 storage instances.
+   */
+  if (!oldStorage.rxdbVersion && schema.indexes) {
+    schema = (0, _index.clone)(schema);
+    schema.indexes = (0, _index.ensureNotFalsy)(schema.indexes).map(index => {
+      index = (0, _index.toArray)(index).filter(field => field !== '_deleted');
+      if (index.includes('_meta.lwt')) {
+        return null;
+      }
+      return index;
+    }).filter(_index.arrayFilterNotEmpty);
+  }
   var oldStorageInstance = await oldStorage.createStorageInstance({
     databaseName: oldDatabaseName,
     collectionName: collection.name,

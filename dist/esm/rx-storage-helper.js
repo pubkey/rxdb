@@ -5,7 +5,7 @@
 import { overwritable } from "./overwritable.js";
 import { newRxError } from "./rx-error.js";
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from "./rx-schema-helper.js";
-import { PROMISE_RESOLVE_TRUE, RX_META_LWT_MINIMUM, appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, lastOfArray, now, promiseWait, randomCouchString } from "./plugins/utils/index.js";
+import { PROMISE_RESOLVE_TRUE, RXDB_VERSION, RX_META_LWT_MINIMUM, appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, lastOfArray, now, promiseWait, randomCouchString } from "./plugins/utils/index.js";
 import { filter, map, startWith, switchMap } from 'rxjs';
 import { prepareQuery } from "./rx-query.js";
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
@@ -691,6 +691,7 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
 export function randomDelayStorage(input) {
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
+    rxdbVersion: RXDB_VERSION,
     async createStorageInstance(params) {
       await promiseWait(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);

@@ -8,6 +8,10 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
+    "supabase:start": "supabase start -x storage-api,imgproxy,vector,edge-runtime,logflare,pgadmin-schema-diff,inbucket",
+    "supabase:stop": "supabase stop",
+    "supabase:nuke": "supabase stop --no-backup",
+    "migrate:create": "supabase db diff",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost",
     "test:dexie": "STORAGE=dexie concurrently \"npm run build:serve\" \"sleep 50 && npm run test:e2e\" --kill-others --success first"
   },
@@ -15,17 +19,18 @@
   "author": "pubkey",
   "license": "MIT",
   "dependencies": {
-    "@supabase/supabase-js": "1.35.7",
+    "@supabase/supabase-js": "2.39.2",
     "html-webpack-plugin": "5.6.0",
     "mini-css-extract-plugin": "2.7.6",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1"
   },
   "devDependencies": {
-    "local-web-server": "5.3.0",
+    "supabase": "1.127.4",
+    "local-web-server": "5.3.1",
     "concurrently": "8.2.2",
     "async-test-util": "2.2.1",
-    "css-loader": "6.8.1",
+    "css-loader": "6.9.0",
     "testcafe": "3.5.0",
     "testcafe-hammerhead": "31.7.1",
     "ts-loader": "9.5.1",

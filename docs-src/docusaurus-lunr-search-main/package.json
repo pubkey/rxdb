@@ -1,0 +1,69 @@
+{
+  "name": "docusaurus-lunr-search",
+  "version": "3.3.1",
+  "description": "Offline search component for Docusaurus V2",
+  "main": "src/index.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "test": "mocha '**/__tests__/**/*.spec.js'"
+  },
+  "homepage": "https://github.com/lelouch77/docusaurus-lunr-search/blob/master/README.md",
+  "repository": {
+    "url": "https://github.com/lelouch77/docusaurus-lunr-search/"
+  },
+  "author": {
+    "name": "Praveen N",
+    "url": "https://github.com/lelouch77"
+  },
+  "contributors": [
+    {
+      "name": "Pieter C",
+      "url": "https://github.com/pcallewaert"
+    },
+    {
+      "name": "ZachJW34",
+      "url": "https://github.com/ZachJW34"
+    },
+    {
+      "name": "Andrei Rublev",
+      "url": "https://github.com/anru"
+    }
+  ],
+  "keywords": [
+    "docusaurus",
+    "lunr",
+    "offline-search",
+    "documentation"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "autocomplete.js": "0.37.0",
+    "clsx": "1.2.1",
+    "gauge": "5.0.0",
+    "hast-util-select": "4.0.0",
+    "hast-util-to-text": "2.0.0",
+    "hogan.js": "3.0.2",
+    "lunr": "2.3.8",
+    "lunr-languages": "1.4.0",
+    "mark.js": "8.11.1",
+    "minimatch": "3.0.4",
+    "rehype-parse": "7.0.1",
+    "to-vfile": "6.1.0",
+    "unified": "9.0.0",
+    "unist-util-is": "4.0.2"
+  },
+  "devDependencies": {
+    "mocha": "8.0.1"
+  },
+  "peerDependencies": {
+    "@docusaurus/core": "^3.0.0",
+    "react": "18.2.0",
+    "react-dom": "^16.8.4 || ^17 || ^18"
+  },
+  "engines": {
+    "node": ">= 8.10.0"
+  }
+}

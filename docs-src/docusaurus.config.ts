@@ -34,6 +34,9 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+    plugins: [['./docusaurus-lunr-search-main/src/', {
+        excludeRoutes:['blog', 'releases']
+    }]],
 
   scripts: [
     {

@@ -116,7 +116,8 @@ function replicateCouchDB(options) {
       },
       batchSize: (0, _index.ensureNotFalsy)(options.pull).batchSize,
       modifier: (0, _index.ensureNotFalsy)(options.pull).modifier,
-      stream$: pullStream$.asObservable()
+      stream$: pullStream$.asObservable(),
+      initialCheckpoint: options.pull.initialCheckpoint
     };
   }
   var replicationPrimitivesPush;
@@ -220,7 +221,8 @@ function replicateCouchDB(options) {
         return conflicts;
       },
       batchSize: options.push.batchSize,
-      modifier: options.push.modifier
+      modifier: options.push.modifier,
+      initialCheckpoint: options.push.initialCheckpoint
     };
   }
   var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : (0, _couchdbHelper.getDefaultFetch)(), options.replicationIdentifier, collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
