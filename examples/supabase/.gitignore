@@ -2,4 +2,8 @@ node_modules/
 log.txt
 dist/
 rxdb-local.tgz
-supabase
+
+# Supabase
+supabase/.branches
+supabase/.temp
+supabase/.env
