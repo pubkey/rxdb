@@ -1,33 +1,33 @@
 import AsyncTestUtil from 'async-test-util';
 
 import {
-    RxJsonSchema,
-    toTypedRxJsonSchema,
     ExtractDocumentTypeFromTypedRxJsonSchema,
+    RxJsonSchema,
+    flatClone,
     overwritable,
-    flatClone
+    toTypedRxJsonSchema
 } from '../../plugins/core/index.mjs';
 import {
-    SimpleHumanV3DocumentType,
-    HumanWithSubOtherDocumentType,
-    NestedHumanDocumentType,
-    DeepNestedHumanDocumentType,
-    EncryptedHumanDocumentType,
-    EncryptedObjectHumanDocumentType,
-    EncryptedDeepHumanDocumentType,
+    AverageSchemaDocumentType,
+    BigHumanDocumentType,
     CompoundIndexDocumentType,
     CompoundIndexNoStringDocumentType,
+    DeepNestedHumanDocumentType,
+    EncryptedDeepHumanDocumentType,
+    EncryptedHumanDocumentType,
+    EncryptedObjectHumanDocumentType,
     HeroArrayDocumentType,
-    SimpleHeroArrayDocumentType,
+    HumanWithCompositePrimary,
+    HumanWithSubOtherDocumentType,
+    HumanWithTimestampDocumentType,
+    NestedHumanDocumentType,
+    NoIndexHumanDocumentType,
+    NostringIndexDocumentType,
+    PointDocumentType,
     RefHumanDocumentType,
     RefHumanNestedDocumentType,
-    AverageSchemaDocumentType,
-    PointDocumentType,
-    HumanWithTimestampDocumentType,
-    BigHumanDocumentType,
-    NostringIndexDocumentType,
-    NoIndexHumanDocumentType,
-    HumanWithCompositePrimary
+    SimpleHeroArrayDocumentType,
+    SimpleHumanV3DocumentType
 } from './schema-objects.ts';
 
 
@@ -56,10 +56,14 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             minimum: 0,
             maximum: 150,
             multipleOf: 1
-        }
+        },
+        optional_value:{
+            type: 'string',
+            maxLength: 100
+          },
     },
     required: ['firstName', 'lastName', 'passportId', 'age'],
-    indexes: ['firstName']
+    indexes: ['firstName','optional_value']
 } as const);
 const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);
 export type HumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanSchemaTyped>;
@@ -92,6 +96,9 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
             minimum: 0,
             maximum: 150,
             default: 20
+        },
+        optional_value:{
+            type:'string'
         }
     },
     indexes: [],
@@ -120,6 +127,9 @@ export const humanFinal: RxJsonSchema<HumanDocumentType> = overwritable.deepFree
             minimum: 0,
             maximum: 150,
             final: true
+        },
+        optional_value:{
+            type:'string'
         }
     },
     required: [
@@ -201,6 +211,9 @@ export const humanAgeIndex: RxJsonSchema<HumanDocumentType> = overwritable.deepF
             minimum: 0,
             maximum: 150,
             multipleOf: 1
+        },
+        optional_value:{
+            type:'string'
         }
     },
     required: ['firstName', 'lastName', 'age'],
@@ -268,6 +281,9 @@ export const humanWithAllIndex: RxJsonSchema<HumanDocumentType> = overwritable.d
             minimum: 0,
             maximum: 150,
             multipleOf: 1
+        },
+        optional_value:{
+            type:'string'
         }
     },
     indexes: ['firstName', 'lastName', 'age'],

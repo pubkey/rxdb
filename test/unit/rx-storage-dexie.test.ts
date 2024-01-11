@@ -10,8 +10,13 @@ import {
     randomCouchString,
     now,
     createRevision,
-    prepareQuery
+      prepareQuery,
+      createRxDatabase,
+      RxJsonSchema,
+      RxCollection
 } from '../../plugins/core/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 
 import {
     getDexieStoreSchema,
@@ -24,6 +29,35 @@ import {
     HumanDocumentType,
     humanSchemaLiteral
 } from '../helper/schemas.ts';
+import * as schemas from '../helper/schemas.ts';
+
+async function getCollection<RxDocType = schemas.HumanDocumentType>(
+      schema: RxJsonSchema<RxDocType> = schemas.human as any
+  ): Promise<RxCollection<RxDocType>> {
+      const db = await createRxDatabase({
+          name: randomCouchString(10),
+          /**
+           * Use the validator in tests to ensure we do not write
+           * broken data.
+           */
+          storage: wrappedKeyCompressionStorage({
+              storage: config.storage.getStorage(),
+          }),
+          multiInstance: false,
+          allowSlowCount:true
+      });
+
+      await db.addCollections({
+          docs: {
+              schema:{
+                  ...schema,
+                  keyCompression:true
+                }
+          }
+      });
+
+      return db.docs;
+  }
 
 /**
  * RxStorageDexie specific tests
@@ -32,6 +66,23 @@ config.parallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
         return;
     }
+      
+    describe('.count()', () => {
+      it('should count items when optional_value as index', async () => {
+            const collection = await getCollection();
+            
+            await collection.insert({passportId:'any_pet',firstName:'xpet',lastName:'x',age:6,optional_value:'u1'})
+            await collection.insert({passportId:'any_pet1',firstName:'xpet',lastName:'x1',age:6,optional_value:'u2'})
+            await collection.insert({passportId:'any_pet2',firstName:'xpet1',lastName:'x2',age:6,optional_value:'u1'})
+
+            const count = await collection.count({selector:{firstName:'xpet',optional_value:'u1'}}).exec()
+            
+            assert.strictEqual(count, 1);
+
+            collection.database.destroy();
+      });
+    });
+      
     describe('helper', () => {
         describe('.getDexieStoreSchema()', () => {
             it('should start with the primary key', () => {
