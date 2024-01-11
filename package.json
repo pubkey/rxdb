@@ -318,6 +318,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "test:local": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit/key-compression.test.js",
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",

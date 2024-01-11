@@ -122,6 +122,32 @@ config.parallel('key-compression.test.js', () => {
 
             col.database.destroy();
         });
+        it('should properly run the .count() with key-compression', async () => {
+            const col = await getCollection();
+            
+            assert.ok(col.schema.jsonSchema.keyCompression);
+
+            await col.bulkInsert([
+                {
+                    firstName: 'aaa',
+                    lastName: 'aaa',
+                    passportId: 'aaa',
+                    age: 0
+                },
+                {
+                    firstName: 'bbb',
+                    lastName: 'bbb',
+                    passportId: 'bbb',
+                    age: 0
+                }
+            ]);
+
+           const counts= await col.count({selector:{firstName:'aaa'}}).exec()
+
+           assert.strictEqual(counts, 1);
+
+            col.database.destroy();
+        });
     });
     describe('replication', () => {
         if (!config.storage.hasReplication) {
