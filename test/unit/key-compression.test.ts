@@ -368,5 +368,32 @@ config.parallel('key-compression.test.js', () => {
             assert.strictEqual(result.id, 'xxx');
             db.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/5492
+         */
+        it('#5492 should properly run the .count() with key-compression', async () => {
+            const col = await getCollection();
+            assert.ok(col.schema.jsonSchema.keyCompression);
+
+            await col.bulkInsert([
+                {
+                    firstName: 'aaa',
+                    lastName: 'aaa',
+                    passportId: 'aaa',
+                    age: 0
+                },
+                {
+                    firstName: 'bbb',
+                    lastName: 'bbb',
+                    passportId: 'bbb',
+                    age: 0
+                }
+            ]);
+
+            const countQuery = col.count({ selector: { firstName: 'aaa' } });
+            const counts = await countQuery.exec();
+            assert.strictEqual(counts, 1);
+            col.database.destroy();
+        });
     });
 });

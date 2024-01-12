@@ -182,19 +182,23 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     modifyFromStorage
                 );
 
-                const queryBefore = wrappedInstance.query.bind(wrappedInstance);
-                wrappedInstance.query = async (preparedQuery: PreparedQuery<RxDocType>) => {
-                    const compressedQuery: FilledMangoQuery<RxDocType> = compressQuery(
-                        compressionState.table,
-                        preparedQuery.query as any
-                    ) as any;
 
-                    const compressedPreparedQuery = prepareQuery(
-                        compressionState.compressedSchema,
-                        compressedQuery
-                    );
-                    return queryBefore(compressedPreparedQuery);
-                }
+                const overwriteMethods = ['query', 'count'] as const;
+                overwriteMethods.forEach(methodName => {
+                    const methodBefore = wrappedInstance[methodName].bind(wrappedInstance);
+                    (wrappedInstance as any)[methodName] = async (preparedQuery: PreparedQuery<RxDocType>) => {
+                        const compressedQuery: FilledMangoQuery<RxDocType> = compressQuery(
+                            compressionState.table,
+                            preparedQuery.query as any
+                        ) as any;
+
+                        const compressedPreparedQuery = prepareQuery(
+                            compressionState.compressedSchema,
+                            compressedQuery
+                        );
+                        return methodBefore(compressedPreparedQuery);
+                    }
+                });
 
                 return wrappedInstance;
             }
