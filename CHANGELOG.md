@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD tutorial on [how to start a HTTP replication with a custom server](https://rxdb.info/replication-http.html)
 - FIX `.count()` broken on key-compression plugin [#5492](https://github.com/pubkey/rxdb/pull/5492)
 - UPDATE dexie to version `4.0.1-beta.6` [#5469](https://github.com/pubkey/rxdb/pull/5469)
 
