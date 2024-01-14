@@ -9,6 +9,10 @@ description: Learn how to establish HTTP replication between RxDB clients and a 
 
 While RxDB has a range of backend-specific replication plugins (like [GraphQL](./replication-graphql.md) or [Firestore](./replication-firestore.md)), the replication is build in a way to make it very easy to replicate data from a custom server to RxDB clients. 
 
+<p align="center">
+  <img src="./files/icons/with-gradient/replication.svg" alt="HTTP replication" height="60" />
+</p>
+
 Using **HTTP** as a transport protocol makes it simple to create a compatible backend on top of your existing infrastructure. For events that must be send from the server to to client, we can use [Server Send Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 
 In this tutorial we will implement a HTTP replication between an RxDB client and a MongoDB express server. You can adapt this for any other backend database technologie like PostgreSQL or even a non-Node.js server like go or java.
@@ -204,7 +208,7 @@ app.get('/push', (req, res) => {
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation).
 The `pull.stream$` is implemented with server send events that are send from the server to the client.
 
-The client connects to an url and recieves server-send-events that contain all ongoing writes.
+The client connects to an url and receives server-send-events that contain all ongoing writes.
 
 ```ts
 // > client.ts
@@ -218,8 +222,6 @@ evtSource.onmessage = event => {
         checkpoint: eventData.checkpoint
     });
 };
-
-
 
 const replicationState = await replicateRxCollection({
     /* ... */
@@ -273,3 +275,12 @@ const replicationState = await replicateRxCollection({
     }
 });
 ```
+
+
+
+## Missing implementation details
+
+Here we only covered the basics of doing a HTTP replication between RxDB clients and a server. We did not cover the following aspects of the implementation:
+
+- Authentication: To authenticate the client on the server, you might want to send authentication headers with the HTTP requests
+- Skip events on the `pull.stream$` for the client that caused the changes to improve performance.
