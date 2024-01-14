@@ -274,7 +274,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return row;
                         })
                     );
-                    const useRows = useRowsOrNull.filter(arrayFilterNotEmpty);
+                    const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(arrayFilterNotEmpty);
 
                     let result: WithDeleted<RxDocType>[] = null as any;
 

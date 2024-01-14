@@ -1,8 +1,11 @@
 import { RxReplicationWriteToMasterRow } from '../replication-protocol.ts';
 import { ById, MaybePromise } from '../util.ts';
 import {
-    ReplicationOptions, ReplicationPullHandlerResult,
-    ReplicationPullOptions, ReplicationPushHandlerResult, ReplicationPushOptions
+    ReplicationOptions,
+    ReplicationPullHandlerResult,
+    ReplicationPullOptions,
+    ReplicationPushHandlerResult,
+    ReplicationPushOptions
 } from './replication.ts';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
