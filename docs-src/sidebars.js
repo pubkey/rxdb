@@ -57,6 +57,7 @@ const sidebars = {
       label: '🔄 Replication',
       items: [
         'replication',
+        'replication-http',
         'replication-graphql',
         'replication-websocket',
         'replication-couchdb',

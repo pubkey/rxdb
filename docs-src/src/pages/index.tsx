@@ -551,8 +551,8 @@ export default function Home() {
                 endpoint which smoothly integrates with your existing infrastructure.
                 Also you can use the replication primitives plugin to create custom
                 replications over any protocol like{' '}
-                <a href="/replication.html" target="_blank">
-                  REST
+                <a href="/replication-http.html" target="_blank">
+                  HTTP
                 </a>
                 ,{' '}
                 <a href="/replication-websocket.html" target="_blank">
