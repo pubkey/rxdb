@@ -130,13 +130,13 @@ jobs:
           args: "@everyone A new RxDB version has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
 
       # @link https://github.com/marketplace/actions/send-tweet-action
-      - name: Twitter notification
-        # To not spam users too much, we only do this on major and minor releases
-        if: steps.vars.outputs.prerelease == 'false' && steps.vars.outputs.nonPatchRelease == 'true'
-        uses: ethomson/send-tweet-action@v1
-        with:
-          status: "A new #RxDB version ${{github.event.inputs.version}} has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
-          consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
-          consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
-          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+#      - name: Twitter notification
+#        # To not spam users too much, we only do this on major and minor releases
+#        if: steps.vars.outputs.prerelease == 'false' && steps.vars.outputs.nonPatchRelease == 'true'
+#        uses: ethomson/send-tweet-action@v1
+#        with:
+#          status: "A new #RxDB version ${{github.event.inputs.version}} has been released: https://github.com/pubkey/rxdb/releases/tag/${{github.event.inputs.version}}"
+#          consumer-key: ${{ secrets.TWITTER_CONSUMER_API_KEY }}
+#          consumer-secret: ${{ secrets.TWITTER_CONSUMER_API_SECRET }}
+#          access-token: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+#          access-token-secret: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
