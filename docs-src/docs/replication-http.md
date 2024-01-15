@@ -215,7 +215,7 @@ The client connects to an url and receives server-send-events that contain all o
 import { Subject } from 'rxjs';
 const myPullStream$ = new Subject();
 const eventSource = new EventSource('http://localhost/pullStream', { withCredentials: true });
-evtSource.onmessage = event => {
+eventSource.onmessage = event => {
     const eventData = JSON.parse(event.data);
     myPullStream$.next({
         documents: eventData.documents,
@@ -268,7 +268,7 @@ If your backend is not capable of emitting the actual documents and checkpoint i
 import { Subject } from 'rxjs';
 const myPullStream$ = new Subject();
 const eventSource = new EventSource('http://localhost/pullStream', { withCredentials: true });
-evtSource.onmessage = () => myPullStream$.next('RESYNC');
+eventSource.onmessage = () => myPullStream$.next('RESYNC');
 const replicationState = await replicateRxCollection({
     pull: {
         stream$: myPullStream$.asObservable()
