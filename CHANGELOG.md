@@ -3,15 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD tutorial on [how to start a HTTP replication with a custom server](https://rxdb.info/replication-http.html)
-- FIX `.count()` broken on key-compression plugin [#5492](https://github.com/pubkey/rxdb/pull/5492)
-- UPDATE dexie to version `4.0.1-beta.6` [#5469](https://github.com/pubkey/rxdb/pull/5469)
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.3.0 (15 January 2024)
+
+- ADD tutorial on [how to start a HTTP replication with a custom server](https://rxdb.info/replication-http.html)
+- FIX `.count()` broken on key-compression plugin [#5492](https://github.com/pubkey/rxdb/pull/5492)
+- UPDATE dexie to version `4.0.1-beta.6` [#5469](https://github.com/pubkey/rxdb/pull/5469)
 
 ### 15.2.0 (5 January 2024)
 

@@ -104,12 +104,15 @@ function wrappedKeyCompressionStorage(args) {
         schema: childSchema
       }));
       var wrappedInstance = (0, _pluginHelpers.wrapRxStorageInstance)(params.schema, instance, modifyToStorage, modifyFromStorage);
-      var queryBefore = wrappedInstance.query.bind(wrappedInstance);
-      wrappedInstance.query = async preparedQuery => {
-        var compressedQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, preparedQuery.query);
-        var compressedPreparedQuery = (0, _rxQuery.prepareQuery)(compressionState.compressedSchema, compressedQuery);
-        return queryBefore(compressedPreparedQuery);
-      };
+      var overwriteMethods = ['query', 'count'];
+      overwriteMethods.forEach(methodName => {
+        var methodBefore = wrappedInstance[methodName].bind(wrappedInstance);
+        wrappedInstance[methodName] = async preparedQuery => {
+          var compressedQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, preparedQuery.query);
+          var compressedPreparedQuery = (0, _rxQuery.prepareQuery)(compressionState.compressedSchema, compressedQuery);
+          return methodBefore(compressedPreparedQuery);
+        };
+      });
       return wrappedInstance;
     }
   });
