@@ -90,8 +90,8 @@ To use the replication you first have to ensure that:
 
 For example if your documents look like this:
 
-```json
-{
+```ts
+const docData = {
     "id": "foobar",
     "name": "Alice",
     "lastName": "Wilson",
@@ -358,12 +358,6 @@ By setting `waitForLeadership: false` you can enforce that each tab runs its own
 If used in a multi instance setting, so when at database creation `multiInstance: false` was not set,
 you need to import the [leader election plugin](./leader-election.md) so that RxDB can know how many instances exist and which browser tab should run the replication.
 
-
-## Limitations
-
- * At the moment it is not possible to replicate [attachments](./rx-attachment.md), make a pull request if you need this.
-
-
 ## Error handling
 
 When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.
@@ -515,10 +509,6 @@ replicationState.isStopped(); // true/false
 
 By default, the push replication will start from the beginning of time and push all documents from there to the remote.
 By setting a custom `push.initialCheckpoint`, you can tell the replication to only push writes that are newer than the given checkpoint.
-
-This is often used when replication is used together with the [schema migration](./migration-schema.md).
-After a migration has run, the collection with the new version would push all migrated documents to the remote.
-This might not be desired, for example when you already have run the migration on the backend server.
 
 ```ts
 // store the latest checkpoint of a collection

@@ -83,7 +83,7 @@ export default function Premium() {
                             the most out of RxDB.
                         </p>
                         <div className="premium-blocks">
-                            <a href="./rx-storage-opfs.html" target="_blank">
+                            <a href="/rx-storage-opfs.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage OPFS</h4>
@@ -94,7 +94,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-indexeddb.html" target="_blank">
+                            <a href="/rx-storage-indexeddb.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage IndexedDB</h4>
@@ -105,7 +105,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-sqlite.html" target="_blank">
+                            <a href="/rx-storage-sqlite.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage SQLite</h4>
@@ -116,7 +116,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-sharding.html" target="_blank">
+                            <a href="/rx-storage-sharding.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage Sharding</h4>
@@ -127,7 +127,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-memory-synced.html" target="_blank">
+                            <a href="/rx-storage-memory-synced.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage Memory Synced</h4>
@@ -139,7 +139,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./query-optimizer.html" target="_blank">
+                            <a href="/query-optimizer.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>Query Optimizer</h4>
@@ -151,7 +151,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-localstorage-meta-optimizer.html" target="_blank">
+                            <a href="/rx-storage-localstorage-meta-optimizer.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage Localstorage Meta Optimizer</h4>
@@ -163,7 +163,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-shared-worker.html" target="_blank">
+                            <a href="/rx-storage-shared-worker.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage SharedWorker</h4>
@@ -175,7 +175,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-worker.html" target="_blank">
+                            <a href="/rx-storage-worker.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage Worker</h4>
@@ -187,7 +187,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./encryption.html" target="_blank">
+                            <a href="/encryption.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>WebCrypto Encryption</h4>
@@ -198,7 +198,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./rx-storage-filesystem-node.html" target="_blank">
+                            <a href="/rx-storage-filesystem-node.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                     <div className="premium-block-inner">
                                         <h4>RxStorage Filesystem Node</h4>
@@ -208,7 +208,7 @@ export default function Premium() {
                                     </div>
                                 </div>
                             </a>
-                            <a href="./logger.html" target="_blank">
+                            <a href="/logger.html" target="_blank">
                                 <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                     <div className="premium-block-inner">
                                         <h4>Logger</h4>
@@ -229,7 +229,7 @@ export default function Premium() {
                             When you start using RxDB, you do not need access to the premium
                             plugins. Most use cases can be implemented with the Open Core part of
                             RxDB. There are many{' '}
-                            <a href="./rx-storage.html" target="_blank">
+                            <a href="/rx-storage.html" target="_blank">
                                 RxStorage
                             </a>
                             options and all core plugins that are required for replication, schema
@@ -241,16 +241,16 @@ export default function Premium() {
                             Premium RxStorage implementations have a better performance so reading
                             and writing data is much faster especially on low-end devices. You can
                             find a performance comparison{' '}
-                            <a href="./rx-storage-performance.html" target="_blank">
+                            <a href="/rx-storage-performance.html" target="_blank">
                                 here
                             </a>
                             . Also there are additional Premium Plugins that can be used to further
                             optimize the performance of your application like the{' '}
-                            <a href="./query-optimizer.html" target="_blank">
+                            <a href="/query-optimizer.html" target="_blank">
                                 Query Optimizer
                             </a>{' '}
                             or the{' '}
-                            <a href="./rx-storage-sharding.html" target="_blank">
+                            <a href="/rx-storage-sharding.html" target="_blank">
                                 Sharding
                             </a>{' '}
                             plugin.
@@ -432,22 +432,22 @@ export default function Premium() {
                                                 <h4>Browser Package</h4>
                                                 <ul>
                                                     <li>
-                                                        <a href="./rx-storage-opfs.html" target="_blank">
+                                                        <a href="/rx-storage-opfs.html" target="_blank">
                                                             RxStorage OPFS
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./rx-storage-indexeddb.html" target="_blank">
+                                                        <a href="/rx-storage-indexeddb.html" target="_blank">
                                                             RxStorage IndexedDB
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./rx-storage-worker.html" target="_blank">
+                                                        <a href="/rx-storage-worker.html" target="_blank">
                                                             RxStorage Worker
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./encryption.html" target="_blank">
+                                                        <a href="/encryption.html" target="_blank">
                                                             WebCrypto Encryption
                                                         </a>
                                                     </li>
@@ -465,13 +465,13 @@ export default function Premium() {
                                                 <h4>Native Package</h4>
                                                 <ul>
                                                     <li>
-                                                        <a href="./rx-storage-sqlite.html" target="_blank">
+                                                        <a href="/rx-storage-sqlite.html" target="_blank">
                                                             RxStorage SQLite
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a
-                                                            href="./rx-storage-filesystem-node.html"
+                                                            href="/rx-storage-filesystem-node.html"
                                                             target="_blank"
                                                         >
                                                             RxStorage Filesystem Node
@@ -491,30 +491,30 @@ export default function Premium() {
                                                 <h4>Performance Package</h4>
                                                 <ul>
                                                     <li>
-                                                        <a href="./rx-storage-sharding.html" target="_blank">
+                                                        <a href="/rx-storage-sharding.html" target="_blank">
                                                             RxStorage Sharding
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./rx-storage-memory-synced.html" target="_blank">
+                                                        <a href="/rx-storage-memory-synced.html" target="_blank">
                                                             RxStorage Memory Synced
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./query-optimizer.html" target="_blank">
+                                                        <a href="/query-optimizer.html" target="_blank">
                                                             Query Optimizer
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a
-                                                            href="./rx-storage-localstorage-meta-optimizer.html"
+                                                            href="/rx-storage-localstorage-meta-optimizer.html"
                                                             target="_blank"
                                                         >
                                                             RxStorage Localstorage Meta Optimizer
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="./rx-storage-shared-worker.html" target="_blank">
+                                                        <a href="/rx-storage-shared-worker.html" target="_blank">
                                                             RxStorage Shared Worker
                                                         </a>
                                                     </li>
@@ -535,7 +535,7 @@ export default function Premium() {
                                                 </h4>
                                                 <ul>
                                                     <li>
-                                                        <a href="./logger.html" target="_blank">
+                                                        <a href="/logger.html" target="_blank">
                                                             Logger
                                                         </a>
                                                     </li>

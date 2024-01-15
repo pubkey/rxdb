@@ -12,7 +12,7 @@ Using attachments instead of adding the data to the normal document, ensures tha
 - You can store string, binary files, images and whatever you want side by side with your documents.
 - Deleted documents automatically loose all their attachments data.
 - Not all replication plugins support the replication of attachments.
-- Attachments can be stored encrypted.
+- Attachments can be stored [encrypted](./encryption.md).
 
 Internally, attachments in RxDB are stored and handled similar to how [CouchDB, PouchDB](https://pouchdb.com/guides/attachments.html#how-attachments-are-stored) does it.
 
