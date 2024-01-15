@@ -4,11 +4,11 @@ import type {
     RxCollection,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
+    RxStorageDefaultCheckpoint,
     StringKeys
 } from '../../types';
 import { getReplicationHandlerByCollection } from '../replication-websocket/index.ts';
 import type { RxServer } from './rx-server.ts';
-import { IncomingHttpHeaders } from 'http';
 import type {
     RxServerAuthenticationData,
     RxServerChangeValidator,
@@ -16,10 +16,19 @@ import type {
     RxServerQueryModifier
 } from './types.ts';
 import { filter, map } from 'rxjs';
-import { ensureNotFalsy } from '../utils/index.ts';
+import {
+    ensureNotFalsy,
+    getFromMapOrThrow,
+    lastOfArray
+} from '../utils/index.ts';
 import { getChangedDocumentsSinceQuery } from '../../rx-storage-helper.ts';
 import { prepareQuery } from '../../rx-query.ts';
-import WebSocket from "ws";
+
+import type {
+    Request,
+    Response,
+    NextFunction
+} from 'express';
 
 export type RxReplicationEndpointMessageType = {
     id: string;
@@ -53,168 +62,136 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
         let v = 0;
         const outdatedUrls = new Set<string>();
         while (v < collection.schema.version) {
-            // const version = v;
-            // const outdatedUrl = '/' + [this.type, collection.name, v].join('/');
-            // const websocketServer = new WebSocket.Server({
-            //     noServer: true,
-            //     path: outdatedUrl,
-            // });
-            // TODO
-            // this.server.expressApp.get('/' + [this.type, collection.name, version].join('/'), { websocket: true }, connection => {
-            //     closeConnection(connection, 426, 'Outdated version ' + version + ' (newest is ' + collection.schema.version + ')');
-            // });
+            const version = v;
+            this.server.expressApp.get('/' + [this.type, collection.name, version].join('/'), (req, res) => {
+                closeConnection(res, 426, 'Outdated version ' + version + ' (newest is ' + collection.schema.version + ')');
+            });
             v++;
         }
 
-        this.urlPath = [this.type, collection.name].join('/');
+        this.urlPath = [this.type, collection.name, collection.schema.version].join('/');
         const replicationHandler = getReplicationHandlerByCollection(this.server.database, collection.name);
-        const authDataByWebsocket = new Map<WebSocket, RxServerAuthenticationData<AuthType>>();
 
-        /**
-         * @link https://cheatcode.co/tutorials/how-to-set-up-a-websocket-server-with-node-js-and-express
-         */
-        const websocketServer = new WebSocket.Server({
-            noServer: true,
-            path: '/' + this.urlPath,
-        });
-        this.server.httpServer.on("upgrade", (request, socket, head) => {
-            websocketServer.handleUpgrade(request, socket, head, (websocket) => {
-                websocketServer.emit("connection", websocket, request);
-            });
-        });
-        websocketServer.on('connection', async (connection, connectionRequest) => {
-            const requestUrl = ensureNotFalsy(connectionRequest.url);
-            console.log('S: GOT CONNECTION ' + requestUrl);
-            console.dir(Array.from(outdatedUrls));
+        const authDataByRequest = new WeakMap<Request, RxServerAuthenticationData<AuthType>>();
 
-            if (outdatedUrls.has(requestUrl)) {
-                console.log('! IS OUTDAEDT');
-                closeConnection(connection, 426, 'Outdated version ' + requestUrl);
+
+        async function authenticate(req: Request, res: Response, next: NextFunction) {
+            try {
+                const authData = await server.authenticationHandler(req.headers);
+                authDataByRequest.set(req, authData);
+                next();
+            } catch (err) {
+                closeConnection(res, 401, 'Unauthorized');
                 return;
             }
-            // console.log(JSON.stringify(connectionRequest.headers));
-            // connection.on('error', () => {
-            //     console.log('S: error');
-            // });
-            connection.on('message', async (messagePlain) => {
-                // console.log('S: GOT MESSSAGE');
-                const message: RxReplicationEndpointMessageType = JSON.parse(messagePlain.toString());
-                // console.dir(message);
 
-                let authData = authDataByWebsocket.get(connection);
-                if (!authData && message.method !== 'auth') {
-                    console.error('UNAUTHORIZED');
-                    closeConnection(connection, 401, 'Unauthorized');
-                    return;
-                }
-                switch (message.method) {
-                    case 'auth':
-                        try {
-                            authData = await this.server.authenticationHandler(message.params[0]);
-                            authDataByWebsocket.set(connection, authData);
-                        } catch (err) {
-                            closeConnection(connection, 401, 'Unauthorized');
-                            return;
-                        }
-                        break;
-                    case 'masterChangeStream$':
-                        const docDataMatcherStream = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
-                        replicationHandler.masterChangeStream$.pipe(
-                            map(changes => {
-                                if (changes === 'RESYNC') {
-                                    return changes;
-                                } else {
-                                    const useDocs = changes.documents.filter(d => docDataMatcherStream(d));
-                                    return {
-                                        documents: useDocs,
-                                        checkpoint: changes.checkpoint
-                                    };
-                                }
-                            }),
-                            filter(f => f === 'RESYNC' || f.documents.length > 0)
-                        ).subscribe(filteredAndModified => {
-                            const streamResponse: RxReplicationEndpointResponseType = {
-                                id: 'stream',
-                                result: filteredAndModified
-                            };
-                            connection.send(JSON.stringify(streamResponse));
-                        });
-                        break;
-                    case 'masterChangesSince':
-                        const plainQuery = getChangedDocumentsSinceQuery(
-                            this.collection.storageInstance,
-                            message.params[1],
-                            message.params[0]
-                        );
-                        const useQueryChanges: FilledMangoQuery<RxDocType> = await this.queryModifier(
-                            ensureNotFalsy(authData),
-                            plainQuery
-                        );
-                        const prepared = prepareQuery<RxDocType>(
-                            this.collection.schema.jsonSchema,
-                            useQueryChanges
-                        );
-                        const result = await this.collection.storageInstance.query(prepared);
-                        const response: RxReplicationEndpointResponseType = {
-                            id: message.id,
-                            result
-                        };
-                        connection.send(JSON.stringify(response));
-                        break;
-                    case 'masterWrite':
-                        const docDataMatcherWrite = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
-                        const rows: RxReplicationWriteToMasterRow<RxDocType>[] = message.params[0];
+        }
+        this.server.expressApp.all(this.urlPath + '/*', authenticate, function (req, res, next) {
+            next();
+        });
 
-                        // ensure all writes are allowed
-                        const nonAllowedRow = rows.find(row => {
-                            if (
-                                !docDataMatcherWrite(row.newDocumentState as any) ||
-                                (row.assumedMasterState && !docDataMatcherWrite(row.assumedMasterState as any))
-                            ) {
-                                return true;
-                            }
-                        });
-                        if (nonAllowedRow) {
-                            closeConnection(connection, 403, 'Forbidden');
-                            return;
-                        }
-                        let hasInvalidChange = false;
-                        await Promise.all(
-                            rows.map(async (row) => {
-                                const isChangeValid = await this.changeValidator(ensureNotFalsy(authData), row);
-                                if (!isChangeValid) {
-                                    hasInvalidChange = true;
-                                }
-                            })
-                        );
-                        if (hasInvalidChange) {
-                            closeConnection(connection, 403, 'Forbidden');
-                            return;
-                        }
-
-                        const resultWrite = await replicationHandler.masterWrite(rows);
-                        const responseWrite: RxReplicationEndpointResponseType = {
-                            id: message.id,
-                            result: resultWrite
-                        };
-                        console.log('response:');
-                        console.dir(responseWrite);
-                        connection.send(JSON.stringify(responseWrite));
-                        break;
-                    default:
-                        closeConnection(connection, 405, 'Method Not Allowed');
-                        break;
-                }
+        this.server.expressApp.get(this.urlPath + 'pull', async (req, res) => {
+            const authData = getFromMapOrThrow(authDataByRequest, req);
+            const id = req.query.id ? req.query.id as string : '';
+            const lwt = req.query.lwt ? parseInt(req.query.lwt as any, 10) : 0;
+            const limit = req.query.limit ? parseInt(req.query.limit as any, 10) : 1;
+            const plainQuery = getChangedDocumentsSinceQuery<RxDocType, RxStorageDefaultCheckpoint>(
+                this.collection.storageInstance,
+                limit,
+                { id, lwt }
+            );
+            const useQueryChanges: FilledMangoQuery<RxDocType> = await this.queryModifier(
+                ensureNotFalsy(authData),
+                plainQuery
+            );
+            const prepared = prepareQuery<RxDocType>(
+                this.collection.schema.jsonSchema,
+                useQueryChanges
+            );
+            const result = await this.collection.storageInstance.query(prepared);
+            const documents = result.documents;
+            const newCheckpoint = documents.length === 0 ? { id, lwt } : {
+                id: ensureNotFalsy(lastOfArray(documents))[this.collection.schema.primaryPath],
+                updatedAt: ensureNotFalsy(lastOfArray(documents))._meta.lwt
+            };
+            res.setHeader('Content-Type', 'application/json');
+            res.json({
+                documents,
+                checkpoint: newCheckpoint
             });
         });
+        this.server.expressApp.post(this.urlPath + 'push', async (req, res) => {
+            const authData = getFromMapOrThrow(authDataByRequest, req);
+            const docDataMatcherWrite = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
+            const rows: RxReplicationWriteToMasterRow<RxDocType>[] = req.body;
+
+            // ensure all writes are allowed
+            const nonAllowedRow = rows.find(row => {
+                if (
+                    !docDataMatcherWrite(row.newDocumentState as any) ||
+                    (row.assumedMasterState && !docDataMatcherWrite(row.assumedMasterState as any))
+                ) {
+                    return true;
+                }
+            });
+            if (nonAllowedRow) {
+                closeConnection(res, 403, 'Forbidden');
+                return;
+            }
+            let hasInvalidChange = false;
+            await Promise.all(
+                rows.map(async (row) => {
+                    const isChangeValid = await this.changeValidator(ensureNotFalsy(authData), row);
+                    if (!isChangeValid) {
+                        hasInvalidChange = true;
+                    }
+                })
+            );
+            if (hasInvalidChange) {
+                closeConnection(res, 403, 'Forbidden');
+                return;
+            }
+
+            const conflicts = await replicationHandler.masterWrite(rows);
+            res.setHeader('Content-Type', 'application/json');
+            res.json(conflicts);
+        });
+        this.server.expressApp.get(this.urlPath + 'pullStream', async (req, res) => {
+            const authData = getFromMapOrThrow(authDataByRequest, req);
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Connection': 'keep-alive',
+                'Cache-Control': 'no-cache'
+            });
+
+            const docDataMatcherStream = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
+            const subscription = replicationHandler.masterChangeStream$.pipe(
+                map(changes => {
+                    if (changes === 'RESYNC') {
+                        return changes;
+                    } else {
+                        const useDocs = changes.documents.filter(d => docDataMatcherStream(d as any));
+                        return {
+                            documents: useDocs,
+                            checkpoint: changes.checkpoint
+                        };
+                    }
+                }),
+                filter(f => f === 'RESYNC' || f.documents.length > 0)
+            ).subscribe(filteredAndModified => {
+                const streamResponse: RxReplicationEndpointResponseType = {
+                    id: 'stream',
+                    result: filteredAndModified
+                };
+                res.write('data: ' + JSON.stringify(streamResponse));
+            });
+            req.on('close', () => subscription.unsubscribe());
+        });
     }
-
-
 }
 
 
-
-async function closeConnection(connection: WebSocket, code: number, message: string) {
+async function closeConnection(response: Response, code: number, message: string) {
     console.log('# CLOSE CONNECTION');
     const responseWrite: RxReplicationEndpointResponseType = {
         id: 'error',
@@ -224,8 +201,11 @@ async function closeConnection(connection: WebSocket, code: number, message: str
             message
         }
     };
-    await connection.send(JSON.stringify(responseWrite));
-    await connection.close();
+
+    response.statusCode = code;
+    await response.write(JSON.stringify(responseWrite));
+    response.set("Connection", "close");
+    response.end();
 }
 
 async function getDocAllowedMatcher<RxDocType, AuthType>(

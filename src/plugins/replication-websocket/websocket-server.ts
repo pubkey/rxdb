@@ -62,16 +62,16 @@ export function startSocketServer(options: ServerOptions): WebsocketServerState 
 }
 
 const REPLICATION_HANDLER_BY_COLLECTION: WeakMap<RxCollection, RxReplicationHandler<any, any>> = new Map();
-export function getReplicationHandlerByCollection(
+export function getReplicationHandlerByCollection<RxDocType>(
     database: RxDatabase<any>,
     collectionName: string
-): RxReplicationHandler<any, any> {
+): RxReplicationHandler<RxDocType, any> {
     if (!database.collections[collectionName]) {
         throw new Error('collection ' + collectionName + ' does not exist');
     }
 
     const collection = database.collections[collectionName];
-    const handler = getFromMapOrCreate<RxCollection, RxReplicationHandler<any, any>>(
+    const handler = getFromMapOrCreate<RxCollection, RxReplicationHandler<RxDocType, any>>(
         REPLICATION_HANDLER_BY_COLLECTION,
         collection,
         () => {
