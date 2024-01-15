@@ -19,6 +19,7 @@ export type ServerSyncOptions<RxDocType> = Omit<
     'pull' | 'push'
 > & {
     url: string;
+    headers?: { [k: string]: string };
     pull?: ServerSyncPullOptions<RxDocType>;
     push?: ServerSyncPushOptions<RxDocType>;
 };

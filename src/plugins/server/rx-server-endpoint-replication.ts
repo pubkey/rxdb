@@ -70,27 +70,37 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
         }
 
         this.urlPath = [this.type, collection.name, collection.schema.version].join('/');
+
+        console.log('SERVER URL PATH: ' + this.urlPath);
+
         const replicationHandler = getReplicationHandlerByCollection(this.server.database, collection.name);
 
         const authDataByRequest = new WeakMap<Request, RxServerAuthenticationData<AuthType>>();
 
 
         async function authenticate(req: Request, res: Response, next: NextFunction) {
+            console.log('-- AUTH 1');
             try {
                 const authData = await server.authenticationHandler(req.headers);
                 authDataByRequest.set(req, authData);
+                console.log('-- AUTH 2');
                 next();
             } catch (err) {
+                console.log('-- AUTH ERR');
                 closeConnection(res, 401, 'Unauthorized');
                 return;
             }
+            console.log('-- AUTH 3');
 
         }
-        this.server.expressApp.all(this.urlPath + '/*', authenticate, function (req, res, next) {
+        this.server.expressApp.all('/' + this.urlPath + '/*', authenticate, function (req, res, next) {
+            console.log('-- ALL 1');
+
             next();
         });
 
-        this.server.expressApp.get(this.urlPath + 'pull', async (req, res) => {
+        this.server.expressApp.get('/' + this.urlPath + '/pull', async (req, res) => {
+            console.log('-- PULL 1');
             const authData = getFromMapOrThrow(authDataByRequest, req);
             const id = req.query.id ? req.query.id as string : '';
             const lwt = req.query.lwt ? parseInt(req.query.lwt as any, 10) : 0;
@@ -120,7 +130,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                 checkpoint: newCheckpoint
             });
         });
-        this.server.expressApp.post(this.urlPath + 'push', async (req, res) => {
+        this.server.expressApp.post('/' + this.urlPath + '/push', async (req, res) => {
             const authData = getFromMapOrThrow(authDataByRequest, req);
             const docDataMatcherWrite = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
             const rows: RxReplicationWriteToMasterRow<RxDocType>[] = req.body;
@@ -156,7 +166,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             res.setHeader('Content-Type', 'application/json');
             res.json(conflicts);
         });
-        this.server.expressApp.get(this.urlPath + 'pullStream', async (req, res) => {
+        this.server.expressApp.get('/' + this.urlPath + '/pullStream', async (req, res) => {
             const authData = getFromMapOrThrow(authDataByRequest, req);
             res.writeHead(200, {
                 'Content-Type': 'text/event-stream',

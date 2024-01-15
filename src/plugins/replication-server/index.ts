@@ -1,6 +1,5 @@
 import {
-    ensureNotFalsy,
-    errorToPlainJson
+    ensureNotFalsy
 } from '../../plugins/utils/index.ts';
 
 
@@ -9,26 +8,22 @@ import type {
     RxCollection,
     ReplicationPullOptions,
     ReplicationPushOptions,
-    RxReplicationWriteToMasterRow,
     RxReplicationPullStreamItem,
-    RxStorageDefaultCheckpoint
+    RxStorageDefaultCheckpoint,
+    ById
 } from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
 } from '../replication/index.ts';
 import {
-    addRxPlugin,
-    newRxError,
-    WithDeleted
+    addRxPlugin, newRxError
 } from '../../index.ts';
 
 import { Subject } from 'rxjs';
-import { awaitRetry } from '../replication/replication-helper.ts';
 import { ServerSyncOptions } from './types.ts';
 
 export * from './types.ts';
-export * from './helper.ts';
 
 
 export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDocType, RxStorageDefaultCheckpoint> {
@@ -39,7 +34,8 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live: boolean = true,
         public retryTime: number = 1000 * 5,
-        public autoStart: boolean = true
+        public autoStart: boolean = true,
+        public headers: ById<string> = {},
     ) {
         super(
             replicationIdentifier,
@@ -59,6 +55,16 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
 export function replicateServer<RxDocType>(
     options: ServerSyncOptions<RxDocType>
 ): RxServerReplicationState<RxDocType> {
+
+    if (!options.pull && !options.push) {
+        throw newRxError('UT3', {
+            collection: options.collection.name,
+            args: {
+                replicationIdentifier: options.replicationIdentifier
+            }
+        });
+    }
+
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
 
@@ -74,8 +80,16 @@ export function replicateServer<RxDocType>(
             async handler(checkpointOrNull, batchSize) {
                 const lwt = checkpointOrNull ? checkpointOrNull.lwt : 0;
                 const id = checkpointOrNull ? checkpointOrNull.id : '';
-                const response = await fetch(options.url + `pull?lwt=${lwt}&id=${id}&limit=${batchSize}`);
-                const data = await response.json();
+                const url = options.url + `/pull?lwt=${lwt}&id=${id}&limit=${batchSize}`;
+                console.log('pull url ' + url);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: Object.assign({
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }, replicationState.headers),
+                });
+                const data = await response.json() as any;
                 return {
                     documents: data.documents,
                     checkpoint: data.checkpoint
@@ -92,15 +106,15 @@ export function replicateServer<RxDocType>(
     if (options.push) {
         replicationPrimitivesPush = {
             async handler(changeRows) {
-                const rawResponse = await fetch(options.url + 'push', {
+                const rawResponse = await fetch(options.url + '/push', {
                     method: 'POST',
-                    headers: {
+                    headers: Object.assign({
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    },
+                    }, replicationState.headers),
                     body: JSON.stringify({ changeRows })
                 });
-                const conflictsArray = await rawResponse.json();
+                const conflictsArray = await rawResponse.json() as any;
                 return conflictsArray;
             },
             batchSize: options.push.batchSize,
@@ -116,18 +130,21 @@ export function replicateServer<RxDocType>(
         replicationPrimitivesPush,
         options.live,
         options.retryTime,
-        options.autoStart
+        options.autoStart,
+        options.headers
     );
 
     /**
      * Use long polling to get live changes for the pull.stream$
      */
-    if (options.live && options.pull) {
+    if (options.live && options.pull && false) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = async () => {
-            const eventSource = new EventSource(options.url + 'pullStream', { withCredentials: true });
-            evtSource.onmessage = event => {
+            // TODO add headers
+            const eventSource = new EventSource(options.url + '/pullStream', { withCredentials: true });
+            eventSource.onerror = () => pullStream$.next('RESYNC');
+            eventSource.onmessage = event => {
                 const eventData = JSON.parse(event.data);
                 pullStream$.next({
                     documents: eventData.documents,
@@ -136,7 +153,7 @@ export function replicateServer<RxDocType>(
             };
 
             replicationState.cancel = () => {
-                newMessages.close();
+                eventSource.close();
                 return cancelBefore();
             };
             return startBefore();

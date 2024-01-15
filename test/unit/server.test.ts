@@ -10,8 +10,8 @@ import {
     startRxServer
 } from '../../plugins/server/index.mjs';
 import {
-    replicateWithWebsocketServer
-} from '../../plugins/replication-websocket/index.mjs';
+    replicateServer
+} from '../../plugins/replication-server/index.mjs';
 import * as humansCollection from './../helper/humans-collection.ts';
 import { nextPort } from '../helper/port-manager.ts';
 import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
@@ -48,7 +48,28 @@ config.parallel('server.test.ts', () => {
         });
     });
     describe('replication endoint', () => {
-        it('should replicate all data in both directions', async () => {
+        it('should be able to reach the endpoint', async function () {
+            this.timeout(100000);
+            const col = await humansCollection.create(1);
+            const port = await nextPort();
+            const server = await startRxServer({
+                database: col.database,
+                authenticationHandler,
+                port,
+                hostname: 'localhost'
+            });
+            const endpoint = await server.addReplicationEndpoint({
+                collection: col
+            });
+            const url = 'http://localhost:' + port + '/' + endpoint.urlPath + '/pull';
+            const response = await fetch(url);
+            const data = await response.json();
+            assert.ok(data.documents[0]);
+            assert.ok(data.checkpoint);
+            await col.database.destroy();
+        });
+        it('should replicate all data in both directions', async function () {
+            this.timeout(1000000000);
             const col = await humansCollection.create(5);
             const port = await nextPort();
             const server = await startRxServer({
@@ -61,21 +82,26 @@ config.parallel('server.test.ts', () => {
                 collection: col
             });
             const clientCol = await humansCollection.create(5);
-            const replicationState = await replicateWithWebsocketServer({
+            const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+            console.log('client url: ' + url);
+            const replicationState = await replicateServer({
                 collection: clientCol,
                 replicationIdentifier: randomCouchString(10),
-                url: 'ws://localhost:' + port + '/' + endpoint.urlPath,
-                headers
+                url,
+                headers,
+                push: {},
+                pull: {}
             });
             console.log('--- 1.2');
             ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInSync();
-            const docsB = await clientCol.find().exec();
-            assert.strictEqual(docsB.length, 10);
 
+            const docsB = await clientCol.find().exec();
             const ids = docsB.map(d => d.primary);
             console.dir(ids);
+            assert.strictEqual(docsB.length, 10);
+
 
             const docsA = await col.find().exec();
             assert.strictEqual(docsA.length, 10);
@@ -101,10 +127,10 @@ config.parallel('server.test.ts', () => {
             console.log('XX 1');
             const clientCol = await humansCollection.createBySchema(schemas.human);
             console.log('XX 2');
-            const replicationState = await replicateWithWebsocketServer({
+            const replicationState = await replicateServer({
                 collection: clientCol,
                 replicationIdentifier: randomCouchString(10),
-                url: 'ws://localhost:' + port + '/replication/human/0',
+                url: 'http://localhost:' + port + '/replication/human/0',
                 headers
             });
             console.log('XX 3');
