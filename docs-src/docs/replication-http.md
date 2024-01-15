@@ -136,7 +136,7 @@ const replicationState = await replicateRxCollection({
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ changeRows })
+                body: JSON.stringify(changeRows)
             });
             const conflictsArray = await rawResponse.json();
             return conflictsArray;
