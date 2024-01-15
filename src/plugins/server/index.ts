@@ -14,6 +14,9 @@ export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>
         options.serverApp = app;
     }
 
+    options.serverApp.use(express.json());
+
+
     const httpServer: HttpServer = await new Promise((res, rej) => {
         const ret = ensureNotFalsy(options.serverApp).listen(options.port, options.hostname, () => {
             res(ret);

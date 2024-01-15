@@ -131,7 +131,9 @@ config.parallel('server.test.ts', () => {
                 collection: clientCol,
                 replicationIdentifier: randomCouchString(10),
                 url: 'http://localhost:' + port + '/replication/human/0',
-                headers
+                headers,
+                push: {},
+                pull: {}
             });
             console.log('XX 3');
 

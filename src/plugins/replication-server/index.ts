@@ -112,7 +112,7 @@ export function replicateServer<RxDocType>(
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     }, replicationState.headers),
-                    body: JSON.stringify({ changeRows })
+                    body: JSON.stringify(changeRows)
                 });
                 const conflictsArray = await rawResponse.json() as any;
                 return conflictsArray;

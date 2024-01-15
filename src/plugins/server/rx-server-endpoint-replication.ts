@@ -135,6 +135,9 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             const docDataMatcherWrite = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
             const rows: RxReplicationWriteToMasterRow<RxDocType>[] = req.body;
 
+            console.log('body:');
+            console.dir(req.body);
+
             // ensure all writes are allowed
             const nonAllowedRow = rows.find(row => {
                 if (
