@@ -255,10 +255,6 @@ config.parallel('server.test.ts', () => {
 
                 // check with replication
                 const clientCol = await humansCollection.create(1);
-
-                console.log('------------------------------ 000000');
-
-
                 const replicationState = await replicateServer({
                     collection: clientCol,
                     replicationIdentifier: randomCouchString(10),
@@ -275,13 +271,9 @@ config.parallel('server.test.ts', () => {
                 replicationState.unauthorized$.subscribe(() => emittedUnauthorized = true);
                 await waitUntil(() => emittedUnauthorized === true);
 
-                console.log('--- 1');
-
                 // setting correct headers afterwards should make the replication work again
                 replicationState.headers = headers;
-                console.log('--- 2');
                 await replicationState.awaitInSync();
-                console.log('--- 2.1');
 
                 await col.insert(schemaObjects.human('after-correct-headers'));
                 await waitUntil(async () => {
@@ -295,7 +287,6 @@ config.parallel('server.test.ts', () => {
                     const docs = await clientCol.find().exec();
                     return docs.length === 4;
                 });
-
 
                 col.database.destroy();
                 clientCol.database.destroy();

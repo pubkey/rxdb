@@ -29,6 +29,7 @@ import type {
     Response,
     NextFunction
 } from 'express';
+import expressCors from 'cors';
 
 export type RxReplicationEndpointMessageType = {
     id: string;
@@ -44,8 +45,23 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
         public readonly server: RxServer<AuthType>,
         public readonly collection: RxCollection<RxDocType>,
         public readonly queryModifier: RxServerQueryModifier<AuthType, RxDocType>,
-        public readonly changeValidator: RxServerChangeValidator<AuthType, RxDocType>
+        public readonly changeValidator: RxServerChangeValidator<AuthType, RxDocType>,
+        public readonly cors?: string
     ) {
+
+        let useCors = cors;
+        if (!useCors) {
+            useCors = this.server.cors;
+        }
+        if (useCors) {
+            this.server.expressApp.options('/' + [this.type, collection.name].join('/') + '/*', expressCors({
+                origin: useCors,
+                // some legacy browsers (IE11, various SmartTVs) choke on 204
+                optionsSuccessStatus: 200
+            }));
+        }
+
+
         /**
          * "block" the previous version urls and send a 426 on them so that
          * the clients know they must update.

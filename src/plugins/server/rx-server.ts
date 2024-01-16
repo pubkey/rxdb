@@ -21,7 +21,8 @@ export class RxServer<AuthType> {
         public readonly database: RxDatabase,
         public readonly authenticationHandler: RxServerAuthenticationHandler<AuthType>,
         public readonly httpServer: HttpServer,
-        public readonly expressApp: Express
+        public readonly expressApp: Express,
+        public readonly cors: string = '*'
     ) {
         database.onDestroy.push(() => this.close());
     }
@@ -29,7 +30,13 @@ export class RxServer<AuthType> {
     public async addReplicationEndpoint<RxDocType>(opts: {
         collection: RxCollection<RxDocType>,
         queryModifier?: RxServerQueryModifier<AuthType, RxDocType>,
-        changeValidator?: RxServerChangeValidator<AuthType, RxDocType>
+        changeValidator?: RxServerChangeValidator<AuthType, RxDocType>,
+        /**
+         * Set a origin for allowed CORS requests.
+         * Overwrites the cors option of the server.
+         * [default='*']
+         */
+        cors?: '*' | string
     }) {
         const endpoint = new RxServerReplicationEndpoint(
             this,

@@ -27,7 +27,8 @@ export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>
         options.database,
         options.authenticationHandler,
         httpServer,
-        ensureNotFalsy(options.serverApp)
+        ensureNotFalsy(options.serverApp),
+        options.cors
     );
 
     return server;
