@@ -8,7 +8,10 @@ export type RxServerOptions<AuthType> = {
     authenticationHandler: RxServerAuthenticationHandler<AuthType>;
     serverApp?: Express;
     appOptions?: any;
-    hostname: string;
+    /**
+     * [default=localhost]
+     */
+    hostname?: 'localhost' | '0.0.0.0' | string;
     port: number;
     /**
      * Set a origin for allowed CORS requests.

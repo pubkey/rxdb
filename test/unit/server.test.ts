@@ -7,8 +7,8 @@ import {
     clone,
     randomCouchString
 } from '../../plugins/core/index.mjs';
-import {
-    startRxServer
+import type {
+    startRxServer as startRxServerType
 } from '../../plugins/server/index.mjs';
 import {
     replicateServer
@@ -20,7 +20,7 @@ import * as schemas from '../helper/schemas.ts';
 import { waitUntil } from 'async-test-util';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import EventSource from 'eventsource';
-import { IncomingHttpHeaders } from 'node:http';
+import type { IncomingHttpHeaders } from 'node:http';
 
 const urlSubPaths = ['pull', 'push', 'pullStream'];
 
@@ -49,6 +49,14 @@ config.parallel('server.test.ts', () => {
         Authorization: 'is-valid'
     };
 
+
+    let startRxServer: typeof startRxServerType;
+    describe('init', () => {
+        it('load server plugin', async () => {
+            const serverPlugin = await import('../../plugins/server/index.mjs');
+            startRxServer = serverPlugin.startRxServer;
+        });
+    });
     describe('basics', () => {
         it('should start end stop the server', async () => {
             const port = await nextPort();

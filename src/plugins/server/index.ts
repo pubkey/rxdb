@@ -18,7 +18,8 @@ export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>
 
 
     const httpServer: HttpServer = await new Promise((res, rej) => {
-        const ret = ensureNotFalsy(options.serverApp).listen(options.port, options.hostname, () => {
+        const hostname = options.hostname ? options.hostname : 'localhost';
+        const ret = ensureNotFalsy(options.serverApp).listen(options.port, hostname, () => {
             res(ret);
         });
     });
