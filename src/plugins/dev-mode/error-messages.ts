@@ -171,6 +171,7 @@ export const ERROR_MESSAGES = {
     RC_COUCHDB_1: 'replicateCouchDB() url must end with a slash like \'https://example.com/mydatabase/\'',
     RC_COUCHDB_2: 'replicateCouchDB() did not get valid result with rows.',
     RC_OUTDATED: 'Outdated client, update required',
+    RC_UNAUTHORIZED: 'Unauthorized client, update the replicationState.headers to set correct auth data',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',

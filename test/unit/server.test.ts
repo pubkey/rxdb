@@ -3,6 +3,7 @@ import config, {
 } from './config.ts';
 
 import {
+    ById,
     clone,
     randomCouchString
 } from '../../plugins/core/index.mjs';
@@ -16,9 +17,12 @@ import * as humansCollection from './../helper/humans-collection.ts';
 import { nextPort } from '../helper/port-manager.ts';
 import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 import * as schemas from '../helper/schemas.ts';
-import { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import EventSource from 'eventsource';
+import { IncomingHttpHeaders } from 'node:http';
+
+const urlSubPaths = ['pull', 'push', 'pullStream'];
 
 config.parallel('server.test.ts', () => {
     if (
@@ -28,9 +32,21 @@ config.parallel('server.test.ts', () => {
         return;
     }
 
-    const authenticationHandler = () => ({ validUntil: Date.now() + 100000, data: {} });
+    const authenticationHandler = (requestHeaders: IncomingHttpHeaders) => {
+
+        console.log('auth:');
+        console.dir(requestHeaders);
+
+        if (requestHeaders.authorization === 'is-valid') {
+            console.log('auth valid!');
+            return { validUntil: Date.now() + 100000, data: {} };
+        } else {
+            console.log('auth NOT valid!');
+            throw new Error('auth not valid');
+        }
+    };
     const headers = {
-        Authorization: 'S0VLU0UhIExFQ0tFUiEK'
+        Authorization: 'is-valid'
     };
 
     describe('basics', () => {
@@ -50,174 +66,240 @@ config.parallel('server.test.ts', () => {
         });
     });
     describe('replication endoint', () => {
-        it('should be able to reach the endpoint', async function () {
-            this.timeout(100000);
-            const col = await humansCollection.create(1);
-            const port = await nextPort();
-            const server = await startRxServer({
-                database: col.database,
-                authenticationHandler,
-                port,
-                hostname: 'localhost'
+        describe('basics', () => {
+
+            it('should be able to reach the endpoint', async function () {
+                this.timeout(100000);
+                const col = await humansCollection.create(1);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: col.database,
+                    authenticationHandler,
+                    port,
+                    hostname: 'localhost'
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: col
+                });
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath + '/pull';
+                const response = await fetch(url, {
+                    headers
+                });
+                const data = await response.json();
+                assert.ok(data.documents[0]);
+                assert.ok(data.checkpoint);
+                await col.database.destroy();
             });
-            const endpoint = await server.addReplicationEndpoint({
-                collection: col
-            });
-            const url = 'http://localhost:' + port + '/' + endpoint.urlPath + '/pull';
-            const response = await fetch(url);
-            const data = await response.json();
-            assert.ok(data.documents[0]);
-            assert.ok(data.checkpoint);
-            await col.database.destroy();
         });
-        it('should replicate all data in both directions', async function () {
-            const col = await humansCollection.create(5);
-            const port = await nextPort();
-            const server = await startRxServer({
-                database: col.database,
-                authenticationHandler,
-                port,
-                hostname: 'localhost'
+        describe('replication', () => {
+
+            it('should replicate all data in both directions', async function () {
+                const col = await humansCollection.create(5);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: col.database,
+                    authenticationHandler,
+                    port,
+                    hostname: 'localhost'
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: col
+                });
+                const clientCol = await humansCollection.create(5);
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                await replicationState.awaitInSync();
+
+                const docsB = await clientCol.find().exec();
+                assert.strictEqual(docsB.length, 10);
+
+                const docsA = await col.find().exec();
+                assert.strictEqual(docsA.length, 10);
+
+                await col.database.destroy();
+                await clientCol.database.destroy();
             });
-            const endpoint = await server.addReplicationEndpoint({
-                collection: col
+            it('should give a 426 error on outdated versions', async () => {
+                const newestSchema = clone(schemas.human);
+                newestSchema.version = 1;
+                const col = await humansCollection.createBySchema(newestSchema, undefined, undefined, { 1: d => d });
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: col.database,
+                    authenticationHandler,
+                    port,
+                    hostname: 'localhost'
+                });
+                await server.addReplicationEndpoint({
+                    collection: col
+                });
+
+                // check with plain requests
+                for (const path of urlSubPaths) {
+                    const response = await fetch('http://localhost:' + port + '/replication/human/0/' + path);
+                    assert.strictEqual(response.status, 426);
+                }
+
+                // check with replication
+                const clientCol = await humansCollection.createBySchema(schemas.human);
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url: 'http://localhost:' + port + '/replication/human/0',
+                    headers,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+
+                const errors: any[] = [];
+                replicationState.error$.subscribe(err => errors.push(err));
+
+                let emittedOutdated = false;
+                replicationState.outdatedClient$.subscribe(() => emittedOutdated = true);
+                await waitUntil(() => emittedOutdated);
+
+
+                await waitUntil(() => errors.length > 0);
+                const firstError = errors[0];
+                assert.strictEqual(firstError.code, 'RC_PULL');
+
+                col.database.destroy();
+                clientCol.database.destroy();
             });
-            const clientCol = await humansCollection.create(5);
-            const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
-            console.log('client url: ' + url);
-            const replicationState = await replicateServer({
-                collection: clientCol,
-                replicationIdentifier: randomCouchString(10),
-                url,
-                headers,
-                push: {},
-                pull: {},
-                eventSource: EventSource
+            it('must replicate ongoing changes', async () => {
+                const col = await humansCollection.create(5);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: col.database,
+                    authenticationHandler,
+                    port,
+                    hostname: 'localhost'
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: col
+                });
+                const clientCol = await humansCollection.create(5);
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInSync();
+
+                // server to client
+                await col.insert(schemaObjects.human());
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    return docs.length === 11;
+                });
+
+                // client to server
+                await clientCol.insert(schemaObjects.human());
+                await waitUntil(async () => {
+                    const docs = await col.find().exec();
+                    return docs.length === 12;
+                });
+
+                // do not miss updates when connection is dropped
+                server.httpServer.closeAllConnections();
+                await col.insert(schemaObjects.human());
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    return docs.length === 13;
+                });
+
+                col.database.destroy();
+                clientCol.database.destroy();
             });
-            console.log('--- 1.2');
-            ensureReplicationHasNoErrors(replicationState);
-
-            await replicationState.awaitInSync();
-
-            const docsB = await clientCol.find().exec();
-            const ids = docsB.map(d => d.primary);
-            console.dir(ids);
-            assert.strictEqual(docsB.length, 10);
-
-
-            const docsA = await col.find().exec();
-            assert.strictEqual(docsA.length, 10);
-
-            await col.database.destroy();
-            await clientCol.database.destroy();
         });
-        it('should give a 426 error on outdated versions', async () => {
-            const newestSchema = clone(schemas.human);
-            newestSchema.version = 1;
-            const col = await humansCollection.createBySchema(newestSchema, undefined, undefined, { 1: d => d });
-            const port = await nextPort();
-            const server = await startRxServer({
-                database: col.database,
-                authenticationHandler,
-                port,
-                hostname: 'localhost'
+        describe('authentication', () => {
+            it('should drop non authenticated clients', async () => {
+                const col = await humansCollection.create(1);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: col.database,
+                    authenticationHandler,
+                    port,
+                    hostname: 'localhost'
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: col
+                });
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+
+                // check with plain requests
+                for (const path of urlSubPaths) {
+                    const response = await fetch(url + '/' + path);
+                    assert.equal(response.status, 401);
+                    const data = await response.json();
+                    console.dir(data);
+                }
+
+                // check with replication
+                const clientCol = await humansCollection.create(1);
+
+                console.log('------------------------------ 000000');
+
+
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers: {},
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource,
+                    retryTime: 100
+                });
+
+                let emittedUnauthorized = false;
+                replicationState.unauthorized$.subscribe(() => emittedUnauthorized = true);
+                await waitUntil(() => emittedUnauthorized === true);
+
+                console.log('--- 1');
+
+                // setting correct headers afterwards should make the replication work again
+                replicationState.headers = headers;
+                console.log('--- 2');
+                await replicationState.awaitInSync();
+                console.log('--- 2.1');
+
+                await col.insert(schemaObjects.human('after-correct-headers'));
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    return docs.length === 3;
+                });
+
+                await replicationState.awaitInSync();
+                await col.insert(schemaObjects.human('after-correct-headers-ongoing'));
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    return docs.length === 4;
+                });
+
+
+                col.database.destroy();
+                clientCol.database.destroy();
             });
-            await server.addReplicationEndpoint({
-                collection: col
-            });
-
-            // check with plain requests
-            const responsePull = await fetch('http://localhost:' + port + '/replication/human/0/pull');
-            assert.strictEqual(responsePull.status, 426);
-            const responsePush = await fetch('http://localhost:' + port + '/replication/human/0/push', {
-                method: 'POST'
-            });
-            assert.strictEqual(responsePush.status, 426);
-            const responsePullStream = await fetch('http://localhost:' + port + '/replication/human/0/pullStream');
-            assert.strictEqual(responsePullStream.status, 426);
-
-            // check with replication
-            console.log('XX 1');
-            const clientCol = await humansCollection.createBySchema(schemas.human);
-            console.log('XX 2');
-            const replicationState = await replicateServer({
-                collection: clientCol,
-                replicationIdentifier: randomCouchString(10),
-                url: 'http://localhost:' + port + '/replication/human/0',
-                headers,
-                push: {},
-                pull: {},
-                eventSource: EventSource
-            });
-            console.log('XX 3');
-
-            const errors: any[] = [];
-            replicationState.error$.subscribe(err => errors.push(err));
-
-            let emittedOutdated = false;
-            replicationState.outdatedClient$.subscribe(() => emittedOutdated = true);
-            await waitUntil(() => emittedOutdated);
-
-
-            await waitUntil(() => errors.length > 0);
-            const firstError = errors[0];
-            assert.strictEqual(firstError.code, 'RC_PULL');
-
-            col.database.destroy();
-            clientCol.database.destroy();
-        });
-        it('must replicate ongoing changes', async () => {
-            const col = await humansCollection.create(5);
-            const port = await nextPort();
-            const server = await startRxServer({
-                database: col.database,
-                authenticationHandler,
-                port,
-                hostname: 'localhost'
-            });
-            const endpoint = await server.addReplicationEndpoint({
-                collection: col
-            });
-            const clientCol = await humansCollection.create(5);
-            const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
-            console.log('client url: ' + url);
-            const replicationState = await replicateServer({
-                collection: clientCol,
-                replicationIdentifier: randomCouchString(10),
-                url,
-                headers,
-                live: true,
-                push: {},
-                pull: {},
-                eventSource: EventSource
-            });
-            ensureReplicationHasNoErrors(replicationState);
-            await replicationState.awaitInSync();
-
-            // server to client
-            await col.insert(schemaObjects.human());
-            await waitUntil(async () => {
-                const docs = await clientCol.find().exec();
-                return docs.length === 11;
-            });
-
-            // client to server
-            await clientCol.insert(schemaObjects.human());
-            await waitUntil(async () => {
-                const docs = await col.find().exec();
-                return docs.length === 12;
-            });
-
-            // do not miss updates when connection is dropped
-            server.httpServer.closeAllConnections();
-            await col.insert(schemaObjects.human());
-            await waitUntil(async () => {
-                const docs = await clientCol.find().exec();
-                return docs.length === 13;
-            });
-
-            await col.database.destroy();
-            await clientCol.database.destroy();
         });
     });
 

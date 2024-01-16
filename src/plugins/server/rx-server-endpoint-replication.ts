@@ -15,7 +15,7 @@ import type {
     RxServerEndpoint,
     RxServerQueryModifier
 } from './types.ts';
-import { filter, map } from 'rxjs';
+import { filter, map, mergeMap } from 'rxjs';
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
@@ -72,7 +72,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
 
 
         async function authenticate(req: Request, res: Response, next: NextFunction) {
-            console.log('-- AUTH 1');
+            console.log('-- AUTH 1 ' + req.path);
             try {
                 const authData = await server.authenticationHandler(req.headers);
                 authDataByRequest.set(req, authData);
@@ -163,16 +163,40 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             res.json(conflicts);
         });
         this.server.expressApp.get('/' + this.urlPath + '/pullStream', async (req, res) => {
-            const authData = getFromMapOrThrow(authDataByRequest, req);
-            res.writeHead(200, {
-                'Content-Type': 'text/event-stream',
-                'Connection': 'keep-alive',
-                'Cache-Control': 'no-cache'
-            });
 
-            const docDataMatcherStream = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
+            console.log('##### new pullStream request');
+
+            res.writeHead(200, {
+                /**
+                 * Use exact these headers to make is less likely
+                 * for people to have problems.
+                 * @link https://www.youtube.com/watch?v=0PcMuYGJPzM
+                 */
+                'Content-Type': 'text/event-stream; charset=utf-8',
+                'Connection': 'keep-alive',
+                'Cache-Control': 'no-cache',
+                /**
+                 * Required for nginx
+                 * @link https://stackoverflow.com/q/61029079/3443137
+                 */
+                'X-Accel-Buffering': 'no'
+            });
+            res.flushHeaders();
+
             const subscription = replicationHandler.masterChangeStream$.pipe(
-                map(changes => {
+                mergeMap(async (changes) => {
+                    /**
+                     * The auth-data might be expired
+                     * so we re-run the auth parsing each time
+                     * before emitting an event.
+                     */
+                    let authData: RxServerAuthenticationData<AuthType>;
+                    try {
+                        authData = await server.authenticationHandler(req.headers);
+                    } catch (err) {
+                        closeConnection(res, 401, 'Unauthorized');
+                        return null;
+                    }
 
                     console.log('S: emit to stream:');
                     console.dir(changes);
@@ -180,6 +204,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                     if (changes === 'RESYNC') {
                         return changes;
                     } else {
+                        const docDataMatcherStream = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
                         const useDocs = changes.documents.filter(d => docDataMatcherStream(d as any));
                         return {
                             documents: useDocs,
@@ -187,11 +212,18 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                         };
                     }
                 }),
-                filter(f => f === 'RESYNC' || f.documents.length > 0)
+                filter(f => f !== null && (f === 'RESYNC' || f.documents.length > 0))
             ).subscribe(filteredAndModified => {
                 res.write('data: ' + JSON.stringify(filteredAndModified) + '\n\n');
             });
-            req.on('close', () => subscription.unsubscribe());
+
+            /**
+             * @link https://youtu.be/0PcMuYGJPzM?si=AxkczxcMaUwhh8k9&t=363
+             */
+            req.on('close', () => {
+                subscription.unsubscribe();
+                res.end();
+            });
         });
     }
 }

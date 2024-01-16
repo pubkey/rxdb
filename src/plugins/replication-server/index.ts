@@ -1,5 +1,5 @@
 import {
-    ensureNotFalsy
+    ensureNotFalsy, flatClone, promiseWait
 } from '../../plugins/utils/index.ts';
 
 
@@ -23,13 +23,14 @@ import {
 import { Subject } from 'rxjs';
 import { ServerSyncOptions } from './types.ts';
 import { parseResponse } from './helpers.ts';
+import EventSource from 'eventsource';
 
 export * from './types.ts';
 
 
 export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDocType, RxStorageDefaultCheckpoint> {
-
     public readonly outdatedClient$ = new Subject<void>();
+    public readonly unauthorized$ = new Subject<void>();
 
     constructor(
         public readonly replicationIdentifier: string,
@@ -52,7 +53,14 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
             autoStart
         );
 
-        this.onCancel.push(() => this.outdatedClient$.complete());
+        this.onCancel.push(() => {
+            this.outdatedClient$.complete();
+            this.unauthorized$.complete();
+        });
+    }
+
+    setHeaders(headers: ById<string>): void {
+        this.headers = flatClone(headers);
     }
 }
 
@@ -84,8 +92,8 @@ export function replicateServer<RxDocType>(
     if (options.pull) {
         replicationPrimitivesPull = {
             async handler(checkpointOrNull, batchSize) {
-                const lwt = checkpointOrNull ? checkpointOrNull.lwt : 0;
-                const id = checkpointOrNull ? checkpointOrNull.id : '';
+                const lwt = checkpointOrNull && checkpointOrNull.lwt ? checkpointOrNull.lwt : 0;
+                const id = checkpointOrNull && checkpointOrNull.id ? checkpointOrNull.id : '';
                 const url = options.url + `/pull?lwt=${lwt}&id=${id}&limit=${batchSize}`;
                 console.log('pull url ' + url);
                 const response = await fetch(url, {
@@ -146,28 +154,51 @@ export function replicateServer<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         replicationState.start = async () => {
-            // TODO add headers
-            const useEventSource: typeof EventSource = options.eventSource ? options.eventSource : EventSource;
-            const eventSource = new useEventSource(options.url + '/pullStream', { withCredentials: true });
-            // TODO check for 426 errors and handle them
-            eventSource.onerror = (err) => {
-                console.log('eventsource error:');
-                console.dir(err);
-                pullStream$.next('RESYNC');
-            };
-            eventSource.onopen = (x) => {
-                console.log('eventsource open!');
-                console.dir(x);
-            }
-            eventSource.onmessage = event => {
-                const eventData = JSON.parse(event.data);
-                pullStream$.next({
-                    documents: eventData.documents,
-                    checkpoint: eventData.checkpoint
-                });
-            };
 
-            replicationState.onCancel.push(() => eventSource.close());
+
+            console.log('CCCLIENT start eventsource');
+
+            const useEventSource: typeof EventSource = options.eventSource ? options.eventSource : EventSource;
+            let eventSource: EventSource;
+            const refreshEventSource = () => {
+                eventSource = new useEventSource(options.url + '/pullStream', {
+                    withCredentials: true,
+                    /**
+                     * Sending headers is not supported by the Browser EventSource API,
+                     * only by the npm module we use. In react-native you might have
+                     * to set another EventSource implementation.
+                     * @link https://www.npmjs.com/package/eventsource
+                     */
+                    headers: replicationState.headers
+                });
+                // TODO check for 426 errors and handle them
+                eventSource.onerror = (err) => {
+                    console.log('eventsource error:');
+                    console.dir(err);
+
+                    if (err.status === 401) {
+                        replicationState.unauthorized$.next();
+                        eventSource.close();
+                        promiseWait(replicationState.retryTime).then(() => refreshEventSource());
+                    } else {
+                        pullStream$.next('RESYNC');
+                    }
+                };
+                eventSource.onopen = (x) => {
+                    console.log('eventsource open!');
+                    console.dir(x);
+                }
+                eventSource.onmessage = event => {
+                    const eventData = JSON.parse(event.data);
+                    pullStream$.next({
+                        documents: eventData.documents,
+                        checkpoint: eventData.checkpoint
+                    });
+                };
+            }
+            refreshEventSource();
+
+            replicationState.onCancel.push(() => eventSource && eventSource.close());
             return startBefore();
         };
     }
