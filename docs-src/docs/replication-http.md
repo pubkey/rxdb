@@ -244,7 +244,7 @@ app.get('/pullStream', (req, res) => {
         'Connection': 'keep-alive',
         'Cache-Control': 'no-cache'
     });
-    const subscription = pullStream$.subscribe(event => res.write('data: ' + JSON.stringify(event)));
+    const subscription = pullStream$.subscribe(event => res.write('data: ' + JSON.stringify(event) + '\n\n'));
     req.on('close', () => subscription.unsubscribe());
 });
 ```
