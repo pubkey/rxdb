@@ -23,7 +23,7 @@ import EventSource from 'eventsource';
 import type { IncomingHttpHeaders } from 'node:http';
 
 import type {
-    RxServerAuthenticationHandler,
+    RxServerAuthentificationHandler,
     RxServerQueryModifier
 } from '../../plugins/server/index.mjs';
 
@@ -41,7 +41,7 @@ describe('server.test.ts', () => {
         return;
     }
 
-    const authenticationHandler: RxServerAuthenticationHandler<AuthType> = (requestHeaders: IncomingHttpHeaders) => {
+    const authentificationHandler: RxServerAuthentificationHandler<AuthType> = (requestHeaders: IncomingHttpHeaders) => {
         console.log('auth:');
         console.dir(requestHeaders);
         if (requestHeaders.authorization === 'is-valid') {
@@ -69,13 +69,13 @@ describe('server.test.ts', () => {
             startRxServer = serverPlugin.startRxServer;
         });
     });
-    config.parallel('basics', () => {
+    describe('basics', () => {
         it('should start end stop the server', async () => {
             const port = await nextPort();
             const col = await humansCollection.create(0);
             const server = await startRxServer({
                 database: col.database,
-                authenticationHandler,
+                authentificationHandler,
                 port
             });
             await server.addReplicationEndpoint({
@@ -91,7 +91,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({
@@ -113,7 +113,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({
@@ -150,7 +150,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 await server.addReplicationEndpoint({
@@ -195,7 +195,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({
@@ -242,13 +242,13 @@ describe('server.test.ts', () => {
                 clientCol.database.destroy();
             });
         });
-        describe('authentication', () => {
+        describe('authentification', () => {
             it('should drop non authenticated clients', async () => {
                 const col = await humansCollection.create(1);
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({
@@ -314,7 +314,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: serverCol.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({
@@ -366,7 +366,7 @@ describe('server.test.ts', () => {
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: serverCol.database,
-                    authenticationHandler,
+                    authentificationHandler,
                     port
                 });
                 const endpoint = await server.addReplicationEndpoint({

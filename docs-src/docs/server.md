@@ -1,0 +1,3 @@
+- Authentification (who are you) with the authentificationHandler
+- authorization with queryModifier and changeValidator
+- cors

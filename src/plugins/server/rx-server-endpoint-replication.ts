@@ -10,7 +10,7 @@ import type {
 import { getReplicationHandlerByCollection } from '../replication-websocket/index.ts';
 import type { RxServer } from './rx-server.ts';
 import type {
-    RxServerAuthenticationData,
+    RxServerAuthentificationData,
     RxServerChangeValidator,
     RxServerEndpoint,
     RxServerQueryModifier
@@ -83,13 +83,13 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
 
         const replicationHandler = getReplicationHandlerByCollection(this.server.database, collection.name);
 
-        const authDataByRequest = new WeakMap<Request, RxServerAuthenticationData<AuthType>>();
+        const authDataByRequest = new WeakMap<Request, RxServerAuthentificationData<AuthType>>();
 
 
-        async function authenticate(req: Request, res: Response, next: NextFunction) {
+        async function authentificate(req: Request, res: Response, next: NextFunction) {
             console.log('-- AUTH 1 ' + req.path);
             try {
-                const authData = await server.authenticationHandler(req.headers);
+                const authData = await server.authentificationHandler(req.headers);
                 authDataByRequest.set(req, authData);
                 console.log('-- AUTH 2');
                 next();
@@ -101,7 +101,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             console.log('-- AUTH 3');
 
         }
-        this.server.expressApp.all('/' + this.urlPath + '/*', authenticate, function (req, res, next) {
+        this.server.expressApp.all('/' + this.urlPath + '/*', authentificate, function (req, res, next) {
             console.log('-- ALL 1');
 
             next();
@@ -205,9 +205,9 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                      * so we re-run the auth parsing each time
                      * before emitting an event.
                      */
-                    let authData: RxServerAuthenticationData<AuthType>;
+                    let authData: RxServerAuthentificationData<AuthType>;
                     try {
-                        authData = await server.authenticationHandler(req.headers);
+                        authData = await server.authentificationHandler(req.headers);
                     } catch (err) {
                         closeConnection(res, 401, 'Unauthorized');
                         return null;
@@ -261,7 +261,7 @@ async function closeConnection(response: Response, code: number, message: string
 
 async function getDocAllowedMatcher<RxDocType, AuthType>(
     endpoint: RxServerReplicationEndpoint<any, RxDocType>,
-    authData: RxServerAuthenticationData<AuthType>
+    authData: RxServerAuthentificationData<AuthType>
 ) {
     const useQuery: FilledMangoQuery<RxDocType> = await endpoint.queryModifier(
         authData,

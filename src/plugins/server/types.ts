@@ -5,7 +5,7 @@ import { Express } from 'express';
 
 export type RxServerOptions<AuthType> = {
     database: RxDatabase;
-    authenticationHandler: RxServerAuthenticationHandler<AuthType>;
+    authentificationHandler: RxServerAuthentificationHandler<AuthType>;
     serverApp?: Express;
     appOptions?: any;
     /**
@@ -21,17 +21,17 @@ export type RxServerOptions<AuthType> = {
     cors?: '*' | string;
 };
 
-export type RxServerAuthenticationData<AuthType> = {
+export type RxServerAuthentificationData<AuthType> = {
     data: AuthType;
     validUntil: number;
 };
 
 /**
- * Returns the authentication state by the given request headers.
- * Throws if authentication not valid.
+ * Returns the authentification state by the given request headers.
+ * Throws if authentification not valid.
  */
-export type RxServerAuthenticationHandler<AuthType> =
-    (headers: IncomingHttpHeaders) => MaybePromise<RxServerAuthenticationData<AuthType>>;
+export type RxServerAuthentificationHandler<AuthType> =
+    (headers: IncomingHttpHeaders) => MaybePromise<RxServerAuthentificationData<AuthType>>;
 
 /**
  * Modifies a given query in a way to limit the results
@@ -52,7 +52,7 @@ export type RxServerAuthenticationHandler<AuthType> =
  * }
  */
 export type RxServerQueryModifier<AuthType, RxDocType> = (
-    authData: RxServerAuthenticationData<AuthType>,
+    authData: RxServerAuthentificationData<AuthType>,
     query: FilledMangoQuery<RxDocType>
 ) => MaybePromise<FilledMangoQuery<RxDocType>>;
 
@@ -63,7 +63,7 @@ export type RxServerQueryModifier<AuthType, RxDocType> = (
  * the client will be disconnected.
  */
 export type RxServerChangeValidator<AuthType, RxDocType> = (
-    authData: RxServerAuthenticationData<AuthType>,
+    authData: RxServerAuthentificationData<AuthType>,
     change: RxReplicationWriteToMasterRow<RxDocType>
 ) => MaybePromise<boolean>;
 
