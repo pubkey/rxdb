@@ -39,7 +39,8 @@ import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
-    toArray
+    toArray,
+    toPromise
 } from '../../plugins/utils/index.ts';
 import {
     awaitRxStorageReplicationFirstInSync,
@@ -85,6 +86,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
     public startPromise: Promise<void>;
+
+    public onCancel: (() => void)[] = [];
+
     constructor(
         /**
          * The identifier, used to flag revisions
@@ -429,7 +433,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             return PROMISE_RESOLVE_FALSE;
         }
 
-        const promises: Promise<any>[] = [];
+        const promises: Promise<any>[] = this.onCancel.map(fn => toPromise(fn()));
 
         if (this.internalReplicationState) {
             await cancelRxStorageReplication(this.internalReplicationState);

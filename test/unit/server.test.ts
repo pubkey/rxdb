@@ -17,6 +17,8 @@ import { nextPort } from '../helper/port-manager.ts';
 import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 import * as schemas from '../helper/schemas.ts';
 import { wait, waitUntil } from 'async-test-util';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import EventSource from 'eventsource';
 
 config.parallel('server.test.ts', () => {
     if (
@@ -69,7 +71,6 @@ config.parallel('server.test.ts', () => {
             await col.database.destroy();
         });
         it('should replicate all data in both directions', async function () {
-            this.timeout(1000000000);
             const col = await humansCollection.create(5);
             const port = await nextPort();
             const server = await startRxServer({
@@ -90,7 +91,8 @@ config.parallel('server.test.ts', () => {
                 url,
                 headers,
                 push: {},
-                pull: {}
+                pull: {},
+                eventSource: EventSource
             });
             console.log('--- 1.2');
             ensureReplicationHasNoErrors(replicationState);
@@ -124,6 +126,17 @@ config.parallel('server.test.ts', () => {
                 collection: col
             });
 
+            // check with plain requests
+            const responsePull = await fetch('http://localhost:' + port + '/replication/human/0/pull');
+            assert.strictEqual(responsePull.status, 426);
+            const responsePush = await fetch('http://localhost:' + port + '/replication/human/0/push', {
+                method: 'POST'
+            });
+            assert.strictEqual(responsePush.status, 426);
+            const responsePullStream = await fetch('http://localhost:' + port + '/replication/human/0/pullStream');
+            assert.strictEqual(responsePullStream.status, 426);
+
+            // check with replication
             console.log('XX 1');
             const clientCol = await humansCollection.createBySchema(schemas.human);
             console.log('XX 2');
@@ -133,25 +146,75 @@ config.parallel('server.test.ts', () => {
                 url: 'http://localhost:' + port + '/replication/human/0',
                 headers,
                 push: {},
-                pull: {}
+                pull: {},
+                eventSource: EventSource
             });
             console.log('XX 3');
 
             const errors: any[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
 
-            await wait(1000);
-            console.dir(errors);
+            let emittedOutdated = false;
+            replicationState.outdatedClient$.subscribe(() => emittedOutdated = true);
+            await waitUntil(() => emittedOutdated);
+
 
             await waitUntil(() => errors.length > 0);
-
-
-
-            process.exit();
-
+            const firstError = errors[0];
+            assert.strictEqual(firstError.code, 'RC_PULL');
 
             col.database.destroy();
             clientCol.database.destroy();
+        });
+        it('must replicate ongoing changes', async () => {
+            const col = await humansCollection.create(5);
+            const port = await nextPort();
+            const server = await startRxServer({
+                database: col.database,
+                authenticationHandler,
+                port,
+                hostname: 'localhost'
+            });
+            const endpoint = await server.addReplicationEndpoint({
+                collection: col
+            });
+            const clientCol = await humansCollection.create(5);
+            const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+            console.log('client url: ' + url);
+            const replicationState = await replicateServer({
+                collection: clientCol,
+                replicationIdentifier: randomCouchString(10),
+                url,
+                headers,
+                push: {},
+                pull: {},
+                eventSource: EventSource
+            });
+            console.log('--- 1.2');
+            ensureReplicationHasNoErrors(replicationState);
+
+            await replicationState.awaitInSync();
+
+            console.log('-- in sync');
+
+            // server to client
+            await col.insert(schemaObjects.human());
+            await waitUntil(async () => {
+                const docs = await clientCol.find().exec();
+                return docs.length === 12;
+            });
+
+            console.log('-- in sync2');
+            // client to server
+            await clientCol.insert(schemaObjects.human());
+            await waitUntil(async () => {
+                const docs = await col.find().exec();
+                return docs.length === 12;
+            });
+            console.log('-- in sync3');
+
+            await col.database.destroy();
+            await clientCol.database.destroy();
         });
     });
 

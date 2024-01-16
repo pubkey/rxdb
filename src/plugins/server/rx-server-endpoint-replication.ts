@@ -36,15 +36,6 @@ export type RxReplicationEndpointMessageType = {
     params: any[];
 };
 
-export type RxReplicationEndpointResponseType = {
-    id: string;
-    result: any;
-    error?: {
-        code: number;
-        message: string;
-    }
-};
-
 
 export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServerEndpoint {
     readonly type = 'replication';
@@ -60,11 +51,13 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
          * the clients know they must update.
          */
         let v = 0;
-        const outdatedUrls = new Set<string>();
         while (v < collection.schema.version) {
             const version = v;
-            this.server.expressApp.get('/' + [this.type, collection.name, version].join('/'), (req, res) => {
-                closeConnection(res, 426, 'Outdated version ' + version + ' (newest is ' + collection.schema.version + ')');
+            ['pull', 'push', 'pullStream'].forEach(route => {
+                this.server.expressApp.all('/' + [this.type, collection.name, version].join('/') + '/' + route, (req, res) => {
+                    console.log('S: autdated version ' + version);
+                    closeConnection(res, 426, 'Outdated version ' + version + ' (newest is ' + collection.schema.version + ')');
+                });
             });
             v++;
         }
@@ -180,6 +173,10 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             const docDataMatcherStream = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
             const subscription = replicationHandler.masterChangeStream$.pipe(
                 map(changes => {
+
+                    console.log('S: emit to stream:');
+                    console.dir(changes);
+
                     if (changes === 'RESYNC') {
                         return changes;
                     } else {
@@ -192,11 +189,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                 }),
                 filter(f => f === 'RESYNC' || f.documents.length > 0)
             ).subscribe(filteredAndModified => {
-                const streamResponse: RxReplicationEndpointResponseType = {
-                    id: 'stream',
-                    result: filteredAndModified
-                };
-                res.write('data: ' + JSON.stringify(streamResponse));
+                res.write('data: ' + JSON.stringify(filteredAndModified) + '\n\n');
             });
             req.on('close', () => subscription.unsubscribe());
         });
@@ -206,18 +199,16 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
 
 async function closeConnection(response: Response, code: number, message: string) {
     console.log('# CLOSE CONNECTION');
-    const responseWrite: RxReplicationEndpointResponseType = {
-        id: 'error',
-        result: {},
-        error: {
-            code,
-            message
-        }
+    const responseWrite = {
+        code,
+        error: true,
+        message
     };
 
+    console.log('close connection!');
     response.statusCode = code;
-    await response.write(JSON.stringify(responseWrite));
     response.set("Connection", "close");
+    await response.write(JSON.stringify(responseWrite));
     response.end();
 }
 

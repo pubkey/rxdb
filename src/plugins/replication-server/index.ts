@@ -22,11 +22,15 @@ import {
 
 import { Subject } from 'rxjs';
 import { ServerSyncOptions } from './types.ts';
+import { parseResponse } from './helpers.ts';
 
 export * from './types.ts';
 
 
 export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDocType, RxStorageDefaultCheckpoint> {
+
+    public readonly outdatedClient$ = new Subject<void>();
+
     constructor(
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
@@ -35,7 +39,7 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
         public readonly live: boolean = true,
         public retryTime: number = 1000 * 5,
         public autoStart: boolean = true,
-        public headers: ById<string> = {},
+        public headers: ById<string> = {}
     ) {
         super(
             replicationIdentifier,
@@ -47,6 +51,8 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
             retryTime,
             autoStart
         );
+
+        this.onCancel.push(() => this.outdatedClient$.complete());
     }
 }
 
@@ -89,7 +95,7 @@ export function replicateServer<RxDocType>(
                         'Content-Type': 'application/json'
                     }, replicationState.headers),
                 });
-                const data = await response.json() as any;
+                const data = await await parseResponse(replicationState, response);
                 return {
                     documents: data.documents,
                     checkpoint: data.checkpoint
@@ -106,7 +112,7 @@ export function replicateServer<RxDocType>(
     if (options.push) {
         replicationPrimitivesPush = {
             async handler(changeRows) {
-                const rawResponse = await fetch(options.url + '/push', {
+                const response = await fetch(options.url + '/push', {
                     method: 'POST',
                     headers: Object.assign({
                         'Accept': 'application/json',
@@ -114,7 +120,7 @@ export function replicateServer<RxDocType>(
                     }, replicationState.headers),
                     body: JSON.stringify(changeRows)
                 });
-                const conflictsArray = await rawResponse.json() as any;
+                const conflictsArray = await parseResponse(replicationState, response);
                 return conflictsArray;
             },
             batchSize: options.push.batchSize,
@@ -137,14 +143,25 @@ export function replicateServer<RxDocType>(
     /**
      * Use long polling to get live changes for the pull.stream$
      */
-    if (options.live && options.pull && false) {
+    if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
-        const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = async () => {
             // TODO add headers
-            const eventSource = new EventSource(options.url + '/pullStream', { withCredentials: true });
-            eventSource.onerror = () => pullStream$.next('RESYNC');
+            const useEventSource: typeof EventSource = options.eventSource ? options.eventSource : EventSource;
+            const eventSource = new useEventSource(options.url + '/pullStream', { withCredentials: true });
+            // TODO check for 426 errors and handle them
+            eventSource.onerror = (err) => {
+                console.log('eventsource error:');
+                console.dir(err);
+                pullStream$.next('RESYNC');
+            };
+            eventSource.onopen = (x) => {
+                console.log('eventsource open!');
+                console.dir(x);
+            }
             eventSource.onmessage = event => {
+                console.log('event source message:');
+                console.dir(event.data);
                 const eventData = JSON.parse(event.data);
                 pullStream$.next({
                     documents: eventData.documents,
@@ -152,10 +169,7 @@ export function replicateServer<RxDocType>(
                 });
             };
 
-            replicationState.cancel = () => {
-                eventSource.close();
-                return cancelBefore();
-            };
+            replicationState.onCancel.push(() => eventSource.close());
             return startBefore();
         };
     }

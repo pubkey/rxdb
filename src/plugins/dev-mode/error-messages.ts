@@ -170,6 +170,7 @@ export const ERROR_MESSAGES = {
     RC_WEBRTC_PEER: 'RxReplication WebRTC Peer has error',
     RC_COUCHDB_1: 'replicateCouchDB() url must end with a slash like \'https://example.com/mydatabase/\'',
     RC_COUCHDB_2: 'replicateCouchDB() did not get valid result with rows.',
+    RC_OUTDATED: 'Outdated client, update required',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',

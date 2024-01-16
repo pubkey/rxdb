@@ -1,4 +1,5 @@
 import type {
+    MaybePromise,
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
@@ -22,4 +23,11 @@ export type ServerSyncOptions<RxDocType> = Omit<
     headers?: { [k: string]: string };
     pull?: ServerSyncPullOptions<RxDocType>;
     push?: ServerSyncPushOptions<RxDocType>;
+
+    /**
+     * If the EventSource API is not available
+     * on the runtime, pass an own implementation here.
+     * Mostly used with the "eventsource" npm package on Node.js.
+     */
+    eventSource?: typeof EventSource
 };
