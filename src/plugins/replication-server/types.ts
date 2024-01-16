@@ -29,5 +29,5 @@ export type ServerSyncOptions<RxDocType> = Omit<
      * on the runtime, pass an own implementation here.
      * Mostly used with the "eventsource" npm package on Node.js.
      */
-    eventSource?: typeof EventSource
+    eventSource?: typeof EventSource | any
 };

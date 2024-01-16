@@ -160,8 +160,6 @@ export function replicateServer<RxDocType>(
                 console.dir(x);
             }
             eventSource.onmessage = event => {
-                console.log('event source message:');
-                console.dir(event.data);
                 const eventData = JSON.parse(event.data);
                 pullStream$.next({
                     documents: eventData.documents,

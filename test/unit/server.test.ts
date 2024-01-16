@@ -186,32 +186,35 @@ config.parallel('server.test.ts', () => {
                 replicationIdentifier: randomCouchString(10),
                 url,
                 headers,
+                live: true,
                 push: {},
                 pull: {},
                 eventSource: EventSource
             });
-            console.log('--- 1.2');
             ensureReplicationHasNoErrors(replicationState);
-
             await replicationState.awaitInSync();
-
-            console.log('-- in sync');
 
             // server to client
             await col.insert(schemaObjects.human());
             await waitUntil(async () => {
                 const docs = await clientCol.find().exec();
-                return docs.length === 12;
+                return docs.length === 11;
             });
 
-            console.log('-- in sync2');
             // client to server
             await clientCol.insert(schemaObjects.human());
             await waitUntil(async () => {
                 const docs = await col.find().exec();
                 return docs.length === 12;
             });
-            console.log('-- in sync3');
+
+            // do not miss updates when connection is dropped
+            server.httpServer.closeAllConnections();
+            await col.insert(schemaObjects.human());
+            await waitUntil(async () => {
+                const docs = await clientCol.find().exec();
+                return docs.length === 13;
+            });
 
             await col.database.destroy();
             await clientCol.database.destroy();
