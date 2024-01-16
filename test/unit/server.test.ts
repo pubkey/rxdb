@@ -22,7 +22,16 @@ import * as schemaObjects from '../helper/schema-objects.ts';
 import EventSource from 'eventsource';
 import type { IncomingHttpHeaders } from 'node:http';
 
+import type {
+    RxServerAuthenticationHandler,
+    RxServerQueryModifier
+} from '../../plugins/server/index.mjs';
+
 const urlSubPaths = ['pull', 'push', 'pullStream'];
+
+type AuthType = {
+    userid: string;
+};
 
 config.parallel('server.test.ts', () => {
     if (
@@ -32,21 +41,24 @@ config.parallel('server.test.ts', () => {
         return;
     }
 
-    const authenticationHandler = (requestHeaders: IncomingHttpHeaders) => {
-
+    const authenticationHandler: RxServerAuthenticationHandler<AuthType> = (requestHeaders: IncomingHttpHeaders) => {
         console.log('auth:');
         console.dir(requestHeaders);
-
         if (requestHeaders.authorization === 'is-valid') {
             console.log('auth valid!');
-            return { validUntil: Date.now() + 100000, data: {} };
+            return {
+                validUntil: Date.now() + 100000, data: {
+                    userid: requestHeaders.userid as string
+                }
+            };
         } else {
             console.log('auth NOT valid!');
             throw new Error('auth not valid');
         }
     };
     const headers = {
-        Authorization: 'is-valid'
+        Authorization: 'is-valid',
+        userid: 'alice'
     };
 
 
@@ -64,8 +76,7 @@ config.parallel('server.test.ts', () => {
             const server = await startRxServer({
                 database: col.database,
                 authenticationHandler,
-                port,
-                hostname: 'localhost'
+                port
             });
             await server.addReplicationEndpoint({
                 collection: col
@@ -75,16 +86,13 @@ config.parallel('server.test.ts', () => {
     });
     describe('replication endoint', () => {
         describe('basics', () => {
-
             it('should be able to reach the endpoint', async function () {
-                this.timeout(100000);
                 const col = await humansCollection.create(1);
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
                     authenticationHandler,
-                    port,
-                    hostname: 'localhost'
+                    port
                 });
                 const endpoint = await server.addReplicationEndpoint({
                     collection: col
@@ -100,15 +108,13 @@ config.parallel('server.test.ts', () => {
             });
         });
         describe('replication', () => {
-
             it('should replicate all data in both directions', async function () {
                 const col = await humansCollection.create(5);
                 const port = await nextPort();
                 const server = await startRxServer({
                     database: col.database,
                     authenticationHandler,
-                    port,
-                    hostname: 'localhost'
+                    port
                 });
                 const endpoint = await server.addReplicationEndpoint({
                     collection: col
@@ -145,8 +151,7 @@ config.parallel('server.test.ts', () => {
                 const server = await startRxServer({
                     database: col.database,
                     authenticationHandler,
-                    port,
-                    hostname: 'localhost'
+                    port
                 });
                 await server.addReplicationEndpoint({
                     collection: col
@@ -191,8 +196,7 @@ config.parallel('server.test.ts', () => {
                 const server = await startRxServer({
                     database: col.database,
                     authenticationHandler,
-                    port,
-                    hostname: 'localhost'
+                    port
                 });
                 const endpoint = await server.addReplicationEndpoint({
                     collection: col
@@ -245,8 +249,7 @@ config.parallel('server.test.ts', () => {
                 const server = await startRxServer({
                     database: col.database,
                     authenticationHandler,
-                    port,
-                    hostname: 'localhost'
+                    port
                 });
                 const endpoint = await server.addReplicationEndpoint({
                     collection: col
@@ -300,6 +303,66 @@ config.parallel('server.test.ts', () => {
                 clientCol.database.destroy();
             });
         });
+        describe('queryModifier', () => {
+            const queryModifier: RxServerQueryModifier<AuthType, schemas.HumanDocumentType> = (authData, query) => {
+                query.selector.firstName = { $eq: authData.data.userid };
+                return query;
+            };
+            it('should only return the matching documents', async () => {
+                const serverCol = await humansCollection.create(5);
+                await serverCol.insert(schemaObjects.human('only-matching', 1, headers.userid));
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: serverCol.database,
+                    authenticationHandler,
+                    port
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: serverCol,
+                    queryModifier
+                });
+                const clientCol = await humansCollection.create(0);
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInSync();
+
+                // only the allowed document should be on the client
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    return docs.length === 1;
+                });
+
+                // also ongoing events should only be replicated if matching
+                await serverCol.bulkInsert([
+                    schemaObjects.human('matching1', 1, headers.userid),
+                    schemaObjects.human('matching2', 1, headers.userid),
+                    schemaObjects.human(),
+                    schemaObjects.human()
+                ]);
+                await replicationState.awaitInSync();
+
+                await waitUntil(async () => {
+                    const docs = await clientCol.find().exec();
+                    console.dir(docs.map(d => d.toJSON()));
+                    return docs.length === 3;
+                });
+
+
+                serverCol.database.destroy();
+                clientCol.database.destroy();
+            });
+        });
+
     });
 
 });

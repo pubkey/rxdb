@@ -6,6 +6,7 @@ import {
     Server as HttpServer
 } from 'http';
 
+export * from './types.ts';
 
 export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>): Promise<RxServer<AuthType>> {
     options = flatClone(options);

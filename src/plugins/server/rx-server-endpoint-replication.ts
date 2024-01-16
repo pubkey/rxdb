@@ -48,7 +48,6 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
         public readonly changeValidator: RxServerChangeValidator<AuthType, RxDocType>,
         public readonly cors?: string
     ) {
-
         let useCors = cors;
         if (!useCors) {
             useCors = this.server.cors;
