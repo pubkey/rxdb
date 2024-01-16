@@ -17,7 +17,7 @@ import * as humansCollection from './../helper/humans-collection.ts';
 import { nextPort } from '../helper/port-manager.ts';
 import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 import * as schemas from '../helper/schemas.ts';
-import { waitUntil } from 'async-test-util';
+import { wait, waitUntil } from 'async-test-util';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import EventSource from 'eventsource';
 import type { IncomingHttpHeaders } from 'node:http';
@@ -33,7 +33,7 @@ type AuthType = {
     userid: string;
 };
 
-config.parallel('server.test.ts', () => {
+describe('server.test.ts', () => {
     if (
         !config.platform.isNode() &&
         !config.isBun
@@ -69,7 +69,7 @@ config.parallel('server.test.ts', () => {
             startRxServer = serverPlugin.startRxServer;
         });
     });
-    describe('basics', () => {
+    config.parallel('basics', () => {
         it('should start end stop the server', async () => {
             const port = await nextPort();
             const col = await humansCollection.create(0);
@@ -84,7 +84,7 @@ config.parallel('server.test.ts', () => {
             await col.database.destroy();
         });
     });
-    describe('replication endoint', () => {
+    config.parallel('replication endoint', () => {
         describe('basics', () => {
             it('should be able to reach the endpoint', async function () {
                 const col = await humansCollection.create(1);
@@ -308,7 +308,7 @@ config.parallel('server.test.ts', () => {
                 query.selector.firstName = { $eq: authData.data.userid };
                 return query;
             };
-            it('should only return the matching documents', async () => {
+            it('should only return the matching documents to the client', async () => {
                 const serverCol = await humansCollection.create(5);
                 await serverCol.insert(schemaObjects.human('only-matching', 1, headers.userid));
                 const port = await nextPort();
@@ -357,6 +357,62 @@ config.parallel('server.test.ts', () => {
                     return docs.length === 3;
                 });
 
+
+                serverCol.database.destroy();
+                clientCol.database.destroy();
+            });
+            it('should only accept the matching documents on the server', async () => {
+                const serverCol = await humansCollection.create(0);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: serverCol.database,
+                    authenticationHandler,
+                    port
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: serverCol,
+                    queryModifier
+                });
+                const clientCol = await humansCollection.create(0);
+                await serverCol.insert(schemaObjects.human('only-matching', 1, headers.userid));
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                await replicationState.awaitInSync();
+
+                // only the allowed document should be on the server
+                await waitUntil(async () => {
+                    const docs = await serverCol.find().exec();
+                    return docs.length === 1;
+                });
+
+                // also ongoing events should only be replicated if matching
+                await clientCol.insert(schemaObjects.human('matching1', 1, headers.userid));
+                await replicationState.awaitInSync();
+                await waitUntil(async () => {
+                    const docs = await serverCol.find().exec();
+                    return docs.length === 2;
+                });
+
+                // when at least one document does not match, do no longer push anything
+                await clientCol.bulkInsert([
+                    schemaObjects.human(),
+                    schemaObjects.human(),
+                    schemaObjects.human('matching2', 2, headers.userid)
+                ]);
+                await wait(config.isFastMode() ? 100 : 200);
+
+                // should not have pushed anything
+                const serverDocs = await serverCol.find().exec();
+                assert.strictEqual(serverDocs.length, 2);
 
                 serverCol.database.destroy();
                 clientCol.database.destroy();
