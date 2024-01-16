@@ -29,7 +29,7 @@
     "supabase": "1.131.4",
     "local-web-server": "5.3.1",
     "concurrently": "8.2.2",
-    "async-test-util": "2.2.1",
+    "async-test-util": "2.3.0",
     "css-loader": "6.9.0",
     "testcafe": "3.5.0",
     "testcafe-hammerhead": "31.7.1",
