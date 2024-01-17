@@ -8,6 +8,7 @@ import {
     randomCouchString
 } from '../../plugins/core/index.mjs';
 import type {
+    RxServerChangeValidator,
     startRxServer as startRxServerType
 } from '../../plugins/server/index.mjs';
 import {
@@ -143,6 +144,60 @@ describe('server.test.ts', () => {
                 await col.database.destroy();
                 await clientCol.database.destroy();
             });
+            it('create read update delete', async () => {
+                const serverCol = await humansCollection.create(0);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: serverCol.database,
+                    authentificationHandler,
+                    port
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: serverCol
+                });
+                const clientCol = await humansCollection.create(0);
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInSync();
+
+                // create
+                const clientDoc = await clientCol.insert(schemaObjects.human(undefined, 1));
+                await replicationState.awaitInSync();
+                await waitUntil(async () => {
+                    const docs = await serverCol.find().exec();
+                    return docs.length === 1;
+                });
+
+                // update
+                await clientDoc.incrementalPatch({ age: 2 });
+                await replicationState.awaitInSync();
+                await waitUntil(async () => {
+                    const serverDoc = await serverCol.findOne().exec(true);
+                    console.dir(serverDoc.toJSON());
+                    return serverDoc.age === 2;
+                });
+
+                // delete
+                await clientDoc.getLatest().remove();
+                await replicationState.awaitInSync();
+                await waitUntil(async () => {
+                    const docs = await serverCol.find().exec();
+                    return docs.length === 0;
+                });
+
+                serverCol.database.destroy();
+                clientCol.database.destroy();
+            });
             it('should give a 426 error on outdated versions', async () => {
                 const newestSchema = clone(schemas.human);
                 newestSchema.version = 1;
@@ -181,7 +236,6 @@ describe('server.test.ts', () => {
                 let emittedOutdated = false;
                 replicationState.outdatedClient$.subscribe(() => emittedOutdated = true);
                 await waitUntil(() => emittedOutdated);
-
 
                 await waitUntil(() => errors.length > 0);
                 const firstError = errors[0];
@@ -374,7 +428,7 @@ describe('server.test.ts', () => {
                     queryModifier
                 });
                 const clientCol = await humansCollection.create(0);
-                await serverCol.insert(schemaObjects.human('only-matching', 1, headers.userid));
+                await clientCol.insert(schemaObjects.human('only-matching', 1, headers.userid));
                 const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
                 const replicationState = await replicateServer({
                     collection: clientCol,
@@ -387,6 +441,9 @@ describe('server.test.ts', () => {
                     eventSource: EventSource
                 });
                 await replicationState.awaitInSync();
+
+                let forbiddenEmitted = false;
+                replicationState.forbidden$.subscribe(() => forbiddenEmitted = true);
 
                 // only the allowed document should be on the server
                 await waitUntil(async () => {
@@ -414,11 +471,74 @@ describe('server.test.ts', () => {
                 const serverDocs = await serverCol.find().exec();
                 assert.strictEqual(serverDocs.length, 2);
 
+                await waitUntil(() => forbiddenEmitted === true);
+
                 serverCol.database.destroy();
                 clientCol.database.destroy();
             });
         });
+        describe('changeValidator', () => {
+            const changeValidator: RxServerChangeValidator<AuthType, schemas.HumanDocumentType> = (authData, change) => {
+                if (change.assumedMasterState && change.assumedMasterState.firstName !== authData.data.userid) {
+                    return false;
+                }
+                if (change.newDocumentState.firstName !== authData.data.userid) {
+                    return false;
+                }
+                return true;
+            };
+            it('should not accept non-allowed writes', async () => {
+                const serverCol = await humansCollection.create(0);
+                const port = await nextPort();
+                const server = await startRxServer({
+                    database: serverCol.database,
+                    authentificationHandler,
+                    port
+                });
+                const endpoint = await server.addReplicationEndpoint({
+                    collection: serverCol,
+                    changeValidator
+                });
+                const clientCol = await humansCollection.create(0);
+                const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                const replicationState = await replicateServer({
+                    collection: clientCol,
+                    replicationIdentifier: randomCouchString(10),
+                    url,
+                    headers,
+                    live: true,
+                    push: {},
+                    pull: {},
+                    eventSource: EventSource
+                });
+                await replicationState.awaitInSync();
+                let forbiddenEmitted = false;
+                replicationState.forbidden$.subscribe(() => forbiddenEmitted = true);
 
+                // insert document
+                const clientDoc = await clientCol.insert(schemaObjects.human(undefined, 1, headers.userid));
+                await waitUntil(async () => {
+                    const docs = await serverCol.find().exec();
+                    return docs.length === 1;
+                });
+
+                // update document
+                await clientDoc.incrementalPatch({ age: 2 });
+                await replicationState.awaitInSync();
+                await waitUntil(async () => {
+                    const serverDoc = await serverCol.findOne().exec(true);
+                    return serverDoc.age === 2;
+                });
+
+                // make disallowed change
+                await clientDoc.getLatest().incrementalPatch({ firstName: 'foobar' });
+                await waitUntil(() => forbiddenEmitted === true);
+                const serverDocAfter = await serverCol.findOne().exec(true);
+                assert.strictEqual(serverDocAfter.firstName, headers.userid);
+
+                serverCol.database.destroy();
+                clientCol.database.destroy();
+            });
+        });
     });
-
 });

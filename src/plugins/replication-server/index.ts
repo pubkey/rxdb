@@ -1,8 +1,8 @@
 import {
-    ensureNotFalsy, flatClone, promiseWait
+    ensureNotFalsy,
+    flatClone,
+    promiseWait
 } from '../../plugins/utils/index.ts';
-
-
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
@@ -27,10 +27,10 @@ import EventSource from 'eventsource';
 
 export * from './types.ts';
 
-
 export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDocType, RxStorageDefaultCheckpoint> {
     public readonly outdatedClient$ = new Subject<void>();
     public readonly unauthorized$ = new Subject<void>();
+    public readonly forbidden$ = new Subject<void>();
 
     constructor(
         public readonly replicationIdentifier: string,
@@ -56,6 +56,7 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
         this.onCancel.push(() => {
             this.outdatedClient$.complete();
             this.unauthorized$.complete();
+            this.forbidden$.complete();
         });
     }
 
@@ -63,8 +64,6 @@ export class RxServerReplicationState<RxDocType> extends RxReplicationState<RxDo
         this.headers = flatClone(headers);
     }
 }
-
-
 
 export function replicateServer<RxDocType>(
     options: ServerSyncOptions<RxDocType>
@@ -83,7 +82,6 @@ export function replicateServer<RxDocType>(
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
 
     const collection = options.collection;
-    const primaryPath = collection.schema.primaryPath;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, RxStorageDefaultCheckpoint>> = new Subject();
@@ -115,7 +113,6 @@ export function replicateServer<RxDocType>(
         };
     }
 
-
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
     if (options.push) {
         replicationPrimitivesPush = {
@@ -136,7 +133,6 @@ export function replicateServer<RxDocType>(
         };
     }
 
-
     const replicationState = new RxServerReplicationState<RxDocType>(
         options.replicationIdentifier,
         collection,
@@ -154,10 +150,6 @@ export function replicateServer<RxDocType>(
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         replicationState.start = async () => {
-
-
-            console.log('CCCLIENT start eventsource');
-
             const useEventSource: typeof EventSource = options.eventSource ? options.eventSource : EventSource;
             let eventSource: EventSource;
             const refreshEventSource = () => {
@@ -175,7 +167,6 @@ export function replicateServer<RxDocType>(
                 eventSource.onerror = (err) => {
                     console.log('eventsource error:');
                     console.dir(err);
-
                     if (err.status === 401) {
                         replicationState.unauthorized$.next();
                         eventSource.close();

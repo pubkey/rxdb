@@ -1,3 +1,4 @@
 - outdatedClient$
 - unauthorized$ - setHeaders()
+- forbidden$
 - custom EventSource library

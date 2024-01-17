@@ -143,8 +143,13 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             const docDataMatcherWrite = await getDocAllowedMatcher(this, ensureNotFalsy(authData));
             const rows: RxReplicationWriteToMasterRow<RxDocType>[] = req.body;
 
-            console.log('body:');
+            console.log('/push body:');
             console.dir(req.body);
+            for (const row of rows) {
+                if (row.assumedMasterState && (row.assumedMasterState as any)._meta) {
+                    throw new Error('body document contains meta!');
+                }
+            }
 
             // ensure all writes are allowed
             const nonAllowedRow = rows.find(row => {
@@ -175,6 +180,9 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
 
             const conflicts = await replicationHandler.masterWrite(rows);
             res.setHeader('Content-Type', 'application/json');
+
+            console.log('push result:');
+            console.dir(conflicts);
             res.json(conflicts);
         });
         this.server.expressApp.get('/' + this.urlPath + '/pullStream', async (req, res) => {
