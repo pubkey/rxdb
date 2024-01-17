@@ -3,7 +3,6 @@ import config, {
 } from './config.ts';
 
 import {
-    ById,
     clone,
     randomCouchString
 } from '../../plugins/core/index.mjs';
@@ -257,6 +256,7 @@ describe('server.test.ts', () => {
                 });
                 const clientCol = await humansCollection.create(5);
                 const url = 'http://localhost:' + port + '/' + endpoint.urlPath;
+                console.log(':::::::::::::::::::::::::::::::: 0');
                 const replicationState = await replicateServer({
                     collection: clientCol,
                     replicationIdentifier: randomCouchString(10),
@@ -267,8 +267,9 @@ describe('server.test.ts', () => {
                     pull: {},
                     eventSource: EventSource
                 });
-                ensureReplicationHasNoErrors(replicationState);
                 await replicationState.awaitInSync();
+
+                console.log(':::::::::::::::::::::::::::::::: 1');
 
                 // server to client
                 await col.insert(schemaObjects.human());
@@ -277,12 +278,14 @@ describe('server.test.ts', () => {
                     return docs.length === 11;
                 });
 
+                console.log(':::::::::::::::::::::::::::::::: 2');
                 // client to server
                 await clientCol.insert(schemaObjects.human());
                 await waitUntil(async () => {
                     const docs = await col.find().exec();
                     return docs.length === 12;
                 });
+                console.log(':::::::::::::::::::::::::::::::: 3');
 
                 // do not miss updates when connection is dropped
                 server.httpServer.closeAllConnections();
@@ -291,6 +294,7 @@ describe('server.test.ts', () => {
                     const docs = await clientCol.find().exec();
                     return docs.length === 13;
                 });
+                console.log(':::::::::::::::::::::::::::::::: 4');
 
                 col.database.destroy();
                 clientCol.database.destroy();

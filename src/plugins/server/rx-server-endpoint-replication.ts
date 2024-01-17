@@ -146,6 +146,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             console.log('/push body:');
             console.dir(req.body);
             for (const row of rows) {
+                // TODO remove this check
                 if (row.assumedMasterState && (row.assumedMasterState as any)._meta) {
                     throw new Error('body document contains meta!');
                 }
