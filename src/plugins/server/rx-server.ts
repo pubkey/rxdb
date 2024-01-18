@@ -4,7 +4,7 @@ import type {
 } from '../../types';
 import { RxServerReplicationEndpoint } from './rx-server-endpoint-replication.ts';
 import type {
-    RxServerAuthentificationHandler,
+    RxServerAuthHandler,
     RxServerChangeValidator,
     RxServerEndpoint,
     RxServerQueryModifier
@@ -19,7 +19,7 @@ export class RxServer<AuthType> {
 
     constructor(
         public readonly database: RxDatabase,
-        public readonly authentificationHandler: RxServerAuthentificationHandler<AuthType>,
+        public readonly authHandler: RxServerAuthHandler<AuthType>,
         public readonly httpServer: HttpServer,
         public readonly expressApp: Express,
         public readonly cors: string = '*'
