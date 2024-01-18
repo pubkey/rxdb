@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "async-test-util": "2.3.0",
-    "css-loader": "6.9.0",
+    "css-loader": "6.9.1",
     "eslint": "8.56.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
