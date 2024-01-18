@@ -276,10 +276,10 @@ export class RxCollectionBase<
 
     // overwritten by migration-plugin
     migrationNeeded(): Promise<boolean> {
-        throw pluginMissing('migration');
+        throw pluginMissing('migration-schema');
     }
     getMigrationState(): RxMigrationState {
-        throw pluginMissing('migration');
+        throw pluginMissing('migration-schema');
     }
     startMigration(batchSize: number = 10): Promise<void> {
         return this.getMigrationState().startMigration(batchSize);

@@ -437,7 +437,7 @@ export class RxDatabaseBase<
     }
 
     public migrationStates(): Observable<RxMigrationState[]> {
-        throw pluginMissing('migration');
+        throw pluginMissing('migration-schema');
     }
 
     /**

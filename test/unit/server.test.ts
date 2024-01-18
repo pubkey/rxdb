@@ -3,6 +3,7 @@ import config, {
 } from './config.ts';
 
 import {
+    addRxPlugin,
     clone,
     randomCouchString
 } from '../../plugins/core/index.mjs';
@@ -22,6 +23,9 @@ import * as schemaObjects from '../helper/schema-objects.ts';
 import EventSource from 'eventsource';
 import type { IncomingHttpHeaders } from 'node:http';
 
+import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
+addRxPlugin(RxDBMigrationPlugin);
+
 import type {
     RxServerAuthHandler,
     RxServerQueryModifier
@@ -35,8 +39,7 @@ type AuthType = {
 
 describe('server.test.ts', () => {
     if (
-        !config.platform.isNode() &&
-        !config.isBun
+        !config.platform.isNode()
     ) {
         return;
     }
@@ -321,6 +324,7 @@ describe('server.test.ts', () => {
                     const data = await response.json();
                     console.dir(data);
                 }
+                console.log(':::::000000 0');
 
                 // check with replication
                 const clientCol = await humansCollection.create(1);
@@ -338,20 +342,28 @@ describe('server.test.ts', () => {
 
                 let emittedUnauthorized = false;
                 replicationState.unauthorized$.subscribe(() => emittedUnauthorized = true);
+
+                console.log(':::::000000 1');
+
                 await waitUntil(() => emittedUnauthorized === true);
 
+                console.log(':::::000000 2');
                 // setting correct headers afterwards should make the replication work again
                 replicationState.headers = headers;
                 await replicationState.awaitInSync();
+                console.log(':::::000000 3');
 
                 await col.insert(schemaObjects.human('after-correct-headers'));
                 await waitUntil(async () => {
                     const docs = await clientCol.find().exec();
                     return docs.length === 3;
                 });
+                console.log(':::::000000 4');
 
                 await replicationState.awaitInSync();
+                console.log(':::::000000 5');
                 await col.insert(schemaObjects.human('after-correct-headers-ongoing'));
+                console.log(':::::000000 6');
                 await waitUntil(async () => {
                     const docs = await clientCol.find().exec();
                     return docs.length === 4;

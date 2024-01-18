@@ -27,8 +27,8 @@ export type RxServerAuthData<AuthType> = {
 };
 
 /**
- * Returns the authentification state by the given request headers.
- * Throws if authentification not valid.
+ * Returns the auth state by the given request headers.
+ * Throws if auth not valid.
  */
 export type RxServerAuthHandler<AuthType> =
     (headers: IncomingHttpHeaders) => MaybePromise<RxServerAuthData<AuthType>>;
