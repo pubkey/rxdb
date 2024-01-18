@@ -165,7 +165,7 @@ export function replicateServer<RxDocType>(
                 });
                 // TODO check for 426 errors and handle them
                 eventSource.onerror = (err) => {
-                    console.log('eventsource error:');
+                    console.log('EVS: eventsource error:');
                     console.dir(err);
                     if (err.status === 401) {
                         replicationState.unauthorized$.next();
@@ -176,8 +176,9 @@ export function replicateServer<RxDocType>(
                     }
                 };
                 eventSource.onopen = (x) => {
-                    console.log('eventsource open!');
+                    console.log('EVS: eventsource open!');
                     console.dir(x);
+                    pullStream$.next('RESYNC');
                 }
                 eventSource.onmessage = event => {
                     const eventData = JSON.parse(event.data);
