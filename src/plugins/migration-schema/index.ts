@@ -28,7 +28,7 @@ import { RxDBLocalDocumentsPlugin } from '../local-documents/index.ts';
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, RxMigrationState> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
-    name: 'migration',
+    name: 'migration-schema',
     rxdb: true,
     init() {
         addRxPlugin(RxDBLocalDocumentsPlugin);

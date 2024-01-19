@@ -4,6 +4,7 @@
  */
 import {
     ensureNotFalsy,
+    flatClone,
     getProperty
 } from '../../plugins/utils/index.ts';
 
@@ -20,7 +21,8 @@ import type {
     GraphQLServerUrl,
     RxReplicationPullStreamItem,
     RxGraphQLReplicationQueryBuilderResponseObject,
-    RxGraphQLReplicationClientState
+    RxGraphQLReplicationClientState,
+    ById
 } from '../../types/index.d.ts';
 import {
     RxReplicationState,
@@ -67,8 +69,8 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         );
     }
 
-    setHeaders(headers: { [k: string]: string; }): void {
-        this.clientState.headers = headers;
+    setHeaders(headers: ById<string>): void {
+        this.clientState.headers = flatClone(headers);
     }
 
     setCredentials(credentials: RequestCredentials | undefined) {

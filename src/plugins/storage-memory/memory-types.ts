@@ -31,6 +31,8 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  * that have been created with the same [databaseName+collectionName] combination.
  */
 export type MemoryStorageInternals<RxDocType> = {
+    // used to debug stuff and identify instances
+    id: string;
 
     /**
      * Schema of the first instance created with the given settings.
