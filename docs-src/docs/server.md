@@ -13,7 +13,7 @@ The replication endpoint allows clients that connect to it to replicate data wit
 
 # 
 
-- Authentification (who are you) with the authentificationHandler
+- Authentication (who are you) with the authHandler
 - authorization with queryModifier and changeValidator
 - cors
 - conflict detection with the conflictHandler
