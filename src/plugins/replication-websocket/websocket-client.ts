@@ -114,9 +114,7 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
-    console.log('--- A1 ' + options.url);
     const websocketClient = await createWebSocketClient(options);
-    console.log('--- A2');
     const wsClient = websocketClient.socket;
     const messages$ = websocketClient.message$;
 
@@ -137,7 +135,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 map(msg => msg.result)
             ),
             async handler(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) {
-                console.log('client 1');
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,
@@ -145,9 +142,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     method: 'masterChangesSince',
                     params: [lastPulledCheckpoint, batchSize]
                 };
-                console.log('client 1.1');
                 wsClient.send(JSON.stringify(request));
-                console.log('client 1.2');
                 const result = await firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),
@@ -167,9 +162,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     method: 'masterWrite',
                     params: [docs]
                 };
-                console.log('client 2');
                 wsClient.send(JSON.stringify(request));
-                console.log('client 2.1');
                 return firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),
