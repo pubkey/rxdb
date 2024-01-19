@@ -897,7 +897,14 @@ export function getChangedDocumentsSinceQuery<RxDocType, CheckpointType>(
         ] as any,
         skip: 0,
         limit,
-        index: ['_meta.lwt', primaryPath]
+        /**
+         * DO NOT SET A SPECIFIC INDEX HERE!
+         * The query might be modified by some plugin
+         * before sending it to the storage.
+         * We can be sure that in the end the query planner
+         * will find the best index.
+         */
+        // index: ['_meta.lwt', primaryPath]
     });
 }
 

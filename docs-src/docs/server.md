@@ -10,7 +10,6 @@ The replication endpoint allows clients that connect to it to replicate data wit
 
 # REST endpoint
 
-
 # 
 
 - Authentication (who are you) with the authHandler
@@ -19,6 +18,9 @@ The replication endpoint allows clients that connect to it to replicate data wit
 - conflict detection with the conflictHandler
 
 # Server-only indexes
+
+`internalIndexes`
+
 
 # Server-only fields
 

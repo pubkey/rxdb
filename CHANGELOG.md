@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD helpers for the new server plugin
+- ADD `RxJsonSchema.internalIndexes`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
