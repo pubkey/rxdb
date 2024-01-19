@@ -1,15 +1,10 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 
 import config from './config.ts';
 import * as humansCollection from '../helper/humans-collection.ts';
 import * as schemas from '../helper/schemas.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import {
-    createRxDatabase,
-    randomCouchString,
-    promiseWait,
-    ensureNotFalsy,
     clone,
     deepEqual,
     normalizeMangoQuery,
@@ -17,14 +12,6 @@ import {
     getChangedDocumentsSinceQuery
 } from '../../plugins/core/index.mjs';
 
-import {
-    first,
-} from 'rxjs/operators';
-import type {
-    RxChangeEvent
-} from '../../plugins/core/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
-import { firstValueFrom } from 'rxjs';
 
 config.parallel('internal-indexes.test.js', () => {
 
