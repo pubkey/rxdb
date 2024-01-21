@@ -140,7 +140,6 @@ config.parallel('internal-indexes.test.js', () => {
                 collection.storageInstance.schema,
                 query
             );
-            console.dir(preparedQuery);
             assert.deepStrictEqual(preparedQuery.queryPlan.index, [
                 'firstName',
                 '_meta.lwt',
