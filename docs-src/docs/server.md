@@ -11,7 +11,6 @@ The replication endpoint allows clients that connect to it to replicate data wit
 # REST endpoint
 
 # 
-
 - Authentication (who are you) with the authHandler
 - authorization with queryModifier and changeValidator
 - cors
@@ -19,7 +18,34 @@ The replication endpoint allows clients that connect to it to replicate data wit
 
 # Server-only indexes
 
-`internalIndexes`
+Normal RxDB schema indexes get the `_deleted` field prepended because all [RxQueries](./rx-query.md) automatically only search for documents with `_deleted=false`.
+When you use RxDB on a server, this might not be optimal because there can be the need to query for documents where the value of `_deleted` does not mather. Mostly this is required in the [pull.stream$]() of a replication.
+
+To set indexes without `_deleted`, you can use the `internalIndexes` field of the schema like the following:
+
+```json
+  {
+    "version": 0,
+    "primaryKey": "id",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "maxLength": 100 // <- the primary key must have set maxLength
+        },
+        "name": {
+            "type": "string",
+            "maxLength": 100
+        }
+    },
+    "internalIndexes": [
+        ["name", "id"]
+    ]
+}
+```
+
+
+**NOTICE:** Indexes come with a performance burden. You should only use the indexes you need and make sure you do not accidentially set the `internalIndexes` in your client side [RxCollections](./rx-collection.md).
 
 
 # Server-only fields

@@ -61,7 +61,7 @@ config.parallel('internal-indexes.test.js', () => {
         });
     });
     describe('usage', () => {
-        it('should be able to run a query with an internal index', async () => {
+        it('should be able to run a query with an internal index explicitly set', async () => {
             const myIdx = ['firstName', 'lastName', 'passportId'];
             const collection = await createCollectionWithInternalIndexes([myIdx], 10);
             await collection.insert({
@@ -83,6 +83,41 @@ config.parallel('internal-indexes.test.js', () => {
                         index: myIdx
                     }
                 )
+            );
+            const result = await collection.storageInstance.query(preparedQuery);
+            assert.strictEqual(result.documents[0].passportId, 'foobar');
+
+            collection.database.destroy();
+        });
+        it('should pick up the intenral index in the query planner', async () => {
+            const myIdx = ['firstName', 'lastName', 'passportId'];
+            const collection = await createCollectionWithInternalIndexes([myIdx], 10);
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'alice',
+                lastName: 'bob',
+                age: 0
+            });
+
+            const preparedQuery = prepareQuery(
+                collection.storageInstance.schema,
+                normalizeMangoQuery(
+                    collection.storageInstance.schema,
+                    {
+                        selector: {
+                            firstName: 'alice',
+                            lastName: 'bob'
+                        }
+                    }
+                )
+            );
+            assert.deepStrictEqual(
+                preparedQuery.queryPlan.index,
+                [
+                    'firstName',
+                    'lastName',
+                    'passportId'
+                ]
             );
             const result = await collection.storageInstance.query(preparedQuery);
             assert.strictEqual(result.documents[0].passportId, 'foobar');
