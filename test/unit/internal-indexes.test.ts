@@ -9,7 +9,7 @@ import {
     deepEqual,
     normalizeMangoQuery,
     prepareQuery,
-    getChangedDocumentsSinceQuery
+    getChangedDocumentsSinceQuery,
 } from '../../plugins/core/index.mjs';
 
 
@@ -57,6 +57,36 @@ config.parallel('internal-indexes.test.js', () => {
                 )
             );
             assert.deepStrictEqual(preparedQuery.queryPlan.index, ['firstName', 'lastName']);
+            collection.database.destroy();
+        });
+    });
+    describe('usage', () => {
+        it('should be able to run a query with an internal index', async () => {
+            const myIdx = ['firstName', 'lastName', 'passportId'];
+            const collection = await createCollectionWithInternalIndexes([myIdx], 10);
+            await collection.insert({
+                passportId: 'foobar',
+                firstName: 'alice',
+                lastName: 'bob',
+                age: 0
+            });
+
+            const preparedQuery = prepareQuery(
+                collection.storageInstance.schema,
+                normalizeMangoQuery(
+                    collection.storageInstance.schema,
+                    {
+                        selector: {
+                            firstName: 'alice',
+                            lastName: 'bob'
+                        },
+                        index: myIdx
+                    }
+                )
+            );
+            const result = await collection.storageInstance.query(preparedQuery);
+            assert.strictEqual(result.documents[0].passportId, 'foobar');
+
             collection.database.destroy();
         });
     });

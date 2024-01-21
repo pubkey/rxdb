@@ -134,7 +134,7 @@ export type RxJsonSchema<
      * by RxDB. Use these to speed up queries that are run manually on the storage
      * or to speed up requests when you use the RxDB server.
      * These could also be utilised when you build a plugin that
-     * has to query documents without repecting the _deleted value.
+     * has to query documents without respecting the _deleted value.
      */
     internalIndexes?: string[][] | readonly string[][];
 

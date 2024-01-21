@@ -48,7 +48,8 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             maxLength: 100
         },
         lastName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
             description: 'age in years',
