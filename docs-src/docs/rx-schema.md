@@ -232,6 +232,12 @@ const schemaWithIndexes = {
 };
 ```
 
+
+# internalIndexes
+
+When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./server.md#server-only-indexes)
+
+
 ## attachments
 To use attachments in the collection, you have to add the `attachments`-attribute to the schema. [See RxAttachment](./rx-attachment.md).
 
