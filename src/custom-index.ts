@@ -256,7 +256,7 @@ export function getStartIndexStringFromLowerBound(
 
         switch (type) {
             case 'string':
-                const maxLength = ensureNotFalsy(schemaPart.maxLength);
+                const maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
                 if (typeof bound === 'string') {
                     str += (bound as string).padEnd(maxLength, ' ');
                 } else {
@@ -321,7 +321,7 @@ export function getStartIndexStringFromUpperBound(
 
         switch (type) {
             case 'string':
-                const maxLength = ensureNotFalsy(schemaPart.maxLength);
+                const maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
                 if (typeof bound === 'string' && bound !== INDEX_MAX) {
                     str += (bound as string).padEnd(maxLength, ' ');
                 } else if (bound === INDEX_MIN) {

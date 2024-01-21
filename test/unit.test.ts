@@ -11,6 +11,7 @@ import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
 
+import './unit/internal-indexes.test.ts';
 
 
 /**
