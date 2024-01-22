@@ -489,7 +489,7 @@
     "@types/assert": "1.5.10",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.17",
-    "@types/crypto-js": "4.2.1",
+    "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.6",
     "@types/node": "20.11.5",
     "@types/request": "2.48.12",
