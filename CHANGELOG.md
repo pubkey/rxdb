@@ -4,7 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD helpers for the new server plugin
 - ADD `RxJsonSchema.internalIndexes`
-- ADD(opfs-storage) allow to set `jsonPositionSize` to increase the maxium database size to be bigger 100 MegaByte.
+- ADD(opfs-storage) allow to set `jsonPositionSize` to increase the maxium database size to be bigger than 100 MegaByte.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
