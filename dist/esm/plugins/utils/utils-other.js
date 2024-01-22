@@ -1,9 +1,12 @@
 export function runXTimes(xTimes, fn) {
   new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
 }
-export function ensureNotFalsy(obj) {
+export function ensureNotFalsy(obj, message) {
   if (!obj) {
-    throw new Error('ensureNotFalsy() is falsy');
+    if (!message) {
+      message = '';
+    }
+    throw new Error('ensureNotFalsy() is falsy: ' + message);
   }
   return obj;
 }

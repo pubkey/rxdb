@@ -8,6 +8,7 @@ import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from "./rx-schema-helper.
 import { PROMISE_RESOLVE_TRUE, RXDB_VERSION, RX_META_LWT_MINIMUM, appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, lastOfArray, now, promiseWait, randomCouchString } from "./plugins/utils/index.js";
 import { filter, map, startWith, switchMap } from 'rxjs';
 import { prepareQuery } from "./rx-query.js";
+import { normalizeMangoQuery } from "./rx-query-helper.js";
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 export async function getSingleDocument(storageInstance, documentId) {
@@ -634,14 +635,11 @@ export function hasEncryption(jsonSchema) {
     return false;
   }
 }
-export async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
-  if (storageInstance.getChangedDocumentsSince) {
-    return storageInstance.getChangedDocumentsSince(limit, checkpoint);
-  }
+export function getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
   var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
   var sinceId = checkpoint ? checkpoint.id : '';
-  var query = prepareQuery(storageInstance.schema, {
+  return normalizeMangoQuery(storageInstance.schema, {
     selector: {
       $or: [{
         '_meta.lwt': {
@@ -666,9 +664,23 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
       [primaryPath]: 'asc'
     }],
     skip: 0,
-    limit,
-    index: ['_meta.lwt', primaryPath]
+    limit
+    /**
+     * DO NOT SET A SPECIFIC INDEX HERE!
+     * The query might be modified by some plugin
+     * before sending it to the storage.
+     * We can be sure that in the end the query planner
+     * will find the best index.
+     */
+    // index: ['_meta.lwt', primaryPath]
   });
+}
+export async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
+  if (storageInstance.getChangedDocumentsSince) {
+    return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+  }
+  var primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
+  var query = prepareQuery(storageInstance.schema, getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint));
   var result = await storageInstance.query(query);
   var documents = result.documents;
   var lastDoc = lastOfArray(documents);

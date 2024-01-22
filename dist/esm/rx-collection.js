@@ -110,10 +110,10 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   // overwritten by migration-plugin
   ;
   _proto.migrationNeeded = function migrationNeeded() {
-    throw pluginMissing('migration');
+    throw pluginMissing('migration-schema');
   };
   _proto.getMigrationState = function getMigrationState() {
-    throw pluginMissing('migration');
+    throw pluginMissing('migration-schema');
   };
   _proto.startMigration = function startMigration(batchSize = 10) {
     return this.getMigrationState().startMigration(batchSize);

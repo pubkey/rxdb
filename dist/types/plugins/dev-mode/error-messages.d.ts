@@ -120,6 +120,9 @@ export declare const ERROR_MESSAGES: {
     RC_WEBRTC_PEER: string;
     RC_COUCHDB_1: string;
     RC_COUCHDB_2: string;
+    RC_OUTDATED: string;
+    RC_UNAUTHORIZED: string;
+    RC_FORBIDDEN: string;
     SC1: string;
     SC2: string;
     SC3: string;

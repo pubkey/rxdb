@@ -14,7 +14,7 @@ var _index2 = require("../../plugins/utils/index.js");
 var _rxjs = require("rxjs");
 var _rxError = require("../../rx-error.js");
 /**
- * Copied and adapter from the 'reconnecting-websocket' npm module.
+ * Copied and adapted from the 'reconnecting-websocket' npm module.
  * Some bundlers have problems with bundling the isomorphic-ws plugin
  * so we directly check the correctness in RxDB to ensure that we can
  * throw a helpful error.
@@ -26,14 +26,34 @@ function ensureIsWebsocket(w) {
     throw new Error('websocket not valid');
   }
 }
-async function createWebSocketClient(url) {
+async function createWebSocketClient(options) {
   ensureIsWebsocket(_isomorphicWs.default);
-  var wsClient = new _reconnectingWebsocket.default(url, [], {
+  var wsClient = new _reconnectingWebsocket.default(options.url, [], {
     WebSocket: _isomorphicWs.default
   });
   var connected$ = new _rxjs.BehaviorSubject(false);
+  var message$ = new _rxjs.Subject();
+  var error$ = new _rxjs.Subject();
+  wsClient.onerror = err => {
+    console.log('--- WAS CLIENT GOT ERROR:');
+    console.log(err.error.message);
+    var emitError = (0, _rxError.newRxError)('RC_STREAM', {
+      errors: (0, _index2.toArray)(err).map(er => (0, _index2.errorToPlainJson)(er)),
+      direction: 'pull'
+    });
+    error$.next(emitError);
+  };
   await new Promise(res => {
     wsClient.onopen = () => {
+      if (options.headers) {
+        var authMessage = {
+          collection: options.collection.name,
+          id: (0, _index2.randomCouchString)(10),
+          params: [options.headers],
+          method: 'auth'
+        };
+        wsClient.send(JSON.stringify(authMessage));
+      }
       connected$.next(true);
       res();
     };
@@ -41,21 +61,12 @@ async function createWebSocketClient(url) {
   wsClient.onclose = () => {
     connected$.next(false);
   };
-  var message$ = new _rxjs.Subject();
   wsClient.onmessage = messageObj => {
     var message = JSON.parse(messageObj.data);
     message$.next(message);
   };
-  var error$ = new _rxjs.Subject();
-  wsClient.onerror = err => {
-    var emitError = (0, _rxError.newRxError)('RC_STREAM', {
-      errors: (0, _index2.toArray)(err).map(er => (0, _index2.errorToPlainJson)(er)),
-      direction: 'pull'
-    });
-    error$.next(emitError);
-  };
   return {
-    url,
+    url: options.url,
     socket: wsClient,
     connected$,
     message$,
@@ -63,7 +74,7 @@ async function createWebSocketClient(url) {
   };
 }
 async function replicateWithWebsocketServer(options) {
-  var websocketClient = await createWebSocketClient(options.url);
+  var websocketClient = await createWebSocketClient(options);
   var wsClient = websocketClient.socket;
   var messages$ = websocketClient.message$;
   var requestCounter = 0;

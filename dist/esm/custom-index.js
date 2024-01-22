@@ -173,7 +173,7 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
     var type = schemaPart.type;
     switch (type) {
       case 'string':
-        var maxLength = ensureNotFalsy(schemaPart.maxLength);
+        var maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
         if (typeof bound === 'string') {
           str += bound.padEnd(maxLength, ' ');
         } else {
@@ -220,7 +220,7 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
     var type = schemaPart.type;
     switch (type) {
       case 'string':
-        var maxLength = ensureNotFalsy(schemaPart.maxLength);
+        var maxLength = ensureNotFalsy(schemaPart.maxLength, 'maxLength not set');
         if (typeof bound === 'string' && bound !== INDEX_MAX) {
           str += bound.padEnd(maxLength, ' ');
         } else if (bound === INDEX_MIN) {

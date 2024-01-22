@@ -18,6 +18,7 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  * that have been created with the same [databaseName+collectionName] combination.
  */
 export type MemoryStorageInternals<RxDocType> = {
+    id: string;
     /**
      * Schema of the first instance created with the given settings.
      * Used to ensure that the same storage is not re-created with

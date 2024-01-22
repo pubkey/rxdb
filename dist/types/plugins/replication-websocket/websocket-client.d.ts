@@ -11,11 +11,11 @@ export type WebsocketClient = {
     error$: Subject<RxError>;
 };
 /**
- * Copied and adapter from the 'reconnecting-websocket' npm module.
+ * Copied and adapted from the 'reconnecting-websocket' npm module.
  * Some bundlers have problems with bundling the isomorphic-ws plugin
  * so we directly check the correctness in RxDB to ensure that we can
  * throw a helpful error.
  */
 export declare function ensureIsWebsocket(w: typeof IsomorphicWebSocket): void;
-export declare function createWebSocketClient(url: string): Promise<WebsocketClient>;
+export declare function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient>;
 export declare function replicateWithWebsocketServer<RxDocType, CheckpointType>(options: WebsocketClientOptions<RxDocType>): Promise<RxReplicationState<RxDocType, CheckpointType>>;

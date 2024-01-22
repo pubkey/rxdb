@@ -3,7 +3,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with a remote graphql endpoint.
  */
-import { ensureNotFalsy, getProperty } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, flatClone, getProperty } from "../../plugins/utils/index.js";
 import { graphQLRequest as _graphQLRequest } from "./helper.js";
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { RxReplicationState, startReplicationOnLeaderShip } from "../replication/index.js";
@@ -30,7 +30,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
   }
   var _proto = RxGraphQLReplicationState.prototype;
   _proto.setHeaders = function setHeaders(headers) {
-    this.clientState.headers = headers;
+    this.clientState.headers = flatClone(headers);
   };
   _proto.setCredentials = function setCredentials(credentials) {
     this.clientState.credentials = credentials;

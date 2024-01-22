@@ -122,7 +122,23 @@ export type RxJsonSchema<
     required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
 
 
+    /**
+     * Indexes that will be used for the queries.
+     * RxDB will internally prepend the _deleted field to the index
+     * because queries do NOT return documents with _deleted=true.
+     */
     indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
+
+    /**
+     * Internally used indexes that do not get _deleted prepended
+     * by RxDB. Use these to speed up queries that are run manually on the storage
+     * or to speed up requests when you use the RxDB server.
+     * These could also be utilised when you build a plugin that
+     * has to query documents without respecting the _deleted value.
+     */
+    internalIndexes?: string[][] | readonly string[][];
+
+
     encrypted?: string[] | readonly string[];
     keyCompression?: boolean;
     /**

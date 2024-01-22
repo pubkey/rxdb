@@ -270,7 +270,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     throw pluginMissing('leader-election');
   };
   _proto.migrationStates = function migrationStates() {
-    throw pluginMissing('migration');
+    throw pluginMissing('migration-schema');
   }
 
   /**

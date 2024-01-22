@@ -100,7 +100,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     var documentsById = this.internals.documents;
     var primaryPath = this.primaryPath;
     var categorized = this.internals.ensurePersistenceTask;
-    delete this.internals.ensurePersistenceTask;
+    this.internals.ensurePersistenceTask = undefined;
 
     /**
      * Do inserts/updates
@@ -181,17 +181,6 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     upperBound = upperBound;
     var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound);
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
-
-    // console.log('in memory query:');
-    // console.dir({
-    //     queryPlan,
-    //     lowerBound,
-    //     upperBound,
-    //     lowerBoundString,
-    //     upperBoundString,
-    //     indexName
-    // });
-
     if (!this.internals.byIndex[indexName]) {
       throw new Error('index does not exist ' + indexName);
     }
@@ -306,6 +295,7 @@ function createMemoryStorageInstance(storage, params, settings) {
   var internals = storage.collectionStates.get(collectionKey);
   if (!internals) {
     internals = {
+      id: (0, _index.randomCouchString)(5),
       schema: params.schema,
       removed: false,
       refCount: 1,

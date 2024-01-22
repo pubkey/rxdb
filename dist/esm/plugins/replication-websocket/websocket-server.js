@@ -40,6 +40,17 @@ export function startSocketServer(options) {
     onConnection$: onConnection$.asObservable()
   };
 }
+var REPLICATION_HANDLER_BY_COLLECTION = new Map();
+export function getReplicationHandlerByCollection(database, collectionName) {
+  if (!database.collections[collectionName]) {
+    throw new Error('collection ' + collectionName + ' does not exist');
+  }
+  var collection = database.collections[collectionName];
+  var handler = getFromMapOrCreate(REPLICATION_HANDLER_BY_COLLECTION, collection, () => {
+    return rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, database.token);
+  });
+  return handler;
+}
 export function startWebsocketServer(options) {
   var {
     database,
@@ -49,17 +60,6 @@ export function startWebsocketServer(options) {
 
   // auto close when the database gets destroyed
   database.onDestroy.push(() => serverState.close());
-  var replicationHandlerByCollection = new Map();
-  function getReplicationHandler(collectionName) {
-    if (!database.collections[collectionName]) {
-      throw new Error('collection ' + collectionName + ' does not exist');
-    }
-    var handler = getFromMapOrCreate(replicationHandlerByCollection, collectionName, () => {
-      var collection = database.collections[collectionName];
-      return rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, database.token);
-    });
-    return handler;
-  }
   serverState.onConnection$.subscribe(ws => {
     var onCloseHandlers = [];
     ws.onclose = () => {
@@ -67,7 +67,10 @@ export function startWebsocketServer(options) {
     };
     ws.on('message', async messageString => {
       var message = JSON.parse(messageString);
-      var handler = getReplicationHandler(message.collection);
+      var handler = getReplicationHandlerByCollection(database, message.collection);
+      if (message.method === 'auth') {
+        return;
+      }
       var method = handler[message.method];
 
       /**

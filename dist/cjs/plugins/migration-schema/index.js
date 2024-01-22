@@ -50,7 +50,7 @@ Object.keys(_migrationTypes).forEach(function (key) {
 });
 var DATA_MIGRATOR_BY_COLLECTION = exports.DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
 var RxDBMigrationPlugin = exports.RxDBMigrationPlugin = {
-  name: 'migration',
+  name: 'migration-schema',
   rxdb: true,
   init() {
     (0, _plugin.addRxPlugin)(_index2.RxDBLocalDocumentsPlugin);

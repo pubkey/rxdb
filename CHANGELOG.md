@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD helpers for the new server plugin
-- ADD `RxJsonSchema.internalIndexes`
-- ADD(opfs-storage) allow to set `jsonPositionSize` to increase the maxium database size to be bigger than 100 MegaByte.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.4.0 (22 January 2024)
+
+- ADD helpers for the new server plugin
+- ADD `RxJsonSchema.internalIndexes`
+- ADD(opfs-storage) allow to set `jsonPositionSize` to increase the maxium database size to be bigger than 100 MegaByte.
 
 ### 15.3.0 (15 January 2024)
 

@@ -198,6 +198,13 @@ export function fillWithDefaultSettings(schemaObj) {
   // we need this index for the getChangedDocumentsSince() method
   useIndexes.push(['_meta.lwt', primaryPath]);
 
+  // also add the internalIndexes
+  if (schemaObj.internalIndexes) {
+    schemaObj.internalIndexes.map(idx => {
+      useIndexes.push(idx);
+    });
+  }
+
   // make indexes unique
   var hasIndex = new Set();
   useIndexes.filter(index => {

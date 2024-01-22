@@ -88,7 +88,7 @@ var RxGraphQLReplicationState = exports.RxGraphQLReplicationState = /*#__PURE__*
   }
   var _proto = RxGraphQLReplicationState.prototype;
   _proto.setHeaders = function setHeaders(headers) {
-    this.clientState.headers = headers;
+    this.clientState.headers = (0, _index.flatClone)(headers);
   };
   _proto.setCredentials = function setCredentials(credentials) {
     this.clientState.credentials = credentials;

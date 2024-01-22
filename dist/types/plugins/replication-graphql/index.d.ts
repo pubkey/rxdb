@@ -1,4 +1,4 @@
-import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions, GraphQLServerUrl, RxGraphQLReplicationQueryBuilderResponseObject, RxGraphQLReplicationClientState } from '../../types/index.d.ts';
+import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions, GraphQLServerUrl, RxGraphQLReplicationQueryBuilderResponseObject, RxGraphQLReplicationClientState, ById } from '../../types/index.d.ts';
 import { RxReplicationState } from '../replication/index.ts';
 import { SyncOptionsGraphQL } from '../../index.ts';
 export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
@@ -14,9 +14,7 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     autoStart?: boolean | undefined;
     readonly customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined;
     constructor(url: GraphQLServerUrl, clientState: RxGraphQLReplicationClientState, replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined);
-    setHeaders(headers: {
-        [k: string]: string;
-    }): void;
+    setHeaders(headers: ById<string>): void;
     setCredentials(credentials: RequestCredentials | undefined): void;
     graphQLRequest(queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
 }

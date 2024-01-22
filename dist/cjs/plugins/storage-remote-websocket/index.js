@@ -76,7 +76,7 @@ function getRxStorageRemoteWebsocket(options) {
     mode: options.mode,
     async messageChannelCreator() {
       var messages$ = new _rxjs.Subject();
-      var websocketClient = await (0, _index2.createWebSocketClient)(options.url);
+      var websocketClient = await (0, _index2.createWebSocketClient)(options);
       websocketClient.message$.subscribe(msg => messages$.next(msg));
       return {
         messages$,

@@ -10,6 +10,7 @@ exports.ensureRxStorageInstanceParamsAreCorrect = ensureRxStorageInstanceParamsA
 exports.flatCloneDocWithMeta = flatCloneDocWithMeta;
 exports.getAttachmentSize = getAttachmentSize;
 exports.getChangedDocumentsSince = getChangedDocumentsSince;
+exports.getChangedDocumentsSinceQuery = getChangedDocumentsSinceQuery;
 exports.getSingleDocument = getSingleDocument;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hasEncryption = hasEncryption;
@@ -27,6 +28,7 @@ var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _index = require("./plugins/utils/index.js");
 var _rxjs = require("rxjs");
 var _rxQuery = require("./rx-query.js");
+var _rxQueryHelper = require("./rx-query-helper.js");
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -657,14 +659,11 @@ function hasEncryption(jsonSchema) {
     return false;
   }
 }
-async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
-  if (storageInstance.getChangedDocumentsSince) {
-    return storageInstance.getChangedDocumentsSince(limit, checkpoint);
-  }
+function getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
   var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
   var sinceId = checkpoint ? checkpoint.id : '';
-  var query = (0, _rxQuery.prepareQuery)(storageInstance.schema, {
+  return (0, _rxQueryHelper.normalizeMangoQuery)(storageInstance.schema, {
     selector: {
       $or: [{
         '_meta.lwt': {
@@ -689,9 +688,23 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
       [primaryPath]: 'asc'
     }],
     skip: 0,
-    limit,
-    index: ['_meta.lwt', primaryPath]
+    limit
+    /**
+     * DO NOT SET A SPECIFIC INDEX HERE!
+     * The query might be modified by some plugin
+     * before sending it to the storage.
+     * We can be sure that in the end the query planner
+     * will find the best index.
+     */
+    // index: ['_meta.lwt', primaryPath]
   });
+}
+async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
+  if (storageInstance.getChangedDocumentsSince) {
+    return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+  }
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
+  var query = (0, _rxQuery.prepareQuery)(storageInstance.schema, getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint));
   var result = await storageInstance.query(query);
   var documents = result.documents;
   var lastDoc = (0, _index.lastOfArray)(documents);

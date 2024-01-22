@@ -58,6 +58,7 @@ export interface RxErrorParameters {
     readonly dataAfter?: any;
     readonly pull?: boolean;
     readonly push?: boolean;
+    readonly url?: string;
     readonly key?: string;
     readonly queryObj?: any;
     readonly query?: any;

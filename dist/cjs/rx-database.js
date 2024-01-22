@@ -284,7 +284,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
     throw (0, _index.pluginMissing)('leader-election');
   };
   _proto.migrationStates = function migrationStates() {
-    throw (0, _index.pluginMissing)('migration');
+    throw (0, _index.pluginMissing)('migration-schema');
   }
 
   /**

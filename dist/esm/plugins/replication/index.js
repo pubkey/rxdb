@@ -7,7 +7,7 @@
 
 import { BehaviorSubject, combineLatest, filter, mergeMap, Subject } from 'rxjs';
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
-import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from "../../plugins/utils/index.js";
+import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray, toPromise } from "../../plugins/utils/index.js";
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from "../../replication-protocol/index.js";
 import { newRxError } from "../../rx-error.js";
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from "./replication-helper.js";
@@ -41,6 +41,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.error$ = this.subjects.error.asObservable();
     this.canceled$ = this.subjects.canceled.asObservable();
     this.active$ = this.subjects.active.asObservable();
+    this.onCancel = [];
     this.callOnStart = undefined;
     this.remoteEvents$ = new Subject();
     this.replicationIdentifier = replicationIdentifier;
@@ -304,7 +305,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (this.isStopped()) {
       return PROMISE_RESOLVE_FALSE;
     }
-    var promises = [];
+    var promises = this.onCancel.map(fn => toPromise(fn()));
     if (this.internalReplicationState) {
       await cancelRxStorageReplication(this.internalReplicationState);
     }

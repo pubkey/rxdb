@@ -49,6 +49,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.error$ = this.subjects.error.asObservable();
     this.canceled$ = this.subjects.canceled.asObservable();
     this.active$ = this.subjects.active.asObservable();
+    this.onCancel = [];
     this.callOnStart = undefined;
     this.remoteEvents$ = new _rxjs.Subject();
     this.replicationIdentifier = replicationIdentifier;
@@ -312,7 +313,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     if (this.isStopped()) {
       return _index2.PROMISE_RESOLVE_FALSE;
     }
-    var promises = [];
+    var promises = this.onCancel.map(fn => (0, _index2.toPromise)(fn()));
     if (this.internalReplicationState) {
       await (0, _index3.cancelRxStorageReplication)(this.internalReplicationState);
     }

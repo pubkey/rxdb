@@ -34,6 +34,7 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
     startPromise: Promise<void>;
+    onCancel: (() => void)[];
     constructor(
     /**
      * The identifier, used to flag revisions

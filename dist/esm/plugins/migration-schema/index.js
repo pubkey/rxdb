@@ -6,7 +6,7 @@ import { addRxPlugin } from "../../plugin.js";
 import { RxDBLocalDocumentsPlugin } from "../local-documents/index.js";
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
 export var RxDBMigrationPlugin = {
-  name: 'migration',
+  name: 'migration-schema',
   rxdb: true,
   init() {
     addRxPlugin(RxDBLocalDocumentsPlugin);

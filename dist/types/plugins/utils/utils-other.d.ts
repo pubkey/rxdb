@@ -1,5 +1,5 @@
 export declare function runXTimes(xTimes: number, fn: (idx: number) => void): void;
-export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
+export declare function ensureNotFalsy<T>(obj: T | false | undefined | null, message?: string): T;
 export declare function ensureInteger(obj: unknown): number;
 /**
  * Using shareReplay() without settings will not unsubscribe
