@@ -3,6 +3,9 @@
 This list contains things that have to be done but will create breaking changes.
 
 
+## OPFS storage has defualt jsonPositionSize=8 but should be 14
+
+Set the default to 14 and also remove all occurences of `jsonPositionSize`.
 
 ## Ideas from https://github.com/pubkey/rxdb/issues/4994
 
