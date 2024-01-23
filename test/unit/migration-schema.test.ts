@@ -2,7 +2,7 @@ import assert from 'assert';
 import config from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import { describeParallel, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import { describeParallel, humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -35,9 +35,9 @@ import { EXAMPLE_REVISION_1 } from '../../plugins/test-utils/index.mjs';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
-import { SimpleHumanAgeDocumentType } from '../../plugins/test-utils/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
+import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
 describeParallel('migration-schema.test.ts', function () {

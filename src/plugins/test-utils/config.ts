@@ -106,7 +106,7 @@ export function initTestEnvironment() {
         const __filename = url.fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
 
-        rootPath = path.join(__dirname, '../../');
+        rootPath = path.join(__dirname, '../../../../');
         console.log('rootPath: ' + rootPath);
 
         /**

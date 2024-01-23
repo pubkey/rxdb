@@ -19,9 +19,12 @@ import {
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import { EXAMPLE_REVISION_1 } from '../../plugins/test-utils/index.mjs';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    EXAMPLE_REVISION_1
+} from '../../plugins/test-utils/index.mjs';
 
 describeParallel('custom-index.test.ts', () => {
 

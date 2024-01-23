@@ -6,9 +6,13 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
 import config from './config.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -22,7 +26,6 @@ import {
 import type {
     RxChangeEvent
 } from '../../plugins/core/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
 describeParallel('reactive-document.test.js', () => {

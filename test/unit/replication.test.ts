@@ -17,7 +17,8 @@ import {
     schemas,
     humansCollection,
     describeParallel,
-    isFastMode
+    isFastMode,
+    ensureReplicationHasNoErrors
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -54,11 +55,11 @@ import type {
     RxStorage
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
-import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
+import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
 type CheckpointType = any;
-type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+type TestDocType = HumanWithTimestampDocumentType;
 
 /**
  * Creates a pull handler that always returns
@@ -283,7 +284,7 @@ describe('replication.test.ts', () => {
                     });
                 })
             );
-            const replicationState = replicateRxCollection<schemaObjects.HumanWithTimestampDocumentType, any>({
+            const replicationState = replicateRxCollection<HumanWithTimestampDocumentType, any>({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
@@ -914,7 +915,7 @@ describe('replication.test.ts', () => {
                     schema: schemas.humanCompositePrimary
                 }
             });
-            const mycollection: RxCollection<schemaObjects.HumanWithCompositePrimary> = collections.mycollection;
+            const mycollection: RxCollection<HumanWithCompositePrimary> = collections.mycollection;
 
             const pullStream$ = new Subject<RxReplicationPullStreamItem<any, CheckpointType>>();
             let fetched = false;
@@ -924,7 +925,7 @@ describe('replication.test.ts', () => {
                 pull: {
                     // eslint-disable-next-line require-await
                     handler: async (lastCheckpoint) => {
-                        const docs: schemaObjects.HumanWithCompositePrimary[] = (fetched) ?
+                        const docs: HumanWithCompositePrimary[] = (fetched) ?
                             [] :
                             [schemaObjects.humanWithCompositePrimary()];
                         fetched = true;

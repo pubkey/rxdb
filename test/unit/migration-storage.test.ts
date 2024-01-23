@@ -45,8 +45,11 @@ import {
     migrateStorage
 } from '../../plugins/migration-storage/index.mjs';
 
-import * as schemaObjects from '../helper/schema-objects.ts';
-import { HumanDocumentType, human } from '../helper/schemas.ts';
+import {
+    HumanDocumentType,
+    human,
+    schemaObjects
+} from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
 
 

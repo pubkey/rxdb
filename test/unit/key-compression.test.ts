@@ -18,15 +18,20 @@ import {
     FilledMangoQuery,
     prepareQuery,
 } from '../../plugins/core/index.mjs';
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression/index.mjs';
-import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    describeParallel,
+    enableKeyCompression,
+    ensureReplicationHasNoErrors,
+    HumanDocumentType,
+    human
+} from '../../plugins/test-utils/index.mjs';
 import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
-import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
-import { SimpleHumanDocumentType } from '../helper/schema-objects.ts';
+import type { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
 describeParallel('key-compression.test.js', () => {
@@ -57,7 +62,7 @@ describeParallel('key-compression.test.js', () => {
 
 
             const internalInstance: RxStorageInstance<
-                schemaObjects.SimpleHumanDocumentType, any, any
+                SimpleHumanDocumentType, any, any
             > = await (c.storageInstance.originalStorageInstance as any)
                 .originalStorageInstance;
 

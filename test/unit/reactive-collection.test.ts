@@ -1,9 +1,13 @@
 import assert from 'assert';
 import config from './config.ts';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -16,7 +20,6 @@ import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
 describeParallel('reactive-collection.test.js', () => {

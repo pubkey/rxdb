@@ -27,6 +27,7 @@ import { createRequire } from 'node:module';
 import {
     DEFAULT_STORAGE,
     getConfig,
+    initTestEnvironment,
     isDeno,
     isFastMode,
     isNode,
@@ -298,10 +299,13 @@ export function getStorage(storageKey: string): RxTestStorage {
     }
 }
 
-setConfig({
-    storage: getStorage(DEFAULT_STORAGE) as any
-});
-console.log('# use RxStorage: ' + getConfig().storage.name);
 
-const config = getConfig();
+const config = (() => {
+    initTestEnvironment();
+    setConfig({
+        storage: getStorage(DEFAULT_STORAGE) as any
+    });
+    console.log('# use RxStorage: ' + getConfig().storage.name);
+    return getConfig();
+})();
 export default config;

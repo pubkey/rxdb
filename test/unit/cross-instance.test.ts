@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config, { getEncryptedStorage, getPassword } from './config.ts';
+import config from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -19,10 +19,15 @@ import {
     ensureNotFalsy,
 } from '../../plugins/core/index.mjs';
 
-import * as schemas from './../helper/schemas.ts';
-import * as schemaObjects from './../helper/schema-objects.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-import { HumanDocumentType } from './../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    getPassword,
+    getEncryptedStorage,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 describeParallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {

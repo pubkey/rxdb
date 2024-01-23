@@ -48,7 +48,9 @@ import {
     getPassword,
     isFastMode,
     isDeno,
-    isBun
+    isBun,
+    getEncryptedStorage,
+    enableKeyCompression
 } from '../../plugins/test-utils/index.mjs';
 import {
     GRAPHQL_PATH,
@@ -64,6 +66,7 @@ import {
     parse as parseQuery
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
+import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
 
@@ -2304,7 +2307,7 @@ describe('replication-graphql.test.ts', () => {
         });
         describeParallel('issues', () => {
             it('push not working on slow db', async () => {
-                if (config.isBun) {
+                if (isBun) {
                     // TODO for somehow bun times out here
                     return;
                 }
@@ -2680,7 +2683,7 @@ describe('replication-graphql.test.ts', () => {
                         schema: schemas.humanWithTimestampAllIndex
                     }
                 });
-                const collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType> = collections.humans;
+                const collection: RxCollection<HumanWithTimestampDocumentType> = collections.humans;
 
                 // insert data to slow down the db
                 const amount = 30;
@@ -2690,7 +2693,7 @@ describe('replication-graphql.test.ts', () => {
                         .map(d => collection.insert(d))
                 );
 
-                const replicationState = replicateGraphQL<schemaObjects.HumanWithTimestampDocumentType, any>({
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
                     replicationIdentifier: randomCouchString(10),
                     collection,
                     url: {

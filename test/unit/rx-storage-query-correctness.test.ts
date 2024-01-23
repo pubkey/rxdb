@@ -22,9 +22,13 @@ import {
     describeParallel,
     EXAMPLE_REVISION_1,
     HumanDocumentType,
-    human
+    human,
+    schemas,
+    nestedHuman,
+    humanMinimal
 } from '../../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { HeroArrayDocumentType, NestedHumanDocumentType, SimpleHumanV3DocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 describeParallel('rx-storage-query-correctness.test.ts', () => {
@@ -227,7 +231,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
         });
     }
 
-    testCorrectQueries<schemaObjects.HumanDocumentType>({
+    testCorrectQueries<HumanDocumentType>({
         testTitle: '$gt/$gte',
         data: [
             schemaObjects.human('aa', 10, 'alice'),
@@ -479,7 +483,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<schemaObjects.NestedHumanDocumentType>({
+    testCorrectQueries<NestedHumanDocumentType>({
         testTitle: 'nested properties',
         data: [
             schemaObjects.nestedHuman({
@@ -614,7 +618,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<schemas.HumanDocumentType>({
+    testCorrectQueries<HumanDocumentType>({
         testTitle: '$in',
         data: [
             schemaObjects.human('aa', 10, 'alice'),
@@ -679,7 +683,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<schemas.HeroArrayDocumentType>({
+    testCorrectQueries<HeroArrayDocumentType>({
         testTitle: '$elemMatch/$size',
         data: [
             {

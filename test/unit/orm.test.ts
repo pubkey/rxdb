@@ -10,9 +10,12 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import { HumanDocumentType } from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 describeParallel('orm.test.js', () => {
     describe('statics', () => {

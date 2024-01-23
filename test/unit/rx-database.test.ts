@@ -19,6 +19,7 @@ import {
     humansCollection,
     describeParallel,
     getPassword,
+    isNode,
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3

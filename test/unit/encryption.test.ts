@@ -1,9 +1,14 @@
 import assert from 'assert';
-import config, { getEncryptedStorage, getPassword } from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    getPassword,
+    getEncryptedStorage
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,

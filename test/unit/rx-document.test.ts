@@ -8,7 +8,8 @@ import {
     schemas,
     humansCollection,
     describeParallel,
-    isFastMode
+    isFastMode,
+    isNode
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -29,6 +30,7 @@ import {
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
+import { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {
@@ -491,7 +493,7 @@ describe('rx-document.test.js', () => {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols.humans;
+                const c: RxCollection<SimpleHumanDocumentType> = cols.humans;
                 await c.insert(schemaObjects.simpleHuman());
                 let doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
@@ -513,7 +515,7 @@ describe('rx-document.test.js', () => {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c2: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols2.humans;
+                const c2: RxCollection<SimpleHumanDocumentType> = cols2.humans;
                 const doc2 = await c2.findOne().exec(true);
                 assert.strictEqual(doc.passportId, doc2.passportId);
                 const docData2 = doc2.toJSON();

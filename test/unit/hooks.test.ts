@@ -4,9 +4,12 @@ import {
 } from 'rxjs/operators';
 
 import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,

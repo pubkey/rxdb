@@ -12,7 +12,9 @@ import {
     schemaObjects,
     schemas,
     describeParallel,
-    isFastMode
+    isFastMode,
+    EXAMPLE_REVISION_1,
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import assert from 'assert';
 
@@ -34,7 +36,7 @@ describeParallel('rx-storage-helper.test.ts', () => {
             });
             const primaryPath = getPrimaryFieldOfPrimaryKey(schemas.human.primaryKey);
             const amount = isFastMode() ? 100 : 10000;
-            const writeRows: BulkWriteRow<schemas.HumanDocumentType>[] = new Array(amount).fill(0).map(() => {
+            const writeRows: BulkWriteRow<HumanDocumentType>[] = new Array(amount).fill(0).map(() => {
                 const document = Object.assign(
                     schemaObjects.human(),
                     {

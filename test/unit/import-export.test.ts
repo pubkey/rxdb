@@ -3,10 +3,6 @@
  */
 import assert from 'assert';
 
-import * as schemas from './../helper/schemas.ts';
-import * as schemaObjects from './../helper/schema-objects.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-
 import {
     createRxDatabase,
     RxCollection,
@@ -15,8 +11,20 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import config, { getEncryptedStorage, getPassword } from './config.ts';
-import { HumanDocumentType } from './../helper/schemas.ts';
+import config from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    getPassword,
+    isNode,
+    EXAMPLE_REVISION_1,
+    EXAMPLE_REVISION_2,
+    EXAMPLE_REVISION_3,
+    getEncryptedStorage,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 describeParallel('import-export.test.js', () => {
     describe('Collection', () => {
