@@ -38,7 +38,7 @@ describeParallel('rx-storage-helper.test.ts', () => {
             const amount = isFastMode() ? 100 : 10000;
             const writeRows: BulkWriteRow<HumanDocumentType>[] = new Array(amount).fill(0).map(() => {
                 const document = Object.assign(
-                    schemaObjects.human(),
+                    schemaObjects.humanData(),
                     {
                         _deleted: false,
                         _rev: EXAMPLE_REVISION_1,

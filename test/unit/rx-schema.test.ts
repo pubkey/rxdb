@@ -714,7 +714,7 @@ describeParallel('rx-schema.test.ts', () => {
             describe('positive', () => {
                 it('should allow a valid change', () => {
                     const schema = createRxSchema(schemas.human, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     const dataAfter = clone(dataBefore);
                     dataAfter.age = 100;
 
@@ -724,7 +724,7 @@ describeParallel('rx-schema.test.ts', () => {
             describe('negative', () => {
                 it('should not allow to change the primary', async () => {
                     const schema = createRxSchema(schemas.primaryHuman, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     const dataAfter = clone(dataBefore);
                     dataAfter.passportId = 'foobar';
 
@@ -736,7 +736,7 @@ describeParallel('rx-schema.test.ts', () => {
                 });
                 it('should not allow to change a final field', async () => {
                     const schema = createRxSchema(schemas.humanFinal, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     dataBefore.age = 1;
                     const dataAfter = clone(dataBefore);
                     dataAfter.age = 100;

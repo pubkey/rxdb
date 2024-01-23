@@ -145,7 +145,7 @@ describeParallel('rx-storage-dexie.test.js', () => {
 
             await storageInstance.bulkWrite(
                 new Array(5).fill(0).map(() => {
-                    const data = schemaObjects.human() as any;
+                    const data = schemaObjects.humanData() as any;
                     data._attachments = {};
                     data._deleted = false;
                     data.age = 18;

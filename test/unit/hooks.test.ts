@@ -49,7 +49,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
                     let count = 0;
                     c.preInsert((data, instance) => {
                         assert.strictEqual(typeof instance, 'undefined');
@@ -61,7 +61,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
                     let count = 0;
                     c.preInsert(function (doc, instance) {
                         assert.strictEqual(typeof instance, 'undefined');
@@ -79,7 +79,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
 
                     c.preInsert(function (d, instance) {
                         assert.strictEqual(typeof instance, 'undefined');
@@ -93,7 +93,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
 
                     c.preInsert(async function (d, instance) {
                         assert.strictEqual(typeof instance, 'undefined');
@@ -108,7 +108,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should not insert if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     c.preInsert(() => {
                         throw new Error('foobar');
                     }, false);
@@ -133,7 +133,7 @@ describeParallel('hooks.test.js', () => {
                         assert.strictEqual(this.foo, 'bar');
                     }, false);
 
-                    await c.insert(schemaObjects.simpleHuman());
+                    await c.insert(schemaObjects.simpleHumanData());
 
                     assert.ok(hasRun);
                     c.database.destroy();
@@ -144,7 +144,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
                     let count = 0;
                     c.postInsert(function (data, instance) {
                         assert.ok(isRxDocument(instance));
@@ -156,7 +156,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
                     let count = 0;
                     c.postInsert(function (data, instance) {
                         assert.ok(isRxDocument(instance));
@@ -169,7 +169,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should call post insert hook after bulkInsert', async () => {
                     const c = await humansCollection.create(0);
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
                     let count = 0;
                     c.postInsert((data, instance) => {
                         assert.ok(data.age);
@@ -188,7 +188,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -208,7 +208,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -223,7 +223,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
 
@@ -238,7 +238,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('async: should save a modified document', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
 
@@ -253,7 +253,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should not save if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     human.firstName = 'test';
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
@@ -279,7 +279,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -293,7 +293,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -314,7 +314,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -328,7 +328,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -342,7 +342,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('should not remove if hook throws', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
 
@@ -408,7 +408,7 @@ describeParallel('hooks.test.js', () => {
             describe('positive', () => {
                 it('series', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -422,7 +422,7 @@ describeParallel('hooks.test.js', () => {
                 });
                 it('parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const human = schemaObjects.simpleHuman();
+                    const human = schemaObjects.simpleHumanData();
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
@@ -491,7 +491,7 @@ describeParallel('hooks.test.js', () => {
                     });
                 });
 
-                const human = schemaObjects.simpleHuman();
+                const human = schemaObjects.simpleHumanData();
                 await collection.insert(human);
                 const doc = await collection.findOne().exec();
                 assert.strictEqual('foobar', doc.myField);
@@ -533,7 +533,7 @@ describeParallel('hooks.test.js', () => {
             }, false);
             let hasThrown = false;
             try {
-                await c.insert(schemaObjects.human());
+                await c.insert(schemaObjects.humanData());
             } catch (e) {
                 hasThrown = true;
             }

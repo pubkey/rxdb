@@ -106,7 +106,7 @@ describe('performance.test.ts', () => {
              * So it makes no sense to measure the time of database/collection creation.
              * Insert we do a single insert an measure the time to the first insert.
              */
-            await collection.insert(schemaObjects.averageSchema());
+            await collection.insert(schemaObjects.averageSchemaData());
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
@@ -117,7 +117,7 @@ describe('performance.test.ts', () => {
                 const docsData = new Array(docsPerBatch)
                     .fill(0)
                     .map((_v, idx) => {
-                        const data = schemaObjects.averageSchema({
+                        const data = schemaObjects.averageSchemaData({
                             var1: (idx % 2) + '',
                             var2: idx % parallelQueryAmount
                         });

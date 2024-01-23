@@ -74,7 +74,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 undefined,
                 getRxStorageLoki()
             );
-            await col1.insert(schemaObjects.human());
+            await col1.insert(schemaObjects.humanData());
             const doc2 = await col2.findOne().exec(true);
             assert.ok(doc2);
             const doc3 = await col1.findOne().exec(true);
@@ -95,8 +95,8 @@ describe('rx-storage-lokijs.test.js', () => {
              * The query on the non-leading instance
              * must return the correct query results.
              */
-            await col2.insert(schemaObjects.human());
-            await col1.insert(schemaObjects.human());
+            await col2.insert(schemaObjects.humanData());
+            await col1.insert(schemaObjects.humanData());
             await waitUntil(async () => {
                 const res = await col2.find().exec();
                 if (res.length > 3) {
@@ -208,7 +208,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             await waitUntil(() => !!lastResult1 && !!lastResult2);
 
-            await col2.insert(schemaObjects.human());
+            await col2.insert(schemaObjects.humanData());
             await waitUntil(() => lastResult1.length === 1 && lastResult2.length === 1);
 
             sub1.unsubscribe();
@@ -365,7 +365,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     devMode: true
                 });
 
-                const firstDocData = Object.assign(schemaObjects.human(), {
+                const firstDocData = Object.assign(schemaObjects.humanData(), {
                     _deleted: false,
                     _meta: {
                         lwt: now()
@@ -381,7 +381,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
                 await storageInstance.bulkWrite([
                     {
-                        document: Object.assign(schemaObjects.human(), {
+                        document: Object.assign(schemaObjects.humanData(), {
                             _deleted: false,
                             _attachments: {},
                             _meta: {

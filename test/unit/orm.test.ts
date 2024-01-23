@@ -150,7 +150,7 @@ describeParallel('orm.test.js', () => {
                     }
                 });
                 const collection = collections.humans;
-                const res = (collection as any).foobar(schemaObjects.human());
+                const res = (collection as any).foobar(schemaObjects.humanData());
                 assert.strictEqual(res.constructor.name, 'Promise');
                 await res;
                 db.destroy();
@@ -195,14 +195,14 @@ describeParallel('orm.test.js', () => {
                     const col = cols.humans;
 
                     // add one to ensure it does not overwrite
-                    await col.insert(schemaObjects.human());
+                    await col.insert(schemaObjects.humanData());
 
-                    const docData = schemaObjects.human();
+                    const docData = schemaObjects.humanData();
                     docData.firstName = 'foobar';
                     const doc = await col.insert(docData);
 
                     // add another one to ensure it does not overwrite
-                    await col.insert(schemaObjects.human());
+                    await col.insert(schemaObjects.humanData());
 
                     const val = doc.myMethod();
                     assert.strictEqual(val, 'test:foobar');
@@ -308,7 +308,7 @@ describeParallel('orm.test.js', () => {
                     }
                 });
                 const collection = collections.humans;
-                await collection.insert(schemaObjects.human());
+                await collection.insert(schemaObjects.humanData());
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.strictEqual(res, 'test');
@@ -330,7 +330,7 @@ describeParallel('orm.test.js', () => {
                     }
                 });
                 const collection = collections.humans;
-                const obj = schemaObjects.human();
+                const obj = schemaObjects.humanData();
                 await collection.insert(obj);
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
@@ -359,7 +359,7 @@ describeParallel('orm.test.js', () => {
                 const collection = collections.humans;
                 const collection2 = collections.humans2;
 
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 const doc1 = await collection.insert(docData);
                 const doc2 = await collection2.insert(docData);
 

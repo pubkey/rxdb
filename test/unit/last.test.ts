@@ -15,7 +15,9 @@ import {
     CACHE_ITEM_BY_MESSAGE_CHANNEL
 } from '../../plugins/storage-remote/index.mjs';
 import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory/index.mjs';
-
+import {
+    isDeno
+} from '../../plugins/test-utils/index.mjs';
 declare const Deno: any;
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
@@ -94,7 +96,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
      * Some runtimes do not automatically exit for whatever reason.
      */
     it('exit the process', () => {
-        if (config.isDeno) {
+        if (isDeno) {
             Deno.exit(0);
         }
     });

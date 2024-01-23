@@ -10,14 +10,16 @@ import {
     describeParallel,
     isNode,
     isFastMode,
-    nextPort
+    nextPort,
+    HumanWithTimestampDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
 } from '../../plugins/replication-websocket/index.mjs';
 import {
-    RxCollection, randomCouchString
+    RxCollection,
+    randomCouchString
 } from '../../plugins/core/index.mjs';
 
 describeParallel('replication-websocket.test.ts', () => {
@@ -29,7 +31,7 @@ describeParallel('replication-websocket.test.ts', () => {
         return;
     }
 
-    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+    type TestDocType = HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
@@ -208,7 +210,7 @@ describeParallel('replication-websocket.test.ts', () => {
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
 
         // should still stream the events after the reconnect
-        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+        await remoteCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'server-doc-after-reconnect'
         }));
         await waitUntil(async () => {
@@ -244,16 +246,16 @@ describeParallel('replication-websocket.test.ts', () => {
         });
 
         // add one initial doc to each collection
-        await localCollection.insert(schemaObjects.humanWithTimestamp({
+        await localCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'local1'
         }));
-        await localDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+        await localDatabase.humans2.insert(schemaObjects.humanWithTimestampData({
             id: 'local2'
         }));
-        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+        await remoteCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'remote1'
         }));
-        await remoteDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+        await remoteDatabase.humans2.insert(schemaObjects.humanWithTimestampData({
             id: 'remote2'
         }));
 
@@ -315,7 +317,7 @@ describeParallel('replication-websocket.test.ts', () => {
 
         // make an ongoing change
         async function updateDoc(
-            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>,
+            collection: RxCollection<HumanWithTimestampDocumentType>,
             id: string
         ) {
             const doc = await collection.findOne(id).exec(true);
@@ -330,7 +332,7 @@ describeParallel('replication-websocket.test.ts', () => {
         await replicationState2.awaitInSync();
 
         async function ensureUpdated(
-            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>
+            collection: RxCollection<HumanWithTimestampDocumentType>
         ) {
             const docs = await collection.find().exec();
             try {
@@ -390,7 +392,7 @@ describeParallel('replication-websocket.test.ts', () => {
         await awaitInSync();
 
 
-        await serverCollection.insert(schemaObjects.humanWithTimestamp({
+        await serverCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'server-doc'
         }));
 

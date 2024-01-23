@@ -175,7 +175,7 @@ describe('replication-webrtc.test.ts', function () {
             console.log('--------- 1');
 
             // insert
-            await c1.insert(schemaObjects.human('inserted-after-first-sync'));
+            await c1.insert(schemaObjects.humanData('inserted-after-first-sync'));
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 
@@ -204,7 +204,7 @@ describe('replication-webrtc.test.ts', function () {
             console.log('--------- 5.1');
             await wait(100);
             console.log('--------- 5.2');
-            await c1.insert(schemaObjects.human('inserted-after-peer-connection-broke'));
+            await c1.insert(schemaObjects.humanData('inserted-after-peer-connection-broke'));
             console.log('--------- 5.3');
             await awaitCollectionsInSync([c1, c2]);
 

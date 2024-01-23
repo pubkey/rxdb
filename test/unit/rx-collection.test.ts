@@ -200,7 +200,7 @@ describe('rx-collection.test.ts', () => {
                             schema: schemas.human
                         }
                     });
-                    await collections.human.insert(schemaObjects.human());
+                    await collections.human.insert(schemaObjects.humanData());
                     db.destroy();
                 });
                 it('should insert nested human', async () => {
@@ -213,7 +213,7 @@ describe('rx-collection.test.ts', () => {
                             schema: schemas.nestedHuman
                         }
                     });
-                    await collections.nestedhuman.insert(schemaObjects.nestedHuman());
+                    await collections.nestedhuman.insert(schemaObjects.nestedHumanData());
                     db.destroy();
                 });
                 it('should insert more than once', async () => {
@@ -227,7 +227,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     for (let i = 0; i < 10; i++) {
-                        await collections.nestedhuman.insert(schemaObjects.nestedHuman());
+                        await collections.nestedhuman.insert(schemaObjects.nestedHumanData());
                     }
                     db.destroy();
                 });
@@ -264,7 +264,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const docData = schemaObjects.human();
+                    const docData = schemaObjects.humanData();
                     await collection.insert(docData);
 
                     const err: RxError = await AsyncTestUtil.assertThrows(
@@ -279,7 +279,7 @@ describe('rx-collection.test.ts', () => {
                 it('should not allow wrong primaryKeys', async () => {
                     const c = await humansCollection.create(10);
                     async function ensurePrimaryKeyInsertThrows(id: string) {
-                        const doc = schemaObjects.human(id);
+                        const doc = schemaObjects.humanData(id);
                         await assertThrows(
                             () => c.insert(doc),
                             'RxError'
@@ -299,7 +299,7 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.create(1);
 
                     // inserts
-                    const doc = schemaObjects.human();
+                    const doc = schemaObjects.humanData();
                     (doc as any).lastName = () => { };
                     await assertThrows(
                         () => c.insert(doc),
@@ -330,7 +330,7 @@ describe('rx-collection.test.ts', () => {
                             schema: schemas.human
                         }
                     });
-                    const docs = new Array(10).fill(0).map(() => schemaObjects.human());
+                    const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
                     const ret = await collections.human.bulkInsert(docs);
 
                     assert.strictEqual(ret.success.length, 10);
@@ -354,10 +354,10 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const double = schemaObjects.human();
+                    const double = schemaObjects.humanData();
                     double.passportId = 'foobar';
                     await collection.insert(double);
-                    const docs = new Array(10).fill(0).map(() => schemaObjects.human());
+                    const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
                     docs.push(double);
                     const ret = await collection.bulkInsert(docs);
 
@@ -390,7 +390,7 @@ describe('rx-collection.test.ts', () => {
                     runXTimes(isFastMode() ? 2 : 3, idx => {
                         it('find in serial #' + idx, async () => {
                             const c = await humansCollection.createPrimary(0);
-                            const docData = schemaObjects.simpleHuman();
+                            const docData = schemaObjects.simpleHumanData();
                             const docs = await c.find().exec();
                             assert.strictEqual(docs.length, 0);
                             await c.insert(docData);
@@ -436,7 +436,7 @@ describe('rx-collection.test.ts', () => {
                                 }
                             });
                             const collection = collections.human;
-                            const human = schemaObjects.human();
+                            const human = schemaObjects.humanData();
                             const passportId = human.passportId;
                             await collection.insert(human);
                             const docs = await collection.find().exec();
@@ -643,7 +643,7 @@ describe('rx-collection.test.ts', () => {
                         const docsData = new Array(10)
                             .fill(0)
                             .map((_v, idx) => {
-                                const docData = schemaObjects.human();
+                                const docData = schemaObjects.humanData();
                                 docData.age = idx + 10;
                                 return docData;
                             });
@@ -826,7 +826,7 @@ describe('rx-collection.test.ts', () => {
                         await Promise.all(
                             new Array(5)
                                 .fill(0)
-                                .map(() => c.insert(schemaObjects.human()))
+                                .map(() => c.insert(schemaObjects.humanData()))
                         );
 
                         const docs = await c.find().sort({
@@ -871,7 +871,7 @@ describe('rx-collection.test.ts', () => {
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);
-                        const matchHuman = schemaObjects.human();
+                        const matchHuman = schemaObjects.humanData();
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const query = c.find({
@@ -889,7 +889,7 @@ describe('rx-collection.test.ts', () => {
                     });
                     it('case sensitive regex', async () => {
                         const c = await humansCollection.create(10);
-                        const matchHuman = schemaObjects.human();
+                        const matchHuman = schemaObjects.humanData();
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
@@ -906,7 +906,7 @@ describe('rx-collection.test.ts', () => {
                     });
                     it('regex on index', async () => {
                         const c = await humansCollection.create(10);
-                        const matchHuman = schemaObjects.human();
+                        const matchHuman = schemaObjects.humanData();
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
@@ -1042,7 +1042,7 @@ describe('rx-collection.test.ts', () => {
                     /**
                      * Add a document to each collection
                      */
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     await Promise.all(
                         Object.keys(db.collections).map(collectionName => {
                             return db.collections[collectionName].insert(docData);
@@ -1080,7 +1080,7 @@ describe('rx-collection.test.ts', () => {
 
                     const db1 = await createDb();
 
-                    await db1.collections['human-2'].insert(schemaObjects.simpleHuman());
+                    await db1.collections['human-2'].insert(schemaObjects.simpleHumanData());
 
                     // remove the collection on one database
                     await db1['human-2'].remove();
@@ -1191,7 +1191,7 @@ describe('rx-collection.test.ts', () => {
                 it('find by primary in parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
 
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const primary = docData.passportId;
 
                     const notExist = await c.findOne(primary).exec();
@@ -1231,7 +1231,7 @@ describe('rx-collection.test.ts', () => {
                             }
                         });
                         const collection = collections.human;
-                        const human = schemaObjects.human();
+                        const human = schemaObjects.humanData();
                         const passportId = human.passportId;
                         await collection.insert(human);
                         const doc = await collection.findOne().exec();
@@ -1286,8 +1286,8 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('count matching only', async () => {
                     const c = await humansCollection.createAgeIndex(0);
-                    await c.insert(schemaObjects.human('aa', 1));
-                    await c.insert(schemaObjects.human('bb', 2));
+                    await c.insert(schemaObjects.humanData('aa', 1));
+                    await c.insert(schemaObjects.humanData('bb', 2));
                     const count = await c.count({
                         selector: {
                             age: {
@@ -1411,7 +1411,7 @@ describe('rx-collection.test.ts', () => {
 
                 // insert
                 await c.bulkUpsert(
-                    new Array(amount).fill(0).map(() => schemaObjects.human())
+                    new Array(amount).fill(0).map(() => schemaObjects.humanData())
                 );
                 let allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, amount);
@@ -1443,7 +1443,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const obj = schemaObjects.simpleHuman();
+                    const obj = schemaObjects.simpleHumanData();
                     obj.firstName = 'foobar';
                     await collection.upsert(obj);
                     const doc = await collection.findOne().exec();
@@ -1461,7 +1461,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const obj = schemaObjects.simpleHuman();
+                    const obj = schemaObjects.simpleHumanData();
                     await collection.insert(obj);
                     obj.firstName = 'foobar';
                     await collection.upsert(obj);
@@ -1480,7 +1480,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const obj = schemaObjects.simpleHuman();
+                    const obj = schemaObjects.simpleHumanData();
 
                     await collection.insert(obj);
                     obj.firstName = 'foobar';
@@ -1495,7 +1495,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('overwrite deleted', async () => {
                     const collection = await humansCollection.createPrimary(1);
-                    const objData = schemaObjects.simpleHuman();
+                    const objData = schemaObjects.simpleHumanData();
 
 
                     let doc = await collection.insert(objData);
@@ -1534,7 +1534,7 @@ describe('rx-collection.test.ts', () => {
                         }
                     });
                     const collection = collections.human;
-                    const obj = schemaObjects.simpleHuman();
+                    const obj = schemaObjects.simpleHumanData();
                     await collection.insert(obj);
                     const cloned: any = clone(obj);
 
@@ -1553,7 +1553,7 @@ describe('rx-collection.test.ts', () => {
             describeParallel('positive', () => {
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const primary = docData.passportId;
                     await c.findOne(primary).exec();
                     await c.incrementalUpsert(docData);
@@ -1566,7 +1566,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const docs = await Promise.all([
                         c.incrementalUpsert(docData),
                         c.incrementalUpsert(docData)
@@ -1582,7 +1582,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not crash when upserting the same doc in parallel 3 times', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const docs = await Promise.all([
                         c.incrementalUpsert(docData),
                         c.incrementalUpsert(docData),
@@ -1594,7 +1594,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not crash when upserting the same doc in parallel many times with random waits', async function () {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
@@ -1623,7 +1623,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should update the value', async function () {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const docId = docData.passportId;
 
                     await Promise.all([
@@ -1647,7 +1647,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should work when upserting to existing document', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     await c.insert(docData);
                     const docs = await Promise.all([
                         c.incrementalUpsert(docData),
@@ -1660,7 +1660,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should process in the given order', async () => {
                     const c = await humansCollection.createPrimary(0);
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     const order: any[] = [];
                     await Promise.all([
                         c.incrementalUpsert(docData).then(() => order.push(0)),
@@ -1685,7 +1685,7 @@ describe('rx-collection.test.ts', () => {
                     });
                     const c = collections.human;
 
-                    const docData = schemaObjects.simpleHuman();
+                    const docData = schemaObjects.simpleHumanData();
                     await c.incrementalUpsert(docData);
                     await c.incrementalUpsert(docData);
                     const docData2 = clone(docData);
@@ -1803,7 +1803,7 @@ describe('rx-collection.test.ts', () => {
                     const collection = collections.human;
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection.insert(schemaObjects.human()))
+                            .map(() => collection.insert(schemaObjects.humanData()))
                     );
                     const allDocs = await collection.find().exec();
                     assert.strictEqual(5, allDocs.length);
@@ -1862,7 +1862,7 @@ describe('rx-collection.test.ts', () => {
 
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection.insert(schemaObjects.human()))
+                            .map(() => collection.insert(schemaObjects.humanData()))
                     );
                     await collection.remove();
 
@@ -1884,7 +1884,7 @@ describe('rx-collection.test.ts', () => {
                     assert.strictEqual(noDocs.length, 0);
                     await Promise.all(
                         new Array(5).fill(0)
-                            .map(() => collection2.insert(schemaObjects.human()))
+                            .map(() => collection2.insert(schemaObjects.humanData()))
                     );
                     const fiveDocs = await collection2.find().exec();
                     assert.strictEqual(fiveDocs.length, 5);
@@ -1983,11 +1983,11 @@ describe('rx-collection.test.ts', () => {
             await firstValueFrom(obs);
 
             // check insert
-            const addData = schemaObjects.human();
+            const addData = schemaObjects.humanData();
             addData.passportId = 'foobar';
             await c.insert(addData);
             // insert whose id is not in ids-list should not affect anything
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
 
             const res2 = await firstValueFrom(obs);
             assert.strictEqual(res2.size, 6);
@@ -2160,7 +2160,7 @@ describe('rx-collection.test.ts', () => {
 
             function createObject(id: string): RxDocumentData<HumanDocumentType> {
                 const ret: RxDocumentData<HumanDocumentType> = Object.assign(
-                    schemaObjects.human(),
+                    schemaObjects.humanData(),
                     {
                         passportId: id,
                         _deleted: false,

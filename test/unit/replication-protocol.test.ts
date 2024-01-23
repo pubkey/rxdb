@@ -149,7 +149,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
     };
     function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
-            schemaObjects.human(),
+            schemaObjects.humanData(),
             partial
         );
         const withMeta: RxDocumentData<HumanDocumentType> = Object.assign(

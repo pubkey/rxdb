@@ -11,7 +11,8 @@ import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState
+    ensureCollectionsHaveEqualState,
+    HumanWithTimestampDocumentType
 } from '../plugins/test-utils/index.mjs';
 
 import {
@@ -52,7 +53,7 @@ describe('replication-nats.test.js', () => {
      * to make it easier to test boundaries.
      */
     const batchSize = 5;
-    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+    type TestDocType = HumanWithTimestampDocumentType;
     async function getAllDocsOfServer(
         name: string
     ): Promise<TestDocType[]> {
@@ -161,7 +162,7 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(docsOnServer.length, 2);
 
             // insert another one
-            await collection.insert(schemaObjects.humanWithTimestamp());
+            await collection.insert(schemaObjects.humanWithTimestampData());
             await replicationState.awaitInSync();
 
 
@@ -207,7 +208,7 @@ describe('replication-nats.test.js', () => {
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
             // insert one
-            await collectionA.insert(schemaObjects.humanWithTimestamp({ id: 'insert', name: 'InsertName' }));
+            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
@@ -223,7 +224,7 @@ describe('replication-nats.test.js', () => {
             await collectionA.bulkInsert(
                 new Array(10)
                     .fill(0)
-                    .map(() => schemaObjects.humanWithTimestamp({ name: 'insert-many' }))
+                    .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
             await replicationStateA.awaitInSync();
 
@@ -232,8 +233,8 @@ describe('replication-nats.test.js', () => {
 
             // insert at both collections at the same time
             await Promise.all([
-                collectionA.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-A' })),
-                collectionB.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-B' }))
+                collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
+                collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();

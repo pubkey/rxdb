@@ -162,7 +162,7 @@ describe('backup.test.ts', () => {
             });
             await backupState.awaitInitialBackup();
 
-            const doc2 = await collection.insert(schemaObjects.human());
+            const doc2 = await collection.insert(schemaObjects.humanData());
 
             await waitUntil(() => {
                 return fs.existsSync(path.join(directory, doc2.primary));

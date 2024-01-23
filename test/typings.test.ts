@@ -6,7 +6,10 @@
  * this checks if typings work as expected
  */
 import * as assert from 'assert';
-import * as schemas from './helper/schemas.js';
+import {
+    HumanCompositePrimaryDocType,
+    schemas
+} from '../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     RxDatabase,
@@ -132,7 +135,7 @@ describe('typings.test.js', function () {
                 await myDb.destroy();
             });
             it('should allow \'as const\' composite primary schemas to work', () => {
-                const humanCompositePrimaryTyped: RxJsonSchema<schemas.HumanCompositePrimaryDocType> = schemas.humanCompositePrimarySchemaLiteral;
+                const humanCompositePrimaryTyped: RxJsonSchema<HumanCompositePrimaryDocType> = schemas.humanCompositePrimarySchemaLiteral;
             });
         });
         describe('negative', () => {

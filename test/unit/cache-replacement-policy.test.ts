@@ -31,7 +31,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             await uncachedQuery.exec();
             clearQueryCache(col);
 
-            await col.insert(schemaObjects.human());
+            await col.insert(schemaObjects.humanData());
             const res = await uncachedQuery.exec();
             assert.strictEqual(res.length, 1);
             col.database.destroy();
@@ -46,7 +46,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             clearQueryCache(col);
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-            await col.insert(schemaObjects.human());
+            await col.insert(schemaObjects.humanData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             sub.unsubscribe();
             col.database.destroy();

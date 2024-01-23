@@ -18,11 +18,7 @@ import {
     schemas,
     humansCollection,
     describeParallel,
-    getPassword,
-    isNode,
-    EXAMPLE_REVISION_1,
-    EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_3
+    getPassword
 } from '../../plugins/test-utils/index.mjs';
 
 
@@ -389,7 +385,7 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await cols.human8.insert(schemaObjects.human());
+                await cols.human8.insert(schemaObjects.humanData());
                 await AsyncTestUtil.assertThrows(
                     () => db.addCollections({
                         human8: {
@@ -470,7 +466,7 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await col1[collectionName].insert(schemaObjects.human());
+                await col1[collectionName].insert(schemaObjects.humanData());
                 await AsyncTestUtil.assertThrows(
                     () => db2.addCollections({
                         [collectionName]: {

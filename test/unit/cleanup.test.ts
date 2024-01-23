@@ -40,8 +40,8 @@ describeParallel('cleanup.test.js', () => {
             }
         });
         const collection: RxCollection<HumanDocumentType> = cols.humans;
-        const notDeleted = await collection.insert(schemaObjects.human());
-        const doc = await collection.insert(schemaObjects.human());
+        const notDeleted = await collection.insert(schemaObjects.humanData());
+        const doc = await collection.insert(schemaObjects.humanData());
         await doc.remove();
 
         await waitUntil(async () => {
@@ -94,7 +94,7 @@ describeParallel('cleanup.test.js', () => {
             live: true
         });
 
-        const doc = await collection.insert(schemaObjects.human());
+        const doc = await collection.insert(schemaObjects.humanData());
         await doc.remove();
         await wait(isFastMode() ? 200 : 500);
 
@@ -122,8 +122,8 @@ describeParallel('cleanup.test.js', () => {
             }
         });
         const collection: RxCollection<HumanDocumentType> = cols.humans;
-        const notDeleted = await collection.insert(schemaObjects.human());
-        const doc = await collection.insert(schemaObjects.human());
+        const notDeleted = await collection.insert(schemaObjects.humanData());
+        const doc = await collection.insert(schemaObjects.humanData());
         await doc.remove();
 
 

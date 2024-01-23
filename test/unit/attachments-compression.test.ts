@@ -67,7 +67,7 @@ modes.forEach(mode => {
             if (size > 0) {
                 const docsData = new Array(size)
                     .fill(0)
-                    .map(() => schemaObjects.human());
+                    .map(() => schemaObjects.humanData());
                 await collections[name].bulkInsert(docsData);
             }
 

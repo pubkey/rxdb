@@ -262,9 +262,9 @@ describe('event-reduce.test.js', () => {
             );
 
             // add some
-            const docsData = new Array(3).fill(0).map(() => schemaObjects.human());
-            docsData.push(schemaObjects.human('age-is-20', 20));
-            docsData.push(schemaObjects.human('age-is-80', 80));
+            const docsData = new Array(3).fill(0).map(() => schemaObjects.humanData());
+            docsData.push(schemaObjects.humanData('age-is-20', 20));
+            docsData.push(schemaObjects.humanData('age-is-80', 80));
             await colNoEventReduce.bulkInsert(docsData);
             await colWithEventReduce.bulkInsert(docsData);
 

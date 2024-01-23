@@ -45,7 +45,7 @@ export async function create(
     if (size > 0) {
         const docsData = new Array(size)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         const writeResult = await collections[collectionName].bulkInsert(docsData);
         assert.deepStrictEqual(writeResult.error, []);
     }
@@ -105,7 +105,7 @@ export async function createAttachments(
     if (size > 0) {
         const docsData = new Array(size)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections[name].bulkInsert(docsData);
     }
 
@@ -135,7 +135,7 @@ export async function createNoCompression(
     if (size > 0) {
         const docsData = new Array(size)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections[name].bulkInsert(docsData);
     }
 
@@ -162,7 +162,7 @@ export async function createAgeIndex(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections.humana.bulkInsert(docsData);
     }
 
@@ -202,12 +202,12 @@ export async function multipleOnSameDB(
     if (size > 0) {
         const docsData = new Array(size)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections.human.bulkInsert(docsData);
 
         const docsData2 = new Array(size)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections.human2.bulkInsert(docsData2);
     }
 
@@ -238,7 +238,7 @@ export async function createNested(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.nestedHuman());
+            .map(() => schemaObjects.nestedHumanData());
         await collections.nestedhuman.bulkInsert(docsData);
     }
 
@@ -264,7 +264,7 @@ export async function createDeepNested(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.deepNestedHuman());
+            .map(() => schemaObjects.deepNestedHumanData());
         await collections.nestedhuman.bulkInsert(docsData);
     }
 
@@ -301,7 +301,7 @@ export async function createMultiInstance(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.human());
+            .map(() => schemaObjects.humanData());
         await collections.human.bulkInsert(docsData);
     }
 
@@ -331,7 +331,7 @@ export async function createPrimary(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.simpleHuman());
+            .map(() => schemaObjects.simpleHumanData());
         await collections.human.bulkInsert(docsData);
     }
 
@@ -363,7 +363,7 @@ export async function createHumanWithTimestamp(
     if (amount > 0) {
         const docsData = new Array(amount)
             .fill(0)
-            .map(() => schemaObjects.humanWithTimestamp());
+            .map(() => schemaObjects.humanWithTimestampData());
         await collections.humans.bulkInsert(docsData);
     }
 
@@ -447,8 +447,8 @@ export async function createRelated(
         }
     });
 
-    const doc1 = schemaObjects.refHuman();
-    const doc2 = schemaObjects.refHuman(doc1.name);
+    const doc1 = schemaObjects.refHumanData();
+    const doc2 = schemaObjects.refHumanData(doc1.name);
     doc1.bestFriend = doc2.name; // cross-relation
 
     await collections.human.insert(doc1);
@@ -475,8 +475,8 @@ export async function createRelatedNested(
         }
     });
 
-    const doc1 = schemaObjects.refHumanNested();
-    const doc2 = schemaObjects.refHumanNested(doc1.name);
+    const doc1 = schemaObjects.refHumanNestedData();
+    const doc2 = schemaObjects.refHumanNestedData(doc1.name);
     doc1.foo.bestFriend = doc2.name; // cross-relation
 
     await collections.human.insert(doc1);

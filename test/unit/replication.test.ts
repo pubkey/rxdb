@@ -278,7 +278,7 @@ describe('replication.test.ts', () => {
             });
             await localCollection.bulkInsert(
                 new Array(10).fill(0).map((_v, idx) => {
-                    return schemaObjects.humanWithTimestamp({
+                    return schemaObjects.humanWithTimestampData({
                         name: 'from-local',
                         age: idx + 1
                     });
@@ -446,7 +446,7 @@ describe('replication.test.ts', () => {
 
             // insert
             const id = 'foobar';
-            const docData = schemaObjects.humanWithTimestamp({
+            const docData = schemaObjects.humanWithTimestampData({
                 id
             });
             let doc = await localCollection.insert(docData);
@@ -506,7 +506,7 @@ describe('replication.test.ts', () => {
              * produce an eventBulk that contains many documents
              */
             await localCollection.bulkInsert(
-                new Array(10).fill(0).map((() => schemaObjects.humanWithTimestamp()))
+                new Array(10).fill(0).map((() => schemaObjects.humanWithTimestampData()))
             );
 
             await replicationState.awaitInSync();
@@ -744,7 +744,7 @@ describe('replication.test.ts', () => {
 
             let lastLocalCheckpoint: any;
             localCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
-            await localCollection.insert(schemaObjects.humanWithTimestamp());
+            await localCollection.insert(schemaObjects.humanWithTimestampData());
 
             const replicationState = replicateRxCollection({
                 collection: localCollection,
@@ -772,7 +772,7 @@ describe('replication.test.ts', () => {
 
             let lastRemoteCheckpoint: any;
             remoteCollection.checkpoint$.subscribe(checkpoint => lastRemoteCheckpoint = checkpoint);
-            await remoteCollection.insert(schemaObjects.humanWithTimestamp());
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData());
 
             const replicationState = replicateRxCollection({
                 collection: localCollection,
@@ -978,11 +978,11 @@ describe('replication.test.ts', () => {
             const localCollection = await getCollection();
 
 
-            const docA = schemaObjects.humanWithTimestamp({
+            const docA = schemaObjects.humanWithTimestampData({
                 id: randomCouchString(primaryKeyLength)
             });
             await remoteCollection.insert(docA);
-            const docB = schemaObjects.humanWithTimestamp({
+            const docB = schemaObjects.humanWithTimestampData({
                 id: randomCouchString(primaryKeyLength)
             });
             await localCollection.insert(docB);

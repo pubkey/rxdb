@@ -234,16 +234,16 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<HumanDocumentType>({
         testTitle: '$gt/$gte',
         data: [
-            schemaObjects.human('aa', 10, 'alice'),
-            schemaObjects.human('bb', 20, 'bob'),
+            schemaObjects.humanData('aa', 10, 'alice'),
+            schemaObjects.humanData('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            schemaObjects.human('cc-looong-id', 30, 'carol'),
-            schemaObjects.human('dd', 40, 'dave'),
-            schemaObjects.human('ee', 50, 'eve')
+            schemaObjects.humanData('cc-looong-id', 30, 'carol'),
+            schemaObjects.humanData('dd', 40, 'dave'),
+            schemaObjects.humanData('ee', 50, 'eve')
         ],
         schema: withIndexes(human, [
             ['age'],
@@ -375,16 +375,16 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<HumanDocumentType>({
         testTitle: '$lt/$lte',
         data: [
-            schemaObjects.human('aa', 10, 'alice'),
-            schemaObjects.human('bb', 20, 'bob'),
+            schemaObjects.humanData('aa', 10, 'alice'),
+            schemaObjects.humanData('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            schemaObjects.human('cc-looong-id', 30, 'carol'),
-            schemaObjects.human('dd', 40, 'dave'),
-            schemaObjects.human('ee', 50, 'eve')
+            schemaObjects.humanData('cc-looong-id', 30, 'carol'),
+            schemaObjects.humanData('dd', 40, 'dave'),
+            schemaObjects.humanData('ee', 50, 'eve')
         ],
         schema: withIndexes(human, [
             ['age'],
@@ -486,21 +486,21 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<NestedHumanDocumentType>({
         testTitle: 'nested properties',
         data: [
-            schemaObjects.nestedHuman({
+            schemaObjects.nestedHumanData({
                 passportId: 'aaa',
                 mainSkill: {
                     level: 6,
                     name: 'zzz'
                 }
             }),
-            schemaObjects.nestedHuman({
+            schemaObjects.nestedHumanData({
                 passportId: 'bbb',
                 mainSkill: {
                     level: 4,
                     name: 'ttt'
                 }
             }),
-            schemaObjects.nestedHuman({
+            schemaObjects.nestedHumanData({
                 passportId: 'ccc',
                 mainSkill: {
                     level: 3,
@@ -531,15 +531,15 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<SimpleHumanV3DocumentType>({
         testTitle: '$or',
         data: [
-            schemaObjects.simpleHumanV3({
+            schemaObjects.simpleHumanV3Data({
                 passportId: 'aaa',
                 oneOptional: 'A'
             }),
-            schemaObjects.simpleHumanV3({
+            schemaObjects.simpleHumanV3Data({
                 passportId: 'bbb',
                 oneOptional: 'B'
             }),
-            schemaObjects.simpleHumanV3({
+            schemaObjects.simpleHumanV3Data({
                 passportId: 'ccc'
             })
         ],
@@ -621,11 +621,11 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<HumanDocumentType>({
         testTitle: '$in',
         data: [
-            schemaObjects.human('aa', 10, 'alice'),
-            schemaObjects.human('bb', 20, 'bob'),
-            schemaObjects.human('cc', 30, 'carol'),
-            schemaObjects.human('dd', 40, 'dave'),
-            schemaObjects.human('ee', 50, 'eve')
+            schemaObjects.humanData('aa', 10, 'alice'),
+            schemaObjects.humanData('bb', 20, 'bob'),
+            schemaObjects.humanData('cc', 30, 'carol'),
+            schemaObjects.humanData('dd', 40, 'dave'),
+            schemaObjects.humanData('ee', 50, 'eve')
         ],
         schema: schemas.human,
         queries: [

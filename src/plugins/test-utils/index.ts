@@ -10,10 +10,13 @@ export * from './port-manager.ts';
 export * from './revisions.ts';
 export * from './test-util.ts';
 
-import * as useHumansCollection from './humans-collection.ts';
-export const humansCollection = useHumansCollection;
-import * as useSchemaObjects from './schema-objects.ts';
-export const schemaObjects = useSchemaObjects;
-import * as useSchemas from './schemas.ts';
+export * from './schema-objects.ts';
 export * from './schemas.ts';
-export const schemas = useSchemas;
+
+import * as humansCollectionConst from './humans-collection.ts';
+export const humansCollection = humansCollectionConst;
+
+import * as schemasConst from './schemas.ts';
+export const schemas = schemasConst;
+import * as schemaObjectsConst from './schema-objects.ts';
+export const schemaObjects = schemaObjectsConst;

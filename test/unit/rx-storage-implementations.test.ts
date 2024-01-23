@@ -61,7 +61,8 @@ import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
-    EXAMPLE_REVISION_4
+    EXAMPLE_REVISION_4,
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
@@ -747,7 +748,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 });
 
                 const docData = Object.assign(
-                    schemaObjects.averageSchema(),
+                    schemaObjects.averageSchemaData(),
                     {
                         _attachments: {},
                         _deleted: false,
@@ -1143,10 +1144,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._id = 'aa';
                 doc1.age = 1;
-                const doc2: any = schemaObjects.human();
+                const doc2: any = schemaObjects.humanData();
                 doc2._id = 'bb';
                 doc2.age = 100;
 
@@ -1267,7 +1268,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<schemas.HumanDocumentType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1277,7 +1278,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const query: FilledMangoQuery<schemas.HumanDocumentType> = {
+                const query: FilledMangoQuery<HumanDocumentType> = {
                     selector: {
                         age: {
                             $gt: 10,
@@ -1295,10 +1296,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._id = 'aa';
                 doc1.age = 1;
-                const doc2: any = schemaObjects.human();
+                const doc2: any = schemaObjects.humanData();
                 doc2._id = 'bb';
                 doc2.age = 100;
 
@@ -1331,7 +1332,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._deleted = true;
                 assert.strictEqual(
                     queryMatcher(doc1),

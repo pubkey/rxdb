@@ -27,15 +27,7 @@ import {
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../plugins/core/index.mjs';
 import {
-    schemaObjects,
-    schemas,
-    humansCollection,
-    describeParallel,
-    getPassword,
-    isNode,
-    EXAMPLE_REVISION_1,
-    EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_3,
+    HumanWithTimestampDocumentType,
     nextPort
 } from '../../plugins/test-utils/index.mjs';
 import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../plugins/core/index.mjs';

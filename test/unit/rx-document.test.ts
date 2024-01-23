@@ -42,7 +42,7 @@ describe('rx-document.test.js', () => {
                 assert.ok(schema);
                 const proto = schema.getDocumentPrototype();
                 assert.ok(proto);
-                const testObjData: any = schemaObjects.human();
+                const testObjData: any = schemaObjects.humanData();
                 const testObj: any = {
                     get(path: string) {
                         return testObjData[path];
@@ -345,7 +345,7 @@ describe('rx-document.test.js', () => {
                         }
                     }
                 });
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 docData.age = 1;
                 const doc = await cols.humans.insert(docData);
                 await AsyncTestUtil.assertThrows(
@@ -455,7 +455,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const c = cols.humans;
-                await c.insert(schemaObjects.simpleHuman());
+                await c.insert(schemaObjects.simpleHumanData());
                 const doc = await c.findOne().exec();
 
                 doc.incrementalModify((innerDoc: any) => {
@@ -494,7 +494,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const c: RxCollection<SimpleHumanDocumentType> = cols.humans;
-                await c.insert(schemaObjects.simpleHuman());
+                await c.insert(schemaObjects.simpleHumanData());
                 let doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
                 assert.ok(docData);
@@ -541,7 +541,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const c = cols.humans;
-                const doc = await c.insert(schemaObjects.simpleHuman());
+                const doc = await c.insert(schemaObjects.simpleHumanData());
                 const db2 = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
@@ -605,7 +605,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const col = cols.humans;
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 docData.age = 1;
                 const doc = await col.insert(docData);
 
@@ -753,7 +753,7 @@ describe('rx-document.test.js', () => {
             });
             const c = cols.humans;
 
-            const doc = await c.insert(schemaObjects.human());
+            const doc = await c.insert(schemaObjects.humanData());
             await doc.putAttachment({
                 id: 'sampledata',
                 data: createBlob('foo bar', 'application/octet-stream'),
@@ -989,7 +989,7 @@ describe('rx-document.test.js', () => {
     describeParallel('issues', () => {
         it('#66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             const primary = docData.passportId;
 
 
@@ -1013,7 +1013,7 @@ describe('rx-document.test.js', () => {
         new Array(isFastMode() ? 1 : 4).fill(0).forEach((_v, idx) => {
             it('#66 - insert -> remove -> insert does not give new state (#' + idx + ')', async () => {
                 const c = await humansCollection.createPrimary(0);
-                const docData = schemaObjects.simpleHuman();
+                const docData = schemaObjects.simpleHumanData();
                 const primary = docData.passportId;
 
                 // insert

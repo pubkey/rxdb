@@ -39,7 +39,7 @@ describeParallel('reactive-collection.test.js', () => {
                 const c = cols[colName];
 
                 const changeEventPromise = firstValueFrom(c.$.pipe(first()));
-                c.insert(schemaObjects.human());
+                c.insert(schemaObjects.humanData());
                 const changeEvent = await changeEventPromise;
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
@@ -67,7 +67,7 @@ describeParallel('reactive-collection.test.js', () => {
                     emittedCollection.push(ce);
                 });
 
-                const docs = new Array(1).fill(0).map(() => schemaObjects.human());
+                const docs = new Array(1).fill(0).map(() => schemaObjects.humanData());
 
                 await collection.bulkInsert(docs);
 
@@ -126,7 +126,7 @@ describeParallel('reactive-collection.test.js', () => {
 
                 assert.deepStrictEqual(ar[0], []);
 
-                await c.insert(schemaObjects.human());
+                await c.insert(schemaObjects.humanData());
                 await AsyncTestUtil.waitUntil(() => ar.length === 2);
 
                 const doc: any = await c.findOne().exec();
@@ -145,12 +145,12 @@ describeParallel('reactive-collection.test.js', () => {
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.insert$.subscribe(cE => emitted.push(cE as any));
 
-            await c.insert(schemaObjects.human());
-            const doc = await c.insert(schemaObjects.human());
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
+            const doc = await c.insert(schemaObjects.humanData());
+            await c.insert(schemaObjects.humanData());
             await doc.remove();
 
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
 
             await AsyncTestUtil.waitUntil(() => {
                 return emitted.length === 4;
@@ -166,10 +166,10 @@ describeParallel('reactive-collection.test.js', () => {
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.update$.subscribe(cE => emitted.push(cE as any));
 
-            const doc1 = await c.insert(schemaObjects.human());
-            const doc2 = await c.insert(schemaObjects.human());
-            const doc3 = await c.insert(schemaObjects.human());
-            await c.insert(schemaObjects.human());
+            const doc1 = await c.insert(schemaObjects.humanData());
+            const doc2 = await c.insert(schemaObjects.humanData());
+            const doc3 = await c.insert(schemaObjects.humanData());
+            await c.insert(schemaObjects.humanData());
             await doc3.remove();
 
             await doc1.incrementalPatch({ firstName: 'foobar1' });
@@ -186,11 +186,11 @@ describeParallel('reactive-collection.test.js', () => {
 
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.remove$.subscribe(cE => emitted.push(cE as any));
-            await c.insert(schemaObjects.human());
-            const doc1 = await c.insert(schemaObjects.human());
-            const doc2 = await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
+            const doc1 = await c.insert(schemaObjects.humanData());
+            const doc2 = await c.insert(schemaObjects.humanData());
             await doc1.remove();
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
             await doc2.remove();
 
 

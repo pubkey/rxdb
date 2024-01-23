@@ -15,7 +15,7 @@ describeParallel('idle-queue.test.js', () => {
         });
         it('inserts should always be faster than idle-call', async () => {
             const c = await humansCollection.create(0);
-            const data = new Array(10).fill(0).map(() => schemaObjects.human());
+            const data = new Array(10).fill(0).map(() => schemaObjects.humanData());
             const order: any[] = [];
 
             Promise.all(data.map(

@@ -19,12 +19,12 @@ describeParallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
 
@@ -35,10 +35,10 @@ describeParallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
-            const last = schemaObjects.human();
+            const last = schemaObjects.humanData();
             await col.insert(last);
             const lastBufferEvent = col._changeEventBuffer.buffer[col._changeEventBuffer.buffer.length - 1];
             assert.strictEqual(last.passportId, lastBufferEvent.documentData.passportId);
@@ -51,14 +51,14 @@ describeParallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
             assert.strictEqual(pointer, null);
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer2 = col._changeEventBuffer.getArrayIndexByPointer(10);
@@ -72,21 +72,21 @@ describeParallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
             assert.strictEqual(pointer, null);
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             got = col._changeEventBuffer.getArrayIndexByPointer(15);
             assert.strictEqual(got, 4);
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             got = col._changeEventBuffer.getArrayIndexByPointer(25);
             assert.strictEqual(got, 4);
@@ -100,7 +100,7 @@ describeParallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(10);
             col._changeEventBuffer.limit = 10;
 
-            const lastDoc = schemaObjects.human();
+            const lastDoc = schemaObjects.humanData();
             await col.insert(lastDoc);
 
             const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
@@ -115,7 +115,7 @@ describeParallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs: any[] = [];
@@ -133,7 +133,7 @@ describeParallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(30).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(30).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs = [];
@@ -150,7 +150,7 @@ describeParallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs: any[] = col._changeEventBuffer.getFrom(1) as any;
@@ -164,7 +164,7 @@ describeParallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             const q = col.find();
             await q.exec();
-            await col.insert(schemaObjects.human());
+            await col.insert(schemaObjects.humanData());
             await q.exec();
 
             // remove the doc

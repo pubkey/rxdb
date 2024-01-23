@@ -557,7 +557,7 @@ describeParallel('local-documents.test.ts', () => {
                     localDocuments: true
                 }
             });
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             docData.passportId = 'foobar';
             docData.age = 40;
             const doc = await c1.humans.insert(docData);

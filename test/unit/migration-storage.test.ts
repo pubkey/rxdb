@@ -146,7 +146,7 @@ testStorages.forEach(storages => {
 
                 const docsAmount = 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
-                    return schemaObjects.human(
+                    return schemaObjects.humanData(
 
                     );
                 });
@@ -243,7 +243,7 @@ testStorages.forEach(storages => {
 
                 const docsAmount = 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
-                    return schemaObjects.human(
+                    return schemaObjects.humanData(
 
                     );
                 });
@@ -340,7 +340,7 @@ testStorages.forEach(storages => {
 
                 const docsAmount = 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
-                    return schemaObjects.human();
+                    return schemaObjects.humanData();
                 });
 
                 const insertResult = await oldCol.bulkInsert(docsData);
@@ -434,9 +434,9 @@ testStorages.forEach(storages => {
                         schema: human as any
                     }
                 });
-                await oldDb.col1.insert(schemaObjects.human());
-                await oldDb.col2.insert(schemaObjects.human());
-                await oldDb.col3.insert(schemaObjects.human());
+                await oldDb.col1.insert(schemaObjects.humanData());
+                await oldDb.col2.insert(schemaObjects.humanData());
+                await oldDb.col3.insert(schemaObjects.humanData());
                 await oldDb.destroy();
 
                 const db = await storages.createRxDatabaseNew({

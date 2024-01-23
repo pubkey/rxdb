@@ -27,7 +27,7 @@ describeParallel('internal-indexes.test.js', () => {
         if (docsAmount > 0) {
             const docsData = new Array(docsAmount)
                 .fill(0)
-                .map(() => schemaObjects.human());
+                .map(() => schemaObjects.humanData());
             const writeResult = await collection.bulkInsert(docsData);
             assert.deepStrictEqual(writeResult.error, []);
         }
@@ -131,7 +131,7 @@ describeParallel('internal-indexes.test.js', () => {
         it('server must be able to iterate with additional fields', async () => {
             const myIdx = ['firstName', '_meta.lwt', 'passportId'];
             const collection = await createCollectionWithInternalIndexes([myIdx], 10);
-            const writeResult = await collection.bulkInsert(new Array(10).fill(0).map(() => schemaObjects.human(undefined, undefined, 'alice')));
+            const writeResult = await collection.bulkInsert(new Array(10).fill(0).map(() => schemaObjects.humanData(undefined, undefined, 'alice')));
             assert.deepStrictEqual(writeResult.error, []);
             const query = getChangedDocumentsSinceQuery(
                 collection.storageInstance,

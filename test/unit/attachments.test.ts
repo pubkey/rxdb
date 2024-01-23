@@ -70,7 +70,7 @@ describeParallel('attachments.test.ts', () => {
         if (size > 0) {
             const docsData = new Array(size)
                 .fill(0)
-                .map(() => schemaObjects.human());
+                .map(() => schemaObjects.humanData());
             await collections[name].bulkInsert(docsData);
         }
 
@@ -247,7 +247,7 @@ describeParallel('attachments.test.ts', () => {
                     schema: schemaJson
                 }
             });
-            await collections.humans.insert(schemaObjects.human());
+            await collections.humans.insert(schemaObjects.humanData());
             const doc = await collections.humans.findOne().exec(true);
             const docAge = doc.age;
             await doc.putAttachment({
@@ -516,7 +516,7 @@ describeParallel('attachments.test.ts', () => {
                 }
             });
 
-            await c.humans.insert(schemaObjects.human());
+            await c.humans.insert(schemaObjects.humanData());
             const doc: Document = await c.humans.findOne().exec(true);
             const doc2: Document = await c2.humans.findOne().exec(true);
             assert.strictEqual(doc.age, doc2.age);
@@ -789,7 +789,7 @@ describeParallel('attachments.test.ts', () => {
                     }
                 }
             });
-            await c.humans.insert(schemaObjects.human());
+            await c.humans.insert(schemaObjects.humanData());
             const doc = await c.humans.findOne().exec();
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
@@ -859,7 +859,7 @@ describeParallel('attachments.test.ts', () => {
                     schema: schemaJson
                 }
             });
-            await c.humans.insert(schemaObjects.human());
+            await c.humans.insert(schemaObjects.humanData());
             const doc = await c.humans.findOne().exec();
 
             const attachments = await doc.allAttachments();

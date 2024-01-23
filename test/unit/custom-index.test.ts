@@ -265,7 +265,7 @@ describeParallel('custom-index.test.ts', () => {
                 const averageSchema = fillWithDefaultSettings(schemas.averageSchema());
                 const docsAmount = 20000;
 
-                const documents = new Array(docsAmount).fill(0).map(() => schemaObjects.averageSchema());
+                const documents = new Array(docsAmount).fill(0).map(() => schemaObjects.averageSchemaData());
                 const fns = ensureNotFalsy(averageSchema.indexes).map(index => getIndexableStringMonad(averageSchema, index as any));
                 await wait(100);
                 const startTime = performance.now();

@@ -32,7 +32,7 @@ describeParallel('conflict-handling.test.js', () => {
                 }
             });
             const collection: RxCollection<HumanDocumentType> = cols.humans;
-            const doc = await collection.insert(schemaObjects.human());
+            const doc = await collection.insert(schemaObjects.humanData());
             const docData = doc.toJSON(true);
             const storageInstance: RxStorageInstanceMemory<HumanDocumentType> = collection.storageInstance as any;
             const oldResolveConflictResultionTask = storageInstance.resolveConflictResultionTask.bind(storageInstance);

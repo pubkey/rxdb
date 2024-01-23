@@ -56,8 +56,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
             );
             const cols = [colServer, colClient];
 
-            await colServer.insert(schemaObjects.human());
-            await colClient.insert(schemaObjects.human());
+            await colServer.insert(schemaObjects.humanData());
+            await colClient.insert(schemaObjects.humanData());
 
             await Promise.all(
                 cols.map(async (col) => {

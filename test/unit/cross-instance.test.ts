@@ -77,7 +77,7 @@ describeParallel('cross-instance.test.js', () => {
                     received++;
                     assert.ok(cEvent.operation);
                 });
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
                 await AsyncTestUtil.waitUntil(() => {
                     return received > 0;
                 });
@@ -100,7 +100,7 @@ describeParallel('cross-instance.test.js', () => {
                     emitted.push(cEvent);
                     assert.ok(cEvent.operation);
                 });
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
                 await wait(100);
 
                 await AsyncTestUtil.waitUntil(() => {
@@ -125,7 +125,7 @@ describeParallel('cross-instance.test.js', () => {
                 received++;
                 assert.ok(cEvent.operation);
             });
-            await c1.insert(schemaObjects.human());
+            await c1.insert(schemaObjects.humanData());
 
             await AsyncTestUtil.waitUntil(() => {
                 return received > 0;
@@ -141,7 +141,7 @@ describeParallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
-            await c1.insert(schemaObjects.human());
+            await c1.insert(schemaObjects.humanData());
 
             const doc1 = await c1.findOne().exec(true);
 
@@ -197,7 +197,7 @@ describeParallel('cross-instance.test.js', () => {
                     schema: schemas.encryptedHuman
                 }
             });
-            await c1.human.insert(schemaObjects.encryptedHuman());
+            await c1.human.insert(schemaObjects.encryptedHumanData());
 
             const doc1 = await c1.human.findOne().exec(true);
 
@@ -257,7 +257,7 @@ describeParallel('cross-instance.test.js', () => {
                     schema: schemas.encryptedObjectHuman
                 }
             });
-            await c1.human.insert(schemaObjects.encryptedObjectHuman());
+            await c1.human.insert(schemaObjects.encryptedObjectHumanData());
 
             const doc1 = await c1.human.findOne().exec(true);
             let doc2: typeof doc1 | null = null;
@@ -309,7 +309,7 @@ describeParallel('cross-instance.test.js', () => {
                 const emitted = [];
                 c2.$.subscribe(ev => emitted.push(ev));
 
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
 
                 await waitUntil(() => emitted.length >= 1);
 
@@ -327,8 +327,8 @@ describeParallel('cross-instance.test.js', () => {
                     assert.ok(cEvent.operation);
                 });
 
-                await c1.insert(schemaObjects.human());
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
+                await c1.insert(schemaObjects.humanData());
 
                 await AsyncTestUtil.waitUntil(() => received === 2);
                 assert.strictEqual(received, 2);

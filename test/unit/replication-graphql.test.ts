@@ -178,7 +178,7 @@ describe('replication-graphql.test.ts', () => {
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
-                .map(() => schemaObjects.humanWithTimestamp())
+                .map(() => schemaObjects.humanWithTimestampData())
                 .map((doc: any) => {
                     doc['deleted'] = false;
                     return doc;
@@ -511,7 +511,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('should handle deleted documents', async () => {
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestampData();
                 doc['deleted'] = true;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -540,7 +540,7 @@ describe('replication-graphql.test.ts', () => {
              * @link https://github.com/pubkey/rxdb/pull/3644
              */
             it('should handle truthy deleted flag values', async () => {
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestampData();
                 doc['deletedAt'] = Math.floor(Date.now());
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -802,7 +802,7 @@ describe('replication-graphql.test.ts', () => {
             });
             it('should overwrite the client doc if it was deleted locally before synced from the server', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const localDoc: any = schemaObjects.humanWithTimestamp();
+                const localDoc: any = schemaObjects.humanWithTimestampData();
                 const rxDoc = await c.insert(localDoc);
                 await rxDoc.remove();
 
@@ -995,7 +995,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
-                await c.insert(schemaObjects.humanWithTimestamp());
+                await c.insert(schemaObjects.humanWithTimestampData());
                 await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
@@ -1301,14 +1301,14 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp({
+                const doc: any = schemaObjects.humanWithTimestampData({
                     id: 'z-some-local'
                 });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
 
                 docsOnServer = server.getDocuments();
-                const insertData = schemaObjects.humanWithTimestamp({
+                const insertData = schemaObjects.humanWithTimestampData({
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
@@ -1365,12 +1365,12 @@ describe('replication-graphql.test.ts', () => {
 
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp({
+                const doc: any = schemaObjects.humanWithTimestampData({
                     name: 'many1local'
                 });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
-                await c.insert(schemaObjects.humanWithTimestamp({
+                await c.insert(schemaObjects.humanWithTimestampData({
                     name: 'many1server'
                 }));
 
@@ -1461,7 +1461,7 @@ describe('replication-graphql.test.ts', () => {
 
 
                 // insert to collection1
-                await collection1.insert(schemaObjects.humanWithTimestamp({
+                await collection1.insert(schemaObjects.humanWithTimestampData({
                     name: 'mt1'
                 }));
                 await waitUntil(async () => {
@@ -1470,7 +1470,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 // insert to collection2
-                await collection2.insert(schemaObjects.humanWithTimestamp({
+                await collection2.insert(schemaObjects.humanWithTimestampData({
                     name: 'mt2'
                 }));
                 await waitUntil(async () => {
@@ -1522,7 +1522,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(pushCount, 0);
 
                 // insert one document at the client
-                await c.insert(schemaObjects.humanWithTimestamp());
+                await c.insert(schemaObjects.humanWithTimestampData());
 
                 /**
                  * After the insert,
@@ -1805,7 +1805,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                const localDoc = schemaObjects.humanWithTimestamp();
+                const localDoc = schemaObjects.humanWithTimestampData();
                 await c.insert(localDoc);
 
                 const error = ensureNotFalsy(
@@ -2015,7 +2015,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
             it('should keep the deleted value', async () => {
-                const docData = schemaObjects.humanWithTimestamp();
+                const docData = schemaObjects.humanWithTimestampData();
                 /**
                  * The GraphQL replication will
                  * internally switch out _deleted with the deleted flag.
@@ -2140,7 +2140,7 @@ describe('replication-graphql.test.ts', () => {
                     }
                 });
                 const collection = collections.humans;
-                await collection.insert(schemaObjects.humanWithTimestamp());
+                await collection.insert(schemaObjects.humanWithTimestampData());
 
                 const server = await SpawnServer.spawn([]);
 
@@ -2332,7 +2332,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = 30;
                 await Promise.all(
                     new Array(amount).fill(0)
-                        .map(() => schemaObjects.humanWithTimestamp())
+                        .map(() => schemaObjects.humanWithTimestampData())
                         .map(d => collection.insert(d))
                 );
                 const server = await SpawnServer.spawn(getTestData(0));
@@ -2352,7 +2352,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // insert one which will trigger an auto push
-                await collection.insert(schemaObjects.humanWithTimestamp());
+                await collection.insert(schemaObjects.humanWithTimestampData());
 
                 await waitUntil(async () => {
                     const docs = await server.getDocuments();
@@ -2406,7 +2406,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // insert one which will trigger an auto push
-                const insertedDoc = await collection.insert(schemaObjects.humanWithTimestamp());
+                const insertedDoc = await collection.insert(schemaObjects.humanWithTimestampData());
                 assert.ok(insertedDoc);
 
                 await waitUntil(async () => {
@@ -2641,7 +2641,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInitialReplication();
 
                 // should push the original doc
-                const doc = await c.insert(schemaObjects.humanWithTimestamp({
+                const doc = await c.insert(schemaObjects.humanWithTimestampData({
                     age: 1
                 }));
                 await replicationState.awaitInSync();
@@ -2689,7 +2689,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = 30;
                 await Promise.all(
                     new Array(amount).fill(0)
-                        .map(() => schemaObjects.humanWithTimestamp())
+                        .map(() => schemaObjects.humanWithTimestampData())
                         .map(d => collection.insert(d))
                 );
 
@@ -2744,7 +2744,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 await replicationState2.awaitInitialReplication();
-                const addDoc = schemaObjects.humanWithTimestamp();
+                const addDoc = schemaObjects.humanWithTimestampData();
                 await collection2.insert(addDoc);
 
                 await waitUntil(async () => {

@@ -57,7 +57,7 @@ describeParallel('key-compression.test.js', () => {
     describe('integration into the RxStorage', () => {
         it('should have saved a compressed document', async () => {
             const c = await getCollection();
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             await c.insert(docData);
 
 
@@ -135,8 +135,8 @@ describeParallel('key-compression.test.js', () => {
         it('replication state should contain key-compressed document data', async () => {
             const col = await getCollection();
             await col.bulkInsert([
-                schemaObjects.simpleHuman(),
-                schemaObjects.simpleHuman()
+                schemaObjects.simpleHumanData(),
+                schemaObjects.simpleHumanData()
             ]);
             const remoteCollection = await getCollection();
 

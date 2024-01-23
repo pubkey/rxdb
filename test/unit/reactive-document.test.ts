@@ -185,7 +185,7 @@ describeParallel('reactive-document.test.js', () => {
                     }
                 });
                 const col = cols.humans;
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
                 await AsyncTestUtil.assertThrows(
