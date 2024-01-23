@@ -1,10 +1,12 @@
 import assert from 'assert';
-import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
 
-config.parallel('idle-queue.test.js', () => {
+describeParallel('idle-queue.test.js', () => {
     describe('integration', () => {
         it('should be able to call queue on database', async () => {
             const c = await humansCollection.create(0);

@@ -9,8 +9,8 @@ import {
     randomString
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
-import { ensureNotFalsy, lastOfArray } from '../../plugins/core/index.mjs';
 import * as schemas from './schemas.ts';
+import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
 
 /**
  * Some storages had problems with umlauts and other special chars.

@@ -1,8 +1,12 @@
 import assert from 'assert';
-import config, { ENV_VARIABLES } from './unit/config.ts';
+import config from './unit/config.ts';
 
-import * as schemaObjects from './helper/schema-objects.ts';
-import * as humansCollection from './helper/humans-collection.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    ENV_VARIABLES,
+    ensureCollectionsHaveEqualState
+} from '../plugins/test-utils/index.mjs';
 
 import {
     addRxPlugin,
@@ -23,13 +27,12 @@ addRxPlugin(RxDBUpdatePlugin);
 import { CouchAllDocsResponse } from './../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
-import { ensureCollectionsHaveEqualState } from './helper/test-util.ts';
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 import * as SpawnServer from './helper/spawn-server.ts';
 
 describe('replication-couchdb.test.ts', () => {
     if (
-        !config.platform.isNode() ||
+        !isNode ||
         !config.storage.hasPersistence
     ) {
         return;

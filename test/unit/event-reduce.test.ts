@@ -1,8 +1,11 @@
 import assert from 'assert';
 import { clone } from 'async-test-util';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    isFastMode
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -220,7 +223,7 @@ describe('event-reduce.test.js', () => {
      * It generates random data writes and checks if the query result
      * is the same as the result calculated by event-reduce.
      */
-    new Array(config.isFastMode() ? 1 : 5).fill(0).forEach(() => {
+    new Array(isFastMode() ? 1 : 5).fill(0).forEach(() => {
         if (config.storage.name === 'lokijs') {
             // TODO why does this fail on lokijs?
             return;

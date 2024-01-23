@@ -3,8 +3,15 @@ import {
     wait, waitUntil
 } from 'async-test-util';
 import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isNode,
+    isFastMode,
+    nextPort
+} from '../../plugins/test-utils/index.mjs';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
@@ -12,14 +19,12 @@ import {
 import {
     RxCollection, randomCouchString
 } from '../../plugins/core/index.mjs';
-import { nextPort } from '../helper/port-manager.ts';
-import { humanWithTimestamp } from '../helper/schemas.ts';
 
-config.parallel('replication-websocket.test.ts', () => {
+describeParallel('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
         return;
     }
-    if (!config.platform.isNode()) {
+    if (!isNode) {
         // creating a server only works on node.js
         return;
     }
@@ -144,7 +149,7 @@ config.parallel('replication-websocket.test.ts', () => {
         remoteCollection.database.destroy();
     });
     it('should continue the replication when the connection is broken and established again', async () => {
-        if (config.isFastMode()) {
+        if (isFastMode()) {
             return;
         }
         const { localCollection, remoteCollection } = await getTestCollections({
@@ -229,12 +234,12 @@ config.parallel('replication-websocket.test.ts', () => {
 
         await localDatabase.addCollections({
             humans2: {
-                schema: humanWithTimestamp
+                schema: schemas.humanWithTimestamp
             }
         });
         await remoteDatabase.addCollections({
             humans2: {
-                schema: humanWithTimestamp
+                schema: schemas.humanWithTimestamp
             }
         });
 

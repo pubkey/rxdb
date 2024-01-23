@@ -1,0 +1,148 @@
+import {
+    ensureNotFalsy,
+    isPromise,
+    randomCouchString
+} from '../utils/index.ts';
+import parallel from 'mocha.parallel';
+import {
+    enforceOptions as broadcastChannelEnforceOptions
+} from 'broadcast-channel';
+import events from 'node:events';
+import * as path from 'node:path';
+import url from 'node:url';
+import type { RxStorage, RxTestStorage } from '../../types';
+import { wrappedKeyEncryptionCryptoJsStorage } from '../encryption-crypto-js/index.ts';
+
+export type TestConfig = {
+    storage: RxTestStorage;
+};
+
+export const isDeno = typeof window !== 'undefined' && 'Deno' in window;
+export const isBun = typeof process !== 'undefined' && !!process.versions.bun;
+export const isNode = !isDeno && !isBun && typeof window === 'undefined';
+
+let config: TestConfig;
+
+export function setConfig(newConfig: TestConfig) {
+    config = newConfig;
+}
+
+export function getConfig() {
+    return ensureNotFalsy(config, 'testConfig not set')
+}
+
+
+declare const Deno: any;
+function getEnvVariables() {
+    if (isDeno) {
+        const ret: any = {};
+        [
+            'DEFAULT_STORAGE',
+            'NODE_ENV'
+        ].forEach(k => {
+            ret[k] = Deno.env.get(k);
+        });
+        return ret;
+    }
+
+    return isBun || isNode ? process.env : (window as any).__karma__.config.env;
+}
+export const ENV_VARIABLES = getEnvVariables();
+export const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
+
+export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
+
+export function isFastMode(): boolean {
+    try {
+        return ENV_VARIABLES.NODE_ENV === 'fast';
+    } catch (err) {
+        return false;
+    }
+}
+
+let rootPath = '';
+export function getRootPath() {
+    return rootPath;
+}
+
+export function initTestEnvironment() {
+    if (ENV_VARIABLES.NODE_ENV === 'fast') {
+        broadcastChannelEnforceOptions({
+            type: 'simulate'
+        });
+    }
+
+    /**
+     * Overwrite the console for easier debugging
+     */
+    const oldConsoleLog = console.log.bind(console);
+    const oldConsoleDir = console.dir.bind(console);
+    function newLog(this: typeof console, value: any) {
+        if (isPromise(value)) {
+            oldConsoleDir(value);
+            throw new Error('cannot log Promise(), you should await it first');
+        }
+        if (typeof value === 'string' || typeof value === 'number') {
+            oldConsoleLog(value);
+            return;
+        }
+        try {
+            JSON.stringify(value);
+            oldConsoleLog(JSON.stringify(value, null, 4));
+        } catch (err) {
+            oldConsoleDir(value);
+        }
+    }
+    console.log = newLog.bind(console);
+    console.dir = newLog.bind(console);
+
+    console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
+
+    if (isNode) {
+        process.setMaxListeners(100);
+
+        events.EventEmitter.defaultMaxListeners = 100;
+
+        const __filename = url.fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+
+        rootPath = path.join(__dirname, '../../');
+        console.log('rootPath: ' + rootPath);
+
+        /**
+         * Add a global function to process, so we can debug timings
+         */
+        (process as any).startTime = performance.now();
+        (process as any).logTime = (msg: string = '') => {
+            const diff = performance.now() - (process as any).startTime;
+            console.log('process logTime(' + msg + ') ' + diff + 'ms');
+        };
+    }
+}
+
+export function getEncryptedStorage(baseStorage = getConfig().storage.getStorage()): RxStorage<any, any> {
+    const ret = config.storage.hasEncryption ?
+        baseStorage :
+        wrappedKeyEncryptionCryptoJsStorage({
+            storage: baseStorage
+        });
+    return ret;
+}
+
+export function isNotOneOfTheseStorages(storageNames: string[]) {
+    const isName = getConfig().storage.name;
+    if (storageNames.includes(isName)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
+export function getPassword(): Promise<string> {
+    if (getConfig().storage.hasEncryption) {
+        return ensureNotFalsy(getConfig().storage.hasEncryption)();
+    } else {
+        return Promise.resolve('test-password-' + randomCouchString(10));
+    }
+}

@@ -3,9 +3,13 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 import clone from 'clone';
 
-import * as humansCollection from './../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from './../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     isRxQuery,
@@ -20,7 +24,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 describe('rx-query.test.ts', () => {
-    config.parallel('.constructor', () => {
+    describeParallel('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
 
@@ -53,7 +57,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.toJSON()', () => {
+    describeParallel('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -80,7 +84,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.toString()', () => {
+    describeParallel('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -153,7 +157,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('immutable', () => {
+    describeParallel('immutable', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -180,7 +184,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('QueryCache.js', () => {
+    describeParallel('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -277,7 +281,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('result caching', () => {
+    describeParallel('result caching', () => {
         /**
          * The object stored in the query cache should be
          * exact the same as the object used in a document data.
@@ -309,7 +313,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.doesDocMatchQuery()', () => {
+    describeParallel('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
@@ -358,7 +362,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.exec()', () => {
+    describeParallel('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('passportId').ne('Alice');
@@ -438,7 +442,7 @@ describe('rx-query.test.ts', () => {
         });
         it('querying fast should still return the same RxDocument', async () => {
             if (
-                !config.platform.isNode()
+                !isNode
             ) {
                 return;
             }
@@ -698,7 +702,7 @@ describe('rx-query.test.ts', () => {
             c.database.destroy();
         });
     });
-    config.parallel('update', () => {
+    describeParallel('update', () => {
         describe('positive', () => {
             it('updates a value on a query', async () => {
                 const c = await humansCollection.create(2);
@@ -740,7 +744,7 @@ describe('rx-query.test.ts', () => {
             });
         });
     });
-    config.parallel('issues', () => {
+    describeParallel('issues', () => {
         it('#278 queryCache breaks when pointer out of bounds', async () => {
             const c = await humansCollection.createPrimary(0);
 

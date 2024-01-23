@@ -7,17 +7,21 @@ import {
     fillWithDefaultSettings,
     randomCouchString
 } from '../../plugins/core/index.mjs';
-import { nextPort } from '../helper/port-manager.ts';
-import * as humansCollections from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isNode,
+    nextPort
+} from '../../plugins/test-utils/index.mjs';
 import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory, } from '../../plugins/storage-memory/index.mjs';
 
-config.parallel('rx-storage-remote.test.ts', () => {
+describeParallel('rx-storage-remote.test.ts', () => {
     /**
      * Notice: Most use cases for the remote storage
      * are tests by having a full unit-test run where all
@@ -28,7 +32,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
      * that are specific to the remote storage plugin.
      */
     if (
-        !config.platform.isNode() ||
+        !isNode ||
         config.storage.name !== 'remote'
     ) {
         return;
@@ -36,14 +40,14 @@ config.parallel('rx-storage-remote.test.ts', () => {
     describe('remote RxDatabase', () => {
         it('should have the same data on both sides', async () => {
             const port = await nextPort();
-            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
             });
             assert.ok(server);
 
-            const colClient = await humansCollections.create(
+            const colClient = await humansCollection.create(
                 0, undefined, false, false,
                 getRxStorageRemoteWebsocket({
                     url: 'ws://localhost:' + port,
@@ -73,7 +77,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
         });
         it('mode: one', async () => {
             const port = await nextPort();
-            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -128,7 +132,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
         });
         it('mode: storage', async () => {
             const port = await nextPort();
-            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -183,7 +187,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
         });
         it('mode: database', async () => {
             const port = await nextPort();
-            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database

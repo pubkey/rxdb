@@ -18,7 +18,7 @@ import AsyncTestUtil from 'async-test-util';
 import config, { getEncryptedStorage, getPassword } from './config.ts';
 import { HumanDocumentType } from './../helper/schemas.ts';
 
-config.parallel('import-export.test.js', () => {
+describeParallel('import-export.test.js', () => {
     describe('Collection', () => {
         describe('.exportJSON()', () => {
             it('export the collection', async () => {

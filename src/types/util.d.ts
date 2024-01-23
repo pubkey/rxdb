@@ -1,4 +1,4 @@
-import type { RxStorage } from './rx-storage.interface.d.ts';
+import type { RxStorage } from './rx-storage.interface';
 
 export type MaybePromise<T> = Promise<T> | T;
 
@@ -66,6 +66,21 @@ export type ById<T> = {
 };
 
 /**
+ * Must be async to support async hashing like from the WebCrypto API.
+ */
+export type HashFunction = (input: string) => Promise<string>;
+
+
+export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
+/**
+ * To have a deterministic sorting, we cannot return 0,
+ * we only return 1 or -1.
+ * This ensures that we always end with the same output array, no mather of the
+ * pre-sorting of the input array.
+ */
+export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
+
+/**
  * To test a storage, we need these
  * configuration values.
  */
@@ -115,19 +130,3 @@ export type RxTestStorage = {
      */
     readonly hasEncryption?: () => Promise<string>;
 };
-
-
-/**
- * Must be async to support async hashing like from the WebCrypto API.
- */
-export type HashFunction = (input: string) => Promise<string>;
-
-
-export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
-/**
- * To have a deterministic sorting, we cannot return 0,
- * we only return 1 or -1.
- * This ensures that we always end with the same output array, no mather of the
- * pre-sorting of the input array.
- */
-export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;

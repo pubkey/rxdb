@@ -10,9 +10,15 @@ import AsyncTestUtil, {
     waitUntil
 } from 'async-test-util';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isFastMode,
+    HumanDocumentType,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     isRxCollection,
@@ -43,7 +49,6 @@ import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { RxDocumentData } from '../../plugins/core/index.mjs';
 
 describe('rx-collection.test.ts', () => {
@@ -70,7 +75,7 @@ describe('rx-collection.test.ts', () => {
                 db.destroy();
             });
         });
-        config.parallel('.create()', () => {
+        describeParallel('.create()', () => {
             describe('positive', () => {
                 it('human', async () => {
                     const db = await createRxDatabase({
@@ -104,7 +109,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.checkCollectionName()', () => {
+        describeParallel('.checkCollectionName()', () => {
             describe('positive', () => {
                 it('allow not allow lodash', async () => {
                     const db = await createRxDatabase({
@@ -183,7 +188,7 @@ describe('rx-collection.test.ts', () => {
         });
     });
     describe('instance', () => {
-        config.parallel('.insert()', () => {
+        describeParallel('.insert()', () => {
             describe('positive', () => {
                 it('should insert a human', async () => {
                     const db = await createRxDatabase({
@@ -313,7 +318,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.bulkInsert()', () => {
+        describeParallel('.bulkInsert()', () => {
             describe('positive', () => {
                 it('should insert some humans', async () => {
                     const db = await createRxDatabase({
@@ -382,7 +387,7 @@ describe('rx-collection.test.ts', () => {
                         assert.ok(docs2.length >= 10);
                         c.database.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 2 : 3, idx => {
+                    runXTimes(isFastMode() ? 2 : 3, idx => {
                         it('find in serial #' + idx, async () => {
                             const c = await humansCollection.createPrimary(0);
                             const docData = schemaObjects.simpleHuman();
@@ -419,7 +424,7 @@ describe('rx-collection.test.ts', () => {
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 2 : 5, idx => {
+                    runXTimes(isFastMode() ? 2 : 5, idx => {
                         it('BUG: insert and find very often (' + idx + ')', async () => {
                             const db = await createRxDatabase({
                                 name: randomCouchString(10),
@@ -461,7 +466,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('$eq', () => {
+            describeParallel('$eq', () => {
                 describe('positive', () => {
                     it('find first by passportId', async () => {
                         const c = await humansCollection.create();
@@ -511,7 +516,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 describe('negative', () => { });
             });
-            config.parallel('.or()', () => {
+            describeParallel('.or()', () => {
                 it('should find the 2 documents with the or-method', async () => {
                     const c = await humansCollection.create(10);
                     // add 2 docs to be found
@@ -559,7 +564,7 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
             });
-            config.parallel('.sort()', () => {
+            describeParallel('.sort()', () => {
                 describe('positive', () => {
                     it('sort by age desc (with own index-search)', async () => {
                         const c = await humansCollection.createAgeIndex();
@@ -726,7 +731,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('.limit()', () => {
+            describeParallel('.limit()', () => {
                 describe('positive', () => {
                     it('get first', async () => {
                         const c = await humansCollection.create();
@@ -764,7 +769,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('.skip()', () => {
+            describeParallel('.skip()', () => {
                 describe('positive', () => {
                     it('skip first', async () => {
                         const c = await humansCollection.create(
@@ -835,7 +840,7 @@ describe('rx-collection.test.ts', () => {
                         c.database.destroy();
                     });
                     // This test failed randomly, so we run it more often.
-                    new Array(config.isFastMode() ? 2 : 4)
+                    new Array(isFastMode() ? 2 : 4)
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
                                 const c = await humansCollection.create(5);
@@ -862,7 +867,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('.regex()', () => {
+            describeParallel('.regex()', () => {
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);
@@ -948,7 +953,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('.remove()', () => {
+            describeParallel('.remove()', () => {
                 it('should remove one document', async () => {
                     const c = await humansCollection.create(1);
                     const query = c.find();
@@ -1092,7 +1097,7 @@ describe('rx-collection.test.ts', () => {
                     db2.destroy();
                 });
             });
-            config.parallel('.bulkRemove()', () => {
+            describeParallel('.bulkRemove()', () => {
                 describe('positive', () => {
                     it('should remove some humans', async () => {
                         const amount = 5;
@@ -1117,7 +1122,7 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
             });
-            config.parallel('.update()', () => {
+            describeParallel('.update()', () => {
                 it('sets a field in all documents', async () => {
                     const c = await humansCollection.create(2);
                     const query = c.find();
@@ -1149,7 +1154,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.findOne()', () => {
+        describeParallel('.findOne()', () => {
             describe('positive', () => {
                 it('find a single document', async () => {
                     const c = await humansCollection.create();
@@ -1214,7 +1219,7 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.destroy();
                 });
-                runXTimes(config.isFastMode() ? 2 : 5, idx => {
+                runXTimes(isFastMode() ? 2 : 5, idx => {
                     it('BUG: insert and find very often (' + idx + ')', async function () {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
@@ -1256,7 +1261,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.count()', () => {
+        describeParallel('.count()', () => {
             describe('basics', () => {
                 it('should count one document', async () => {
                     const c = await humansCollection.create(1);
@@ -1399,7 +1404,7 @@ describe('rx-collection.test.ts', () => {
                 db.destroy();
             });
         });
-        config.parallel('.bulkUpsert()', () => {
+        describeParallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
                 const c = await humansCollection.create(0);
                 const amount = 5;
@@ -1425,7 +1430,7 @@ describe('rx-collection.test.ts', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('.upsert()', () => {
+        describeParallel('.upsert()', () => {
             describe('positive', () => {
                 it('insert when not exists', async () => {
                     const db = await createRxDatabase({
@@ -1545,7 +1550,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
         describe('.incrementalUpsert()', () => {
-            config.parallel('positive', () => {
+            describeParallel('positive', () => {
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
@@ -1593,7 +1598,7 @@ describe('rx-collection.test.ts', () => {
                     docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 15 : 100;
+                    const amount = isFastMode() ? 15 : 100;
 
                     const docs = await Promise.all(
                         new Array(amount)
@@ -1667,7 +1672,7 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('should work when inserting on a slow storage', async () => {
-                    if (!config.platform.isNode()) return;
+                    if (!isNode) return;
                     // use a 'slow' adapter because memory might be to fast
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -1754,7 +1759,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.remove()', () => {
+        describeParallel('.remove()', () => {
             describe('positive', () => {
                 it('should not crash', async () => {
                     const c = await humansCollection.createPrimary(0);
@@ -1909,7 +1914,7 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        config.parallel('.findByIds()', () => {
+        describeParallel('.findByIds()', () => {
             it('should not crash', async () => {
                 const c = await humansCollection.create();
                 const res = await c.findByIds([
@@ -1945,7 +1950,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
     });
-    config.parallel('.findByIds.$()', () => {
+    describeParallel('.findByIds.$()', () => {
         it('should not crash and emit a map', async () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
@@ -2216,7 +2221,7 @@ describe('rx-collection.test.ts', () => {
             await AsyncTestUtil.waitUntil(() => lastOfArray(emitted)?.size === matchingIds.length);
 
             // wait a bit more
-            await AsyncTestUtil.wait(config.isFastMode() ? 50 : 150);
+            await AsyncTestUtil.wait(isFastMode() ? 50 : 150);
             assert.strictEqual(lastOfArray(emitted)?.size, matchingIds.length);
 
 
@@ -2267,7 +2272,7 @@ describe('rx-collection.test.ts', () => {
             );
 
             //  Wait a bit to see if we catch anything
-            await wait(config.isFastMode() ? 100 : 300);
+            await wait(isFastMode() ? 100 : 300);
             const sizeAfterRandomInserts = lastOfArray(emitted)?.size;
 
             //  Verify that the subscription has not been triggered and no error has been added

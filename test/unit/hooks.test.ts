@@ -17,7 +17,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-config.parallel('hooks.test.js', () => {
+describeParallel('hooks.test.js', () => {
     describe('get/set', () => {
         it('should set a hook', async () => {
             const c = await humansCollection.create(0);

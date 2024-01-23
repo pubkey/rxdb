@@ -1,4 +1,4 @@
-import config, { getPassword } from './config.ts';
+import config from './config.ts';
 import assert from 'assert';
 
 import {
@@ -13,12 +13,19 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    getPassword,
+    EXAMPLE_REVISION_1,
+    EXAMPLE_REVISION_2,
+    EXAMPLE_REVISION_3
+} from '../../plugins/test-utils/index.mjs';
 
 
-config.parallel('rx-database.test.ts', () => {
+describeParallel('rx-database.test.ts', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('normal', async () => {

@@ -25,7 +25,7 @@ import type {
 import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
-config.parallel('reactive-document.test.js', () => {
+describeParallel('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
             it('should fire on save', async () => {

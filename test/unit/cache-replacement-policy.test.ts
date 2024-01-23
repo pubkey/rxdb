@@ -1,9 +1,11 @@
 import assert from 'assert';
-import config from './config.ts';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
 import {
     defaultCacheReplacementPolicyMonad,
     countRxQuerySubscribers,
@@ -15,7 +17,7 @@ import {
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
 
-config.parallel('cache-replacement-policy.test.js', () => {
+describeParallel('cache-replacement-policy.test.js', () => {
     function clearQueryCache(collection: RxCollection) {
         const queryCache = collection._queryCache;
         queryCache._map = new Map();

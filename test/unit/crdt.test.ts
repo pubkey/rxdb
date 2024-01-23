@@ -2,8 +2,11 @@ import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -32,7 +35,7 @@ import config from './config.ts';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
-config.parallel('crdt.test.js', () => {
+describeParallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
         crdts?: CRDTDocumentField<RxDocType>;
     };

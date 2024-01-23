@@ -1,9 +1,11 @@
 import assert from 'assert';
 
-import config from './config.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
 import {
     clone,
     deepEqual,
@@ -13,7 +15,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-config.parallel('internal-indexes.test.js', () => {
+describeParallel('internal-indexes.test.js', () => {
 
     async function createCollectionWithInternalIndexes(internalIndexes: string[][], docsAmount: number = 0) {
         const schema = clone(schemas.human);

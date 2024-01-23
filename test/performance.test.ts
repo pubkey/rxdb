@@ -5,8 +5,12 @@ import {
     requestIdlePromise
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
-import * as schemas from './helper/schemas.ts';
-import * as schemaObjects from './helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    isFastMode,
+    isDeno
+} from '../plugins/test-utils/index.mjs';
 import config from './unit/config.ts';
 import { wait } from 'async-test-util';
 declare const Deno: any;
@@ -30,7 +34,7 @@ describe('performance.test.ts', () => {
     });
     it('run the performance test', async function () {
         this.timeout(200 * 1000);
-        const runs = config.isFastMode() ? 1 : 40;
+        const runs = isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimes: { [k: string]: number[]; } = {};
@@ -208,7 +212,7 @@ describe('performance.test.ts', () => {
 
         const timeToLog: any = {
             description: perfStorage.description,
-            platform: config.platform.name,
+            platform: config.storage.name,
             collectionsAmount,
             docsAmount
         };
@@ -224,7 +228,7 @@ describe('performance.test.ts', () => {
      * Some runtimes do not automatically exit for whatever reason.
      */
     it('exit the process', () => {
-        if (config.isDeno) {
+        if (isDeno) {
             Deno.exit(0);
         }
     });

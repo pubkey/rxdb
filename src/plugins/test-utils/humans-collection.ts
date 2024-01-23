@@ -1,7 +1,7 @@
 import clone from 'clone';
 import * as schemas from './schemas.ts';
 import * as schemaObjects from './schema-objects.ts';
-import config from '../unit/config.ts';
+import { getConfig } from './config.ts';
 import assert from 'assert';
 
 import {
@@ -13,7 +13,7 @@ import {
     MigrationStrategies,
     RxAttachmentCreator,
     RxStorage
-} from '../../plugins/core/index.mjs';
+} from '../../index.ts';
 
 import { HumanDocumentType } from './schemas.ts';
 
@@ -22,7 +22,7 @@ export async function create(
     collectionName: string = 'human',
     multiInstance: boolean = true,
     eventReduce: boolean = true,
-    storage: RxStorage<any, any> = config.storage.getStorage()
+    storage: RxStorage<any, any> = getConfig().storage.getStorage()
 
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
@@ -55,7 +55,7 @@ export async function create(
 export async function createBySchema<RxDocumentType = {}>(
     schema: RxJsonSchema<RxDocumentType>,
     name = 'human',
-    storage = config.storage.getStorage(),
+    storage = getConfig().storage.getStorage(),
     migrationStrategies?: MigrationStrategies
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType>; }>({
@@ -86,7 +86,7 @@ export async function createAttachments(
     }
     const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
@@ -118,7 +118,7 @@ export async function createNoCompression(
 ): Promise<RxCollection<HumanDocumentType>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -147,7 +147,7 @@ export async function createAgeIndex(
 ): Promise<RxCollection<HumanDocumentType>> {
     const db = await createRxDatabase<{ humana: RxCollection<HumanDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -184,7 +184,7 @@ export async function multipleOnSameDB(
         human2: RxCollection<HumanDocumentType>;
     }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -223,7 +223,7 @@ export async function createNested(
 ): Promise<RxCollection<schemaObjects.NestedHumanDocumentType>> {
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -250,7 +250,7 @@ export async function createDeepNested(
 ): Promise<RxCollection<schemaObjects.DeepNestedHumanDocumentType>> {
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
     });
     // setTimeout(() => db.destroy(), dbLifetime);
@@ -275,9 +275,9 @@ export async function createMultiInstance(
     name: string,
     amount = 0,
     password = undefined,
-    storage: RxStorage<any, any> = config.storage.getStorage()
+    storage: RxStorage<any, any> = getConfig().storage.getStorage()
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
-    if (!config.storage.hasMultiInstance) {
+    if (!getConfig().storage.hasMultiInstance) {
         throw new Error('createMultiInstance() cannot be called on a storage with hasMultiInstance:false');
     }
 
@@ -315,7 +315,7 @@ export async function createPrimary(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanDocumentType>; }>({
         name,
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -342,7 +342,7 @@ export async function createHumanWithTimestamp(
     amount = 0,
     databaseName = randomCouchString(10),
     multiInstance = true,
-    storage = config.storage.getStorage()
+    storage = getConfig().storage.getStorage()
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType>; }>({
@@ -391,7 +391,7 @@ export async function createMigrationCollection(
     const colName = 'human';
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType>; }>({
         name,
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -415,7 +415,7 @@ export async function createMigrationCollection(
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType>; }>({
         name,
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });
@@ -435,7 +435,7 @@ export async function createRelated(
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType>; }>({
         name,
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -463,7 +463,7 @@ export async function createRelatedNested(
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanNestedDocumentType>; }>({
         name,
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         multiInstance: true,
         eventReduce: true,
         ignoreDuplicate: true
@@ -490,7 +490,7 @@ export async function createIdAndAgeIndex(
 ): Promise<RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>> {
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>; }>({
         name: randomCouchString(10),
-        storage: config.storage.getStorage(),
+        storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
     });

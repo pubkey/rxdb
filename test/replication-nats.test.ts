@@ -7,18 +7,18 @@ import {
     WithDeleted
 } from '../plugins/core/index.mjs';
 
-import * as humansCollection from './helper/humans-collection.ts';
-import * as schemaObjects from './helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    ensureReplicationHasNoErrors,
+    ensureCollectionsHaveEqualState
+} from '../plugins/test-utils/index.mjs';
 
 import {
     replicateNats,
     NatsSyncOptions,
     RxNatsReplicationState
 } from '../plugins/replication-nats/index.mjs';
-import {
-    ensureCollectionsHaveEqualState,
-    ensureReplicationHasNoErrors
-} from './helper/test-util.ts';
 import {
     DeliverPolicy,
     JSONCodec,

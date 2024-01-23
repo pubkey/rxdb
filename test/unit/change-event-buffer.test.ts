@@ -1,11 +1,14 @@
 import assert from 'assert';
 
-import config from './config.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    describeParallel
+} from '../../plugins/test-utils/index.mjs';
+
 import AsyncTestUtil from 'async-test-util';
 
-config.parallel('change-event-buffer.test.js', () => {
+describeParallel('change-event-buffer.test.js', () => {
     describe('basic', () => {
         it('should contains some events', async () => {
             const col = await humansCollection.create(10);

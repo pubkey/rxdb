@@ -2,8 +2,13 @@ import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
 import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    isFastMode,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -11,13 +16,12 @@ import {
     RxCollection
 } from '../../plugins/core/index.mjs';
 
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
-config.parallel('cleanup.test.js', () => {
+describeParallel('cleanup.test.js', () => {
     it('should clean up the deleted documents', async () => {
         const db = await createRxDatabase({
             name: randomCouchString(10),
@@ -92,7 +96,7 @@ config.parallel('cleanup.test.js', () => {
 
         const doc = await collection.insert(schemaObjects.human());
         await doc.remove();
-        await wait(config.isFastMode() ? 200 : 500);
+        await wait(isFastMode() ? 200 : 500);
 
         /**
          * The deleted document still be there

@@ -16,16 +16,20 @@ import {
     RxStorageInstanceLoki
 } from '../../plugins/storage-lokijs/index.mjs';
 
-import * as humansCollections from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
-
 import { waitUntil } from 'async-test-util';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { LeaderElector } from 'broadcast-channel';
-import { HumanDocumentType } from '../helper/schemas.ts';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isNode,
+    isFastMode,
+    HumanDocumentType,
+    EXAMPLE_REVISION_1
+} from '../../plugins/test-utils/index.mjs';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 import url from 'node:url';
@@ -38,9 +42,9 @@ describe('rx-storage-lokijs.test.js', () => {
     }
     addRxPlugin(RxDBLeaderElectionPlugin);
     addRxPlugin(RxDBLocalDocumentsPlugin);
-    config.parallel('RxDatabase', () => {
+    describeParallel('RxDatabase', () => {
         it('create/write/remove', async () => {
-            const collection = await humansCollections.create(
+            const collection = await humansCollection.create(
                 10,
                 randomCouchString(10),
                 true,
@@ -57,14 +61,14 @@ describe('rx-storage-lokijs.test.js', () => {
         });
         it('should work with 2 instances', async () => {
             const databaseName = randomCouchString(12);
-            const col1 = await humansCollections.createMultiInstance(
+            const col1 = await humansCollection.createMultiInstance(
                 databaseName,
                 0,
                 undefined,
                 getRxStorageLoki()
             );
             await col1.database.waitForLeadership();
-            const col2 = await humansCollections.createMultiInstance(
+            const col2 = await humansCollection.createMultiInstance(
                 databaseName,
                 0,
                 undefined,
@@ -109,7 +113,7 @@ describe('rx-storage-lokijs.test.js', () => {
             const amount = 5;
             const cols = await Promise.all(
                 new Array(amount).fill(0)
-                    .map(() => humansCollections.createMultiInstance(
+                    .map(() => humansCollection.createMultiInstance(
                         databaseName,
                         0,
                         undefined,
@@ -140,7 +144,7 @@ describe('rx-storage-lokijs.test.js', () => {
             await Promise.all(
                 new Array(amount).fill(0)
                     .map(async () => {
-                        const col = await humansCollections.createMultiInstance(
+                        const col = await humansCollection.createMultiInstance(
                             databaseName,
                             0,
                             undefined,
@@ -183,14 +187,14 @@ describe('rx-storage-lokijs.test.js', () => {
         });
         it('listening to queries must work', async () => {
             const databaseName = randomCouchString(12);
-            const col1 = await humansCollections.createMultiInstance(
+            const col1 = await humansCollection.createMultiInstance(
                 databaseName,
                 0,
                 undefined,
                 getRxStorageLoki()
             );
             await col1.database.waitForLeadership();
-            const col2 = await humansCollections.createMultiInstance(
+            const col2 = await humansCollection.createMultiInstance(
                 databaseName,
                 0,
                 undefined,
@@ -213,7 +217,7 @@ describe('rx-storage-lokijs.test.js', () => {
             col2.database.destroy();
         });
         it('should use the given adapter', async () => {
-            if (!config.platform.isNode()) {
+            if (!isNode) {
                 return;
             }
             /**
@@ -268,7 +272,7 @@ describe('rx-storage-lokijs.test.js', () => {
             assert.ok(exists);
         });
         it('should have called the autosaveCallback', async () => {
-            if (!config.platform.isNode()) {
+            if (!isNode) {
                 return;
             }
             const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
@@ -313,7 +317,7 @@ describe('rx-storage-lokijs.test.js', () => {
             await storageInstance.close();
         });
     });
-    config.parallel('issues', () => {
+    describeParallel('issues', () => {
         /**
          * When the leading tab is set to cpu throttling mode by the browsers,
          * running setTimeout takes way longer then the given time.
@@ -329,9 +333,9 @@ describe('rx-storage-lokijs.test.js', () => {
             it('must not use setTimeout internally', async () => {
                 if (
                     // run only on node to ensure that rewriting the setTimeout works properly.
-                    !config.platform.isNode() ||
+                    !isNode ||
                     // do not run in fast mode because we overwrite global.setTimeout which break parallel tests.
-                    config.isFastMode()
+                    isFastMode()
                 ) {
                     return;
                 }
@@ -407,9 +411,9 @@ describe('rx-storage-lokijs.test.js', () => {
             });
         });
     });
-    config.parallel('migration 11.x.x -> 12.0.0', () => {
+    describeParallel('migration 11.x.x -> 12.0.0', () => {
         it('should move the $lastWriteAt value to _meta.lwt', async () => {
-            if (!config.platform.isNode()) {
+            if (!isNode) {
                 return;
             }
             const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');

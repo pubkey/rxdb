@@ -19,6 +19,19 @@ export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
 }
 
 /**
+ * returns true if promise is given
+ */
+export function isPromise(value: any): boolean {
+    if (
+        typeof value !== 'undefined' &&
+        typeof value.then === 'function'
+    ) {
+        return true;
+    }
+    return false;
+}
+
+/**
  * Reusing resolved promises has a better
  * performance than creating new ones each time.
  */

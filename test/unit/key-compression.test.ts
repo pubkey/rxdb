@@ -29,7 +29,7 @@ import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 import { SimpleHumanDocumentType } from '../helper/schema-objects.ts';
 
 
-config.parallel('key-compression.test.js', () => {
+describeParallel('key-compression.test.js', () => {
     async function getCollection() {
         const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),

@@ -1,9 +1,13 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil, randomString } from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -29,7 +33,7 @@ declare type TestDocType = {
     foo: string;
 };
 
-config.parallel('local-documents.test.ts', () => {
+describeParallel('local-documents.test.ts', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
             it('should create a local document', async () => {
@@ -692,7 +696,7 @@ config.parallel('local-documents.test.ts', () => {
             if (!config.storage.hasPersistence) {
                 return;
             }
-            if (!config.platform.isNode()) {
+            if (!isNode) {
                 return;
             }
             const dbName: string = randomCouchString(10);
@@ -745,7 +749,7 @@ config.parallel('local-documents.test.ts', () => {
             await db2.destroy();
         });
         it('doing many upsertLocal() can cause a 404 document not found', async () => {
-            if (!config.platform.isNode()) {
+            if (!isNode) {
                 return;
             }
             const dbName: string = randomCouchString(10);

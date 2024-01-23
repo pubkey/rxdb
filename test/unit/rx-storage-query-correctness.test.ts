@@ -17,20 +17,17 @@ import {
     createRxDatabase,
     prepareQuery
 } from '../../plugins/core/index.mjs';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
-import * as schemas from '../helper/schemas.ts';
 import {
-    HeroArrayDocumentType,
-    human,
-    nestedHuman,
-    NestedHumanDocumentType,
-    simpleHumanV3,
-    SimpleHumanV3DocumentType
-} from '../helper/schema-objects.ts';
+    schemaObjects,
+    describeParallel,
+    EXAMPLE_REVISION_1,
+    HumanDocumentType,
+    human
+} from '../../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
-config.parallel('rx-storage-query-correctness.test.ts', () => {
+describeParallel('rx-storage-query-correctness.test.ts', () => {
     type TestCorrectQueriesInput<RxDocType> = {
         notRunIfTrue?: () => boolean;
         testTitle: string;
@@ -230,21 +227,21 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         });
     }
 
-    testCorrectQueries<schemas.HumanDocumentType>({
+    testCorrectQueries<schemaObjects.HumanDocumentType>({
         testTitle: '$gt/$gte',
         data: [
-            human('aa', 10, 'alice'),
-            human('bb', 20, 'bob'),
+            schemaObjects.human('aa', 10, 'alice'),
+            schemaObjects.human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30, 'carol'),
-            human('dd', 40, 'dave'),
-            human('ee', 50, 'eve')
+            schemaObjects.human('cc-looong-id', 30, 'carol'),
+            schemaObjects.human('dd', 40, 'dave'),
+            schemaObjects.human('ee', 50, 'eve')
         ],
-        schema: withIndexes(schemas.human, [
+        schema: withIndexes(human, [
             ['age'],
             ['age', 'firstName'],
             ['firstName'],
@@ -371,21 +368,21 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<schemas.HumanDocumentType>({
+    testCorrectQueries<HumanDocumentType>({
         testTitle: '$lt/$lte',
         data: [
-            human('aa', 10, 'alice'),
-            human('bb', 20, 'bob'),
+            schemaObjects.human('aa', 10, 'alice'),
+            schemaObjects.human('bb', 20, 'bob'),
             /**
              * One must have a longer id
              * because we had many bugs around how padLeft
              * works on custom indexes.
              */
-            human('cc-looong-id', 30, 'carol'),
-            human('dd', 40, 'dave'),
-            human('ee', 50, 'eve')
+            schemaObjects.human('cc-looong-id', 30, 'carol'),
+            schemaObjects.human('dd', 40, 'dave'),
+            schemaObjects.human('ee', 50, 'eve')
         ],
-        schema: withIndexes(schemas.human, [
+        schema: withIndexes(human, [
             ['age'],
             ['age', 'firstName'],
             ['firstName'],
@@ -482,24 +479,24 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<NestedHumanDocumentType>({
+    testCorrectQueries<schemaObjects.NestedHumanDocumentType>({
         testTitle: 'nested properties',
         data: [
-            nestedHuman({
+            schemaObjects.nestedHuman({
                 passportId: 'aaa',
                 mainSkill: {
                     level: 6,
                     name: 'zzz'
                 }
             }),
-            nestedHuman({
+            schemaObjects.nestedHuman({
                 passportId: 'bbb',
                 mainSkill: {
                     level: 4,
                     name: 'ttt'
                 }
             }),
-            nestedHuman({
+            schemaObjects.nestedHuman({
                 passportId: 'ccc',
                 mainSkill: {
                     level: 3,
@@ -507,7 +504,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 }
             })
         ],
-        schema: withIndexes(schemas.nestedHuman, [
+        schema: withIndexes(nestedHuman, [
             ['mainSkill.level'],
             ['mainSkill.name']
         ]),
@@ -530,19 +527,19 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<SimpleHumanV3DocumentType>({
         testTitle: '$or',
         data: [
-            simpleHumanV3({
+            schemaObjects.simpleHumanV3({
                 passportId: 'aaa',
                 oneOptional: 'A'
             }),
-            simpleHumanV3({
+            schemaObjects.simpleHumanV3({
                 passportId: 'bbb',
                 oneOptional: 'B'
             }),
-            simpleHumanV3({
+            schemaObjects.simpleHumanV3({
                 passportId: 'ccc'
             })
         ],
-        schema: withIndexes(schemas.humanMinimal, [
+        schema: withIndexes(humanMinimal, [
         ]),
         queries: [
             {
@@ -620,11 +617,11 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     testCorrectQueries<schemas.HumanDocumentType>({
         testTitle: '$in',
         data: [
-            human('aa', 10, 'alice'),
-            human('bb', 20, 'bob'),
-            human('cc', 30, 'carol'),
-            human('dd', 40, 'dave'),
-            human('ee', 50, 'eve')
+            schemaObjects.human('aa', 10, 'alice'),
+            schemaObjects.human('bb', 20, 'bob'),
+            schemaObjects.human('cc', 30, 'carol'),
+            schemaObjects.human('dd', 40, 'dave'),
+            schemaObjects.human('ee', 50, 'eve')
         ],
         schema: schemas.human,
         queries: [
@@ -682,7 +679,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
-    testCorrectQueries<HeroArrayDocumentType>({
+    testCorrectQueries<schemas.HeroArrayDocumentType>({
         testTitle: '$elemMatch/$size',
         data: [
             {

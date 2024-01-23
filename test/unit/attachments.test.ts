@@ -1,13 +1,18 @@
 import assert from 'assert';
-import config, {
-    getEncryptedStorage,
-    getPassword
-} from './config.ts';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    getPassword,
+    isNode,
+    isDeno,
+    HumanDocumentType,
+    getEncryptedStorage
+} from '../../plugins/test-utils/index.mjs';
 import {
     clone,
     createRxDatabase,
@@ -26,11 +31,10 @@ import {
     blobToString,
     RxDocumentWriteData
 } from '../../plugins/core/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
-config.parallel('attachments.test.ts', () => {
+describeParallel('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
     }
@@ -90,7 +94,7 @@ config.parallel('attachments.test.ts', () => {
 
     describe('base64 blob transformations', () => {
         it('should create the same base64 string in the browser as it did on node.js', async () => {
-            if (config.platform.isNode()) {
+            if (isNode) {
                 return;
             }
             const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
@@ -106,7 +110,7 @@ config.parallel('attachments.test.ts', () => {
             );
         });
         it('image attachment should be usable as img-element after base64<->Blob transformations', async function () {
-            if (config.platform.isNode() || config.isDeno) {
+            if (isNode || isDeno) {
                 return;
             }
             const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
@@ -429,7 +433,7 @@ config.parallel('attachments.test.ts', () => {
             c.database.destroy();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
-            if (config.platform.isNode() || config.isDeno) {
+            if (isNode || isDeno) {
                 return;
             }
             const c = await createEncryptedAttachmentsCollection(1);

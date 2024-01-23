@@ -14,8 +14,13 @@ import {
 
 import * as firebase from 'firebase/app';
 
-import * as humansCollection from './helper/humans-collection.ts';
-import * as schemaObjects from './helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    ensureReplicationHasNoErrors,
+    HumanDocumentType,
+    ensureCollectionsHaveEqualState
+} from '../plugins/test-utils/index.mjs';
 
 
 import {
@@ -39,8 +44,6 @@ import {
     RxFirestoreReplicationState,
     SyncOptionsFirestore
 } from '../plugins/replication-firestore/index.mjs';
-import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util.ts';
-import { HumanDocumentType } from './helper/schemas.ts';
 import config from './unit/config.ts';
 
 

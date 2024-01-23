@@ -4,8 +4,6 @@
  */
 
 import assert from 'assert';
-
-import config from './config.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -13,13 +11,18 @@ import {
     RxPlugin
 } from '../../plugins/core/index.mjs';
 
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    humansCollection,
+    describeParallel,
+    isNode,
+    getRootPath
+} from '../../plugins/test-utils/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
 import { createRequire } from 'node:module';
 
-config.parallel('plugin.test.js', () => {
-    if (!config.platform.isNode()) return;
+describeParallel('plugin.test.js', () => {
+    if (!isNode) return;
     describe('.addRxPlugin()', () => {
         it('should not crash when a new plugin is added', () => {
             addRxPlugin({
@@ -43,14 +46,14 @@ config.parallel('plugin.test.js', () => {
     });
     describe('full.node.ts', () => {
         it('full.node.ts should run without errors', async () => {
-            if (!config.platform.isNode())
+            if (!isNode)
                 return;
 
             const require = createRequire(import.meta.url);
             const { spawn } = await require('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);
+            const promise = spawn('mocha', [getRootPath() + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
             childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));

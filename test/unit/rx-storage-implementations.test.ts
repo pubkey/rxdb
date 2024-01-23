@@ -1,7 +1,6 @@
 import assert from 'assert';
 
 import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -44,7 +43,6 @@ import {
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.mjs';
-import * as schemas from '../helper/schemas.ts';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
 import {
@@ -56,11 +54,15 @@ import {
 } from 'async-test-util';
 import { filter, map } from 'rxjs';
 import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    isFastMode,
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4
-} from '../helper/revisions.ts';
+} from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -165,7 +167,7 @@ declare type NestedDoc = {
 
 const testContext = 'rx-storage-implementations.test.ts';
 
-config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
+describeParallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {
@@ -2061,7 +2063,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const amount = config.isFastMode() ? 100 : 10000;
+                const amount = isFastMode() ? 100 : 10000;
                 const writeRows = new Array(amount)
                     .fill(0)
                     .map(() => ({ document: getWriteData() }));
@@ -2267,7 +2269,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const writeAmount = config.isFastMode() ? 40 : 100;
+                const writeAmount = isFastMode() ? 40 : 100;
                 await storageInstance.bulkWrite(
                     new Array(writeAmount / 5)
                         .fill(0)

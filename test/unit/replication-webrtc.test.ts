@@ -1,9 +1,5 @@
 import assert from 'assert';
 import config from './config.ts';
-
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-
 import {
     randomCouchString,
     RxCollection,
@@ -20,7 +16,13 @@ import {
     SimplePeer,
     SimplePeerWrtc
 } from '../../plugins/replication-webrtc/index.mjs';
-
+import {
+    schemaObjects,
+    humansCollection,
+    isFastMode,
+    isDeno,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-webrtc.test.ts', function () {
@@ -34,7 +36,7 @@ describe('replication-webrtc.test.ts', function () {
         return;
     }
 
-    if (config.isDeno) {
+    if (isDeno) {
         /**
          * We do not have WebRTC in Deno
          */
@@ -49,7 +51,7 @@ describe('replication-webrtc.test.ts', function () {
 
     describe('init', () => {
         it('import WebRTC polyfills on Node.js', async () => {
-            if (config.platform.isNode()) {
+            if (isNode) {
                 const wrtcModule = await import('node-datachannel/polyfill');
                 wrtc = wrtcModule.default as any;
 
@@ -147,7 +149,7 @@ describe('replication-webrtc.test.ts', function () {
     }
 
     describe('basic CRUD', () => {
-        if (config.isFastMode()) {
+        if (isFastMode()) {
             return;
         }
         /**

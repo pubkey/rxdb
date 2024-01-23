@@ -14,7 +14,7 @@ import * as schemas from '../helper/schemas.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import { HumanDocumentType } from '../helper/schemas.ts';
 
-config.parallel('orm.test.js', () => {
+describeParallel('orm.test.js', () => {
     describe('statics', () => {
         describe('create', () => {
             describe('positive', () => {

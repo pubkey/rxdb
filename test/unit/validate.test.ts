@@ -6,8 +6,13 @@ import {
 } from 'async-test-util';
 
 import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    describeParallel,
+    EXAMPLE_REVISION_1,
+    isFastMode
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -32,8 +37,6 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
  */
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 
-
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 const validationImplementations: {
     key: string;
@@ -60,7 +63,7 @@ const validationImplementations: {
 
 
 validationImplementations.forEach(
-    validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
+    validationImplementation => describeParallel('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
         async function assertBulkWriteNoError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -94,8 +97,9 @@ validationImplementations.forEach(
         let storage: RxStorage<any, any>;
         describe('init', () => {
             it('create storage', () => {
+                const innerStorage: RxStorage<any, any> = config.storage.getStorage();
                 storage = validationImplementation.implementation({
-                    storage: config.storage.getStorage()
+                    storage: innerStorage
                 });
             });
         });
@@ -161,7 +165,7 @@ validationImplementations.forEach(
                 });
                 it('validate with decimal _meta.lwt times', async () => {
                     const instance = await getRxStorageInstance(schemas.nestedHuman);
-                    const amount = config.isFastMode() ? 10 : 155;
+                    const amount = isFastMode() ? 10 : 155;
                     const writeRows = new Array(amount)
                         .fill(0)
                         .map(() => schemaObjects.nestedHuman())

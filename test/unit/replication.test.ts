@@ -12,9 +12,13 @@ import {
 } from 'async-test-util';
 
 import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isFastMode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     wrappedValidateAjvStorage
@@ -164,7 +168,7 @@ describe('replication.test.ts', () => {
             });
         });
     });
-    config.parallel('non-live replication', () => {
+    describeParallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = 15;
             const { localCollection, remoteCollection } = await getTestCollections({
@@ -230,7 +234,7 @@ describe('replication.test.ts', () => {
                 pull: {
                     handler: getPullHandler(remoteCollection),
                     modifier: async (doc) => {
-                        await wait(config.isFastMode() ? 10 : 100);
+                        await wait(isFastMode() ? 10 : 100);
                         doc = clone(doc);
                         doc.name = 'pull-modified';
                         return doc;
@@ -239,7 +243,7 @@ describe('replication.test.ts', () => {
                 push: {
                     handler: getPushHandler(remoteCollection),
                     modifier: async (doc) => {
-                        await wait(config.isFastMode() ? 10 : 100);
+                        await wait(isFastMode() ? 10 : 100);
                         doc = clone(doc);
                         doc.name = 'push-modified';
                         return doc;
@@ -338,7 +342,7 @@ describe('replication.test.ts', () => {
             replicationState.error$.subscribe(err => errors.push(err));
             await replicationState.awaitInitialReplication();
 
-            await wait(config.isFastMode() ? 0 : 100);
+            await wait(isFastMode() ? 0 : 100);
 
             const docsLocal = await otherSchemaCollection.find().exec();
             assert.strictEqual(docsLocal.length, 0);
@@ -378,7 +382,7 @@ describe('replication.test.ts', () => {
             replicationState.awaitInitialReplication().then(() => {
                 hasResolved = true;
             });
-            await wait(config.isFastMode() ? 200 : 500);
+            await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
             localCollection.database.destroy();
@@ -412,14 +416,14 @@ describe('replication.test.ts', () => {
             });
             await replicationState.cancel();
 
-            await wait(config.isFastMode() ? 200 : 500);
+            await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
     });
-    config.parallel('live replication', () => {
+    describeParallel('live replication', () => {
         it('should replicate all writes', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
@@ -553,7 +557,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.destroy();
         });
     });
-    config.parallel('other', () => {
+    describeParallel('other', () => {
         describe('autoStart', () => {
             it('should run first replication by default', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -639,7 +643,7 @@ describe('replication.test.ts', () => {
                 replicationState.awaitInSync().then(() => {
                     resolved = true;
                 });
-                await wait(config.isFastMode() ? 100 : 400);
+                await wait(isFastMode() ? 100 : 400);
                 assert.strictEqual(resolved, false);
 
                 localCollection.database.destroy();
@@ -791,7 +795,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.destroy();
         });
     });
-    config.parallel('attachment replication', () => {
+    describeParallel('attachment replication', () => {
         if (!config.storage.hasAttachments) {
             return;
         }
@@ -897,7 +901,7 @@ describe('replication.test.ts', () => {
             await remoteCollection.database.destroy();
         });
     });
-    config.parallel('issues', () => {
+    describeParallel('issues', () => {
         it('#4190 Composite Primary Keys broken on replicated collections', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),

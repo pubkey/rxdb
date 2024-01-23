@@ -24,7 +24,7 @@ import * as schemaObjects from './../helper/schema-objects.ts';
 import * as humansCollection from './../helper/humans-collection.ts';
 import { HumanDocumentType } from './../helper/schemas.ts';
 
-config.parallel('cross-instance.test.js', () => {
+describeParallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
         return;
     }

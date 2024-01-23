@@ -31,7 +31,7 @@ import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 
-config.parallel('encryption.test.ts', () => {
+describeParallel('encryption.test.ts', () => {
     async function createEncryptedCollection(
         amount: number = 10,
         useStorage?: typeof storage

@@ -14,7 +14,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-config.parallel('population.test.js', () => {
+describeParallel('population.test.js', () => {
     describe('createRxSchema', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', () => {

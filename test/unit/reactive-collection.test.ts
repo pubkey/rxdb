@@ -19,7 +19,7 @@ import {
 import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
-config.parallel('reactive-collection.test.js', () => {
+describeParallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {

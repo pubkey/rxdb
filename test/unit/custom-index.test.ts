@@ -19,12 +19,11 @@ import {
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
-import config from './config.ts';
+import { EXAMPLE_REVISION_1 } from '../../plugins/test-utils/index.mjs';
 
-config.parallel('custom-index.test.ts', () => {
+describeParallel('custom-index.test.ts', () => {
 
     type IndexTestDocType = {
         id: string;

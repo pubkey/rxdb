@@ -3,9 +3,14 @@ import clone from 'clone';
 import config from './config.ts';
 
 
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    describeParallel,
+    isFastMode,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import {
@@ -26,10 +31,9 @@ import {
     map,
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas.ts';
 
-config.parallel('reactive-query.test.js', () => {
-    config.parallel('positive', () => {
+describeParallel('reactive-query.test.js', () => {
+    describeParallel('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
@@ -165,7 +169,7 @@ config.parallel('reactive-query.test.js', () => {
             await c.bulkInsert(
                 new Array(10).fill(0).map(() => schemaObjects.human())
             );
-            await wait(config.isFastMode() ? 50 : 100);
+            await wait(isFastMode() ? 50 : 100);
             assert.ok(
                 emitted.length <= 3,
                 JSON.stringify(emitted.map(result => result.map(doc => doc.toJSON())), null, 4)
@@ -212,10 +216,10 @@ config.parallel('reactive-query.test.js', () => {
     });
     describe('ISSUES', () => {
         // his test failed randomly, so we run it more often.
-        new Array(config.isFastMode() ? 3 : 10)
+        new Array(isFastMode() ? 3 : 10)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
-                    const docAmount = config.isFastMode() ? 2 : 10;
+                    const docAmount = isFastMode() ? 2 : 10;
                     const c = await humansCollection.createAgeIndex(0);
                     const docsData = new Array(docAmount)
                         .fill(0)
