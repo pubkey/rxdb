@@ -26,7 +26,7 @@
     "rxjs": "7.8.1"
   },
   "devDependencies": {
-    "supabase": "1.131.5",
+    "supabase": "1.136.2",
     "local-web-server": "5.3.1",
     "concurrently": "8.2.2",
     "async-test-util": "2.3.0",
