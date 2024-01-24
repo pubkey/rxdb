@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
-import config from './config.ts';
+import config, { rootPath } from './config.ts';
 
 import {
     addRxPlugin, createBlob
@@ -11,7 +11,6 @@ import {
 import {
     schemaObjects,
     isNode,
-    rootPath,
     createAttachments
 } from '../../plugins/test-utils/index.mjs';
 import {
