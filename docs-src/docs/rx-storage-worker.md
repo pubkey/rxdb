@@ -115,3 +115,30 @@ const databaseTwo = await createRxDatabase({
 ```
 
 
+## Passing in a Worker instance
+
+Instead of setting an url as `workerInput`, you can also specify a function that returns a new `Worker` instance when called.
+
+```ts
+getRxStorageWorker({
+    workerInput: () => new Worker('path/to/worker.js')
+})
+```
+
+This can be helpful for environments where the worker is build dynamically by the bundler. For example in angular you would create a `my-custom.worker.ts` file that contains a custom build worker and then import it. 
+
+```ts
+const storage = getRxStorageWorker({
+    workerInput: () => new Worker(new URL('./my-custom.worker', import.meta.url)),
+});
+```
+
+```ts
+//> my-custom.worker.ts
+import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
+
+exposeWorkerRxStorage({
+    storage: getRxStorageLoki()
+});
+```

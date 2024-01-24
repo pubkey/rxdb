@@ -97,6 +97,10 @@ const database = await createRxDatabase({
 });
 ```
 
+## Passing in a SharedWorker instance
+
+Instead of setting an url as `workerInput`, you can also specify a function that returns a new `SharedWorker` instance when called. This is mostly used when you have a custom worker file and dynamically import it.
+This works equal to the [workerInput of the Worker Storage](./rx-storage-worker.md#passing-in-a-worker-instance)
 
 ## Replication with SharedWorker
 
