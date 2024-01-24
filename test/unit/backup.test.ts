@@ -28,8 +28,6 @@ describe('backup.test.ts', () => {
         return;
     }
 
-    console.log('bbbackup 1');
-
     const backupRootPath = path.join(
         rootPath,
         'test_tmp',
