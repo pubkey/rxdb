@@ -101,9 +101,6 @@ export function initTestEnvironment() {
 
         events.EventEmitter.defaultMaxListeners = 100;
 
-        const __filename = url.fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-
         /**
          * Add a global function to process, so we can debug timings
          */
