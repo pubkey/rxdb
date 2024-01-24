@@ -1,11 +1,15 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    isFastMode,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import {
@@ -26,10 +30,9 @@ import {
     map,
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas.ts';
 
-config.parallel('reactive-query.test.js', () => {
-    config.parallel('positive', () => {
+describeParallel('reactive-query.test.js', () => {
+    describeParallel('positive', () => {
         it('get results of array when .subscribe() and filled array later', async () => {
             const c = await humansCollection.create(1);
             const query = c.find();
@@ -57,7 +60,7 @@ config.parallel('reactive-query.test.js', () => {
             await waitUntil(() => emitted.length === 1);
             assert.strictEqual(lastValue.length, 1);
 
-            const addHuman = schemaObjects.human();
+            const addHuman = schemaObjects.humanData();
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
             await c.insert(addHuman);
             await newPromiseWait.promise;
@@ -163,9 +166,9 @@ config.parallel('reactive-query.test.js', () => {
             await waitUntil(() => emitted.length > 0);
 
             await c.bulkInsert(
-                new Array(10).fill(0).map(() => schemaObjects.human())
+                new Array(10).fill(0).map(() => schemaObjects.humanData())
             );
-            await wait(config.isFastMode() ? 50 : 100);
+            await wait(isFastMode() ? 50 : 100);
             assert.ok(
                 emitted.length <= 3,
                 JSON.stringify(emitted.map(result => result.map(doc => doc.toJSON())), null, 4)
@@ -182,12 +185,12 @@ config.parallel('reactive-query.test.js', () => {
 
             const c = await humansCollection.create(1);
             let result = [];
-            c.insert(schemaObjects.human()); // do not await here!
+            c.insert(schemaObjects.humanData()); // do not await here!
             c.find().$.subscribe(r => {
                 result = r;
             });
 
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
             await waitUntil(() => result.length === 3);
 
             // should still have correct results after some time
@@ -212,15 +215,15 @@ config.parallel('reactive-query.test.js', () => {
     });
     describe('ISSUES', () => {
         // his test failed randomly, so we run it more often.
-        new Array(config.isFastMode() ? 3 : 10)
+        new Array(isFastMode() ? 3 : 10)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
-                    const docAmount = config.isFastMode() ? 2 : 10;
+                    const docAmount = isFastMode() ? 2 : 10;
                     const c = await humansCollection.createAgeIndex(0);
                     const docsData = new Array(docAmount)
                         .fill(0)
                         .map((_x, idx) => {
-                            const docData = schemaObjects.human();
+                            const docData = schemaObjects.humanData();
                             docData.age = idx + 10;
                             return docData;
                         });
@@ -299,7 +302,7 @@ config.parallel('reactive-query.test.js', () => {
         it('#136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
             const col = await humansCollection.create(3);
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             const doc: any = await col.insert(docData);
             const _id = doc._id;
             const streamed: any[] = [];
@@ -489,7 +492,7 @@ config.parallel('reactive-query.test.js', () => {
                 });
                 const collection = collections.humans;
 
-                await collection.insert(schemaObjects.human());
+                await collection.insert(schemaObjects.humanData());
 
                 const results: any[] = [];
 

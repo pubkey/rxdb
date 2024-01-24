@@ -1,9 +1,12 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -16,10 +19,9 @@ import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
-config.parallel('reactive-collection.test.js', () => {
+describeParallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {
@@ -36,7 +38,7 @@ config.parallel('reactive-collection.test.js', () => {
                 const c = cols[colName];
 
                 const changeEventPromise = firstValueFrom(c.$.pipe(first()));
-                c.insert(schemaObjects.human());
+                c.insert(schemaObjects.humanData());
                 const changeEvent = await changeEventPromise;
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
@@ -64,7 +66,7 @@ config.parallel('reactive-collection.test.js', () => {
                     emittedCollection.push(ce);
                 });
 
-                const docs = new Array(1).fill(0).map(() => schemaObjects.human());
+                const docs = new Array(1).fill(0).map(() => schemaObjects.humanData());
 
                 await collection.bulkInsert(docs);
 
@@ -123,7 +125,7 @@ config.parallel('reactive-collection.test.js', () => {
 
                 assert.deepStrictEqual(ar[0], []);
 
-                await c.insert(schemaObjects.human());
+                await c.insert(schemaObjects.humanData());
                 await AsyncTestUtil.waitUntil(() => ar.length === 2);
 
                 const doc: any = await c.findOne().exec();
@@ -142,12 +144,12 @@ config.parallel('reactive-collection.test.js', () => {
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.insert$.subscribe(cE => emitted.push(cE as any));
 
-            await c.insert(schemaObjects.human());
-            const doc = await c.insert(schemaObjects.human());
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
+            const doc = await c.insert(schemaObjects.humanData());
+            await c.insert(schemaObjects.humanData());
             await doc.remove();
 
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
 
             await AsyncTestUtil.waitUntil(() => {
                 return emitted.length === 4;
@@ -163,10 +165,10 @@ config.parallel('reactive-collection.test.js', () => {
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.update$.subscribe(cE => emitted.push(cE as any));
 
-            const doc1 = await c.insert(schemaObjects.human());
-            const doc2 = await c.insert(schemaObjects.human());
-            const doc3 = await c.insert(schemaObjects.human());
-            await c.insert(schemaObjects.human());
+            const doc1 = await c.insert(schemaObjects.humanData());
+            const doc2 = await c.insert(schemaObjects.humanData());
+            const doc3 = await c.insert(schemaObjects.humanData());
+            await c.insert(schemaObjects.humanData());
             await doc3.remove();
 
             await doc1.incrementalPatch({ firstName: 'foobar1' });
@@ -183,11 +185,11 @@ config.parallel('reactive-collection.test.js', () => {
 
             const emitted: RxChangeEvent<HumanDocumentType>[] = [];
             c.remove$.subscribe(cE => emitted.push(cE as any));
-            await c.insert(schemaObjects.human());
-            const doc1 = await c.insert(schemaObjects.human());
-            const doc2 = await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
+            const doc1 = await c.insert(schemaObjects.humanData());
+            const doc2 = await c.insert(schemaObjects.humanData());
             await doc1.remove();
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
             await doc2.remove();
 
 

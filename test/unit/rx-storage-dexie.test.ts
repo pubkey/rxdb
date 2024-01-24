@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -19,16 +19,16 @@ import {
     fromStorageToDexie
 } from '../../plugins/storage-dexie/index.mjs';
 
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
-    HumanDocumentType,
-    humanSchemaLiteral
-} from '../helper/schemas.ts';
+    schemaObjects,
+    humanSchemaLiteral,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 /**
  * RxStorageDexie specific tests
  */
-config.parallel('rx-storage-dexie.test.js', () => {
+describeParallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
         return;
     }
@@ -144,7 +144,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
 
             await storageInstance.bulkWrite(
                 new Array(5).fill(0).map(() => {
-                    const data = schemaObjects.human() as any;
+                    const data = schemaObjects.humanData() as any;
                     data._attachments = {};
                     data._deleted = false;
                     data.age = 18;

@@ -1,8 +1,6 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import { faker } from '@faker-js/faker';
-
-import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -12,9 +10,12 @@ import {
     RxJsonSchema,
     defaultHashSha256,
 } from '../../plugins/core/index.mjs';
+import {
+    humansCollection
+} from '../../plugins/test-utils/index.mjs';
 
 
-config.parallel('population.test.js', () => {
+describeParallel('population.test.js', () => {
     describe('createRxSchema', () => {
         describe('positive', () => {
             it('should allow to create a schema with a relation', () => {

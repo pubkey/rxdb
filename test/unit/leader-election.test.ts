@@ -1,9 +1,12 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import {
+    schemas,
+    humansCollection,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -20,7 +23,7 @@ describe('leader-election.test.js', () => {
         return;
     }
     addRxPlugin(RxDBLeaderElectionPlugin);
-    config.parallel('.die()', () => {
+    describeParallel('.die()', () => {
         it('other instance applies on death of leader', async () => {
             const name = randomCouchString(10);
             const c = await humansCollection.createMultiInstance(name);
@@ -59,7 +62,7 @@ describe('leader-election.test.js', () => {
             c2.database.destroy();
         });
         it('when 2 instances apply at the same time, one should win', async () => {
-            if (!config.platform.isNode()) return;
+            if (!isNode) return;
 
             // run often
             let tries = 0;
@@ -163,7 +166,7 @@ describe('leader-election.test.js', () => {
             await Promise.all(nonDeadDbs.map(db => db.destroy()));
         });
     });
-    config.parallel('integration', () => {
+    describeParallel('integration', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),

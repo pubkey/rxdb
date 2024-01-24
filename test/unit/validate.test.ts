@@ -5,9 +5,13 @@ import {
     deepEqual
 } from 'async-test-util';
 
-import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    EXAMPLE_REVISION_1,
+    isFastMode
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -32,8 +36,6 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
  */
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 
-
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 const validationImplementations: {
     key: string;
@@ -60,7 +62,7 @@ const validationImplementations: {
 
 
 validationImplementations.forEach(
-    validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
+    validationImplementation => describeParallel('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
         async function assertBulkWriteNoError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -94,8 +96,9 @@ validationImplementations.forEach(
         let storage: RxStorage<any, any>;
         describe('init', () => {
             it('create storage', () => {
+                const innerStorage: RxStorage<any, any> = config.storage.getStorage();
                 storage = validationImplementation.implementation({
-                    storage: config.storage.getStorage()
+                    storage: innerStorage
                 });
             });
         });
@@ -129,7 +132,7 @@ validationImplementations.forEach(
                 it('validate one human', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
                     await instance.bulkWrite([{
-                        document: toRxDocumentData(schemaObjects.human())
+                        document: toRxDocumentData(schemaObjects.humanData())
                     }], testContext);
                     await instance.close();
                 });
@@ -137,13 +140,13 @@ validationImplementations.forEach(
                 it('validate one point', async () => {
                     const instance = await getRxStorageInstance(schemas.point);
                     await instance.bulkWrite([{
-                        document: toRxDocumentData(schemaObjects.point())
+                        document: toRxDocumentData(schemaObjects.pointData())
                     }], testContext);
                     await instance.close();
                 });
                 it('validate without non-required', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj: any = schemaObjects.human();
+                    const obj: any = schemaObjects.humanData();
                     delete obj.age;
 
                     await instance.bulkWrite([{
@@ -153,7 +156,7 @@ validationImplementations.forEach(
                 });
                 it('validate nested', async () => {
                     const instance = await getRxStorageInstance(schemas.nestedHuman);
-                    const obj: any = schemaObjects.nestedHuman();
+                    const obj: any = schemaObjects.nestedHumanData();
                     await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
@@ -161,10 +164,10 @@ validationImplementations.forEach(
                 });
                 it('validate with decimal _meta.lwt times', async () => {
                     const instance = await getRxStorageInstance(schemas.nestedHuman);
-                    const amount = config.isFastMode() ? 10 : 155;
+                    const amount = isFastMode() ? 10 : 155;
                     const writeRows = new Array(amount)
                         .fill(0)
-                        .map(() => schemaObjects.nestedHuman())
+                        .map(() => schemaObjects.nestedHumanData())
                         .map(obj => toRxDocumentData(obj))
                         .map(document => ({ document }));
 
@@ -271,7 +274,7 @@ validationImplementations.forEach(
                 });
                 it('required field not given', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj: any = schemaObjects.human();
+                    const obj: any = schemaObjects.humanData();
                     delete obj.lastName;
 
                     await assertBulkWriteValidationError(
@@ -285,7 +288,7 @@ validationImplementations.forEach(
                 });
                 it('overflow maximum int', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj: any = schemaObjects.human();
+                    const obj: any = schemaObjects.humanData();
                     obj.age = 1000;
 
                     await assertBulkWriteValidationError(
@@ -299,7 +302,7 @@ validationImplementations.forEach(
                 });
                 it('additional property', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj: any = schemaObjects.human();
+                    const obj: any = schemaObjects.humanData();
                     obj['token'] = randomCouchString(5);
                     await assertBulkWriteValidationError(
                         instance,
@@ -336,7 +339,7 @@ validationImplementations.forEach(
                 });
                 it('do not allow primary==null', async () => {
                     const instance = await getRxStorageInstance(schemas.primaryHuman);
-                    const obj: any = schemaObjects.simpleHuman();
+                    const obj: any = schemaObjects.simpleHumanData();
                     obj.passportId = null;
                     await assertBulkWriteValidationError(
                         instance,
@@ -393,7 +396,7 @@ validationImplementations.forEach(
             describe('error layout', () => {
                 it('accessible error-parameters', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj = schemaObjects.human('foobar');
+                    const obj = schemaObjects.humanData('foobar');
                     (obj as any)['foobar'] = 'barfoo';
 
                     const result = await instance.bulkWrite([{
@@ -436,7 +439,7 @@ validationImplementations.forEach(
                             schema: schemas.human
                         }
                     });
-                    const human: any = schemaObjects.human();
+                    const human: any = schemaObjects.humanData();
                     delete human.firstName;
                     await assertThrows(
                         () => collections.human.insert(human),
@@ -482,7 +485,7 @@ validationImplementations.forEach(
                             schema: schemas.human
                         }
                     });
-                    const human: any = schemaObjects.human();
+                    const human: any = schemaObjects.humanData();
                     human['any'] = randomCouchString(20);
                     await assertThrows(
                         () => collections.human.insert(human),
@@ -525,7 +528,7 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    const obj: any = schemaObjects.simpleHuman();
+                    const obj: any = schemaObjects.simpleHumanData();
                     obj.firstName = 'foobar';
                     obj['foo'] = 'bar';
                     await assertThrows(
@@ -548,7 +551,7 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    let doc = await collection.insert(schemaObjects.human());
+                    let doc = await collection.insert(schemaObjects.humanData());
                     doc = await doc.incrementalModify((innerDoc: any) => {
                         innerDoc.age = 50;
                         return innerDoc;
@@ -578,7 +581,7 @@ validationImplementations.forEach(
                             }
                         });
                         const collection = collections.human;
-                        const docData = schemaObjects.simpleHuman();
+                        const docData = schemaObjects.simpleHumanData();
                         await Promise.all([
                             collection.incrementalUpsert(docData),
                             collection.incrementalUpsert(docData),
@@ -607,7 +610,7 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    const doc = await collection.insert(schemaObjects.nestedHuman());
+                    const doc = await collection.insert(schemaObjects.nestedHumanData());
                     await assertThrows(
                         () => doc.incrementalPatch({
                             foobar: 'foobar'
@@ -629,7 +632,7 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    const human = schemaObjects.human();
+                    const human = schemaObjects.humanData();
 
                     collection.preInsert(function (doc: any) {
                         doc.lastName = 1337;

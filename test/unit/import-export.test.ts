@@ -3,10 +3,6 @@
  */
 import assert from 'assert';
 
-import * as schemas from './../helper/schemas.ts';
-import * as schemaObjects from './../helper/schema-objects.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-
 import {
     createRxDatabase,
     RxCollection,
@@ -15,10 +11,19 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import config, { getEncryptedStorage, getPassword } from './config.ts';
-import { HumanDocumentType } from './../helper/schemas.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    getPassword,
+    getEncryptedStorage,
+    HumanDocumentType,
+    EncryptedObjectHumanDocumentType,
+    NestedHumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
-config.parallel('import-export.test.js', () => {
+describeParallel('import-export.test.js', () => {
     describe('Collection', () => {
         describe('.exportJSON()', () => {
             it('export the collection', async () => {
@@ -31,7 +36,7 @@ config.parallel('import-export.test.js', () => {
                 col.database.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
+                const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
@@ -45,7 +50,7 @@ config.parallel('import-export.test.js', () => {
 
                 const fns = [];
                 for (let i = 0; i < 10; i++)
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
+                    fns.push(col.insert(schemaObjects.encryptedObjectHumanData()));
                 await Promise.all(fns);
 
                 const json = await col.exportJSON();
@@ -125,7 +130,7 @@ config.parallel('import-export.test.js', () => {
                 col.database.destroy();
             });
             it('export encrypted as decrypted', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
+                const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
@@ -138,7 +143,7 @@ config.parallel('import-export.test.js', () => {
                 const col = cols.enchuman;
                 await Promise.all(
                     new Array(10).fill(0)
-                        .map(() => col.insert(schemaObjects.encryptedObjectHuman()))
+                        .map(() => col.insert(schemaObjects.encryptedObjectHumanData()))
                 );
                 const json = await db.exportJSON();
 
@@ -151,7 +156,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export with multiple collections', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
+                const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
@@ -171,8 +176,8 @@ config.parallel('import-export.test.js', () => {
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    fns.push(col2.insert(schemaObjects.encryptedObjectHuman()));
+                    fns.push(col.insert(schemaObjects.encryptedObjectHumanData()));
+                    fns.push(col2.insert(schemaObjects.encryptedObjectHumanData()));
                 }
                 await Promise.all(fns);
 
@@ -183,7 +188,7 @@ config.parallel('import-export.test.js', () => {
                 db.destroy();
             });
             it('export 1 of 2 collections', async () => {
-                const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
+                const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
@@ -201,8 +206,8 @@ config.parallel('import-export.test.js', () => {
 
                 const fns = [];
                 for (let i = 0; i < 10; i++) {
-                    fns.push(col.insert(schemaObjects.encryptedObjectHuman()));
-                    fns.push(col2.insert(schemaObjects.encryptedObjectHuman()));
+                    fns.push(col.insert(schemaObjects.encryptedObjectHumanData()));
+                    fns.push(col2.insert(schemaObjects.encryptedObjectHumanData()));
                 }
                 await Promise.all(fns);
 
@@ -244,7 +249,7 @@ config.parallel('import-export.test.js', () => {
                     });
                     const col = cols.human;
 
-                    const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.NestedHumanDocumentType>; }>({
+                    const db2 = await createRxDatabase<{ human: RxCollection<NestedHumanDocumentType>; }>({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
                         multiInstance: true
@@ -258,7 +263,7 @@ config.parallel('import-export.test.js', () => {
 
                     const fns = [];
                     for (let i = 0; i < 5; i++) {
-                        fns.push(col.insert(schemaObjects.human()));
+                        fns.push(col.insert(schemaObjects.humanData()));
                     }
                     await Promise.all(fns);
 

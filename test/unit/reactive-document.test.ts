@@ -5,10 +5,13 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -22,10 +25,9 @@ import {
 import type {
     RxChangeEvent
 } from '../../plugins/core/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
-config.parallel('reactive-document.test.js', () => {
+describeParallel('reactive-document.test.js', () => {
     describe('.save()', () => {
         describe('positive', () => {
             it('should fire on save', async () => {
@@ -182,7 +184,7 @@ config.parallel('reactive-document.test.js', () => {
                     }
                 });
                 const col = cols.humans;
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 await col.insert(docData);
                 const doc = await col.findOne().exec();
                 await AsyncTestUtil.assertThrows(

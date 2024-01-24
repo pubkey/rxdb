@@ -1,8 +1,11 @@
 import { waitUntil } from 'async-test-util';
+import { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
-import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -14,9 +17,8 @@ import {
     RxStorageInstanceMemory
 } from '../../plugins/storage-memory/index.mjs';
 
-import { HumanDocumentType } from '../helper/schemas.ts';
 
-config.parallel('conflict-handling.test.js', () => {
+describeParallel('conflict-handling.test.js', () => {
     describe('RxStorageInterface', () => {
         it('should resolve the emitted conflict of conflictResultionTasks()', async () => {
             const db = await createRxDatabase({
@@ -29,7 +31,7 @@ config.parallel('conflict-handling.test.js', () => {
                 }
             });
             const collection: RxCollection<HumanDocumentType> = cols.humans;
-            const doc = await collection.insert(schemaObjects.human());
+            const doc = await collection.insert(schemaObjects.humanData());
             const docData = doc.toJSON(true);
             const storageInstance: RxStorageInstanceMemory<HumanDocumentType> = collection.storageInstance as any;
             const oldResolveConflictResultionTask = storageInstance.resolveConflictResultionTask.bind(storageInstance);

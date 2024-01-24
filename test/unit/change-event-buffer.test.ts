@@ -1,11 +1,14 @@
 import assert from 'assert';
 
-import config from './config.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection
+} from '../../plugins/test-utils/index.mjs';
+import { describeParallel } from './config.ts';
+
 import AsyncTestUtil from 'async-test-util';
 
-config.parallel('change-event-buffer.test.js', () => {
+describeParallel('change-event-buffer.test.js', () => {
     describe('basic', () => {
         it('should contains some events', async () => {
             const col = await humansCollection.create(10);
@@ -16,12 +19,12 @@ config.parallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
 
@@ -32,10 +35,10 @@ config.parallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
-            const last = schemaObjects.human();
+            const last = schemaObjects.humanData();
             await col.insert(last);
             const lastBufferEvent = col._changeEventBuffer.buffer[col._changeEventBuffer.buffer.length - 1];
             assert.strictEqual(last.passportId, lastBufferEvent.documentData.passportId);
@@ -48,14 +51,14 @@ config.parallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             col._changeEventBuffer.limit = 10;
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
             assert.strictEqual(pointer, null);
 
             await Promise.all(
-                new Array(11).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer2 = col._changeEventBuffer.getArrayIndexByPointer(10);
@@ -69,21 +72,21 @@ config.parallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const pointer = col._changeEventBuffer.getArrayIndexByPointer(0);
             assert.strictEqual(pointer, null);
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             got = col._changeEventBuffer.getArrayIndexByPointer(15);
             assert.strictEqual(got, 4);
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
             got = col._changeEventBuffer.getArrayIndexByPointer(25);
             assert.strictEqual(got, 4);
@@ -97,7 +100,7 @@ config.parallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(10);
             col._changeEventBuffer.limit = 10;
 
-            const lastDoc = schemaObjects.human();
+            const lastDoc = schemaObjects.humanData();
             await col.insert(lastDoc);
 
             const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
@@ -112,7 +115,7 @@ config.parallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs: any[] = [];
@@ -130,7 +133,7 @@ config.parallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(30).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(30).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs = [];
@@ -147,7 +150,7 @@ config.parallel('change-event-buffer.test.js', () => {
             col._changeEventBuffer.limit = 10;
 
             await Promise.all(
-                new Array(10).fill(0).map(() => col.insert(schemaObjects.human()))
+                new Array(10).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
 
             const evs: any[] = col._changeEventBuffer.getFrom(1) as any;
@@ -161,7 +164,7 @@ config.parallel('change-event-buffer.test.js', () => {
             const col = await humansCollection.create(0);
             const q = col.find();
             await q.exec();
-            await col.insert(schemaObjects.human());
+            await col.insert(schemaObjects.humanData());
             await q.exec();
 
             // remove the doc
@@ -186,7 +189,7 @@ config.parallel('change-event-buffer.test.js', () => {
             let newVal = 0;
             while (newVal < 5) {
                 newVal++;
-                await oneDoc.incrementalPatch({age: newVal});
+                await oneDoc.incrementalPatch({ age: newVal });
             }
 
             const allEvents: any[] = q.collection._changeEventBuffer.getFrom(1) as any;

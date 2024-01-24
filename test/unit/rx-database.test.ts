@@ -1,4 +1,4 @@
-import config, { getPassword } from './config.ts';
+import config, { describeParallel } from './config.ts';
 import assert from 'assert';
 
 import {
@@ -13,12 +13,15 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import * as schemas from '../helper/schemas.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    getPassword
+} from '../../plugins/test-utils/index.mjs';
 
 
-config.parallel('rx-database.test.ts', () => {
+describeParallel('rx-database.test.ts', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('normal', async () => {
@@ -381,7 +384,7 @@ config.parallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await cols.human8.insert(schemaObjects.human());
+                await cols.human8.insert(schemaObjects.humanData());
                 await AsyncTestUtil.assertThrows(
                     () => db.addCollections({
                         human8: {
@@ -462,7 +465,7 @@ config.parallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await col1[collectionName].insert(schemaObjects.human());
+                await col1[collectionName].insert(schemaObjects.humanData());
                 await AsyncTestUtil.assertThrows(
                     () => db2.addCollections({
                         [collectionName]: {

@@ -16,7 +16,9 @@ import {
     createRxDatabase,
     randomCouchString
 } from '../../plugins/core/index.mjs';
-
+import {
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
 
@@ -25,8 +27,8 @@ describe('bug-report.test.js', () => {
          * you should comment in the return operator and adapt the if statement.
          */
         if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
+            !isNode // runs only in node
+            // isNode // runs only in the browser
         ) {
             // return;
         }

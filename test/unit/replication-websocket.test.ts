@@ -2,29 +2,35 @@ import assert from 'assert';
 import {
     wait, waitUntil
 } from 'async-test-util';
-import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    isNode,
+    isFastMode,
+    nextPort,
+    HumanWithTimestampDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
 } from '../../plugins/replication-websocket/index.mjs';
 import {
-    RxCollection, randomCouchString
+    RxCollection,
+    randomCouchString
 } from '../../plugins/core/index.mjs';
-import { nextPort } from '../helper/port-manager.ts';
-import { humanWithTimestamp } from '../helper/schemas.ts';
 
-config.parallel('replication-websocket.test.ts', () => {
+describeParallel('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
         return;
     }
-    if (!config.platform.isNode()) {
+    if (!isNode) {
         // creating a server only works on node.js
         return;
     }
 
-    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+    type TestDocType = HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
@@ -144,7 +150,7 @@ config.parallel('replication-websocket.test.ts', () => {
         remoteCollection.database.destroy();
     });
     it('should continue the replication when the connection is broken and established again', async () => {
-        if (config.isFastMode()) {
+        if (isFastMode()) {
             return;
         }
         const { localCollection, remoteCollection } = await getTestCollections({
@@ -203,7 +209,7 @@ config.parallel('replication-websocket.test.ts', () => {
         assert.strictEqual(serverDocOnClient.name, 'server-edited');
 
         // should still stream the events after the reconnect
-        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+        await remoteCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'server-doc-after-reconnect'
         }));
         await waitUntil(async () => {
@@ -229,26 +235,26 @@ config.parallel('replication-websocket.test.ts', () => {
 
         await localDatabase.addCollections({
             humans2: {
-                schema: humanWithTimestamp
+                schema: schemas.humanWithTimestamp
             }
         });
         await remoteDatabase.addCollections({
             humans2: {
-                schema: humanWithTimestamp
+                schema: schemas.humanWithTimestamp
             }
         });
 
         // add one initial doc to each collection
-        await localCollection.insert(schemaObjects.humanWithTimestamp({
+        await localCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'local1'
         }));
-        await localDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+        await localDatabase.humans2.insert(schemaObjects.humanWithTimestampData({
             id: 'local2'
         }));
-        await remoteCollection.insert(schemaObjects.humanWithTimestamp({
+        await remoteCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'remote1'
         }));
-        await remoteDatabase.humans2.insert(schemaObjects.humanWithTimestamp({
+        await remoteDatabase.humans2.insert(schemaObjects.humanWithTimestampData({
             id: 'remote2'
         }));
 
@@ -310,7 +316,7 @@ config.parallel('replication-websocket.test.ts', () => {
 
         // make an ongoing change
         async function updateDoc(
-            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>,
+            collection: RxCollection<HumanWithTimestampDocumentType>,
             id: string
         ) {
             const doc = await collection.findOne(id).exec(true);
@@ -325,7 +331,7 @@ config.parallel('replication-websocket.test.ts', () => {
         await replicationState2.awaitInSync();
 
         async function ensureUpdated(
-            collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType>
+            collection: RxCollection<HumanWithTimestampDocumentType>
         ) {
             const docs = await collection.find().exec();
             try {
@@ -385,7 +391,7 @@ config.parallel('replication-websocket.test.ts', () => {
         await awaitInSync();
 
 
-        await serverCollection.insert(schemaObjects.humanWithTimestamp({
+        await serverCollection.insert(schemaObjects.humanWithTimestampData({
             id: 'server-doc'
         }));
 

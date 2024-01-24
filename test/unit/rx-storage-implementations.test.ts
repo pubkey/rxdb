@@ -1,7 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import config, { describeParallel } from './config.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -44,7 +43,6 @@ import {
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.mjs';
-import * as schemas from '../helper/schemas.ts';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
 import {
@@ -55,12 +53,17 @@ import {
     waitUntil
 } from 'async-test-util';
 import { filter, map } from 'rxjs';
+
 import {
+    schemaObjects,
+    schemas,
+    isFastMode,
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
-    EXAMPLE_REVISION_4
-} from '../helper/revisions.ts';
+    EXAMPLE_REVISION_4,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -165,7 +168,7 @@ declare type NestedDoc = {
 
 const testContext = 'rx-storage-implementations.test.ts';
 
-config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
+describeParallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {
@@ -745,7 +748,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const docData = Object.assign(
-                    schemaObjects.averageSchema(),
+                    schemaObjects.averageSchemaData(),
                     {
                         _attachments: {},
                         _deleted: false,
@@ -1141,10 +1144,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._id = 'aa';
                 doc1.age = 1;
-                const doc2: any = schemaObjects.human();
+                const doc2: any = schemaObjects.humanData();
                 doc2._id = 'bb';
                 doc2.age = 100;
 
@@ -1265,7 +1268,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<schemas.HumanDocumentType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1275,7 +1278,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const query: FilledMangoQuery<schemas.HumanDocumentType> = {
+                const query: FilledMangoQuery<HumanDocumentType> = {
                     selector: {
                         age: {
                             $gt: 10,
@@ -1293,10 +1296,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._id = 'aa';
                 doc1.age = 1;
-                const doc2: any = schemaObjects.human();
+                const doc2: any = schemaObjects.humanData();
                 doc2._id = 'bb';
                 doc2.age = 100;
 
@@ -1329,7 +1332,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     query
                 );
 
-                const doc1: any = schemaObjects.human();
+                const doc1: any = schemaObjects.humanData();
                 doc1._deleted = true;
                 assert.strictEqual(
                     queryMatcher(doc1),
@@ -2061,7 +2064,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const amount = config.isFastMode() ? 100 : 10000;
+                const amount = isFastMode() ? 100 : 10000;
                 const writeRows = new Array(amount)
                     .fill(0)
                     .map(() => ({ document: getWriteData() }));
@@ -2267,7 +2270,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const writeAmount = config.isFastMode() ? 40 : 100;
+                const writeAmount = isFastMode() ? 40 : 100;
                 await storageInstance.bulkWrite(
                     new Array(writeAmount / 5)
                         .fill(0)

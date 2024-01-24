@@ -1,7 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import config, { describeParallel } from './config.ts';
 import {
     randomCouchString,
     now,
@@ -42,23 +41,25 @@ import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents/index.mjs';
-import * as schemas from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    isFastMode,
+    EXAMPLE_REVISION_3,
+    HumanDocumentType,
+    EXAMPLE_REVISION_2,
+    EXAMPLE_REVISION_1
+} from '../../plugins/test-utils/index.mjs';
 import {
     clone,
     wait,
     waitUntil,
     randomBoolean
 } from 'async-test-util';
-import { HumanDocumentType } from '../helper/schemas.ts';
-import {
-    EXAMPLE_REVISION_1,
-    EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_3
-} from '../helper/revisions.ts';
 
 const testContext = 'replication-protocol.test.ts';
 
-const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
+const useParallel = config.storage.name === 'dexie-worker' ? describe : describeParallel;
 
 function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
     /**
@@ -147,7 +148,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
     };
     function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
-            schemaObjects.human(),
+            schemaObjects.humanData(),
             partial
         );
         const withMeta: RxDocumentData<HumanDocumentType> = Object.assign(
@@ -940,7 +941,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             cleanUp(replicationState, masterInstance);
         });
         it('doing many writes on the fork should not lead to many writes on the master', async () => {
-            const writeAmount = config.isFastMode() ? 5 : 50;
+            const writeAmount = isFastMode() ? 5 : 50;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -1034,7 +1035,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
              * makes no sense because we do too less writes
              * to make a difference.
              */
-            if (!config.isFastMode()) {
+            if (!isFastMode()) {
                 assert.ok(
                     /**
                      * Here we do a '<=' instead of just a '<'
@@ -1109,7 +1110,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 return;
             }
 
-            const writeAmount = config.isFastMode() ? 5 : 10;
+            const writeAmount = isFastMode() ? 5 : 10;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -1285,7 +1286,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await cleanUp(replicationState, masterInstance);
         });
         it('should not stuck when replicating many document in the initial replication', async () => {
-            const writeAmount = config.isFastMode() ? 40 : 200;
+            const writeAmount = isFastMode() ? 40 : 200;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);

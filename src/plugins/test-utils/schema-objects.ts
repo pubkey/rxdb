@@ -9,8 +9,8 @@ import {
     randomString
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
-import { ensureNotFalsy, lastOfArray } from '../../plugins/core/index.mjs';
 import * as schemas from './schemas.ts';
+import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
 
 /**
  * Some storages had problems with umlauts and other special chars.
@@ -31,7 +31,7 @@ export interface SimpleHumanDocumentType {
     lastName: string;
 }
 
-export function human(
+export function humanData(
     passportId: string = randomStringWithSpecialChars(12),
     age: number = randomNumber(10, 50),
     firstName: string = faker.person.firstName()
@@ -44,7 +44,7 @@ export function human(
     };
 }
 
-export function simpleHuman(): SimpleHumanDocumentType {
+export function simpleHumanData(): SimpleHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         firstName: faker.person.firstName(),
@@ -57,7 +57,7 @@ export interface SimpleHumanV3DocumentType {
     age: number;
     oneOptional?: string;
 }
-export function simpleHumanV3(partial: Partial<SimpleHumanV3DocumentType> = {}): SimpleHumanV3DocumentType {
+export function simpleHumanV3Data(partial: Partial<SimpleHumanV3DocumentType> = {}): SimpleHumanV3DocumentType {
     const defaultObj = {
         passportId: randomStringWithSpecialChars(12),
         age: randomNumber(10, 50)
@@ -117,7 +117,7 @@ export interface NestedHumanDocumentType {
         level: number;
     };
 }
-export function nestedHuman(partial: Partial<NestedHumanDocumentType> = {}): NestedHumanDocumentType {
+export function nestedHumanData(partial: Partial<NestedHumanDocumentType> = {}): NestedHumanDocumentType {
     const defaultObj = {
         passportId: randomStringWithSpecialChars(12),
         firstName: faker.person.firstName(),
@@ -142,7 +142,7 @@ export interface DeepNestedHumanDocumentType {
         };
     };
 }
-export function deepNestedHuman(): DeepNestedHumanDocumentType {
+export function deepNestedHumanData(): DeepNestedHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         mainSkill: {
@@ -179,7 +179,7 @@ export interface HeroArrayDocumentType {
         damage: number;
     }[];
 }
-export function heroArray(): HeroArrayDocumentType {
+export function heroArrayData(): HeroArrayDocumentType {
     return {
         name: randomStringWithSpecialChars(6),
         skills: new Array(3).fill(0).map(() => {
@@ -211,7 +211,7 @@ export interface EncryptedHumanDocumentType {
     firstName: string;
     secret: string;
 }
-export function encryptedHuman(secret = randomStringWithSpecialChars(12)): EncryptedHumanDocumentType {
+export function encryptedHumanData(secret = randomStringWithSpecialChars(12)): EncryptedHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         firstName: faker.person.firstName(),
@@ -227,7 +227,7 @@ export interface EncryptedObjectHumanDocumentType {
         subname: string;
     };
 }
-export function encryptedObjectHuman(): EncryptedObjectHumanDocumentType {
+export function encryptedObjectHumanData(): EncryptedObjectHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         firstName: faker.person.firstName(),
@@ -282,7 +282,7 @@ export interface CompoundIndexDocumentType {
     passportCountry: string;
     age: number;
 }
-export function compoundIndex(): CompoundIndexDocumentType {
+export function compoundIndexData(): CompoundIndexDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         passportCountry: randomStringWithSpecialChars(12),
@@ -295,7 +295,7 @@ export interface CompoundIndexNoStringDocumentType {
     passportCountry: { [prop: string]: string; };
     age: number;
 }
-export function compoundIndexNoString(): CompoundIndexNoStringDocumentType {
+export function compoundIndexNoStringData(): CompoundIndexNoStringDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         passportCountry: { [randomStringWithSpecialChars(12)]: randomStringWithSpecialChars(12) },
@@ -318,7 +318,7 @@ export interface RefHumanDocumentType {
     name: string;
     bestFriend: string;
 }
-export function refHuman(bestFriend?: string): RefHumanDocumentType {
+export function refHumanData(bestFriend?: string): RefHumanDocumentType {
     return {
         name: randomStringWithSpecialChars(12),
         bestFriend
@@ -331,7 +331,7 @@ export interface RefHumanNestedDocumentType {
         bestFriend: string;
     };
 }
-export function refHumanNested(bestFriend?: string): RefHumanNestedDocumentType {
+export function refHumanNestedData(bestFriend?: string): RefHumanNestedDocumentType {
     return {
         name: randomStringWithSpecialChars(12),
         foo: {
@@ -347,7 +347,7 @@ export interface HumanWithTimestampDocumentType {
     updatedAt: number;
     deletedAt?: number;
 }
-export function humanWithTimestamp(givenData: Partial<HumanWithTimestampDocumentType> = {}): HumanWithTimestampDocumentType {
+export function humanWithTimestampData(givenData: Partial<HumanWithTimestampDocumentType> = {}): HumanWithTimestampDocumentType {
     let ret = {
         id: randomStringWithSpecialChars(12),
         name: faker.person.firstName(),
@@ -378,7 +378,7 @@ export interface AverageSchemaDocumentType {
 
 
 const averageSchemaForFieldLength = schemas.averageSchema() as any;
-export function averageSchema(
+export function averageSchemaData(
     partial: Partial<AverageSchemaDocumentType> = {}
 ): AverageSchemaDocumentType {
     return Object.assign(
@@ -408,7 +408,7 @@ export interface PointDocumentType {
     x: number;
     y: number;
 }
-export function point(): PointDocumentType {
+export function pointData(): PointDocumentType {
     return {
         id: randomStringWithSpecialChars(12),
         x: faker.number.int(),

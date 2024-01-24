@@ -1,13 +1,6 @@
 import AsyncTestUtil from 'async-test-util';
 
 import {
-    RxJsonSchema,
-    toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema,
-    overwritable,
-    flatClone
-} from '../../plugins/core/index.mjs';
-import {
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,
     NestedHumanDocumentType,
@@ -29,6 +22,13 @@ import {
     NoIndexHumanDocumentType,
     HumanWithCompositePrimary
 } from './schema-objects.ts';
+import { overwritable } from '../../overwritable.ts';
+import { toTypedRxJsonSchema } from '../../rx-schema.ts';
+import type {
+    ExtractDocumentTypeFromTypedRxJsonSchema,
+    RxJsonSchema
+} from '../../types/rx-schema';
+import { flatClone } from '../utils/index.ts';
 
 
 export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({

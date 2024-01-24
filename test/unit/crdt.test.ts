@@ -2,8 +2,11 @@ import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import {
+    schemaObjects,
+    schemas,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
     randomCouchString,
@@ -28,11 +31,11 @@ import {
     getCRDTConflictHandler
 } from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
-config.parallel('crdt.test.js', () => {
+describeParallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
         crdts?: CRDTDocumentField<RxDocType>;
     };
@@ -46,7 +49,7 @@ config.parallel('crdt.test.js', () => {
     }
 
 
-    async function getCRDTCollection<RxDocType = schemas.HumanDocumentType>(
+    async function getCRDTCollection<RxDocType = HumanDocumentType>(
         schema: RxJsonSchema<RxDocType> = schemas.human as any
     ): Promise<RxCollection<WithCRDTs<RxDocType>>> {
         const useSchema = enableCRDTinSchema(schema);
@@ -101,7 +104,7 @@ config.parallel('crdt.test.js', () => {
     describe('.insert()', () => {
         it('should insert a document and initialize the crdt state', async () => {
             const collection = await getCRDTCollection();
-            const writeData = schemaObjects.human();
+            const writeData = schemaObjects.humanData();
             const doc = await collection.insert(writeData);
             assert.ok(doc);
             const docData = doc.toJSON(true);
@@ -114,7 +117,7 @@ config.parallel('crdt.test.js', () => {
         });
         it('should insert document via bulkInsert', async () => {
             const collection = await getCRDTCollection();
-            const writeData = schemaObjects.human();
+            const writeData = schemaObjects.humanData();
             await collection.bulkInsert([writeData]);
             const doc = await collection.findOne().exec(true);
             assert.ok(doc);
@@ -130,7 +133,7 @@ config.parallel('crdt.test.js', () => {
     describe('.insertCRDT()', () => {
         it('should insert the document', async () => {
             const collection = await getCRDTCollection();
-            const writeData = schemaObjects.human();
+            const writeData = schemaObjects.humanData();
 
             const doc1 = await collection.insertCRDT({
                 ifMatch: {
@@ -175,7 +178,7 @@ config.parallel('crdt.test.js', () => {
             });
             const collection = db.docs;
 
-            const writeData = schemaObjects.human('insert-me');
+            const writeData = schemaObjects.humanData('insert-me');
             (writeData as any).optional_value = undefined;
             const doc1 = await collection.insert(writeData);
             assert.strictEqual(doc1.getLatest().optional_value, undefined);
@@ -184,7 +187,7 @@ config.parallel('crdt.test.js', () => {
         });
         it('should respect the if-else logic', async () => {
             const collection = await getCRDTCollection();
-            const writeData = schemaObjects.human('foobar', 1);
+            const writeData = schemaObjects.humanData('foobar', 1);
 
             const doc1 = await collection.insert(writeData);
             const doc2 = await collection.insertCRDT({
@@ -211,7 +214,7 @@ config.parallel('crdt.test.js', () => {
     describe('.remove()', () => {
         it('should delete the document via .remove', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
             await doc.remove();
 
             const docsAfter = await collection.find().exec();
@@ -228,7 +231,7 @@ config.parallel('crdt.test.js', () => {
     describe('.incrementalPatch()', () => {
         it('should update the document', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
             await doc.incrementalPatch({
                 age: 10
             });
@@ -253,7 +256,7 @@ config.parallel('crdt.test.js', () => {
     describe('disallowed methods', () => {
         it('should throw the correct errors', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
 
             await AsyncTestUtil.assertThrows(
                 () => doc.incrementalModify(d => d),
@@ -269,7 +272,7 @@ config.parallel('crdt.test.js', () => {
         return; // TODO
         it('should update the document via CRDT', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
             await doc.updateCRDT({
                 ifMatch: {
                     $inc: {
@@ -290,7 +293,7 @@ config.parallel('crdt.test.js', () => {
         });
         it('should delete the document via CRDT', async () => {
             const collection = await getCRDTCollection();
-            const doc = await collection.insert(schemaObjects.human('foobar', 1));
+            const doc = await collection.insert(schemaObjects.humanData('foobar', 1));
             await doc.updateCRDT({
                 ifMatch: {
                     $set: {
@@ -315,7 +318,7 @@ config.parallel('crdt.test.js', () => {
         let conflictHandler: any;
         describe('init', () => {
             it('init', () => {
-                conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
+                conflictHandler = getCRDTConflictHandler<WithCRDTs<HumanDocumentType>>(
                     defaultHashSha256,
                     schema
                 );
@@ -323,7 +326,7 @@ config.parallel('crdt.test.js', () => {
         });
         describe('.getCRDTConflictHandler()', () => {
             it('should merge 2 inserts correctly', async () => {
-                const writeData = schemaObjects.human();
+                const writeData = schemaObjects.humanData();
                 async function getDoc() {
                     const c = await getCRDTCollection();
                     const doc = await c.insert(writeData);
@@ -356,7 +359,7 @@ config.parallel('crdt.test.js', () => {
                 return;
             }
             const REPLICATION_IDENTIFIER_TEST = 'replication-crdt-tests';
-            type TestDocType = WithCRDTs<schemas.HumanDocumentType>;
+            type TestDocType = WithCRDTs<HumanDocumentType>;
             type CheckpointType = any;
             function getPullHandler(
                 remoteCollection: RxCollection<TestDocType>
@@ -434,7 +437,7 @@ config.parallel('crdt.test.js', () => {
                 const serverCollection = await getCRDTCollection();
 
                 // first replicate the document once
-                const writeData = schemaObjects.human('foobar', 0);
+                const writeData = schemaObjects.humanData('foobar', 0);
                 await clientACollection.insert(writeData);
                 await replicateOnce(clientACollection, serverCollection);
 

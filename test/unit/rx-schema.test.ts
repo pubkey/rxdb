@@ -5,9 +5,11 @@ import {
 } from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas
+} from '../../plugins/test-utils/index.mjs';
 
 import { checkSchema } from '../../plugins/dev-mode/index.mjs';
 
@@ -28,7 +30,7 @@ import {
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
-config.parallel('rx-schema.test.ts', () => {
+describeParallel('rx-schema.test.ts', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {
@@ -711,7 +713,7 @@ config.parallel('rx-schema.test.ts', () => {
             describe('positive', () => {
                 it('should allow a valid change', () => {
                     const schema = createRxSchema(schemas.human, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     const dataAfter = clone(dataBefore);
                     dataAfter.age = 100;
 
@@ -721,7 +723,7 @@ config.parallel('rx-schema.test.ts', () => {
             describe('negative', () => {
                 it('should not allow to change the primary', async () => {
                     const schema = createRxSchema(schemas.primaryHuman, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     const dataAfter = clone(dataBefore);
                     dataAfter.passportId = 'foobar';
 
@@ -733,7 +735,7 @@ config.parallel('rx-schema.test.ts', () => {
                 });
                 it('should not allow to change a final field', async () => {
                     const schema = createRxSchema(schemas.humanFinal, defaultHashSha256);
-                    const dataBefore = schemaObjects.human();
+                    const dataBefore = schemaObjects.humanData();
                     dataBefore.age = 1;
                     const dataAfter = clone(dataBefore);
                     dataAfter.age = 100;

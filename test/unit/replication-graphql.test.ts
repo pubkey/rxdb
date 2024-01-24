@@ -16,13 +16,7 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config, { getEncryptedStorage, getPassword } from './config.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import {
-    HumanWithTimestampDocumentType
-} from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
-
+import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     RxJsonSchema,
@@ -45,7 +39,18 @@ import {
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression/index.mjs';
-import * as schemas from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    isNode,
+    getPassword,
+    isFastMode,
+    isDeno,
+    isBun,
+    getEncryptedStorage,
+    enableKeyCompression
+} from '../../plugins/test-utils/index.mjs';
 import {
     GRAPHQL_PATH,
     getDocsOnServer
@@ -60,7 +65,7 @@ import {
     parse as parseQuery
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
-import { enableKeyCompression } from '../helper/schemas.ts';
+import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
 
@@ -165,14 +170,14 @@ describe('replication-graphql.test.ts', () => {
         });
     }
     describe('node', () => {
-        if (!config.platform.isNode()) {
+        if (!isNode) {
             return;
         }
         let SpawnServer: any;
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
-                .map(() => schemaObjects.humanWithTimestamp())
+                .map(() => schemaObjects.humanWithTimestampData())
                 .map((doc: any) => {
                     doc['deleted'] = false;
                     return doc;
@@ -180,14 +185,14 @@ describe('replication-graphql.test.ts', () => {
         }
         describe('init', () => {
             it('import server module', async () => {
-                if (config.platform.name === 'node') {
+                if (isNode) {
                     SpawnServer = await import('../helper/graphql-server.js');
-                } else if (config.isDeno) {
+                } else if (isDeno) {
                     SpawnServer = await import('../helper/graphql-server.ts');
                 }
             });
         });
-        config.parallel('graphql-server.js', () => {
+        describeParallel('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
                 const res = await graphQLRequest(
@@ -346,7 +351,7 @@ describe('replication-graphql.test.ts', () => {
                 await server.close();
             });
         });
-        config.parallel('live:false pull only', () => {
+        describeParallel('live:false pull only', () => {
             it('should pull all documents in one batch', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -505,7 +510,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('should handle deleted documents', async () => {
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestampData();
                 doc['deleted'] = true;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -534,7 +539,7 @@ describe('replication-graphql.test.ts', () => {
              * @link https://github.com/pubkey/rxdb/pull/3644
              */
             it('should handle truthy deleted flag values', async () => {
-                const doc: any = schemaObjects.humanWithTimestamp();
+                const doc: any = schemaObjects.humanWithTimestampData();
                 doc['deletedAt'] = Math.floor(Date.now());
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -699,7 +704,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.cancel();
                 const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                await wait(config.isFastMode() ? 200 : 1500);
+                await wait(isFastMode() ? 200 : 1500);
                 assert.deepStrictEqual(
                     queryBuilderCountAfterCancel,
                     queryBuilderCount
@@ -710,7 +715,7 @@ describe('replication-graphql.test.ts', () => {
             });
 
         });
-        config.parallel('live:true pull only', () => {
+        describeParallel('live:true pull only', () => {
             it('should also get documents that come in afterwards', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -796,7 +801,7 @@ describe('replication-graphql.test.ts', () => {
             });
             it('should overwrite the client doc if it was deleted locally before synced from the server', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
-                const localDoc: any = schemaObjects.humanWithTimestamp();
+                const localDoc: any = schemaObjects.humanWithTimestampData();
                 const rxDoc = await c.insert(localDoc);
                 await rxDoc.remove();
 
@@ -831,7 +836,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('should fail because initial replication never resolves', async () => {
-                if (config.isFastMode()) {
+                if (isFastMode()) {
                     // this test takes too long, do not run in fast mode
                     return;
                 }
@@ -877,7 +882,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        config.parallel('push only', () => {
+        describeParallel('push only', () => {
             it('should send all documents in one batch', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
@@ -989,7 +994,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // check for inserts
-                await c.insert(schemaObjects.humanWithTimestamp());
+                await c.insert(schemaObjects.humanWithTimestampData());
                 await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     return docsOnServer2.length === amount + 1;
@@ -1079,7 +1084,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.cancel();
                 const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                await wait(config.isFastMode() ? 200 : 1500);
+                await wait(isFastMode() ? 200 : 1500);
                 assert.deepStrictEqual(
                     queryBuilderCountAfterCancel,
                     queryBuilderCount
@@ -1185,7 +1190,7 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
         });
-        config.parallel('push and pull', () => {
+        describeParallel('push and pull', () => {
             it('should push and pull all docs; live: false', async () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
@@ -1295,14 +1300,14 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp({
+                const doc: any = schemaObjects.humanWithTimestampData({
                     id: 'z-some-local'
                 });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
 
                 docsOnServer = server.getDocuments();
-                const insertData = schemaObjects.humanWithTimestamp({
+                const insertData = schemaObjects.humanWithTimestampData({
                     id: 'z-some-server'
                 });
                 await c.insert(insertData);
@@ -1359,12 +1364,12 @@ describe('replication-graphql.test.ts', () => {
 
 
                 // insert one on local and one on server
-                const doc: any = schemaObjects.humanWithTimestamp({
+                const doc: any = schemaObjects.humanWithTimestampData({
                     name: 'many1local'
                 });
                 doc['deleted'] = false;
                 await server.setDocument(doc);
-                await c.insert(schemaObjects.humanWithTimestamp({
+                await c.insert(schemaObjects.humanWithTimestampData({
                     name: 'many1server'
                 }));
 
@@ -1391,7 +1396,7 @@ describe('replication-graphql.test.ts', () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                if (config.isFastMode()) {
+                if (isFastMode()) {
                     // TODO this test randomly fails in fast mode with lokijs storage.
                     return;
                 }
@@ -1455,7 +1460,7 @@ describe('replication-graphql.test.ts', () => {
 
 
                 // insert to collection1
-                await collection1.insert(schemaObjects.humanWithTimestamp({
+                await collection1.insert(schemaObjects.humanWithTimestampData({
                     name: 'mt1'
                 }));
                 await waitUntil(async () => {
@@ -1464,7 +1469,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 // insert to collection2
-                await collection2.insert(schemaObjects.humanWithTimestamp({
+                await collection2.insert(schemaObjects.humanWithTimestampData({
                     name: 'mt2'
                 }));
                 await waitUntil(async () => {
@@ -1516,7 +1521,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(pushCount, 0);
 
                 // insert one document at the client
-                await c.insert(schemaObjects.humanWithTimestamp());
+                await c.insert(schemaObjects.humanWithTimestampData());
 
                 /**
                  * After the insert,
@@ -1540,7 +1545,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        config.parallel('live:true with pull.stream$', () => {
+        describeParallel('live:true with pull.stream$', () => {
             it('should pull all ongoing document writes from the server', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
@@ -1691,7 +1696,7 @@ describe('replication-graphql.test.ts', () => {
         });
 
 
-        config.parallel('observables', () => {
+        describeParallel('observables', () => {
             it('should emit the received documents when pulling', async () => {
                 const testData = getTestData(batchSize);
                 const [c, server] = await Promise.all([
@@ -1799,7 +1804,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
 
-                const localDoc = schemaObjects.humanWithTimestamp();
+                const localDoc = schemaObjects.humanWithTimestampData();
                 await c.insert(localDoc);
 
                 const error = ensureNotFalsy(
@@ -1821,7 +1826,7 @@ describe('replication-graphql.test.ts', () => {
             });
         });
 
-        config.parallel('.graphQLSchemaFromRxSchema()', () => {
+        describeParallel('.graphQLSchemaFromRxSchema()', () => {
             it('assumption: buildSchema() fails on non-graphql input', () => {
                 assert.throws(
                     () => buildSchema('foobar')
@@ -1885,7 +1890,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(build);
             });
         });
-        config.parallel('.pullQueryBuilderFromRxSchema()', () => {
+        describeParallel('.pullQueryBuilderFromRxSchema()', () => {
             it('assumption: parseQuery() fails on non-graphql input', () => {
                 assert.throws(
                     () => parseQuery('foobar')
@@ -1924,7 +1929,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
         });
-        config.parallel('.pullStreamBuilderFromRxSchema()', () => {
+        describeParallel('.pullStreamBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
@@ -1959,7 +1964,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
         });
-        config.parallel('.pushQueryBuilderFromRxSchema()', () => {
+        describeParallel('.pushQueryBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
                 const builder = pushQueryBuilderFromRxSchema(
                     'human', {
@@ -2009,7 +2014,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
             });
             it('should keep the deleted value', async () => {
-                const docData = schemaObjects.humanWithTimestamp();
+                const docData = schemaObjects.humanWithTimestampData();
                 /**
                  * The GraphQL replication will
                  * internally switch out _deleted with the deleted flag.
@@ -2034,7 +2039,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(pushDoc.deleted);
             });
         });
-        config.parallel('integrations', () => {
+        describeParallel('integrations', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
@@ -2134,7 +2139,7 @@ describe('replication-graphql.test.ts', () => {
                     }
                 });
                 const collection = collections.humans;
-                await collection.insert(schemaObjects.humanWithTimestamp());
+                await collection.insert(schemaObjects.humanWithTimestampData());
 
                 const server = await SpawnServer.spawn([]);
 
@@ -2299,9 +2304,9 @@ describe('replication-graphql.test.ts', () => {
                 await c.database.destroy();
             });
         });
-        config.parallel('issues', () => {
+        describeParallel('issues', () => {
             it('push not working on slow db', async () => {
-                if (config.isBun) {
+                if (isBun) {
                     // TODO for somehow bun times out here
                     return;
                 }
@@ -2326,7 +2331,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = 30;
                 await Promise.all(
                     new Array(amount).fill(0)
-                        .map(() => schemaObjects.humanWithTimestamp())
+                        .map(() => schemaObjects.humanWithTimestampData())
                         .map(d => collection.insert(d))
                 );
                 const server = await SpawnServer.spawn(getTestData(0));
@@ -2346,7 +2351,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // insert one which will trigger an auto push
-                await collection.insert(schemaObjects.humanWithTimestamp());
+                await collection.insert(schemaObjects.humanWithTimestampData());
 
                 await waitUntil(async () => {
                     const docs = await server.getDocuments();
@@ -2400,7 +2405,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 // insert one which will trigger an auto push
-                const insertedDoc = await collection.insert(schemaObjects.humanWithTimestamp());
+                const insertedDoc = await collection.insert(schemaObjects.humanWithTimestampData());
                 assert.ok(insertedDoc);
 
                 await waitUntil(async () => {
@@ -2635,7 +2640,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInitialReplication();
 
                 // should push the original doc
-                const doc = await c.insert(schemaObjects.humanWithTimestamp({
+                const doc = await c.insert(schemaObjects.humanWithTimestampData({
                     age: 1
                 }));
                 await replicationState.awaitInSync();
@@ -2655,12 +2660,12 @@ describe('replication-graphql.test.ts', () => {
         });
     });
     describe('browser', () => {
-        if (config.platform.isNode()) {
+        if (isNode) {
             return;
         }
         describe('issues', () => {
             it('push not working on slow db', async () => {
-                if (config.isBun || config.isDeno) {
+                if (isBun || isDeno) {
                     // TODO for somehow bun times out here
                     return;
                 }
@@ -2677,17 +2682,17 @@ describe('replication-graphql.test.ts', () => {
                         schema: schemas.humanWithTimestampAllIndex
                     }
                 });
-                const collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType> = collections.humans;
+                const collection: RxCollection<HumanWithTimestampDocumentType> = collections.humans;
 
                 // insert data to slow down the db
                 const amount = 30;
                 await Promise.all(
                     new Array(amount).fill(0)
-                        .map(() => schemaObjects.humanWithTimestamp())
+                        .map(() => schemaObjects.humanWithTimestampData())
                         .map(d => collection.insert(d))
                 );
 
-                const replicationState = replicateGraphQL<schemaObjects.HumanWithTimestampDocumentType, any>({
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
                     replicationIdentifier: randomCouchString(10),
                     collection,
                     url: {
@@ -2738,7 +2743,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 await replicationState2.awaitInitialReplication();
-                const addDoc = schemaObjects.humanWithTimestamp();
+                const addDoc = schemaObjects.humanWithTimestampData();
                 await collection2.insert(addDoc);
 
                 await waitUntil(async () => {

@@ -2,10 +2,14 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from '../helper/schemas.ts';
+import config, { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    isFastMode,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -25,18 +29,19 @@ import {
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
+import { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {
-    config.parallel('statics', () => { });
-    config.parallel('prototype-merge', () => {
+    describeParallel('statics', () => { });
+    describeParallel('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', () => {
                 const schema = createRxSchema(schemas.human, defaultHashSha256);
                 assert.ok(schema);
                 const proto = schema.getDocumentPrototype();
                 assert.ok(proto);
-                const testObjData: any = schemaObjects.human();
+                const testObjData: any = schemaObjects.humanData();
                 const testObj: any = {
                     get(path: string) {
                         return testObjData[path];
@@ -118,7 +123,7 @@ describe('rx-document.test.js', () => {
         });
 
     });
-    config.parallel('.get()', () => {
+    describeParallel('.get()', () => {
         it('get a value', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec(true);
@@ -143,7 +148,7 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('.remove()', () => {
+    describeParallel('.remove()', () => {
         describe('positive', () => {
             it('delete 1 document', async () => {
                 const c = await humansCollection.create(5);
@@ -256,7 +261,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.update()', () => {
+    describeParallel('.update()', () => {
         describe('positive', () => {
             it('$set a value with a mongo like query', async () => {
                 const c = await humansCollection.createPrimary(1);
@@ -339,7 +344,7 @@ describe('rx-document.test.js', () => {
                         }
                     }
                 });
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 docData.age = 1;
                 const doc = await cols.humans.insert(docData);
                 await AsyncTestUtil.assertThrows(
@@ -355,7 +360,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.modify()', () => {
+    describeParallel('.modify()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -435,7 +440,7 @@ describe('rx-document.test.js', () => {
             });
             it('should work when inserting on a slow storage', async () => {
                 if (
-                    !config.platform.isNode()
+                    !isNode
                 ) {
                     return;
                 }
@@ -449,7 +454,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const c = cols.humans;
-                await c.insert(schemaObjects.simpleHuman());
+                await c.insert(schemaObjects.simpleHumanData());
                 const doc = await c.findOne().exec();
 
                 doc.incrementalModify((innerDoc: any) => {
@@ -487,8 +492,8 @@ describe('rx-document.test.js', () => {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols.humans;
-                await c.insert(schemaObjects.simpleHuman());
+                const c: RxCollection<SimpleHumanDocumentType> = cols.humans;
+                await c.insert(schemaObjects.simpleHumanData());
                 let doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
                 assert.ok(docData);
@@ -509,7 +514,7 @@ describe('rx-document.test.js', () => {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c2: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols2.humans;
+                const c2: RxCollection<SimpleHumanDocumentType> = cols2.humans;
                 const doc2 = await c2.findOne().exec(true);
                 assert.strictEqual(doc.passportId, doc2.passportId);
                 const docData2 = doc2.toJSON();
@@ -535,7 +540,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const c = cols.humans;
-                const doc = await c.insert(schemaObjects.simpleHuman());
+                const doc = await c.insert(schemaObjects.simpleHumanData());
                 const db2 = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
@@ -599,7 +604,7 @@ describe('rx-document.test.js', () => {
                     }
                 });
                 const col = cols.humans;
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 docData.age = 1;
                 const doc = await col.insert(docData);
 
@@ -643,7 +648,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.patch()', () => {
+    describeParallel('.patch()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -691,7 +696,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.toJSON()', () => {
+    describeParallel('.toJSON()', () => {
         it('should get the documents data as json', async () => {
             const c = await humansCollection.create(1);
             const doc: any = await c.findOne().exec();
@@ -747,7 +752,7 @@ describe('rx-document.test.js', () => {
             });
             const c = cols.humans;
 
-            const doc = await c.insert(schemaObjects.human());
+            const doc = await c.insert(schemaObjects.humanData());
             await doc.putAttachment({
                 id: 'sampledata',
                 data: createBlob('foo bar', 'application/octet-stream'),
@@ -765,7 +770,7 @@ describe('rx-document.test.js', () => {
             db.destroy();
         });
     });
-    config.parallel('.toMutableJSON()', () => {
+    describeParallel('.toMutableJSON()', () => {
         it('should be able to mutate the output', async () => {
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec(true);
@@ -774,7 +779,7 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('Proxy', () => {
+    describeParallel('Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
@@ -980,10 +985,10 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('issues', () => {
+    describeParallel('issues', () => {
         it('#66 - insert -> remove -> upsert does not give new state', async () => {
             const c = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             const primary = docData.passportId;
 
 
@@ -1004,10 +1009,10 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
         // randomly failed -> run multiple times
-        new Array(config.isFastMode() ? 1 : 4).fill(0).forEach((_v, idx) => {
+        new Array(isFastMode() ? 1 : 4).fill(0).forEach((_v, idx) => {
             it('#66 - insert -> remove -> insert does not give new state (#' + idx + ')', async () => {
                 const c = await humansCollection.createPrimary(0);
-                const docData = schemaObjects.simpleHuman();
+                const docData = schemaObjects.simpleHumanData();
                 const primary = docData.passportId;
 
                 // insert

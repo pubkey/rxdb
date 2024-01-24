@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config, { getEncryptedStorage, getPassword } from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -19,12 +19,16 @@ import {
     ensureNotFalsy,
 } from '../../plugins/core/index.mjs';
 
-import * as schemas from './../helper/schemas.ts';
-import * as schemaObjects from './../helper/schema-objects.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
-import { HumanDocumentType } from './../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    getPassword,
+    getEncryptedStorage,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
-config.parallel('cross-instance.test.js', () => {
+describeParallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
         return;
     }
@@ -72,7 +76,7 @@ config.parallel('cross-instance.test.js', () => {
                     received++;
                     assert.ok(cEvent.operation);
                 });
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
                 await AsyncTestUtil.waitUntil(() => {
                     return received > 0;
                 });
@@ -95,7 +99,7 @@ config.parallel('cross-instance.test.js', () => {
                     emitted.push(cEvent);
                     assert.ok(cEvent.operation);
                 });
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
                 await wait(100);
 
                 await AsyncTestUtil.waitUntil(() => {
@@ -120,7 +124,7 @@ config.parallel('cross-instance.test.js', () => {
                 received++;
                 assert.ok(cEvent.operation);
             });
-            await c1.insert(schemaObjects.human());
+            await c1.insert(schemaObjects.humanData());
 
             await AsyncTestUtil.waitUntil(() => {
                 return received > 0;
@@ -136,7 +140,7 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
-            await c1.insert(schemaObjects.human());
+            await c1.insert(schemaObjects.humanData());
 
             const doc1 = await c1.findOne().exec(true);
 
@@ -192,7 +196,7 @@ config.parallel('cross-instance.test.js', () => {
                     schema: schemas.encryptedHuman
                 }
             });
-            await c1.human.insert(schemaObjects.encryptedHuman());
+            await c1.human.insert(schemaObjects.encryptedHumanData());
 
             const doc1 = await c1.human.findOne().exec(true);
 
@@ -252,7 +256,7 @@ config.parallel('cross-instance.test.js', () => {
                     schema: schemas.encryptedObjectHuman
                 }
             });
-            await c1.human.insert(schemaObjects.encryptedObjectHuman());
+            await c1.human.insert(schemaObjects.encryptedObjectHumanData());
 
             const doc1 = await c1.human.findOne().exec(true);
             let doc2: typeof doc1 | null = null;
@@ -304,7 +308,7 @@ config.parallel('cross-instance.test.js', () => {
                 const emitted = [];
                 c2.$.subscribe(ev => emitted.push(ev));
 
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
 
                 await waitUntil(() => emitted.length >= 1);
 
@@ -322,8 +326,8 @@ config.parallel('cross-instance.test.js', () => {
                     assert.ok(cEvent.operation);
                 });
 
-                await c1.insert(schemaObjects.human());
-                await c1.insert(schemaObjects.human());
+                await c1.insert(schemaObjects.humanData());
+                await c1.insert(schemaObjects.humanData());
 
                 await AsyncTestUtil.waitUntil(() => received === 2);
                 assert.strictEqual(received, 2);

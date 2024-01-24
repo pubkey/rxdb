@@ -1,11 +1,14 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import clone from 'clone';
 
-import * as humansCollection from './../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as schemas from './../helper/schemas.ts';
+import {
+    schemaObjects,
+    schemas,
+    humansCollection,
+    isNode
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     isRxQuery,
@@ -20,7 +23,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 describe('rx-query.test.ts', () => {
-    config.parallel('.constructor', () => {
+    describeParallel('.constructor', () => {
         it('should throw dev-mode error on wrong query object', async () => {
             const col = await humansCollection.create(0);
 
@@ -53,7 +56,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.toJSON()', () => {
+    describeParallel('.toJSON()', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -80,7 +83,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.toString()', () => {
+    describeParallel('.toString()', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -153,7 +156,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('immutable', () => {
+    describeParallel('immutable', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -180,7 +183,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('QueryCache.js', () => {
+    describeParallel('QueryCache.js', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
@@ -200,7 +203,7 @@ describe('rx-query.test.ts', () => {
         });
         it('should return the same object after exec', async () => {
             const col = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             await col.insert(docData);
             const query = col.findOne(docData.passportId);
             await query.exec();
@@ -277,7 +280,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('result caching', () => {
+    describeParallel('result caching', () => {
         /**
          * The object stored in the query cache should be
          * exact the same as the object used in a document data.
@@ -309,18 +312,18 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.doesDocMatchQuery()', () => {
+    describeParallel('.doesDocMatchQuery()', () => {
         it('should match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             assert.ok(q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
         it('should not match', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('firstName').ne('foobar');
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             docData.firstName = 'foobar';
             assert.strictEqual(false, q.doesDocumentDataMatch(docData));
             col.database.destroy();
@@ -328,7 +331,7 @@ describe('rx-query.test.ts', () => {
         it('should match ($gt)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('age').gt(1);
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             docData.age = 5;
             assert.ok(q.doesDocumentDataMatch(docData));
             col.database.destroy();
@@ -336,7 +339,7 @@ describe('rx-query.test.ts', () => {
         it('should not match ($gt)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find().where('age').gt(100);
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             docData.age = 5;
             assert.strictEqual(false, q.doesDocumentDataMatch(docData));
             col.database.destroy();
@@ -358,7 +361,7 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
     });
-    config.parallel('.exec()', () => {
+    describeParallel('.exec()', () => {
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('passportId').ne('Alice');
@@ -391,7 +394,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
-            const addObj = schemaObjects.human();
+            const addObj = schemaObjects.humanData();
             addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
@@ -418,7 +421,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(q._execOverDatabaseCount, 1);
             assert.strictEqual(q._latestChangeEvent, 2);
 
-            const addDoc = schemaObjects.human();
+            const addDoc = schemaObjects.humanData();
 
             // set _id to first value to force a re-exec-over database
             addDoc.passportId = '1-aaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -438,7 +441,7 @@ describe('rx-query.test.ts', () => {
         });
         it('querying fast should still return the same RxDocument', async () => {
             if (
-                !config.platform.isNode()
+                !isNode
             ) {
                 return;
             }
@@ -453,7 +456,7 @@ describe('rx-query.test.ts', () => {
                 }
             });
             const c = cols.humans;
-            await c.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
 
             const query1 = c.findOne().where('age').gt(0);
             const query2 = c.findOne().where('age').gt(1);
@@ -478,7 +481,7 @@ describe('rx-query.test.ts', () => {
             });
             let inserted = 0;
             while (inserted < amount) {
-                const docData = schemaObjects.human();
+                const docData = schemaObjects.humanData();
                 docData.age = 10;
                 await col.insert(docData);
                 inserted = inserted + 1;
@@ -490,7 +493,7 @@ describe('rx-query.test.ts', () => {
         });
         it('should not make more requests then needed', async () => {
             const col = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             const otherData = () => {
                 const data = clone(docData);
                 data.firstName = AsyncTestUtil.randomString();
@@ -539,7 +542,7 @@ describe('rx-query.test.ts', () => {
         });
         it('should not make more requests then needed on incremental upsert', async () => {
             const col = await humansCollection.createPrimary(0);
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             let count = 0;
             const otherData = () => {
                 const data = clone(docData);
@@ -586,7 +589,7 @@ describe('rx-query.test.ts', () => {
             await Promise.all(
                 new Array(10)
                     .fill(0)
-                    .map(() => schemaObjects.averageSchema())
+                    .map(() => schemaObjects.averageSchemaData())
                     .map(data => col.insert(data))
             );
 
@@ -632,7 +635,7 @@ describe('rx-query.test.ts', () => {
         });
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             const docId = 'foobar';
             docData.passportId = docId;
             await c.insert(docData);
@@ -698,7 +701,7 @@ describe('rx-query.test.ts', () => {
             c.database.destroy();
         });
     });
-    config.parallel('update', () => {
+    describeParallel('update', () => {
         describe('positive', () => {
             it('updates a value on a query', async () => {
                 const c = await humansCollection.create(2);
@@ -740,7 +743,7 @@ describe('rx-query.test.ts', () => {
             });
         });
     });
-    config.parallel('issues', () => {
+    describeParallel('issues', () => {
         it('#278 queryCache breaks when pointer out of bounds', async () => {
             const c = await humansCollection.createPrimary(0);
 
@@ -749,7 +752,7 @@ describe('rx-query.test.ts', () => {
             await c.bulkInsert(
                 new Array(insertAmount)
                     .fill(0)
-                    .map((_v, idx) => schemaObjects.human(undefined, idx))
+                    .map((_v, idx) => schemaObjects.humanData(undefined, idx))
             );
 
             // make and exec query
@@ -761,7 +764,7 @@ describe('rx-query.test.ts', () => {
             await c.bulkInsert(
                 new Array(300) // higher than ChangeEventBuffer.limit
                     .fill(0)
-                    .map(() => schemaObjects.human())
+                    .map(() => schemaObjects.humanData())
             );
 
             // re-exec query
@@ -771,7 +774,7 @@ describe('rx-query.test.ts', () => {
             // try same with upserts
             const docData = new Array(200)
                 .fill(0)
-                .map(() => schemaObjects.human());
+                .map(() => schemaObjects.humanData());
             await c.bulkInsert(docData);
 
             const docs3 = await query.exec();
@@ -1186,11 +1189,11 @@ describe('rx-query.test.ts', () => {
 
 
 
-            const docDataMatching = schemaObjects.human('docMatching');
+            const docDataMatching = schemaObjects.humanData('docMatching');
             docDataMatching.age = 42;
             await c.insert(docDataMatching);
 
-            const docDataNotMatching = schemaObjects.human('docNotMatching');
+            const docDataNotMatching = schemaObjects.humanData('docNotMatching');
             docDataNotMatching.age = 99;
             await c.insert(docDataNotMatching);
 
@@ -1237,11 +1240,11 @@ describe('rx-query.test.ts', () => {
 
 
 
-            const docDataMatching = schemaObjects.human('docMatching');
+            const docDataMatching = schemaObjects.humanData('docMatching');
             docDataMatching.age = 42;
             await c.insert(docDataMatching);
 
-            const docDataNotMatching = schemaObjects.human('docNotMatching');
+            const docDataNotMatching = schemaObjects.humanData('docNotMatching');
             docDataNotMatching.age = 99;
             await c.insert(docDataNotMatching);
 
@@ -1265,7 +1268,7 @@ describe('rx-query.test.ts', () => {
             queryParams.selector.age = 0;
 
             // trigger a write so the results are not cached
-            const addData = schemaObjects.human('a-trigger-write');
+            const addData = schemaObjects.humanData('a-trigger-write');
             addData.age = 55;
             await c.insert(addData);
 
@@ -1382,7 +1385,7 @@ describe('rx-query.test.ts', () => {
         });
         it('#4773 should not return deleted documents when queried by a primary key', async () => {
             const c = await humansCollection.create();
-            const docData = schemaObjects.human();
+            const docData = schemaObjects.humanData();
             await c.insert(docData);
             const doc = await c.findOne(docData.passportId).exec();
             assert.ok(doc);

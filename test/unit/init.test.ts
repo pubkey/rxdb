@@ -15,21 +15,16 @@ faker.seed(123);
 // add dev-mode plugin
 import { addRxPlugin, overwritable } from '../../plugins/core/index.mjs';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
+import { isDeno, isNode } from '../../plugins/test-utils/index.mjs';
 addRxPlugin(RxDBDevModePlugin);
-
-config.platform.isNode = function () {
-    return config.platform.name === 'node';
-};
 
 console.log('###### PLATFORM: ######');
 if (typeof window !== 'undefined') {
     console.log('USER-AGENT: ' + window.navigator.userAgent);
 }
-console.log('PLATFORM-NAME: ' + config.platform.name);
-console.log('PLATFORM-VERSION: ' + config.platform.version);
 console.log('STORAGE: ' + config.storage.name);
 
-if (config.platform.name !== 'node') {
+if (!isNode) {
     console.dir = (d: any) => {
         console.log(JSON.stringify(d));
     };
@@ -63,23 +58,8 @@ if (config.platform.name !== 'node') {
 
 
 
-/**
- * MONKEYPATCH console.error on firefox
- * this is needed because core-js has its own non-caught-promise-behavior
- * and spams the console with useless error-logs.
-*/
-if (config.platform.name === 'firefox') {
-    const consoleErrorBefore = console.error.bind(console);
-    console.error = function (msg: string) {
-        if (msg !== 'Unhandled promise rejection')
-            consoleErrorBefore(msg);
-    };
-}
-
-
-
 describe('init.test.ts', () => {
-    it('ensure dev-mode is activated', ()=> {
+    it('ensure dev-mode is activated', () => {
         assert.ok(overwritable.isDevMode());
     });
     it('init storage', async () => {
@@ -91,11 +71,11 @@ describe('init.test.ts', () => {
         await clearNodeFolder();
     });
     it('start test servers', async () => {
-        if (config.platform.name === 'node') {
+        if (isNode) {
             console.log('START TEST SERVERS');
             const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
             startTestServers();
-        } else if (config.isDeno) {
+        } else if (isDeno) {
             console.log('START TEST SERVERS');
             const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
             startTestServers();

@@ -3,8 +3,11 @@ import {
     clone
 } from 'async-test-util';
 
-import config from './config.ts';
-import * as schemas from '../helper/schemas.ts';
+import { describeParallel } from './config.ts';
+import {
+    schemas,
+    HumanDocumentType
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     fillWithDefaultSettings,
@@ -20,10 +23,9 @@ import {
 import type {
     RxDocumentData
 } from '../../plugins/core/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
 
 
-config.parallel('query-planner.test.js', () => {
+describeParallel('query-planner.test.js', () => {
     function getHumanSchemaWithIndexes(
         indexes: string[][]
     ): RxJsonSchema<RxDocumentData<HumanDocumentType>> {

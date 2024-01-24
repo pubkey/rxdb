@@ -1,10 +1,8 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import { humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -32,17 +30,17 @@ import {
     RxMigrationStatus,
     getOldCollectionMeta
 } from '../../plugins/migration-schema/index.mjs';
-import { HumanDocumentType } from '../helper/schemas.ts';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import { HumanDocumentType } from '../../plugins/test-utils/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../../plugins/test-utils/index.mjs';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
-import { SimpleHumanAgeDocumentType } from '../helper/schema-objects.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
-import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
+import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
+import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
-config.parallel('migration-schema.test.ts', function () {
+describeParallel('migration-schema.test.ts', function () {
     this.timeout(1000 * 10);
     if (
         !config.storage.hasPersistence ||

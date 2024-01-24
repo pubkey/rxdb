@@ -33,7 +33,11 @@ import {
     jsSha256,
     canUseCryptoSubtle
 } from '../../plugins/utils/index.mjs';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import {
+    isFastMode,
+    isBun,
+    EXAMPLE_REVISION_1
+} from '../../plugins/test-utils/index.mjs';
 
 import { BIG_BASE64 } from '../helper/big-base64.ts';
 
@@ -88,7 +92,7 @@ describe('util.test.js', () => {
         ];
         cloneMethods.forEach(method => {
             it('run once', async () => {
-                if (!config.isFastMode()) {
+                if (!isFastMode()) {
                     await wait(200);
                 }
                 let obj = {
@@ -113,7 +117,7 @@ describe('util.test.js', () => {
                 };
                 const start = performance.now();
                 let t = 0;
-                const runs = config.isFastMode() ? 100 : 2000;
+                const runs = isFastMode() ? 100 : 2000;
                 while (t < runs) {
                     t++;
                     method(obj);
@@ -289,7 +293,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {
-        if (config.isBun) {
+        if (isBun) {
             // TODO for somehow bun has no strict mode here
             return;
         }

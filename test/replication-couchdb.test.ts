@@ -1,8 +1,13 @@
 import assert from 'assert';
-import config, { ENV_VARIABLES } from './unit/config.ts';
+import config from './unit/config.ts';
 
-import * as schemaObjects from './helper/schema-objects.ts';
-import * as humansCollection from './helper/humans-collection.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    ENV_VARIABLES,
+    ensureCollectionsHaveEqualState,
+    isNode
+} from '../plugins/test-utils/index.mjs';
 
 import {
     addRxPlugin,
@@ -23,13 +28,12 @@ addRxPlugin(RxDBUpdatePlugin);
 import { CouchAllDocsResponse } from './../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
-import { ensureCollectionsHaveEqualState } from './helper/test-util.ts';
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 import * as SpawnServer from './helper/spawn-server.ts';
 
 describe('replication-couchdb.test.ts', () => {
     if (
-        !config.platform.isNode() ||
+        !isNode ||
         !config.storage.hasPersistence
     ) {
         return;
@@ -116,7 +120,7 @@ describe('replication-couchdb.test.ts', () => {
         it('push one insert to server', async () => {
             const server = await SpawnServer.spawn();
             const c = await humansCollection.create(0);
-            await c.insert(schemaObjects.human('foobar'));
+            await c.insert(schemaObjects.humanData('foobar'));
             await syncOnce(c, server);
 
             const serverDocs = await getAllServerDocs(server.url);
@@ -132,8 +136,8 @@ describe('replication-couchdb.test.ts', () => {
             const c2 = await humansCollection.create(0);
 
             // insert on both sides
-            await c.insert(schemaObjects.human());
-            await c2.insert(schemaObjects.human());
+            await c.insert(schemaObjects.humanData());
+            await c2.insert(schemaObjects.humanData());
 
             await syncOnce(c, server);
             await syncOnce(c2, server);
@@ -158,7 +162,7 @@ describe('replication-couchdb.test.ts', () => {
             const c = await humansCollection.create(0);
 
             const c2 = await humansCollection.create(0);
-            await c2.insert(schemaObjects.human());
+            await c2.insert(schemaObjects.humanData());
             await syncOnce(c2, server);
 
             let serverDocs = await getAllServerDocs(server.url);
@@ -186,8 +190,8 @@ describe('replication-couchdb.test.ts', () => {
             const c = await humansCollection.create(0, 'col1', false);
             const c2 = await humansCollection.create(0, 'col2', false);
 
-            const doc1 = await c.insert(schemaObjects.human('doc1'));
-            const doc2 = await c2.insert(schemaObjects.human('doc2'));
+            const doc1 = await c.insert(schemaObjects.humanData('doc1'));
+            const doc2 = await c2.insert(schemaObjects.humanData('doc2'));
 
             await syncAll(c, c2, server);
             await ensureCollectionsHaveEqualState(c, c2);
@@ -285,7 +289,7 @@ describe('replication-couchdb.test.ts', () => {
                 )
             );
 
-            await c1.insert(schemaObjects.human('foobar'));
+            await c1.insert(schemaObjects.humanData('foobar'));
             await awaitInSync();
 
             // wait until it is on the server
@@ -396,9 +400,9 @@ describe('replication-couchdb.test.ts', () => {
 
             // insert 3
             await collection.bulkInsert([
-                schemaObjects.human('1'),
-                schemaObjects.human('2'),
-                schemaObjects.human('3')
+                schemaObjects.humanData('1'),
+                schemaObjects.humanData('2'),
+                schemaObjects.humanData('3')
             ]);
 
             // delete 2

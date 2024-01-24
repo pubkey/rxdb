@@ -2,7 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 
 import {
@@ -18,18 +18,22 @@ import {
     FilledMangoQuery,
     prepareQuery,
 } from '../../plugins/core/index.mjs';
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression/index.mjs';
-import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
+import {
+    schemaObjects,
+    enableKeyCompression,
+    ensureReplicationHasNoErrors,
+    HumanDocumentType,
+    human
+} from '../../plugins/test-utils/index.mjs';
 import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
-import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
-import { SimpleHumanDocumentType } from '../helper/schema-objects.ts';
+import type { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
-config.parallel('key-compression.test.js', () => {
+describeParallel('key-compression.test.js', () => {
     async function getCollection() {
         const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
@@ -52,12 +56,12 @@ config.parallel('key-compression.test.js', () => {
     describe('integration into the RxStorage', () => {
         it('should have saved a compressed document', async () => {
             const c = await getCollection();
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.simpleHumanData();
             await c.insert(docData);
 
 
             const internalInstance: RxStorageInstance<
-                schemaObjects.SimpleHumanDocumentType, any, any
+                SimpleHumanDocumentType, any, any
             > = await (c.storageInstance.originalStorageInstance as any)
                 .originalStorageInstance;
 
@@ -130,8 +134,8 @@ config.parallel('key-compression.test.js', () => {
         it('replication state should contain key-compressed document data', async () => {
             const col = await getCollection();
             await col.bulkInsert([
-                schemaObjects.simpleHuman(),
-                schemaObjects.simpleHuman()
+                schemaObjects.simpleHumanData(),
+                schemaObjects.simpleHumanData()
             ]);
             const remoteCollection = await getCollection();
 

@@ -1,10 +1,11 @@
 import assert from 'assert';
-import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
-import * as humansCollection from '../helper/humans-collection.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-
-config.parallel('idle-queue.test.js', () => {
+import {
+    schemaObjects,
+    humansCollection
+} from '../../plugins/test-utils/index.mjs';
+import { describeParallel } from './config.ts';
+describeParallel('idle-queue.test.js', () => {
     describe('integration', () => {
         it('should be able to call queue on database', async () => {
             const c = await humansCollection.create(0);
@@ -13,7 +14,7 @@ config.parallel('idle-queue.test.js', () => {
         });
         it('inserts should always be faster than idle-call', async () => {
             const c = await humansCollection.create(0);
-            const data = new Array(10).fill(0).map(() => schemaObjects.human());
+            const data = new Array(10).fill(0).map(() => schemaObjects.humanData());
             const order: any[] = [];
 
             Promise.all(data.map(

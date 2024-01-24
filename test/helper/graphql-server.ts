@@ -26,9 +26,11 @@ import {
 } from './graphql-config.ts';
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../plugins/core/index.mjs';
-import { HumanWithTimestampDocumentType } from './schema-objects.ts';
+import {
+    HumanWithTimestampDocumentType,
+    nextPort
+} from '../../plugins/test-utils/index.mjs';
 import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../plugins/core/index.mjs';
-import { nextPort } from './port-manager.ts';
 
 import {
     graphQLRequest

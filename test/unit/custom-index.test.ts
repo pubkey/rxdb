@@ -19,12 +19,14 @@ import {
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
-import config from './config.ts';
+import { describeParallel } from './config.ts';
+import {
+    schemaObjects,
+    schemas,
+    EXAMPLE_REVISION_1
+} from '../../plugins/test-utils/index.mjs';
 
-config.parallel('custom-index.test.ts', () => {
+describeParallel('custom-index.test.ts', () => {
 
     type IndexTestDocType = {
         id: string;
@@ -263,7 +265,7 @@ config.parallel('custom-index.test.ts', () => {
                 const averageSchema = fillWithDefaultSettings(schemas.averageSchema());
                 const docsAmount = 20000;
 
-                const documents = new Array(docsAmount).fill(0).map(() => schemaObjects.averageSchema());
+                const documents = new Array(docsAmount).fill(0).map(() => schemaObjects.averageSchemaData());
                 const fns = ensureNotFalsy(averageSchema.indexes).map(index => getIndexableStringMonad(averageSchema, index as any));
                 await wait(100);
                 const startTime = performance.now();

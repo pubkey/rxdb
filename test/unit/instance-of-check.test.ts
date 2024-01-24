@@ -1,7 +1,9 @@
 import assert from 'assert';
-import config from './config.ts';
 
-import * as humansCollection from '../helper/humans-collection.ts';
+import { describeParallel } from './config.ts';
+import {
+    humansCollection
+} from '../../plugins/test-utils/index.mjs';
 import {
     isRxDatabase,
     isRxCollection,
@@ -10,7 +12,7 @@ import {
     isRxSchema
 } from '../../plugins/core/index.mjs';
 
-config.parallel('instance-of-check.test.js', () => {
+describeParallel('instance-of-check.test.js', () => {
     it('positive', async () => {
         const c = await humansCollection.create(1);
         const query = c.findOne();

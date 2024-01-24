@@ -1,5 +1,5 @@
 import assert from 'assert';
-
+import config from './unit/config.ts';
 import {
     randomCouchString,
     RxCollection,
@@ -7,18 +7,19 @@ import {
     WithDeleted
 } from '../plugins/core/index.mjs';
 
-import * as humansCollection from './helper/humans-collection.ts';
-import * as schemaObjects from './helper/schema-objects.ts';
+import {
+    schemaObjects,
+    humansCollection,
+    ensureReplicationHasNoErrors,
+    ensureCollectionsHaveEqualState,
+    HumanWithTimestampDocumentType
+} from '../plugins/test-utils/index.mjs';
 
 import {
     replicateNats,
     NatsSyncOptions,
     RxNatsReplicationState
 } from '../plugins/replication-nats/index.mjs';
-import {
-    ensureCollectionsHaveEqualState,
-    ensureReplicationHasNoErrors
-} from './helper/test-util.ts';
 import {
     DeliverPolicy,
     JSONCodec,
@@ -47,12 +48,13 @@ const connectionStatePromise = (async () => {
  * because it is too slow to setup the NATS backend.
  */
 describe('replication-nats.test.js', () => {
+    assert.ok(config);
     /**
      * Use a low batchSize in all tests
      * to make it easier to test boundaries.
      */
     const batchSize = 5;
-    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+    type TestDocType = HumanWithTimestampDocumentType;
     async function getAllDocsOfServer(
         name: string
     ): Promise<TestDocType[]> {
@@ -161,7 +163,7 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(docsOnServer.length, 2);
 
             // insert another one
-            await collection.insert(schemaObjects.humanWithTimestamp());
+            await collection.insert(schemaObjects.humanWithTimestampData());
             await replicationState.awaitInSync();
 
 
@@ -207,7 +209,7 @@ describe('replication-nats.test.js', () => {
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
             // insert one
-            await collectionA.insert(schemaObjects.humanWithTimestamp({ id: 'insert', name: 'InsertName' }));
+            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
@@ -223,7 +225,7 @@ describe('replication-nats.test.js', () => {
             await collectionA.bulkInsert(
                 new Array(10)
                     .fill(0)
-                    .map(() => schemaObjects.humanWithTimestamp({ name: 'insert-many' }))
+                    .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
             await replicationStateA.awaitInSync();
 
@@ -232,8 +234,8 @@ describe('replication-nats.test.js', () => {
 
             // insert at both collections at the same time
             await Promise.all([
-                collectionA.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-A' })),
-                collectionB.insert(schemaObjects.humanWithTimestamp({ name: 'insert-parallel-B' }))
+                collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
+                collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
