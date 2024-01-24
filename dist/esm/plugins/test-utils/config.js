@@ -2,8 +2,6 @@
 import { ensureNotFalsy, isPromise, randomCouchString } from "../utils/index.js";
 import { enforceOptions as broadcastChannelEnforceOptions } from 'broadcast-channel';
 import events from 'node:events';
-import * as path from 'node:path';
-import url from 'node:url';
 import { wrappedKeyEncryptionCryptoJsStorage } from "../encryption-crypto-js/index.js";
 export var isDeno = typeof window !== 'undefined' && 'Deno' in window;
 export var isBun = typeof process !== 'undefined' && !!process.versions.bun;
@@ -39,10 +37,6 @@ export function isFastMode() {
     return false;
   }
 }
-var rootPath = '';
-export function getRootPath() {
-  return rootPath;
-}
 export function initTestEnvironment() {
   if (ENV_VARIABLES.NODE_ENV === 'fast') {
     broadcastChannelEnforceOptions({
@@ -77,10 +71,6 @@ export function initTestEnvironment() {
   if (isNode) {
     process.setMaxListeners(100);
     events.EventEmitter.defaultMaxListeners = 100;
-    var __filename = url.fileURLToPath(import.meta.url);
-    var __dirname = path.dirname(__filename);
-    rootPath = path.join(__dirname, '../../../../');
-    console.log('rootPath: ' + rootPath);
 
     /**
      * Add a global function to process, so we can debug timings

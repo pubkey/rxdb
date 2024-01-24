@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD(worker storage) support for directly imported `Worker` and `SharedWorker` functions as `workerInput`.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.4.2 (24 January 2024)
+
+- ADD(worker storage) support for directly imported `Worker` and `SharedWorker` functions as `workerInput`.
 
 ### 15.4.1 (24 January 2024)
 

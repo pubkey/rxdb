@@ -11,7 +11,6 @@ export declare function getConfig(): TestConfig;
 export declare const ENV_VARIABLES: any;
 export declare const DEFAULT_STORAGE: string;
 export declare function isFastMode(): boolean;
-export declare function getRootPath(): string;
 export declare function initTestEnvironment(): void;
 export declare function getEncryptedStorage(baseStorage?: RxStorage<any, any>): RxStorage<any, any>;
 export declare function isNotOneOfTheseStorages(storageNames: string[]): boolean;

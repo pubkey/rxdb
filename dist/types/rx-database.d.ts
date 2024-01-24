@@ -27,7 +27,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
     readonly allowSlowCount?: boolean | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "15.4.1";
+    readonly rxdbVersion = "15.4.2";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
