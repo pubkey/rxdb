@@ -43,7 +43,7 @@ function nodeRequire(filePath: string) {
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const rootPath = path.join(__dirname, '../../../../');
+export const rootPath = path.join(__dirname, '../../');
 console.log('rootPath: ' + rootPath);
 
 

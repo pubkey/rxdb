@@ -7,6 +7,8 @@ slug: replication-graphql.html
 
 The GraphQL replication provides handlers for GraphQL to run [replication](./replication.md) with GraphQL as the transportation layer.
 
+The GraphQL replication is mostly used when you already have a backend that exposes a GraphQL API that can be adjusted to serve as a replication endpoint. If you do not already have a GraphQL endpoint, using the [HTTP replication](./replication-http.md) is an easier solution.
+
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
 
 ## Usage
