@@ -10,7 +10,8 @@ import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { randomNumber } from 'async-test-util';
-
+import * as path from 'node:path';
+import url from 'node:url';
 import {
     RxTestStorage,
     randomDelayStorage
@@ -39,6 +40,15 @@ function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
     return require(filePath);
 }
+
+export function getRootPath() {
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const rootPath = path.join(__dirname, '../../');
+    return rootPath;
+}
+
 
 export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
 

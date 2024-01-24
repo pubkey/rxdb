@@ -166,8 +166,6 @@ describeParallel('rx-storage-dexie.test.js', () => {
                     schema,
                     normalizeMangoQuery(schema, query)
                 );
-
-                console.dir(preparedQuery);
                 const queryPlan = preparedQuery.queryPlan;
                 const result = await storageInstance.query(preparedQuery);
                 return {

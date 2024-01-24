@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
-import config from './config.ts';
+import config, { getRootPath } from './config.ts';
 
 import {
     addRxPlugin, createBlob
@@ -11,7 +11,6 @@ import {
 import {
     schemaObjects,
     isNode,
-    getRootPath,
     createAttachments
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -28,8 +27,6 @@ describe('backup.test.ts', () => {
         // backup to filesystem only works on node.js not in browsers
         return;
     }
-
-    console.log('bbbackup 1');
 
     const backupRootPath = path.join(
         getRootPath(),

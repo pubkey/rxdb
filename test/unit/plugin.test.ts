@@ -11,11 +11,10 @@ import {
     RxPlugin
 } from '../../plugins/core/index.mjs';
 
-import { describeParallel } from './config.ts';
+import { describeParallel, getRootPath } from './config.ts';
 import {
     humansCollection,
-    isNode,
-    getRootPath
+    isNode
 } from '../../plugins/test-utils/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
