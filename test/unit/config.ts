@@ -40,11 +40,14 @@ function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
     return require(filePath);
 }
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-export const rootPath = path.join(__dirname, '../../');
-console.log('rootPath: ' + rootPath);
+export function getRootPath() {
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const rootPath = path.join(__dirname, '../../');
+    return rootPath;
+}
 
 
 export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;

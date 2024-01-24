@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
-import config, { rootPath } from './config.ts';
+import config, { getRootPath } from './config.ts';
 
 import {
     addRxPlugin, createBlob
@@ -29,7 +29,7 @@ describe('backup.test.ts', () => {
     }
 
     const backupRootPath = path.join(
-        rootPath,
+        getRootPath(),
         'test_tmp',
         '_backups'
     );

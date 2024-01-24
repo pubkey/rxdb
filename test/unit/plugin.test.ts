@@ -11,7 +11,7 @@ import {
     RxPlugin
 } from '../../plugins/core/index.mjs';
 
-import { describeParallel, rootPath } from './config.ts';
+import { describeParallel, getRootPath } from './config.ts';
 import {
     humansCollection,
     isNode
@@ -52,7 +52,7 @@ describeParallel('plugin.test.js', () => {
             const { spawn } = await require('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
-            const promise = spawn('mocha', [rootPath + 'test_tmp/unit/full.node.js']);
+            const promise = spawn('mocha', [getRootPath() + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
             childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
