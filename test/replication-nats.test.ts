@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config from './config.ts';
+import config from './unit/config.ts';
 import {
     randomCouchString,
     RxCollection,
