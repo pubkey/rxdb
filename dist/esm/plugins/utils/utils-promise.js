@@ -17,6 +17,16 @@ export function toPromise(maybePromise) {
 }
 
 /**
+ * returns true if promise is given
+ */
+export function isPromise(value) {
+  if (typeof value !== 'undefined' && typeof value.then === 'function') {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Reusing resolved promises has a better
  * performance than creating new ones each time.
  */

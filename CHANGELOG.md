@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD export test utilities so other projects can use them
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.4.1 (24 January 2024)
+
+- ADD export test utilities so other projects can use them
 
 ### 15.4.0 (22 January 2024)
 

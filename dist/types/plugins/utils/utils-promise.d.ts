@@ -5,6 +5,10 @@ export declare function nextTick(): Promise<void>;
 export declare function promiseWait(ms?: number): Promise<void>;
 export declare function toPromise<T>(maybePromise: Promise<T> | T): Promise<T>;
 /**
+ * returns true if promise is given
+ */
+export declare function isPromise(value: any): boolean;
+/**
  * Reusing resolved promises has a better
  * performance than creating new ones each time.
  */

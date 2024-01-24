@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_FALSE = void 0;
+exports.isPromise = isPromise;
 exports.nextTick = nextTick;
 exports.promiseSeries = promiseSeries;
 exports.promiseWait = promiseWait;
@@ -27,6 +28,16 @@ function toPromise(maybePromise) {
   } else {
     return Promise.resolve(maybePromise);
   }
+}
+
+/**
+ * returns true if promise is given
+ */
+function isPromise(value) {
+  if (typeof value !== 'undefined' && typeof value.then === 'function') {
+    return true;
+  }
+  return false;
 }
 
 /**
