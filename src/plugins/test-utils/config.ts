@@ -63,11 +63,6 @@ export function isFastMode(): boolean {
     }
 }
 
-let rootPath = '';
-export function getRootPath() {
-    return rootPath;
-}
-
 export function initTestEnvironment() {
     if (ENV_VARIABLES.NODE_ENV === 'fast') {
         broadcastChannelEnforceOptions({
@@ -108,9 +103,6 @@ export function initTestEnvironment() {
 
         const __filename = url.fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
-
-        rootPath = path.join(__dirname, '../../../../');
-        console.log('rootPath: ' + rootPath);
 
         /**
          * Add a global function to process, so we can debug timings

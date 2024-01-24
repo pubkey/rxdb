@@ -11,7 +11,7 @@ import {
 import {
     schemaObjects,
     isNode,
-    getRootPath,
+    rootPath,
     createAttachments
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -32,7 +32,7 @@ describe('backup.test.ts', () => {
     console.log('bbbackup 1');
 
     const backupRootPath = path.join(
-        getRootPath(),
+        rootPath,
         'test_tmp',
         '_backups'
     );

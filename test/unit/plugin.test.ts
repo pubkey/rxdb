@@ -15,7 +15,7 @@ import { describeParallel } from './config.ts';
 import {
     humansCollection,
     isNode,
-    getRootPath
+    rootPath
 } from '../../plugins/test-utils/index.mjs';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
@@ -53,7 +53,7 @@ describeParallel('plugin.test.js', () => {
             const { spawn } = await require('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
-            const promise = spawn('mocha', [getRootPath() + 'test_tmp/unit/full.node.js']);
+            const promise = spawn('mocha', [rootPath + 'test_tmp/unit/full.node.js']);
             const childProcess = promise.childProcess;
             childProcess.stdout.on('data', (data: any) => stdout.push(data.toString()));
             childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
