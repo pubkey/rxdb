@@ -1,5 +1,5 @@
 import assert from 'assert';
-
+import config from './config.ts';
 import {
     randomCouchString,
     RxCollection,
@@ -48,6 +48,7 @@ const connectionStatePromise = (async () => {
  * because it is too slow to setup the NATS backend.
  */
 describe('replication-nats.test.js', () => {
+    assert.ok(config);
     /**
      * Use a low batchSize in all tests
      * to make it easier to test boundaries.
