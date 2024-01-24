@@ -1,11 +1,10 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 import {
     schemas,
     humansCollection,
-    describeParallel,
     isNode
 } from '../../plugins/test-utils/index.mjs';
 

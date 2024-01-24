@@ -5,11 +5,10 @@ import {
     deepEqual
 } from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     EXAMPLE_REVISION_1,
     isFastMode
 } from '../../plugins/test-utils/index.mjs';

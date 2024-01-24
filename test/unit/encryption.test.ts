@@ -1,11 +1,10 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     getPassword,
     getEncryptedStorage,
     EncryptedHumanDocumentType

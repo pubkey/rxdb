@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -23,7 +23,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     getPassword,
     getEncryptedStorage,
     HumanDocumentType

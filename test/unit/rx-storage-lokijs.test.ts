@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     addRxPlugin,
     ensureNotFalsy,
@@ -24,7 +24,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode,
     isFastMode,
     HumanDocumentType,

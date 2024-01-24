@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     randomCouchString,
     now,
@@ -44,7 +44,6 @@ import {
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     isFastMode,
     EXAMPLE_REVISION_3,
     HumanDocumentType,

@@ -1,4 +1,4 @@
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import assert from 'assert';
 
 import {
@@ -17,7 +17,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     getPassword
 } from '../../plugins/test-utils/index.mjs';
 

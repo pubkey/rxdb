@@ -5,7 +5,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -21,7 +20,7 @@ import {
 
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     filter,
     first,

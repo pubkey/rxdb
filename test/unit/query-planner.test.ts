@@ -3,9 +3,9 @@ import {
     clone
 } from 'async-test-util';
 
+import { describeParallel } from './config.ts';
 import {
     schemas,
-    describeParallel,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 

@@ -3,12 +3,11 @@ import {
     first
 } from 'rxjs/operators';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
-    humansCollection,
-    describeParallel
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 
 import {

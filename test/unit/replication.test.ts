@@ -11,12 +11,11 @@ import {
     waitUntil
 } from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isFastMode,
     ensureReplicationHasNoErrors
 } from '../../plugins/test-utils/index.mjs';

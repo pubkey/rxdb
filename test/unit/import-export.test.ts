@@ -11,12 +11,11 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     getPassword,
     getEncryptedStorage,
     HumanDocumentType,

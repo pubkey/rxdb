@@ -9,7 +9,7 @@ import {
     createQueryBuilder
 } from '../../plugins/query-builder/index.mjs';
 
-import { describeParallel } from '../../plugins/test-utils/index.mjs';
+import { describeParallel } from './config.ts';
 
 /**
  * This tests the plugin 'query-builder'

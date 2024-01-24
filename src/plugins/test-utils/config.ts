@@ -1,9 +1,9 @@
+/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 import {
     ensureNotFalsy,
     isPromise,
     randomCouchString
 } from '../utils/index.ts';
-import parallel from 'mocha.parallel';
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
@@ -27,7 +27,12 @@ export function setConfig(newConfig: TestConfig) {
     config = newConfig;
 }
 
+let initDone = false;
 export function getConfig() {
+    if (!initDone) {
+        initTestEnvironment();
+        initDone = true;
+    }
     return ensureNotFalsy(config, 'testConfig not set')
 }
 
@@ -49,8 +54,6 @@ function getEnvVariables() {
 }
 export const ENV_VARIABLES = getEnvVariables();
 export const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
-
-export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
 
 export function isFastMode(): boolean {
     try {

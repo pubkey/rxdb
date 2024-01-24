@@ -19,10 +19,10 @@ import {
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
+import { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     EXAMPLE_REVISION_1
 } from '../../plugins/test-utils/index.mjs';
 

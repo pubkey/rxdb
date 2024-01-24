@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -53,10 +53,10 @@ import {
     waitUntil
 } from 'async-test-util';
 import { filter, map } from 'rxjs';
+
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     isFastMode,
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,

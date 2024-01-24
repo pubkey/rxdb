@@ -11,9 +11,9 @@ import {
     RxPlugin
 } from '../../plugins/core/index.mjs';
 
+import { describeParallel } from './config.ts';
 import {
     humansCollection,
-    describeParallel,
     isNode,
     getRootPath
 } from '../../plugins/test-utils/index.mjs';

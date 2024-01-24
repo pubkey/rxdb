@@ -1,7 +1,7 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -13,7 +13,6 @@ import {
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 

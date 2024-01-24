@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     RxJsonSchema,
     randomCouchString,
@@ -19,7 +19,6 @@ import {
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
-    describeParallel,
     EXAMPLE_REVISION_1,
     HumanDocumentType,
     human,

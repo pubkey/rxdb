@@ -2,12 +2,11 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isFastMode,
     isNode
 } from '../../plugins/test-utils/index.mjs';

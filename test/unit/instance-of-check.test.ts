@@ -1,8 +1,8 @@
 import assert from 'assert';
 
+import { describeParallel } from './config.ts';
 import {
-    humansCollection,
-    describeParallel
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import {
     isRxDatabase,

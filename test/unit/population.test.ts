@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import { faker } from '@faker-js/faker';
 
 import {
@@ -11,8 +11,7 @@ import {
     defaultHashSha256,
 } from '../../plugins/core/index.mjs';
 import {
-    humansCollection,
-    describeParallel
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 
 

@@ -22,12 +22,13 @@ import {
 } from 'fake-indexeddb';
 import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
 import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
+import parallel from 'mocha.parallel';
 
 import { createRequire } from 'node:module';
 import {
     DEFAULT_STORAGE,
+    ENV_VARIABLES,
     getConfig,
-    initTestEnvironment,
     isDeno,
     isFastMode,
     isNode,
@@ -38,6 +39,8 @@ function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
     return require(filePath);
 }
+
+export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
 
 
 export function getStorage(storageKey: string): RxTestStorage {
@@ -301,7 +304,6 @@ export function getStorage(storageKey: string): RxTestStorage {
 
 
 const config = (() => {
-    initTestEnvironment();
     setConfig({
         storage: getStorage(DEFAULT_STORAGE) as any
     });

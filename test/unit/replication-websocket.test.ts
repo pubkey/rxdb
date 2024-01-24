@@ -2,12 +2,11 @@ import assert from 'assert';
 import {
     wait, waitUntil
 } from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode,
     isFastMode,
     nextPort,

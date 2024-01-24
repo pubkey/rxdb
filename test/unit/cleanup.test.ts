@@ -1,11 +1,10 @@
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     isFastMode,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';

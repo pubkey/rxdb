@@ -1,11 +1,10 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 

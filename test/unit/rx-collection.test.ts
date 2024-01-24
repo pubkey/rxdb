@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
@@ -14,7 +14,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isFastMode,
     HumanDocumentType,
     isNode

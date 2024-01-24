@@ -2,9 +2,9 @@ import assert from 'assert';
 
 import {
     schemaObjects,
-    humansCollection,
-    describeParallel
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
+import { describeParallel } from './config.ts';
 
 import AsyncTestUtil from 'async-test-util';
 
@@ -189,7 +189,7 @@ describeParallel('change-event-buffer.test.js', () => {
             let newVal = 0;
             while (newVal < 5) {
                 newVal++;
-                await oneDoc.incrementalPatch({age: newVal});
+                await oneDoc.incrementalPatch({ age: newVal });
             }
 
             const allEvents: any[] = q.collection._changeEventBuffer.getFrom(1) as any;

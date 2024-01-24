@@ -1,7 +1,7 @@
 
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     fillWithDefaultSettings,
@@ -11,7 +11,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode,
     nextPort
 } from '../../plugins/test-utils/index.mjs';

@@ -1,13 +1,12 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import clone from 'clone';
 
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode
 } from '../../plugins/test-utils/index.mjs';
 

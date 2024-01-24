@@ -1,13 +1,12 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isFastMode,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';

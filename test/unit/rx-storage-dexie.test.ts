@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -21,7 +21,6 @@ import {
 
 import {
     schemaObjects,
-    describeParallel,
     humanSchemaLiteral,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';

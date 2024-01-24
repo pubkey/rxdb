@@ -1,10 +1,9 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
-
+import { describeParallel } from './config.ts';
 import {
     schemaObjects,
-    humansCollection,
-    describeParallel
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import {
     defaultCacheReplacementPolicyMonad,

@@ -5,7 +5,6 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import {
     schemaObjects,
     schemas,
-    describeParallel,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -32,7 +31,7 @@ import {
     getCRDTConflictHandler
 } from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 

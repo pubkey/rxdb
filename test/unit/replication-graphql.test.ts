@@ -16,7 +16,7 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     RxJsonSchema,
@@ -43,7 +43,6 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    describeParallel,
     isNode,
     getPassword,
     isFastMode,

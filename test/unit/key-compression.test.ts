@@ -2,7 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 
 import {
@@ -23,7 +23,6 @@ import {
 } from '../../plugins/key-compression/index.mjs';
 import {
     schemaObjects,
-    describeParallel,
     enableKeyCompression,
     ensureReplicationHasNoErrors,
     HumanDocumentType,

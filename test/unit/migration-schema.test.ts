@@ -1,8 +1,8 @@
 import assert from 'assert';
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import { describeParallel, humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import { humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,

@@ -5,11 +5,10 @@ import {
 } from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
-    schemas,
-    describeParallel
+    schemas
 } from '../../plugins/test-utils/index.mjs';
 
 import { checkSchema } from '../../plugins/dev-mode/index.mjs';
