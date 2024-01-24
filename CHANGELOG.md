@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD export test utilities so other projects can use them
 
 <!-- ADD new changes here! -->
 
