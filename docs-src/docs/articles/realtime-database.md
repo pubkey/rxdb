@@ -86,7 +86,7 @@ A competent realtime application is engineered to offer feedback or results swif
 
 - Dive into the [RxDB Quickstart](https://rxdb.info/quickstart.html)
 - Discover more about the [RxDB realtime replication protocol](../replication.md)
-- Join the conversation at [RxDB Chat](https://rxdb.info/chat.html)
+- Join the conversation at [RxDB Chat](https://rxdb.info/chat)
 
 
 

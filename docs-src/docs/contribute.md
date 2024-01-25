@@ -40,7 +40,7 @@ If you make a pull-request, ensure the following:
 
 ## Getting help
 
-If you need help with your contribution, ask at [discord](https://rxdb.info/chat.html).
+If you need help with your contribution, ask at [discord](https://rxdb.info/chat).
 
 
 # Docs

@@ -153,7 +153,7 @@ In addition to its security features, RxDB offers cost-effective benefits. RxDB 
 
 - Try out the [RxDB ionic example project](https://github.com/pubkey/rxdb/tree/master/examples/ionic2)
 - Try out the [RxDB Quickstart](https://rxdb.info/quickstart.html)
-- Join the [RxDB Chat](https://rxdb.info/chat.html)
+- Join the [RxDB Chat](https://rxdb.info/chat)
 
 
 

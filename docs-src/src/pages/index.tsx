@@ -613,7 +613,7 @@ export default function Home() {
           </div>
         </div>
         <a
-          href="https://rxdb.info/chat.html"
+          href="https://rxdb.info/chat"
           onClick={() => trigger('discord_trophy_click', 0.20)}
           target="_blank"
         >
@@ -1106,7 +1106,7 @@ export default function Home() {
                 </div>
               </a>
               <a
-                href="https://rxdb.info/newsletter.html"
+                href="https://rxdb.info/newsletter"
                 rel="noopener"
                 target="_blank"
                 onClick={() => trigger('get_newsletter', 0.40)}
@@ -1116,7 +1116,7 @@ export default function Home() {
                 </div>
               </a>
               <a
-                href="https://rxdb.info/chat.html"
+                href="https://rxdb.info/chat"
                 rel="noopener"
                 target="_blank"
                 onClick={() => trigger('join_chat', 0.40)}

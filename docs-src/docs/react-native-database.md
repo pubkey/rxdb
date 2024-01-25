@@ -199,9 +199,9 @@ class Post extends Model {
 }
 ```
 
-WatermelonDB also [supports replication](https://nozbe.github.io/WatermelonDB/Advanced/Sync.html) but the sync protocol is pretty complex because on how it resolves conflicts. I recommend to watch [this video](https://www.youtube.com/watch?v=uFvHURTRLxQ) to learn how the replication works.
+WatermelonDB also supports replication but the sync protocol is pretty complex because on how it resolves conflicts. I recommend to watch [this video](https://www.youtube.com/watch?v=uFvHURTRLxQ) to learn how the replication works.
 
-According to the roadmap, despite being essentially feature-complete, WatermelonDB is still on the `0.xx` version and intends to switch to a `1.x.x` version as once it [reaches a long-term stable API](https://nozbe.github.io/WatermelonDB/Roadmap.html).
+According to the roadmap, despite being essentially feature-complete, WatermelonDB is still on the `0.xx` version and intends to switch to a `1.x.x` version as once it reaches a long-term stable API.
 
 ### Firebase / Firestore
 
