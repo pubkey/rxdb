@@ -75,7 +75,7 @@ const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
 });
 
 // create an encrypted database
-const db = await createRxDatabase<RxStylechaseCollections>({
+const db = await createRxDatabase<RxCollections>({
     name: 'mydatabase',
     storage: encryptedDexieStorage,
     password: 'sudoLetMeIn'

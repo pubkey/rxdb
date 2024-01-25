@@ -26,7 +26,7 @@ import {
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create the new RxDatabase
-const db = await createRxDatabase<RxStylechaseCollections>({
+const db = await createRxDatabase<RxCollections>({
     name: dbLocation,
     storage: getRxStorageDexie(),
     multiInstance: false
