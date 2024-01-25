@@ -176,7 +176,7 @@ const storageWithAttachmentsCompression = wrappedAttachmentsCompressionStorage({
     storage: getRxStorageIndexedDB()
 });
 
-const db = await createRxDatabase<RxCollections>({
+const db = await createRxDatabase({
     name: 'mydatabase',
     storage: storageWithAttachmentsCompression
 });

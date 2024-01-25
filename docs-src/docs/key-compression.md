@@ -28,7 +28,7 @@ const storageWithKeyCompression = wrappedKeyCompressionStorage({
     storage: getRxStorageDexie()
 });
 
-const db = await createRxDatabase<RxCollections>({
+const db = await createRxDatabase({
     name: 'mydatabase',
     storage: storageWithKeyCompression
 });
