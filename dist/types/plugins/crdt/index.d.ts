@@ -6,7 +6,7 @@ export declare function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDo
 export declare function hashCRDTOperations(hashFunction: HashFunction, crdts: CRDTDocumentField<any>): Promise<string>;
 export declare function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>>;
 export declare function mergeCRDTFields<RxDocType>(hashFunction: HashFunction, crdtsA: CRDTDocumentField<RxDocType>, crdtsB: CRDTDocumentField<RxDocType>): Promise<CRDTDocumentField<RxDocType>>;
-export declare function rebuildFromCRDT<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, docData: WithDeleted<RxDocType>, crdts: CRDTDocumentField<RxDocType>): WithDeleted<RxDocType>;
+export declare function rebuildFromCRDT<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, docData: WithDeleted<RxDocType> | RxDocType, crdts: CRDTDocumentField<RxDocType>): WithDeleted<RxDocType>;
 export declare function getCRDTConflictHandler<RxDocType>(hashFunction: HashFunction, schema: RxJsonSchema<RxDocumentData<RxDocType>>): RxConflictHandler<RxDocType>;
 export declare const RX_CRDT_CONTEXT = "rx-crdt";
 export declare const RxDBcrdtPlugin: RxPlugin;
