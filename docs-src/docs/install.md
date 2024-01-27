@@ -40,6 +40,7 @@ You have to add them by your own, like we do [here](https://github.com/pubkey/rx
 (window as any).global = window;
 (window as any).process = {
     env: { DEBUG: undefined },
+    nextTick: () => {},
 };
 ```
 
