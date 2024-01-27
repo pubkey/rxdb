@@ -235,7 +235,7 @@ const schemaWithIndexes = {
 
 # internalIndexes
 
-When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./server.md#server-only-indexes)
+When you use RxDB on the server-side, you might want to use internalIndexes to speed up internal queries. [Read more](./rx-server.md#server-only-indexes)
 
 
 ## attachments
