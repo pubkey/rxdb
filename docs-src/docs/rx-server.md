@@ -62,9 +62,15 @@ The server plugin is in beta mode and some features are still missing. Make a Pu
 
 
 
+## Query modifier
 
+`RxServerQueryModifier`
 
+NOTICE: For performance reasons the `RxServerQueryModifier` and `RxServerChangeValidator` MUST NOT be async and return a promise. If you need async data to run them, you should gather that data in  the `RxServerAuthHandler` and store it in the auth data to access it later.
 
+## Change validator
+
+`RxServerChangeValidator`
 
 
 

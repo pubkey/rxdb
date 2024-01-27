@@ -70,8 +70,8 @@ export type ById<T> = {
  */
 export type HashFunction = (input: string) => Promise<string>;
 
+export declare type QueryMatcher<DocType> = (doc: DocType | DeepReadonly<DocType>) => boolean;
 
-export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
 /**
  * To have a deterministic sorting, we cannot return 0,
  * we only return 1 or -1.

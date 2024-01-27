@@ -7,9 +7,9 @@ import type { WithDeleted } from './rx-storage.d.ts';
  * and therefore cannot be used to resolve conflicts.
  */
 export type RxConflictHandlerInput<RxDocType> = {
-    assumedMasterState?: WithDeleted<RxDocType>;
-    realMasterState: WithDeleted<RxDocType>;
-    newDocumentState: WithDeleted<RxDocType>;
+    assumedMasterState?: WithDeleted<RxDocType> | RxDocType;
+    realMasterState: WithDeleted<RxDocType> | RxDocType;
+    newDocumentState: WithDeleted<RxDocType> | RxDocType;
 };
 
 /**
