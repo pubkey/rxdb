@@ -38,7 +38,7 @@ Compression storage for JSON documents is made effortless with RxDB's [key-compr
 
 
 ## Schema Validation and Data Migration on Schema Changes
-Storing JSON documents inside of an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
+Storing JSON documents inside of a database in an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
 When your application's schema evolves, RxDB provides [migration strategies](../migration-schema.md) to facilitate the transition, ensuring data consistency throughout schema updates.
 
 **JSONSchema Validation Plugins**: RxDB supports multiple [JSONSchema validation plugins](../schema-validation.md), guaranteeing that only valid data is stored in the database. RxDB uses the JsonSchema standardization that you might know from other technologies like OpenAPI (aka Swagger).
@@ -84,7 +84,7 @@ RxDB offers versatile storage solutions for browser-based applications:
 </p>
 
 
-## RxDB Database Performance
+## RxDB JSON Database Performance
 
 Certainly! Let's delve deeper into the performance aspects of RxDB when it comes to working with JSON data.
 
@@ -102,7 +102,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 
 ## RxDB in Node.js
-Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON database to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).
+Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON db to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).
 
 ## RxDB to store JSON documents in React Native
 

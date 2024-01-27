@@ -1,12 +1,13 @@
 ---
-title: Capacitor Database
+title: Capacitor Database - SQLite, RxDB and others
 slug: capacitor-database.html
+description: Explore Capacitor's database options including SQLite, RxDB, and Preferences API for web-native apps. Learn about their uses, limitations, and integration in this comprehensive guide.
 ---
 
 
 
 
-# Capacitor Database
+# Capacitor Database - SQLite, RxDB and others
 
 [Capacitor](https://capacitorjs.com/) is an open source native JavaScript runtime to build Web based Native apps. You can use it to create cross-platform iOS, Android, and Progressive Web Apps with the web technologies JavaScript, HTML, and CSS.
 It is developed by the Ionic Team and provides a great alternative to create hybrid apps. Compared to [React Native](./react-native-database.md), Capacitor is more Web-Like because the JavaScript runtime supports most Web APIs like IndexedDB, fetch,  and so on.
@@ -84,9 +85,11 @@ Now you can create a database connection and use the SQLite database.
 
 ```ts
 import { Capacitor } from '@capacitor/core';
-import { CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
-         capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
-         capNCDatabasePathResult } from '@capacitor-community/sqlite';
+import {
+  CapacitorSQLite, SQLiteDBConnection, SQLiteConnection, capSQLiteSet,
+  capSQLiteChanges, capSQLiteValues, capEchoResult, capSQLiteResult,
+  capNCDatabasePathResult
+} from '@capacitor-community/sqlite';
 
 const sqlite = new SQLiteConnection(CapacitorSQLite);
 const database: SQLiteDBConnection = await this.sqlite.createConnection(databaseName, encrypted, mode, version, readOnly);

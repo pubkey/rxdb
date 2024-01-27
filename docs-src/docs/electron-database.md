@@ -34,7 +34,7 @@ Because Electron uses a common Chrome web browser in the renderer process, you c
 
 But as soon as your application goes beyond a simple TODO-app, there are multiple obstacles that come in your way. One thing is the bad multi-tab support. If you have more then one *renderer* process, it becomes hard to manage database writes between them. Each *browser tab* could modify the database state while the others do not know of the changes and keep an outdated UI.
 
-Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md) mostly because it has to go through layers of browser security and abstractions. Storing and querying much data might become your performance bottleneck. Localstorage and WebSQL are even slower by the way. Using these Web Storage APIs is generally only recommend when you know for sure that there will be always only **one rendering process** and performance is not that relevant.
+Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md) mostly because it has to go through layers of browser security and abstractions. Storing and querying much data might become your performance bottleneck. Localstorage and WebSQL are even slower by the way. Using these Web Storage APIs is generally only recommend when you know for sure that there will be always only **one rendering process** and performance is not that relevant. The main reason for that is the security- and abstraction layers that writes and reads have to go through when using the browsers IndexedDB API. So instead of using IndexedDB in Electron in the renderer process, you should use something that runs in the "main" process in Node.js like the [Filesystem RxStorage](./rx-storage-filesystem-node.md) or the [In Memory RxStorage](./rx-storage-memory.md).
 
 ### RxDB
 
@@ -52,7 +52,7 @@ Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of Rx
 - The [PouchDB RxStorage](./rx-storage-pouchdb.md) with the SQLite adapter mentioned above.
 - The [IndexedDB RxStorage](./rx-storage-indexeddb.md)
 - The [Dexie.js RxStorage](./rx-storage-dexie.md)
-- The [NOde.js Filesystem](./rx-storage-filesystem-node.md)
+- The [Node.js Filesystem](./rx-storage-filesystem-node.md)
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [👑 Premium Plugins](/premium) which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
 In production you would always run the RxStorage in the main process with the [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain) plugins.

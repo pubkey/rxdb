@@ -1,7 +1,7 @@
 ---
-title: CRDT - Conflict-free replicated data type
+title: CRDT - Conflict-free replicated data type Database
 slug: crdt.html
-description: Explore the beta RxDB CRDT Plugin - A guide to conflict-free data handling in distributed systems with RxDB's novel CRDT approach
+description: Explore the beta RxDB CRDT Plugin - A guide to conflict-free data handling in distributed systems with RxDB's novel CRDT approach to store and handle CRDTs in a database.
 ---
 
 

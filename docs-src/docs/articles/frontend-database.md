@@ -6,7 +6,7 @@ description: Explore RxDB as simple frontend database - Learn the benefits of of
 
 
 # RxDB JavaScript Frontend Database: Efficient Data Storage in Frontend Applications
-In modern web development, managing data on the frontend has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where [RxDB](https://rxdb.info/), a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how [RxDB](https://rxdb.info/) addresses these challenges to become an excellent choice for frontend data storage.
+In modern web development, managing data on the front end has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where [RxDB](https://rxdb.info/), a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how [RxDB](https://rxdb.info/) addresses these challenges to become an excellent choice for frontend data storage.
 
 <center>
     <a href="https://rxdb.info/">
@@ -26,7 +26,7 @@ Frontend databases also serve as efficient caching mechanisms. By storing freque
 Storing data in the frontend decreases the initial application start time because the data is already present locally. By eliminating the need to fetch data from a server during startup, applications can quickly render the UI and provide users with an immediate interactive experience. This is especially advantageous for applications with large datasets or complex data retrieval processes.
 
 ### Password encryption for local data
-Security is a crucial aspect of data storage. With a frontend database, developers can [encrypt](../encryption.md) sensitive local data, such as user credentials or personal information, using encryption algorithms. This ensures that even if the device is compromised, the data remains securely stored and protected.
+Security is a crucial aspect of data storage. With a front end database, developers can [encrypt](../encryption.md) sensitive local data, such as user credentials or personal information, using encryption algorithms. This ensures that even if the device is compromised, the data remains securely stored and protected.
 
 ### Local database for state management
 Frontend databases provide an alternative to traditional state management libraries like Redux or NgRx. By utilizing a local database, developers can store and manage application state directly in the frontend, eliminating the need for additional libraries. This approach simplifies the codebase, reduces complexity, and provides a more straightforward data flow within the application.
@@ -52,7 +52,7 @@ Replicating database state between the frontend and backend can be challenging, 
 Frontend databases offer improved scalability compared to traditional SQL databases. By leveraging the computational capabilities of client devices, the burden on server resources is reduced. Queries and operations are performed locally, minimizing the need for server round-trips and enabling applications to scale more efficiently.
 
 
-## Why SQL databases are not a good fit for the frontend
+## Why SQL databases are not a good fit for the front end of an application
 While SQL databases excel in server-side scenarios, they pose limitations when used on the frontend. Here are some reasons why SQL databases are not well-suited for frontend applications:
 
 ### Push/Pull based vs. reactive
