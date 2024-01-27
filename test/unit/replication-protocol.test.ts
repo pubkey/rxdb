@@ -118,7 +118,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         //     });
         // }
 
-        if (docA._deleted !== docB._deleted) {
+        if ((docA as any)._deleted !== (docB as any)._deleted) {
             return Promise.resolve({
                 isEqual: false,
                 documentData: input.newDocumentState
