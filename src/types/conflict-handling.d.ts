@@ -20,7 +20,7 @@ export type RxConflictHandlerInput<RxDocType> = {
  */
 export type RxConflictHandlerOutput<RxDocType> = {
     isEqual: false;
-    documentData: WithDeleted<RxDocType>;
+    documentData: WithDeleted<RxDocType> | RxDocType;
 } | {
     isEqual: true;
 };

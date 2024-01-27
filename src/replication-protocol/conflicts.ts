@@ -90,7 +90,7 @@ export async function resolveConflictError<RxDocType>(
                 _rev: getDefaultRevision(),
                 _attachments: flatClone(forkState._attachments)
             }
-        );
+        ) as any;
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(
             await state.checkpointKey,
