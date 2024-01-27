@@ -141,6 +141,11 @@ const rows = await ipcRenderer.invoke('db-query', "SELECT * FROM Users");
 The downside of SQLite (or SQL in general) is that it is lacking many features that are handful when using a database together with **UI based** applications. It is not possible to observe queries or document fields and there is no replication method to sync data with a server. This makes SQLite a good solution when you just want to store data on the client or process expensive SQL queries on the server, but it is not suitable for more complex operations like two-way replication, encryption, compression and so on. Also developer helpers like TypeScript type safety are totally out of reach.
 
 
+<p align="center">
+  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB Electron Database" width="170" />
+</p>
+
+
 ## Follow up
 
 - Check out the [RxDB Electron example](https://github.com/pubkey/rxdb/tree/master/examples/electron)

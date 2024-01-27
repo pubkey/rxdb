@@ -280,7 +280,7 @@ export async function mergeCRDTFields<RxDocType>(
 
 export function rebuildFromCRDT<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    docData: WithDeleted<RxDocType>,
+    docData: WithDeleted<RxDocType> | RxDocType,
     crdts: CRDTDocumentField<RxDocType>
 ): WithDeleted<RxDocType> {
     let base: WithDeleted<RxDocType> = {
@@ -306,7 +306,7 @@ export function getCRDTConflictHandler<RxDocType>(
 ): RxConflictHandler<RxDocType> {
     const crdtOptions = ensureNotFalsy(schema.crdt);
     const crdtField = crdtOptions.field;
-    const getCRDTValue = objectPathMonad<WithDeleted<RxDocType>, CRDTDocumentField<RxDocType>>(crdtField);
+    const getCRDTValue = objectPathMonad<WithDeleted<RxDocType> | RxDocType, CRDTDocumentField<RxDocType>>(crdtField);
 
     const conflictHandler: RxConflictHandler<RxDocType> = async (
         i: RxConflictHandlerInput<RxDocType>,

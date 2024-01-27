@@ -1,6 +1,7 @@
 import { LOGICAL_OPERATORS } from './query-planner.ts';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
 import type {
+    DeepReadonly,
     DeterministicSortComparator,
     FilledMangoQuery,
     MangoQuery,
@@ -219,7 +220,7 @@ export function getQueryMatcher<RxDocType>(
     }
 
     const mingoQuery = getMingoQuery(query.selector as any);
-    const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
+    const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType> | DeepReadonly<RxDocumentData<RxDocType>>) => {
         return mingoQuery.test(doc);
     };
     return fun;
