@@ -1,8 +1,12 @@
 import type {
+    DeepReadonly,
     RxDocumentData,
     RxDocumentMeta,
-    StringKeys
+    StringKeys,
+    WithDeleted,
+    WithDeletedAndAttachments
 } from '../../types/index.d.ts';
+import { flatClone } from './utils-object.ts';
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
@@ -96,4 +100,17 @@ export function sortDocumentsByLastWriteTime<RxDocType>(
     docs: RxDocumentData<RxDocType>[]
 ): RxDocumentData<RxDocType>[] {
     return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
+
+type AnyDocFormat<RxDocType> = RxDocType | WithDeleted<RxDocType> | RxDocumentData<RxDocType> | WithDeletedAndAttachments<RxDocType>;
+export function toWithDeleted<RxDocType>(
+    docData: AnyDocFormat<RxDocType> | DeepReadonly<AnyDocFormat<RxDocType>>
+): WithDeleted<RxDocType> {
+    docData = flatClone(docData);
+    (docData as any)._deleted = !!(docData as any)._deleted;
+    return Object.assign(docData as any, {
+        _attachments: undefined,
+        _meta: undefined,
+        _rev: undefined
+    }) as any;
 }

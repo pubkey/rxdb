@@ -20,7 +20,8 @@ import {
     getBlobSize,
     blobToBase64String,
     createBlobFromBase64,
-    overwritable
+    overwritable,
+    toWithDeleted
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -60,7 +61,7 @@ describe('util.test.js', () => {
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
         });
-        it('must have enabled canUseCryptoSubtle', ()=> {
+        it('must have enabled canUseCryptoSubtle', () => {
             assert.ok(canUseCryptoSubtle);
         });
         it('both versions must return the exact same value', async () => {
@@ -460,6 +461,18 @@ describe('util.test.js', () => {
                 objectPathMonad('not.here.nes.ted')(docData),
                 undefined
             );
+        });
+    });
+    describe('.toWithDeleted()', () => {
+        it('should have the _deleted flag set', () => {
+            assert.strictEqual(toWithDeleted({})._deleted, false);
+            assert.strictEqual(toWithDeleted({ _deleted: false })._deleted, false);
+            assert.strictEqual(toWithDeleted({ _deleted: true })._deleted, true);
+        });
+        it('should have _attachments and _meta and _rev removed', () => {
+            assert.strictEqual(toWithDeleted({ _meta: {} })._meta, undefined);
+            assert.strictEqual(toWithDeleted({ _attachments: {} })._attachments, undefined);
+            assert.strictEqual(toWithDeleted({ _rev: 'aa' })._rev, undefined);
         });
     });
 });
