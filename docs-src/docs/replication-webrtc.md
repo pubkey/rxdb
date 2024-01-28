@@ -147,7 +147,30 @@ const replicationPool = await replicateWebRTC(
 RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
 A **custom conflict handler** can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. [Find out more about RxDB conflict handling here](https://rxdb.info/transactions-conflicts-revisions.html)
 
+## SimplePeer requires to have `process.nextTick()`
 
+In the browser you might not have a process variable or process.nextTick() method. But the [simple peer](https://github.com/feross/simple-peer) uses that so you have to polyfill it.
+
+In webpack you can use the `process/browser` package to polyfill it:
+
+```js
+const plugins = [
+    /* ... */
+    new webpack.ProvidePlugin({
+        process: 'process/browser',
+    })
+    /* ... */
+];
+```
+
+In angular or other libraries you can add the polyfill manually:
+
+```js
+window.process = {
+    nextTick: (fn) => {fn},
+};
+
+```
 
 ## Storing replicated data encrypted on client device
 

@@ -91,6 +91,7 @@ export function getConnectionHandlerSimplePeer({
     wrtc,
     webSocketConstructor
 }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer> {
+    ensureProcessNextTickIsSet();
 
     signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
     webSocketConstructor = webSocketConstructor ? webSocketConstructor as any : WebSocket;
@@ -274,4 +275,19 @@ export function getConnectionHandlerSimplePeer({
         return handler;
     };
     return creator;
+}
+
+
+/**
+ * Multiple people had problems because it requires to have
+ * the nextTick() method in the runtime. So we check here and
+ * throw a helpful error.
+ */
+export function ensureProcessNextTickIsSet() {
+    if (
+        typeof process === 'undefined' ||
+        typeof process.nextTick !== 'function'
+    ) {
+        throw newRxError('RC7');
+    }
 }

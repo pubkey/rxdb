@@ -14,12 +14,13 @@ Also it uses **angular-universal** to enable server side rendering.
 7. Open [http://127.0.0.1:4200/](http://127.0.0.1:4200/) **IMPORTANT: do not use localhost**
 
 ## Important parts when using RxDB with angular:
-- Make sure you have the `window` polyfills added that are needed for pouchdb
+- Make sure you have the `window` polyfills added that are needed for some plugins.
 ```ts
 // in polyfills.ts
 (window as any).global = window;
 (window as any).process = {
     env: { DEBUG: undefined },
+    nextTick: (fn) => {fn},
 };
 ```
 
