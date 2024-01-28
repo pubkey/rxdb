@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.4.3 (28 January 2024)
+
 ### 15.4.2 (24 January 2024)
 
 - ADD(worker storage) support for directly imported `Worker` and `SharedWorker` functions as `workerInput`.

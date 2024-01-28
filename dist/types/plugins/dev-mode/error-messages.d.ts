@@ -113,6 +113,7 @@ export declare const ERROR_MESSAGES: {
     RC4: string;
     RC5: string;
     RC6: string;
+    RC7: string;
     RC_PULL: string;
     RC_STREAM: string;
     RC_PUSH: string;

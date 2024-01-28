@@ -1,3 +1,4 @@
+import { flatClone } from "./utils-object.js";
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
@@ -73,5 +74,14 @@ export function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
 }
 export function sortDocumentsByLastWriteTime(primaryPath, docs) {
   return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
+export function toWithDeleted(docData) {
+  docData = flatClone(docData);
+  docData._deleted = !!docData._deleted;
+  return Object.assign(docData, {
+    _attachments: undefined,
+    _meta: undefined,
+    _rev: undefined
+  });
 }
 //# sourceMappingURL=utils-document.js.map

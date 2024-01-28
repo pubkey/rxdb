@@ -1,4 +1,4 @@
-import type { RxDocumentData, RxDocumentMeta, StringKeys } from '../../types/index.d.ts';
+import type { DeepReadonly, RxDocumentData, RxDocumentMeta, StringKeys, WithDeleted, WithDeletedAndAttachments } from '../../types/index.d.ts';
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
@@ -21,3 +21,6 @@ export declare function stripMetaDataFromDocument<RxDocType>(docData: RxDocument
 export declare function areRxDocumentArraysEqual<RxDocType>(primaryPath: StringKeys<RxDocumentData<RxDocType>>, ar1: RxDocumentData<RxDocType>[], ar2: RxDocumentData<RxDocType>[]): boolean;
 export declare function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string): (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => number;
 export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>[];
+type AnyDocFormat<RxDocType> = RxDocType | WithDeleted<RxDocType> | RxDocumentData<RxDocType> | WithDeletedAndAttachments<RxDocType>;
+export declare function toWithDeleted<RxDocType>(docData: AnyDocFormat<RxDocType> | DeepReadonly<AnyDocFormat<RxDocType>>): WithDeleted<RxDocType>;
+export {};

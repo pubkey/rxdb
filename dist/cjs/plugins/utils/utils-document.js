@@ -10,6 +10,8 @@ exports.getDefaultRxDocumentMeta = getDefaultRxDocumentMeta;
 exports.getSortDocumentsByLastWriteTimeComparator = getSortDocumentsByLastWriteTimeComparator;
 exports.sortDocumentsByLastWriteTime = sortDocumentsByLastWriteTime;
 exports.stripMetaDataFromDocument = stripMetaDataFromDocument;
+exports.toWithDeleted = toWithDeleted;
+var _utilsObject = require("./utils-object.js");
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
@@ -85,5 +87,14 @@ function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
 }
 function sortDocumentsByLastWriteTime(primaryPath, docs) {
   return docs.sort(getSortDocumentsByLastWriteTimeComparator(primaryPath));
+}
+function toWithDeleted(docData) {
+  docData = (0, _utilsObject.flatClone)(docData);
+  docData._deleted = !!docData._deleted;
+  return Object.assign(docData, {
+    _attachments: undefined,
+    _meta: undefined,
+    _rev: undefined
+  });
 }
 //# sourceMappingURL=utils-document.js.map
