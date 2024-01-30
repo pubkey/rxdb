@@ -277,6 +277,7 @@ The server plugin is in beta mode and some features are still missing. Make a Pu
 
 <details>
     <summary>Why are the server plugins in a different github repo and npm package?</summary>
+    <div>
     The RxServer and its other plugins are in a different github repository because:
     <ul>
         <li>
@@ -286,4 +287,5 @@ The server plugin is in beta mode and some features are still missing. Make a Pu
             It has a different license <a href="https://en.wikipedia.org/wiki/Server_Side_Public_License">(SSPL)</a> to prevent large cloud vendors from "stealing" the revenue, similar to MongoDB's license.
         </li>
     </ul>
+    </div>
 </details>
