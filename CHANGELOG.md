@@ -3,14 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD [RxServer](https://rxdb.info/rx-server.html) 🎉
-- ADD Optionally supress dev mode Warning [#5556](https://github.com/pubkey/rxdb/issues/5556)
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.5.0 (30 January 2024)
+
+- ADD [RxServer](https://rxdb.info/rx-server.html) 🎉
+- ADD Optionally supress dev mode Warning [#5556](https://github.com/pubkey/rxdb/issues/5556)
 
 ### 15.4.3 (28 January 2024)
 

@@ -10,6 +10,15 @@ import { ensurePrimaryKeyValid } from "./check-document.js";
 export * from "./check-schema.js";
 export * from "./unallowed-properties.js";
 export * from "./check-query.js";
+var showDevModeWarning = true;
+
+/**
+ * Suppresses the warning message shown in the console, typically invoked once the developer (hello!) 
+ * has acknowledged it.
+ */
+export function disableWarnings() {
+  showDevModeWarning = false;
+}
 
 /**
  * Deep freezes and object when in dev-mode.
@@ -29,10 +38,12 @@ export var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
   init: () => {
-    console.warn(['-------------- RxDB dev-mode warning -------------------------------', 'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html ', 'This is great in development mode, because it will run many checks to ensure', 'that you use RxDB correct. If you see this in production mode,', 'you did something wrong because the dev-mode plugin will decrease the performance.', '', '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins', 'to get access to faster storages and more professional features: https://rxdb.info/premium',
-    // '',
-    // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
-    '---------------------------------------------------------------------'].join('\n'));
+    if (showDevModeWarning) {
+      console.warn(['-------------- RxDB dev-mode warning -------------------------------', 'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html ', 'This is great in development mode, because it will run many checks to ensure', 'that you use RxDB correct. If you see this in production mode,', 'you did something wrong because the dev-mode plugin will decrease the performance.', '', '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins', 'to get access to faster storages and more professional features: https://rxdb.info/premium',
+      // '',
+      // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
+      '---------------------------------------------------------------------'].join('\n'));
+    }
   },
   overwritable: {
     isDevMode() {
