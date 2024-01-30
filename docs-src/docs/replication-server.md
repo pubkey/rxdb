@@ -51,7 +51,7 @@ replicationState.unauthorized$.subscribe(() => {
 
 When you client behaves wrong in any case, like update non-allowed values or changing documents that it is not allowed to,
 the server will drop the connection and the replication state will emit on the `forbidden$` observable.
-It will also automatically stop the replication so that your client does not accidentially DOS attack the server.
+It will also automatically stop the replication so that your client does not accidentally DOS attack the server.
 
 ```ts
 replicationState.forbidden$.subscribe(() => {

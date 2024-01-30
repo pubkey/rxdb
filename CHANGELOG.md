@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - ADD [RxServer](https://rxdb.info/rx-server.html) 🎉
+- ADD Optionally supress dev mode Warning [#5556](https://github.com/pubkey/rxdb/issues/5556)
 
 <!-- ADD new changes here! -->
 

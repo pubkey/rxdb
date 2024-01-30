@@ -34,7 +34,7 @@ export * from './check-query.ts';
 let showDevModeWarning = true;
 
 /**
- * Supresses the warning message shown in the console, typically invoked once the developer (hello!) 
+ * Suppresses the warning message shown in the console, typically invoked once the developer (hello!) 
  * has acknowledged it.
  */
 export function disableWarnings() {
