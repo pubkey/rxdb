@@ -88,9 +88,9 @@ async function run() {
     ]);
     releaseBodyRows.push([
         '### Join RxDB:',
-        '- 💬 [Join the RxDB Chat](https://rxdb.info/chat.html)',
+        '- 💬 [Join the RxDB Chat](https://rxdb.info/chat)',
         '- ⭐ [Star the RxDB Repo](https://github.com/pubkey/rxdb)',
-        '- 📰 [Subscribe to the newsletter](https://rxdb.info/newsletter.html)',
+        '- 📰 [Subscribe to the newsletter](https://rxdb.info/newsletter)',
         '- 🐦 [Follow at Twitter](https://twitter.com/intent/user?screen_name=rxdbjs)',
         '- 🔗 [Follow at LinkedIn](https://www.linkedin.com/company/rxdb)'
     ]);

@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD [RxServer](https://rxdb.info/rx-server.html) 🎉
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -58,6 +58,7 @@ const sidebars = {
       items: [
         'replication',
         'replication-http',
+        'replication-server',
         'replication-graphql',
         'replication-websocket',
         'replication-couchdb',
@@ -66,6 +67,7 @@ const sidebars = {
         'replication-nats'
       ],
     },
+    'rx-server',
     {
       type: 'category',
       label: 'Migration',
