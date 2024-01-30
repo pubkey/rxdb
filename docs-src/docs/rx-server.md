@@ -164,7 +164,7 @@ const endpoint = await server.addReplicationEndpoint({
 
 The RxServer will use the queryModifier at many places internally to determine which queries to run or if a document is allowed to be seen/edited by a client.
 
-NOTICE: For performance reasons the `queryModifier` and `changeValidator` **MUST NOT** be `async`` and return a promise. If you need async data to run them, you should gather that data in  the `RxServerAuthHandler` and store it in the auth data to access it later.
+NOTICE: For performance reasons the `queryModifier` and `changeValidator` **MUST NOT** be `async` and return a promise. If you need async data to run them, you should gather that data in  the `RxServerAuthHandler` and store it in the auth data to access it later.
 
 ## Change validator
 
