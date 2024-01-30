@@ -77,6 +77,8 @@ export const RxDBDevModePlugin: RxPlugin = {
                 '',
                 '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
                 'to get access to faster storages and more professional features: https://rxdb.info/premium',
+                '',
+                'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
                 // '',
                 // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
                 '---------------------------------------------------------------------'
