@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.SIMPLE_PEER_PING_INTERVAL = exports.DEFAULT_SIGNALING_SERVER = void 0;
+exports.ensureProcessNextTickIsSet = ensureProcessNextTickIsSet;
 exports.getConnectionHandlerSimplePeer = getConnectionHandlerSimplePeer;
 var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
@@ -26,6 +27,7 @@ function getConnectionHandlerSimplePeer({
   wrtc,
   webSocketConstructor
 }) {
+  ensureProcessNextTickIsSet();
   signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
   webSocketConstructor = webSocketConstructor ? webSocketConstructor : WebSocket;
   if (signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) && !defaultServerWarningShown) {
@@ -181,5 +183,16 @@ function getConnectionHandlerSimplePeer({
     return handler;
   };
   return creator;
+}
+
+/**
+ * Multiple people had problems because it requires to have
+ * the nextTick() method in the runtime. So we check here and
+ * throw a helpful error.
+ */
+function ensureProcessNextTickIsSet() {
+  if (typeof process === 'undefined' || typeof process.nextTick !== 'function') {
+    throw (0, _rxError.newRxError)('RC7');
+  }
 }
 //# sourceMappingURL=connection-handler-simple-peer.js.map

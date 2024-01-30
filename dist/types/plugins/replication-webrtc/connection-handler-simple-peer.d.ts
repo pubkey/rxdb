@@ -44,3 +44,9 @@ export declare const SIMPLE_PEER_PING_INTERVAL: number;
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export declare function getConnectionHandlerSimplePeer({ signalingServerUrl, wrtc, webSocketConstructor }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer>;
+/**
+ * Multiple people had problems because it requires to have
+ * the nextTick() method in the runtime. So we check here and
+ * throw a helpful error.
+ */
+export declare function ensureProcessNextTickIsSet(): void;
