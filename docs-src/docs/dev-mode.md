@@ -93,7 +93,7 @@ async function createDb() {
 
 ## Disable the dev-mode warning
 
-When the dev-mode is enabled, it will print a `console.warn()` message to the console so that you do not accidentially use the dev-mode in production. To disable this warning you can call the `disableWarnings()` function.
+When the dev-mode is enabled, it will print a `console.warn()` message to the console so that you do not accidentally use the dev-mode in production. To disable this warning you can call the `disableWarnings()` function.
 
 ```ts
 import { disableWarnings } from 'rxdb/plugins/dev-mode';
