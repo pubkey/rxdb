@@ -1,11 +1,13 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function Home() {
     const { siteConfig } = useDocusaurusContext();
 
-
+    const isBrowser = useIsBrowser();
+    useEffect(() => { if (isBrowser) { window.trigger('get_newsletter', 0.40); } });
 
     return (
         <Layout

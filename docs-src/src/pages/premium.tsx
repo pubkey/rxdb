@@ -31,6 +31,8 @@ export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     useEffect(() => {
+        if (isBrowser) { window.trigger('premium_request', 1); }
+
         (async () => {
             if (!isBrowser || !hasIndexedDB()) {
                 return;
@@ -626,7 +628,7 @@ export default function Premium() {
                                             }
 
                                             const formDataPlain = new FormData($priceCalculatorForm);
-                                            const formData = Object.fromEntries(formDataPlain.entries());
+                                            const formData = Object.fromEntries((formDataPlain as any).entries());
 
                                             console.log('formData:');
                                             console.dir(formData);
@@ -742,11 +744,7 @@ export default function Premium() {
                                         </tbody>
                                     </table>
                                     <div className="proceed-hint">
-                                        Fill out
-                                        <a href="#premium-request-form-block">
-                                            {' '}<b>this form</b>{' '}
-                                        </a>
-                                        to proceed.
+                                        Fill out the <b>form below &darr;</b> to proceed.
                                     </div>
                                 </div>
                             </div>

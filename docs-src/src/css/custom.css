@@ -34,10 +34,22 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
-/* Hide Search Field on Homepage */
-.homepage .navbarSearchContainer_Bca1{
-    display:none;
+
+.navbar__title b {
+  color: white;
 }
+
+/* Hide Search Field on Homepage */
+.homepage .navbarSearchContainer_Bca1 {
+  display: none;
+}
+
+@media (max-width: 500px) {
+  .navbar__search #search_input_react {
+    width: 6rem;
+  }
+}
+
 
 
 /**
@@ -280,26 +292,29 @@ p a:hover {
   text-decoration: underline;
 }
 
-ul.checked li {
-  margin-bottom: 34px;
+
+ul.checked {
+  padding-left: 0px;
 }
 
 ul.checked li {
+  text-align: justify;
+  margin-bottom: 10px;
+  display: table;
   list-style: none;
 }
 
-ul.checked li {
+ul.checked li b {
   font-size: var(--fontSizes-xl);
 }
 
 ul.checked li:before {
   content: '✓ ';
-  font-size: 40px;
-  display: block;
-  float: left;
+  font-size: 55px;
   padding-right: 10px;
-  margin-top: -11px;
   font-weight: bold;
+  display: table-cell;
+  vertical-align: middle;
 }
 
 
@@ -558,20 +573,28 @@ body {
   overflow: hidden;
 }
 
-.block.first .inner h1 {
+.block.first h1 {
   font-size: var(--fontSizes-6xl);
-  padding-left: 25px;
+  text-align: center;
+}
+
+.block.first .half.left {
+  flex: 1.6;
 }
 
 @media (max-width: 900px) {
-  .block.first {
-    padding-top: 0px;
+  .block.first .inner {
+    margin-top: 38px;
   }
 
   .block.first .inner {
     flex-direction: column-reverse;
   }
 }
+
+.block.first .half.right .content-canvas {}
+
+
 
 .block.second .inner {
   margin-top: 70px;
@@ -733,13 +756,18 @@ body {
   position: relative;
 }
 
-
-@media (max-width: 600px) {
-  .block.offline-first ul {
-    padding-left: 0px;
-  }
+.block.offline-first ul li {
+  font-size: 26px;
+  text-align: left;
 }
 
+.block.offline-first ul li b {
+  font-size: 26px;
+}
+
+.block.offline-first ul li:before {
+  font-size: 33px;
+}
 
 
 .block.frameworks .content {
@@ -1898,25 +1926,24 @@ footer a:visited {
   display: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .call-to-action .call-to-action-icon {
     display: contents;
   }
 
-    .navbar .call-to-action {
-        margin-right:145px;
-
-    }
+  .navbar .call-to-action {
+    margin-right: 95px;
+  }
 
   .call-to-action .call-to-action-keyword {
     display: none;
   }
 }
+
 @media (max-width: 340px) {
-    .navbar .text {
-        padding-right: 4px;
-    }
+  .navbar .text {
+    padding-right: 4px;
+  }
 
 
 }
-

@@ -1,16 +1,19 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function Home() {
     const { siteConfig } = useDocusaurusContext();
 
+    const isBrowser = useIsBrowser();
+    useEffect(() => { if (isBrowser) { window.trigger('goto_code', 0.40); } });
 
 
     return (
         <Layout
-            title={`Chat - ${siteConfig.title}`}
-            description="RxDB Community Chat"
+            title={`Code - ${siteConfig.title}`}
+            description="RxDB Source Code"
         >
             <main>
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
@@ -26,7 +29,7 @@ export default function Home() {
                     <p>
                         <a href="https://github.com/pubkey/rxdb">Click here to open Code</a>
                     </p>
-                    <meta httpEquiv="Refresh" content="0; url=https://github.com/pubkey/rxdb" />
+                    <meta httpEquiv="Refresh" content="1; url=https://github.com/pubkey/rxdb" />
                 </div>
             </main>
         </Layout >

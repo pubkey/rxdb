@@ -1,11 +1,13 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import React from 'react';
+import React, { useEffect } from 'react';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
-export default function Home() {
+export default function Chat() {
     const { siteConfig } = useDocusaurusContext();
 
-
+    const isBrowser = useIsBrowser();
+    useEffect(() => { if (isBrowser) { window.trigger('join_chat', 0.40); } });
 
     return (
         <Layout
@@ -26,7 +28,7 @@ export default function Home() {
                     <p>
                         <a href="https://discord.gg/tqt9ZttJfD">Click here to open Chat</a>
                     </p>
-                    <meta httpEquiv="Refresh" content="0; url=https://discord.gg/tqt9ZttJfD" />
+                    <meta httpEquiv="Refresh" content="1; url=https://discord.gg/tqt9ZttJfD" />
                 </div>
             </main>
         </Layout >
