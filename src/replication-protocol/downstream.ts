@@ -1,6 +1,7 @@
 import {
     firstValueFrom,
-    filter
+    filter,
+    mergeMap
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
 import { stackCheckpoints } from '../rx-storage-helper.ts';
@@ -139,6 +140,18 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
     if (!state.events.canceled.getValue()) {
         const sub = replicationHandler
             .masterChangeStream$
+            .pipe(
+                mergeMap(async (ev) => {
+                    /**
+                     * While a push is running, we have to delay all incoming
+                     * events from the server to not mix up the replication state.
+                     */
+                    await firstValueFrom(
+                        state.events.active.up.pipe(filter(s => !s))
+                    );
+                    return ev;
+                })
+            )
             .subscribe((task: Task) => {
                 state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
                 addNewTask(task);

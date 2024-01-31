@@ -943,10 +943,7 @@ describe('replication.test.ts', () => {
                     stream$: pullStream$.asObservable()
                 },
             });
-
-            replicationState.error$.subscribe((err) => {
-                throw Error(err.message);
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
 
@@ -1006,11 +1003,7 @@ describe('replication.test.ts', () => {
                     }
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.log(JSON.stringify(err, null, 4));
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
 
             await replicationState.awaitInitialReplication();
@@ -1024,6 +1017,46 @@ describe('replication.test.ts', () => {
 
             remoteCollection.database.destroy();
             localCollection.database.destroy();
+        });
+        it('#5571 Replication observation mode ignored when push handler is waiting for response from backend', async () => {
+            const serverCollection = await humansCollection.create(0);
+            const clientCollection = await humansCollection.create(0);
+            const replicationState = replicateRxCollection({
+                replicationIdentifier: 'replicate-' + randomCouchString(10),
+                collection: clientCollection,
+                pull: {
+                    handler: (lastPulledCheckpoint: CheckpointType, pullBatchSize: number) => {
+                        return getPullHandler(serverCollection)(lastPulledCheckpoint, pullBatchSize);
+                    },
+                    stream$: getPullStream(serverCollection).pipe(
+                    )
+                },
+                push: {
+                    handler: async (rows) => {
+                        // simulate that the server is modifying the pushed document.
+                        rows = rows.map(row => {
+                            row = clone(row);
+                            row.newDocumentState.lastName = 'server-modified';
+                            return row;
+                        });
+                        const resultPromise = getPushHandler(serverCollection)(rows);
+                        await wait(50);
+                        const result = await resultPromise;
+                        return result;
+                    }
+                },
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            await clientCollection.insert(schemaObjects.humanData('first'));
+            await replicationState.awaitInSync();
+
+            const docOnClient = await clientCollection.findOne().exec(true);
+            assert.strictEqual(docOnClient.lastName, 'server-modified');
+
+            serverCollection.database.destroy();
+            clientCollection.database.destroy();
         });
     });
 });
