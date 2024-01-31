@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX Replication observation mode ignored when push handler is waiting [#5571](https://github.com/pubkey/rxdb/issues/5571)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
