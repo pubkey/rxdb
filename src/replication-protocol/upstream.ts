@@ -1,5 +1,8 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { getChangedDocumentsSince, stackCheckpoints } from '../rx-storage-helper.ts';
+import {
+    getChangedDocumentsSince,
+    stackCheckpoints
+} from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -24,7 +27,9 @@ import {
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint.ts';
-import { resolveConflictError } from './conflicts.ts';
+import {
+    resolveConflictError
+} from './conflicts.ts';
 import {
     stripAttachmentsDataFromMetaWriteRows,
     writeDocToDocState
