@@ -8,7 +8,7 @@ description: Local-First software stores data on client devices for seamless off
 
 Local-First (aka offline first) is a software paradigm where the software stores data locally at the clients device and must work as well offline as it does online.
 To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
-This can be either done with complex caching strategies, or by using an local-first, offline database (like [RxDB](https://github.com/pubkey/rxdb)) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
+This can be either done with complex caching strategies, or by using an local-first, offline database (like [RxDB](https://rxdb.info)) that stores the data inside of a local database like IndexedDB and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
 
 > **Offline first is not about having no internet connection**
 

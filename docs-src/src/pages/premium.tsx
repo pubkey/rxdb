@@ -626,7 +626,7 @@ export default function Premium() {
                                             }
 
                                             const formDataPlain = new FormData($priceCalculatorForm);
-                                            const formData = Object.fromEntries(formDataPlain.entries());
+                                            const formData = Object.fromEntries((formDataPlain as any).entries());
 
                                             console.log('formData:');
                                             console.dir(formData);
