@@ -146,6 +146,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                      * While a push is running, we have to delay all incoming
                      * events from the server to not mix up the replication state.
                      */
+                    state.events.active.down.next(true);
                     await firstValueFrom(
                         state.events.active.up.pipe(filter(s => !s))
                     );
