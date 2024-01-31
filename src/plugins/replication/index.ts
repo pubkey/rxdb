@@ -422,11 +422,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             t--;
 
             /**
-         * Often awaitInSync() is called directly after a document write,
-         * like in the unit tests.
-         * So we first have to await the idleness to ensure that all RxChangeEvents
-         * are processed already.
-         */
+             * Often awaitInSync() is called directly after a document write,
+             * like in the unit tests.
+             * So we first have to await the idleness to ensure that all RxChangeEvents
+             * are processed already.
+             */
             await this.collection.database.requestIdlePromise();
             await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
         }
