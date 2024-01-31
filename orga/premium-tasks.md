@@ -4,9 +4,10 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 
 ## Open Tasks
-
-
 (This list will be regularly updated with new Tasks)
+
+- Update the [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples) so that they use the new [RxServer](https://rxdb.info/rx-server.html) for replication instead of the pouchdb/couchdb server.
+
 
 
 
