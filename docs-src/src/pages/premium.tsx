@@ -744,11 +744,7 @@ export default function Premium() {
                                         </tbody>
                                     </table>
                                     <div className="proceed-hint">
-                                        Fill out
-                                        <a href="#premium-request-form-block">
-                                            {' '}<b>this form</b>{' '}
-                                        </a>
-                                        to proceed.
+                                        Fill out the <b>form below &darr;</b> to proceed.
                                     </div>
                                 </div>
                             </div>
