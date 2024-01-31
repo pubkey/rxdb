@@ -20,7 +20,8 @@ import {
     ensureReplicationHasNoErrors,
     HumanDocumentType,
     ensureCollectionsHaveEqualState,
-    HumanWithTimestampDocumentType
+    HumanWithTimestampDocumentType,
+    humanSchemaLiteral
 } from '../plugins/test-utils/index.mjs';
 
 
@@ -46,6 +47,7 @@ import {
     SyncOptionsFirestore
 } from '../plugins/replication-firestore/index.mjs';
 import config from './unit/config.ts';
+import { wrappedValidateZSchemaStorage } from '../plugins/validate-z-schema/index.mjs';
 
 
 /**
@@ -53,7 +55,7 @@ import config from './unit/config.ts';
  * do not run in the normal test suite
  * because it is too slow to setup the firestore backend emulators.
  */
-describe('replication-firestore.test.js', function () {
+describe('replication-firestore.test.ts', function () {
     this.timeout(1000 * 20);
     /**
      * Use a low batchSize in all tests
@@ -338,42 +340,9 @@ describe('replication-firestore.test.js', function () {
     });
     describe('issues', () => {
         it('#4698 adding items quickly does not send them to the server', async () => {
-            const mySchema = {
-                version: 0,
-                primaryKey: 'passportId',
-                type: 'object',
-                properties: {
-                    passportId: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    firstName: {
-                        type: 'string'
-                    },
-                    lastName: {
-                        type: 'string'
-                    },
-                    age: {
-                        type: 'integer',
-                        minimum: 0,
-                        maximum: 150
-                    }
-                }
-            };
-
-            /**
-             * Always generate a random database-name
-             * to ensure that different test runs do not affect each other.
-             */
             const name = randomCouchString(10);
-
-            // create a database
             const db = await createRxDatabase({
                 name,
-                /**
-                 * By calling config.storage.getStorage(),
-                 * we can ensure that all variations of RxStorage are tested in the CI.
-                 */
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -382,12 +351,11 @@ describe('replication-firestore.test.js', function () {
             // create a collection
             const collections = await db.addCollections({
                 mycollection: {
-                    schema: mySchema
+                    schema: humanSchemaLiteral
                 }
             });
 
             const firestoreState = getFirestoreState();
-
             const replicationState = replicateFirestore({
                 replicationIdentifier: firestoreState.projectId,
                 firestore: firestoreState,
@@ -395,10 +363,6 @@ describe('replication-firestore.test.js', function () {
                 pull: {},
                 push: {},
                 live: true,
-            });
-            replicationState.sent$.subscribe(x => {
-                console.log('# send:');
-                console.dir(x);
             });
             ensureReplicationHasNoErrors(replicationState);
 
@@ -419,15 +383,42 @@ describe('replication-firestore.test.js', function () {
             const myDocument = await collections.mycollection.findOne({ selector: { passportId: 'foobar' } }).exec();
             assert.strictEqual(myDocument.age, 30);
 
-
             // ensure correct remote value
             const docRef = DocRef(firestoreState.collection, 'foobar');
             const docSnap = ensureNotFalsy(await getDoc(docRef));
 
             assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
-
-            // clean up afterwards
             db.destroy();
+        });
+        it('#5572 firestore replication not working with schema validation', async () => {
+            const collection = await humansCollection.create(0, undefined, undefined, undefined, wrappedValidateZSchemaStorage({
+                storage: config.storage.getStorage()
+            }));
+            const firestoreState = getFirestoreState();
+            const replicationState = replicateFirestore({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection,
+                pull: {},
+                push: {},
+                live: true,
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            const doc = await collection.insert(schemaObjects.humanData('foobar'));
+            await replicationState.awaitInSync();
+            await doc.incrementalPatch({ age: 30 });
+            await replicationState.awaitInSync();
+
+            const myDocument = await collection.findOne({ selector: { passportId: 'foobar' } }).exec(true);
+            assert.strictEqual(myDocument.age, 30);
+
+            const docRef = DocRef(firestoreState.collection, 'foobar');
+            const docSnap = ensureNotFalsy(await getDoc(docRef));
+            assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
+
+            collection.database.destroy();
         });
     });
 });

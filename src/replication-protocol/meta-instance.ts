@@ -159,7 +159,16 @@ export async function getMetaWriteRow<RxDocType>(
         }
     };
     newMeta.docData = newMasterDocState;
-    newMeta.isResolvedConflict = isResolvedConflict;
+
+    /**
+     * Sending isResolvedConflict with the value undefined
+     * will throw a schema validation error because it must be either
+     * not set or have a string.
+     */
+    if (isResolvedConflict) {
+        newMeta.isResolvedConflict = isResolvedConflict;
+    }
+
     newMeta._meta.lwt = now();
     newMeta.id = getComposedPrimaryKeyOfDocumentData(
         state.input.metaInstance.schema,
@@ -169,8 +178,11 @@ export async function getMetaWriteRow<RxDocType>(
         await state.checkpointKey,
         previous
     );
-    return {
+
+    const ret = {
         previous,
         document: newMeta
     };
+
+    return ret;
 }
