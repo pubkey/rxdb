@@ -278,7 +278,7 @@ export default function Home() {
                     </li>
                     <li>
                       <b>Supports all JavaScript runtimes</b>:
-                      With the flexible RxDB storage layer you can to run the 
+                      With the flexible RxDB storage layer you can run the 
                       same code in <u>Browsers</u>, <u>Node.js</u>, <u>Electron</u>,{' '}
                       <u>React-Native</u>, <u>Capacitor</u>, <u>Bun</u> and <u>Deno</u>.
                     </li>
