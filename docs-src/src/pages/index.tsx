@@ -894,7 +894,7 @@ export default function Home() {
                     rel="noopener"
                     target="_blank"
                   >
-                    133
+                    211
                   </a>
                   <div className="clear" />
                 </div>
@@ -914,14 +914,14 @@ export default function Home() {
                 <div className="clear" />
                 <div className="box dark">
                   <img src="files/icons/gear.svg" alt="gear" />
-                  <div className="label">Projects build with RxDB</div>
+                  <div className="label">RxDB made Projects</div>
                   <a
                     className="value"
                     href="https://github.com/pubkey/rxdb/network/dependents?package_id=UGFja2FnZS0xODM0NzAyMw%3D%3D"
                     rel="noopener"
                     target="_blank"
                   >
-                    825
+                    1402
                   </a>
                   <div className="clear" />
                 </div>
