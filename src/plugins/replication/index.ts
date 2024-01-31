@@ -415,7 +415,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * are processed already.
          */
         await this.collection.database.requestIdlePromise();
-
         await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
 
         /**
@@ -423,6 +422,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * that was delayed until the push has finished.
          */
         await this.collection.database.requestIdlePromise();
+        await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
 
         return true;
     }
