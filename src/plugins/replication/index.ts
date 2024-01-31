@@ -409,20 +409,23 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         await awaitRxStorageReplicationFirstInSync(ensureNotFalsy(this.internalReplicationState));
 
         /**
+         * To reduce the amount of re-renders and make testing
+         * and to make the whole behavior more predictable,
+         * we await these things multiple times.
+         */
+        let t = 2;
+        while (t > 0) {
+            t--;
+
+            /**
          * Often awaitInSync() is called directly after a document write,
          * like in the unit tests.
          * So we first have to await the idleness to ensure that all RxChangeEvents
          * are processed already.
          */
-        await this.collection.database.requestIdlePromise();
-        await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
-
-        /**
-         * Await idleness again to be sure there was no event coming from the server
-         * that was delayed until the push has finished.
-         */
-        await this.collection.database.requestIdlePromise();
-        await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+            await this.collection.database.requestIdlePromise();
+            await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+        }
 
         return true;
     }
