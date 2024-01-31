@@ -419,7 +419,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
 
         /**
-         * Await idleness again to be sure there was no event comming from the server
+         * Await idleness again to be sure there was no event coming from the server
          * that was delayed until the push has finished.
          */
         await this.collection.database.requestIdlePromise();
