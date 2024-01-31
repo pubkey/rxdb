@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - FIX firestore replication not working with schema validation [#5572](https://github.com/pubkey/rxdb/issues/5572)
 - FIX Replication observation mode ignored when push handler is waiting [#5571](https://github.com/pubkey/rxdb/issues/5571)
+- FIX migration from v14 -> v15 is broken when IndexedDB is used inside of worker. [5565](https://github.com/pubkey/rxdb/issues/5565)
 
 <!-- ADD new changes here! -->
 
