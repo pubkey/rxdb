@@ -34,10 +34,22 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
+
+.navbar__title b {
+  color: white;
+}
+
 /* Hide Search Field on Homepage */
 .homepage .navbarSearchContainer_Bca1 {
   display: none;
 }
+
+@media (max-width: 500px) {
+  .navbar__search #search_input_react {
+    width: 6rem;
+  }
+}
+
 
 
 /**
@@ -1914,14 +1926,13 @@ footer a:visited {
   display: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .call-to-action .call-to-action-icon {
     display: contents;
   }
 
   .navbar .call-to-action {
-    margin-right: 145px;
-
+    margin-right: 95px;
   }
 
   .call-to-action .call-to-action-keyword {
