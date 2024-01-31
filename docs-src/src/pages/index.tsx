@@ -264,26 +264,27 @@ export default function Home() {
                     <li>
                       <b>Realtime Queries</b>:
                       From results of queries to single document fields, with RxDB you can
-                      observe everything which makes building realtime applications effortless.
+                      observe everything which makes building <u>realtime applications</u> effortless.
                     </li>
                     <li>
                       <b>Realtime Replication</b>:
                       Run a two-way realtime replication with one of the many replication plugins.
-                      Also making your custom backend compatible is pretty simple.
+                      Also making your <u>custom backend compatible</u> is pretty simple.
                     </li>
                     <li>
                       <b>Offline Support</b>:
                       Store data locally on your clients device to build applications that still work when
-                      there is no internet access. Running queries locally also improves your user experience.
+                      there is <u>no internet access</u>. Running queries locally also improves your user experience.
                     </li>
                     <li>
                       <b>Supports all JavaScript runtimes</b>:
-                      With the flexible RxDB storage layer you can to run the same code in Browsers, Node.js, Electron,
-                      React-Native, Capacitor, Bun and Deno.
+                      With the flexible RxDB storage layer you can to run the 
+                      same code in <u>Browsers</u>, <u>Node.js</u>, <u>Electron</u>,{' '}
+                      <u>React-Native</u>, <u>Capacitor</u>, <u>Bun</u> and <u>Deno</u>.
                     </li>
                     <li>
                       <b>Great Performance</b>:
-                      Years of performance optimization made RxDB one of the fastest ways
+                      Years of performance optimization made RxDB one of the <u>fastest</u> ways
                       to store and query data inside of JavaScript.
                     </li>
                   </ul>
