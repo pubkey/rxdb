@@ -74,6 +74,9 @@ function addCallToActionButton() {
         newElementWrapper.classList.add('call-to-action');
 
         const newElement = document.createElement('a');
+        newElement.onclick = () => {
+            window.trigger('call-to-action', 0.35);
+        }
         newElement.classList.add('hover-shadow-top');
         newElement.id = callToActionButtonId;
         newElement.innerHTML = callToAction.text + ' <b class="call-to-action-keyword">' + callToAction.keyword + '</b>' +
@@ -100,9 +103,6 @@ function addCommunityChatButton() {
     elemDiv.href = '/chat';
     elemDiv.target = '_blank';
     elemDiv.innerHTML = '💬 Community Chat';
-    elemDiv.onclick = function () {
-        trigger('join_chat_action', 0.10);
-    };
 
     const styleSheet = document.createElement('style');
     styleSheet.type = 'text/css';

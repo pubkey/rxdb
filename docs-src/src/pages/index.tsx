@@ -373,8 +373,7 @@ export default function Home() {
             </div>
           </div>
           <a
-            href="https://github.com/pubkey/rxdb"
-            onClick={() => trigger('github_trophy_click', 0.20)}
+            href="/code"
             target="_blank"
           >
             <div className="trophy">
@@ -635,8 +634,7 @@ export default function Home() {
             </div>
           </div>
           <a
-            href="https://rxdb.info/chat"
-            onClick={() => trigger('discord_trophy_click', 0.20)}
+            href="/chat"
             target="_blank"
           >
             <div className="trophy discord">
@@ -861,7 +859,7 @@ export default function Home() {
                   <div className="label">Github Stars</div>
                   <a
                     className="value"
-                    href="https://github.com/pubkey/rxdb"
+                    href="/code"
                     rel="noopener"
                     target="_blank"
                   >
@@ -963,10 +961,9 @@ export default function Home() {
                         </ul>
                       </div>
                       <a
-                        href="https://github.com/pubkey/rxdb"
+                        href="/code"
                         target="_blank"
                         rel="noopener"
-                        onClick={() => trigger('goto_code', 0.20)}
                       >
                         <div className="buy-option-action bg-top hover-shadow-top">
                           Get the Code
@@ -1068,7 +1065,6 @@ export default function Home() {
                       </div>
                       <a
                         href="/premium"
-                        onClick={() => trigger('premium_request', 1)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
                           Request Premium
@@ -1128,20 +1124,18 @@ export default function Home() {
                   </div>
                 </a>
                 <a
-                  href="https://rxdb.info/newsletter"
+                  href="/newsletter"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('get_newsletter', 0.40)}
                 >
                   <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     Get the Newsletter
                   </div>
                 </a>
                 <a
-                  href="https://rxdb.info/chat"
+                  href="/chat"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('join_chat', 0.40)}
                 >
                   <div
                     className="button"
@@ -1150,7 +1144,7 @@ export default function Home() {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium" onClick={() => trigger('premium_request', 1)}>
+                <a href="/premium">
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1172,10 +1166,9 @@ export default function Home() {
                   </div>
                 </a>
                 <a
-                  href="https://github.com/pubkey/rxdb"
+                  href="/code"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('goto_code', 0.40)}
                 >
                   <div
                     className="button"

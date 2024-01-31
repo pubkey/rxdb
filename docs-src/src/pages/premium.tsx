@@ -31,6 +31,8 @@ export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     useEffect(() => {
+        if (isBrowser) { window.trigger('premium_request', 1); }
+
         (async () => {
             if (!isBrowser || !hasIndexedDB()) {
                 return;
