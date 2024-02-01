@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX(lokijs) `$in` operator not working on arrays.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
