@@ -83,7 +83,14 @@ async function startReplicationDownstream(state) {
    * when running on a completed observable.
    */
   if (!state.events.canceled.getValue()) {
-    var sub = replicationHandler.masterChangeStream$.subscribe(task => {
+    var sub = replicationHandler.masterChangeStream$.pipe((0, _rxjs.mergeMap)(async ev => {
+      /**
+       * While a push is running, we have to delay all incoming
+       * events from the server to not mix up the replication state.
+       */
+      await (0, _rxjs.firstValueFrom)(state.events.active.up.pipe((0, _rxjs.filter)(s => !s)));
+      return ev;
+    })).subscribe(task => {
       state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
       addNewTask(task);
     });

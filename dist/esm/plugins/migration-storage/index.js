@@ -176,7 +176,18 @@ logFunction) {
         throw err;
       }
       log('deleted batch on old storage');
-      await oldStorageInstance.cleanup(0);
+      await oldStorageInstance.cleanup(0).catch(() => {
+        /**
+         * Migration from RxDB v14 to v15 had problem running the cleanup()
+         * on the old storage because the indexing structure changed.
+         * Because the periodic cleanup during migration
+         * is an optional step, we just log instead of throwing an error.
+         * @link https://github.com/pubkey/rxdb/issues/5565
+         * 
+         * TODO remove this in the next major version
+         */
+        log('oldStorageInstance.cleanup(0) has thrown');
+      });
 
       // run the handler if provided
       if (afterMigrateBatch) {

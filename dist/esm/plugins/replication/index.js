@@ -286,13 +286,27 @@ export var RxReplicationState = /*#__PURE__*/function () {
     await awaitRxStorageReplicationFirstInSync(ensureNotFalsy(this.internalReplicationState));
 
     /**
-     * Often awaitInSync() is called directly after a document write,
-     * like in the unit tests.
-     * So we first have to await the idleness to ensure that all RxChangeEvents
-     * are processed already.
+     * To reduce the amount of re-renders and make testing
+     * and to make the whole behavior more predictable,
+     * we await these things multiple times.
+     * For example the state might be in sync already and at the
+     * exact same time a pull.stream$ event comes in and we want to catch
+     * that in the same call to awaitInSync() instead of resolving
+     * while actually the state is not in sync.
      */
-    await this.collection.database.requestIdlePromise();
-    await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+    var t = 2;
+    while (t > 0) {
+      t--;
+
+      /**
+       * Often awaitInSync() is called directly after a document write,
+       * like in the unit tests.
+       * So we first have to await the idleness to ensure that all RxChangeEvents
+       * are processed already.
+       */
+      await this.collection.database.requestIdlePromise();
+      await awaitRxStorageReplicationInSync(ensureNotFalsy(this.internalReplicationState));
+    }
     return true;
   };
   _proto.reSync = function reSync() {

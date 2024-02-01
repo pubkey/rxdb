@@ -94,13 +94,22 @@ export async function getMetaWriteRow(state, newMasterDocState, previous, isReso
     }
   };
   newMeta.docData = newMasterDocState;
-  newMeta.isResolvedConflict = isResolvedConflict;
+
+  /**
+   * Sending isResolvedConflict with the value undefined
+   * will throw a schema validation error because it must be either
+   * not set or have a string.
+   */
+  if (isResolvedConflict) {
+    newMeta.isResolvedConflict = isResolvedConflict;
+  }
   newMeta._meta.lwt = now();
   newMeta.id = getComposedPrimaryKeyOfDocumentData(state.input.metaInstance.schema, newMeta);
   newMeta._rev = createRevision(await state.checkpointKey, previous);
-  return {
+  var ret = {
     previous,
     document: newMeta
   };
+  return ret;
 }
 //# sourceMappingURL=meta-instance.js.map

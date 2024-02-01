@@ -292,9 +292,9 @@ export interface RxStorageInstance<
         minimumDeletedTime: number
     ): Promise<
         /**
-             * True if all docs cleaned up,
-             * false if there are more docs to clean up
-             */
+         * True if all docs cleaned up,
+         * false if there are more docs to clean up
+         */
         boolean
     >;
 

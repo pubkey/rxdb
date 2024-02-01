@@ -1,4 +1,4 @@
-import { firstValueFrom, filter } from 'rxjs';
+import { firstValueFrom, filter, mergeMap } from 'rxjs';
 import { newRxError } from "../rx-error.js";
 import { stackCheckpoints } from "../rx-storage-helper.js";
 import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, now, parseRevision, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
@@ -78,7 +78,14 @@ export async function startReplicationDownstream(state) {
    * when running on a completed observable.
    */
   if (!state.events.canceled.getValue()) {
-    var sub = replicationHandler.masterChangeStream$.subscribe(task => {
+    var sub = replicationHandler.masterChangeStream$.pipe(mergeMap(async ev => {
+      /**
+       * While a push is running, we have to delay all incoming
+       * events from the server to not mix up the replication state.
+       */
+      await firstValueFrom(state.events.active.up.pipe(filter(s => !s)));
+      return ev;
+    })).subscribe(task => {
       state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
       addNewTask(task);
     });
