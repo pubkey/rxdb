@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(lokijs) `$in` operator not working on arrays.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.6.1 (1 February 2024)
+
+- FIX(lokijs) `$in` operator not working on arrays.
 
 ### 15.6.0 (1 February 2024)
 

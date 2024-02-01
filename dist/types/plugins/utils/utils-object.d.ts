@@ -51,4 +51,5 @@ export declare const clone: typeof deepClone;
  * Mostly used for caching stuff on the first run
  */
 export declare function overwriteGetterForCaching<ValueType = any>(obj: any, getterName: string, value: ValueType): ValueType;
+export declare function hasDeepProperty(obj: any, property: string): boolean;
 export {};

@@ -138,22 +138,37 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
       preparedQuery = (0, _index.flatClone)(preparedQuery);
       preparedQuery.selector = (0, _lokijsHelper.transformRegexToRegExp)(preparedQuery.selector);
     }
-    var query = localState.collection.chain().find(preparedQuery.selector);
+    var query = preparedQueryOriginal.query;
+    var skip = query.skip ? query.skip : 0;
+    var limit = query.limit ? query.limit : Infinity;
+    var skipPlusLimit = skip + limit;
+
+    /**
+     * LokiJS is not able to give correct results for some
+     * operators, so we have to check all documents in that case
+     * and laster apply skip and limit manually.
+     * @link https://github.com/pubkey/rxdb/issues/5320
+     */
+    var mustRunMatcher = false;
+    if ((0, _index.hasDeepProperty)(preparedQuery.selector, '$in')) {
+      mustRunMatcher = true;
+    }
+    var lokiQuery = localState.collection.chain().find(mustRunMatcher ? {} : preparedQuery.selector);
     if (preparedQuery.sort) {
-      query = query.sort((0, _lokijsHelper.getLokiSortComparator)(this.schema, preparedQuery));
+      lokiQuery = lokiQuery.sort((0, _lokijsHelper.getLokiSortComparator)(this.schema, preparedQuery));
     }
 
     /**
      * Offset must be used before limit in LokiJS
      * @link https://github.com/techfort/LokiJS/issues/570
      */
-    if (preparedQuery.skip) {
-      query = query.offset(preparedQuery.skip);
+    if (!mustRunMatcher && preparedQuery.skip) {
+      lokiQuery = lokiQuery.offset(preparedQuery.skip);
     }
-    if (preparedQuery.limit) {
-      query = query.limit(preparedQuery.limit);
+    if (!mustRunMatcher && preparedQuery.limit) {
+      lokiQuery = lokiQuery.limit(preparedQuery.limit);
     }
-    var foundDocuments = query.data().map(lokiDoc => (0, _lokijsHelper.stripLokiKey)(lokiDoc));
+    var foundDocuments = lokiQuery.data().map(lokiDoc => (0, _lokijsHelper.stripLokiKey)(lokiDoc));
 
     /**
      * LokiJS returned wrong results on some queries
@@ -163,6 +178,9 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
      */
     var queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(this.schema, preparedQuery);
     foundDocuments = foundDocuments.filter(d => queryMatcher(d));
+    if (mustRunMatcher) {
+      foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
+    }
     return {
       documents: foundDocuments
     };

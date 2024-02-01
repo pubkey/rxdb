@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow } from "../utils/index.js";
+import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, hasDeepProperty } from "../utils/index.js";
 import { newRxError } from "../../rx-error.js";
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS, transformRegexToRegExp } from "./lokijs-helper.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -130,22 +130,37 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       preparedQuery = flatClone(preparedQuery);
       preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
     }
-    var query = localState.collection.chain().find(preparedQuery.selector);
+    var query = preparedQueryOriginal.query;
+    var skip = query.skip ? query.skip : 0;
+    var limit = query.limit ? query.limit : Infinity;
+    var skipPlusLimit = skip + limit;
+
+    /**
+     * LokiJS is not able to give correct results for some
+     * operators, so we have to check all documents in that case
+     * and laster apply skip and limit manually.
+     * @link https://github.com/pubkey/rxdb/issues/5320
+     */
+    var mustRunMatcher = false;
+    if (hasDeepProperty(preparedQuery.selector, '$in')) {
+      mustRunMatcher = true;
+    }
+    var lokiQuery = localState.collection.chain().find(mustRunMatcher ? {} : preparedQuery.selector);
     if (preparedQuery.sort) {
-      query = query.sort(getLokiSortComparator(this.schema, preparedQuery));
+      lokiQuery = lokiQuery.sort(getLokiSortComparator(this.schema, preparedQuery));
     }
 
     /**
      * Offset must be used before limit in LokiJS
      * @link https://github.com/techfort/LokiJS/issues/570
      */
-    if (preparedQuery.skip) {
-      query = query.offset(preparedQuery.skip);
+    if (!mustRunMatcher && preparedQuery.skip) {
+      lokiQuery = lokiQuery.offset(preparedQuery.skip);
     }
-    if (preparedQuery.limit) {
-      query = query.limit(preparedQuery.limit);
+    if (!mustRunMatcher && preparedQuery.limit) {
+      lokiQuery = lokiQuery.limit(preparedQuery.limit);
     }
-    var foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+    var foundDocuments = lokiQuery.data().map(lokiDoc => stripLokiKey(lokiDoc));
 
     /**
      * LokiJS returned wrong results on some queries
@@ -155,6 +170,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
      */
     var queryMatcher = getQueryMatcher(this.schema, preparedQuery);
     foundDocuments = foundDocuments.filter(d => queryMatcher(d));
+    if (mustRunMatcher) {
+      foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
+    }
     return {
       documents: foundDocuments
     };
