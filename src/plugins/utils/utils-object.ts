@@ -205,3 +205,27 @@ export function overwriteGetterForCaching<ValueType = any>(
     });
     return value;
 }
+
+
+export function hasDeepProperty(obj: any, property: string): boolean {
+    if (obj.hasOwnProperty(property)) {
+        return true;
+    }
+
+    if (Array.isArray(obj)) {
+        const has = !!obj.find(item => hasDeepProperty(item, property));
+        return has;
+    }
+
+    // Recursively check for property in nested objects
+    for (const key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+            if (hasDeepProperty(obj[key], property)) {
+                return true;
+            }
+        }
+    }
+
+    // Return false if 'foobar' is not found at any level
+    return false;
+}
