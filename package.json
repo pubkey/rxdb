@@ -569,7 +569,7 @@
     "typescript": "5.3.3",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
-    "webpack": "5.90.0",
+    "webpack": "5.90.1",
     "webpack-bundle-analyzer": "4.10.1",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "4.15.1"
