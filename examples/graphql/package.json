@@ -42,7 +42,7 @@
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "html-webpack-plugin": "5.6.0",
-    "mini-css-extract-plugin": "2.7.7",
+    "mini-css-extract-plugin": "2.8.0",
     "ncp": "2.0.0",
     "rimraf": "5.0.5",
     "source-map-loader": "5.0.0",
