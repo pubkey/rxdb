@@ -109,7 +109,7 @@ When a SharedWorker RxStorage is used, it is recommended to run the replication 
 ```ts
 // shared-worker.ts
 
-import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
+import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
@@ -125,7 +125,7 @@ addRxPlugin(RxDBReplicationGraphQLPlugin);
 const baseStorage = getRxStorageIndexedDB();
 
 // first expose the RxStorage to the outside
-exposeSharedWorkerRxStorage({
+exposeWorkerRxStorage({
     storage: baseStorage
 });
 
