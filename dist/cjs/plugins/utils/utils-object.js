@@ -10,6 +10,7 @@ exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
 exports.flattenObject = flattenObject;
 exports.getFromObjectOrThrow = getFromObjectOrThrow;
+exports.hasDeepProperty = hasDeepProperty;
 exports.objectPathMonad = objectPathMonad;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.sortObject = sortObject;
@@ -179,5 +180,26 @@ function overwriteGetterForCaching(obj, getterName, value) {
     }
   });
   return value;
+}
+function hasDeepProperty(obj, property) {
+  if (obj.hasOwnProperty(property)) {
+    return true;
+  }
+  if (Array.isArray(obj)) {
+    var has = !!obj.find(item => hasDeepProperty(item, property));
+    return has;
+  }
+
+  // Recursively check for property in nested objects
+  for (var key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (hasDeepProperty(obj[key], property)) {
+        return true;
+      }
+    }
+  }
+
+  // Return false if 'foobar' is not found at any level
+  return false;
 }
 //# sourceMappingURL=utils-object.js.map

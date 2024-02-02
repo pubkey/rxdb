@@ -24,7 +24,8 @@ import {
     human,
     schemas,
     nestedHuman,
-    humanMinimal
+    humanMinimal,
+    SimpleHeroArrayDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { HeroArrayDocumentType, NestedHumanDocumentType, SimpleHumanV3DocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
@@ -679,6 +680,58 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     }
                 },
                 expectedResultDocIds: ['aa', 'cc', 'ee']
+            }
+        ]
+    });
+    /**
+     * $in must not only work on strings but also on
+     * arrays.
+     */
+    testCorrectQueries<SimpleHeroArrayDocumentType>({
+        testTitle: '$in for array fields named skills',
+        data: [
+            { name: 'alice', skills: ['a', 'b', 'c'] },
+            { name: 'bob', skills: ['c', 'd', 'e'] }
+        ],
+        schema: schemas.simpleArrayHero,
+        queries: [
+            {
+                info: 'get first',
+                query: {
+                    selector: {
+                        skills: {
+                            $in: ['a']
+                        },
+                    }
+                },
+                expectedResultDocIds: [
+                    'alice'
+                ]
+            },
+            {
+                info: 'get by multiple',
+                query: {
+                    selector: {
+                        skills: {
+                            $in: ['c']
+                        },
+                    }
+                },
+                expectedResultDocIds: [
+                    'alice',
+                    'bob'
+                ]
+            },
+            {
+                info: 'get none matching',
+                query: {
+                    selector: {
+                        skills: {
+                            $in: ['aa']
+                        },
+                    }
+                },
+                expectedResultDocIds: []
             }
         ]
     });

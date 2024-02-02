@@ -134,7 +134,7 @@ npm install rxdb rxjs --save
 ```javascript
 import { 
   createRxDatabase
-} from 'rxdb';
+} from 'rxdb/plugins/core';
 
 /**
  * For browsers, we use the dexie.js based storage

@@ -9,6 +9,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.6.1 (1 February 2024)
+
+- FIX(lokijs) `$in` operator not working on arrays.
+
 ### 15.6.0 (1 February 2024)
 
 - FIX firestore replication not working with schema validation [#5572](https://github.com/pubkey/rxdb/issues/5572)
