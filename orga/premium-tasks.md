@@ -6,14 +6,14 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 ## Open Tasks
 (This list will be regularly updated with new Tasks)
 
-- Update the [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples) so that they use the new [RxServer](https://rxdb.info/rx-server.html) for replication instead of the pouchdb/couchdb server.
 
-
-
-
+- Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
 
 
 ## Tasks already in progress (do no work on these!)
+
+- [#5584](https://github.com/pubkey/rxdb/issues/5584) Update the [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples) so that they use the new [RxServer](https://rxdb.info/rx-server.html) for replication instead of the pouchdb/couchdb server.
+
 
 #### Task: Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
 - Solution: https://github.com/pubkey/rxdb/pull/3935
