@@ -13,12 +13,7 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 ## Tasks already in progress (do no work on these!)
 
 - [#5584](https://github.com/pubkey/rxdb/issues/5584) Update the [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples) so that they use the new [RxServer](https://rxdb.info/rx-server.html) for replication instead of the pouchdb/couchdb server.
-
-
-#### Task: Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
-- Solution: https://github.com/pubkey/rxdb/pull/3935
-
-
+- [#3935](https://github.com/pubkey/rxdb/pull/3935) Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
 
 ## Solved Tasks
 
