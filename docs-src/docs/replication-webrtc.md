@@ -167,7 +167,7 @@ In angular or other libraries you can add the polyfill manually:
 
 ```js
 window.process = {
-    nextTick: (fn) => {fn},
+    nextTick: (fn, ...args) => setTimeout(() => fn(...args)),
 };
 
 ```
