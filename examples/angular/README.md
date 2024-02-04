@@ -20,7 +20,7 @@ Also it uses **angular-universal** to enable server side rendering.
 (window as any).global = window;
 (window as any).process = {
     env: { DEBUG: undefined },
-    nextTick: (fn) => {fn},
+    nextTick: (fn, ...args) => setTimeout(() => fn(...args)),
 };
 ```
 
