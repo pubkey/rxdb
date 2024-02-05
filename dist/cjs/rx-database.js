@@ -395,7 +395,7 @@ function throwIfDatabaseNameUsed(name) {
   } else {
     throw (0, _rxError.newRxError)('DB8', {
       name,
-      link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
+      link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
     });
   }
 }
