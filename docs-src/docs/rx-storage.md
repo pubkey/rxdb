@@ -22,11 +22,6 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 The Dexie.js based storage is based on the [Dexie.js](https://github.com/dexie/Dexie.js) IndexedDB wrapper.
 It stores the data inside of a browsers IndexedDB database and has a very small bundle size. **If you are new to RxDB, you should start with the Dexie.js RxStorage**. [Read more](./rx-storage-dexie.md)
 
-### LokiJS
-
-The LokiJS based storage is based on the [LokiJS](https://github.com/techfort/LokiJS) database.
-It has the special behavior of loading all data into memory at app start and therefore has the best performance when running operations over a small to mid sized dataset. [Read more](./rx-storage-lokijs.md)
-
 
 ### Memory
 
@@ -62,6 +57,10 @@ To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, sca
 
 To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. [Read more](./rx-storage-foundationdb.md)
 
+### LokiJS
+
+The LokiJS based storage is based on the [LokiJS](https://github.com/techfort/LokiJS) database.
+It has the special behavior of loading all data into memory at app start and therefore has a good performance when running operations over a small dataset where loading all data upfront is not a problem. [Read more](./rx-storage-lokijs.md)
 
 ### 👑 Worker
 
