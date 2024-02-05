@@ -290,7 +290,7 @@ export default function Home() {
                   </ul>
                   <a
                     className="button" href="/quickstart.html"
-                    target="_blank" onClick={() => trigger('get-started-button', 0.9)}
+                    target="_blank" onClick={() => trigger('start_now', 0.4)}
                   >
                     Quickstart »
                   </a>
