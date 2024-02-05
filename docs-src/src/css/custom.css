@@ -44,11 +44,11 @@ html[data-theme='dark'] {
   display: none;
 }
 
-@media (max-width: 500px) {
+/* @media (max-width: 500px) {
   .navbar__search #search_input_react {
     width: 6rem;
   }
-}
+} */
 
 
 
@@ -239,6 +239,10 @@ a:visited {
   min-width: 3rem;
   font-size: 1rem;
 
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--color-top);
+
   padding: 10px;
   padding-left: 20px;
   padding-right: 20px;
@@ -264,6 +268,18 @@ a:visited {
 .button:hover {
   box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
 }
+
+.button.light {
+  background-color: var(--bg-color);
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--color-top);
+}
+
+.button.light:hover {
+  color: white;
+}
+
 
 
 b {
@@ -560,7 +576,8 @@ body {
 .block.first .button {
   width: 100px;
   float: left;
-  margin-left: 25px;
+  margin-left: 5px;
+  margin-right: 5px;
   margin-top: 30px;
   margin-bottom: 10px;
 }
