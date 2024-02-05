@@ -292,7 +292,7 @@ export default function Home() {
                     className="button" href="/quickstart.html"
                     target="_blank" onClick={() => trigger('get-started-button', 0.9)}
                   >
-                    Get Started
+                    Quickstart »
                   </a>
                   <a
                     className="button light" href="/code"
