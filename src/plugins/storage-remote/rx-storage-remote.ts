@@ -62,8 +62,6 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceRemote<RxDocType>> {
-        ensureRxStorageInstanceParamsAreCorrect(params);
-
         const connectionId = 'c|' + this.getRequestId();
 
         const cacheKeys: string[] = [
