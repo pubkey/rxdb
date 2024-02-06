@@ -244,8 +244,8 @@ a:visited {
   border-color: var(--color-top);
 
   padding: 10px;
-  padding-left: 14px;
-  padding-right: 14px;
+  padding-left: 18px;
+  padding-right: 18px;
   text-align: center;
   margin-right: 20px;
 
@@ -424,9 +424,9 @@ body {
 
 @media (max-width: 800px) {
   .content {
-    width: 92%;
-    padding-left: 4%;
-    padding-right: 4%;
+    width: 98%;
+    padding-left: 1%;
+    padding-right: 1%;
   }
 }
 

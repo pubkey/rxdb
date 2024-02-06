@@ -122,11 +122,11 @@ function addCommunityChatButton() {
         'font-weight: bold;' +
         'border-top-left-radius: 9px;' +
         'border-top-right-radius: 9px;' +
+        'z-index: 11;' +
         '}' +
         '#fixed-chat-button:hover {' +
         'box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;' +
         'text-decoration: underline;' +
-        'z-index: 10;' +
         '}'
         ;
     document.head.appendChild(styleSheet);
