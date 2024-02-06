@@ -98,8 +98,6 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
 
         const waitForOkResult = await waitForOkPromise;
         if (waitForOkResult.error) {
-            console.log('--------------- ERROR IN CREATION!!');
-            console.dir(JSON.stringify(waitForOkResult.error));
             await closeMessageChannel(messageChannel);
             throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
         }
