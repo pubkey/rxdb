@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX using encryption plugins inside of worker was broken
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
