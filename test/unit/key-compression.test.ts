@@ -33,7 +33,6 @@ import {
 import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import type { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
-import { wait, waitUntil } from 'async-test-util';
 
 
 describeParallel('key-compression.test.js', () => {
