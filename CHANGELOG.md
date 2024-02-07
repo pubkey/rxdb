@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX using encryption plugins inside of worker was broken
+- FIX(premium) missing type `SharedWorker`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
