@@ -71,6 +71,13 @@ export const basePrototype = {
             map((d: any) => d._data._deleted)
         );
     },
+    get deleted$$() {
+        const _this: RxDocument<any> = this as any;
+        const observable = _this.$.pipe(
+            map((d: any) => d._data._deleted)
+        );
+        return _this.collection.database.signals.observableToSignal(observable, _this.getLatest().data._deleted);
+    },
     get deleted() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {

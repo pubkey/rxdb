@@ -569,7 +569,8 @@ export function createRxDatabase<
         cleanupPolicy,
         allowSlowCount = false,
         localDocuments = false,
-        hashFunction = defaultHashSha256
+        hashFunction = defaultHashSha256,
+        signals = 
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>

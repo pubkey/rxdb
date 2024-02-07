@@ -11,8 +11,9 @@ import type { RxStorage } from './rx-storage.interface.d.ts';
 import type { RxLocalDocument } from './plugins/local-documents.d.ts';
 import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { HashFunction } from './util.d.ts';
+import type { RxSignals } from '../plugins/signals/index.ts';
 
-export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
+export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, SignalType = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
@@ -42,6 +43,12 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      * By default, count() queries in 'slow' mode are not allowed.
      */
     allowSlowCount?: boolean;
+
+    /**
+     * An implementation of the signals api,
+     * use a different implementation depending on your frontend framework.
+     */
+    signals?: RxSignals<SignalType>;
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection; };
