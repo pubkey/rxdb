@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX key-compression broken on keys with brackets [#5605](https://github.com/pubkey/rxdb/issues/5605)
 
 <!-- ADD new changes here! -->
 
