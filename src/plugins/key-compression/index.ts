@@ -150,7 +150,8 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
 
                 const compressionState = getCompressionStateByRxJsonSchema(params.schema);
                 function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
-                    return compressDocumentData(compressionState, docData);
+                    const ret = compressDocumentData(compressionState, docData);
+                    return ret;
                 }
                 function modifyFromStorage(docData: RxDocumentData<any>): Promise<RxDocumentData<RxDocType>> {
                     return decompressDocumentData(compressionState, docData);
