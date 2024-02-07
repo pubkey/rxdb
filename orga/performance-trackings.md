@@ -1801,3 +1801,67 @@ LOG LOG: '# CREATE TX pmoyfsfzeo_3'
 LOG LOG: '# CREATE TX sgphpgdqib_0'
 LOG LOG: '# CREATE TX _rxdb_internal'
 LOG LOG: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DONE 11988.700000017881'
+
+
+
+## IndexedDB split wal data
+
+BEFORE:
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1018.05,
+    "insert-documents-1200": 31.95
+}
+
+AFTER (batchSize 20):
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1024.8,
+    "insert-documents-1200": 33.55
+}
+
+AFTER (batchSize 50):
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1025.8,
+    "insert-documents-1200": 28.85
+}
+
+AFTER (batchSize 100):
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1019.8,
+    "insert-documents-1200": 29.15
+}'
+
+AFTER (batchSize 500):
+'{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1019,
+    "insert-documents-1200": 34.95
+}'
+
+AFTER (batchSize 1000):
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1020,
+    "insert-documents-1200": 32.3
+}'

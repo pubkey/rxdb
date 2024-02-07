@@ -67,10 +67,10 @@ export function calculatePrice(input: PriceCalculationInput) {
      * Discount if more then one package
      */
     if (input.packages.length === 2) {
-        totalPrice = totalPrice * 0.90;
+        totalPrice = totalPrice * 0.80;
     }
     if (input.packages.length > 2) {
-        totalPrice = totalPrice * 0.85;
+        totalPrice = totalPrice * 0.70;
     }
 
     /**
