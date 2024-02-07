@@ -125,7 +125,7 @@ describe('bug-report.test.js', () => {
 
 
         // you can also wait for events
-        const emitted = [];
+        const emitted: any[] = [];
         const sub = collectionInOtherTab.mycollection
             .findOne().$
             .subscribe(doc => {

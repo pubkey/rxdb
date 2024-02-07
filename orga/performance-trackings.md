@@ -1865,3 +1865,50 @@ AFTER (batchSize 1000):
     "time-to-first-insert": 1020,
     "insert-documents-1200": 32.3
 }'
+
+
+
+## key-compression improvements (feb 2024)
+
+BEFORE:
+
+{
+  "notice": "times are in milliseconds",
+  "createCompressionTable": {
+    "amount": 10000,
+    "total": 87.29935099929571,
+    "perInstance": 0.008729935099929571
+  },
+  "compress": {
+    "amount": 10000,
+    "total": 87.45416999980807,
+    "perObject": 0.008745416999980807
+  },
+  "decompress": {
+    "amount": 10000,
+    "total": 121.86422900017351,
+    "perObject": 0.012186422900017351
+  }
+}
+
+
+AFTER:
+
+{
+  "notice": "times are in milliseconds",
+  "createCompressionTable": {
+    "amount": 10000,
+    "total": 89.79377999994904,
+    "perInstance": 0.008979377999994903
+  },
+  "compress": {
+    "amount": 10000,
+    "total": 81.2287579998374,
+    "perObject": 0.00812287579998374
+  },
+  "decompress": {
+    "amount": 10000,
+    "total": 118.99220599979162,
+    "perObject": 0.011899220599979162
+  }
+}
