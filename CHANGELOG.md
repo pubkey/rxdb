@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX using encryption plugins inside of worker was broken
-- FIX(premium) missing type `SharedWorker`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.6.2 (7 February 2024)
+
+- FIX using encryption plugins inside of worker was broken
+- FIX(premium) missing type `SharedWorker`
 
 ### 15.6.1 (1 February 2024)
 
