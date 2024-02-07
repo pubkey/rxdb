@@ -388,7 +388,7 @@ export default function Premium() {
                                                 <div className="suffix">employee(s)</div>
                                             </div>
                                         </div>
-                                        <div className="field">
+                                        {/* <div className="field">
                                             <label htmlFor="project-amount">Project Amount:</label>
                                             <div className="input">
                                                 <select name="project-amount" id="project-amount" required={true}
@@ -402,7 +402,7 @@ export default function Premium() {
                                                 </select>
                                                 <div className="suffix">project(s)</div>
                                             </div>
-                                        </div>
+                                        </div> */}
                                         <div className="packages">
                                             <h3>Packages:</h3>
                                             <div className="package bg-gradient-left-top">
@@ -654,7 +654,7 @@ export default function Premium() {
 
                                                 const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
                                                 const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
-                                                const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
+                                                // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
                                                 const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
                                                 const setPrice = (element: typeof $priceCalculatorResultPerMonth, price: number) => {
                                                     console.log('setPrice:');
@@ -668,7 +668,7 @@ export default function Premium() {
                                                 } else {
                                                     setPrice($priceCalculatorResultPerMonth, 0);
                                                 }
-                                                setPrice($priceCalculatorResultPerYear, pricePerYear);
+                                                // setPrice($priceCalculatorResultPerYear, pricePerYear);
                                                 setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
                                                 $priceCalculatorResult.style.display = 'block';
                                             }}
@@ -682,7 +682,7 @@ export default function Premium() {
                                         <table>
                                             <tbody>
                                                 <tr>
-                                                    <th>Price Per Project per Month</th>
+                                                    <th>Price per Month</th>
                                                     <td>
                                                         <a
                                                             id="total-per-project-per-month"
@@ -695,7 +695,7 @@ export default function Premium() {
                                                         </a>
                                                     </td>
                                                 </tr>
-                                                <tr>
+                                                {/* <tr>
                                                     <th>Total Price per Year</th>
                                                     <td>
                                                         <a
@@ -708,7 +708,7 @@ export default function Premium() {
                                                             XX €
                                                         </a>
                                                     </td>
-                                                </tr>
+                                                </tr> */}
                                                 <tr>
                                                     <th>Total Price</th>
                                                     <td>

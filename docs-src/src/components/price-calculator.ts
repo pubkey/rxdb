@@ -78,7 +78,7 @@ export function calculatePrice(input: PriceCalculationInput) {
      * @link https://www.geogebra.org/graphing
      */
     if (input.companySize > 1) {
-        let companySizeIncrease = 1 + ((Math.pow((input.companySize * 1) - 1, 0.95) / 100) * 4.5);
+        let companySizeIncrease = 1 + ((Math.pow((input.companySize * 1) - 1, 0.85) / 100) * 4.5);
 
         const companySizeIncreaseMax = 6;
         if (companySizeIncrease > companySizeIncreaseMax) {
