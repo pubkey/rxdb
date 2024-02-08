@@ -17,6 +17,8 @@ import {
     RxStorageReplicationMeta,
     FilledMangoQuery,
     prepareQuery,
+    toTypedRxJsonSchema,
+    ExtractDocumentTypeFromTypedRxJsonSchema,
 } from '../../plugins/core/index.mjs';
 import {
     wrappedKeyCompressionStorage
@@ -398,6 +400,80 @@ describeParallel('key-compression.test.js', () => {
             const counts = await countQuery.exec();
             assert.strictEqual(counts, 1);
             col.database.destroy();
+        });
+        it('#5603 corrupt keys containing square brackets', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                keyCompression: true,
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    tags: {
+                        type: 'object',
+                        patternProperties: {
+                            '.*': {
+                                properties: {
+                                    name: { type: 'string' },
+                                },
+                                required: ['name'],
+                            }
+                        },
+                    }
+                }
+            } as const;
+            const schemaTyped = toTypedRxJsonSchema(mySchema);
+            type TestDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+
+            const db = await createRxDatabase<{ mycollection: RxCollection<TestDocType>; }>({
+                name: randomCouchString(10),
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: wrappedKeyCompressionStorage({ storage: config.storage.getStorage() }),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                },
+            });
+            const collection = db.mycollection;
+            let myDocument = await collection.insert({
+                passportId: 'foobar',
+                tags: {
+                    example: 'example',
+                }
+            });
+
+            assert.strictEqual((myDocument.tags as any).example, 'example');
+
+            await myDocument.incrementalModify((docData) => {
+                const newDocData = Object.assign({}, docData);
+                (newDocData.tags as any)['[example2]'] = '[example2]';
+                return newDocData;
+            });
+            const expectedTags = {
+                example: 'example',
+                '[example2]': '[example2]',
+            };
+
+            // check on plain storage
+            const storageResults = await collection.storageInstance.findDocumentsById([myDocument.primary], false);
+            const storageDoc = ensureNotFalsy(storageResults[0]);
+            assert.deepStrictEqual(storageDoc.tags, expectedTags);
+
+            // check on the RxDocument
+            myDocument = myDocument.getLatest();
+            const tags = myDocument.toJSON().tags;
+            assert.deepEqual(tags, expectedTags);
+
+            db.destroy();
         });
     });
 });

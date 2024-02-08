@@ -9,6 +9,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.7.0 (7 February 2024)
+
+- FIX key-compression broken on keys with brackets [#5605](https://github.com/pubkey/rxdb/issues/5605)
+
 ### 15.6.2 (7 February 2024)
 
 - FIX using encryption plugins inside of worker was broken

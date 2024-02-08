@@ -77,7 +77,8 @@ export function wrappedKeyCompressionStorage(args) {
       }
       var compressionState = getCompressionStateByRxJsonSchema(params.schema);
       function modifyToStorage(docData) {
-        return compressDocumentData(compressionState, docData);
+        var ret = compressDocumentData(compressionState, docData);
+        return ret;
       }
       function modifyFromStorage(docData) {
         return decompressDocumentData(compressionState, docData);
