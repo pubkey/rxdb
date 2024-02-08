@@ -140,6 +140,18 @@ export function calculatePrice(input: PriceCalculationInput) {
     }
 
     totalPrice = Math.ceil(totalPrice);
+
+
+    /**
+     * Stripe does not allow to create abos on flexibles prices
+     * so we just round the value so we can use precreated stripe products.
+     */
+    if (totalPrice > 1200) {
+        totalPrice = Math.floor(totalPrice / 100) * 100;
+    } else {
+        totalPrice = Math.floor(totalPrice / 50) * 50;
+    }
+
     return {
         totalPrice
     };
