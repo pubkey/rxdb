@@ -1,39 +1,26 @@
 import assert from 'assert';
-import clone from 'clone';
-import config, { describeParallel } from './config.ts';
+import { describeParallel } from './config.ts';
 
 
 import {
     schemaObjects,
     schemas,
-    humansCollection,
-    isFastMode,
-    HumanDocumentType,
     getConfig,
     SimpleHumanAgeDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import { waitUntil } from 'async-test-util';
 import {
     createRxDatabase,
-    RxDocument,
-    isRxDocument,
-    promiseWait,
     randomCouchString,
     addRxPlugin,
-    RxCollection,
-    RxQuery
+    RxCollection
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 
-import {
-    filter,
-    map,
-    first
-} from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { RxReactivityFactory } from '../../src/types/plugins/reactivity';
 
