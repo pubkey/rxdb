@@ -1,13 +1,13 @@
 ---
-title: Signals $ Co. - Custom reactivity adapters instead of RxJS Observables
+title: Signals & Custom Reactivity
 slug: reactivity.html
 ---
 
-# Signals $ Co. - Custom reactivity adapters instead of RxJS Observables
+# Signals & Co. - Custom reactivity adapters instead of RxJS Observables
 
-RxDB internally uses the [rxjs library](https://rxjs.dev/) for observables and streams. All functionalities of RxDB that expose values  that change over time, return a rxjs Observable that allows you to observe the values and update your UI accordingly depending on the changes to the database state.
+RxDB internally uses the [rxjs library](https://rxjs.dev/) for observables and streams. All functionalities of RxDB like [query](./rx-query.md#observe) results or [document fields](./rx-document.md#observe) that expose values that change over time return a rxjs `Observable` that allows you to observe the values and update your UI accordingly depending on the changes to the database state.
 
-However there are many reasons to use other reactivity libraries that use a different datatype to represent changing values. For example when you use signals in angular or react, the template refs of vue or state libraries like MobX and redux.
+However there are many reasons to use other reactivity libraries that use a different datatype to represent changing values. For example when you use **signals** in angular or react, the **template refs** of vue or state libraries like MobX and redux.
 
 RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-database.md) creation so that you can easily access values wrapped with your custom datatype in a convenient way.
 
