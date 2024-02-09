@@ -46,9 +46,9 @@ All observable data in RxDB is marked by the single dollar sign `$` like `RxColl
 ```ts
 // RxDocument
 const signal = myRxDocument.get$$('foobar'); // get signal that represents the document field 'foobar'
-const signal = RxDocument.foobar$$; // same as above
-const signal = RxDocument.$$; // get signal that represents whole document over time
-const signal = RxDocument.deleted$$; // get signal that represents the deleted state of the document
+const signal = myRxDocument.foobar$$; // same as above
+const signal = myRxDocument.$$; // get signal that represents whole document over time
+const signal = myRxDocument.deleted$$; // get signal that represents the deleted state of the document
 ```
 
 ```ts
