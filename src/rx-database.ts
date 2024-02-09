@@ -95,7 +95,7 @@ export class RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
-    Reactivity = {}
+    Reactivity = unknown
 > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
@@ -567,7 +567,7 @@ export function createRxDatabase<
     Collections = { [key: string]: RxCollection; },
     Internals = any,
     InstanceCreationOptions = any,
-    Reactivity = {}
+    Reactivity = unknown
 >(
     {
         storage,

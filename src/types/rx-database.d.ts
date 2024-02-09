@@ -13,7 +13,7 @@ import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
 import type { ById, HashFunction } from './util.d.ts';
 import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
 
-export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = {}> {
+export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = unknown> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;

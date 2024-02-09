@@ -78,12 +78,12 @@ export type RxCollection<
     OrmMethods = {},
     StaticMethods = {},
     InstanceCreationOptions = {},
-    Reactivity = {}
+    Reactivity = unknown
 > = StaticMethods &
     RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods, Reactivity> &
     RxCollectionGenerated<RxDocumentType, OrmMethods, Reactivity>;
 
-export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Reactivity = {}> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods, any, any, Reactivity>> {
+export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Reactivity = unknown> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods, any, any, Reactivity>> {
 
     // HOOKS
     preInsert(fun: RxCollectionHookNoInstanceCallback<RxDocumentType, OrmMethods, Reactivity>, parallel: boolean): void;

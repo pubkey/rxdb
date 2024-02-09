@@ -31,7 +31,7 @@ declare type LocalDocumentModifyFunction<Data> = (
 ) => Data | Promise<Data>;
 
 
-export declare type RxLocalDocument<Parent, Data = any, Reactivity = {}> = Override<
+export declare type RxLocalDocument<Parent, Data = any, Reactivity = unknown> = Override<
     RxDocumentBase<RxLocalDocumentData<Data>, {}, Reactivity>,
     {
         readonly parent: Parent;

@@ -15,7 +15,7 @@ import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
 
-export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = {}> = RxDocumentBase<
+export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknown> = RxDocumentBase<
     RxDocumentType,
     OrmMethods,
     Reactivity
@@ -48,7 +48,7 @@ export type RxDocumentMeta = {
     [k: string]: PlainJsonValue;
 };
 
-export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity = {}> {
+export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity = unknown> {
     isInstanceOfRxDocument: true;
     collection: RxCollection<RxDocType, OrmMethods, Reactivity>;
     readonly deleted: boolean;
@@ -56,6 +56,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     readonly $: Observable<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     readonly $$: Reactivity;
     readonly deleted$: Observable<boolean>;
+    readonly deleted$$: Reactivity;
 
     readonly primary: string;
     readonly allAttachments$: Observable<RxAttachment<RxDocType, OrmMethods, Reactivity>[]>;

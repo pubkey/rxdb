@@ -60,7 +60,7 @@ export class RxQueryBase<
     RxDocType,
     RxQueryResult,
     OrmMethods = {},
-    Reactivity = {},
+    Reactivity = unknown,
 > {
 
     public id: number = newQueryID();

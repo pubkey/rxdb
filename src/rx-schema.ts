@@ -141,6 +141,14 @@ export class RxSchema<RxDocType = any> {
                     enumerable: false,
                     configurable: false
                 });
+                // getter - reactivity$$
+                Object.defineProperty(proto, key + '$$', {
+                    get: function () {
+                        return this.get$$(fullPath);
+                    },
+                    enumerable: false,
+                    configurable: false
+                });
                 // getter - populate_
                 Object.defineProperty(proto, key + '_', {
                     get: function () {

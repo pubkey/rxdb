@@ -30,6 +30,8 @@ import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-remote.test.ts';
 
 
+import './unit/reactivity.test.ts'; // TODO move down
+
 import './unit/instance-of-check.test.ts';
 import './unit/rx-schema.test.ts';
 import './unit/bug-report.test.ts';

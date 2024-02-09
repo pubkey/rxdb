@@ -134,7 +134,7 @@ export declare class RxQuery<
     RxDocumentType = any,
     RxQueryResult = any,
     OrmMethods = {},
-    Reactivity = {}
+    Reactivity = unknown
 > extends RxQueryBase<RxDocumentType, RxQueryResult, OrmMethods, Reactivity> {
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
