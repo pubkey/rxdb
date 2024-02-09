@@ -124,7 +124,7 @@ export class RxCollectionBase<
     public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 
     constructor(
-        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
+        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,

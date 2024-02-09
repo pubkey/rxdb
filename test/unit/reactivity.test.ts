@@ -59,6 +59,7 @@ describeParallel('reactivity.test.js', () => {
         const db = await createRxDatabase({
             name: randomCouchString(10),
             storage: getConfig().storage.getStorage(),
+            localDocuments: true,
             reactivity
         });
         await db.addCollections({
@@ -102,20 +103,62 @@ describeParallel('reactivity.test.js', () => {
         it('RxDocument[proxy]$$', async () => {
             const collection = await getReactivityCollection();
             const doc = await collection.findOne().exec(true);
-            const signal = doc.age$$;
+            const signal = (doc as any).age$$;
             assert.deepStrictEqual(signal.init, doc.age);
             collection.database.destroy();
         });
     });
     describe('RxLocalDocument', () => {
-        it('RxLocalDocument.$$', async () => { });
-        it('RxLocalDocument.get$$()', async () => { });
-        it('RxLocalDocument.deleted$$', async () => { });
-        it('RxLocalDocument[proxy]$$', async () => { });
+        it('RxLocalDocument.$$', async () => {
+            const collection = await getReactivityCollection();
+            const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
+            const signal: ReactivityType = localDoc.$$ as any; // TODO fix type
+            assert.deepStrictEqual(signal.init.data, { bar: 1 });
+            collection.database.destroy();
+        });
+        it('RxLocalDocument.get$$()', async () => {
+            const collection = await getReactivityCollection();
+            const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
+            const signal: ReactivityType = localDoc.get$$('bar') as any; // TODO fix type
+            assert.deepStrictEqual(signal.init, 1);
+            collection.database.destroy();
+        });
+        it('RxLocalDocument.deleted$$', async () => {
+            const collection = await getReactivityCollection();
+            const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
+            const signal: ReactivityType = localDoc.deleted$$ as any; // TODO fix type
+            assert.deepStrictEqual(signal.init, false);
+
+            let lastEmit = false;
+            signal.obs.subscribe((v: boolean) => lastEmit = v);
+            await localDoc.remove();
+            await waitUntil(() => !!lastEmit);
+            collection.database.destroy();
+        });
     });
     describe('RxQuery', () => {
-        it('RxQuery.find().$$', async () => { });
-        it('RxQuery.findOne().$$', async () => { });
+        it('RxQuery.find().$$', async () => {
+            const collection = await getReactivityCollection();
+            const query = collection.find();
+            const signal = query.$$;
+            assert.deepStrictEqual(signal.init, undefined);
+
+            let lastEmit = false;
+            signal.obs.subscribe((v: boolean) => lastEmit = v);
+            await waitUntil(() => Array.isArray(lastEmit));
+            collection.database.destroy();
+        });
+        it('RxQuery.findOne().$$', async () => {
+            const collection = await getReactivityCollection();
+            const query = collection.findOne();
+            const signal = query.$$;
+            assert.deepStrictEqual(signal.init, undefined);
+
+            let lastEmit = false;
+            signal.obs.subscribe((v: boolean) => lastEmit = v);
+            await waitUntil(() => !!lastEmit);
+            collection.database.destroy();
+        });
     });
     describe('issues', () => { });
 });

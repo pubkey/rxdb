@@ -63,26 +63,25 @@ export type RxDatabase<
     InstanceCreationOptions,
     Collections,
     Reactivity
-> &
-    Collections & RxDatabaseGenerated<Collections>;
+> & Collections & RxDatabaseGenerated<Collections, Reactivity>;
 
 
-export interface RxLocalDocumentMutation<StorageType> {
+export interface RxLocalDocumentMutation<StorageType, Reactivity = unknown> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-        RxLocalDocument<StorageType, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType, Reactivity>
     >;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-        RxLocalDocument<StorageType, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType, Reactivity>
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
-        RxLocalDocument<StorageType, LocalDocType> | null
+        RxLocalDocument<StorageType, LocalDocType, Reactivity> | null
     >;
     getLocal$<LocalDocType = any>(id: string): Observable<
-        RxLocalDocument<StorageType, LocalDocType> | null
+        RxLocalDocument<StorageType, LocalDocType, Reactivity> | null
     >;
 }
 
-export interface RxDatabaseGenerated<Collections> extends RxLocalDocumentMutation<RxDatabase<Collections>> { }
+export interface RxDatabaseGenerated<Collections, Reactivity> extends RxLocalDocumentMutation<RxDatabase<Collections, any, any, Reactivity>> { }
 
 /**
  * Extract the **DocumentType** of a collection.

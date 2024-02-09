@@ -36,6 +36,7 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../plugins/utils/index.ts';
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper.ts';
+import { isRxDatabase } from '../../rx-database.ts';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
@@ -84,6 +85,24 @@ const RxLocalDocumentPrototype: any = {
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         ) as Observable<any>;
     },
+    get $$(): any {
+        const _this: RxLocalDocumentClass = this as any;
+        const db = getRxDatabaseFromLocalDocument(_this);
+        const reactivity = db.getReactivityFactory();
+        return reactivity.fromObservable(
+            _this.$,
+            _this.getLatest()._data
+        );
+    },
+    get deleted$$() {
+        const _this: RxLocalDocumentClass = this as any;
+        const db = getRxDatabaseFromLocalDocument(_this);
+        const reactivity = db.getReactivityFactory();
+        return reactivity.fromObservable(
+            _this.deleted$,
+            _this.getLatest().deleted
+        );
+    },
     getLatest(this: RxLocalDocument<any>): RxLocalDocument<any> {
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
         const latestDocData = state.docCache.getLatestDocumentData(this.primary);
@@ -126,7 +145,8 @@ const RxLocalDocumentPrototype: any = {
             );
     },
     get$$(this: RxDocument, objPath: string) {
-        const reactivity = this.collection.database.getReactivityFactory();
+        const db = getRxDatabaseFromLocalDocument(this as any);
+        const reactivity = db.getReactivityFactory();
         return reactivity.fromObservable(
             this.get$(objPath),
             this.getLatest().get(objPath)
@@ -239,4 +259,14 @@ export function createRxLocalDocument<DocData>(
     Object.setPrototypeOf(newDoc, RxLocalDocumentPrototype);
     newDoc.prototype = RxLocalDocumentPrototype;
     return newDoc as any;
+}
+
+
+export function getRxDatabaseFromLocalDocument(doc: RxLocalDocument<any> | RxLocalDocumentClass) {
+    const parent = doc.parent;
+    if (isRxDatabase(parent)) {
+        return parent;
+    } else {
+        return (parent as RxCollection).database;
+    }
 }

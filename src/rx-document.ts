@@ -237,9 +237,6 @@ export const basePrototype = {
                             if (typeof property !== 'string') {
                                 return target[property];
                             }
-
-                            console.log('prxy: ' + property);
-
                             const lastChar = property.charAt(property.length - 1);
                             if (property.endsWith('$$')) {
                                 const key = property.slice(0, -2);
