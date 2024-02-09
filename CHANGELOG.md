@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD support for [custom reactivity factories](https://rxdb.info/reactivity.html) like angular signals or vue template refs.
 
 <!-- ADD new changes here! -->
 

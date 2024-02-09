@@ -81,6 +81,7 @@ import {
 import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
+import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 
 /**
  * stores the used database names
@@ -94,6 +95,7 @@ export class RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
     Collections = CollectionsOfDatabase,
+    Reactivity = unknown
 > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
@@ -125,7 +127,8 @@ export class RxDatabaseBase<
         public readonly internalStore: RxStorageInstance<InternalStoreDocType, Internals, InstanceCreationOptions>,
         public readonly hashFunction: HashFunction,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>,
-        public readonly allowSlowCount?: boolean
+        public readonly allowSlowCount?: boolean,
+        public readonly reactivity?: RxReactivityFactory<any>
     ) {
         DB_COUNT++;
 
@@ -169,6 +172,13 @@ export class RxDatabaseBase<
 
     get $(): Observable<RxChangeEvent<any>> {
         return this.observable$;
+    }
+
+    public getReactivityFactory(): RxReactivityFactory<Reactivity> {
+        if (!this.reactivity) {
+            throw newRxError('DB14', { database: this.name });
+        }
+        return this.reactivity;
     }
 
     public _subs: Subscription[] = [];
@@ -269,7 +279,7 @@ export class RxDatabaseBase<
      */
     async addCollections<CreatedCollections = Partial<Collections>>(collectionCreators: {
         [key in keyof CreatedCollections]: RxCollectionCreator<any>
-    }): Promise<{ [key in keyof CreatedCollections]: RxCollection }> {
+    }): Promise<{ [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> }> {
         const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
         const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
@@ -368,7 +378,7 @@ export class RxDatabaseBase<
             })
         );
 
-        const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
+        const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
                 const useArgs = useArgsByCollectionName[collectionName];
@@ -502,7 +512,8 @@ export class RxDatabaseBase<
     get asRxDatabase(): RxDatabase<
         {},
         Internals,
-        InstanceCreationOptions
+        InstanceCreationOptions,
+        Reactivity
     > {
         return this as any;
     }
@@ -555,7 +566,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
 export function createRxDatabase<
     Collections = { [key: string]: RxCollection; },
     Internals = any,
-    InstanceCreationOptions = any
+    InstanceCreationOptions = any,
+    Reactivity = unknown
 >(
     {
         storage,
@@ -569,10 +581,11 @@ export function createRxDatabase<
         cleanupPolicy,
         allowSlowCount = false,
         localDocuments = false,
-        hashFunction = defaultHashSha256
-    }: RxDatabaseCreator<Internals, InstanceCreationOptions>
+        hashFunction = defaultHashSha256,
+        reactivity
+    }: RxDatabaseCreator<Internals, InstanceCreationOptions, Reactivity>
 ): Promise<
-    RxDatabase<Collections, Internals, InstanceCreationOptions>
+    RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>
 > {
     runPluginHooks('preCreateRxDatabase', {
         storage,
@@ -627,7 +640,8 @@ export function createRxDatabase<
                 storageInstance,
                 hashFunction,
                 cleanupPolicy,
-                allowSlowCount
+                allowSlowCount,
+                reactivity
             ) as any;
 
             return runAsyncPluginHooks('createRxDatabase', {
@@ -725,7 +739,7 @@ export async function isRxDatabaseFirstTimeInstantiated(
  * on database creation.
  */
 export async function ensureNoStartupErrors(
-    rxDatabase: RxDatabaseBase<any, any, any>
+    rxDatabase: RxDatabaseBase<any, any, any, any>
 ) {
     await rxDatabase.storageToken;
     if (rxDatabase.startupErrors[0]) {

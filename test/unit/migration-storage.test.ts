@@ -99,7 +99,7 @@ testStorages.forEach(storages => {
     describe('migration-storage.test.ts (' + storages.name + ')', () => {
         describe('basic migrations', () => {
             it('create both databases', async () => {
-                const oldDb = await storages.createRxDatabaseOld({
+                const oldDb = await (storages.createRxDatabaseOld as any)({
                     name: DB_PREFIX + randomCouchString(12),
                     storage: storages.old() as any,
                     multiInstance: false
@@ -131,7 +131,7 @@ testStorages.forEach(storages => {
 
                 // create old database and insert data
                 const oldDatabaseName = name + '-old';
-                const oldDb = await storages.createRxDatabaseOld({
+                const oldDb: any = await (storages.createRxDatabaseOld as any)({
                     name: oldDatabaseName,
                     storage: storages.old() as any,
                     multiInstance: false
@@ -142,7 +142,7 @@ testStorages.forEach(storages => {
                     }
                 });
 
-                const oldCol = oldDb[collectionName];
+                const oldCol: RxCollection = oldDb[collectionName];
 
                 const docsAmount = 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
@@ -228,7 +228,7 @@ testStorages.forEach(storages => {
 
                 // create old database and insert data
                 const oldDatabaseName = name + '-old';
-                const oldDb = await storages.createRxDatabaseOld({
+                const oldDb = await (storages.createRxDatabaseOld as any)({
                     name: oldDatabaseName,
                     storage: storages.old() as any,
                     multiInstance: false
@@ -239,7 +239,7 @@ testStorages.forEach(storages => {
                     }
                 });
 
-                const oldCol = oldDb[collectionName];
+                const oldCol: RxCollection = oldDb[collectionName];
 
                 const docsAmount = 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
@@ -418,7 +418,7 @@ testStorages.forEach(storages => {
         describe('issues', () => {
             it('migration with multiple collections', async () => {
                 const oldDatabaseName = DB_PREFIX + randomCouchString(12);
-                const oldDb = await storages.createRxDatabaseOld({
+                const oldDb = await (storages.createRxDatabaseOld as any)({
                     name: oldDatabaseName,
                     storage: storages.old() as any,
                     multiInstance: false

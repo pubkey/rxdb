@@ -111,7 +111,8 @@ export class RxCollectionBase<
     InstanceCreationOptions,
     RxDocumentType = { [prop: string]: any; },
     OrmMethods = {},
-    StaticMethods = { [key: string]: any; }
+    StaticMethods = { [key: string]: any; },
+    Reactivity = any
 > {
 
 
@@ -123,7 +124,7 @@ export class RxCollectionBase<
     public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 
     constructor(
-        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
+        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
@@ -526,7 +527,9 @@ export class RxCollectionBase<
 
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods>[]
+        RxDocument<RxDocumentType, OrmMethods>[],
+        OrmMethods,
+        Reactivity
     > {
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
@@ -546,7 +549,9 @@ export class RxCollectionBase<
         queryObj?: MangoQueryNoLimit<RxDocumentType> | string
     ): RxQuery<
         RxDocumentType,
-        RxDocument<RxDocumentType, OrmMethods> | null
+        RxDocument<RxDocumentType, OrmMethods> | null,
+        OrmMethods,
+        Reactivity
     > {
 
         // TODO move this check to dev-mode plugin
@@ -590,7 +595,9 @@ export class RxCollectionBase<
 
     count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<
         RxDocumentType,
-        number
+        number,
+        OrmMethods,
+        Reactivity
     > {
         if (!queryObj) {
             queryObj = _getDefaultQuery();
@@ -605,7 +612,12 @@ export class RxCollectionBase<
      */
     findByIds(
         ids: string[]
-    ): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
+    ): RxQuery<
+        RxDocumentType,
+        Map<string, RxDocument<RxDocumentType, OrmMethods>>,
+        OrmMethods,
+        Reactivity
+    > {
         const mangoQuery: MangoQuery<RxDocumentType> = {
             selector: {
                 [this.schema.primaryPath]: {
@@ -805,7 +817,7 @@ export class RxCollectionBase<
         );
     }
 
-    get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods> {
+    get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods, any, Reactivity> {
         return this as any;
     }
 }

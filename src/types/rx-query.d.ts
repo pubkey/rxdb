@@ -130,7 +130,12 @@ export type MangoQuery<RxDocType = any> = MangoQueryNoLimit<RxDocType> & {
 
 export type RxQueryOP = 'find' | 'findOne' | 'count' | 'findByIds';
 
-export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentType | RxDocumentType[]> extends RxQueryBase<RxDocumentType, RxQueryResult> {
+export declare class RxQuery<
+    RxDocumentType = any,
+    RxQueryResult = any,
+    OrmMethods = {},
+    Reactivity = unknown
+> extends RxQueryBase<RxDocumentType, RxQueryResult, OrmMethods, Reactivity> {
     equals(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     eq(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     or(queryObj: keyof RxDocumentType | string | any[]): RxQuery<RxDocumentType, RxQueryResult>;

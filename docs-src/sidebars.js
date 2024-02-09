@@ -76,6 +76,7 @@ const sidebars = {
         'migration-storage'
       ],
     },
+    'reactivity',
     'encryption',
     'key-compression',
     'rx-local-document',

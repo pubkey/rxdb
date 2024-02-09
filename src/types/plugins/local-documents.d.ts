@@ -31,8 +31,8 @@ declare type LocalDocumentModifyFunction<Data> = (
 ) => Data | Promise<Data>;
 
 
-export declare type RxLocalDocument<Parent, Data = any> = Override<
-    RxDocumentBase<RxLocalDocumentData<Data>, {}>,
+export declare type RxLocalDocument<Parent, Data = any, Reactivity = unknown> = Override<
+    RxDocumentBase<RxLocalDocumentData<Data>, {}, Reactivity>,
     {
         readonly parent: Parent;
         isLocal(): true;
@@ -41,9 +41,9 @@ export declare type RxLocalDocument<Parent, Data = any> = Override<
              * Because local documents store their relevant data inside of the 'data' property,
              * the incremental mutation methods are changed a bit to only allow to change parts of the data property.
              */
-        incrementalModify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data>>;
-        incrementalPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data>>;
+        incrementalModify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
+        incrementalPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data, Reactivity>>;
 
-        $: Observable<RxLocalDocument<Parent, Data>>;
+        $: Observable<RxLocalDocument<Parent, Data, Reactivity>>;
     }
 >;
