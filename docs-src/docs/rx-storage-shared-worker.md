@@ -97,6 +97,10 @@ const database = await createRxDatabase({
 });
 ```
 
+## Building a custom worker
+
+To build a custom `worker.js` file, check out the webpack config at the [worker](./rx-storage-worker.md#building-a-custom-worker) documentation. Any worker file form the worker storage can also be used in a shared worker because `exposeWorkerRxStorage` detects where it runs and exposes the correct messaging endpoints.
+
 ## Passing in a SharedWorker instance
 
 Instead of setting an url as `workerInput`, you can also specify a function that returns a new `SharedWorker` instance when called. This is mostly used when you have a custom worker file and dynamically import it.

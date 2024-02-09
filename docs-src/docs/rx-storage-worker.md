@@ -89,6 +89,63 @@ const database = await createRxDatabase({
 });
 ```
 
+## Building a custom worker
+
+The easiest way to bundle a custom `worker.js` file is by using webpack. Here is the webpack-config that is also used for the prebuild workers:
+
+```ts
+// webpack.config.js
+const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
+const projectRootPath = path.resolve(
+    __dirname,
+    '../../' // path from webpack-config to the root folder of the repo
+);
+const babelConfig = require(path.join(projectRootPath, 'babel.config'));
+const baseDir = './dist/workers/'; // output path
+module.exports = {
+    target: 'webworker',
+    entry: {
+        'my-custom-worker': baseDir + 'my-custom-worker.js',
+    },
+    output: {
+        filename: '[name].js',
+        clean: true,
+        path: path.resolve(
+            projectRootPath,
+            'dist/workers'
+        ),
+    },
+    mode: 'production',
+    module: {
+        rules: [
+            {
+                test: /\.tsx?$/,
+                exclude: /(node_modules)/,
+                use: {
+                    loader: 'babel-loader',
+                    options: babelConfig
+                }
+            }
+        ],
+    },
+    resolve: {
+        extensions: ['.tsx', '.ts', '.js', '.mjs', '.mts']
+    },
+    optimization: {
+        moduleIds: 'deterministic',
+        minimize: true,
+        minimizer: [new TerserPlugin({
+            terserOptions: {
+                format: {
+                    comments: false,
+                },
+            },
+            extractComments: false,
+        })],
+    }
+};
+```
 
 ## One worker per database
 
