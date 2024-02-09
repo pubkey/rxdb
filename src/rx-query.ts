@@ -58,8 +58,9 @@ const newQueryID = function (): number {
 
 export class RxQueryBase<
     RxDocType,
-    // TODO also pass DocMethods here
-    RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>
+    RxQueryResult,
+    OrmMethods = {},
+    Reactivity = {},
 > {
 
     public id: number = newQueryID();
@@ -168,6 +169,13 @@ export class RxQueryBase<
         return this._$ as any;
     }
 
+    get $$(): Reactivity {
+        const reactivity = this.collection.database.getReactivityFactory();
+        return reactivity.fromObservable(
+            this.$,
+            undefined
+        );
+    }
 
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
@@ -278,7 +286,7 @@ export class RxQueryBase<
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    public exec(throwIfMissing: true): Promise<RxDocument<RxDocType>>;
+    public exec(throwIfMissing: true): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     public exec(): Promise<RxQueryResult>;
     public exec(throwIfMissing?: boolean): Promise<any> {
         if (throwIfMissing && this.op !== 'findOne') {
@@ -295,7 +303,7 @@ export class RxQueryBase<
          * this will make sure that errors in the query which throw inside of the RxStorage,
          * will be thrown at this execution context and not in the background.
          */
-        return _ensureEqual(this)
+        return _ensureEqual(this as any)
             .then(() => firstValueFrom(this.$))
             .then(result => {
                 if (!result && throwIfMissing) {
@@ -467,7 +475,7 @@ export function createRxQuery<RxDocType>(
         other
     });
 
-    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection, other);
+    let ret = new RxQueryBase<RxDocType, any>(op, queryObj, collection, other);
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);
@@ -481,7 +489,7 @@ export function createRxQuery<RxDocType>(
  * which means that no write event happened since the last run.
  * @return false if not which means it should re-execute
  */
-function _isResultsInSync(rxQuery: RxQueryBase<any>): boolean {
+function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
     const currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
     if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
         return true;
@@ -496,7 +504,7 @@ function _isResultsInSync(rxQuery: RxQueryBase<any>): boolean {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery: RxQueryBase<any>): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     // Optimisation shortcut
     if (
         rxQuery.collection.database.destroyed ||
@@ -514,7 +522,7 @@ function _ensureEqual(rxQuery: RxQueryBase<any>): Promise<boolean> {
  * ensures that the results of this query is equal to the results which a query over the database would give
  * @return true if results have changed
  */
-function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<boolean> {
+function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
     rxQuery._lastEnsureEqual = now();
 
     /**
@@ -664,7 +672,7 @@ export function prepareQuery<RxDocType>(
  * when specific queries are used.
  */
 export async function queryCollection<RxDocType>(
-    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType>
+    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>
 ): Promise<RxDocumentData<RxDocType>[]> {
     let docs: RxDocumentData<RxDocType>[] = [];
     const collection = rxQuery.collection;

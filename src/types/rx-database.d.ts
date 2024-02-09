@@ -10,10 +10,10 @@ import { Observable } from 'rxjs';
 import type { RxStorage } from './rx-storage.interface.d.ts';
 import type { RxLocalDocument } from './plugins/local-documents.d.ts';
 import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
-import type { HashFunction } from './util.d.ts';
-import type { RxSignals } from '../plugins/signals/index.ts';
+import type { ById, HashFunction } from './util.d.ts';
+import type { RxReactivityFactory } from './plugins/reactivity.d.ts';
 
-export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, SignalType = any> {
+export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any, Reactivity = {}> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
@@ -45,21 +45,24 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     allowSlowCount?: boolean;
 
     /**
-     * An implementation of the signals api,
-     * use a different implementation depending on your frontend framework.
+     * Can be used to add a custom reactivity Factory
+     * that is used on all getters and values that end with the double $$.
+     * For example you can use the signals api of your framework and vuejs ref()
      */
-    signals?: RxSignals<SignalType>;
+    reactivity?: RxReactivityFactory<Reactivity>;
 }
 
-export type CollectionsOfDatabase = { [key: string]: RxCollection; };
+export type CollectionsOfDatabase = ById<RxCollection>;
 export type RxDatabase<
     Collections = CollectionsOfDatabase,
     Internals = any,
     InstanceCreationOptions = any,
+    Reactivity = any
 > = RxDatabaseBase<
     Internals,
     InstanceCreationOptions,
-    Collections
+    Collections,
+    Reactivity
 > &
     Collections & RxDatabaseGenerated<Collections>;
 

@@ -552,7 +552,7 @@ export function getWrappedStorageInstance<
     InstanceCreationOptions,
     CheckpointType
 >(
-    database: RxDatabase<{}, Internals, InstanceCreationOptions>,
+    database: RxDatabase<{}, Internals, InstanceCreationOptions, any>,
     storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>,
     /**
      * The original RxJsonSchema

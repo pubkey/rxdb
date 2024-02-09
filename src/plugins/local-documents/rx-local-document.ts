@@ -125,6 +125,13 @@ const RxLocalDocumentPrototype: any = {
                 distinctUntilChanged()
             );
     },
+    get$$(this: RxDocument, objPath: string) {
+        const reactivity = this.collection.database.getReactivityFactory();
+        return reactivity.fromObservable(
+            this.get$(objPath),
+            this.getLatest().get(objPath)
+        );
+    },
     async incrementalModify<DocData>(
         this: RxLocalDocument<any, DocData>,
         mutationFunction: LocalDocumentModifyFunction<any>

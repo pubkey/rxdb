@@ -72,11 +72,12 @@ export const basePrototype = {
         );
     },
     get deleted$$() {
-        const _this: RxDocument<any> = this as any;
-        const observable = _this.$.pipe(
-            map((d: any) => d._data._deleted)
+        const _this: RxDocument = this as any;
+        const reactivity = _this.collection.database.getReactivityFactory();
+        return reactivity.fromObservable(
+            _this.deleted$,
+            _this.getLatest().deleted
         );
-        return _this.collection.database.signals.observableToSignal(observable, _this.getLatest().data._deleted);
     },
     get deleted() {
         const _this: RxDocument = this as any;
@@ -95,7 +96,7 @@ export const basePrototype = {
      * returns the observable which emits the plain-data of this document
      */
     get $(): Observable<RxDocumentData<any>> {
-        const _this: RxDocument = this as any;
+        const _this: RxDocument<{}, {}, {}> = this as any;
         return _this.collection.$.pipe(
             filter(changeEvent => !changeEvent.isLocal),
             filter(changeEvent => changeEvent.documentId === this.primary),
@@ -104,6 +105,14 @@ export const basePrototype = {
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
             map(docData => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
+        );
+    },
+    get $$(): any {
+        const _this: RxDocument = this as any;
+        const reactivity = _this.collection.database.getReactivityFactory();
+        return reactivity.fromObservable(
+            _this.$,
+            _this.getLatest()
         );
     },
 
@@ -146,6 +155,11 @@ export const basePrototype = {
                 map(data => getProperty(data, path)),
                 distinctUntilChanged()
             );
+    },
+    get$$(this: RxDocument, path: string) {
+        const obs = this.get$(path);
+        const reactivity = this.collection.database.getReactivityFactory();
+        return reactivity.fromObservable(obs, this.getLatest().get(path));
     },
 
     /**
@@ -224,7 +238,10 @@ export const basePrototype = {
                                 return target[property];
                             }
                             const lastChar = property.charAt(property.length - 1);
-                            if (lastChar === '$') {
+                            if (property.endsWith('$$')) {
+                                const key = property.slice(0, -2);
+                                return _this.get$$(trimDots(objPath + '.' + key));
+                            } else if (lastChar === '$') {
                                 const key = property.slice(0, -1);
                                 return _this.get$(trimDots(objPath + '.' + key));
                             } else if (lastChar === '_') {

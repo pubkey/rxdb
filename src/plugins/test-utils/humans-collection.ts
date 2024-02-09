@@ -407,7 +407,7 @@ export async function createMigrationCollection(
             .fill(0)
             .map(() => cols[colName].insert(schemaObjects.simpleHumanAge()).then(doc => {
                 if (attachment !== undefined) {
-                    return doc.putAttachment(attachment, true);
+                    return doc.putAttachment(attachment);
                 }
             }))
     );

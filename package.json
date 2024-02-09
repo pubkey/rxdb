@@ -297,6 +297,12 @@
       "import": "./dist/esm/plugins/update/index.js",
       "default": "./dist/esm/plugins/update/index.js"
     },
+    "./plugins/reactivity": {
+      "types": "./dist/types/plugins/reactivity/index.d.ts",
+      "require": "./dist/cjs/plugins/reactivity/index.js",
+      "import": "./dist/esm/plugins/reactivity/index.js",
+      "default": "./dist/esm/plugins/reactivity/index.js"
+    },
     "./plugins/validate-ajv": {
       "types": "./dist/types/plugins/validate-ajv/index.d.ts",
       "require": "./dist/cjs/plugins/validate-ajv/index.js",

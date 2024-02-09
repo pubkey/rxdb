@@ -94,10 +94,10 @@ export function getRxDocumentConstructor<RxDocType, ORM>(
  * You should never call this method directly,
  * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
-export function createNewRxDocument<RxDocType, ORM>(
-    rxCollection: RxCollection<RxDocType, ORM>,
+export function createNewRxDocument<RxDocType, ORM, Reactivity>(
+    rxCollection: RxCollection<RxDocType, ORM, any, any, Reactivity>,
     docData: RxDocumentData<RxDocType>
-): RxDocument<RxDocType, ORM> {
+): RxDocument<RxDocType, ORM, Reactivity> {
     const doc = createRxDocumentWithConstructor(
         getRxDocumentConstructor(rxCollection),
         rxCollection as any,
