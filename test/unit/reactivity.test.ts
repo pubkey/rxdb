@@ -10,19 +10,19 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 
 import { waitUntil } from 'async-test-util';
+import { Observable } from 'rxjs';
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
-    RxCollection
+    RxCollection,
+    RxReactivityFactory
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 
-import { Observable } from 'rxjs';
-import { RxReactivityFactory } from '../../src/types/plugins/reactivity';
 
 /**
  * Here we test the custom reactivity that can be accessed with the
