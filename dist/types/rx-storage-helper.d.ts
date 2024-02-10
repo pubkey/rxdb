@@ -74,7 +74,7 @@ export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreation
  * and other data transformations and also ensure that database.lockedRun()
  * is used properly.
  */
-export declare function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>(database: RxDatabase<{}, Internals, InstanceCreationOptions>, storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>, 
+export declare function getWrappedStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>(database: RxDatabase<{}, Internals, InstanceCreationOptions, any>, storageInstance: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions, CheckpointType>, 
 /**
  * The original RxJsonSchema
  * before it was mutated by hooks.

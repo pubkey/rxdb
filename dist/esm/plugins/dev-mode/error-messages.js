@@ -62,6 +62,7 @@ export var ERROR_MESSAGES = {
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
   DB12: 'RxDatabase.addCollections(): could not write to internal store',
   DB13: 'createRxDatabase(): Invalid db-name or collection name, name contains the dollar sign',
+  DB14: 'no custom reactivity factory added on database creation',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
   COL2: 'RxCollection.insert() fieldName ._id can only be used as primaryKey',

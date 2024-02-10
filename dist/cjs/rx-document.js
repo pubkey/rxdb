@@ -46,6 +46,11 @@ var basePrototype = exports.basePrototype = {
     }
     return _this.$.pipe((0, _operators.map)(d => d._data._deleted));
   },
+  get deleted$$() {
+    var _this = this;
+    var reactivity = _this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted);
+  },
   get deleted() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
@@ -63,6 +68,11 @@ var basePrototype = exports.basePrototype = {
   get $() {
     var _this = this;
     return _this.collection.$.pipe((0, _operators.filter)(changeEvent => !changeEvent.isLocal), (0, _operators.filter)(changeEvent => changeEvent.documentId === this.primary), (0, _operators.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent)), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _operators.map)(docData => this.collection._docCache.getCachedRxDocument(docData)), (0, _operators.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
+  },
+  get $$() {
+    var _this = this;
+    var reactivity = _this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(_this.$, _this.getLatest()._data);
   },
   /**
    * returns observable of the value of the given path
@@ -92,6 +102,11 @@ var basePrototype = exports.basePrototype = {
       }
     }
     return this.$.pipe((0, _operators.map)(data => (0, _index.getProperty)(data, path)), (0, _operators.distinctUntilChanged)());
+  },
+  get$$(path) {
+    var obs = this.get$(path);
+    var reactivity = this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(obs, this.getLatest().get(path));
   },
   /**
    * populate the given path
@@ -156,12 +171,15 @@ var basePrototype = exports.basePrototype = {
             return target[property];
           }
           var lastChar = property.charAt(property.length - 1);
-          if (lastChar === '$') {
-            var key = property.slice(0, -1);
-            return _this.get$((0, _index.trimDots)(objPath + '.' + key));
-          } else if (lastChar === '_') {
+          if (property.endsWith('$$')) {
+            var key = property.slice(0, -2);
+            return _this.get$$((0, _index.trimDots)(objPath + '.' + key));
+          } else if (lastChar === '$') {
             var _key = property.slice(0, -1);
-            return _this.populate((0, _index.trimDots)(objPath + '.' + _key));
+            return _this.get$((0, _index.trimDots)(objPath + '.' + _key));
+          } else if (lastChar === '_') {
+            var _key2 = property.slice(0, -1);
+            return _this.populate((0, _index.trimDots)(objPath + '.' + _key2));
           } else {
             return _this.get((0, _index.trimDots)(objPath + '.' + property));
           }

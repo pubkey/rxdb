@@ -15,8 +15,8 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     [prop: string]: any;
 }, OrmMethods = {}, StaticMethods = {
     [key: string]: any;
-}> {
-    database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>;
+}, Reactivity = any> {
+    database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>;
     name: string;
     schema: RxSchema<RxDocumentType>;
     internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
@@ -34,7 +34,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
     incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType>;
-    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: MigrationStrategies, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: MigrationStrategies, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
@@ -96,14 +96,14 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
     incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
-    find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
-    findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
-    count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<RxDocumentType, number>;
+    find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[], OrmMethods, Reactivity>;
+    findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null, OrmMethods, Reactivity>;
+    count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<RxDocumentType, number, OrmMethods, Reactivity>;
     /**
      * find a list documents by their primary key
      * has way better performance then running multiple findOne() or a find() with a complex $or-selected
      */
-    findByIds(ids: string[]): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
+    findByIds(ids: string[]): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>, OrmMethods, Reactivity>;
     /**
      * Export collection to a JSON friendly format.
      */
@@ -140,7 +140,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * remove all data of the collection
      */
     remove(): Promise<any>;
-    get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods>;
+    get asRxCollection(): RxCollection<RxDocumentType, OrmMethods, StaticMethods, any, Reactivity>;
 }
 /**
  * creates and prepares a new collection

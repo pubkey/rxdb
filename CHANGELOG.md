@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD support for [custom reactivity factories](https://rxdb.info/reactivity.html) like angular signals or vue template refs.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.8.0 (10 February 2024)
+
+- ADD support for [custom reactivity factories](https://rxdb.info/reactivity.html) like angular signals or vue template refs.
 
 ### 15.7.0 (7 February 2024)
 

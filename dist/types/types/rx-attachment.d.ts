@@ -16,8 +16,8 @@ export type RxAttachmentCreator = {
     data: Blob;
 };
 
-export declare class RxAttachment<RxDocumentType, OrmMethods = {}> {
-    readonly doc: RxDocument<RxDocumentType, OrmMethods>;
+export declare class RxAttachment<RxDocumentType, OrmMethods = {}, Reactivity = unknown> {
+    readonly doc: RxDocument<RxDocumentType, OrmMethods, Reactivity>;
     readonly id: string;
     readonly type: string;
     readonly length: number;

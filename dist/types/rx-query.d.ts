@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher, RxJsonSchema, FilledMangoQuery } from './types/index.d.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
-export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
+export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reactivity = unknown> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery<RxDocType>>;
     collection: RxCollection<RxDocType>;
@@ -23,6 +23,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     _result: RxQuerySingleResult<RxDocType> | null;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>, other?: any);
     get $(): BehaviorSubject<RxQueryResult>;
+    get $$(): Reactivity;
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;
     _lastExecEnd: number;
@@ -54,7 +55,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
      * To have an easier implementations,
      * just subscribe and use the first result
      */
-    exec(throwIfMissing: true): Promise<RxDocument<RxDocType>>;
+    exec(throwIfMissing: true): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     exec(): Promise<RxQueryResult>;
     /**
      * cached call to get the queryMatcher
@@ -101,7 +102,7 @@ export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
  * run this query through the QueryCache
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
-export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType> | RxDocument<RxDocType>[]>;
+export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, any, {}, unknown>;
 /**
  * @returns a format of the query that can be used with the storage
  * when calling RxStorageInstance().query()
@@ -113,7 +114,7 @@ export declare function prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentD
  * Does some optimizations to ensure findById is used
  * when specific queries are used.
  */
-export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType>): Promise<RxDocumentData<RxDocType>[]>;
+export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>): Promise<RxDocumentData<RxDocType>[]>;
 /**
  * Returns true if the given query
  * selects exactly one document by its id.

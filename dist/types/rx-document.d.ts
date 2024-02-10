@@ -12,27 +12,30 @@ export declare const basePrototype: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
+    readonly deleted$$: any;
     readonly deleted: boolean | undefined;
-    getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}>): import("./types/rx-document").RxDocumentBase<{}, {}>;
+    getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): import("./types/rx-document").RxDocumentBase<{}, {}, unknown>;
     /**
      * returns the observable which emits the plain-data of this document
      */
     readonly $: Observable<any>;
+    readonly $$: any;
     /**
      * returns observable of the value of the given path
      */
-    get$(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Observable<any>;
+    get$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Observable<any>;
+    get$$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): any;
     /**
      * populate the given path
      */
-    populate(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Promise<RxDocument | null>;
+    populate(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Promise<RxDocument | null>;
     /**
      * get data by objectPath
      * @hotPath Performance here is really important,
      * run some tests before changing anything.
      */
-    get(this: import("./types/rx-document").RxDocumentBase<{}, {}>, objPath: string): any | null;
-    toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
+    get(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, objPath: string): any | null;
+    toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -40,7 +43,7 @@ export declare const basePrototype: {
         _rev: string;
         _meta: import("./types/rx-document").RxDocumentMeta;
     }>;
-    toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+    toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -65,8 +68,8 @@ export declare const basePrototype: {
      * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+    incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
+    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
     /**
      * patches the given properties
      */
@@ -81,8 +84,8 @@ export declare const basePrototype: {
      * Notice that there is no hard delete,
      * instead deleted documents get flagged with _deleted=true.
      */
-    remove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<RxDocument>;
-    incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<RxDocument>;
+    remove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<RxDocument>;
+    incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<RxDocument>;
     destroy(): never;
 };
 export declare function createRxDocumentConstructor(proto?: {
@@ -97,27 +100,30 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
+    readonly deleted$$: any;
     readonly deleted: boolean | undefined;
-    getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}>): import("./types/rx-document").RxDocumentBase<{}, {}>;
+    getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): import("./types/rx-document").RxDocumentBase<{}, {}, unknown>;
     /**
      * returns the observable which emits the plain-data of this document
      */
     readonly $: Observable<any>;
+    readonly $$: any;
     /**
      * returns observable of the value of the given path
      */
-    get$(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Observable<any>;
+    get$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Observable<any>;
+    get$$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): any;
     /**
      * populate the given path
      */
-    populate(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Promise<import("./types/rx-document").RxDocumentBase<{}, {}> | null>;
+    populate(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown> | null>;
     /**
      * get data by objectPath
      * @hotPath Performance here is really important,
      * run some tests before changing anything.
      */
-    get(this: import("./types/rx-document").RxDocumentBase<{}, {}>, objPath: string): any;
-    toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
+    get(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, objPath: string): any;
+    toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -125,7 +131,7 @@ export declare function createRxDocumentConstructor(proto?: {
         _rev: string;
         _meta: import("./types/rx-document").RxDocumentMeta;
     }>;
-    toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+    toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): {
         _deleted: boolean;
         _attachments: {
             [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -145,13 +151,13 @@ export declare function createRxDocumentConstructor(proto?: {
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
-    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
+    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
     /**
      * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+    incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
+    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
     /**
      * patches the given properties
      */
@@ -166,11 +172,11 @@ export declare function createRxDocumentConstructor(proto?: {
      * Notice that there is no hard delete,
      * instead deleted documents get flagged with _deleted=true.
      */
-    remove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
-    incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
+    remove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
+    incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
     destroy(): never;
 }): {
-    (this: import("./types/rx-document").RxDocumentBase<{}, {}>, collection: RxCollection, docData: RxDocumentData<any>): void;
+    (this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, collection: RxCollection, docData: RxDocumentData<any>): void;
     prototype: {
         readonly primaryPath: import("./types/util").StringKeys<{
             _deleted: boolean;
@@ -183,27 +189,30 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: any;
+        readonly deleted$$: any;
         readonly deleted: boolean | undefined;
-        getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}>): import("./types/rx-document").RxDocumentBase<{}, {}>;
+        getLatest(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): import("./types/rx-document").RxDocumentBase<{}, {}, unknown>;
         /**
          * returns the observable which emits the plain-data of this document
          */
         readonly $: Observable<any>;
+        readonly $$: any;
         /**
          * returns observable of the value of the given path
          */
-        get$(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Observable<any>;
+        get$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Observable<any>;
+        get$$(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): any;
         /**
          * populate the given path
          */
-        populate(this: import("./types/rx-document").RxDocumentBase<{}, {}>, path: string): Promise<import("./types/rx-document").RxDocumentBase<{}, {}> | null>;
+        populate(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, path: string): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown> | null>;
         /**
          * get data by objectPath
          * @hotPath Performance here is really important,
          * run some tests before changing anything.
          */
-        get(this: import("./types/rx-document").RxDocumentBase<{}, {}>, objPath: string): any;
-        toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
+        get(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, objPath: string): any;
+        toJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -211,7 +220,7 @@ export declare function createRxDocumentConstructor(proto?: {
             _rev: string;
             _meta: import("./types/rx-document").RxDocumentMeta;
         }>;
-        toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}>, withMetaFields?: boolean): {
+        toMutableJSON(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, withMetaFields?: boolean): {
             _deleted: boolean;
             _attachments: {
                 [attachmentId: string]: import("./types/rx-storage").RxAttachmentData;
@@ -231,13 +240,13 @@ export declare function createRxDocumentConstructor(proto?: {
         getAttachment(): never;
         allAttachments(): never;
         readonly allAttachments$: void;
-        modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
+        modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
         /**
          * runs an incremental update over the document
          * @param function that takes the document-data and returns a new data-object
          */
-        incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
-        patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+        incrementalModify(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
+        patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
         /**
          * patches the given properties
          */
@@ -252,8 +261,8 @@ export declare function createRxDocumentConstructor(proto?: {
          * Notice that there is no hard delete,
          * instead deleted documents get flagged with _deleted=true.
          */
-        remove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
-        incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}>>;
+        remove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
+        incrementalRemove(this: import("./types/rx-document").RxDocumentBase<{}, {}, unknown>): Promise<import("./types/rx-document").RxDocumentBase<{}, {}, unknown>>;
         destroy(): never;
     };
 };

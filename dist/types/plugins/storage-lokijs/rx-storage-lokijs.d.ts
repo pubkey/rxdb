@@ -4,7 +4,7 @@ import type { LeaderElector } from 'broadcast-channel';
 export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     databaseSettings: LokiDatabaseSettings;
     name: string;
-    readonly rxdbVersion = "15.7.0";
+    readonly rxdbVersion = "15.8.0";
     /**
      * Create one leader elector by db name.
      * This is done inside of the storage, not globally

@@ -1,7 +1,7 @@
 import type { CRDTDocumentField, CRDTEntry, CRDTOperation, HashFunction, JsonSchema, RxConflictHandler, RxDocument, RxDocumentData, RxJsonSchema, RxPlugin, WithDeleted } from '../../types/index.d.ts';
 import { RxCollection } from '../../index.ts';
-export declare function updateCRDT<RxDocType>(this: RxDocument<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}>>;
-export declare function insertCRDT<RxDocType>(this: RxCollection<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}>>;
+export declare function updateCRDT<RxDocType>(this: RxDocument<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}, unknown>>;
+export declare function insertCRDT<RxDocType>(this: RxCollection<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}> | RxDocument<RxDocType, {}, any>>;
 export declare function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>): 1 | -1;
 export declare function hashCRDTOperations(hashFunction: HashFunction, crdts: CRDTDocumentField<any>): Promise<string>;
 export declare function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>>;

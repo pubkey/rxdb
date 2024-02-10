@@ -36,6 +36,11 @@ export var basePrototype = {
     }
     return _this.$.pipe(map(d => d._data._deleted));
   },
+  get deleted$$() {
+    var _this = this;
+    var reactivity = _this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted);
+  },
   get deleted() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
@@ -53,6 +58,11 @@ export var basePrototype = {
   get $() {
     var _this = this;
     return _this.collection.$.pipe(filter(changeEvent => !changeEvent.isLocal), filter(changeEvent => changeEvent.documentId === this.primary), map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)), startWith(_this.collection._docCache.getLatestDocumentData(this.primary)), distinctUntilChanged((prev, curr) => prev._rev === curr._rev), map(docData => this.collection._docCache.getCachedRxDocument(docData)), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
+  },
+  get $$() {
+    var _this = this;
+    var reactivity = _this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(_this.$, _this.getLatest()._data);
   },
   /**
    * returns observable of the value of the given path
@@ -82,6 +92,11 @@ export var basePrototype = {
       }
     }
     return this.$.pipe(map(data => getProperty(data, path)), distinctUntilChanged());
+  },
+  get$$(path) {
+    var obs = this.get$(path);
+    var reactivity = this.collection.database.getReactivityFactory();
+    return reactivity.fromObservable(obs, this.getLatest().get(path));
   },
   /**
    * populate the given path
@@ -146,12 +161,15 @@ export var basePrototype = {
             return target[property];
           }
           var lastChar = property.charAt(property.length - 1);
-          if (lastChar === '$') {
-            var key = property.slice(0, -1);
-            return _this.get$(trimDots(objPath + '.' + key));
-          } else if (lastChar === '_') {
+          if (property.endsWith('$$')) {
+            var key = property.slice(0, -2);
+            return _this.get$$(trimDots(objPath + '.' + key));
+          } else if (lastChar === '$') {
             var _key = property.slice(0, -1);
-            return _this.populate(trimDots(objPath + '.' + _key));
+            return _this.get$(trimDots(objPath + '.' + _key));
+          } else if (lastChar === '_') {
+            var _key2 = property.slice(0, -1);
+            return _this.populate(trimDots(objPath + '.' + _key2));
           } else {
             return _this.get(trimDots(objPath + '.' + property));
           }

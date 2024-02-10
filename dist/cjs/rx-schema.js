@@ -83,6 +83,14 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
         enumerable: false,
         configurable: false
       });
+      // getter - reactivity$$
+      Object.defineProperty(proto, key + '$$', {
+        get: function () {
+          return this.get$$(fullPath);
+        },
+        enumerable: false,
+        configurable: false
+      });
       // getter - populate_
       Object.defineProperty(proto, key + '_', {
         get: function () {

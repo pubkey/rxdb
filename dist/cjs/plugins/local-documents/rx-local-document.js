@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxLocalDocument = createRxLocalDocument;
+exports.getRxDatabaseFromLocalDocument = getRxDatabaseFromLocalDocument;
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 var _rxjs = require("rxjs");
 var _overwritable = require("../../overwritable.js");
@@ -14,6 +15,7 @@ var _rxError = require("../../rx-error.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _index = require("../../plugins/utils/index.js");
 var _localDocumentsHelper = require("./local-documents-helper.js");
+var _rxDatabase = require("../../rx-database.js");
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
   (0, _inheritsLoose2.default)(RxLocalDocumentClass, _RxDocumentParent);
@@ -50,6 +52,18 @@ var RxLocalDocumentPrototype = {
     var state = (0, _index.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
     return _this.parent.$.pipe((0, _rxjs.filter)(changeEvent => changeEvent.documentId === this.primary), (0, _rxjs.filter)(changeEvent => changeEvent.isLocal), (0, _rxjs.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent)), (0, _rxjs.startWith)(state.docCache.getLatestDocumentData(this.primary)), (0, _rxjs.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _rxjs.map)(docData => state.docCache.getCachedRxDocument(docData)), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
   },
+  get $$() {
+    var _this = this;
+    var db = getRxDatabaseFromLocalDocument(_this);
+    var reactivity = db.getReactivityFactory();
+    return reactivity.fromObservable(_this.$, _this.getLatest()._data);
+  },
+  get deleted$$() {
+    var _this = this;
+    var db = getRxDatabaseFromLocalDocument(_this);
+    var reactivity = db.getReactivityFactory();
+    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted);
+  },
   getLatest() {
     var state = (0, _index.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
     var latestDocData = state.docCache.getLatestDocumentData(this.primary);
@@ -82,6 +96,11 @@ var RxLocalDocumentPrototype = {
       }
     }
     return this.$.pipe((0, _rxjs.map)(localDocument => localDocument._data), (0, _rxjs.map)(data => (0, _index.getProperty)(data, objPath)), (0, _rxjs.distinctUntilChanged)());
+  },
+  get$$(objPath) {
+    var db = getRxDatabaseFromLocalDocument(this);
+    var reactivity = db.getReactivityFactory();
+    return reactivity.fromObservable(this.get$(objPath), this.getLatest().get(objPath));
   },
   async incrementalModify(mutationFunction) {
     var state = await (0, _localDocumentsHelper.getLocalDocStateByParent)(this.parent);
@@ -161,5 +180,13 @@ function createRxLocalDocument(data, parent) {
   Object.setPrototypeOf(newDoc, RxLocalDocumentPrototype);
   newDoc.prototype = RxLocalDocumentPrototype;
   return newDoc;
+}
+function getRxDatabaseFromLocalDocument(doc) {
+  var parent = doc.parent;
+  if ((0, _rxDatabase.isRxDatabase)(parent)) {
+    return parent;
+  } else {
+    return parent.database;
+  }
 }
 //# sourceMappingURL=rx-local-document.js.map

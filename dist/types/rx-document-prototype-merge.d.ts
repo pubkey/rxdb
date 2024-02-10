@@ -15,7 +15,7 @@ export declare function getRxDocumentConstructor<RxDocType, ORM>(rxCollection: R
  * You should never call this method directly,
  * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
-export declare function createNewRxDocument<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>, docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, ORM>;
+export declare function createNewRxDocument<RxDocType, ORM, Reactivity>(rxCollection: RxCollection<RxDocType, ORM, any, any, Reactivity>, docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, ORM, Reactivity>;
 /**
  * returns the prototype-object
  * that contains the orm-methods,
