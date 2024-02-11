@@ -5,9 +5,9 @@ slug: rx-storage-lokijs.html
 
 # RxStorage LokiJS
 
-The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
+The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached. This makes it very fast but you have the possibility to lose semingly persisted writes when the JavaScript process ends before the persistence loop has been done.
 
-**WARNING:** The LokiJS project itself is [no longer](https://github.com/techfort/LokiJS/issues/917) in development or maintained. Bugs that occur outside of the RxDB layer will likely not be fixed. It is recommended to use another [RxStorage](./rx-storage.md) instead.
+**WARNING:** The LokiJS project itself is [no longer](https://github.com/techfort/LokiJS/issues/917) in development or maintained. There are known bugs like having wrong query results of lossing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage might get deprecated soon. Using LokiJS as storage is only recommended for proof-of-concepts or quick sample apps. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data you can use the [Memory Synced](./rx-storage-memory-synced.md) storage.
 
 
 ### Pros
