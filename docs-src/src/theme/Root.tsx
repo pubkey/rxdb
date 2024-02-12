@@ -17,7 +17,11 @@ export default function Root({ children }) {
 
 
 function addCallToActionButton() {
-    return;
+
+    // do not show on landingpage
+    if(location.pathname === '/'){
+        return;
+    }
 
     const callToActions = [
         {
@@ -57,7 +61,13 @@ function addCallToActionButton() {
     const callToActionButtonId = 'rxdb-call-to-action-button';
     function setCallToActionOnce() {
         console.log('set call to action button');
-        const randId = Date.now() % callToActions.length;
+
+        const tenMinutes = 1000 * 60*10;
+        const now = Date.now();
+        const timeSlot = (now - (now % tenMinutes)) / tenMinutes;
+        console.log('timeslot ' + timeSlot);
+        const randId = timeSlot % callToActions.length;
+        console.log('randid: ' + randId);
         const callToAction = callToActions[randId];
         const alreadyThere = document.querySelector('.call-to-action');
         if (alreadyThere) {
@@ -77,7 +87,7 @@ function addCallToActionButton() {
         const newElement = document.createElement('a');
         newElement.onclick = () => {
             window.trigger('call-to-action', 0.35);
-        }
+        };
         newElement.classList.add('hover-shadow-top');
         newElement.id = callToActionButtonId;
         newElement.innerHTML = callToAction.text + ' <b class="call-to-action-keyword">' + callToAction.keyword + '</b>' +

@@ -45,11 +45,11 @@ html[data-theme='dark'] {
   display: none;
 }
 
-/* @media (max-width: 500px) {
+@media (max-width: 500px) {
   .navbar__search #search_input_react {
     width: 6rem;
   }
-} */
+}
 
 
 
@@ -1928,11 +1928,11 @@ footer a:visited {
   background-color: var(--color-top);
   color: white;
   text-align: center;
-  padding-left: 15px;
-  padding-right: 15px;
-  line-height: 40px;
+  padding-left: 11px;
+  padding-right: 11px;
+  line-height: 37px;
   border-radius: 7px;
-  height: 40px;
+  height: 36px;
   vertical-align: middle;
 }
 
