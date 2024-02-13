@@ -207,7 +207,8 @@ Continue with the [quickstart here](https://rxdb.info/quickstart.html).
   <p>
 
 RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
-This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.</p>
+This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.
+You can also add [custom reactiveness libraries](https://rxdb.info/reactivity.html) like signals or other state management.</p>
 
 </summary>
 

@@ -423,7 +423,7 @@ export default function Home() {
                 you can <b>observe everything</b>. This enables you to build realtime
                 applications <b>fast</b> and <b>reliable</b>. It does not matter if the data was changed by{' '}
                 <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b>.{' '}
-                Whenever your data changes, your UI reflects the new state.
+                Whenever your data changes, your UI reflects the new state. You can either use <b>RxJS</b> or add <a href="/reactivity.html" target="_blank">custom reactiveness libraries</a> like signals or other state management.
               </p>
               <div className="inner">
                 {/*
