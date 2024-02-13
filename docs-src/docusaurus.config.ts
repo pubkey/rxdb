@@ -57,9 +57,10 @@ const config: Config = {
         },
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
           routeBasePath: '',
           path: './docs',
+          // I disabled the editUrl because it just confuses users and does not look professional
+          // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
         },
         // blog: {
         //   showReadingTime: true,

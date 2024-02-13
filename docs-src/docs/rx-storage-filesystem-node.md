@@ -17,7 +17,7 @@ Using the same database folder in parallel with multiple Node.js processes is su
 
 ### Cons
 
-- It is part of the [👑 RxDB Premium](/premium) plugin that must be purchased.
+- It is part of the [RxDB Premium 👑](/premium) plugin that must be purchased.
 - It is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.
 
 <p align="center">

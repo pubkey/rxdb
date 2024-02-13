@@ -82,23 +82,23 @@ export default function Premium() {
                                 that use RxDB in a professional context.
                             </p>
                             <div className="premium-blocks">
-                                <a href="/rx-storage-opfs.html" target="_blank">
+                                <a href="/rx-storage-indexeddb.html" target="_blank">
                                     <div className="premium-block hover-shadow-middle bg-gradient-right-top">
+                                        <div className="premium-block-inner">
+                                            <h4>RxStorage IndexedDB</h4>
+                                            <p>
+                                                A storage for browsers based on <b>IndexedDB</b>. Has the best latency on writes and smallest build size.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="/rx-storage-opfs.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                         <div className="premium-block-inner">
                                             <h4>RxStorage OPFS</h4>
                                             <p>
                                                 Currently the RxStorage with best data throughput that can be used in the browser.
                                                 Based on the <b>OPFS File System Access API</b>.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a href="/rx-storage-indexeddb.html" target="_blank">
-                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
-                                        <div className="premium-block-inner">
-                                            <h4>RxStorage IndexedDB</h4>
-                                            <p>
-                                                A storage for browsers based on <b>IndexedDB</b>. Has the best latency on writes and small reads.
                                             </p>
                                         </div>
                                     </div>

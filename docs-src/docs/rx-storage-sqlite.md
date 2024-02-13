@@ -5,21 +5,20 @@ slug: rx-storage-sqlite.html
 
 # SQLite RxStorage
 
-This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native** and **Capacitor**.
+This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, [Electron](./electron-database.md), [React Native](./react-native-database.md) and [Capacitor](./capacitor-database.md) or SQLite via wasm in the browser. It can be used with different so called `sqliteBasics` adapters to account for the differences in the various SQLite bundles and libraries that exist.
+
+## Performance comparison with other storages
+
+The SQLite storage is a bit slower compared to other Node.js based storages like the [Filesystem Storage](./rx-storage-filesystem-node.md) because wrapping SQLite has a bit of overhead and sending data from the JavaScript process to SQLite and backwards increases the latency. However for most hybrid apps the SQLite storage is the best option because it can leverage the SQLite version that comes already installed on the smartphones OS (iOS and android). Also for desktop electron apps it can be a viable solution because it is easy to ship SQLite together inside of the electron bundle.
+
+<p align="center">
+  <img src="./files/rx-storage-performance-node.png" alt="SQLite performance - Node.js" width="700" />
+</p>
 
 
-### Pros
+## Using the SQLite RxStorage 
 
-- Fast
-- Small build size
-
-### Cons
-
-- It is part of [👑 RxDB Premium](/premium)
-
-### Requirements
-
-The SQlite RxStorage works on SQLite libraries that use SQLite in version `3.38.0` or higher, because it uses the [SQLite JSON](https://www.sqlite.org/json1.html) methods like `JSON_EXTRACT`. If you get an error like `[Error: no such function: JSON_EXTRACT (code 1 SQLITE_ERROR[1])`, you might have a too old version of SQLite.
+To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
 ## Usage with **Node.js SQLite**
 
@@ -155,7 +154,7 @@ If you need to access the database connection for any reason you can use `getDat
 import { getDatabaseConnection } from 'rxdb-premium/plugins/storage-sqlite'
 ```
 
-It has the following signiture:
+It has the following signature:
 
 ```ts
 getDatabaseConnection(
@@ -164,9 +163,11 @@ getDatabaseConnection(
 ): Promise<SQLiteDatabaseClass>;
 ```
 
-## Known Problems
+## Known Problems of SQLite in JavaScript apps
 
 - Some JavaScript runtimes do not contain a `Buffer` API which is used by SQLite to store binary attachments data as `BLOB`. You can set `storeAttachmentsAsBase64String: true` if you want to store the attachments data as base64 string instead. This increases the database size but makes it work even without having a `Buffer`.
+
+- The SQlite RxStorage works on SQLite libraries that use SQLite in version `3.38.0 (2022-02-22)` or newer, because it uses the [SQLite JSON](https://www.sqlite.org/json1.html) methods like `JSON_EXTRACT`. If you get an error like `[Error: no such function: JSON_EXTRACT (code 1 SQLITE_ERROR[1])`, you might have a too old version of SQLite.
 
 - [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) because it uses an [outdated SQLite version](https://expo.canny.io/feature-requests/p/expo-sqlite-ship-newer-sqlite3-version-on-android). This is fixed if you use Expo SDK version 50 or never.
 
@@ -178,6 +179,7 @@ const storage = getRxStorageSQLite({
     log: console.log.bind(console)
 });
 ```
+
 
 
 ## Related

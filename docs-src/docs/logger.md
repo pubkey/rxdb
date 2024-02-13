@@ -10,7 +10,7 @@ With the logger plugin you can log all operations to the [storage layer](./rx-st
 
 This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
 
-Notice that the logger plugin is not part of the RxDB core, it is part of [👑 RxDB Premium](/premium).
+Notice that the logger plugin is not part of the RxDB core, it is part of [RxDB Premium 👑](/premium).
 
 
 <p align="center">
