@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX [#5624](https://github.com/pubkey/rxdb/issues/5624) Maximum call stack size exceeded during encryptString
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
