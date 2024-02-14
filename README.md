@@ -463,7 +463,6 @@ And for any other use case, there are [many more plugins and addons](https://rxd
 
 Get started now by [reading the docs](https://rxdb.info/quickstart.html) or exploring the [example-projects](./examples).
 
-
 <h2>
   <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
 </h2>
@@ -472,7 +471,7 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium)
 - [Join us at discord to get help](https://rxdb.info/chat)
-
+- [Give Feedback (anonymous)](https://forms.gle/vGaZB7zrub1hgqDk8)
 
 <!-- 
   There are many websites that just exact-copy the readme of github projects.
