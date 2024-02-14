@@ -250,6 +250,10 @@ describeParallel('encryption.test.ts', () => {
          * @link https://github.com/pubkey/rxdb/issues/5624
          */
         it('#5624 insert with really big encrypted string', async () => {
+            if (config.storage.name === 'foundationdb') {
+                // Error: Value length exceeds limit
+                return;
+            }
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage,
