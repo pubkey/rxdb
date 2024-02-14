@@ -67,3 +67,26 @@ export function isFolderPath(name: string) {
         return false;
     }
 }
+
+
+/**
+ * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ */
+export function arrayBufferToString(buffer: ArrayBuffer): string {
+    let str = '';
+    var bytes = new Uint8Array(buffer);
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        str += String.fromCharCode(bytes[i]);
+    }
+    return str;
+}
+
+export function stringToArrayBuffer(str: string): ArrayBuffer {
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+}
