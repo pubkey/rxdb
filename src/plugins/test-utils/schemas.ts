@@ -438,8 +438,7 @@ export const encryptedHuman: RxJsonSchema<EncryptedHumanDocumentType> = {
             type: 'string'
         },
         secret: {
-            type: 'string',
-            maxLength: 100
+            type: 'string'
         }
     },
     indexes: [],
