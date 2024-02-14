@@ -400,8 +400,7 @@ var encryptedHuman = exports.encryptedHuman = {
       type: 'string'
     },
     secret: {
-      type: 'string',
-      maxLength: 100
+      type: 'string'
     }
   },
   indexes: [],

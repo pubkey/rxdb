@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX [#5624](https://github.com/pubkey/rxdb/issues/5624) Maximum call stack size exceeded during encryptString
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.8.1 (14 February 2024)
+
+- FIX [#5624](https://github.com/pubkey/rxdb/issues/5624) Maximum call stack size exceeded during encryptString
 
 ### 15.8.0 (10 February 2024)
 

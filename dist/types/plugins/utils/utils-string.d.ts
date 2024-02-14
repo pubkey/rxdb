@@ -25,6 +25,7 @@ export declare function lastCharOfString(str: string): string;
 export declare function isFolderPath(name: string): boolean;
 /**
  * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ * @link https://stackoverflow.com/a/76240378/3443137
  */
-export declare function arrayBufferToString(buf: ArrayBuffer): string;
+export declare function arrayBufferToString(arrayBuffer: ArrayBuffer): string;
 export declare function stringToArrayBuffer(str: string): ArrayBuffer;
