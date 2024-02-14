@@ -71,13 +71,19 @@ export function isFolderPath(name: string) {
 
 /**
  * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ * @link https://stackoverflow.com/a/76240378/3443137
  */
-export function arrayBufferToString(buffer: ArrayBuffer): string {
+export function arrayBufferToString(arrayBuffer: ArrayBuffer): string {
+    const chunkSize = 8192;
     let str = '';
-    var bytes = new Uint8Array(buffer);
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
-        str += String.fromCharCode(bytes[i]);
+    var len = arrayBuffer.byteLength;
+    for (let i = 0; i < len; i += chunkSize) {
+        const chunk = new Uint8Array(
+            arrayBuffer,
+            i,
+            Math.min(chunkSize, len - i)
+        );
+        str += String.fromCharCode.apply(null, chunk as any);
     }
     return str;
 }
