@@ -250,7 +250,10 @@ describeParallel('encryption.test.ts', () => {
          * @link https://github.com/pubkey/rxdb/issues/5624
          */
         it('#5624 insert with really big encrypted string', async () => {
-            if (config.storage.name === 'foundationdb') {
+            if (
+                config.storage.name === 'foundationdb' ||
+                config.storage.name === 'denokv'
+            ) {
                 // Error: Value length exceeds limit
                 return;
             }
