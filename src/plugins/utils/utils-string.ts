@@ -71,14 +71,26 @@ export function isFolderPath(name: string) {
 
 /**
  * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ * @link https://stackoverflow.com/a/76240378/3443137
  */
-export function arrayBufferToString(buf: ArrayBuffer): string {
-    return String.fromCharCode.apply(null, new Uint16Array(buf) as any);
+export function arrayBufferToString(arrayBuffer: ArrayBuffer): string {
+    const chunkSize = 8192;
+    let str = '';
+    var len = arrayBuffer.byteLength;
+    for (let i = 0; i < len; i += chunkSize) {
+        const chunk = new Uint8Array(
+            arrayBuffer,
+            i,
+            Math.min(chunkSize, len - i)
+        );
+        str += String.fromCharCode.apply(null, chunk as any);
+    }
+    return str;
 }
 
 export function stringToArrayBuffer(str: string): ArrayBuffer {
-    const buf = new ArrayBuffer(str.length * 2);
-    const bufView = new Uint16Array(buf);
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
     for (let i = 0, strLen = str.length; i < strLen; i++) {
         bufView[i] = str.charCodeAt(i);
     }

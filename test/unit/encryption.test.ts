@@ -7,7 +7,8 @@ import {
     schemas,
     getPassword,
     getEncryptedStorage,
-    EncryptedHumanDocumentType
+    EncryptedHumanDocumentType,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -243,6 +244,33 @@ describeParallel('encryption.test.ts', () => {
             const secret = doc.get('secret');
             assert.strictEqual(agent.secret.name, secret.name);
             assert.strictEqual(agent.secret.subname, secret.subname);
+            db.destroy();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/5624
+         */
+        it('#5624 insert with really big encrypted string', async () => {
+            if (config.storage.name === 'foundationdb') {
+                // Error: Value length exceeds limit
+                return;
+            }
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage,
+                password: await getPassword()
+            });
+            const c = await db.addCollections({
+                enchuman: {
+                    schema: schemas.encryptedHuman
+                }
+            });
+            const secret = randomStringWithSpecialChars(1000 * 250);
+            const agent = schemaObjects.encryptedHumanData();
+            agent.secret = secret;
+            await c.enchuman.insert(agent);
+            const doc = await c.enchuman.findOne().exec();
+            const secretAfter = doc.get('secret');
+            assert.strictEqual(secret, secretAfter);
             db.destroy();
         });
     });

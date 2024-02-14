@@ -21,7 +21,9 @@ import {
     blobToBase64String,
     createBlobFromBase64,
     overwritable,
-    toWithDeleted
+    toWithDeleted,
+    stringToArrayBuffer,
+    arrayBufferToString
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -37,7 +39,8 @@ import {
 import {
     isFastMode,
     isBun,
-    EXAMPLE_REVISION_1
+    EXAMPLE_REVISION_1,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
 import { BIG_BASE64 } from '../helper/big-base64.ts';
@@ -473,6 +476,23 @@ describe('util.test.js', () => {
             assert.strictEqual(toWithDeleted({ _meta: {} })._meta, undefined);
             assert.strictEqual(toWithDeleted({ _attachments: {} })._attachments, undefined);
             assert.strictEqual(toWithDeleted({ _rev: 'aa' })._rev, undefined);
+        });
+    });
+    describe('.arrayBufferToString() / .stringToArrayBuffer()', () => {
+        it('should return the correct result', () => {
+            const str = randomStringWithSpecialChars(1000);
+            const buffer = stringToArrayBuffer(str);
+            const back = arrayBufferToString(buffer);
+            assert.strictEqual(str, back);
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/5624
+         */
+        it('#5624 should work with really big strings', () => {
+            const str = randomStringWithSpecialChars(1000 * 250);
+            const buffer = stringToArrayBuffer(str);
+            const back = arrayBufferToString(buffer);
+            assert.strictEqual(str, back);
         });
     });
 });
