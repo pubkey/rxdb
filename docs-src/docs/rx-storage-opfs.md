@@ -48,7 +48,6 @@ const accessHandle = await draftFile.createSyncAccessHandle();
 const fileSize = accessHandle.getSize();
 
 // read file and transform data to string
-const fileSize = await accessHandle.getSize();
 const readBuffer = new Uint8Array(fileSize);
 await accessHandle.read(readBuffer, { at: 0 });
 const contentAsString = new TextDecoder().decode(readBuffer);
@@ -111,7 +110,7 @@ const database = await createRxDatabase({
 When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workers by calling `exposeWorkerRxStorage` like described in the [worker storage plugin](./rx-storage-worker.md).
 
 ```ts
-// inside of worker.js
+// inside of the worker.js file
 import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
 import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 
@@ -148,7 +147,7 @@ Origin Private File System is a browser API that is only accessible in browsers.
 
 Often developers are confused with the differences between the `File System Access API` and the `Origin Private File System (OPFS)`.
 
-- The `File System API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the ile System API, the user has to actively select the files from a filepicker.
+- The `File System API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the File System API, the user has to actively select the files from a filepicker.
 - `Origin Private File System (OPFS)` is a sub-part of the `File System API` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. 
 
 
