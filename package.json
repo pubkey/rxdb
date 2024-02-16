@@ -448,7 +448,7 @@
     "broadcast-channel": "7.0.0",
     "crypto-js": "4.2.0",
     "custom-idle-queue": "3.0.1",
-    "dexie": "4.0.1-beta.7",
+    "dexie": "4.0.1-beta.11",
     "event-reduce-js": "5.2.7",
     "firebase": "10.8.0",
     "get-graphql-from-jsonschema": "8.1.0",
