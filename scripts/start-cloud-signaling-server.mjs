@@ -41,7 +41,12 @@ async function run() {
         const filename = files.find(f => f !== '.gittouch');
         let content = 'no certbot challenge';
         if (filename) {
-            content = fs.readFileSync(path.join(certbotChallengePath, filename));
+            try {
+                content = fs.readFileSync(path.join(certbotChallengePath, filename));
+            }catch(err){
+                response.end('could not read certfile at ' + certbotChallengePath, 'utf-8');
+                return;
+            }
         }
         response.end(content, 'utf-8');
     });
