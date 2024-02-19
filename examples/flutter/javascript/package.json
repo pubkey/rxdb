@@ -15,7 +15,7 @@
     "rxjs": "7.8.1"
   },
   "devDependencies": {
-    "webpack": "5.90.2",
+    "webpack": "5.90.3",
     "webpack-cli": "5.1.4"
   }
 }
