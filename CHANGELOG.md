@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD `awaitWritePersistence` option to memory-synced storage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

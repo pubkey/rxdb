@@ -17,7 +17,7 @@ The main reason to use this is to improve initial page load and query/write time
 ## Cons
 
 - It does not support attachments.
-- When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage.
+- When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
@@ -60,7 +60,7 @@ const db = await createRxDatabase({
 
 ## Options
 
-Some options can be provided to fine tune the performance.
+Some options can be provided to fine tune the performance and behavior.
 
 ```ts
 
@@ -90,6 +90,15 @@ const storage = getMemorySyncedRxStorage({
     keepIndexesOnParent: true,
 
     /**
+     * If set to true, all write operations will resolve AFTER the writes
+     * have been persisted from the memory to the parentStorage.
+     * This ensures writes are not lost even if the JavaScript process exits
+     * between memory writes and the persistence interval.
+     * default=false
+     */
+    awaitWritePersistence: true,
+
+    /**
      * After a write, await until the return value of this method resolves
      * before replicating with the master storage.
      * 
@@ -101,7 +110,6 @@ const storage = getMemorySyncedRxStorage({
      */
     waitBeforePersist: () => requestIdlePromise();
 });
-
 ```
 
 
@@ -148,7 +156,7 @@ replicateRxCollection({
 
 
 /**
- * Creat an equal memory-synced database with the same name+collections
+ * Create an equal memory-synced database with the same name+collections
  * and use it for writes and queries.
  */
 const memoryDatabase = await createRxDatabase({
@@ -156,6 +164,4 @@ const memoryDatabase = await createRxDatabase({
     storage: memorySyncedStorage
 });
 await memoryDatabase.addCollections(/* ... */);
-
-
 ```

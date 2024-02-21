@@ -67,7 +67,14 @@ const sidebars = {
         'replication-nats'
       ],
     },
-    'rx-server',
+    {
+      type: 'category',
+      label: 'Server',
+      items: [
+        'rx-server',
+        'rx-server-scaling',
+      ],
+    },
     {
       type: 'category',
       label: 'Migration',
