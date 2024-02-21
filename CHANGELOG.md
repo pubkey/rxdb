@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX creating two databases with the same name but different storage must work.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

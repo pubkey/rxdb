@@ -84,7 +84,7 @@ import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 
 /**
- * stores the used database names
+ * stores the used database names+storage names
  * so we can throw when the same database is created more then once.
  */
 const USED_DATABASE_NAMES: Set<string> = new Set();
@@ -495,7 +495,7 @@ export class RxDatabaseBase<
             // destroy internal storage instances
             .then(() => this.internalStore.close())
             // remove combination from USED_COMBINATIONS-map
-            .then(() => USED_DATABASE_NAMES.delete(this.name))
+            .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name))
             .then(() => true);
     }
 
@@ -520,17 +520,20 @@ export class RxDatabaseBase<
 }
 
 /**
- * checks if an instance with same name and adapter already exists
+ * checks if an instance with same name and storage already exists
  * @throws {RxError} if used
  */
 function throwIfDatabaseNameUsed(
-    name: string
+    name: string,
+    storage: RxStorage<any, any>
 ) {
-    if (!USED_DATABASE_NAMES.has(name)) {
+    const key = storage.name + '|' + name;
+    if (!USED_DATABASE_NAMES.has(key)) {
         return;
     } else {
         throw newRxError('DB8', {
             name,
+            storage: storage.name,
             link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
         });
     }
@@ -600,9 +603,9 @@ export function createRxDatabase<
     });
     // check if combination already used
     if (!ignoreDuplicate) {
-        throwIfDatabaseNameUsed(name);
+        throwIfDatabaseNameUsed(name, storage);
     }
-    USED_DATABASE_NAMES.add(name);
+    USED_DATABASE_NAMES.add(storage.name + '|' + name);
 
     const databaseInstanceToken = randomCouchString(10);
 
@@ -624,7 +627,7 @@ export function createRxDatabase<
          * In that case we have to properly clean up the database.
          */
         .catch(err => {
-            USED_DATABASE_NAMES.delete(name);
+            USED_DATABASE_NAMES.delete(storage.name + '|' + name);
             throw err;
         })
         .then(storageInstance => {
