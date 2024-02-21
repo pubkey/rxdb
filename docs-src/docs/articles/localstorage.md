@@ -72,7 +72,7 @@ Despite its convenience, localStorage does come with a set of limitations that d
 
 ### Is localStorage Slow?
 
-Contrary to concerns about performance, the localStorage API in JavaScript is surprisingly fast when compared to alternative storage solutions like IndexedDB or OPFS. It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option.
+Contrary to concerns about performance, the localStorage API in JavaScript is surprisingly fast when compared to alternative storage solutions like IndexedDB or OPFS. It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option. For example RxDB uses localStorage in the [localStorage meta optimizer](../rx-storage-localstorage-meta-optimizer.md) to manage simple key values pairs while storing the "normal" documents inside of another storage like IndexedDB.
 
 ## When Not to Use localStorage
 
@@ -89,7 +89,7 @@ While localStorage offers convenience, it may not be suitable for every use case
 ### localStorage vs IndexedDB
 
 While **localStorage** serves as a reliable storage solution for simpler data needs, it's essential to explore alternatives like **IndexedDB** when dealing with more complex requirements. **IndexedDB** is designed to store not only key-value pairs but also JSON documents. Unlike localStorage, which usually has a storage limit of around 5-10MB per domain, IndexedDB can handle significantly larger datasets. IndexDB with its support for indexing facilitates efficient querying, making range queries possible. However, it's worth noting that IndexedDB lacks observability, which is a feature unique to localStorage through the `storage` event. Also, 
-complex queries can pose a challenge with IndexedDB, and while its performance is acceptable, it's not exceptional.
+complex queries can pose a challenge with IndexedDB, and while its performance is acceptable, IndexedDB can be [too slow](../slow-indexeddb.md) for some use cases.
 
 ```js
 // localStorage can observe chanes with the storage event.
@@ -127,6 +127,22 @@ For React Native developers, the [AsyncStorage API](https://reactnative.dev/docs
 ### `node-localstorage` for Node.js
 
 Because native localStorage is absent in the **Node.js** JavaScript runtime, you will get the error `ReferenceError: localStorage is not defined` in Node.js or node based runtimes like Next.js. The [node-localstorage npm package](https://github.com/lmaccherone/node-localstorage) bridges the gap. This package replicates the browser's localStorage API within the Node.js environment, ensuring consistent and compatible data storage capabilities.
+
+## localStorage in browser extensions
+
+While browser extensions for chrome and firefox support the localStorage API, it is not recommended to use it in that context to store extension-related data. The browser will clear the data in many scenarios like when the users clear their browsing history.
+
+Instead the [Extension Storage API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage#properties) should be used for browser extensions.
+In contrast to localStorage, the storage API works `async` and all operations return a Promise. Also it provides automatic sync to replicate data between all instances of that browser that the user is logged into. The storage API is even able to storage JSON-ifiable objects instead of plain strings.
+
+```ts
+// Using the storage API in chrome
+
+await chrome.storage.local.set({ foobar: {nr: 1} });
+
+const result = await chrome.storage.local.get('foobar');
+console.log(result.foobar); // {nr: 1}
+```
 
 ## localStorage in Deno and Bun
 
