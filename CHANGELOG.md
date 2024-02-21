@@ -3,12 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD `awaitWritePersistence` option to memory-synced storage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.9.0 (21 February 2024)
+
+- ADD `awaitWritePersistence` option to memory-synced storage.
 
 ### 15.8.1 (14 February 2024)
 
