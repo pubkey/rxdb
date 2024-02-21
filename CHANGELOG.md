@@ -3,12 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX creating two databases with the same name but different storage must work.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.9.1 (21 February 2024)
+
+- FIX creating two databases with the same name but different storage must work.
 
 ### 15.9.0 (21 February 2024)
 
