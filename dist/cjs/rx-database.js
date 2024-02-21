@@ -27,7 +27,7 @@ var _rxDatabaseInternalStore = require("./rx-database-internal-store.js");
 var _rxCollectionHelper = require("./rx-collection-helper.js");
 var _overwritable = require("./overwritable.js");
 /**
- * stores the used database names
+ * stores the used database names+storage names
  * so we can throw when the same database is created more then once.
  */
 var USED_DATABASE_NAMES = new Set();
@@ -371,7 +371,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
     // destroy internal storage instances
     .then(() => this.internalStore.close())
     // remove combination from USED_COMBINATIONS-map
-    .then(() => USED_DATABASE_NAMES.delete(this.name)).then(() => true);
+    .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name)).then(() => true);
   }
 
   /**
@@ -395,15 +395,17 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
   return RxDatabaseBase;
 }();
 /**
- * checks if an instance with same name and adapter already exists
+ * checks if an instance with same name and storage already exists
  * @throws {RxError} if used
  */
-function throwIfDatabaseNameUsed(name) {
-  if (!USED_DATABASE_NAMES.has(name)) {
+function throwIfDatabaseNameUsed(name, storage) {
+  var key = storage.name + '|' + name;
+  if (!USED_DATABASE_NAMES.has(key)) {
     return;
   } else {
     throw (0, _rxError.newRxError)('DB8', {
       name,
+      storage: storage.name,
       link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
     });
   }
@@ -454,9 +456,9 @@ function createRxDatabase({
   });
   // check if combination already used
   if (!ignoreDuplicate) {
-    throwIfDatabaseNameUsed(name);
+    throwIfDatabaseNameUsed(name, storage);
   }
-  USED_DATABASE_NAMES.add(name);
+  USED_DATABASE_NAMES.add(storage.name + '|' + name);
   var databaseInstanceToken = (0, _index.randomCouchString)(10);
   return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance, password)
   /**
@@ -465,7 +467,7 @@ function createRxDatabase({
    * and then throw.
    * In that case we have to properly clean up the database.
    */.catch(err => {
-    USED_DATABASE_NAMES.delete(name);
+    USED_DATABASE_NAMES.delete(storage.name + '|' + name);
     throw err;
   }).then(storageInstance => {
     var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy, allowSlowCount, reactivity);
