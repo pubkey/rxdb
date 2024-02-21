@@ -1,6 +1,7 @@
 ---
 title: RxServer Scaling
 slug: rx-server-scaling.html
+description: Explore how to scale the RxServer with vertical and horizontal methods, including multiple processes, worker threads, in-memory storage, and replication strategies for enhanced performance.
 ---
 
 
@@ -15,7 +16,7 @@ Vertical Scaling aka "scaling up" has the goal to get more power out of a single
 
 ### Run multiple JavaScript processes
 To utilize more compute power of your server, the first step is to scale vertically by running the RxDB server on **multiple processes** in parallel.
-RxDB itself is already build to support multiInstance-usage on the client, like when the user has openened multiple browser tabs at once. The same method works also on the server side in Node.js. You can spawn multiple JavaScript processes that use the same [RxDatabase](./rx-database.md) and the instances will automatically communicate with each other and distribute their data and events with the [BroadcastChannel](https://github.com/pubkey/broadcast-channel).
+RxDB itself is already build to support multiInstance-usage on the client, like when the user has opened multiple browser tabs at once. The same method works also on the server side in Node.js. You can spawn multiple JavaScript processes that use the same [RxDatabase](./rx-database.md) and the instances will automatically communicate with each other and distribute their data and events with the [BroadcastChannel](https://github.com/pubkey/broadcast-channel).
 By default the [multiInstance param](./rx-database.md#multiinstance) is set to `true` when calling `createRxDatabase()`, so you do not have to change anything. To make all processes accessible through the same endpoint, you can put a load-balancer like [nginx](https://nginx.org/en/docs/http/load_balancing.html) in front of them.
 
 
@@ -57,7 +58,7 @@ To scale the RxDB Server above a single physical hardware unit, there are differ
 
 ### Single Datastore with multiple branches
 Thke most common way to use multiple servers with RxDB is to split up the server into a tree with a root "datastore" and multiple "branches". The datastore contains the persisted data and only servers as a replication endpoint for the branches. The branches themself will replicate data to and from the datastore and server requests to the end users.
-This is mostly usefull on read-heavy applications because reads will directly run on the branches without ever reaching the main datastore and you can always add more branches to **scale up**. Even adding additional layers of "datastores" is possible so the tree can grow (or shrink) with the demand.
+This is mostly useful on read-heavy applications because reads will directly run on the branches without ever reaching the main datastore and you can always add more branches to **scale up**. Even adding additional layers of "datastores" is possible so the tree can grow (or shrink) with the demand.
 
 <p align="center">
   <img src="./files/server-scaling-tree.png" alt="Server Scaling Tree" width="320" class="img-padding" />
