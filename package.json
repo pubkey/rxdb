@@ -456,7 +456,7 @@
     "graphql-ws": "5.15.0",
     "is-my-json-valid": "2.20.6",
     "isomorphic-ws": "5.0.0",
-    "js-base64": "3.7.6",
+    "js-base64": "3.7.7",
     "jsonschema-key-compression": "1.7.0",
     "lokijs": "1.5.12",
     "mingo": "6.4.10",
