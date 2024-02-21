@@ -22,7 +22,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "vue": "3.4.19",
-    "vue-router": "4.2.5"
+    "vue-router": "4.3.0"
   },
   "devDependencies": {
     "@types/node": "20.11.19",
