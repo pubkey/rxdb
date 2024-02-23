@@ -45,6 +45,7 @@ const config: Config = {
       async: true,
     },
     {
+      id: 'Cookiebot',
       src: 'https://consent.cookiebot.com/uc.js',
       'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
       'data-blockingmode': 'auto',
