@@ -684,9 +684,7 @@ export async function removeRxDatabase(
         false,
         password
     );
-
     const collectionDocs = await getAllCollectionDocuments(dbInternalsStorageInstance);
-
     const collectionNames = new Set<string>();
     collectionDocs.forEach(doc => collectionNames.add(doc.data.name));
     const removedCollectionNames: string[] = Array.from(collectionNames);
