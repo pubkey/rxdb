@@ -102,3 +102,8 @@ You do not have to care whether this data came from the UI, another tab, the bac
    - sync can be done webrtc https://hypercore-protocol.org/
 -->
 
+
+## Follow up
+
+- Learn how to store and query data with RxDB in the [RxDB Quickstart](./quickstart.md)
+- [Downsides of Offline First](./downsides-of-offline-first.md)

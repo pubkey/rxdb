@@ -153,3 +153,10 @@ The **Deno** JavaScript runtime has a working localStorage API so running `local
 
 ## Conclusion: Choosing the Right Storage Solution
 In the world of modern web development, **localStorage** serves as a valuable tool for lightweight data storage. Its simplicity and speed make it an excellent choice for small key-value assignments. However, as application complexity grows, developers must assess their storage needs carefully. For scenarios that demand advanced querying, complex data structures, or high-volume operations, alternatives like IndexedDB, wrapper libraries with additional features like [RxDB](../), or platform-specific APIs offer more robust solutions. By understanding the strengths and limitations of various storage options, developers can make informed decisions that pave the way for efficient and scalable applications.
+
+
+## Follow up
+
+- Learn how to store and query data with RxDB in the [RxDB Quickstart](../quickstart.md)
+- [Why IndexedDB is slow and how to fix it](../slow-indexeddb.md)
+- [RxStorage performance comparison](../rx-storage-performance.md)
