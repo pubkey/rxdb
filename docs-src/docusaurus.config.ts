@@ -44,6 +44,12 @@ const config: Config = {
         '/js/analytics.js',
       async: true,
     },
+    {
+      src: 'https://consent.cookiebot.com/uc.js',
+      'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
+      'data-blockingmode': 'auto',
+      type: 'text/javascript'
+    }
   ],
 
   presets: [
