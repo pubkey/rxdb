@@ -1965,3 +1965,36 @@ footer a:visited {
 
 
 }
+
+
+#__docusaurus {
+  position: relative;
+}
+
+
+/**
+ * Change stuff in cookie banner
+ */
+#CybotCookiebotDialogHeader {
+  display: none !important;
+}
+
+#CybotCookiebotDialog {
+  padding: 12px !important;
+}
+
+.CybotCookiebotDialogBodyBottomWrapper {
+  margin-top: 0.5em !important;
+}
+
+#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
+  background-color: var(--color-top) !important;
+}
+
+#CybotCookiebotDialogBodyLevelButtonCustomize {
+  border-color: var(--color-top) !important;
+}
+
+#CybotCookiebotDialogPoweredByText {
+  display: none !important;
+}
