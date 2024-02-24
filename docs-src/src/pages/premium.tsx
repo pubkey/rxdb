@@ -18,20 +18,23 @@ import { getDatabase, hasIndexedDB } from '../components/database';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
-type FormValueDocData = {
+export type FormValueDocData = {
     homeCountry: string;
     companySize: number;
     projectAmount: ProjectAmount;
     licensePeriod: LicensePeriod;
     packages: PackageName[];
+    price: number;
 };
-const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
+export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (isBrowser) { window.trigger('premium_request', 1); }
+        if (isBrowser) {
+            window.trigger('open_pricing_page', 1);
+        }
 
         (async () => {
             if (!isBrowser || !hasIndexedDB()) {
@@ -627,18 +630,6 @@ export default function Premium() {
                                                 const packages: PackageName[] = packageFields
                                                     .map(([k]) => lastOfArray(k.split('-')) as any);
 
-                                                const database = await getDatabase();
-                                                /**
-                                                 * Save the input
-                                                 * so we have to not re-insert manually on page reload.
-                                                 */
-                                                await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-                                                    companySize: formData['company-size'] as any,
-                                                    projectAmount: formData['project-amount'] as any,
-                                                    licensePeriod: formData['license-period'] as any,
-                                                    homeCountry: homeCountry.name,
-                                                    packages
-                                                });
                                                 const priceCalculationInput: PriceCalculationInput = {
                                                     companySize: parseInt(formData['company-size'] as any, 10),
                                                     teamSize: formData['developer-count'] as any,
@@ -651,6 +642,7 @@ export default function Premium() {
                                                 const priceResult = calculatePrice(priceCalculationInput);
                                                 console.log('priceResult:');
                                                 console.log(JSON.stringify(priceResult, null, 4));
+
 
                                                 const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
                                                 const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
@@ -670,6 +662,22 @@ export default function Premium() {
                                                 }
                                                 // setPrice($priceCalculatorResultPerYear, pricePerYear);
                                                 setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
+
+                                                /**
+                                                 * Save the input
+                                                 * so we have to not re-insert manually on page reload.
+                                                 */
+                                                const database = await getDatabase();
+                                                await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+                                                    companySize: formData['company-size'] as any,
+                                                    projectAmount: formData['project-amount'] as any,
+                                                    licensePeriod: formData['license-period'] as any,
+                                                    homeCountry: homeCountry.name,
+                                                    packages,
+                                                    price: priceResult.totalPrice
+                                                });
+
+
                                                 $priceCalculatorResult.style.display = 'block';
                                             }}
                                         >
