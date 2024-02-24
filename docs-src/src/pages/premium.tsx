@@ -19,12 +19,13 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
 export type FormValueDocData = {
-    homeCountry: string;
-    companySize: number;
-    projectAmount: ProjectAmount;
-    licensePeriod: LicensePeriod;
-    packages: PackageName[];
-    price: number;
+    homeCountry?: string;
+    companySize?: number;
+    projectAmount?: ProjectAmount;
+    licensePeriod?: LicensePeriod;
+    packages?: PackageName[];
+    price?: number;
+    formSubmitted: boolean;
 };
 export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 
@@ -674,7 +675,8 @@ export default function Premium() {
                                                     licensePeriod: formData['license-period'] as any,
                                                     homeCountry: homeCountry.name,
                                                     packages,
-                                                    price: priceResult.totalPrice
+                                                    price: priceResult.totalPrice,
+                                                    formSubmitted: false
                                                 });
 
 
