@@ -60,6 +60,9 @@ export default function Premium() {
                 formValueDoc._data.data.packages.forEach(packageName => {
                     setToInput('package-' + packageName, true);
                 });
+
+                // auto-submit form
+                document.getElementById('price-calculator-submit').click();
             }
         })();
     });
@@ -363,6 +366,7 @@ export default function Premium() {
                                                     required={true}
                                                     style={{ width: '100%', maxWidth: 240 }}
                                                     autoComplete="off"
+                                                    placeholder="Company Home Country"
                                                 />
                                                 <datalist id="home-country">
                                                     {
@@ -375,6 +379,8 @@ export default function Premium() {
                                                 </datalist>
                                             </div>
                                         </div>
+                                        <br />
+                                        <div className="clear"></div>
                                         <div className="field">
                                             <label htmlFor="company-size">Company Size:</label>
                                             <div className="input">
@@ -388,6 +394,7 @@ export default function Premium() {
                                                         const ev = ensureNotFalsy(event) as any;
                                                         return ev.keyCode !== 69 && ev.keyCode !== 189 && ev.keyCode !== 190;
                                                     }}
+                                                    placeholder="Company Size"
                                                 />
                                                 <div className="suffix">employee(s)</div>
                                             </div>
@@ -648,12 +655,12 @@ export default function Premium() {
                                                 const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
                                                 const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
                                                 // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
-                                                const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
+                                                // const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
                                                 const setPrice = (element: typeof $priceCalculatorResultPerMonth, price: number) => {
                                                     console.log('setPrice:');
                                                     console.dir(price);
-                                                    element.innerHTML = Math.ceil(price).toString() + ' &euro; (EUR)';
-                                                    (element as any).href = getConverterUrl(Math.ceil(price));
+                                                    element.innerHTML = Math.ceil(price).toString();
+                                                    // (element as any).href = getConverterUrl(Math.ceil(price));
                                                 };
                                                 const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
                                                 if (priceCalculationInput.projectAmount !== 'infinity') {
@@ -662,7 +669,7 @@ export default function Premium() {
                                                     setPrice($priceCalculatorResultPerMonth, 0);
                                                 }
                                                 // setPrice($priceCalculatorResultPerYear, pricePerYear);
-                                                setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
+                                                // setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
 
                                                 /**
                                                  * Save the input
@@ -686,26 +693,40 @@ export default function Premium() {
                                             Estimate Price
                                         </div>
                                     </form>
-                                    <div id="price-calculator-result" style={{ display: 'none' }}>
-                                        <hr />
-                                        <h4>Estimated Price:</h4>
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <th>Price per Month</th>
-                                                    <td>
-                                                        <a
-                                                            id="total-per-project-per-month"
-                                                            target="_blank"
-                                                            rel="nofollow noopener noreferrer"
-                                                            title="Click to convert to other currency"
-                                                            href="#"
-                                                        >
-                                                            XX €
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                {/* <tr>
+                                </div>
+                            </div>
+                            <div className="price-calculator" style={{ marginBottom: 90 }}>
+                                <div className="price-calculator-inner" id="price-calculator-result" style={{ display: 'none' }}>
+                                    <h4>Estimated Price:</h4>
+
+                                    <br />
+                                    <div className="inner">
+
+                                        <span className="price-label">&euro;</span>
+                                        <span id="total-per-project-per-month">84</span>
+                                        <span className="per-month">/month</span>
+                                        <span className='clear'></span>
+                                    </div>
+                                    <br />
+                                    <br />
+
+                                    {/* <table>
+                                        <tbody>
+                                            <tr>
+                                                <th>Price per Month</th>
+                                                <td>
+                                                    <a
+                                                        id="total-per-project-per-month"
+                                                        target="_blank"
+                                                        rel="nofollow noopener noreferrer"
+                                                        title="Click to convert to other currency"
+                                                        href="#"
+                                                    >
+                                                        XX €
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
                                                     <th>Total Price per Year</th>
                                                     <td>
                                                         <a
@@ -718,26 +739,25 @@ export default function Premium() {
                                                             XX €
                                                         </a>
                                                     </td>
-                                                </tr> */}
-                                                <tr>
-                                                    <th>Total Price</th>
-                                                    <td>
-                                                        <a
-                                                            id="total-price"
-                                                            target="_blank"
-                                                            rel="nofollow noopener noreferrer"
-                                                            title="Click to convert to other currency"
-                                                            href="#"
-                                                        >
-                                                            XX €
-                                                        </a>
-                                                    </td>
                                                 </tr>
-                                            </tbody>
-                                        </table>
-                                        <div className="proceed-hint">
-                                            Fill out the <b>form below &darr;</b> to proceed.
-                                        </div>
+                                            <tr>
+                                                <th>Total Price</th>
+                                                <td>
+                                                    <a
+                                                        id="total-price"
+                                                        target="_blank"
+                                                        rel="nofollow noopener noreferrer"
+                                                        title="Click to convert to other currency"
+                                                        href="#"
+                                                    >
+                                                        XX €
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table> */}
+                                    <div className="proceed-hint">
+                                        Fill out the <b>form below &darr;</b> to proceed.
                                     </div>
                                 </div>
                             </div>
@@ -768,9 +788,9 @@ export default function Premium() {
         </>
     );
 }
-function getConverterUrl(price: number) {
-    return 'https://www.xe.com/en/currencyconverter/convert/?Amount=' + price + '&From=EUR&To=USD';
-}
+// function getConverterUrl(price: number) {
+//     return 'https://www.xe.com/en/currencyconverter/convert/?Amount=' + price + '&From=EUR&To=USD';
+// }
 
 function setToInput(name: string, value: any) {
     if (typeof value === 'undefined') {

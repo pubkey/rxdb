@@ -1649,8 +1649,6 @@ a:hover {
 
   background-color: var(--bg-color);
   box-shadow: 0px 0px 12px 8px var(--bg-color);
-
-  margin-bottom: 90px;
 }
 
 @media (max-width: 800px) {
@@ -1701,27 +1699,25 @@ a:hover {
 }
 
 .price-calculator .field {
+  font-size: 80%;
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .price-calculator .field label {
-  vertical-align: top;
-  width: 48%;
-  text-align: right;
-  display: inline-block;
+  width: 100%;
   font-size: 120%;
-  margin-top: 4px;
+  margin-bottom: 5px;
 }
 
 .price-calculator .field .input {
-  width: 48%;
+  width: 100%;
   text-align: left;
-  float: right;
+  border-radius: 4px;
 }
 
 .price-calculator .field .input input[type="number"] {
-  max-width: 140px;
+  width: 150px;
 }
 
 @media (max-width: 800px) {
@@ -1796,6 +1792,26 @@ a:hover {
 #price-calculator-result {
   font-size: 120%;
 }
+
+#price-calculator-result .inner {
+  width: 100%;
+  text-align: center;
+}
+
+#price-calculator-result .price-label {
+  font-size: 100%;
+  line-height: 320%;
+  vertical-align: top;
+}
+
+#price-calculator-result #total-per-project-per-month {
+  font-size: 300%;
+}
+#price-calculator-result .per-month {
+  font-size: 120%;
+  line-height: 300%;
+}
+
 
 #price-calculator-result table {
   width: 100%;
