@@ -146,7 +146,7 @@ exposeWorkerRxStorage({
 
 ## Setting `usesRxDatabaseInWorker` when a RxDatabase is also used inside of the worker
 
-When you use the OPFS inside of a worker, it will internally use strings to represent operation results. This has the benefit that transfering strings from the worker to the main thread, is way faster compared to complex json objects. The `getRxStorageWorker()` will automatically decode these strings on the main thread so that the data can be used by the RxDatabase.
+When you use the OPFS inside of a worker, it will internally use strings to represent operation results. This has the benefit that transferring strings from the worker to the main thread, is way faster compared to complex json objects. The `getRxStorageWorker()` will automatically decode these strings on the main thread so that the data can be used by the RxDatabase.
 
 But using a RxDatabase **inside** of your worker can make sense for example when you want to move the [replication](./replication.md) with a server. To enable this, you have to set `usesRxDatabaseInWorker` to `true`:
 

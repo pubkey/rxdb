@@ -12,9 +12,9 @@ Therefore the performance can be completely different depending on where you use
 
 ## Persistend vs Semi-Persistend storages
 
-The "normal" storages are always persistend. This means each RxDB write is directly wirtten to disc and all queries run on the disc state. This means a good startup performance because nothing has to be done on startup.
+The "normal" storages are always persistend. This means each RxDB write is directly written to disc and all queries run on the disc state. This means a good startup performance because nothing has to be done on startup.
 
-In contrast, semi-persistend storages like [Memory-Synced](./rx-storage-memory-synced.md) and [LokiJS](./rx-storage-lokijs.md) store all data in memory on startup and only save to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also these storages can only be used when all data fits into the memory at least once. In general it is recommened to stay on the persistend storages and only use semi-persitend ones, when you know for sure that the dataset will stay small (less then 2k documents).
+In contrast, semi-persistend storages like [Memory-Synced](./rx-storage-memory-synced.md) and [LokiJS](./rx-storage-lokijs.md) store all data in memory on startup and only save to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also these storages can only be used when all data fits into the memory at least once. In general it is recommended to stay on the persistend storages and only use semi-persitend ones, when you know for sure that the dataset will stay small (less then 2k documents).
 
 
 ## Performance comparison
@@ -35,7 +35,7 @@ Here the following metrics are measured:
 
 ## Browser based Storages Performance Comparison
 
-The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommeneded for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-synced](./rx-storage-memory-synced.md). If you do not want to purchase [RxDB Premium](/premium), you could use the slower [Dexie.js based RxStorage](./rx-storage-dexie.md) instead.
+The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-synced](./rx-storage-memory-synced.md). If you do not want to purchase [RxDB Premium](/premium), you could use the slower [Dexie.js based RxStorage](./rx-storage-dexie.md) instead.
 
 <p align="center">
   <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
