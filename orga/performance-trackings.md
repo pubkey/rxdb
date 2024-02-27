@@ -1912,3 +1912,46 @@ AFTER:
     "perObject": 0.011899220599979162
   }
 }
+
+
+## OPFS in main thread
+
+### WRITES:
+worker thread:
+performanceResult: 43.77
+
+main thread:
+performanceResult: 13.9
+
+
+## find by id
+
+worker thread:
+performanceResult: 44.93
+
+main thread:
+performanceResult: 828.3
+performanceResult: 490.1
+performanceResult: 118.07
+performanceResult: 85
+performanceResult: 66.57
+performanceResult: 38.4
+performanceResult: 29.67
+
+## Query
+worker thread:
+performanceResult: 111.3
+
+main thread:
+
+
+## Faster opfs writes
+
+BEFORE:
+13.6
+13.97
+
+AFTER:
+12.7
+12.63
+11.97

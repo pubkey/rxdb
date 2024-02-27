@@ -2,7 +2,9 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- IMPROVE [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) performance.
+- ADD `usesRxDatabaseInWorker` option to the [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html).
+- ADD `getRxStorageOPFSMainThread()` to run OPFS from the main thread instead of a worker for less latency.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

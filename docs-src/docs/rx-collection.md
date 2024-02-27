@@ -281,3 +281,14 @@ Returns true if the given object is an instance of RxCollection. Returns false i
 ```js
 const is = isRxCollection(myObj);
 ```
+
+
+## FAQ
+
+<details>
+    <summary>When I reload the browser window, will my collections still be in the database?</summary>
+    <div>
+    No, the javascript instance of the collections will not automatically load into the database on page reloads.
+    You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will be automatically in your RxCollection each time you create it.
+    </div>
+</details>

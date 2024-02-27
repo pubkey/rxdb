@@ -128,6 +128,20 @@ exposeWorkerRxStorage({
 });
 ```
 
+## Using the storage to also create a RxDatabase inside of the worker
+
+When you use the OPFS inside of a worker, it will internally use strings to represent operation results. This has the benefit that transfering strings from the worker to the main thread, is way faster compared to complex json objects. The `getRxStorageWorker()` will automatically decode these strings on the main thread so that the data can be used by the RxDatabase.
+
+But using a RxDatabase **inside** of your worker can make sense for example when you want to move the [replication](./replication.md) with a server. To enable this, you have to set `usesRxDatabaseInWorker` to `true`:
+
+```ts
+// inside of the worker.js file
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+const storage = getRxStorageOPFS({
+  usesRxDatabaseInWorker: true
+});
+```
+
 ## Setting `jsonPositionSize` to increase the maximum database size.
 
 By default the `jsonPositionSize` value is set to `8` which allows the database to get up to 100 megabytes in size (per collection).
