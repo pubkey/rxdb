@@ -113,6 +113,22 @@ const database = await createRxDatabase({
 });
 ```
 
+## Using OPFS in the main thread instead of a worker
+
+The `createSyncAccessHandle` method from the Filesystem API is only available inside of a Webworker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. But there is a slightly slower way to access the virtual filesystem from the main thread. RxDB support the `getRxStorageOPFSMainThread()` for that. Notice that this uses the [createWritable](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable) function which is not supported in safari.
+
+Using OPFS from the main thread can have benefits because not having to cross the worker bridge can reduce latence in reads and writes.
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStorageOPFSMainThread()
+});
+```
+
 ## Building a custom `worker.js`
 
 When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workers by calling `exposeWorkerRxStorage` like described in the [worker storage plugin](./rx-storage-worker.md).
@@ -128,7 +144,7 @@ exposeWorkerRxStorage({
 });
 ```
 
-## Using the storage to also create a RxDatabase inside of the worker
+## Setting `usesRxDatabaseInWorker` when a RxDatabase is also used inside of the worker
 
 When you use the OPFS inside of a worker, it will internally use strings to represent operation results. This has the benefit that transfering strings from the worker to the main thread, is way faster compared to complex json objects. The `getRxStorageWorker()` will automatically decode these strings on the main thread so that the data can be used by the RxDatabase.
 

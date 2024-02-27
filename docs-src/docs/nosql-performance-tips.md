@@ -46,7 +46,7 @@ const orQuery = {
                 user: { $gt: 'foobar' }
             },
         ]
-        time: { $gt: 1234 } // <- add restrictive operator
+        time: { $gte: 1234 } // <- add restrictive operator
     }
 }
 
@@ -60,7 +60,7 @@ const regexQuery = {
     selector: {
         user: {
             $regex: '^foo(.*)0-9$', // a complex regex with a ^ in the beginning
-            $gt: 'foo' // <- add restrictive operator
+            $gte: 'foo' // <- add restrictive operator
         }
     }
 }
