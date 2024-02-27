@@ -12,6 +12,7 @@ exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.isOneItemOfArrayInOtherArray = isOneItemOfArrayInOtherArray;
 exports.lastOfArray = lastOfArray;
 exports.maxOfNumbers = maxOfNumbers;
+exports.randomOfArray = randomOfArray;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
 exports.sumNumberArray = sumNumberArray;
@@ -26,6 +27,10 @@ function lastOfArray(ar) {
  */
 function shuffleArray(arr) {
   return arr.slice(0).sort(() => Math.random() - 0.5);
+}
+function randomOfArray(arr) {
+  var randomElement = arr[Math.floor(Math.random() * arr.length)];
+  return randomElement;
 }
 function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];
