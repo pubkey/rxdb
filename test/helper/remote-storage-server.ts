@@ -5,7 +5,7 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { randomDelayStorage } from '../../plugins/core/index.mjs';
 
 export async function startRemoteStorageServer(port: number) {
-    const delayFn = () => 10;
+    const delayFn = () => 0;
     const server = await startRxStorageRemoteWebsocketServer({
         port,
         /**
