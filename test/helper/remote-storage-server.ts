@@ -3,7 +3,6 @@ import {
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { randomDelayStorage } from '../../plugins/core/index.mjs';
-import { randomNumber } from 'async-test-util';
 
 export async function startRemoteStorageServer(port: number) {
     const delayFn = () => 10;
