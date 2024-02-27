@@ -17,6 +17,6 @@
   },
   "devDependencies": {
     "mocha": "10.3.0",
-    "playwright-core": "1.41.2"
+    "playwright-core": "1.42.0"
   }
 }
