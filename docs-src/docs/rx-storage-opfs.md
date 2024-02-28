@@ -6,7 +6,7 @@ description: Origin Private File System (OPFS) Database with the RxDB OPFS-RxSto
 
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 
-With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured database on top of the Origin Private File System (OPFS) browser API. Compared to other storage solutions, it has a way better performance.
+With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured database on top of the [Origin Private File System](https://web.dev/opfs) (OPFS) browser API. Compared to other storage solutions, it has a way better performance.
 
 ## What is OPFS
 
@@ -17,47 +17,55 @@ OPFS is ideal for applications requiring **high-performance** file operations (*
 
 From the beginning of 2023, the Origin Private File System API is supported by [all modern browsers](https://caniuse.com/native-filesystem-api) like Safari, Chrome, Edge and Firefox. Only Internet Explorer is not supported and likely will never get support.
 
-It is important to know that the OPFS API is **only available inside of a [WebWorker](./rx-storage-worker.md)**.
-It cannot be used in the main thread, an iFrame or even a [SharedWorker](./rx-storage-shared-worker.md).
-If you call the OPFS `getFileHandle()` function in the main thread, it will throw the error `Uncaught DOMException: A requested file or directory could not be found at the time an operation was processed.`.
+It is important to know that the most performant synchronous methods like [`read()`](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemSyncAccessHandle/read) and [`write()`](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemSyncAccessHandle/write) of the OPFS API are **only available inside of a [WebWorker](./rx-storage-worker.md)**.
+They cannot be used in the main thread, an iFrame or even a [SharedWorker](./rx-storage-shared-worker.md).
+The OPFS [`createSyncAccessHandle()`](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createSyncAccessHandle) method that gives you access to the synchronous methods is not exposed in the main thread, only in a Worker.
 
 While there is no concrete **data size limit** defined by the API, browsers will refuse to store more data at some point.
 If no more data can be written, a `QuotaExceededError` is thrown which should be handled by the application, like showing an error message to the user.
 
 ## How the OPFS API works
 
-The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directory on that. Notice that whenever you write to, or read from a file, an `ArrayBuffer` must be used that contains the data. It is not possible to write plain strings or objects into the file. Therefore the `TextEncoder` and `TextDecoder` API must be used.
+The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directories on that. Notice that whenever you _synchronously_ write to, or read from a file, an `ArrayBuffer` must be used that contains the data. It is not possible to synchronously write plain strings or objects into the file. Therefore the `TextEncoder` and `TextDecoder` API must be used.
 
-Also notice that the methods of `FileSystemSyncAccessHandle` have been asynchronous in the past, but are synchronous since Chromium 108. To make it less confusing, we just use `await` in front of them, so it will work in both cases.
+Also notice that some of the methods of `FileSystemSyncAccessHandle` [have been asynchronous](https://developer.chrome.com/blog/sync-methods-for-accesshandles) in the past, but are synchronous since Chromium 108. To make it less confusing, we just use `await` in front of them, so it will work in both cases.
 
 
 ```ts
-// Access the root directory of the origin's private file system
+// Access the root directory of the origin's private file system.
 const root = await navigator.storage.getDirectory();
 
-// create a subdirectory
-const diaryDirectory = await root.getDirectoryHandle('subfolder', { create : true });
+// Create a subdirectory.
+const diaryDirectory = await root.getDirectoryHandle('subfolder', {
+  create: true,
+});  
 
-// Create a new file named 'example.txt'
-const fileHandle = await diaryDirectory.getFileHandle('example.txt', { create: true });
+// Create a new file named 'example.txt'.
+const fileHandle = await diaryDirectory.getFileHandle('example.txt', {
+  create: true,
+});
 
 // Create a FileSystemSyncAccessHandle on the file.
-const accessHandle = await draftFile.createSyncAccessHandle();
+const accessHandle = await fileHandle.createSyncAccessHandle();
 
-// Get the size of the file.
-const fileSize = accessHandle.getSize();
+// Write a sentence to the file.
+let writeBuffer = new TextEncoder().encode('Hello from RxDB');
+const writeSize = accessHandle.write(writeBuffer);
 
-// read file and transform data to string
-const readBuffer = new Uint8Array(fileSize);
-await accessHandle.read(readBuffer, { at: 0 });
+// Read file and transform data to string.
+const readBuffer = new Uint8Array(writeSize);
+const readSize = accessHandle.read(readBuffer, { at: 0 });  
 const contentAsString = new TextDecoder().decode(readBuffer);
 
-// Write a sentence to the end of the file.
-const writeBuffer = new TextEncoder().encode('Hello from RxDB');
-const writeSize = await accessHandle.write(writeBuffer, { "at" : readSize });
+// Write an exclamation mark to the end of the file.
+writeBuffer = new TextEncoder().encode('!');
+accessHandle.write(writeBuffer, { at: readSize });
 
 // Truncate file to 10 bytes.
 await accessHandle.truncate(10);
+
+// Get the new size of the file.
+const fileSize = await accessHandle.getSize();
 
 // Persist changes to disk.
 await accessHandle.flush();
@@ -66,7 +74,7 @@ await accessHandle.flush();
 await accessHandle.close();
 ```
 
-Are more detailed description of the OPFS API can be found on mdn [here](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system).
+A more detailed description of the OPFS API can be found [on MDN](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system).
 
 ## OPFS performance
 
@@ -77,7 +85,6 @@ A good comparison about real world scenarios, are the [performance results](./rx
 <p align="center">
   <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
 </p>
-
 
 ## Using OPFS as RxStorage in RxDB
 
@@ -105,6 +112,23 @@ const database = await createRxDatabase({
     )
 });
 ```
+
+## Using OPFS in the main thread instead of a worker
+
+The `createSyncAccessHandle` method from the Filesystem API is only available inside of a Webworker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. But there is a slightly slower way to access the virtual filesystem from the main thread. RxDB support the `getRxStorageOPFSMainThread()` for that. Notice that this uses the [createWritable](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable) function which is not supported in safari.
+
+Using OPFS from the main thread can have benefits because not having to cross the worker bridge can reduce latence in reads and writes.
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+
+const database = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStorageOPFSMainThread()
+});
+```
+
 ## Building a custom `worker.js`
 
 When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workers by calling `exposeWorkerRxStorage` like described in the [worker storage plugin](./rx-storage-worker.md).
@@ -120,6 +144,19 @@ exposeWorkerRxStorage({
 });
 ```
 
+## Setting `usesRxDatabaseInWorker` when a RxDatabase is also used inside of the worker
+
+When you use the OPFS inside of a worker, it will internally use strings to represent operation results. This has the benefit that transferring strings from the worker to the main thread, is way faster compared to complex json objects. The `getRxStorageWorker()` will automatically decode these strings on the main thread so that the data can be used by the RxDatabase.
+
+But using a RxDatabase **inside** of your worker can make sense for example when you want to move the [replication](./replication.md) with a server. To enable this, you have to set `usesRxDatabaseInWorker` to `true`:
+
+```ts
+// inside of the worker.js file
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+const storage = getRxStorageOPFS({
+  usesRxDatabaseInWorker: true
+});
+```
 
 ## Setting `jsonPositionSize` to increase the maximum database size.
 
@@ -147,9 +184,8 @@ Origin Private File System is a browser API that is only accessible in browsers.
 
 Often developers are confused with the differences between the `File System Access API` and the `Origin Private File System (OPFS)`.
 
-- The `File System API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the File System API, the user has to actively select the files from a filepicker.
-- `Origin Private File System (OPFS)` is a sub-part of the `File System API` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. 
-
+- The `File System Access API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the File System API, the user has to actively select the files from a filepicker.
+- `Origin Private File System (OPFS)` is a sub-part of the `File System Standard` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. 
 
 ## Learn more about OPFS:
 

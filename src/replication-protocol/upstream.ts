@@ -102,7 +102,9 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 task: eventBulk,
                 time: timer++
             });
-            state.events.active.up.next(true);
+            if (!state.events.active.up.getValue()) {
+                state.events.active.up.next(true);
+            }
             if (state.input.waitBeforePersist) {
                 return state.input.waitBeforePersist()
                     .then(() => processTasks());

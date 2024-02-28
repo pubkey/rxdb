@@ -93,9 +93,7 @@ describeParallel('rx-database.test.ts', () => {
                 db2.destroy();
             });
             it('do allow 2 databases with same name but different storage', async () => {
-                if (
-                    config.storage.name === 'memory'
-                ) {
+                if (config.storage.name.includes('memory')) {
                     return;
                 }
                 const name = randomCouchString(10);

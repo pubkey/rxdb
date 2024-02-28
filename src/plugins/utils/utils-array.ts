@@ -14,6 +14,12 @@ export function shuffleArray<T>(arr: T[]): T[] {
     return arr.slice(0).sort(() => (Math.random() - 0.5));
 }
 
+export function randomOfArray<T>(arr: T[]): T {
+    const randomElement = arr[Math.floor(Math.random() * arr.length)];
+    return randomElement;
+}
+
+
 export function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[] {
     return Array.isArray(input) ? (input as any[]).slice(0) : [input];
 }

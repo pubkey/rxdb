@@ -86,6 +86,14 @@ function exposeRxStorageRemote(settings) {
           params
         };
         instanceByFullName.set(fullName, state);
+
+        /**
+         * Must await the creation here
+         * so that in case of an error,
+         * it knows about the error message and can send
+         * that back to the main process. 
+         */
+        await state.storageInstancePromise;
       } catch (err) {
         settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, err));
         return;

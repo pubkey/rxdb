@@ -41,7 +41,7 @@ html[data-theme='dark'] {
 }
 
 /* Hide Search Field on Homepage */
-.homepage .navbar__search {
+.homepage .navbarSearchContainer_Bca1 {
   display: none;
 }
 
@@ -430,135 +430,8 @@ body {
     padding-right: 1%;
   }
 }
-.slick-slider {
-  padding-bottom: 150px;
-}
-.slick-slide {
-  padding: 0px 10px;
-}
-.slick-list{
-  padding: 0;
-  height: auto !important;
-}
-.slider-content {
-  //padding: 23px 36px;
-    padding: 30px 40px;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-color-dark);
-  margin: 0 10px;
-  height: auto;
-  border-radius: 15px;
-}
-.slider-content h3 {
-    font-size: 1.2em;
-    font-weight: normal;
-    line-height: 28px;
-}
 
-.slider-content .slider-profile {
-    display: flex;
-    margin-top: 30px;
-    gap: 10px;
-}
 
-.slider-content .slider-profile img {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    border-radius: 15px;
-    padding: 5px;
-}
-.slider-content .slider-profile img.slider-logo-black {
-    background: var(--bg-color-dark);
-}
-.slider-content .slider-profile img.slider-logo-white {
-    background: #fff;
-}
-.slider-content .slider-profile .slider-info {
-    margin-left: 10px;
-    width: 70%;
-}
-.slider-content .slider-profile .developer {
-    font-size: 1.1em;
-    margin-bottom: 0px;
-    font-weight: bold;
-    color: var(--color-top);
-}
-.slider-content .slider-profile .company {
-    margin-left: 10px;
-    font-weight: bold;
-    .slider-content h3 {
-        font-size: 1.3em;
-        line-height: 30px;
-    }
-}
-
-.slider-content .slider-profile .company-link {
-    color: #fff;
-    font-weight: normal;
-    font-size: .9em;
-}
-@media (min-width: 480px) {
-    .slider-content {
-
-        padding: 30px 40px;
-        height: auto;
-    }
-    .slider-content h3 {
-        font-size: 1em;
-    }
-
-    .slider-content .slider-profile .company-link {
-        font-size: .9em !important;
-    }
-}
-
-@media (min-width: 600px) {
-    .slider-content {
-        padding: 30px 40px;
-    }
-
-    .slider-content h3 {
-        font-size: 1em;
-        line-height: 24px;;
-    }
-
-    .slider-content .slider-profile img {
-        width: 40px;
-        height: 40px;
-
-        .slider-content .slider-profile .company-link {
-            font-size: 1em !important;
-        }
-    }
-}
-@media (min-width: 800px) {
-    .slick-list {
-        height: auto !important;
-    }
-}
-@media (min-width: 900px) {
-    .slider-content {
-
-        padding: 36px 46px;
-        height: auto;
-    }
-    .slider-content h3 {
-        font-size: 1.1em;
-    }
-}
-
-@media (min-width: 1024px) {
-    .slick-list {
-        height: auto !important;
-    }
-    .slider-content {
-
-        padding: 40px 50px;
-        height: auto;
-    }
-}
 
 .device {
   display: flex;
@@ -586,7 +459,7 @@ body {
   height: 60%;
   right: 0;
   bottom: 0;
-  background-image: url('/files/smartphone/tablet_white.svg');
+  background-image: url(/files/smartphone/tablet_white.svg);
 }
 
 .device.tablet .beating-color {
@@ -681,16 +554,16 @@ body {
   position: relative;
 }
 
-.block.reviews{
-    min-height: 150px;
-    padding-bottom:0px;
-}
-.block.reviews .inner {
-    max-width: 1224px;
-}
-.reviews h2{
-    text-align: center;
-}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -759,9 +632,6 @@ body {
 @media (max-width: 900px) {
   .block.second .inner {
     flex-direction: column;
-  }
-  .slider-content h3 {
-    font-size: 1.1em;
   }
 }
 
@@ -962,9 +832,7 @@ body {
 .block.fifth .inner {
   width: 624px;
 }
-.block.fifth h2{
-    text-align:center
-}
+
 @media (max-width: 624px) {
   .block.fifth .inner {
     width: 100%;
@@ -1169,18 +1037,20 @@ body {
 }
 
 .block.last .button.get-premium {
-    padding: 10px;
-    padding-left: 38px;
-    padding-right: 38px;
-    border-radius: 10px;
-    font-size: 37px;
+  padding: 10px;
+  padding-left: 38px;
+  padding-right: 38px;
+  border-radius: 10px;
+  font-size: 37px;
+
 }
+
 
 
 /**
  * NEUMORPHISM STUFF
  * Generate circles shadows: https://neumorphism.io/#1a202c
-*/
+ */
 .neumorphism-circle-xl {
   border-radius: 50%;
   width: 130px;
@@ -1218,16 +1088,19 @@ body {
   width: 70px;
   height: 70px;
   font-size: 85%;
+
   color: white;
   background: var(--bg-color);
+
   box-shadow: 3px 3px 6px #151a24,
     -3px -3px 6px #1f2634;
 }
 
 .dark .neumorphism-circle-s {
-    background: var(--bg-color-dark);
-    box-shadow: 3px 3px 6px #13151d,
+  background: var(--bg-color--dark);
+  box-shadow: 3px 3px 6px #13151d,
     -3px -3px 6px #1b1e29;
+
 }
 
 .neumorphism-circle-xs {
@@ -1776,8 +1649,6 @@ a:hover {
 
   background-color: var(--bg-color);
   box-shadow: 0px 0px 12px 8px var(--bg-color);
-
-  margin-bottom: 90px;
 }
 
 @media (max-width: 800px) {
@@ -1828,27 +1699,25 @@ a:hover {
 }
 
 .price-calculator .field {
+  font-size: 80%;
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .price-calculator .field label {
-  vertical-align: top;
-  width: 48%;
-  text-align: right;
-  display: inline-block;
+  width: 100%;
   font-size: 120%;
-  margin-top: 4px;
+  margin-bottom: 5px;
 }
 
 .price-calculator .field .input {
-  width: 48%;
+  width: 100%;
   text-align: left;
-  float: right;
+  border-radius: 4px;
 }
 
 .price-calculator .field .input input[type="number"] {
-  max-width: 140px;
+  width: 150px;
 }
 
 @media (max-width: 800px) {
@@ -1923,6 +1792,26 @@ a:hover {
 #price-calculator-result {
   font-size: 120%;
 }
+
+#price-calculator-result .inner {
+  width: 100%;
+  text-align: center;
+}
+
+#price-calculator-result .price-label {
+  font-size: 100%;
+  line-height: 320%;
+  vertical-align: top;
+}
+
+#price-calculator-result #total-per-project-per-month {
+  font-size: 300%;
+}
+#price-calculator-result .per-month {
+  font-size: 120%;
+  line-height: 300%;
+}
+
 
 #price-calculator-result table {
   width: 100%;
@@ -2023,7 +1912,6 @@ footer a:visited {
 
 
 
-@media (min-width: 576px) {  }
 
 .redirectBox .ul-container {
   text-align: center;
@@ -2038,7 +1926,6 @@ footer a:visited {
   margin: 10px 0;
 }
 
-@media (min-width: 576px) {  }
 
 /*
  * Call to action button
@@ -2091,14 +1978,39 @@ footer a:visited {
   .navbar .text {
     padding-right: 4px;
   }
+
+
 }
 
-@media (min-width: 576px) {  }
 
-@media (min-width: 768px) {  }
+#__docusaurus {
+  position: relative;
+}
 
-@media (min-width: 992px) {  }
 
-@media (min-width: 1200px) {  }
+/**
+ * Change stuff in cookie banner
+ */
+#CybotCookiebotDialogHeader {
+  display: none !important;
+}
 
-@media (min-width: 1400px) { }
+#CybotCookiebotDialog {
+  padding: 12px !important;
+}
+
+.CybotCookiebotDialogBodyBottomWrapper {
+  margin-top: 0.5em !important;
+}
+
+#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
+  background-color: var(--color-top) !important;
+}
+
+#CybotCookiebotDialogBodyLevelButtonCustomize {
+  border-color: var(--color-top) !important;
+}
+
+#CybotCookiebotDialogPoweredByText {
+  display: none !important;
+}

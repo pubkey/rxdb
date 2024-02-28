@@ -120,6 +120,14 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     params
                 };
                 instanceByFullName.set(fullName, state);
+
+                /**
+                 * Must await the creation here
+                 * so that in case of an error,
+                 * it knows about the error message and can send
+                 * that back to the main process. 
+                 */
+                await state.storageInstancePromise;
             } catch (err: any) {
                 settings.send(createErrorAnswer(msg, err));
                 return;

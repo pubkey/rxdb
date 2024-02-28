@@ -4,6 +4,7 @@ export declare function lastOfArray<T>(ar: T[]): T | undefined;
  * shuffle the given array
  */
 export declare function shuffleArray<T>(arr: T[]): T[];
+export declare function randomOfArray<T>(arr: T[]): T;
 export declare function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[];
 /**
  * Split array with items into smaller arrays with items

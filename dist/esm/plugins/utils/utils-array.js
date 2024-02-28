@@ -8,6 +8,10 @@ export function lastOfArray(ar) {
 export function shuffleArray(arr) {
   return arr.slice(0).sort(() => Math.random() - 0.5);
 }
+export function randomOfArray(arr) {
+  var randomElement = arr[Math.floor(Math.random() * arr.length)];
+  return randomElement;
+}
 export function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];
 }
