@@ -23,7 +23,7 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const sslKeyPath = '/etc/letsencrypt/live/signaling.rxdb.info/privkey.pem';
 const sslCertPath = '/etc/letsencrypt/live/signaling.rxdb.info/fullchain.pem';
-const certbotChallengePath = path.join(__dirname, 'acme-challenge');
+const certbotChallengePath = path.join(__dirname, 'acme-challenge', '.well-known');
 
 async function run() {
     console.log('# Start Cloud Signaling Server');
@@ -37,6 +37,12 @@ async function run() {
     const httpServer = createHttpServer((request, response) => {
         console.log('# port 80 request to ' + request.url);
         response.writeHead(200, { 'Content-Type': 'text/plain' });
+
+        if (!fs.existsSync(certbotChallengePath)) {
+            console.log('challenge dir not exists at ' + certbotChallengePath);
+            response.end('could not read certfile at ' + certbotChallengePath, 'utf-8');
+            return;
+        }
 
         const files = fs.readdirSync(certbotChallengePath).filter(f => f !== '.gittouch');
         console.log('acme files:');
