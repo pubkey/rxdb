@@ -22,6 +22,10 @@ import {
 import React, { useEffect } from 'react';
 import { trigger } from '../components/trigger-event';
 
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+
 type MousePositionType = {
   x: number;
   y: number;
@@ -230,7 +234,6 @@ async function startLandingpageAnimation() {
   });
 }
 
-
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
 
@@ -241,6 +244,67 @@ export default function Home() {
       animationStarted = false;
     };
   });
+  const slickSettings = {
+    dots: true,
+    centerMode: true,
+    centerPadding: '10px',
+    infinite: true,
+      arrows:false,
+      //centerMode:true,
+      //centerPadding:'100px',
+      adaptiveHeight:true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    initialSlide: 0,
+    responsive: [
+      {
+        breakpoint: 1250,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 900,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true,
+        },
+      },
+    ],
+  };
   return (
     <>
       <Head>
@@ -250,7 +314,7 @@ export default function Home() {
         title={`${siteConfig.title}`}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
-          <div className="block first centered">
+          <div className="block first centered dark">
             <div className="content">
               <h1>
                 The local <b className="underline">Database</b> for{' '}
@@ -413,6 +477,80 @@ export default function Home() {
               </div>
             </div>
           </a>
+
+          <div className="block reviews">
+            <div className="content centered">
+                <div className="inner">
+                    <h2>
+                        Our <b className="underline">Success Stories</b>
+                    </h2>
+                    <br/><br/>
+                </div>
+            </div>
+            <Slider {...slickSettings}>
+                <div className="slider-content">
+                    <h3>
+                      "We use RxDB to create applications capable of being used in the most remote areas where Internet access is really a challenge."
+                    </h3>
+                    <div className="slider-profile">
+                        <img className="slider-logo-white" src="https://altgras.com/assets/img/logo.png"/>
+                        <div className="slider-info">
+                            <p className="developer">ALTGRAS</p>
+                            <a href="https://altgras.com/" target="_blank" className="company-link">https://altgras.com/</a>
+                        </div>
+                    </div>
+                </div>
+                <div className="slider-content">
+                    <h3>
+                      "We provide a mobile app that is used by people in the field to fill in valuable information like inspections, surveys and audits"
+                    </h3>
+                    <div className="slider-profile">
+                        <img className="slider-logo-black" src="https://moreapp.com/assets/img/logo.png"/>
+                        <div className="slider-info">
+                            <p className="developer">MoreApp</p>
+                            <a href="https://moreapp.com/" target="_blank" className="company-link">https://moreapp.com/</a>
+                        </div>
+                    </div>
+                </div>
+                <div className="slider-content">
+                    <h3>
+                      "We use RxDB to provide an offline first, cross platform point of sale system"
+                    </h3>
+                    <div className="slider-profile">
+                        <img className="slider-logo-black" src="https://wcpos.com/wp-content/uploads/2014/06/woopos-logo.png"/>
+                        <div className="slider-info">
+                            <p className="developer">WooCommerce POS</p>
+                            <a href="https://wcpos.com/" target="_blank" className="company-link">https://wcpos.com/</a>
+                        </div>
+                    </div>
+                </div>
+                <div className="slider-content">
+                    <h3>
+                      "RxDB is a main component in building offline-ready multichannel apps. It has become our default stack for this kind of apps."
+                    </h3>
+                    <div className="slider-profile">
+                        <img className="slider-logo-black" src="https://atroo.de/wp-content/uploads/2018/10/atroo-small-300x117.png"/>
+                        <div className="slider-info">
+                            <p className="developer">atroo GmbH</p>
+                            <a href="https://atroo.de/" target="_blank" className="company-link">https://atroo.de/</a>
+                        </div>
+                    </div>
+                </div>
+                {/* <div className="slider-content"> */}
+                {/*    <h3>*/}
+                {/*      "We use RxDB to store clients network topology modifications made with our map plugin visual editor"*/}
+                {/*    </h3>*/}
+                {/*    <div className="slider-profile">*/}
+                {/*        <img className="slider-logo-black" src="https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png"/>*/}
+                {/*        <div className="slider-info">*/}
+                {/*            <p className="developer">Mapgl Grafana plugins</p>*/}
+                {/*            <a href="https://raw.githubusercontent.com/vaduga/mapgl-community/" target="_blank" className="company-link">https://raw.githubusercontent.com/vaduga/mapgl-community/</a>*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/* </div> */}
+            </Slider>
+          </div>
+
           <div className="block second dark">
             <div className="content">
               <h2>
@@ -875,6 +1013,86 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <div className="block reviews dark">
+                <div className="content centered">
+                    <div className="inner">
+                        <h2>
+                            Our <b className="underline">Success Stories</b>
+                        </h2>
+                        <br/><br/>
+                    </div>
+                </div>
+                <Slider {...slickSettings}>
+                    <div className="slider-content">
+                        <h3>
+                          "We use RxDB to create applications capable of being used in the most remote areas where Internet access is really a challenge."
+                        </h3>
+                        <div className="slider-profile">
+                            <img className="slider-logo-white" src="https://altgras.com/assets/img/logo.png"/>
+                            <div className="slider-info">
+                                <p className="developer">ALTGRAS</p>
+                                <a href="https://altgras.com/" target="_blank" className="company-link">https://altgras.com/</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="slider-content">
+                        <h3>
+                          "We provide a mobile app that is used by people in the field to fill in valuable information like inspections, surveys and audits"
+                        </h3>
+                        <div className="slider-profile">
+                            <img className="slider-logo-black" src="https://moreapp.com/assets/img/logo.png"/>
+                            <div className="slider-info">
+                                <p className="developer">MoreApp</p>
+                                <a href="https://moreapp.com/" target="_blank"
+                                   className="company-link">https://moreapp.com/</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="slider-content">
+                        <h3>
+                            "We use RxDB to provide an offline first, cross platform point of sale system"
+                        </h3>
+                        <div className="slider-profile">
+                            <img className="slider-logo-black"
+                                 src="https://wcpos.com/wp-content/uploads/2014/06/woopos-logo.png"/>
+                            <div className="slider-info">
+                                <p className="developer">WooCommerce POS</p>
+                                <a href="https://wcpos.com/" target="_blank"
+                                   className="company-link">https://wcpos.com/</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="slider-content">
+                        <h3>
+                            "RxDB is a main component in building offline-ready multichannel apps. It has become our
+                            default stack for this kind of apps."
+                        </h3>
+                        <div className="slider-profile">
+                        <img className="slider-logo-black"
+                                 src="https://atroo.de/wp-content/uploads/2018/10/atroo-small-300x117.png"/>
+                            <div className="slider-info">
+                                <span className="developer">atroo GmbH</span><br/>
+                                <a href="https://atroo.de/" target="_blank"
+                                   className="company-link">https://atroo.de/</a>
+                            </div>
+                        </div>
+                    </div>
+                    {/*<div className="slider-content">*/}
+                    {/*    <h3>*/}
+                    {/*        "We use RxDB to store clients network topology modifications made with our map plugin visual editor"*/}
+                    {/*    </h3>*/}
+                    {/*    <div className="slider-profile">*/}
+                    {/*        <img className="slider-logo-black" src="https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png"/>*/}
+                    {/*        <div className="slider-info">*/}
+                    {/*            <p className="developer">Mapgl Grafana plugins</p>*/}
+                    {/*            <a href="https://raw.githubusercontent.com/vaduga/mapgl-community/" target="_blank" className="company-link">https://raw.githubusercontent.com/vaduga/mapgl-community/</a>*/}
+                    {/*        </div>*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
+                </Slider>
+            </div>
+
           <div className="block fifth dark">
             <div className="content centered">
               <div className="inner">
@@ -965,6 +1183,9 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+
+
           <div className="block sixth">
             <div className="content">
               <h2>Pricing Models</h2>
@@ -1131,6 +1352,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+
           <div className="block last dark">
             <div className="content">
               <h2>
