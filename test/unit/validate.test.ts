@@ -178,7 +178,7 @@ validationImplementations.forEach(
                         console.dir(err);
                         throw err;
                     }
-                    await instance.close();
+                    await instance.remove();
                 });
 
                 it('should allow this complex regex pattern', async () => {

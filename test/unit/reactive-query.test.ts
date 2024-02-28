@@ -271,7 +271,7 @@ describeParallel('reactive-query.test.js', () => {
                     // query must not have emitted because an unrelated document got changed.
                     assert.strictEqual(valuesAr.length, 1);
                     querySub.unsubscribe();
-                    c.database.destroy();
+                    c.database.remove();
                 });
             });
 

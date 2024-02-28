@@ -1235,7 +1235,7 @@ describe('rx-collection.test.ts', () => {
                         await collection.insert(human);
                         const doc = await collection.findOne().exec();
                         assert.strictEqual(passportId, doc._data.passportId);
-                        db.destroy();
+                        db.remove();
                     });
                 });
             });

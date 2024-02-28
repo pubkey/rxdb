@@ -262,9 +262,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         await cancelRxStorageReplication(replicationState);
 
         await Promise.all([
-            masterInstance.close(),
-            replicationState.input.forkInstance.close(),
-            replicationState.input.metaInstance.close()
+            masterInstance.remove(),
+            replicationState.input.forkInstance.remove(),
+            replicationState.input.metaInstance.remove()
         ]).catch(() => {
             /**
              * Closing the instances might error

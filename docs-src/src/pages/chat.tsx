@@ -7,7 +7,11 @@ export default function Chat() {
     const { siteConfig } = useDocusaurusContext();
 
     const isBrowser = useIsBrowser();
-    useEffect(() => { if (isBrowser) { window.trigger('join_chat', 0.40); } });
+    useEffect(() => {
+        if (isBrowser) {
+            window.trigger('join_chat', 0.40);
+        }
+    });
 
     return (
         <Layout

@@ -23,7 +23,6 @@ const testContext = 'rx-storage-helper.test.ts';
 describeParallel('rx-storage-helper.test.ts', () => {
     describe('.categorizeBulkWriteRows()', () => {
         it('performance', async () => {
-
             const instance = await config.storage.getStorage().createStorageInstance({
                 databaseInstanceToken: randomCouchString(10),
                 databaseName: randomCouchString(10),
@@ -68,7 +67,7 @@ describeParallel('rx-storage-helper.test.ts', () => {
 
 
             assert.ok(typeof time === 'number');
-            instance.close();
+            instance.remove();
         });
     });
 });
