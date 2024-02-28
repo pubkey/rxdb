@@ -34,6 +34,27 @@ setTimeout(function () {
     trigger('spend_60_seconds_on_page', 0.03);
 }, 60 * 1000);
 
+// detect scroll to bottom of landingpage
+let scrollTriggerDone = false;
+if (location.pathname === '/') {
+    window.addEventListener('scroll', () => {
+        if (!scrollTriggerDone) {
+            /**
+             * @link https://fjolt.com/article/javascript-check-if-user-scrolled-to-bottom
+             */
+            const documentHeight = document.body.scrollHeight;
+            const currentScroll = window.scrollY + window.innerHeight;
+            // When the user is [modifier]px from the bottom, fire the event.
+            const modifier = 500;
+            if (currentScroll + modifier > documentHeight) {
+                console.log('You are at the bottom!');
+                scrollTriggerDone = true;
+                trigger('scroll_to_bottom', 0.12);
+            }
+        }
+    });
+
+}
 
 // Reddit Pixel
 // ! function (w, d) {
