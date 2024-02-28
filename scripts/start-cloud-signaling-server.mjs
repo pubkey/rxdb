@@ -90,8 +90,12 @@ async function run() {
      * "ensures" that all 3 relevant files are updated, and accounts for
      * sometimes trigger-happy fs.watch.
      * @link https://stackoverflow.com/a/74076392/3443137
+     *
+     * We have to watch the parent dir, not the file itself
+     * otherwise it will not detect the changes.
+     * @link https://github.com/nodejs/node/issues/5039#issuecomment-178561688
      */
-    fs.watch(sslKeyPath, async () => {
+    fs.watch(path.join(sslKeyPath, '../'), { persistent: false, recursive: false }, async () => {
         console.log('# ssl certificate has changed -> update https secure context');
 
         // wait a bit in case it first changed the key and afterwards changed the cert
