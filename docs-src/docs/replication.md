@@ -263,7 +263,7 @@ const replicationState = await replicateRxCollection({
             return {
                 /**
                  * Contains the pulled documents from the remote.
-                 * Notice: If documentsFromRemote.length < batchSize,
+                 * Not that if documentsFromRemote.length < batchSize,
                  * then RxDB assumes that there are no more un-replicated documents
                  * on the backend, so the replication will switch to 'Event observation' mode.
                  */
@@ -428,14 +428,18 @@ Returns a `Promise` that resolves when:
 - All local data is replicated with the remote.
 - No replication cycle is running or in retry-state.
 
-**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInSync()` will not resolve until the other tab is closed and the replication starts in this tab.
+:::warning
+When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInSync()` will not resolve until the other tab is closed and the replication starts in this tab.
 
 ```ts
 await myRxReplicationState.awaitInSync();
 ```
+:::
 
 
-### Warning: `awaitInitialReplication()` and `awaitInSync()` should not be used to block the application
+:::warning 
+
+#### `awaitInitialReplication()` and `awaitInSync()` should not be used to block the application
 
 A common mistake in RxDB usage is when developers want to block the app usage until the application is in sync.
 Often they just `await` the promise of `awaitInitialReplication()` or `awaitInSync()` and show a loading spinner until they resolve. This is dangerous and should not be done because:
@@ -467,7 +471,7 @@ await firstValueFrom(
 await hideLoadingSpinner();
 ```
 
-
+:::
 
 
 ### reSync()

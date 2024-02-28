@@ -171,7 +171,9 @@ Index is only allowed on field types `string`, `integer` and `number`. Some RxSt
 Depending on the field type, you must have set some meta attributes like `maxLength` or `minimum`. This is required so that RxDB
 is able to know the maximum string representation length of a field, which is needed to craft custom indexes on several `RxStorage` implementations.
 
-**NOTICE:** RxDB will always append the `primaryKey` to all indexes to ensure a deterministic sort order of query results. You do not have to add the `primaryKey` to any index.
+:::note
+RxDB will always append the `primaryKey` to all indexes to ensure a deterministic sort order of query results. You do not have to add the `primaryKey` to any index.
+:::
 
 ### Index-example
 
@@ -304,8 +306,9 @@ const schemaWithFinalAge = {
 };
 ```
 
-## NOTICE: Not everything within the jsonschema-spec is allowed
+:::note Not everything within the jsonschema-spec is allowed
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
 
+:::
 

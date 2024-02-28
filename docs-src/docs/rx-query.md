@@ -266,7 +266,9 @@ query.$.subscribe(amount => {
 });
 ```
 
-**IMPORTANT:** count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires to fetch and compare the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
+:::note
+Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires to fetch and compare the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
+:::
 
 ```ts
 /**
@@ -342,13 +344,12 @@ Doing this is mostly not wanted, because it would run the counting on the storag
 This is only recommended if the RxStorage is running remotely like in a WebWorker and you not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
 
 
-## NOTICE: RxDB will always append the primary key to the sort parameters
+## RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
+:::
 
-
-## NOTICE: RxQuery's are immutable
-
+## RxQuery's are immutable
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
 This means, when you have a `RxQuery` and run a `.where()` on it, the original RxQuery-Object is not changed. Instead the where-function returns a new `RxQuery`-Object with the changed where-field. Keep this in mind if you create RxQuery's and change them afterwards.
 

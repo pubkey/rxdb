@@ -105,7 +105,9 @@ const result = await myCollection.bulkInsert([{
 // }
 ```
 
-NOTICE: `bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also the call to `bulkInsert()` it will not throw if a single document errors because of validation errors. Instead it will return the error in the `.error` property of the returned object.
+:::note
+`bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also the call to `bulkInsert()` it will not throw if a single document errors because of validation errors. Instead it will return the error in the `.error` property of the returned object.
+:::
 
 ### bulkRemove()
 
@@ -230,8 +232,9 @@ const docsMap = await myCollection.findByIds(ids);
 console.dir(docsMap); // Map(2)
 ```
 
-NOTICE: The `Map` returned by `findByIds` is not guaranteed to return elements in the same order as the list of ids passed to it.
-
+:::note
+The `Map` returned by `findByIds` is not guaranteed to return elements in the same order as the list of ids passed to it.
+:::
 
 ### exportJSON()
 Use this function to create a json export from every document in the collection.

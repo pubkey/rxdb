@@ -148,7 +148,9 @@ const replicationState = await replicateRxCollection({
 
 On the server we first have to detect if the `assumedMasterState` is correct for each row. If yes, we have to write the new document state to the database, otherwise we have to return the "real" master state in the conflict array.
 
-**NOTICE:** For simplicity in this tutorial, we do not use transactions. In reality you should run the full push function inside of a MongoDB transaction to ensure that no other process can mix up the document state while the writes are processed. Also you should call batch operations on MongoDB instead of running the operations for each change row.
+:::note
+For simplicity in this tutorial, we do not use transactions. In reality you should run the full push function inside of a MongoDB transaction to ensure that no other process can mix up the document state while the writes are processed. Also you should call batch operations on MongoDB instead of running the operations for each change row.
+:::
 
 The server also creates an `event` that is emitted to the `pullStream$` which is later used in the [pull.stream$](#pullstream-for-ongoing-changes).
 

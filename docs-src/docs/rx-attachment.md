@@ -121,7 +121,9 @@ The length of the data of the attachment as `number`.
 
 The hash of the attachments data as `string`.
 
-NOTICE: The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
+:::note
+The digest is NOT calculated by RxDB, instead it is calculated by the RxStorage. The only guarantee is that the digest will change when the attachments data changes.
+:::
 
 ### rev
 

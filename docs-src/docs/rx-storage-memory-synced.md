@@ -23,7 +23,9 @@ The main reason to use this is to improve initial page load and query/write time
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
 
 
-**NOTICE:** The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+:::note Premium
+The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+:::
 
 ## Usage
 

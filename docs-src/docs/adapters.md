@@ -14,8 +14,9 @@ This page is an overview over the different adapters with recommendations on wha
 
 ---------------------- 
 
-## IMPORTANT:
+:::warning
 The PouchDB RxStorage [is removed from RxDB](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and can no longer be used in new projects. You should switch to a different [RxStorage](./rx-storage.md).
+:::
 
 ---------------------- 
 
@@ -86,7 +87,9 @@ const database = await createRxDatabase({
 
 A reimplementation of the indexeddb adapter which uses native secondary indexes. Should have a much better performance but can behave [different on some edge cases](https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-adapter-indexeddb#differences-between-couchdb-and-pouchdbs-find-implementations-under-indexeddb).
 
-**Notice**: Multiple users have reported problems with this adapter. It is **not** recommended to use this adapter.
+:::note
+Multiple users have reported problems with this adapter. It is **not** recommended to use this adapter.
+:::
 
 ```js
 // npm install pouchdb-adapter-indexeddb --save
@@ -217,7 +220,9 @@ const database = await createRxDatabase({
 
 Uses react-native's [asyncstorage](https://facebook.github.io/react-native/docs/asyncstorage).
 
-**Notice**: There are [known problems](https://github.com/pubkey/rxdb/issues/2286) with this adapter and it is **not** recommended to use it.
+:::note
+There are [known problems](https://github.com/pubkey/rxdb/issues/2286) with this adapter and it is **not** recommended to use it.
+:::
 
 ```js
 // npm install pouchdb-adapter-asyncstorage --save

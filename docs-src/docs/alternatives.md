@@ -19,8 +19,7 @@ This list should be seen as an **entrypoint** for your personal evaluation of wh
 
 --------------------------------------------------------------------------------
 
-<!-- 
-  IMPORTANT:
+<!--
   DO NOT ADD ANY LINKS TO THE PROJECTS.
   THEY WOULD HAVE TO BE UPDATED EVERY FEW MONTHS AND I DO NOT WANT TO MAINTAIN THEM.
 -->

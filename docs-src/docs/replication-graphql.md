@@ -9,7 +9,9 @@ The GraphQL replication provides handlers for GraphQL to run [replication](./rep
 
 The GraphQL replication is mostly used when you already have a backend that exposes a GraphQL API that can be adjusted to serve as a replication endpoint. If you do not already have a GraphQL endpoint, using the [HTTP replication](./replication-http.md) is an easier solution.
 
-**NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+:::note
+To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+:::
 
 ## Usage
 
@@ -334,8 +336,9 @@ const replicationState = replicateGraphQL(
 );
 ```
 
-**NOTICE**: If it is not possible to create a websocket server on your backend, you can use any other method of pull out the ongoing events from the backend and then you can send them into `RxReplicationState.emitEvent()`.
-
+:::note
+If it is not possible to create a websocket server on your backend, you can use any other method of pull out the ongoing events from the backend and then you can send them into `RxReplicationState.emitEvent()`.
+:::
 
 ### Transforming null to undefined in optional fields
 
@@ -485,5 +488,6 @@ replicateGraphQL(
 
 See [the fetch spec](https://fetch.spec.whatwg.org/#concept-request-credentials-mode) for more information about available options.
 
-
-**NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+:::note
+To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
+:::

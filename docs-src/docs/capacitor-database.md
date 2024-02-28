@@ -14,7 +14,9 @@ It is developed by the Ionic Team and provides a great alternative to create hyb
 
 To read and write persistent data in Capacitor, there are multiple solutions which are shown in the following.
 
-**NOTICE:** You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
+:::note
+You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
+:::
 
 <p align="center">
   <img src="./files/icons/capacitor.svg" alt="Capacitor" width="50" />

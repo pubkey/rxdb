@@ -48,7 +48,9 @@ myDatabase.addCollections({
 });
 ```
 
-**NOTICE:** If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the initial database creation.
+:::note
+If you want to store local documents in a `RxCollection` but **NOT** in the `RxDatabase`, you **MUST NOT** set `localDocuments: true` in the `RxDatabase` because it will only slow down the initial database creation.
+:::
 
 ## insertLocal()
 
@@ -123,7 +125,9 @@ localDoc.get$('foo').subscribe(value => { /* .. */ });
 await localDoc.remove();
 ```
 
-## NOTICE: Because the local document does not have a schema, accessing the documents data-fields via pseudo-proxy will not work.
+:::note
+Because the local document does not have a schema, accessing the documents data-fields via pseudo-proxy will not work.
+:::
 
 ```javascript
 const foo = localDoc.foo; // undefined

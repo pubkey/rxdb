@@ -11,7 +11,9 @@ React Native provides a cross-platform JavaScript runtime that runs on different
 In difference to the JavaScript runtime of browsers, React Native does not support all HTML5 APIs and so it is not possible to use browser storage possibilities like localstorage, cookies, WebSQL or IndexedDB.
 Instead a different storage solution must be chosen that does not come directly with React Native itself but has to be installed as a library or plugin.
 
-**NOTICE:** You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
+:::note
+You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
+:::
 
 <p align="center">
   <img src="./files/icons/react-native.png" alt="React Native" width="20" />

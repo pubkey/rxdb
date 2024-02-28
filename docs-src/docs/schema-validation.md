@@ -12,7 +12,9 @@ The schema validation is **not a plugin** but comes in as a wrapper around any o
 - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
 - It allows us to configure which `RxDatabase` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 
-**NOTICE:** Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
+:::warning
+Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.
+:::
 
 When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
 

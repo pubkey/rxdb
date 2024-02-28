@@ -7,8 +7,9 @@ slug: rx-server.html
 
 The RxDB Server Plugin makes it possible to spawn a server on top of a RxDB database that offers multiple types of endpoints for various usages. It can spawn basic CRUD REST endpoints or even realtime replication endpoints that can be used by the client devices to replicate data. The RxServer plugin is designed to be used in Node.js but you can also use it in Deno, Bun or the Electron "main" process. You can use it either as a **standalone server** or add it on top of an **existing http server** (like express) in nodejs.
 
-**NOTICE:** The server plugin is in beta mode and the API might be changed without a major RxDB release.
-
+:::warning beta
+The server plugin is in **beta** mode and the API might be changed without a major RxDB release.
+:::
 
 ## Starting a RxServer
 
@@ -169,7 +170,9 @@ const endpoint = await server.addReplicationEndpoint({
 
 The RxServer will use the queryModifier at many places internally to determine which queries to run or if a document is allowed to be seen/edited by a client.
 
-NOTICE: For performance reasons the `queryModifier` and `changeValidator` **MUST NOT** be `async` and return a promise. If you need async data to run them, you should gather that data in  the `RxServerAuthHandler` and store it in the auth data to access it later.
+:::note
+For performance reasons the `queryModifier` and `changeValidator` **MUST NOT** be `async` and return a promise. If you need async data to run them, you should gather that data in  the `RxServerAuthHandler` and store it in the auth data to access it later.
+:::
 
 ## Change validator
 
@@ -226,8 +229,9 @@ To set indexes without `_deleted`, you can use the `internalIndexes` field of th
 ```
 
 
-**NOTICE:** Indexes come with a performance burden. You should only use the indexes you need and make sure you **do not** accidentally set the `internalIndexes` in your client side [RxCollections](./rx-collection.md).
-
+:::note
+Indexes come with a performance burden. You should only use the indexes you need and make sure you **do not** accidentally set the `internalIndexes` in your client side [RxCollections](./rx-collection.md).
+:::
 
 ## Server-only fields
 
@@ -243,7 +247,9 @@ const endpoint = await server.addReplicationEndpoint({
 });
 ```
 
-**NOTICE**: For performance reasons, only top-level fields can be used as `serverOnlyFields`. Otherwise the server would have to deep-clone all document data which is too expensive.
+:::note
+For performance reasons, only top-level fields can be used as `serverOnlyFields`. Otherwise the server would have to deep-clone all document data which is too expensive.
+:::
 
 ## Readonly fields
 

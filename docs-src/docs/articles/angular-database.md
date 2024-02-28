@@ -81,15 +81,17 @@ Once installed, you can import RxDB into your Angular application and start usin
 ### Patch Change Detection with zone.js
 Angular uses change detection to detect and update UI elements when data changes. However, RxDB's data handling is based on observables, which can sometimes bypass Angular's change detection mechanism. To ensure that changes made in RxDB are detected by Angular, we need to patch the change detection mechanism using zone.js. Zone.js is a library that intercepts and tracks asynchronous operations, including observables. By patching zone.js, we can make sure that Angular is aware of changes happening in RxDB.
 
+:::warning
+
+RxDB creates rxjs observables outside of angulars zone
+So you have to import the rxjs patch to ensure the [angular change detection](https://angular.io/guide/change-detection) works correctly.
+[link](https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm)
+
 ```ts
 //> app.component.ts
-/**
- * IMPORTANT: RxDB creates rxjs observables outside of angulars zone
- * So you have to import the rxjs patch to ensure changedetection works correctly.
- * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
- */
 import 'zone.js/plugins/zone-patch-rxjs';
 ```
+:::
 
 ### Use the Angular async pipe to observe an RxDB Query
 Angular provides the async pipe, which is a convenient way to subscribe to observables and handle the subscription lifecycle automatically. When working with RxDB, you can use the async pipe to observe an RxDB query and bind the results directly to your Angular template. This ensures that the UI stays in sync with the data changes emitted by the RxDB query.

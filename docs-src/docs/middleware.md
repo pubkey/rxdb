@@ -237,4 +237,6 @@ console.log(doc.myField);
 // 'foobar'
 ```
 
-Notice: This hook does not run on already created or cached documents. Make sure to add `postCreate`-hooks before interacting with the collection.
+:::note
+This hook does not run on already created or cached documents. Make sure to add `postCreate`-hooks before interacting with the collection.
+:::

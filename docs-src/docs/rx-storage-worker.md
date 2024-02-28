@@ -7,7 +7,9 @@ slug: rx-storage-worker.html
 
 With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommend to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
-**NOTICE:** This plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+:::note Premium
+This plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+:::
 
 ## On the worker process
 

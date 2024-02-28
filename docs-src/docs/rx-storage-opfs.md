@@ -164,9 +164,11 @@ By default the `jsonPositionSize` value is set to `8` which allows the database 
 This is ok for most use cases but you might want to just increase `jsonPositionSize` to `14`.
 In the next major RxDB version the default will be set to `14`, but this was not possible without introducing a breaking change.
 
-NOTICE: If you have already stored data, you cannot just change the `jsonPositionSize` value because your stored binary data will not be compatible anymore.
+:::note
+If you have already stored data, you cannot just change the `jsonPositionSize` value because your stored binary data will not be compatible anymore.
 
 Also there is a `opfs-big.worker.js` file that has `jsonPositionSize` set to `14` already.
+:::
 
 ## OPFS in Electron, React-Native or Capacitor.js
 

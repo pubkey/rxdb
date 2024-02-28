@@ -181,7 +181,7 @@ Wipes all documents from the storage. Use this to free up disc space.
 await myDatabase.remove();
 // database instance is now gone
 
-// NOTICE: You can also clear a database without removing its instance
+// You can also clear a database without removing its instance
 import { removeRxDatabase } from 'rxdb';
 removeRxDatabase('mydatabasename', 'localstorage');
 ```

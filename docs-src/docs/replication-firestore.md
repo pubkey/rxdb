@@ -72,7 +72,7 @@ const replicationState = replicateFirestore(
          * is required for fetch 'changes-since-x'.
          * So instead we have to rely on a custom user defined field
          * that contains the server time which is set by firestore via serverTimestamp()
-         * IMPORTANT: The serverTimestampField MUST NOT be part of the collections RxJsonSchema!
+         * Notice that the serverTimestampField MUST NOT be part of the collections RxJsonSchema!
          * [default='serverTimestamp']
          */
         serverTimestampField: 'serverTimestamp'
