@@ -38,8 +38,12 @@ async function run() {
         console.log('# port 80 request to ' + request.url);
         response.writeHead(200, { 'Content-Type': 'text/plain' });
 
-        const files = fs.readdirSync(certbotChallengePath);
-        const filename = files.find(f => f !== '.gittouch');
+        const files = fs.readdirSync(certbotChallengePath).filter(f => f !== '.gittouch');
+        console.log('acme files:');
+        console.dir(files);
+
+        const filename = files[0];
+
         let content = 'no certbot challenge';
         if (filename) {
             try {
