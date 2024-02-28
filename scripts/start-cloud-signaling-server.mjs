@@ -34,7 +34,8 @@ async function run() {
      * the certbot challenges
      */
     console.log('# Start http server');
-    const httpServer = createHttpServer((_request, response) => {
+    const httpServer = createHttpServer((request, response) => {
+        console.log('# port 80 request to ' + request.originalUrl);
         response.writeHead(200, { 'Content-Type': 'text/plain' });
 
         const files = fs.readdirSync(certbotChallengePath);
