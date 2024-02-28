@@ -1,7 +1,7 @@
 /**
  * We use pipedrive as a sales tool.
  * However sharing pipedrive url directly in emails
- * has shown to increase the likelyhood of landing in spam filters.
+ * has shown to increase the likelihood of landing in spam filters.
  * Therefore just use a rxdb.info link that redirects to pipedrive.
  * This also allows to track the conversion event.
  */
