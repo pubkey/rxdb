@@ -48,7 +48,9 @@ async function run() {
         if (filename) {
             try {
                 content = fs.readFileSync(path.join(certbotChallengePath, filename));
-            }catch(err){
+                console.log('acme file content:');
+                console.log(content);
+            } catch (err) {
                 response.end('could not read certfile at ' + certbotChallengePath, 'utf-8');
                 return;
             }
