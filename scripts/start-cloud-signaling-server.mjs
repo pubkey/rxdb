@@ -43,15 +43,18 @@ async function run() {
         console.dir(files);
 
         const filename = files[0];
-
         let content = 'no certbot challenge';
         if (filename) {
+            const filepath = path.join(certbotChallengePath, filename);
             try {
-                content = fs.readFileSync(path.join(certbotChallengePath, filename));
+                content = fs.readFileSync(filepath);
                 console.log('acme file content:');
                 console.log(content);
             } catch (err) {
-                response.end('could not read certfile at ' + certbotChallengePath, 'utf-8');
+                console.log('# ERROR: could not read file content at ' + filepath);
+                console.dir(err);
+
+                response.end('could not read certfile at ' + filepath, 'utf-8');
                 return;
             }
         }
