@@ -261,9 +261,14 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
         await cancelRxStorageReplication(replicationState);
 
+        /**
+         * TODO here we should run .remove()
+         * on all instances to ensure we do not fill up the
+         * browser storage limits. But this failed for unknown reason.
+         */
         await Promise.all([
-            masterInstance.remove(),
-            replicationState.input.forkInstance.remove(),
+            masterInstance.close(),
+            replicationState.input.forkInstance.close(),
             replicationState.input.metaInstance.remove()
         ]).catch(() => {
             /**
