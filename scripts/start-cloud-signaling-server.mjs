@@ -23,7 +23,7 @@ const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const sslKeyPath = '/etc/letsencrypt/live/signaling.rxdb.info/privkey.pem';
 const sslCertPath = '/etc/letsencrypt/live/signaling.rxdb.info/fullchain.pem';
-const certbotChallengePath = path.join(__dirname, 'acme-challenge', '.well-known');
+const certbotChallengePath = path.join(__dirname, 'acme-challenge', '.well-known', 'acme-challenge');
 
 async function run() {
     console.log('# Start Cloud Signaling Server');
