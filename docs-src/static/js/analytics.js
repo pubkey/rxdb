@@ -37,7 +37,7 @@ setTimeout(function () {
 // detect scroll to bottom of landingpage
 let scrollTriggerDone = false;
 if (location.pathname === '/') {
-    window.addEventListener('scroll', (event) => {
+    window.addEventListener('scroll', () => {
         if (!scrollTriggerDone) {
             /**
              * @link https://fjolt.com/article/javascript-check-if-user-scrolled-to-bottom
