@@ -1819,7 +1819,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const results = await storageInstance.query(preparedQuery);
                 assert.strictEqual(results.documents.length, amount);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.count()', () => {
@@ -2309,7 +2309,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(Object.keys(docs).length, writeAmount);
                 assert.strictEqual(writesDone, writeAmount);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.changeStream()', () => {

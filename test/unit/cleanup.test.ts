@@ -108,7 +108,7 @@ describeParallel('cleanup.test.js', () => {
         );
         assert.ok(deletedDocInStorage[0]);
 
-        db.destroy();
+        db.remove();
     });
     it('should work by manually calling RxCollection.cleanup()', async () => {
         const db = await createRxDatabase({

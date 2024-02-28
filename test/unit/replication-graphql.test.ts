@@ -711,7 +711,7 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 server.close();
-                c.database.destroy();
+                c.database.remove();
             });
 
         });
