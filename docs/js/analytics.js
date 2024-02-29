@@ -36,21 +36,26 @@ setTimeout(function () {
 
 // detect scroll to bottom of landingpage
 let scrollTriggerDone = false;
+let nextScrollTimestamp = 0;
 if (location.pathname === '/') {
-    window.addEventListener('scroll', () => {
-        if (!scrollTriggerDone) {
-            /**
-             * @link https://fjolt.com/article/javascript-check-if-user-scrolled-to-bottom
-             */
-            const documentHeight = document.body.scrollHeight;
-            const currentScroll = window.scrollY + window.innerHeight;
-            // When the user is [modifier]px from the bottom, fire the event.
-            const modifier = 500;
-            if (currentScroll + modifier > documentHeight) {
-                console.log('You are at the bottom!');
-                scrollTriggerDone = true;
-                trigger('scroll_to_bottom', 0.12);
-            }
+    window.addEventListener('scroll', (event) => {
+        const newTimestamp = event.timeStamp;
+        if (!scrollTriggerDone && nextScrollTimestamp < newTimestamp) {
+            nextScrollTimestamp = newTimestamp + 250;
+        } else {
+            return;
+        }
+        /**
+         * @link https://fjolt.com/article/javascript-check-if-user-scrolled-to-bottom
+         */
+        const documentHeight = document.body.scrollHeight;
+        const currentScroll = window.scrollY + window.innerHeight;
+        // When the user is [modifier]px from the bottom, fire the event.
+        const modifier = 800;
+        if (currentScroll + modifier > documentHeight) {
+            console.log('You are at the bottom!');
+            scrollTriggerDone = true;
+            trigger('scroll_to_bottom', 0.12);
         }
     });
 
