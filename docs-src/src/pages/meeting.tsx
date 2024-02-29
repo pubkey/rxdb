@@ -11,9 +11,9 @@ import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { getDatabase, hasIndexedDB } from '../components/database';
 
-const FILE_EVENT_ID = 'premium_license_opened';
+const FILE_EVENT_ID = 'meeting-link-clicked';
 
-export default function LicensePreview() {
+export default function Meeting() {
     const { siteConfig } = useDocusaurusContext();
 
     const isBrowser = useIsBrowser();
@@ -26,13 +26,11 @@ export default function LicensePreview() {
             const database = await getDatabase();
             const flagDoc = await database.getLocal(FILE_EVENT_ID);
             if (flagDoc) {
-                console.log('# file opening already tracked');
+                console.log('# already tracked ' + FILE_EVENT_ID);
             } else {
-                const myParam = new URLSearchParams(window.location.search).get('v');
-                const value = myParam ? parseInt(myParam, 10) : 300;
                 window.trigger(
                     FILE_EVENT_ID,
-                    Math.floor(value / 3) // assume lead-to-sale-rate is 33%.
+                    10
                 );
                 await database.upsertLocal(FILE_EVENT_ID, {});
             }
@@ -40,16 +38,16 @@ export default function LicensePreview() {
     });
 
 
-    let goalUrl = 'https://rxdb.pipedrive.com/documents/p/';
+    let goalUrl = 'https://rxdb.pipedrive.com/scheduler/';
     if (isBrowser) {
         const myParam = new URLSearchParams(window.location.search).get('f');
-        goalUrl += myParam;
+        goalUrl += myParam + '/schedulr';
     }
 
     return (
         <Layout
             title={`Chat - ${siteConfig.title}`}
-            description="License Preview"
+            description="Meeting Scheduler"
         >
             <main>
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
@@ -58,14 +56,14 @@ export default function LicensePreview() {
                             <img src="/files/logo/logo_text.svg" alt="RxDB" width={160} />
                         </div>
                     </a>
-                    <h1>RxDB License Preview</h1>
+                    <h1>RxDB Meeting Scheduler</h1>
                     <p>
                         <b>You will be redirected in a few seconds.</b>
                     </p>
                     <p>
-                        <a href={goalUrl}>Click here to open the license agreement directly.</a>
+                        <a href={goalUrl}>Click here to open the meeting scheduler directly.</a>
                     </p>
-                    <meta httpEquiv="Refresh" content={'1; url=' + goalUrl} />
+                    <meta httpEquiv="Refresh" content={'0; url=' + goalUrl} />
                 </div>
             </main>
         </Layout >
