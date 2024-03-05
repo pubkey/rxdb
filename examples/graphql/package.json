@@ -21,7 +21,7 @@
   "author": "pubkey",
   "license": "MIT",
   "dependencies": {
-    "@apollo/server": "4.10.0",
+    "@apollo/server": "4.10.1",
     "concurrently": "8.2.2",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
