@@ -70,6 +70,9 @@ const config: Config = {
           trackingID: 'G-62D63SY3S0',
           anonymizeIP: false,
         },
+        googleTagManager: {
+          containerId: 'GTM-PL63TR5',
+        },
         docs: {
           sidebarPath: './sidebars.js',
           routeBasePath: '',

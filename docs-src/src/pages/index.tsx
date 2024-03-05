@@ -297,10 +297,11 @@ export default function Home() {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: 1.1,
+            centerPadding:'15px',
           slidesToScroll: 1,
-          infinite: true,
-          dots: true,
+          infinite: false,
+          dots: false,
         },
       },
     ],

@@ -137,7 +137,8 @@ const parentStorage = getRxStorageIndexedDB({
 });
 
 const memorySyncedStorage = getMemorySyncedRxStorage({
-    storage: parentStorage
+    storage: parentStorage,
+    keepIndexesOnParent: true
 });
 
 const databaseName = 'mydata';
