@@ -157,3 +157,7 @@ export declare class RxQuery<
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;
 }
+
+
+
+export type RxAggregationOperation = {};

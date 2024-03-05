@@ -47,6 +47,9 @@ export const ERROR_MESSAGES = {
     QU16: '$regex queries must be defined by a string, not an RegExp instance. ' +
         'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
 
+        // RxCollection.aggregate()
+    AGG1: 'RxCollection.aggregate() is not implemented in this storage. Use a differnt storage instead https://rxdb.info/aggregate.html#supported-storages',
+
     // mquery.js
     MQ1: 'path must be a string or object',
     MQ2: 'Invalid argument',

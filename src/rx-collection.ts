@@ -80,7 +80,8 @@ import type {
     MaybePromise,
     CRDTEntry,
     MangoQuerySelectorAndIndex,
-    MigrationStrategies
+    MigrationStrategies,
+    RxAggregationOperation
 } from './types/index.d.ts';
 
 import {
@@ -604,6 +605,11 @@ export class RxCollectionBase<
         }
         const query = createRxQuery('count', queryObj, this as any);
         return query as any;
+    }
+
+    async aggregate<T = any>(pipeline: RxAggregationOperation[]): Promise<T> {
+        const result = await this.storageInstance.aggregate<T>(pipeline);
+        return result;
     }
 
     /**

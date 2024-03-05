@@ -135,7 +135,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         } else {
             // if instance already existed, ensure that the schema is equal
             if (!deepEqual(params.schema, state.params.schema)) {
-                settings.send(createErrorAnswer(msg, new Error('Remote storage: schema not equal to existing storage')));
+                settings.send(createErrorAnswer(msg, new Error('Remote storage: schema not equal to existing storage ' + JSON.stringify(state.params.schema))));
                 return;
             }
         }

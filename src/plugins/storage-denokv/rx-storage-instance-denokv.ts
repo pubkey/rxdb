@@ -28,7 +28,7 @@ import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDe
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
-import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
+import { aggregateNotImplemented, categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
@@ -235,6 +235,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+    aggregate() {
+        return aggregateNotImplemented();
     }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         throw new Error("Method not implemented.");

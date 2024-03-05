@@ -44,7 +44,7 @@ import {
 } from './dexie-helper.ts';
 import { dexieCount, dexieQuery } from './dexie-query.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { aggregateNotImplemented, categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import { newRxError } from '../../rx-error.ts';
 
@@ -234,6 +234,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 mode: 'slow'
             };
         }
+    }
+
+    aggregate() {
+        return aggregateNotImplemented();
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {

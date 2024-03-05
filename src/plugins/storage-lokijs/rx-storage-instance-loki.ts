@@ -50,7 +50,7 @@ import {
 } from './lokijs-helper.ts';
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { aggregateNotImplemented, categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import {
     addRxStorageMultiInstanceSupport,
     removeBroadcastChannelReference
@@ -100,6 +100,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 close: this.close.bind(this),
                 query: this.query.bind(this),
                 count: this.count.bind(this),
+                aggregate: this.aggregate.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
@@ -297,6 +298,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+    aggregate() {
+        return aggregateNotImplemented();
     }
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');

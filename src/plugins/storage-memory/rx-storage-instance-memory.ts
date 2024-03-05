@@ -8,6 +8,7 @@ import {
 } from '../../custom-index.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import {
+    aggregateNotImplemented,
     categorizeBulkWriteRows
 } from '../../rx-storage-helper.ts';
 import type {
@@ -373,6 +374,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+    aggregate() {
+        return aggregateNotImplemented();
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {

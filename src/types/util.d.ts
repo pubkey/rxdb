@@ -110,6 +110,7 @@ export type RxTestStorage = {
     readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
     readonly hasAttachments: boolean;
+    readonly hasAggregation: boolean;
 
     /**
      * Some storages likes the memory-synced storage,

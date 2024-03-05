@@ -127,6 +127,11 @@ export function stackCheckpoints<CheckpointType>(
     );
 }
 
+
+export function aggregateNotImplemented(): any {
+    throw newRxError('AGG1');
+}
+
 export function storageChangeEventToRxChangeEvent<DocType>(
     isLocal: boolean,
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
@@ -752,6 +757,11 @@ export function getWrappedStorageInstance<
                 () => storageInstance.count(preparedQuery)
             );
         },
+        aggregate(pipeline) {
+            return database.lockedRun(
+                () => storageInstance.aggregate(pipeline)
+            );
+        },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
@@ -1007,7 +1017,12 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     const ret = await storageInstance.count(a);
                     await promiseWait(input.delayTimeAfter());
                     return ret;
-
+                },
+                async aggregate(a) {
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.aggregate(a);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret as any;
                 },
                 async getAttachmentData(a, b, c) {
                     await promiseWait(input.delayTimeBefore());

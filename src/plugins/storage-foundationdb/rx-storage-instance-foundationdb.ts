@@ -35,6 +35,7 @@ import type {
 //     StreamingMode as foundationDBStreamingMode
 // } from 'foundationdb';
 import {
+    aggregateNotImplemented,
     categorizeBulkWriteRows
 } from '../../rx-storage-helper.ts';
 import {
@@ -241,6 +242,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+
+    aggregate() {
+        return aggregateNotImplemented();
     }
 
     async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {

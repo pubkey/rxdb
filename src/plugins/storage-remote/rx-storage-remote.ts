@@ -239,6 +239,9 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     count(preparedQuery: any): Promise<RxStorageCountResult> {
         return this.requestRemote('count', [preparedQuery]);
     }
+    aggregate<T>(pipeline: any): Promise<T> {
+        return this.requestRemote('aggregate', [pipeline]);
+    }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         return this.requestRemote('getAttachmentData', [documentId, attachmentId, digest]);
     }

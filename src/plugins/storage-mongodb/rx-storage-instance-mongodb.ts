@@ -10,6 +10,7 @@ import type {
     BulkWriteRow,
     EventBulk,
     PreparedQuery,
+    RxAggregationOperation,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
@@ -394,6 +395,13 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             count,
             mode: 'fast'
         };
+    }
+
+
+    async aggregate<T>(pipeline: RxAggregationOperation[]): Promise<T> {
+        const mongoCollection = await this.mongoCollectionPromise;
+        const result = await mongoCollection.aggregate(pipeline);
+        return result.toArray() as any;
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {

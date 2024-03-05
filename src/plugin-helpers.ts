@@ -195,6 +195,7 @@ export function wrapRxStorageInstance<RxDocType>(
         collectionName: instance.collectionName,
         count: instance.count.bind(instance),
         remove: instance.remove.bind(instance),
+        aggregate: instance.aggregate.bind(instance),
         originalStorageInstance: instance,
         bulkWrite: async (
             documentWrites: BulkWriteRow<RxDocType>[],

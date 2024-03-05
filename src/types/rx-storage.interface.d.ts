@@ -11,6 +11,7 @@ import type {
 import type {
     MangoQuerySelector,
     MangoQuerySortPart,
+    RxAggregationOperation,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
@@ -218,6 +219,11 @@ export interface RxStorageInstance<
     count(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult>;
+
+    /**
+     * Runs the aggregation pipeline
+     */
+    aggregate<T>(pipeline: RxAggregationOperation[]): Promise<T>;
 
     /**
      * Returns the plain data of a single attachment.
