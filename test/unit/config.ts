@@ -72,7 +72,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: false,
                 hasAttachments: true,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: true
             };
             break;
         /**
@@ -96,7 +97,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: false,
                 hasAttachments: true,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: true
             };
             break;
         /**
@@ -134,7 +136,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: false,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: true
             };
             break;
         case 'lokijs':
@@ -163,7 +166,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: false,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: false
             };
             break;
         case 'dexie':
@@ -202,7 +206,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: true,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: false
             };
             break;
         case 'foundationdb':
@@ -233,7 +238,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: false,
                 hasAttachments: true,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: false
             };
             break;
         case 'mongodb':
@@ -264,7 +270,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: false,
                 hasAttachments: false,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: true
             };
             break;
         case 'remote':
@@ -288,7 +295,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: true,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: false
             };
             break;
         case 'denokv':
@@ -304,7 +312,8 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: false,
-                hasReplication: true
+                hasReplication: true,
+                hasAggregation: false
             };
             break;
         default:

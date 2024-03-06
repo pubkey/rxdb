@@ -16,6 +16,7 @@ import type {
     EventBulk,
     PreparedQuery,
     QueryMatcher,
+    RxAggregationOperation,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
@@ -63,6 +64,8 @@ import type {
     RxStorageMemorySettings
 } from './memory-types.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { getMingoAggregator } from '../../rx-query-mingo.ts';
+import { prepareQuery } from '../../rx-query.ts';
 
 /**
  * Used in tests to ensure everything
@@ -375,8 +378,37 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             mode: 'fast'
         };
     }
-    aggregate() {
-        return aggregateNotImplemented();
+    async aggregate<T>(pipeline: RxAggregationOperation[]): Promise<T[]> {
+        pipeline = pipeline.slice(0);
+        const first = pipeline[0];
+        const isFirstMatcher = first && first.$match;
+        let docs: RxDocumentData<RxDocType>[];
+
+        /**
+         * Performance shortcut,
+         * if first operation is a matcher,
+         * run a "normal" query to use indexes
+         * for faster matching.
+         */
+        if (isFirstMatcher) {
+            const matcher = ensureNotFalsy(pipeline.shift());
+            const preparedQuery = prepareQuery(
+                this.schema,
+                {
+                    selector: matcher.$match as any,
+                    skip: 0,
+                    sort: [{ [this.primaryPath]: 'asc' } as any]
+                }
+            );
+            const queryResult = await this.query(preparedQuery);
+            docs = queryResult.documents;
+        } else {
+            docs = Array.from(this.internals.documents.values())
+        }
+
+        const aggregator = getMingoAggregator(pipeline);
+        const result = aggregator.run(docs);
+        return result as any;
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {

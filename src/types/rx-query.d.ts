@@ -160,4 +160,8 @@ export declare class RxQuery<
 
 
 
-export type RxAggregationOperation = {};
+export type RxAggregationOperation = {
+    $match?: {};
+    $group?: {};
+    $sort?: {};
+};

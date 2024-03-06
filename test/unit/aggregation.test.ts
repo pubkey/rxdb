@@ -23,106 +23,118 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 describe('aggregation.test.ts', () => {
-    describe('$match', () => {
-        it('should find the correct documents', async () => {
-            const col = await humansCollection.create(10);
+    if (!config.storage.hasAggregation) {
+        return;
+    }
+    describe('RxStorageInstance.aggregate()', () => {
 
-            const all = await col.aggregate([]);
-            assert.strictEqual(all.length, 10);
-            const firstId = all[0].passportId;
+        describe('$match', () => {
+            it('should find the correct documents', async () => {
+                const col = await humansCollection.create(10);
 
-            const onlyFirst = await col.aggregate([
-                { $match: { passportId: firstId } }
-            ]);
-            assert.ok(onlyFirst[0].passportId, firstId);
+                const all = await col.aggregate([]);
+                assert.strictEqual(all.length, 10);
+                const firstId = all[0].passportId;
 
-            const none = await col.aggregate([
-                { $match: { passportId: 'foobar' } }
-            ]);
-            assert.strictEqual(none.length, 0);
+                const onlyFirst = await col.aggregate([
+                    { $match: { passportId: firstId } }
+                ]);
+                assert.ok(onlyFirst[0].passportId, firstId);
 
-            col.database.remove();
+                const none = await col.aggregate([
+                    { $match: { passportId: 'foobar' } }
+                ]);
+                assert.strictEqual(none.length, 0);
+
+                col.database.remove();
+            });
+            it('should also find the _deleted:true documents', async () => {
+                const col = await humansCollection.create(10);
+                await col.find().remove();
+                const all = await col.aggregate([]);
+                assert.strictEqual(all.length, 10);
+                col.database.remove();
+            });
         });
-    });
-    describe('$match', () => {
-        it('should find the correct documents', async () => {
-            const col = await humansCollection.create(10);
+        describe('$match', () => {
+            it('should find the correct documents', async () => {
+                const col = await humansCollection.create(10);
 
-            const all = await col.aggregate([]);
-            assert.strictEqual(all.length, 10);
-            const firstId = all[0].passportId;
+                const all = await col.aggregate([]);
+                assert.strictEqual(all.length, 10);
+                const firstId = all[0].passportId;
 
-            const onlyFirst = await col.aggregate([
-                { $match: { passportId: firstId } }
-            ]);
-            assert.ok(onlyFirst[0].passportId, firstId);
+                const onlyFirst = await col.aggregate([
+                    { $match: { passportId: firstId } }
+                ]);
+                assert.ok(onlyFirst[0].passportId, firstId);
 
-            const none = await col.aggregate([
-                { $match: { passportId: 'foobar' } }
-            ]);
-            assert.strictEqual(none.length, 0);
+                const none = await col.aggregate([
+                    { $match: { passportId: 'foobar' } }
+                ]);
+                assert.strictEqual(none.length, 0);
 
-            col.database.remove();
+                col.database.remove();
+            });
         });
-    });
-    describe('$group', () => {
-        it('should group correctly', async () => {
-            const col = await humansCollection.create(0);
-            await col.bulkInsert([
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 30)
-            ]);
+        describe('$group', () => {
+            it('should group correctly', async () => {
+                const col = await humansCollection.create(0);
+                await col.bulkInsert([
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 30)
+                ]);
 
-            const groups = await col.aggregate<any>([{
-                $group: {
-                    _id: '$age',
-                    age: { '$first': '$age' },
-                    myCount: { $sum: 1 }
-                }
-            }]);
-            assert.strictEqual(groups.length, 3);
-            const group20 = groups.find(g => g._id === 20);
-            assert.strictEqual(group20.age, 20);
-            assert.strictEqual(group20.myCount, 3);
-
-            col.database.remove();
-        });
-    });
-    describe('$sort', () => {
-        it('should $group and $sort correctly', async () => {
-            const col = await humansCollection.create(0);
-            await col.bulkInsert([
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 10),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 20),
-                schemaObjects.humanData(undefined, 30)
-            ]);
-
-            const result = await col.aggregate<any>([
-                {
+                const groups = await col.aggregate<any>([{
                     $group: {
                         _id: '$age',
                         age: { '$first': '$age' },
                         myCount: { $sum: 1 }
                     }
-                },
-                {
-                    $sort: { myCount: 1 }
-                }
-            ]);
-            assert.strictEqual(result[0].age, 30);
-            col.database.remove();
+                }]);
+                assert.strictEqual(groups.length, 3);
+                const group20 = groups.find(g => g._id === 20);
+                assert.strictEqual(group20.age, 20);
+                assert.strictEqual(group20.myCount, 3);
+
+                col.database.remove();
+            });
+        });
+        describe('$sort', () => {
+            it('should $group and $sort correctly', async () => {
+                const col = await humansCollection.create(0);
+                await col.bulkInsert([
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 10),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 20),
+                    schemaObjects.humanData(undefined, 30)
+                ]);
+
+                const result = await col.aggregate<any>([
+                    {
+                        $group: {
+                            _id: '$age',
+                            age: { '$first': '$age' },
+                            myCount: { $sum: 1 }
+                        }
+                    },
+                    {
+                        $sort: { myCount: 1 }
+                    }
+                ]);
+                assert.strictEqual(result[0].age, 30);
+                col.database.remove();
+            });
         });
     });
-
 });
