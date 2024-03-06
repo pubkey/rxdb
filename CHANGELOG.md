@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
