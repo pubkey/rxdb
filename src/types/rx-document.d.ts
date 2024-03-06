@@ -27,7 +27,7 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
 /**
  * Extend the base properties by the property$ fields
  * so it knows that RxDocument.age also has RxDocument.age$ which is
- * and observable.
+ * an observable.
  * TODO how to do this for the nested fields?
  */
 type ExtendObservables<RxDocumentType> = {
