@@ -298,23 +298,15 @@ describe('typings.test.ts', function () {
             const id2 = otherDoc.passportId;
         });
         it('should know the age$ observables', async () => {
-            const myDb: any = {};
             type DocType = {
                 age: number;
-                firstName: string;
-                lastName: string;
-                passportId: string;
+                nes: {
+                    ted: string;
+                };
             };
-            const myCollections = await myDb.addCollections({
-                humans: {
-                    schema: {},
-                    autoMigrate: false,
-                }
-            });
-            const result = await myCollections.humans.findOne().exec();
-            if (result === null) throw new Error('got no document');
-            const oneDoc: RxDocument<DocType> = result;
+            const oneDoc: RxDocument<DocType> = {} as any;
 
+            // top level
             const observable = oneDoc.age$;
             observable.subscribe();
         });
