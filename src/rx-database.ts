@@ -82,6 +82,7 @@ import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
+import type { RxState } from './plugins/state/rx-state.ts';
 
 /**
  * stores the used database names+storage names
@@ -416,6 +417,10 @@ export class RxDatabaseBase<
     exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
     exportJSON(_collections?: string[]): Promise<any> {
         throw pluginMissing('json-dump');
+    }
+
+    addState(): Promise<RxState> {
+        throw pluginMissing('state');
     }
 
     /**
