@@ -297,7 +297,7 @@ describe('typings.test.ts', function () {
             const otherDoc: RxDocument<DocType> = otherResult;
             const id2 = otherDoc.passportId;
         });
-        it('should know the age$ observables', async () => {
+        it('should know the age$ observables', () => {
             type DocType = {
                 age: number;
                 nes: {
