@@ -15,12 +15,24 @@ import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
 
+
+
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknown> = RxDocumentBase<
     RxDocumentType,
     OrmMethods,
     Reactivity
-> & RxDocumentType & OrmMethods;
+> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType>;
 
+
+/**
+ * Extend the base properties by the property$ fields
+ * so it knows that RxDocument.age also has RxDocument.age$ which is
+ * an observable.
+ * TODO how to do this for the nested fields?
+ */
+type ExtendObservables<RxDocumentType> = {
+    [P in keyof RxDocumentType as `${string & P}$`]: Observable<RxDocumentType[P]>;
+};
 
 /**
  * The public facing modify update function.

@@ -25,6 +25,7 @@ import {
     createBlob
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
+import { Observable } from 'rxjs';
 
 type DefaultDocType = {
     passportId: string;
@@ -35,7 +36,7 @@ type DefaultOrmMethods = {
     foobar(): string;
 };
 
-describe('typings.test.js', function () {
+describe('typings.test.ts', function () {
 
     describe('basic', () => {
         it('should fail on broken code', () => {
@@ -295,6 +296,19 @@ describe('typings.test.js', function () {
             if (otherResult === null) throw new Error('got no other document');
             const otherDoc: RxDocument<DocType> = otherResult;
             const id2 = otherDoc.passportId;
+        });
+        it('should know the age$ observables', () => {
+            type DocType = {
+                age: number;
+                nes: {
+                    ted: string;
+                };
+            };
+            const oneDoc: RxDocument<DocType> = {} as any;
+
+            // top level
+            const observable = oneDoc.age$;
+            observable.subscribe();
         });
         it('.putAttachment()', async () => {
             const myDb: any = {};
