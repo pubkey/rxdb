@@ -25,7 +25,8 @@ import type {
     RxTypeError,
     RxError,
     HashFunction,
-    MaybePromise
+    MaybePromise,
+    RxState
 } from './types/index.d.ts';
 
 import {
@@ -82,7 +83,6 @@ import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
-import type { RxState } from './plugins/state/rx-state.ts';
 
 /**
  * stores the used database names+storage names
@@ -419,7 +419,7 @@ export class RxDatabaseBase<
         throw pluginMissing('json-dump');
     }
 
-    addState(): Promise<RxState> {
+    addState<T>(_prefix?: string): Promise<RxState<T>> {
         throw pluginMissing('state');
     }
 

@@ -1,7 +1,27 @@
-import type { RxDatabase, RxPlugin, RxQuery } from '../../types/index.d.ts';
+import type { RxDatabase, RxPlugin, RxQuery, RxState } from '../../types/index.d.ts';
+import { getFromMapOrCreate } from '../utils/utils-map.ts';
+import { RxStateBase, createRxState } from './rx-state.ts';
 
-export async function addState(this: RxDatabase) {
+export * from './helpers.ts';
 
+type StateByPrefix = Map<string, Promise<RxStateBase<any>>>;
+const STATE_BY_DATABASE = new WeakMap<RxDatabase, StateByPrefix>();
+
+export async function addState<T>(
+    this: RxDatabase,
+    prefix: string = ''
+): Promise<RxState<T>> {
+    const stateCache = getFromMapOrCreate<RxDatabase, StateByPrefix>(
+        STATE_BY_DATABASE,
+        this,
+        () => new Map()
+    );
+    const state = await getFromMapOrCreate(
+        stateCache,
+        prefix,
+        () => createRxState<T>(this, prefix)
+    );
+    return state;
 }
 
 export const RxDBStatePlugin: RxPlugin = {
@@ -12,5 +32,4 @@ export const RxDBStatePlugin: RxPlugin = {
             proto.addState = addState;
         }
     }
-
 };
