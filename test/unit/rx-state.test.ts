@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { randomBoolean, wait } from 'async-test-util';
+import AsyncTestUtil, { randomBoolean, randomNumber, wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
 import config, { describeParallel } from './config.ts';
@@ -37,6 +37,14 @@ import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-state.test.ts', () => {
+    type TestState = {
+        foo?: string;
+        a?: number;
+        b?: number;
+        nes?: {
+            ted?: string;
+        };
+    };
     async function getState(
         databaseName: string = randomCouchString(10),
         prefix?: string,
@@ -46,7 +54,7 @@ describe('rx-state.test.ts', () => {
             storage: config.storage.getStorage(),
             ignoreDuplicate: true
         });
-        const state = await database.addState(prefix);
+        const state = await database.addState<TestState>(prefix);
         return state;
     }
     function plusOne(v: number): number {
@@ -87,6 +95,59 @@ describe('rx-state.test.ts', () => {
             assert.strictEqual(state.get('a'), 10);
             state.collection.database.destroy();
         });
+        it('update nested', async () => {
+            const state = await getState();
+            await state.set('nes', () => {
+                return {};
+            });
+            await state.set('nes.ted', () => 'foo');
+            await state.set('nes.ted', () => 'foo2');
+            state.collection.database.destroy();
+        });
+    });
+    describe('.get()', () => {
+        it('should get root state', async () => {
+            const state = await getState();
+            await state.set('foo', () => 'bar');
+            const root = state.get();
+            assert.strictEqual(root.foo, 'bar');
+            state.collection.database.destroy();
+        });
+        it('should get the updated value', async () => {
+            const state = await getState();
+            await state.set('foo', () => 'bar');
+            assert.strictEqual(state.foo, 'bar');
+            assert.strictEqual(state.get('foo'), 'bar');
+            await state.set('foo', () => 'bar2');
+            assert.strictEqual(state.foo, 'bar2');
+            assert.strictEqual(state.get('foo'), 'bar2');
+            state.collection.database.destroy();
+        });
+        it('should get nested values', async () => {
+            const state = await getState();
+            await state.set('nes', () => {
+                return { ted: 'foo' };
+            });
+            assert.deepStrictEqual(state.nes, { ted: 'foo' });
+            assert.deepStrictEqual(state.get('nes'), { ted: 'foo' });
+            assert.deepStrictEqual(state.get('nes.ted'), 'foo');
+
+            await state.set('nes.ted', () => 'foo2');
+            assert.deepStrictEqual(state.nes, { ted: 'foo2' });
+            assert.deepStrictEqual(state.get('nes'), { ted: 'foo2' });
+            assert.deepStrictEqual(state.get('nes.ted'), 'foo2');
+
+            state.collection.database.destroy();
+        });
+        it('should not throw on undefined values', async () => {
+            const state = await getState();
+            assert.deepStrictEqual(state.get('nes'), undefined);
+            assert.deepStrictEqual(state.nes, undefined);
+            assert.deepStrictEqual(state.get('nes.ted'), undefined);
+            state.collection.database.destroy();
+        });
+    });
+    describe('multiInstance', () => {
         it('write with two states at once', async () => {
             const databaseName = randomCouchString(10);
             const state1 = await getState(databaseName);
@@ -116,18 +177,46 @@ describe('rx-state.test.ts', () => {
                 promises.push(state1.set('a', plusOne));
                 promises.push(state2.set('a', plusOne));
                 if (randomBoolean() && randomBoolean()) {
-                    await wait(0);
+                    await wait(randomNumber(0, 10));
                 }
             }
             await Promise.all(promises);
 
-            const valueAfter = state1.get('a');
-            assert.strictEqual(valueAfter, amount * 2);
+            assert.strictEqual(state1.get('a'), amount * 2);
+            assert.strictEqual(state2.get('a'), amount * 2);
 
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
+        it('should not have a deterministic output when 2 instances write to different fields', async () => {
+            const databaseName = randomCouchString(10);
+            const state1 = await getState(databaseName);
+            const state2 = await getState(databaseName);
 
+            await state1.set('a', () => 0);
+            await state2.set('b', () => 0);
+
+            let t = 0;
+            const amount = 100;
+            const promises: Promise<any>[] = [];
+            while (t < amount) {
+                t++;
+                promises.push(state1.set('a', plusOne));
+                promises.push(state2.set('b', plusOne));
+                if (randomBoolean() && randomBoolean()) {
+                    await wait(randomNumber(0, 10));
+                }
+            }
+            await Promise.all(promises);
+            await wait(100);
+
+            assert.strictEqual(state1.get('a'), amount);
+            assert.strictEqual(state2.get('a'), amount);
+            assert.strictEqual(state1.get('b'), amount);
+            assert.strictEqual(state2.get('b'), amount);
+
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
+        });
     });
-
 });

@@ -1,4 +1,8 @@
-import type { RxDatabase, RxPlugin, RxQuery, RxState } from '../../types/index.d.ts';
+import type {
+    RxDatabase,
+    RxPlugin,
+    RxState
+} from '../../types/index.d.ts';
 import { getFromMapOrCreate } from '../utils/utils-map.ts';
 import { RxStateBase, createRxState } from './rx-state.ts';
 
@@ -21,7 +25,7 @@ export async function addState<T>(
         prefix,
         () => createRxState<T>(this, prefix)
     );
-    return state;
+    return state as any;
 }
 
 export const RxDBStatePlugin: RxPlugin = {

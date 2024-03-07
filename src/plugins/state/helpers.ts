@@ -21,6 +21,11 @@ export const RX_STATE_COLLECTION_SCHEMA: DeepReadonly<RxJsonSchema<RxStateDocume
             minLength: RX_STATE_ID_LENGTH,
             pattern: '[0-9]+'
         },
+        sId: {
+            type: 'string',
+            maxLength: 10,
+            minLength: 10
+        },
         ops: {
             type: 'array',
             minItems: 1,
@@ -43,6 +48,7 @@ export const RX_STATE_COLLECTION_SCHEMA: DeepReadonly<RxJsonSchema<RxStateDocume
     },
     required: [
         'id',
+        'sId',
         'ops'
     ]
 } as const;

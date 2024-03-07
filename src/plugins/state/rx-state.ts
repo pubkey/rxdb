@@ -20,7 +20,9 @@ import {
     getProperty,
     setProperty,
     PROMISE_RESOLVE_VOID,
-    appendToArray
+    appendToArray,
+    clone,
+    randomCouchString
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
@@ -31,7 +33,7 @@ import {
     RxStateOperation,
     RxStateModifier
 } from './types.ts';
-import { isBulkWriteConflictError, newRxError } from '../../rx-error.ts';
+import { newRxError } from '../../rx-error.ts';
 
 export class RxStateBase<T> {
     public state: T | any = {};
@@ -43,11 +45,13 @@ export class RxStateBase<T> {
     }[] = [];
     public writeQueue = PROMISE_RESOLVE_VOID;
     public initDone = false;
+    public instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
 
     constructor(
         public readonly prefix: string,
         public readonly collection: RxCollection<RxStateDocument>
     ) {
+        this.collection.onDestroy.push(() => this.writeQueue);
         this.lastIdQuery = this.collection.findOne({
             sort: [
                 { id: 'desc' }
@@ -59,7 +63,11 @@ export class RxStateBase<T> {
         this.$ = this.collection.$.pipe(
             tap(event => {
                 console.log('got event1');
-                if (this.initDone) {
+                if (
+                    this.initDone &&
+                    event.operation === 'INSERT' &&
+                    event.documentData.sId !== this.instanceId
+                ) {
                     console.log('Ev2');
                     console.dir(event.documentData.ops);
                     mergeOperationsIntoState(this.state, event.documentData.ops);
@@ -102,14 +110,18 @@ export class RxStateBase<T> {
                 this.nonPersisted = [];
                 const nextId = nextRxStateId(lastIdDoc ? lastIdDoc.id : undefined);
                 try {
+                    /**
+                     * TODO instead of a deep-clone we should
+                     * only clone the parts where we know that they
+                     * will be changed. This would improve performance.
+                     */
+                    const newState = clone(this.state);
                     const ops: RxStateOperation[] = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
-                        const value = getProperty(this.state, writeRow.path);
-                        console.log('old value: ' + value);
+                        const value = getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
-                        console.log('new value ' + newValue);
-                        setProperty(this.state, writeRow.path, newValue);
+                        setProperty(newState, writeRow.path, newValue);
                         ops.push({
                             k: writeRow.path,
                             v: newValue
@@ -117,8 +129,10 @@ export class RxStateBase<T> {
                     }
                     await this.collection.insert({
                         id: nextId,
+                        sId: this.instanceId,
                         ops
                     });
+                    this.state = newState;
                     done = true;
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
@@ -244,6 +258,9 @@ export function mergeOperationsIntoState<T>(
 ) {
     for (let index = 0; index < operations.length; index++) {
         const operation = operations[index];
-        setProperty(state, operation.k, operation.v);
+        console.log('merge op 1');
+        console.dir(operation);
+        setProperty(state, operation.k, clone(operation.v));
+        console.log('merge op 2');
     }
 }

@@ -14,6 +14,12 @@ export type RxStateDocument = {
      * in a string format like '0001', '0123'...
      */
     id: string;
+    /**
+     * Id of the JavaScript Instance of RxState
+     * that did the write. Used to optimise performance
+     * by not running these modifiers twice.
+     */
+    sId: string;
     ops: RxStateOperation[]
 };
 
