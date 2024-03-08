@@ -45,16 +45,20 @@ describe('rx-state.test.ts', () => {
             };
         }
     };
-    async function getState(
-        databaseName: string = randomCouchString(10),
-        prefix?: string,
-    ) {
+    async function getDatabase(databaseName: string = randomCouchString(10)) {
         const database = await createRxDatabase<{}, {}, {}, ReactivityType>({
             name: databaseName,
             storage: config.storage.getStorage(),
             reactivity,
             ignoreDuplicate: true,
         });
+        return database;
+    }
+    async function getState(
+        databaseName: string = randomCouchString(10),
+        prefix?: string,
+    ) {
+        const database = await getDatabase(databaseName);
         const state: RxState<TestState, ReactivityType> = await database.addState<TestState>(prefix);
         return state;
     }
@@ -78,6 +82,22 @@ describe('rx-state.test.ts', () => {
                 const sorted = ids.slice(0).sort();
                 assert.deepStrictEqual(ids, sorted);
             });
+        });
+    });
+    describe('creation', () => {
+        it('calling addState twice should give the same instance', async () => {
+            const database = await getDatabase();
+
+            const state1 = await database.addState();
+            const state2 = await database.addState();
+            const state3 = await database.addState('foobar');
+
+            assert.ok(state1 === state2);
+            assert.ok(state1 !== state3);
+            assert.ok(state1 === database.states['']);
+            assert.ok(state3 === database.states.foobar);
+
+            database.destroy();
         });
     });
     describe('write state data', () => {

@@ -13,7 +13,7 @@ const STATE_BY_DATABASE = new WeakMap<RxDatabase, StateByPrefix>();
 
 export async function addState<T>(
     this: RxDatabase,
-    prefix: string = ''
+    name: string = ''
 ): Promise<RxState<T>> {
     const stateCache = getFromMapOrCreate<RxDatabase, StateByPrefix>(
         STATE_BY_DATABASE,
@@ -22,9 +22,10 @@ export async function addState<T>(
     );
     const state = await getFromMapOrCreate(
         stateCache,
-        prefix,
-        () => createRxState<T>(this, prefix)
+        name,
+        () => createRxState<T>(this, name)
     );
+    this.states[name] = state;
     return state as any;
 }
 

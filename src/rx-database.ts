@@ -200,6 +200,7 @@ export class RxDatabaseBase<
     public onDestroy: (() => MaybePromise<any>)[] = [];
     public destroyed: boolean = false;
     public collections: Collections = {} as any;
+    public states: { [name: string]: RxState<any, Reactivity>; } = {};
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
@@ -419,7 +420,7 @@ export class RxDatabaseBase<
         throw pluginMissing('json-dump');
     }
 
-    addState<T>(_prefix?: string): Promise<RxState<T, Reactivity>> {
+    addState<T>(_name?: string): Promise<RxState<T, Reactivity>> {
         throw pluginMissing('state');
     }
 
