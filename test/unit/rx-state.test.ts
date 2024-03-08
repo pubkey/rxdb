@@ -237,6 +237,9 @@ describe('rx-state.test.ts', () => {
         });
     });
     describe('multiInstance', () => {
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
         it('write with two states at once', async () => {
             const databaseName = randomCouchString(10);
             const state1 = await getState(databaseName);
