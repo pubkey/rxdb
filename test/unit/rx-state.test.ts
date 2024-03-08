@@ -125,6 +125,21 @@ describe('rx-state.test.ts', () => {
             await state.set('nes.ted', () => 'foo2');
             state.collection.database.destroy();
         });
+        it('doing many writes should end up in a single persistence write to the storage', async () => {
+            const state = await getState();
+            await state.set('a', () => 0);
+
+            const promises: Promise<any>[] = [];
+            new Array(100).fill(0).forEach((_v, i) => {
+                promises.push(state.set('a', () => i));
+            });
+            await Promise.all(promises);
+
+            const storageWrites = await state.collection.find().exec();
+            assert.strictEqual(storageWrites.length, 2);
+
+            state.collection.database.destroy();
+        });
     });
     describe('.get()', () => {
         it('should get root state', async () => {

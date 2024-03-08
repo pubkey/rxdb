@@ -420,7 +420,7 @@ export class RxDatabaseBase<
         throw pluginMissing('json-dump');
     }
 
-    addState<T>(_name?: string): Promise<RxState<T, Reactivity>> {
+    addState<T = any>(_name?: string): Promise<RxState<T, Reactivity>> {
         throw pluginMissing('state');
     }
 
