@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { randomBoolean, randomNumber, wait } from 'async-test-util';
+import AsyncTestUtil, { randomBoolean, randomNumber, wait, waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 
 import config, { describeParallel } from './config.ts';
@@ -22,7 +22,8 @@ import {
     RxCollection,
     createBlob,
     defaultHashSha256,
-    RxJsonSchema
+    RxJsonSchema,
+    lastOfArray
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -147,6 +148,46 @@ describe('rx-state.test.ts', () => {
             state.collection.database.destroy();
         });
     });
+    describe('.get$()', () => {
+        it('should emit the correct data', async () => {
+            const state = await getState();
+
+            const emitted: any[] = [];
+            state.get$('a').subscribe(v => {
+                emitted.push(v);
+            });
+
+            await state.set('a', () => 0);
+            await state.set('a', () => 1);
+
+
+            await state.set('a', () => 2);
+
+            assert.deepStrictEqual(emitted, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+
+            await Promise.all([
+                state.set('a', () => 3),
+                state.set('a', () => 4),
+                state.set('a', () => 5)
+            ]);
+
+            await waitUntil(() => lastOfArray(emitted) === 5);
+            assert.deepStrictEqual(emitted, [
+                undefined,
+                0,
+                1,
+                2,
+                5
+            ]);
+
+            state.collection.database.destroy();
+        });
+    });
     describe('multiInstance', () => {
         it('write with two states at once', async () => {
             const databaseName = randomCouchString(10);
@@ -157,12 +198,28 @@ describe('rx-state.test.ts', () => {
                 state1.set('a', plusOne),
                 state2.set('a', plusOne),
             ]);
-            assert.strictEqual(state1.a, 2);
-            assert.strictEqual(state2.a, 2);
+            await waitUntil(() => state1.a === 2);
+            await waitUntil(() => state2.a === 2);
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
-        it('should not have a deterministic output when 2 instances write at the same time', async () => {
+        it('write with two states to nested at once', async () => {
+            const databaseName = randomCouchString(10);
+            const state1 = await getState(databaseName);
+            const state2 = await getState(databaseName);
+            await state1.set('nes', () => {
+                return { ted: 'foo' };
+            });
+            await Promise.all([
+                state1.set('nes.ted', () => 'foo1'),
+                state2.set('nes.ted', () => 'foo2')
+            ]);
+            await waitUntil(() => state1.nes?.ted === 'foo2');
+            await waitUntil(() => state2.nes?.ted === 'foo2');
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
+        });
+        it('should have a deterministic output when 2 instances write at the same time', async () => {
             const databaseName = randomCouchString(10);
             const state1 = await getState(databaseName);
             const state2 = await getState(databaseName);
@@ -182,13 +239,13 @@ describe('rx-state.test.ts', () => {
             }
             await Promise.all(promises);
 
-            assert.strictEqual(state1.get('a'), amount * 2);
-            assert.strictEqual(state2.get('a'), amount * 2);
+            await waitUntil(() => state1.a === amount * 2);
+            await waitUntil(() => state2.a === amount * 2);
 
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
-        it('should not have a deterministic output when 2 instances write to different fields', async () => {
+        it('should have a deterministic output when 2 instances write to different fields', async () => {
             const databaseName = randomCouchString(10);
             const state1 = await getState(databaseName);
             const state2 = await getState(databaseName);

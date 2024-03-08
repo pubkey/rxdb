@@ -1,9 +1,14 @@
 import {
     Observable,
+    Subject,
+    distinctUntilChanged,
+    filter,
     map,
+    merge,
     shareReplay,
     startWith,
-    tap
+    tap,
+    zip
 } from 'rxjs';
 import { overwritable } from '../../overwritable.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
@@ -13,7 +18,8 @@ import type {
     RxDatabase,
     RxQuery,
     RxDocument,
-    RxError
+    RxError,
+    Paths
 } from '../../types';
 import {
     RXJS_SHARE_REPLAY_DEFAULTS,
@@ -22,7 +28,8 @@ import {
     PROMISE_RESOLVE_VOID,
     appendToArray,
     clone,
-    randomCouchString
+    randomCouchString,
+    deepEqual
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
@@ -37,7 +44,7 @@ import { newRxError } from '../../rx-error.ts';
 
 export class RxStateBase<T> {
     public state: T | any = {};
-    public $: Observable<RxChangeEvent<RxStateDocument>>;
+    public $: Observable<T>;
     public lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
     public nonPersisted: {
         path: string;
@@ -46,6 +53,7 @@ export class RxStateBase<T> {
     public writeQueue = PROMISE_RESOLVE_VOID;
     public initDone = false;
     public instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    public ownEmits$ = new Subject<T>();
 
     constructor(
         public readonly prefix: string,
@@ -60,27 +68,32 @@ export class RxStateBase<T> {
         // make it "hot" for better write performance
         this.lastIdQuery.$.subscribe();
 
-        this.$ = this.collection.$.pipe(
-            tap(event => {
-                console.log('got event1');
-                if (
-                    this.initDone &&
-                    event.operation === 'INSERT' &&
-                    event.documentData.sId !== this.instanceId
-                ) {
-                    console.log('Ev2');
-                    console.dir(event.documentData.ops);
-                    mergeOperationsIntoState(this.state, event.documentData.ops);
-                }
-            }),
-            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
+        this.$ = zip([
+            this.ownEmits$,
+            this.collection.$.pipe(
+                tap(event => {
+                    if (
+                        this.initDone &&
+                        event.operation === 'INSERT' &&
+                        event.documentData.sId !== this.instanceId
+                    ) {
+                        console.log('use event !');
+                        console.dir(event.documentData.ops);
+                        mergeOperationsIntoState(this.state, event.documentData.ops);
+                    }
+                }),
+                map(() => this.state),
+                shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
+            )
+        ]).pipe(
+            map(() => this.state)
         );
         // directly subscribe because of the tap() side effect
         this.$.subscribe();
     }
 
     async set(
-        path: string,
+        path: Paths<T>,
         modifier: RxStateModifier
     ) {
         this.nonPersisted.push({
@@ -127,12 +140,16 @@ export class RxStateBase<T> {
                             v: newValue
                         });
                     }
+                    console.log('insert to collection');
                     await this.collection.insert({
                         id: nextId,
                         sId: this.instanceId,
                         ops
                     });
+                    console.log('insert to collection DONE');
+                    console.dir(newState);
                     this.state = newState;
+                    this.ownEmits$.next(this.state);
                     done = true;
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
@@ -149,7 +166,7 @@ export class RxStateBase<T> {
         return this.writeQueue;
     }
 
-    get(path?: string) {
+    get(path?: Paths<T>) {
         if (!path) {
             return overwritable.deepFreezeWhenDevMode(this.state);
         }
@@ -157,14 +174,15 @@ export class RxStateBase<T> {
             getProperty(this.state, path)
         );
     }
-    get$(path?: string): Observable<any> {
+    get$(path?: Paths<T>): Observable<any> {
         return this.$.pipe(
             map(() => this.get(path)),
             startWith(this.get(path)),
-            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
+            distinctUntilChanged(deepEqual),
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
         );
     }
-    get$$(path?: string) {
+    get$$(path?: Paths<T>) {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(obs, this.get(path));
@@ -234,12 +252,12 @@ export async function createRxState<T>(
                 const lastChar = property.charAt(property.length - 1);
                 if (property.endsWith('$$')) {
                     const key = property.slice(0, -2);
-                    return rxState.get$$(key);
+                    return rxState.get$$(key as any);
                 } else if (lastChar === '$') {
                     const key = property.slice(0, -1);
-                    return rxState.get$(key);
+                    return rxState.get$(key as any);
                 } else {
-                    return rxState.get(property);
+                    return rxState.get(property as any);
                 }
             },
             set(target, newValue, reciever) {
