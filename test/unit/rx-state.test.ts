@@ -23,7 +23,9 @@ import {
     createBlob,
     defaultHashSha256,
     RxJsonSchema,
-    lastOfArray
+    lastOfArray,
+    RxReactivityFactory,
+    RxState
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -46,16 +48,29 @@ describe('rx-state.test.ts', () => {
             ted?: string;
         };
     };
+    type ReactivityType = {
+        obs: Observable<any>;
+        init: any;
+    };
+    const reactivity: RxReactivityFactory<ReactivityType> = {
+        fromObservable(obs, init) {
+            return {
+                obs,
+                init
+            };
+        }
+    };
     async function getState(
         databaseName: string = randomCouchString(10),
         prefix?: string,
     ) {
-        const database = await createRxDatabase({
+        const database = await createRxDatabase<{}, {}, {}, ReactivityType>({
             name: databaseName,
             storage: config.storage.getStorage(),
-            ignoreDuplicate: true
+            reactivity,
+            ignoreDuplicate: true,
         });
-        const state = await database.addState<TestState>(prefix);
+        const state: RxState<TestState, ReactivityType> = await database.addState<TestState>(prefix);
         return state;
     }
     function plusOne(v: number): number {
@@ -221,6 +236,18 @@ describe('rx-state.test.ts', () => {
                 5
             ]);
 
+            state.collection.database.destroy();
+        });
+    });
+    describe('.get$$()', () => {
+        it('should get the correct object', async () => {
+            const state = await getState();
+            await state.set('a', () => 42);
+            const reactivityAr = [
+                state.get$$('a'),
+                state.a$$
+            ];
+            reactivityAr.forEach(rr => assert.strictEqual(rr.init, 42));
             state.collection.database.destroy();
         });
     });

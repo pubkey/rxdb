@@ -42,7 +42,7 @@ import {
 } from './types.ts';
 import { newRxError } from '../../rx-error.ts';
 
-export class RxStateBase<T> {
+export class RxStateBase<T, Reactivity = unknown> {
     public state: T | any = {};
     public $: Observable<T>;
     public lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
@@ -182,7 +182,7 @@ export class RxStateBase<T> {
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
         );
     }
-    get$$(path?: Paths<T>) {
+    get$$(path?: Paths<T>): Reactivity {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(obs, this.get(path));
