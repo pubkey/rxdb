@@ -210,7 +210,7 @@ export async function createRxState<T>(
 
     /**
      * Directly get the state and put it into memory.
-     * This ensures we can do non-async acesses to the
+     * This ensures we can do non-async accesses to the
      * correct state.
      */
     let done = false;
@@ -260,7 +260,7 @@ export async function createRxState<T>(
                     return rxState.get(property as any);
                 }
             },
-            set(target, newValue, reciever) {
+            set(target, newValue, receiver) {
                 throw new Error('Do not write to RxState');
             }
         }
