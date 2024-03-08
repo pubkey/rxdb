@@ -187,6 +187,42 @@ describe('rx-state.test.ts', () => {
 
             state.collection.database.destroy();
         });
+        it('should emit the correct data via proxy-getter a$', async () => {
+            const state = await getState();
+
+            const emitted: any[] = [];
+            state.a$.subscribe(v => {
+                emitted.push(v);
+            });
+
+            await state.set('a', () => 0);
+            await state.set('a', () => 1);
+            await state.set('a', () => 2);
+
+            assert.deepStrictEqual(emitted, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+
+            await Promise.all([
+                state.set('a', () => 3),
+                state.set('a', () => 4),
+                state.set('a', () => 5)
+            ]);
+
+            await waitUntil(() => lastOfArray(emitted) === 5);
+            assert.deepStrictEqual(emitted, [
+                undefined,
+                0,
+                1,
+                2,
+                5
+            ]);
+
+            state.collection.database.destroy();
+        });
     });
     describe('multiInstance', () => {
         it('write with two states at once', async () => {
