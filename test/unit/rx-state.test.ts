@@ -12,7 +12,9 @@ import {
     RxReactivityFactory,
     RxState
 } from '../../plugins/core/index.mjs';
-
+import {
+    isFastMode
+} from '../../plugins/test-utils/index.mjs';
 import {
     nextRxStateId,
     RxDBStatePlugin
@@ -276,21 +278,24 @@ describe('rx-state.test.ts', () => {
             const state = await getState();
 
             let t = 0;
-            while (t < 100) {
-                await state.set('a', () => t);
+            const amount = isFastMode() ? 20 : 100;
+            while (t < amount) {
                 t++;
+                await state.set('a', () => t);
             }
 
             const stateDocsBefore = await state.collection.find().exec();
-            assert.strictEqual(stateDocsBefore.length, 100);
+            assert.strictEqual(stateDocsBefore.length, amount);
             console.log('stateDocsBefore: ' + stateDocsBefore.length);
 
+            console.log('--- 1');
             await state._cleanup();
+            console.log('--- 2');
 
             const stateDocsAfter = await state.collection.find().exec();
             assert.strictEqual(stateDocsAfter.length, 1, 'stateDocsAfter must be one');
 
-            assert.strictEqual(state.a, 99);
+            assert.strictEqual(state.a, amount);
 
             state.collection.database.destroy();
         });
