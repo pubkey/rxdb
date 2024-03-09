@@ -66,7 +66,7 @@ export const ERROR_MESSAGES = {
     DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html#cant-change-the-schema',
     // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' +
-        'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n'+
+        'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' +
         'This often happens in react projects with hot reload that reloads the code without reloading the process.',
     // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
     // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
@@ -216,6 +216,7 @@ export const ERROR_MESSAGES = {
     SC39: 'The primary key must have the maxLength attribute set',
     SC40: '$ref fields in the schema are not allowed. RxDB cannot resolve related schemas because it would have a negative performance impact.' +
         'It would have to run http requests on runtime. $ref fields should be resolved during build time.',
+    SC41: 'minimum, maximum and maxLength values for indexes must be real numbers, not Infinity or -Infinity',
 
     // plugins/dev-mode
     // removed in 13.9.0, use PL3 instead - DEV1: 'dev-mode added multiple times',
