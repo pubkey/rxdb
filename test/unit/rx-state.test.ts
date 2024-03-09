@@ -392,5 +392,24 @@ describeParallel('rx-state.test.ts', () => {
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
+
+        it('should recover the same state from disc on the other side', async () => {
+            const databaseName = randomCouchString(10);
+            let state = await getState(databaseName);
+            await state.set('a', () => 0);
+            await state.set('a', () => 1);
+            await state.set('a', () => 2);
+            await state.collection.database.destroy();
+
+            state = await getState(databaseName);
+            assert.strictEqual(state.a, 2);
+            await state.set('a', () => 3);
+            await state._cleanup();
+            await state.collection.database.destroy();
+
+            state = await getState(databaseName);
+            assert.strictEqual(state.a, 3);
+            await state.collection.database.destroy();
+        });
     });
 });
