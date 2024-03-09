@@ -114,9 +114,9 @@ const mySignal = myState.myField$$;
 
 RxState is optimized for correctness, not for performance. Compared to other state libraries, RxState directly persists data to storage and ensures write conflicts are handled properly. Other state libraries are handles mainly in-memory and lazily persist to disc without caring about conflicts or multiple browser tabs which can cause problems and hard to reproduce bugs.
 
-RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with a substate name) to split writes accross multiple storage instances.
+RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with a substate name) to split writes across multiple storage instances.
 
-Reads happen directly in-memory which makes RxState read performance compareable to other state libraries.
+Reads happen directly in-memory which makes RxState read performance comparable to other state libraries.
 
 ## RxState Replication
 
