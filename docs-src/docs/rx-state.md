@@ -21,8 +21,8 @@ const database = await createRxDatabase({
 // create a state instance
 const myState = await database.addState();
 
-// you can also create sub-states with a given name
-const myChildState = await database.addState('myChildName');
+// you can also create states with a given namespace
+const myChildState = await database.addState('myNamepsace');
 ```
 
 ## Writing data and Persistense
@@ -110,11 +110,22 @@ const mySignal = myState.myField$$;
 ```
 
 
+## Cleanup RxState operations
+
+For faster writes, changes to the state are only written as list of operations to disc. After some time you might have too
+many operations written which would delay the initial state creation. To automatically merge the state operations into a single operation and clear the old operations, you should add the [Cleanup Plugin](./cleanup.md) before creating the [RxDatabase](./rx-database.md):
+
+```ts
+import { addRxPlugin } from 'rxdb';
+import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+addRxPlugin(RxDBCleanupPlugin);
+```
+
 ## Correctness over Performance
 
 RxState is optimized for correctness, not for performance. Compared to other state libraries, RxState directly persists data to storage and ensures write conflicts are handled properly. Other state libraries are handles mainly in-memory and lazily persist to disc without caring about conflicts or multiple browser tabs which can cause problems and hard to reproduce bugs.
 
-RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with a substate name) to split writes across multiple storage instances.
+RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with an different namespace) to split writes across multiple storage instances.
 
 Reads happen directly in-memory which makes RxState read performance comparable to other state libraries.
 
