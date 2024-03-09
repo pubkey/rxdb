@@ -290,6 +290,8 @@ describe('rx-state.test.ts', () => {
             const stateDocsAfter = await state.collection.find().exec();
             assert.strictEqual(stateDocsAfter.length, 1, 'stateDocsAfter must be one');
 
+            assert.strictEqual(state.a, 99);
+
             state.collection.database.destroy();
         });
     });
