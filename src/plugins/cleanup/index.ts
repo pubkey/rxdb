@@ -3,6 +3,7 @@ import type {
     RxPlugin
 } from '../../types/index.d.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
+import { startCleanupForRxState } from './cleanup-state.ts';
 import { startCleanupForRxCollection } from './cleanup.ts';
 
 export const RxDBCleanupPlugin: RxPlugin = {
@@ -33,6 +34,11 @@ export const RxDBCleanupPlugin: RxPlugin = {
         createRxCollection: {
             after: (i) => {
                 startCleanupForRxCollection(i.collection);
+            }
+        },
+        createRxState: {
+            after: (i) => {
+                startCleanupForRxState(i.state);
             }
         }
     }

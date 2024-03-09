@@ -18,7 +18,8 @@ import type {
     RxDocument,
     RxStorage,
     RxReplicationWriteToMasterRow,
-    WithDeleted
+    WithDeleted,
+    RxState
 } from './index.d.ts';
 import type { RxSchema } from '../rx-schema.d.ts';
 
@@ -109,6 +110,10 @@ export interface RxPlugin {
         createRxCollection?: RxPluginHooks<{
             collection: RxCollection;
             creator: RxCollectionCreator;
+        }>;
+        createRxState?: RxPluginHooks<{
+            collection: RxCollection;
+            state: RxState<unknown, unknown>;
         }>;
         preCreateRxCollection?: RxPluginHooks<RxCollectionCreator<any> & {
             name: string;

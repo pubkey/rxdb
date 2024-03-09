@@ -271,6 +271,28 @@ describe('rx-state.test.ts', () => {
             state.collection.database.destroy();
         });
     });
+    describe('cleanup', () => {
+        it('should merge the state documents data on cleanup', async () => {
+            const state = await getState();
+
+            let t = 0;
+            while (t < 100) {
+                await state.set('a', () => t);
+                t++;
+            }
+
+            const stateDocsBefore = await state.collection.find().exec();
+            assert.strictEqual(stateDocsBefore.length, 100);
+            console.log('stateDocsBefore: ' + stateDocsBefore.length);
+
+            await state._cleanup();
+
+            const stateDocsAfter = await state.collection.find().exec();
+            assert.strictEqual(stateDocsAfter.length, 1, 'stateDocsAfter must be one');
+
+            state.collection.database.destroy();
+        });
+    });
     describe('multiInstance', () => {
         if (!config.storage.hasMultiInstance) {
             return;

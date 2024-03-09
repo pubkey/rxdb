@@ -1,20 +1,13 @@
-import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
+import type { RxCleanupPolicy, RxCollection, RxState } from '../../types/index.d.ts';
 import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
+import { initialCleanupWait } from './cleanup.ts';
 
-/**
- * Even on multiple databases,
- * the calls to RxStorage().cleanup()
- * must never run in parallel.
- * The cleanup is a background task which should
- * not affect the performance of other, more important tasks.
- */
-let RXSTORAGE_CLEANUP_QUEUE: Promise<boolean> = PROMISE_RESOLVE_TRUE;
+let RXSTATE_CLEANUP_QUEUE: Promise<any> = PROMISE_RESOLVE_TRUE;
 
-export async function startCleanupForRxCollection(
-    rxCollection: RxCollection
-) {
+export async function startCleanupForRxState(state: RxState<unknown, unknown>) {
+    const rxCollection = state.collection;
     const rxDatabase = rxCollection.database;
     const cleanupPolicy = Object.assign(
         {},
@@ -22,48 +15,30 @@ export async function startCleanupForRxCollection(
         rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {}
     );
 
-
     await initialCleanupWait(rxCollection, cleanupPolicy);
     if (rxCollection.destroyed) {
         return;
     }
 
-    // initially cleanup the collection
-    await cleanupRxCollection(rxCollection, cleanupPolicy);
+    // initially cleanup the state
+    await cleanupRxState(state, cleanupPolicy);
 
     /**
-     * Afterwards we listen to deletes
-     * and only re-run the cleanup after
-     * minimumDeletedTime is reached.
+     * Afterwards we listen to writes
+     * and only re-run the cleanup if there was a write
+     * to the state.
      */
-    await runCleanupAfterDelete(rxCollection, cleanupPolicy);
+    await runCleanupAfterWrite(state, cleanupPolicy);
 }
-
-
-export async function initialCleanupWait(collection: RxCollection, cleanupPolicy: RxCleanupPolicy) {
-    /**
-     * Wait until minimumDatabaseInstanceAge is reached
-     * or collection is destroyed.
-     */
-    await collection.promiseWait(cleanupPolicy.minimumCollectionAge);
-    if (collection.destroyed) {
-        return;
-    }
-
-    if (cleanupPolicy.waitForLeadership) {
-        await collection.database.waitForLeadership();
-    }
-}
-
 /**
- * Runs the cleanup for a single RxCollection
+ * Runs the cleanup for a single RxState
  */
-export async function cleanupRxCollection(
-    rxCollection: RxCollection,
+export async function cleanupRxState(
+    state: RxState<unknown, unknown>,
     cleanupPolicy: RxCleanupPolicy
 ) {
+    const rxCollection = state.collection;
     const rxDatabase = rxCollection.database;
-    const storageInstance = rxCollection.storageInstance;
 
     // run cleanup() until it returns true
     let isDone = false;
@@ -83,31 +58,32 @@ export async function cleanupRxCollection(
         if (rxCollection.destroyed) {
             return;
         }
-        RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE
+        RXSTATE_CLEANUP_QUEUE = RXSTATE_CLEANUP_QUEUE
             .then(async () => {
                 if (rxCollection.destroyed) {
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
-                return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
+                return state._cleanup();
             });
-        isDone = await RXSTORAGE_CLEANUP_QUEUE;
+        isDone = await RXSTATE_CLEANUP_QUEUE;
     }
 }
 
 /**
- * TODO this is not waiting for deletes!
+ * TODO this is not waiting for writes!
  * it just runs on interval.
  */
-export async function runCleanupAfterDelete(
-    rxCollection: RxCollection,
+export async function runCleanupAfterWrite(
+    state: RxState<unknown, unknown>,
     cleanupPolicy: RxCleanupPolicy
 ) {
+    const rxCollection = state.collection;
     while (!rxCollection.destroyed) {
         await rxCollection.promiseWait(cleanupPolicy.runEach);
         if (rxCollection.destroyed) {
             return;
         }
-        await cleanupRxCollection(rxCollection, cleanupPolicy);
+        await cleanupRxState(state, cleanupPolicy);
     }
 }

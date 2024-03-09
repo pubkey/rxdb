@@ -41,62 +41,69 @@ import {
     RxStateModifier
 } from './types.ts';
 import { newRxError } from '../../rx-error.ts';
+import { runPluginHooks } from '../../hooks.ts';
 
+
+/**
+ * RxDB internally used properties are
+ * prefixed with lodash _ to make them less
+ * likely to clash with actual state properties
+ * from the user.
+ */
 export class RxStateBase<T, Reactivity = unknown> {
-    public state: T | any = {};
+    public _state: T | any = {};
     public $: Observable<T>;
-    public lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
-    public nonPersisted: {
+    public _lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
+    public _nonPersisted: {
         path: string;
         modifier: RxStateModifier;
     }[] = [];
-    public writeQueue = PROMISE_RESOLVE_VOID;
-    public initDone = false;
-    public instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
-    public ownEmits$ = new Subject<T>();
+    public _writeQueue = PROMISE_RESOLVE_VOID;
+    public _initDone = false;
+    public _instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    public _ownEmits$ = new Subject<T>();
 
     constructor(
         public readonly prefix: string,
         public readonly collection: RxCollection<RxStateDocument>
     ) {
-        this.collection.onDestroy.push(() => this.writeQueue);
-        this.lastIdQuery = this.collection.findOne({
+        this.collection.onDestroy.push(() => this._writeQueue);
+        this._lastIdQuery = this.collection.findOne({
             sort: [
                 { id: 'desc' }
             ]
         });
         // make it "hot" for better write performance
-        this.lastIdQuery.$.subscribe();
+        this._lastIdQuery.$.subscribe();
 
         this.$ = zip([
-            this.ownEmits$,
+            this._ownEmits$,
             this.collection.$.pipe(
                 tap(event => {
                     if (
-                        this.initDone &&
+                        this._initDone &&
                         event.operation === 'INSERT' &&
-                        event.documentData.sId !== this.instanceId
+                        event.documentData.sId !== this._instanceId
                     ) {
                         console.log('use event !');
                         console.dir(event.documentData.ops);
-                        mergeOperationsIntoState(this.state, event.documentData.ops);
+                        mergeOperationsIntoState(this._state, event.documentData.ops);
                     }
-                }),
-                map(() => this.state),
-                shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
+                })
             )
         ]).pipe(
-            map(() => this.state)
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
+            map(() => this._state)
         );
         // directly subscribe because of the tap() side effect
         this.$.subscribe();
     }
 
     async set(
-        path: Paths<T>,
+        path: Paths<T> | '',
         modifier: RxStateModifier
     ) {
-        this.nonPersisted.push({
+        this._nonPersisted.push({
             path,
             modifier
         });
@@ -111,16 +118,16 @@ export class RxStateBase<T, Reactivity = unknown> {
      */
     _triggerWrite() {
         console.log('_triggerWrite()');
-        this.writeQueue = this.writeQueue.then(async () => {
-            if (this.nonPersisted.length === 0) {
+        this._writeQueue = this._writeQueue.then(async () => {
+            if (this._nonPersisted.length === 0) {
                 return;
             }
-            let useWrites: typeof this.nonPersisted = [];
+            let useWrites: typeof this._nonPersisted = [];
             let done = false;
             while (!done) {
-                const lastIdDoc = await this.lastIdQuery.exec();
-                appendToArray(useWrites, this.nonPersisted);
-                this.nonPersisted = [];
+                const lastIdDoc = await this._lastIdQuery.exec();
+                appendToArray(useWrites, this._nonPersisted);
+                this._nonPersisted = [];
                 const nextId = nextRxStateId(lastIdDoc ? lastIdDoc.id : undefined);
                 try {
                     /**
@@ -128,7 +135,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                      * only clone the parts where we know that they
                      * will be changed. This would improve performance.
                      */
-                    const newState = clone(this.state);
+                    const newState = clone(this._state);
                     const ops: RxStateOperation[] = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
@@ -143,13 +150,13 @@ export class RxStateBase<T, Reactivity = unknown> {
                     console.log('insert to collection');
                     await this.collection.insert({
                         id: nextId,
-                        sId: this.instanceId,
+                        sId: this._instanceId,
                         ops
                     });
                     console.log('insert to collection DONE');
                     console.dir(newState);
-                    this.state = newState;
-                    this.ownEmits$.next(this.state);
+                    this._state = newState;
+                    this._ownEmits$.next(this._state);
                     done = true;
                 } catch (err) {
                     if ((err as RxError).code !== 'CONFLICT') {
@@ -163,15 +170,15 @@ export class RxStateBase<T, Reactivity = unknown> {
                 error
             });
         });
-        return this.writeQueue;
+        return this._writeQueue;
     }
 
     get(path?: Paths<T>) {
         if (!path) {
-            return overwritable.deepFreezeWhenDevMode(this.state);
+            return overwritable.deepFreezeWhenDevMode(this._state);
         }
         return overwritable.deepFreezeWhenDevMode(
-            getProperty(this.state, path)
+            getProperty(this._state, path)
         );
     }
     get$(path?: Paths<T>): Observable<any> {
@@ -186,6 +193,42 @@ export class RxStateBase<T, Reactivity = unknown> {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(obs, this.get(path));
+    }
+
+    /**
+     * Merges the state operations into a single write row
+     * to store space and make recreating the state from
+     * disc faster.
+     */
+    async _cleanup() {
+        const firstWrite = await this.collection.findOne({
+            sort: [{ id: 'asc' }]
+        }).exec();
+        const lastWrite = await this._lastIdQuery.exec();
+
+        if (!firstWrite || !lastWrite) {
+            return;
+        }
+
+        const firstNr = parseInt(firstWrite.id, 10);
+        const lastNr = parseInt(lastWrite.id, 10);
+        if ((lastNr - 5) < firstNr) {
+            // only run if more then 5 write rows
+            return;
+        }
+
+        // update whole state object
+        await this._writeQueue;
+        await this.set('', () => this._state);
+
+        // delete old ones
+        await this.collection.find({
+            selector: {
+                id: {
+                    $lte: lastWrite.id
+                }
+            }
+        }).remove();
     }
 }
 
@@ -228,11 +271,11 @@ export async function createRxState<T>(
         } else {
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
-                mergeOperationsIntoState(rxState.state, document.ops);
+                mergeOperationsIntoState(rxState._state, document.ops);
             }
         }
     }
-    rxState.initDone = true;
+    rxState._initDone = true;
 
     const proxy = new Proxy(
         rxState as any,
@@ -265,6 +308,11 @@ export async function createRxState<T>(
             }
         }
     );
+
+    runPluginHooks('createRxState', {
+        collection,
+        state: proxy
+    });
 
     return proxy;
 }
