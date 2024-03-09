@@ -83,6 +83,7 @@ const sidebars = {
         'migration-storage'
       ],
     },
+    'rx-state',
     'reactivity',
     'encryption',
     'key-compression',

@@ -112,7 +112,43 @@ const mySignal = myState.myField$$;
 
 ## Correctness over Performance
 
+RxState is optimized for correctness, not for performance. Compared to other state libraries, RxState directly persists data to storage and ensures write conflicts are handled properly. Other state libraries are handles mainly in-memory and lazily persist to disc without caring about conflicts or multiple browser tabs which can cause problems and hard to reproduce bugs.
+
+RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with a substate name) to split writes accross multiple storage instances.
+
+Reads happen directly in-memory which makes RxState read performance compareable to other state libraries.
 
 ## RxState Replication
 
+Because the state data is stored inside of a internal [RxCollection](./rx-collection.md) you can easily use the [RxDB Replication](./replication.md) to sync data between users or devices of the same user.
+
+For example with the [P2P WebRTC replication](./replication-webrtc.md) you can start the replication on the collection and automatically sync the RxState operations between users directly:
+
+```ts
+import {
+    replicateWebRTC,
+    getConnectionHandlerSimplePeer
+} from 'rxdb/plugins/replication-webrtc';
+
+const database = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageDexie(),
+});
+
+const myState = await database.addState();
+
+const replicationPool = await replicateWebRTC(
+    {
+        collection: myState.collection,
+        topic: 'my-state-replication-pool',
+        connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
+        pull: {},
+        push: {}
+    }
+);
+```
+
+
 ## Limitations
+
+- RxState is in beta mode, it might get breaking changes without having a major RxDB version release.
