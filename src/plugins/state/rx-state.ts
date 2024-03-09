@@ -144,17 +144,19 @@ export class RxStateBase<T, Reactivity = unknown> {
                         setProperty(newState, writeRow.path, newValue);
                         ops.push({
                             k: writeRow.path,
-                            v: newValue
+                            /**
+                             * Here we have to clone the value because
+                             * some storages like the memory storage
+                             * make input data deep-frozen in dev-mode.
+                             */
+                            v: clone(newValue)
                         });
                     }
-                    console.log('insert to collection');
                     await this.collection.insert({
                         id: nextId,
                         sId: this._instanceId,
                         ops
                     });
-                    console.log('insert to collection DONE');
-                    console.dir(newState);
                     this._state = newState;
                     this._ownEmits$.next(this._state);
                     done = true;

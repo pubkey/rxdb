@@ -2,7 +2,7 @@ import assert from 'assert';
 import { randomBoolean, randomNumber, wait, waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 import {
     createRxDatabase,
@@ -26,7 +26,7 @@ addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
-describe('rx-state.test.ts', () => {
+describeParallel('rx-state.test.ts', () => {
     type TestState = {
         foo?: string;
         a?: number;
@@ -326,11 +326,13 @@ describe('rx-state.test.ts', () => {
                 return { ted: 'foo' };
             });
             await Promise.all([
-                state1.set('nes.ted', () => 'foo1'),
+                state1.set('nes.ted', () => 'foo2'),
                 state2.set('nes.ted', () => 'foo2')
             ]);
+
             await waitUntil(() => state1.nes?.ted === 'foo2');
             await waitUntil(() => state2.nes?.ted === 'foo2');
+
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
