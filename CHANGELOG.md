@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
+- ADD check to ensure `Infinity` is not used when defining index sizes in the `RxJsonSchema`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
