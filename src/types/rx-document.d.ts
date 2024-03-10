@@ -21,7 +21,7 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
     RxDocumentType,
     OrmMethods,
     Reactivity
-> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType>;
+> & RxDocumentType & OrmMethods & ExtendObservables<RxDocumentType> & ExtendReactivity<RxDocumentType, Reactivity>;
 
 
 /**
@@ -32,6 +32,10 @@ export type RxDocument<RxDocumentType = {}, OrmMethods = {}, Reactivity = unknow
  */
 type ExtendObservables<RxDocumentType> = {
     [P in keyof RxDocumentType as `${string & P}$`]: Observable<RxDocumentType[P]>;
+};
+
+type ExtendReactivity<RxDocumentType, Reactivity> = {
+    [P in keyof RxDocumentType as `${string & P}$$`]: Reactivity;
 };
 
 /**

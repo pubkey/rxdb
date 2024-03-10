@@ -1166,6 +1166,87 @@ describeParallel('rx-schema.test.ts', () => {
 
             db.destroy();
         });
+        /**
+         * Using Infinity as "maximum" does not work
+         * and should throw a proper error.
+         */
+        it('broken on Infinity numbers in index sizes', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+
+            const brokenSchemas: RxJsonSchema<any>[] = [
+                {
+                    version: 0,
+                    type: 'object',
+                    primaryKey: 'id',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        nr: {
+                            type: 'number',
+                            minimum: -Infinity,
+                            maximum: 100,
+                            multipleOf: 1
+                        }
+                    },
+                    indexes: [
+                        ['nr']
+                    ]
+                },
+                {
+                    version: 0,
+                    type: 'object',
+                    primaryKey: 'id',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: Infinity
+                        }
+                    },
+                    indexes: [
+                        ['nr']
+                    ]
+                },
+                {
+                    version: 0,
+                    type: 'object',
+                    primaryKey: 'id',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        nr: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: Infinity,
+                            multipleOf: 1
+                        }
+                    },
+                    indexes: [
+                        ['nr']
+                    ]
+                }
+            ];
+
+            for (const schema of brokenSchemas) {
+                await assertThrows(
+                    () => db.addCollections({
+                        test: {
+                            schema
+                        }
+                    }),
+                    'RxError',
+                    'SC41'
+                );
+            }
+
+            db.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {

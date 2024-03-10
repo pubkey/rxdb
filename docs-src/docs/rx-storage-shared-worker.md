@@ -107,6 +107,11 @@ To build a custom `worker.js` file, check out the webpack config at the [worker]
 Instead of setting an url as `workerInput`, you can also specify a function that returns a new `SharedWorker` instance when called. This is mostly used when you have a custom worker file and dynamically import it.
 This works equal to the [workerInput of the Worker Storage](./rx-storage-worker.md#passing-in-a-worker-instance)
 
+
+## Set multiInstance: false
+
+When you know that you only ever create your RxDatabase inside of the shared worker, you might want to set `multiInstance: false` to prevent sending change events across JavaScript realms and to improve performance. Do not set this when you also create the same storage on another realm, like when you have the same RxDatabase once inside the shared worker and once on the main thread.
+
 ## Replication with SharedWorker
 
 When a SharedWorker RxStorage is used, it is recommended to run the replication **inside** of the worker. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there.
@@ -140,12 +145,6 @@ exposeWorkerRxStorage({
  */
 const database = await createRxDatabase({
     name: 'mydatabase',
-    /**
-     * Important: INSIDE of your SharedWorker, you can
-     * be sure that there is exactly one instance running.
-     * Therefore you MUST set multiInstance=false for better performance.
-     */
-    multiInstance: false,
     storage: baseStorage
 });
 await db.addCollections({

@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "15.10.0",
+  "version": "15.11.0",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -297,6 +297,12 @@
       "import": "./dist/esm/plugins/update/index.js",
       "default": "./dist/esm/plugins/update/index.js"
     },
+    "./plugins/state": {
+      "types": "./dist/types/plugins/state/index.d.ts",
+      "require": "./dist/cjs/plugins/state/index.js",
+      "import": "./dist/esm/plugins/state/index.js",
+      "default": "./dist/esm/plugins/state/index.js"
+    },
     "./plugins/validate-ajv": {
       "types": "./dist/types/plugins/validate-ajv/index.d.ts",
       "require": "./dist/cjs/plugins/validate-ajv/index.js",
@@ -520,12 +526,12 @@
     "disc": "1.3.3",
     "eslint": "8.57.0",
     "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jsdoc": "48.2.0",
+    "eslint-plugin-jsdoc": "48.2.1",
     "exists-file": "3.0.2",
     "express": "4.18.3",
     "express-graphql": "0.12.0",
     "fake-indexeddb": "5.0.2",
-    "firebase-tools": "13.4.0",
+    "firebase-tools": "13.4.1",
     "get-port": "5.1.1",
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",

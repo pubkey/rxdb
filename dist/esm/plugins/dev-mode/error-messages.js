@@ -194,6 +194,7 @@ export var ERROR_MESSAGES = {
   SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
   SC39: 'The primary key must have the maxLength attribute set',
   SC40: '$ref fields in the schema are not allowed. RxDB cannot resolve related schemas because it would have a negative performance impact.' + 'It would have to run http requests on runtime. $ref fields should be resolved during build time.',
+  SC41: 'minimum, maximum and maxLength values for indexes must be real numbers, not Infinity or -Infinity',
   // plugins/dev-mode
   // removed in 13.9.0, use PL3 instead - DEV1: 'dev-mode added multiple times',
 

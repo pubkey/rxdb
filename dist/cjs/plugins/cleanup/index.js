@@ -8,6 +8,7 @@ var _exportNames = {
 };
 exports.RxDBCleanupPlugin = void 0;
 var _cleanupHelper = require("./cleanup-helper.js");
+var _cleanupState = require("./cleanup-state.js");
 var _cleanup = require("./cleanup.js");
 Object.keys(_cleanup).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -43,6 +44,11 @@ var RxDBCleanupPlugin = exports.RxDBCleanupPlugin = {
     createRxCollection: {
       after: i => {
         (0, _cleanup.startCleanupForRxCollection)(i.collection);
+      }
+    },
+    createRxState: {
+      after: i => {
+        (0, _cleanupState.startCleanupForRxState)(i.state);
       }
     }
   }

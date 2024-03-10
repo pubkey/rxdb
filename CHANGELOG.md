@@ -2,12 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.11.0 (10 March 2024)
+
+- ADD [RxState](https://rxdb.info/rx-state.html): A convenient state library to store, fetch and observe complex json data that is persisted into RxDB.
+- ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
+- ADD check to ensure `Infinity` is not used when defining index sizes in the `RxJsonSchema`
+- FIX do not automatically set `multiInstance: false` for shared worker storage databases.
 
 ### 15.10.0 (27 February 2024)
 

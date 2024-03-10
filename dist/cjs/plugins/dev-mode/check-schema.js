@@ -205,6 +205,13 @@ function checkPrimaryKey(jsonSchema) {
         primaryPathSchemaPart
       }
     });
+  } else if (!isFinite(primaryPathSchemaPart.maxLength)) {
+    throw (0, _rxError.newRxError)('SC41', {
+      schema: jsonSchema,
+      args: {
+        primaryPathSchemaPart
+      }
+    });
   }
 }
 
@@ -358,6 +365,13 @@ function checkSchema(jsonSchema) {
             var minimum = schemaPart.minimum;
             if (typeof maximum === 'undefined' || typeof minimum === 'undefined') {
               throw (0, _rxError.newRxError)('SC37', {
+                index,
+                field: fieldName,
+                schema: jsonSchema
+              });
+            }
+            if (!isFinite(maximum) || !isFinite(minimum)) {
+              throw (0, _rxError.newRxError)('SC41', {
                 index,
                 field: fieldName,
                 schema: jsonSchema

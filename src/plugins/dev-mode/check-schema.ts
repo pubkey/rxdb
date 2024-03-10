@@ -251,6 +251,8 @@ export function checkPrimaryKey(
     const primaryPathSchemaPart = jsonSchema.properties[primaryPath];
     if (!primaryPathSchemaPart.maxLength) {
         throw newRxError('SC39', { schema: jsonSchema, args: { primaryPathSchemaPart } });
+    } else if (!isFinite(primaryPathSchemaPart.maxLength)) {
+        throw newRxError('SC41', { schema: jsonSchema, args: { primaryPathSchemaPart } });
     }
 }
 
@@ -419,6 +421,18 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                                 schema: jsonSchema
                             });
                         }
+
+                        if (
+                            !isFinite(maximum) ||
+                            !isFinite(minimum)
+                        ) {
+                            throw newRxError('SC41', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+
                         break;
                     case 'boolean':
                         /**

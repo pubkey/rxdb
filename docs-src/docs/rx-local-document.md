@@ -8,7 +8,7 @@ slug: rx-local-document.html
 Local documents are a special class of documents which are used to store local metadata.
 They come in handy when you want to store settings or additional data next to your documents.
 
-- Local Documents can exist on `RxDatabase` or `RxCollection`.
+- Local Documents can exist on a [RxDatabase](./rx-database.md) or [RxCollection](./rx-collection.md).
 - Local Document do not have to match the collections schema.
 - Local Documents do not get replicated.
 - Local Documents will not be found on queries.
@@ -16,6 +16,9 @@ They come in handy when you want to store settings or additional data next to yo
 - Local Documents will not get handled by the [migration-schema](./migration-schema.md).
 - The id of a local document has the `maxLength` of `128` characters.
 
+:::note
+While local documents can be very useful, in many cases the [RxState](./rx-state.md) API is more convenient.
+:::
 
 ## Add the local documents plugin
 
