@@ -3,9 +3,10 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD [RxState](https://rxdb.info/rx-state.html): A convenient state library to store, fetch and observe complex json data instead of collection documents.
+- ADD [RxState](https://rxdb.info/rx-state.html): A convenient state library to store, fetch and observe complex json data that is persisted into RxDB.
 - ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
 - ADD check to ensure `Infinity` is not used when defining index sizes in the `RxJsonSchema`
+- FIX do not automatically set `multiInstance: false` for shared worker storage databases.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
