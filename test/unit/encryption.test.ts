@@ -159,8 +159,8 @@ describeParallel('encryption.test.ts', () => {
             assert.ok(doc2);
             assert.strictEqual(typeof doc2.data.passwordHash, 'string');
 
-            db.remove();
-            db2.remove();
+            db.destroy();
+            db2.destroy();
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
             if (!config.storage.hasPersistence) {
@@ -196,8 +196,8 @@ describeParallel('encryption.test.ts', () => {
                 'RxError',
                 'DB1'
             );
-            db.remove();
-            db2.remove();
+            db.destroy();
+            db2.destroy();
         });
     });
     describe('RxCollection creation', () => {

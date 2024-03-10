@@ -296,8 +296,8 @@ describeParallel('reactive-query.test.js', () => {
             assert.strictEqual((c2._docCache.getLatestDocumentData(docId) as any).passportId, docId);
 
             sub.unsubscribe();
-            c.database.remove();
-            c2.database.remove();
+            c.database.destroy();
+            c2.database.destroy();
         });
         it('#136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
@@ -473,8 +473,8 @@ describeParallel('reactive-query.test.js', () => {
 
             sub.unsubscribe();
             sub2.unsubscribe();
-            db.remove();
-            db2.remove();
+            db.destroy();
+            db2.destroy();
         });
         it(
             '#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()',
