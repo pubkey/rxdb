@@ -131,7 +131,7 @@ Reads happen directly in-memory which makes RxState read performance comparable 
 
 ## RxState Replication
 
-Because the state data is stored inside of a internal [RxCollection](./rx-collection.md) you can easily use the [RxDB Replication](./replication.md) to sync data between users or devices of the same user.
+Because the state data is stored inside of an internal [RxCollection](./rx-collection.md) you can easily use the [RxDB Replication](./replication.md) to sync data between users or devices of the same user.
 
 For example with the [P2P WebRTC replication](./replication-webrtc.md) you can start the replication on the collection and automatically sync the RxState operations between users directly:
 
