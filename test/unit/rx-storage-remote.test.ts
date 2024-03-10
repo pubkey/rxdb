@@ -95,8 +95,9 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 storage: getRxStorageMemory()
             });
 
-            dbRemote.destroy();
-            dbLocal.destroy();
+            await dbRemote.destroy();
+            await dbLocal.destroy();
+            await colServer.database.destroy();
         });
     });
     describe('mode setting with RemoteMessageChannel reuse', () => {
