@@ -11,12 +11,16 @@ The state is automatically persisted through RxDB and states changes are propaga
 
 ## Creating a RxState
 
-A `RxState` instance is created on top of a [RxDatabase](./rx-database.md). The state will automatically be persisted with the [storage](./rx-storage.md) that was used when setting up the RxDatabase.
+A `RxState` instance is created on top of a [RxDatabase](./rx-database.md). The state will automatically be persisted with the [storage](./rx-storage.md) that was used when setting up the RxDatabase. To use it you first have to import the `RxDBStatePlugin` and add it to RxDB with `addRxPlugin()`.
 To create a state call the `addState()` method on the database instance. Calling `addState` multiple times will automatically de-duplicated and only create a single RxState object.
 
 ```javascript
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase, addRxPlugin } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+
+// first add the RxState plugin to RxDB
+import { RxDBStatePlugin } from 'rxdb/plugins/state';
+addRxPlugin(RxDBStatePlugin);
 
 const database = await createRxDatabase({
   name: 'heroesdb',
