@@ -1,3 +1,8 @@
+---
+title: RxState
+slug: rx-state.html
+---
+
 # RxState
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
