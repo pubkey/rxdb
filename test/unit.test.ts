@@ -1,8 +1,6 @@
 import './unit/init.test.ts';
 import './unit/util.test.ts';
 
-import './unit/rx-state.test.ts'; // TODO move down
-
 /**
  * Helpers that
  * do not fully test RxDB but
@@ -62,6 +60,7 @@ import './unit/replication.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
+import './unit/rx-state.test.ts';
 import './unit/migration-schema.test.ts';
 import './unit/attachments.test.ts';
 import './unit/attachments-compression.test.ts';
