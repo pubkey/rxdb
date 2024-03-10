@@ -251,20 +251,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
 
-
-
-        /**
-         * Offset must be used before limit in LokiJS
-         * @link https://github.com/techfort/LokiJS/issues/570
-         */
-        if (!mustRunMatcher && preparedQuery.skip) {
-            lokiQuery = lokiQuery.offset(preparedQuery.skip);
-        }
-
-        if (!mustRunMatcher && preparedQuery.limit) {
-            lokiQuery = lokiQuery.limit(preparedQuery.limit);
-        }
-
         let foundDocuments = lokiQuery.data().map((lokiDoc: any) => stripLokiKey(lokiDoc));
 
 
@@ -280,10 +266,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         );
         foundDocuments = foundDocuments.filter((d: any) => queryMatcher(d));
 
-
-        if (mustRunMatcher) {
-            foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
-        }
+        // always apply offset and limit like this, because
+        // sylvieQuery.offset() and sylvieQuery.limit() results were inconsistent
+        foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
 
         return {
             documents: foundDocuments
