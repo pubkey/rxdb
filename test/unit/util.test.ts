@@ -23,7 +23,8 @@ import {
     overwritable,
     toWithDeleted,
     stringToArrayBuffer,
-    arrayBufferToString
+    arrayBufferToString,
+    clone
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -322,6 +323,14 @@ describe('util.test.js', () => {
             };
             const frozen = deepFreezeWhenDevMode(obj);
             assert.ok(obj === frozen);
+        });
+        it('cloning a deep-frozen object should make it mutateable', () => {
+            const obj = {
+                foo: 'bar'
+            };
+            const frozen = deepFreezeWhenDevMode(obj);
+            const cloned = clone(frozen);
+            cloned.foo = 'bar2';
         });
     });
     describe('.sortDocumentsByLastWriteTime()', () => {

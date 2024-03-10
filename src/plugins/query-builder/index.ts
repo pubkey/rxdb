@@ -21,7 +21,7 @@ export function runBuildingStep<RxDocumentType, RxQueryResult>(
 
     const queryBuilderJson = queryBuilder.toJSON();
 
-    return createRxQuery(
+    return createRxQuery<RxDocumentType>(
         rxQuery.op,
         queryBuilderJson.query,
         rxQuery.collection,
@@ -29,7 +29,7 @@ export function runBuildingStep<RxDocumentType, RxQueryResult>(
             ...rxQuery.other,
             [RXQUERY_OTHER_FLAG]: queryBuilderJson.path
         }
-    ) as RxQuery;
+    ) as RxQuery<RxDocumentType>;
 }
 
 export function applyBuildingStep(

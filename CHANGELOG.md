@@ -2,6 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+
+- ADD [RxState](https://rxdb.info/rx-state.html): A convenient state library to store, fetch and observe complex json data instead of collection documents.
 - ADD automatically extend the RxDocument type so it knows about the `RxDocument.myField$` observables.
 - ADD check to ensure `Infinity` is not used when defining index sizes in the `RxJsonSchema`
 <!-- ADD new changes here! -->
