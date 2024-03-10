@@ -28,7 +28,7 @@ describeParallel('change-event-buffer.test.js', () => {
             );
             assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
 
-            col.database.destroy();
+            col.database.remove();
         });
         it('check if correct events get removed', async () => {
             const col = await humansCollection.create(0);
@@ -43,7 +43,7 @@ describeParallel('change-event-buffer.test.js', () => {
             const lastBufferEvent = col._changeEventBuffer.buffer[col._changeEventBuffer.buffer.length - 1];
             assert.strictEqual(last.passportId, lastBufferEvent.documentData.passportId);
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
     describe('.getArrayIndexByPointer()', () => {
@@ -64,7 +64,7 @@ describeParallel('change-event-buffer.test.js', () => {
             const pointer2 = col._changeEventBuffer.getArrayIndexByPointer(10);
             assert.strictEqual(pointer2, null);
 
-            col.database.destroy();
+            col.database.remove();
         });
         it('return the right pointer', async () => {
             const col = await humansCollection.create(0);
@@ -94,7 +94,7 @@ describeParallel('change-event-buffer.test.js', () => {
             got = col._changeEventBuffer.getArrayIndexByPointer(21);
             assert.strictEqual(got, 0);
 
-            col.database.destroy();
+            col.database.remove();
         });
         it('return the correct pointer', async () => {
             const col = await humansCollection.create(10);
@@ -106,7 +106,7 @@ describeParallel('change-event-buffer.test.js', () => {
             const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
             assert.strictEqual(col._changeEventBuffer.buffer[gotIndex].documentData.firstName, lastDoc.firstName);
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
     describe('.runFrom()', () => {
@@ -141,7 +141,7 @@ describeParallel('change-event-buffer.test.js', () => {
                 evs.push(cE);
             }));
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
     describe('.getFrom()', () => {
@@ -158,7 +158,7 @@ describeParallel('change-event-buffer.test.js', () => {
             evs.forEach((cE: any) => assert.ok(cE.documentId));
 
 
-            col.database.destroy();
+            col.database.remove();
         });
         it('should run correct on remove', async () => {
             const col = await humansCollection.create(0);
@@ -176,7 +176,7 @@ describeParallel('change-event-buffer.test.js', () => {
             assert.strictEqual(evs.length, 1);
             assert.strictEqual(evs[0].operation, 'DELETE');
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
     describe('.reduceByLastOfDoc()', () => {

@@ -101,7 +101,7 @@ modes.forEach(mode => {
                 assert.ok(attachment);
                 assert.strictEqual(attachment.id, 'cat.txt');
                 assert.strictEqual(attachment.type, 'text/plain');
-                c.database.destroy();
+                c.database.remove();
             });
             it('should get the attachment', async () => {
                 const c = await createCompressedAttachmentsCollection();
