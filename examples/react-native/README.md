@@ -4,7 +4,7 @@ This is an example usage of RxDB with React-native. It implements a simple heroe
 
 ## Syncing
 
-For database replication and syncing you will need to input a public ip address as the app simulators will have a different context for `localhost`. One simple way is to run a server locally and expose the port via [ngrok](https://ngrok.com/).
+For database replication and syncing you will need to input a public ip address as the app simulators will have a different context for `localhost`. One simple way is to run a server locally and expose the port via [tunnelmole](https://tunnelmole.com/docs), a free and open source tunneling tool, or [ngrok](https://ngrok.com/), a popular closed source tunneling tool.
 
 ## Try it out
 
