@@ -140,12 +140,6 @@ exposeWorkerRxStorage({
  */
 const database = await createRxDatabase({
     name: 'mydatabase',
-    /**
-     * Important: INSIDE of your SharedWorker, you can
-     * be sure that there is exactly one instance running.
-     * Therefore you MUST set multiInstance=false for better performance.
-     */
-    multiInstance: false,
     storage: baseStorage
 });
 await db.addCollections({

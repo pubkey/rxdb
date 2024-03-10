@@ -85,8 +85,6 @@ export class RxStateBase<T, Reactivity = unknown> {
                         event.operation === 'INSERT' &&
                         event.documentData.sId !== this._instanceId
                     ) {
-                        console.log('use event !');
-                        console.dir(event.documentData.ops);
                         mergeOperationsIntoState(this._state, event.documentData.ops);
                     }
                 })
@@ -117,7 +115,6 @@ export class RxStateBase<T, Reactivity = unknown> {
      * that would throw conflict errors and trigger a retry.
      */
     _triggerWrite() {
-        console.log('_triggerWrite()');
         this._writeQueue = this._writeQueue.then(async () => {
             if (this._nonPersisted.length === 0) {
                 return;
@@ -326,9 +323,6 @@ export function mergeOperationsIntoState<T>(
 ) {
     for (let index = 0; index < operations.length; index++) {
         const operation = operations[index];
-        console.log('merge op 1');
-        console.dir(operation);
         setProperty(state, operation.k, clone(operation.v));
-        console.log('merge op 2');
     }
 }

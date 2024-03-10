@@ -18,7 +18,7 @@ import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
 } from '../../plugins/storage-remote-websocket/index.mjs';
-import { getRxStorageMemory, } from '../../plugins/storage-memory/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 describeParallel('rx-storage-remote.test.ts', () => {
     /**
@@ -66,6 +66,37 @@ describeParallel('rx-storage-remote.test.ts', () => {
             );
 
             await colClient.database.destroy();
+            await colServer.database.destroy();
+        });
+        /**
+         * Often it makes sense to have the same database twice.
+         * Once in the webworker via remote and once locally.
+         * So this should not throw an error.
+         */
+        it('should not throw when the same database is created on remote and local', async () => {
+            const port = await nextPort();
+            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database: colServer.database
+            });
+            assert.ok(server);
+            const name = randomCouchString(10);
+
+            const dbRemote = await createRxDatabase({
+                name,
+                storage: getRxStorageRemoteWebsocket({
+                    url: 'ws://localhost:' + port,
+                    mode: 'storage'
+                })
+            });
+            const dbLocal = await createRxDatabase({
+                name,
+                storage: getRxStorageMemory()
+            });
+
+            await dbRemote.destroy();
+            await dbLocal.destroy();
             await colServer.database.destroy();
         });
     });
