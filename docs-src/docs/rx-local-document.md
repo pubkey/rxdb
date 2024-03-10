@@ -17,7 +17,7 @@ They come in handy when you want to store settings or additional data next to yo
 - The id of a local document has the `maxLength` of `128` characters.
 
 :::note
-While local documents can be very usefull, in many cases the [RxState](./rx-state.md) API is more convenient.
+While local documents can be very useful, in many cases the [RxState](./rx-state.md) API is more convenient.
 :::
 
 ## Add the local documents plugin
