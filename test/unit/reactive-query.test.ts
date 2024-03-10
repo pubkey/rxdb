@@ -335,7 +335,7 @@ describeParallel('reactive-query.test.js', () => {
             assert.strictEqual(streamed2[0]._id, _id);
 
             subs.forEach(sub => sub.unsubscribe());
-            col.database.destroy();
+            col.database.remove();
         });
         it('#138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
@@ -351,7 +351,7 @@ describeParallel('reactive-query.test.js', () => {
             assert.strictEqual(streamed.length, 1);
             assert.ok(isRxDocument(streamed[0]));
             sub.unsubscribe();
-            col.database.destroy();
+            col.database.remove();
         });
         it('ISSUE emitted-order not correct when doing many incrementalUpserts', async () => {
             if (
@@ -528,7 +528,7 @@ describeParallel('reactive-query.test.js', () => {
                     assert.strictEqual(res.length, 1);
                 });
 
-                db.destroy();
+                db.remove();
             });
     });
 });

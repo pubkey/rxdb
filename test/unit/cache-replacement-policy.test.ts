@@ -181,7 +181,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
 
 
             subs.forEach(sub => sub.unsubscribe());
-            col.database.destroy();
+            col.database.remove();
         });
         it('should remove the unexecuted ones after unExecutedLifetime', async () => {
             const amount = 4;
@@ -200,7 +200,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             const cachedQueries = Array.from(col._queryCache._map.values());
             assert.strictEqual(cachedQueries.length, 0);
 
-            col.database.destroy();
+            col.database.remove();
         });
         it('should remove the oldest ones', async () => {
             const col = await humansCollection.create(0);
@@ -235,7 +235,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             assert.deepStrictEqual(cachedQueries, newerQueries);
             assert.strictEqual(cachedQueries.length, amount);
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
     describe('.triggerCacheReplacement()', () => {
@@ -283,7 +283,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             });
             assert.strictEqual(runs, 2);
 
-            col.database.destroy();
+            col.database.remove();
         });
     });
 });

@@ -58,7 +58,7 @@ describeParallel('internal-indexes.test.js', () => {
                 )
             );
             assert.deepStrictEqual(preparedQuery.queryPlan.index, ['firstName', 'lastName']);
-            collection.database.destroy();
+            collection.database.remove();
         });
     });
     describe('usage', () => {
@@ -88,7 +88,7 @@ describeParallel('internal-indexes.test.js', () => {
             const result = await collection.storageInstance.query(preparedQuery);
             assert.strictEqual(result.documents[0].passportId, 'foobar');
 
-            collection.database.destroy();
+            collection.database.remove();
         });
         it('should pick up the intenral index in the query planner', async () => {
             const myIdx = ['firstName', 'lastName', 'passportId'];
@@ -123,7 +123,7 @@ describeParallel('internal-indexes.test.js', () => {
             const result = await collection.storageInstance.query(preparedQuery);
             assert.strictEqual(result.documents[0].passportId, 'foobar');
 
-            collection.database.destroy();
+            collection.database.remove();
         });
     });
     describe('special case', () => {
@@ -150,7 +150,7 @@ describeParallel('internal-indexes.test.js', () => {
             const result = await collection.storageInstance.query(preparedQuery);
             result.documents.forEach(d => assert.strictEqual(d.firstName, 'alice'));
 
-            collection.database.destroy();
+            collection.database.remove();
         });
     });
 });

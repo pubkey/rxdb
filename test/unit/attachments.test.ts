@@ -272,7 +272,7 @@ describeParallel('attachments.test.ts', () => {
             const attachment = doc2.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            c2.database.destroy();
+            c2.database.remove();
         });
         it('should remove all attachments when a document gets deleted', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -295,7 +295,7 @@ describeParallel('attachments.test.ts', () => {
             }
             assert.ok(hasThrown);
 
-            c.database.destroy();
+            c.database.remove();
         });
     });
     describe('RxAttachment.getData()', () => {
@@ -313,7 +313,7 @@ describeParallel('attachments.test.ts', () => {
             const data = await attachment.getData();
             const dataString = await blobToString(data);
             assert.strictEqual(dataString, dat);
-            c.database.destroy();
+            c.database.remove();
         });
     });
     describe('RxAttachment.getStringData()', () => {
@@ -330,7 +330,7 @@ describeParallel('attachments.test.ts', () => {
             const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getStringData();
             assert.strictEqual(data, dat);
-            c.database.destroy();
+            c.database.remove();
         });
     });
     describe('RxAttachment.remove()', () => {
@@ -353,7 +353,7 @@ describeParallel('attachments.test.ts', () => {
             const shouldBeNull = doc.getAttachment('cat.txt');
             assert.strictEqual(null, shouldBeNull);
 
-            c.database.destroy();
+            c.database.remove();
         });
     });
     describe('.allAttachments()', () => {
