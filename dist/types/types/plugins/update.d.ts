@@ -1,8 +1,8 @@
 import type { AnyKeys, AnyObject } from '../util.d.ts';
 
-import type {
-    UpdateExpression
-} from 'mingo/updater';
+// import type {
+//     UpdateExpression
+// } from 'mingo/updater';
 
 /**
  * We use an own type here, copied from mongoose

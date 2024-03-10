@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.cleanupRxCollection = cleanupRxCollection;
+exports.initialCleanupWait = initialCleanupWait;
 exports.runCleanupAfterDelete = runCleanupAfterDelete;
 exports.startCleanupForRxCollection = startCleanupForRxCollection;
 var _index = require("../../plugins/utils/index.js");
@@ -16,22 +17,11 @@ var _cleanupHelper = require("./cleanup-helper.js");
  * The cleanup is a background task which should
  * not affect the performance of other, more important tasks.
  */
-var RXSOTRAGE_CLEANUP_QUEUE = _index.PROMISE_RESOLVE_TRUE;
+var RXSTORAGE_CLEANUP_QUEUE = _index.PROMISE_RESOLVE_TRUE;
 async function startCleanupForRxCollection(rxCollection) {
   var rxDatabase = rxCollection.database;
   var cleanupPolicy = Object.assign({}, _cleanupHelper.DEFAULT_CLEANUP_POLICY, rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {});
-
-  /**
-   * Wait until minimumDatabaseInstanceAge is reached
-   * or collection is destroyed.
-   */
-  await rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge);
-  if (rxCollection.destroyed) {
-    return;
-  }
-  if (cleanupPolicy.waitForLeadership) {
-    await rxDatabase.waitForLeadership();
-  }
+  await initialCleanupWait(rxCollection, cleanupPolicy);
   if (rxCollection.destroyed) {
     return;
   }
@@ -45,6 +35,19 @@ async function startCleanupForRxCollection(rxCollection) {
    * minimumDeletedTime is reached.
    */
   await runCleanupAfterDelete(rxCollection, cleanupPolicy);
+}
+async function initialCleanupWait(collection, cleanupPolicy) {
+  /**
+   * Wait until minimumDatabaseInstanceAge is reached
+   * or collection is destroyed.
+   */
+  await collection.promiseWait(cleanupPolicy.minimumCollectionAge);
+  if (collection.destroyed) {
+    return;
+  }
+  if (cleanupPolicy.waitForLeadership) {
+    await collection.database.waitForLeadership();
+  }
 }
 
 /**
@@ -67,19 +70,24 @@ async function cleanupRxCollection(rxCollection, cleanupPolicy) {
         }));
       }
     }
-    await rxDatabase.requestIdlePromise();
     if (rxCollection.destroyed) {
       return;
     }
-    RXSOTRAGE_CLEANUP_QUEUE = RXSOTRAGE_CLEANUP_QUEUE.then(() => {
+    RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE.then(async () => {
       if (rxCollection.destroyed) {
         return true;
       }
+      await rxDatabase.requestIdlePromise();
       return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
     });
-    isDone = await RXSOTRAGE_CLEANUP_QUEUE;
+    isDone = await RXSTORAGE_CLEANUP_QUEUE;
   }
 }
+
+/**
+ * TODO this is not waiting for deletes!
+ * it just runs on interval.
+ */
 async function runCleanupAfterDelete(rxCollection, cleanupPolicy) {
   while (!rxCollection.destroyed) {
     await rxCollection.promiseWait(cleanupPolicy.runEach);

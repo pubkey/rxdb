@@ -1,4 +1,5 @@
 import { DEFAULT_CLEANUP_POLICY } from "./cleanup-helper.js";
+import { startCleanupForRxState } from "./cleanup-state.js";
 import { startCleanupForRxCollection } from "./cleanup.js";
 export var RxDBCleanupPlugin = {
   name: 'cleanup',
@@ -23,6 +24,11 @@ export var RxDBCleanupPlugin = {
     createRxCollection: {
       after: i => {
         startCleanupForRxCollection(i.collection);
+      }
+    },
+    createRxState: {
+      after: i => {
+        startCleanupForRxState(i.state);
       }
     }
   }

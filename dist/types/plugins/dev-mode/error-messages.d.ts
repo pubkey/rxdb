@@ -161,6 +161,7 @@ export declare const ERROR_MESSAGES: {
     SC38: string;
     SC39: string;
     SC40: string;
+    SC41: string;
     VD1: string;
     VD2: string;
     S1: string;
