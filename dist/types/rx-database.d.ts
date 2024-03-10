@@ -1,6 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types/index.d.ts';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise, RxState } from './types/index.d.ts';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import type { RxBackupState } from './plugins/backup/index.ts';
@@ -29,7 +29,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly allowSlowCount?: boolean | undefined;
     readonly reactivity?: RxReactivityFactory<any> | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "15.10.0";
+    readonly rxdbVersion = "15.11.0";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
@@ -64,6 +64,9 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
     collections: Collections;
+    states: {
+        [name: string]: RxState<any, Reactivity>;
+    };
     readonly eventBulks$: Subject<RxChangeEventBulk<any>>;
     private observable$;
     /**
@@ -123,6 +126,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     exportJSON(_collections?: string[]): Promise<RxDumpDatabase<Collections>>;
     exportJSON(_collections?: string[]): Promise<RxDumpDatabaseAny<Collections>>;
+    addState<T = any>(_name?: string): Promise<RxState<T, Reactivity>>;
     /**
      * Import the parsed JSON export into the collection.
      * @param _exportedJSON The previously exported data from the `<db>.exportJSON()` method.

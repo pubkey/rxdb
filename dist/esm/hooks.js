@@ -19,6 +19,7 @@ export var HOOKS = {
   createRxDatabase: [],
   preCreateRxCollection: [],
   createRxCollection: [],
+  createRxState: [],
   /**
   * runs at the end of the destroy-process of a collection
   * @async

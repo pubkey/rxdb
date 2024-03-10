@@ -1,6 +1,6 @@
 import type { LeaderElector } from 'broadcast-channel';
-import { AddReturn } from 'unload';
-import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue.ts';
+import type { AddReturn } from 'unload';
+import type { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue.ts';
 
 export type LokiDatabaseSettings = any;
 

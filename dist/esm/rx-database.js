@@ -43,6 +43,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.onDestroy = [];
     this.destroyed = false;
     this.collections = {};
+    this.states = {};
     this.eventBulks$ = new Subject();
     this.observable$ = this.eventBulks$.pipe(mergeMap(changeEventBulk => changeEventBulk.events));
     this.storageToken = PROMISE_RESOLVE_FALSE;
@@ -289,6 +290,9 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
    */;
   _proto.exportJSON = function exportJSON(_collections) {
     throw pluginMissing('json-dump');
+  };
+  _proto.addState = function addState(_name) {
+    throw pluginMissing('state');
   }
 
   /**
