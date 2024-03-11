@@ -362,7 +362,7 @@ export default function Premium() {
                                                 <input
                                                     list="home-country"
                                                     name="home-country"
-                                                    pattern="[A-Za-z \-]{2,}"
+                                                    pattern="[A-Za-z \-\,]{2,}"
                                                     required={true}
                                                     style={{ width: '100%', maxWidth: 240 }}
                                                     autoComplete="off"

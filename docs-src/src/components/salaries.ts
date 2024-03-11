@@ -142,7 +142,7 @@ export const AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY: AverageFrontEndDevel
     { 'name': 'Kazakhstan', 'code': 'KZ', salary: 12243 },
     // { 'name': 'Kenya', 'code': 'KE', salary: false },
     // { 'name': 'Kiribati', 'code': 'KI', salary: false },
-    { 'name': 'Korea, Republic of', 'code': 'KR', salary: 45957 },
+    { 'name': 'Republic of Korea', 'code': 'KR', salary: 45957 },
     // { 'name': 'Kuwait', 'code': 'KW', salary: false },
     // { 'name': 'Kyrgyzstan', 'code': 'KG', salary: false },
     { 'name': 'Latvia', 'code': 'LV', salary: 26728 },
