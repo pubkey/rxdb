@@ -1134,6 +1134,7 @@ export default function Home() {
                         href="/code"
                         target="_blank"
                         rel="noopener"
+                        onClick={() => trigger('get_the_code_main_page', 0.8)}
                       >
                         <div className="buy-option-action bg-top hover-shadow-top">
                           Get the Code
@@ -1235,6 +1236,7 @@ export default function Home() {
                       </div>
                       <a
                         href="/premium"
+                        onClick={() => trigger('request_premium_main_page', 3)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
                           Request Premium
@@ -1262,7 +1264,7 @@ export default function Home() {
                       <a
                         href="https://github.com/sponsors/pubkey?frequency=one-time&sponsor=pubkey"
                         target="_blank"
-                        onClick={() => trigger('consulting_session_request', 1.5)}
+                        onClick={() => trigger('consulting_session_request_main_page', 4)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
                           Book Now
@@ -1285,7 +1287,7 @@ export default function Home() {
                   href="/quickstart.html"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('start_now', 0.40)}
+                  onClick={() => trigger('start_now_main_bottom', 0.40)}
                 >
                   <div
                     className="button get-premium"
@@ -1298,6 +1300,7 @@ export default function Home() {
                   href="/newsletter"
                   rel="noopener"
                   target="_blank"
+                  onClick={() => trigger('newsletter_main_bottom', 0.40)}
                 >
                   <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     Get the Newsletter
@@ -1307,6 +1310,7 @@ export default function Home() {
                   href="/chat"
                   rel="noopener"
                   target="_blank"
+                  onClick={() => trigger('join_chat_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1315,7 +1319,7 @@ export default function Home() {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium">
+                <a href="/premium" onClick={() => trigger('get_premium_main_bottom', 0.40)}>
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1327,7 +1331,7 @@ export default function Home() {
                   href="https://twitter.com/intent/user?screen_name=rxdbjs"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('follow_twitter', 0.40)}
+                  onClick={() => trigger('follow_twitter_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1340,6 +1344,7 @@ export default function Home() {
                   href="/code"
                   rel="noopener"
                   target="_blank"
+                  onClick={() => trigger('get_code_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
