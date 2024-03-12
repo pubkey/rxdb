@@ -3,22 +3,33 @@ function trigger(type, value) {
 
     // reddit
     if (typeof window.rdt === 'function') {
-        window.rdt('track', 'Lead', {
-            transactionId: type + '-' + new Date().getTime(),
-            value: value
-        });
+        try {
+            window.rdt('track', 'Lead', {
+                transactionId: type + '-' + new Date().getTime(),
+                currency: 'EUR',
+                value: value
+            });
+        } catch (err) {
+            console.log('# Error on reddit trigger:');
+            console.dir(err);
+        }
     }
 
     // google analytics
     if (typeof window.gtag === 'function') {
-        window.gtag(
-            'event',
-            type,
-            {
-                value,
-                currency: 'EUR'
-            }
-        );
+        try {
+            window.gtag(
+                'event',
+                type,
+                {
+                    value,
+                    currency: 'EUR'
+                }
+            );
+        } catch (err) {
+            console.log('# Error on google trigger:');
+            console.dir(err);
+        }
     }
 }
 window.trigger = trigger;
@@ -61,25 +72,25 @@ if (location.pathname === '/') {
 
 }
 
-// Reddit Pixel
-// ! function (w, d) {
-//     if (!w.rdt) {
-//         var p = w.rdt = function () {
-//             p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments)
-//         };
-//         p.callQueue = [];
-//         var t = d.createElement('script');
-//         t.src = 'https://www.redditstatic.com/ads/pixel.js', t.async = !0;
-//         var s = d.getElementsByTagName('script')[0];
-//         s.parentNode.insertBefore(t, s)
-//     }
-// }(window, document);
-// window.rdt('init', 't2_131k54', {
-//     optOut: false,
-//     useDecimalCurrencyValues: true
-// });
-// window.rdt('track', 'PageVisit');
-// /Reddit Pixel
+// reddit pixel
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
+!function (w, d) {
+    if (!w.rdt) {
+        var p = w.rdt = function () {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
+            p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments);
+        }; p.callQueue = [];
+        var t = d.createElement('script');
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
+        t.src = 'https://www.redditstatic.com/ads/pixel.js', t.async = !0;
+        var s = d.getElementsByTagName('script')[0]; s.parentNode.insertBefore(t, s);
+    }
+}(window, document); window.rdt('init', 't2_131k54', {
+    'aaid': '<AAID-HERE>', 'email': '<EMAIL-HERE>', 'externalId': '<EXTERNAL-ID-HERE>', 'idfa': '<IDFA-HERE>'
+});
+window.rdt('track', 'PageVisit');
+// /redddit pixel
+
 
 
 function parseQueryParams(url) {
