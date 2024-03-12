@@ -188,7 +188,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(storageInstance.collectionName, collectionName);
                 assert.strictEqual(storageInstance.databaseName, databaseName);
 
-                await storageInstance.close();
+                await storageInstance.remove();
             });
             it('open many instances on the same database name', async () => {
                 const databaseName = randomCouchString(12);
@@ -205,7 +205,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         devMode: true
                     }))
                 );
-                await Promise.all(instances.map(instance => instance.close()));
+                await Promise.all(instances.map(instance => instance.remove()));
             });
             /**
              * This test ensures that people do not accidentally set
@@ -995,7 +995,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         })
                 );
                 await Promise.all(
-                    storageInstances.map(i => i.close())
+                    storageInstances.map(i => i.remove())
                 );
             });
             // Some storages had problems storing non-utf-8 chars like "é"
@@ -1720,7 +1720,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     await testQuery(query);
                 }
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to search over a nested object', async () => {
                 const schema = getNestedDocSchema();
@@ -2257,7 +2257,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(resultAfterDelete.documents.length, 1);
                 assert.strictEqual(resultAfterDelete.documents[0]._deleted, true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to correctly iterate over the checkpoints', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2411,7 +2411,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should emit all events', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2500,7 +2500,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(lastEvent.previousDocumentData);
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('it should not emit an empty eventBulk when the write had only errors', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2607,7 +2607,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo', writeResult._attachments.foo.digest);
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should return the correct attachment object on all document fetch methods', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2970,7 +2970,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     })
                 );
                 await Promise.all(
-                    storageInstances.map(i => i.close())
+                    storageInstances.map(i => i.remove())
                 );
             });
         });
@@ -3073,7 +3073,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.ok(nonDeletedDoc[0]);
 
-                await storageInstance.close();
+                await storageInstance.remove();
             });
             it('should at some time return true (when all docs are cleaned up)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({

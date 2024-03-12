@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.11.1 (10 March 2024)
+
 ### 15.11.0 (10 March 2024)
 
 - ADD [RxState](https://rxdb.info/rx-state.html): A convenient state library to store, fetch and observe complex json data that is persisted into RxDB.

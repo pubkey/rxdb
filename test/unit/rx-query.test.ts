@@ -791,7 +791,7 @@ describe('rx-query.test.ts', () => {
             const docs4 = await query.exec();
             assert.strictEqual(docs4.length, 600);
 
-            c.database.destroy();
+            c.database.remove();
         });
         it('#585 sort by sub-path not working', async () => {
             if (['lokijs'].includes(config.storage.name)) {
@@ -864,7 +864,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(foundDocsDesc.length, 3);
             assert.strictEqual(foundDocsDesc[0].info.title, 'cctest');
 
-            db.destroy();
+            db.remove();
         });
         it('#698 Same query producing a different result', async () => {
             const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number; }> = {
@@ -1123,7 +1123,7 @@ describe('rx-query.test.ts', () => {
                 result2.map(d => d.toJSON())
             );
 
-            db.destroy();
+            db.remove();
         });
         it('#2071 RxCollection.findOne().exec() returns deleted document while find().exec() not', async () => {
             const c = await humansCollection.create(1);
@@ -1140,7 +1140,7 @@ describe('rx-query.test.ts', () => {
             const doc2 = await c.findOne().exec();
             assert.strictEqual(doc2, null);
 
-            c.database.destroy();
+            c.database.remove();
         });
         it('#2213 prepareQuery should handle all comparison operators', async () => {
             const collection = await humansCollection.createAgeIndex(0);
@@ -1169,7 +1169,7 @@ describe('rx-query.test.ts', () => {
 
             assert.strictEqual(myDocument.age, 58);
 
-            collection.database.destroy();
+            collection.database.remove();
         });
         it('should not mutate the query input', async () => {
             const db = await createRxDatabase({

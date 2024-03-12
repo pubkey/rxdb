@@ -220,7 +220,7 @@ testStorages.forEach(storages => {
                 const firstEmit = handlerEmitted[0];
                 assert.deepStrictEqual(firstEmit.writeToNewResult.error, []);
 
-                await db.destroy();
+                await db.remove();
             });
             it('should migrate in parallel', async () => {
                 const name = DB_PREFIX + randomCouchString(12);
@@ -317,7 +317,7 @@ testStorages.forEach(storages => {
                 const firstEmit = handlerEmitted[0];
                 assert.deepStrictEqual(firstEmit.writeToNewResult.error, []);
 
-                await db.destroy();
+                await db.remove();
             });
             it('migrate new->new should also work', async () => {
                 const name = DB_PREFIX + randomCouchString(12);
@@ -470,7 +470,7 @@ testStorages.forEach(storages => {
                 await db.col2.findOne().exec(true);
                 await db.col2.findOne().exec(true);
 
-                await db.destroy();
+                await db.remove();
             });
         });
     });

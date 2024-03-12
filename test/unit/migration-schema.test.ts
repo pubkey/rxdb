@@ -344,7 +344,7 @@ describeParallel('migration-schema.test.ts', function () {
                 assert.ok(states.length >= 3);
 
                 sub.unsubscribe();
-                await col.database.destroy();
+                await col.database.remove();
             });
 
             it('should remove the document when migration-strategy returns null', async () => {
@@ -393,7 +393,7 @@ describeParallel('migration-schema.test.ts', function () {
                     await col.migratePromise();
                     const docs = await col.find().exec();
                     assert.strictEqual(docs.length, 5);
-                    await col.database.destroy();
+                    await col.database.remove();
                 });
             });
             describe('negative', () => {

@@ -214,7 +214,7 @@ describeParallel('encryption.test.ts', () => {
             });
             const collection = collections.humanenc;
             assert.ok(isRxCollection(collection));
-            db.destroy();
+            db.remove();
         });
     });
     describe('RxCollection.insert()', () => {
@@ -225,7 +225,7 @@ describeParallel('encryption.test.ts', () => {
             const doc = await c.findOne().exec(true);
             const secret = doc.get('secret');
             assert.strictEqual(agent.secret, secret);
-            c.database.destroy();
+            c.database.remove();
         });
         it('should insert one encrypted value (object)', async () => {
             const db = await createRxDatabase({
@@ -244,7 +244,7 @@ describeParallel('encryption.test.ts', () => {
             const secret = doc.get('secret');
             assert.strictEqual(agent.secret.name, secret.name);
             assert.strictEqual(agent.secret.subname, secret.subname);
-            db.destroy();
+            db.remove();
         });
         /**
          * @link https://github.com/pubkey/rxdb/issues/5624
@@ -274,7 +274,7 @@ describeParallel('encryption.test.ts', () => {
             const doc = await c.enchuman.findOne().exec();
             const secretAfter = doc.get('secret');
             assert.strictEqual(secret, secretAfter);
-            db.destroy();
+            db.remove();
         });
     });
     describe('RxDocument.save()', () => {
@@ -290,7 +290,7 @@ describeParallel('encryption.test.ts', () => {
             await doc.incrementalPatch({ secret: newSecret });
             const docNew = await c.findOne().exec(true);
             assert.strictEqual(newSecret, docNew.get('secret'));
-            c.database.destroy();
+            c.database.remove();
         });
         it('should save one encrypted value (object)', async () => {
             const db = await createRxDatabase({
@@ -320,7 +320,7 @@ describeParallel('encryption.test.ts', () => {
 
             assert.strictEqual(newSecret.name, docNew.get('secret.name'));
             assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));
-            db.destroy();
+            db.remove();
         });
     });
     describe('replication', () => {
@@ -417,7 +417,7 @@ describeParallel('encryption.test.ts', () => {
                 password
             });
             assert.ok(db3);
-            await db3.destroy();
+            await db3.remove();
         });
         it('#917 Unexpected end of JSON input', async () => {
             const schema: RxJsonSchema<{ name: string; color: string; happy: boolean; }> = {
@@ -471,7 +471,7 @@ describeParallel('encryption.test.ts', () => {
             // will throw exception
             await collection.findOne().exec();
 
-            db.destroy();
+            db.remove();
         });
         describe('#157 Cannot sort on field(s) "XXX" when using the default index', () => {
             it('schema example 1', async () => {
@@ -528,7 +528,7 @@ describeParallel('encryption.test.ts', () => {
 
                 const resultsAll = await queryAll.exec();
                 assert.strictEqual(resultsAll.length, 0);
-                db.destroy();
+                db.remove();
             });
             it('schema example 2', async () => {
                 const schema: RxJsonSchema<{ id: string; value: number; }> = {
@@ -572,7 +572,7 @@ describeParallel('encryption.test.ts', () => {
 
                 const resultsAll = await queryAll.exec();
                 assert.strictEqual(resultsAll.length, 0);
-                db.destroy();
+                db.remove();
             });
         });
     });

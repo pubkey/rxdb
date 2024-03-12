@@ -99,7 +99,7 @@ describeParallel('rx-state.test.ts', () => {
             assert.ok(state1 === database.states['']);
             assert.ok(state3 === database.states.foobar);
 
-            database.destroy();
+            database.remove();
         });
     });
     describe('write state data', () => {
@@ -107,7 +107,7 @@ describeParallel('rx-state.test.ts', () => {
             const state = await getState();
             await state.set('foo', () => 'bar');
             assert.strictEqual(state.foo, 'bar');
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('write multiple times at once', async () => {
             const state = await getState();
@@ -116,7 +116,7 @@ describeParallel('rx-state.test.ts', () => {
                 new Array(10).fill(0).map(() => state.set('a', plusOne))
             );
             assert.strictEqual(state.get('a'), 10);
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('update nested', async () => {
             const state = await getState();
@@ -125,7 +125,7 @@ describeParallel('rx-state.test.ts', () => {
             });
             await state.set('nes.ted', () => 'foo');
             await state.set('nes.ted', () => 'foo2');
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('doing many writes should end up in a single persistence write to the storage', async () => {
             const state = await getState();
@@ -140,7 +140,7 @@ describeParallel('rx-state.test.ts', () => {
             const storageWrites = await state.collection.find().exec();
             assert.strictEqual(storageWrites.length, 2);
 
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
     });
     describe('.get()', () => {
@@ -149,7 +149,7 @@ describeParallel('rx-state.test.ts', () => {
             await state.set('foo', () => 'bar');
             const root = state.get();
             assert.strictEqual(root.foo, 'bar');
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('should get the updated value', async () => {
             const state = await getState();
@@ -159,7 +159,7 @@ describeParallel('rx-state.test.ts', () => {
             await state.set('foo', () => 'bar2');
             assert.strictEqual(state.foo, 'bar2');
             assert.strictEqual(state.get('foo'), 'bar2');
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('should get nested values', async () => {
             const state = await getState();
@@ -175,14 +175,14 @@ describeParallel('rx-state.test.ts', () => {
             assert.deepStrictEqual(state.get('nes'), { ted: 'foo2' });
             assert.deepStrictEqual(state.get('nes.ted'), 'foo2');
 
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('should not throw on undefined values', async () => {
             const state = await getState();
             assert.deepStrictEqual(state.get('nes'), undefined);
             assert.deepStrictEqual(state.nes, undefined);
             assert.deepStrictEqual(state.get('nes.ted'), undefined);
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
     });
     describe('.get$()', () => {
@@ -222,7 +222,7 @@ describeParallel('rx-state.test.ts', () => {
                 5
             ]);
 
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
         it('should emit the correct data via proxy-getter a$', async () => {
             const state = await getState();
@@ -258,7 +258,7 @@ describeParallel('rx-state.test.ts', () => {
                 5
             ]);
 
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
     });
     describe('.get$$()', () => {
@@ -270,7 +270,7 @@ describeParallel('rx-state.test.ts', () => {
                 state.a$$
             ];
             reactivityAr.forEach(rr => assert.strictEqual(rr.init, 42));
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
     });
     describe('cleanup', () => {
@@ -286,18 +286,15 @@ describeParallel('rx-state.test.ts', () => {
 
             const stateDocsBefore = await state.collection.find().exec();
             assert.strictEqual(stateDocsBefore.length, amount);
-            console.log('stateDocsBefore: ' + stateDocsBefore.length);
 
-            console.log('--- 1');
             await state._cleanup();
-            console.log('--- 2');
 
             const stateDocsAfter = await state.collection.find().exec();
             assert.strictEqual(stateDocsAfter.length, 1, 'stateDocsAfter must be one');
 
             assert.strictEqual(state.a, amount);
 
-            state.collection.database.destroy();
+            state.collection.database.remove();
         });
     });
     describe('multiInstance', () => {

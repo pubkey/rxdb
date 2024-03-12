@@ -362,7 +362,7 @@ export default function Premium() {
                                                 <input
                                                     list="home-country"
                                                     name="home-country"
-                                                    pattern="[A-Za-z \-]{2,}"
+                                                    pattern="[A-Za-z \-\,]{2,}"
                                                     required={true}
                                                     style={{ width: '100%', maxWidth: 240 }}
                                                     autoComplete="off"
@@ -371,7 +371,7 @@ export default function Premium() {
                                                 <datalist id="home-country">
                                                     {
                                                         AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-                                                            .sort((a, b) => a.code >= b.code ? 1 : -1)
+                                                            .sort((a, b) => a.name >= b.name ? 1 : -1)
                                                             .map((country, idx) => {
                                                                 return <option key={idx} value={country.name} >{country.name}</option>;
                                                             })
