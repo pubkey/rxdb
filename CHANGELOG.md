@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(Lokisjs RxStorage) always use slice() for applying offset and limit [#5757](https://github.com/pubkey/rxdb/pull/5757)
 
 <!-- ADD new changes here! -->
 
