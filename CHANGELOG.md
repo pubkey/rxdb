@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX(Lokisjs RxStorage) always use slice() for applying offset and limit [#5757](https://github.com/pubkey/rxdb/pull/5757)
+- FIX randomly failing lokijs and denokv test [#5765](https://github.com/pubkey/rxdb/pull/5765)
 
 <!-- ADD new changes here! -->
 
