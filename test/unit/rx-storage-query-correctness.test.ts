@@ -1465,4 +1465,134 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             },
         ],
     });
+
+    testCorrectQueries<{
+        _id: string;
+        name: string;
+        gender: string;
+        age: number;
+    }>({
+        testTitle: 'issue: wrong results using skip and limit',
+        data: [
+            {
+                '_id': 'aaaaaa',
+                'name': 'odvxvubzto',
+                'gender': 'f',
+                'age': 7
+            },
+            {
+                '_id': 'bbbbbb',
+                'name': 'ftudnsnyek',
+                'gender': 'f',
+                'age': 14
+            },
+            {
+                '_id': 'cccccc',
+                'name': 'ollytrnxkr',
+                'gender': 'f',
+                'age': 3
+            },
+            {
+                '_id': 'dddddd',
+                'name': 'sxzsplrctw',
+                'gender': 'f',
+                'age': 15
+            },
+            {
+                '_id': 'eeeeee',
+                'name': 'gwhtwjinib',
+                'gender': 'm',
+                'age': 9
+            }
+        ],
+        schema: {
+            primaryKey: '_id',
+            type: 'object',
+            version: 0,
+            properties: {
+                _id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                gender: {
+                    type: 'string',
+                    enum: ['f', 'm', 'x'],
+                    maxLength: 1
+                },
+                age: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                [
+                    '_id'
+                ],
+            ]
+        },
+        queries: [
+            {
+                info: 'use skip + limit, expecting no results',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$eq': 'f'
+                        },
+                        'name': {
+                            '$gt': 'baavgagzmr',
+                            '$lte': 'mzahchkldk'
+                        }
+                    },
+                    'skip': 1,
+                    'limit': 5,
+                    'sort': [
+                        {
+                            'gender': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'use skip + limit, expecting one specific result',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$gt': 3
+                        },
+                        'name': {
+                            '$gt': 'enjpqcusiu',
+                            '$lt': 'ircrnmjhkd'
+                        }
+                    },
+                    'skip': 1,
+                    'limit': 9,
+                    'sort': [
+                        {
+                            'gender': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['eeeeee']
+            },
+        ],
+    });
 });
