@@ -33,6 +33,7 @@ import {
     RxAttachmentWriteData,
     flatClone,
     requestIdlePromise,
+    promiseSeries,
     prepareQuery
 } from '../../plugins/core/index.mjs';
 
@@ -1107,14 +1108,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
     });
     describe('stability', () => {
         it('do many writes while replication is running', async () => {
-            if (
-                config.storage.name === 'lokijs' ||
-                config.storage.name === 'denokv'
-            ) {
-                // TODO this test fails in about 1/20 times in lokijs
-                return;
-            }
-
             const writeAmount = isFastMode() ? 5 : 10;
 
             const masterInstance = await createRxStorageInstance(0);
@@ -1138,9 +1131,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const document = getDocData();
             document.passportId = 'foobar';
             const docId = document.passportId;
-            await Promise.all(
+            await promiseSeries(
                 instances
-                    .map(async (instance, idx) => {
+                    .map((instance, idx) => async () => {
                         // insert
                         const docData = Object.assign({}, clone(document), {
                             firstName: idx === 0 ? 'master' : 'fork',
