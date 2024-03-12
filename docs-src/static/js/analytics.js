@@ -78,7 +78,7 @@ if (location.pathname === '/') {
     if (!w.rdt) {
         var p = w.rdt = function () {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
-            p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments)
+            p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments);
         }; p.callQueue = [];
         var t = d.createElement('script');
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
