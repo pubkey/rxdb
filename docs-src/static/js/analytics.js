@@ -3,22 +3,33 @@ function trigger(type, value) {
 
     // reddit
     if (typeof window.rdt === 'function') {
-        window.rdt('track', 'Lead', {
-            transactionId: type + '-' + new Date().getTime(),
-            value: value
-        });
+        try {
+            window.rdt('track', 'Lead', {
+                transactionId: type + '-' + new Date().getTime(),
+                currency: 'EUR',
+                value: value
+            });
+        } catch (err) {
+            console.log('# Error on reddit trigger:');
+            console.dir(err);
+        }
     }
 
     // google analytics
     if (typeof window.gtag === 'function') {
-        window.gtag(
-            'event',
-            type,
-            {
-                value,
-                currency: 'EUR'
-            }
-        );
+        try {
+            window.gtag(
+                'event',
+                type,
+                {
+                    value,
+                    currency: 'EUR'
+                }
+            );
+        } catch (err) {
+            console.log('# Error on google trigger:');
+            console.dir(err);
+        }
     }
 }
 window.trigger = trigger;
