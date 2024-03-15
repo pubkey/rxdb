@@ -32,7 +32,7 @@ import {
 } from 'rxdb-premium/plugins/storage-sqlite';
 
 /**
- * In Node.js, we get use the SQLite database
+ * In Node.js, we use the SQLite database
  * from the 'sqlite' npm module.
  * @link https://www.npmjs.com/package/sqlite3
  */
@@ -49,6 +49,38 @@ const myRxDatabase = await createRxDatabase({
          * sqlite operations.
          */
         sqliteBasics: getSQLiteBasicsNode(sqlite3)
+    })
+});
+```
+
+## Usage with Webassembly in the Browser
+
+In the browser you can use the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) package to run sQLite in Webassembly. The wa-sqlite module also allows to use persistence with IndexedDB or OPFS.
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsWasm
+} from 'rxdb-premium/plugins/storage-sqlite';
+
+/**
+ * In the Browser, we use the SQLite database
+ * from the 'wa-sqlite' npm module. This contains the SQLite library
+ * compiled to Webassembly
+ * @link https://www.npmjs.com/package/wa-sqlite
+ */
+import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite-async.mjs';
+import SQLite from 'wa-sqlite';
+const sqliteModule = await SQLiteESMFactory();
+const sqlite3 = SQLite.Factory(module);
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsWasm(sqlite3)
     })
 });
 ```
