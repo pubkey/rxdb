@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html) add support to use Webassembly SQLite in the browser
+- [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html) add support to use Webassembly SQLite in the browser
 - FIX(Lokisjs RxStorage) always use slice() for applying offset and limit [#5757](https://github.com/pubkey/rxdb/pull/5757)
 - FIX randomly failing lokijs and denokv test [#5765](https://github.com/pubkey/rxdb/pull/5765)
 
