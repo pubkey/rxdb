@@ -186,7 +186,7 @@ Absurd-sql is a project that implements an IndexedDB-based persistence for sql.j
 
 ### NeDB
 
-NeDB was a embedded persistent or in-memory database for Node.js, nw.js, Electron and browsers.
+NeDB was a embedded persistent or in-memory database for Node.js, nw.js, [Electron](./electron-database.md) and browsers.
 It is document-oriented and had the same query syntax as MongoDB. 
 Like LokiJS it has persistence adapters for IndexedDB etc. to persist the database state on the disc.
 The last commit to NeDB was in **2016**.

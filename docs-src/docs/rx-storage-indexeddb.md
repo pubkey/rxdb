@@ -6,7 +6,7 @@ description: Optimize browser, Electron, and hybrid app performance with Indexed
 
 # IndexedDB RxStorage
 
-The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, electron or hybrid apps.
+The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or hybrid apps.
 Compared to other browser based storages, the IndexedDB storage has the smallest write- and read latency, the fastest initial page load
 and the smallest build size. Only for big datasets (more then 10k documents), the [OPFS storage](./rx-storage-opfs.md) is better suited.
 

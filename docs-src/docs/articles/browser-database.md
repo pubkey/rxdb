@@ -116,7 +116,7 @@ RxDB excels in handling schema changes, even when data is stored on multiple cli
 To optimize [storage](./browser-storage.md) space, RxDB allows the [compression](../key-compression.md) of documents. Storing compressed documents reduces storage requirements and improves overall performance, especially in scenarios with large data volumes.
 
 ### Flexible storage layer for various platforms
-RxDB offers a flexible storage layer, enabling code reuse across different platforms, including Electron.js, React Native, hybrid apps (e.g., Capacitor.js), and web browsers. This flexibility streamlines development efforts and ensures consistent data management across multiple platforms.
+RxDB offers a flexible storage layer, enabling code reuse across different platforms, including [Electron.js](../electron-database.md), React Native, hybrid apps (e.g., Capacitor.js), and web browsers. This flexibility streamlines development efforts and ensures consistent data management across multiple platforms.
 
 ### Replication Algorithm for compatibility with any backend
 RxDB incorporates a [Replication Algorithm](../replication.md) that is open-source and can be made compatible with various backend systems. This compatibility allows seamless data synchronization with different backend architectures, such as own servers, [Firebase](../replication-firestore.md), [CouchDB](../replication-couchdb.md), [NATS](../replication-nats.md) or [WebSocket](../replication-websocket.md).

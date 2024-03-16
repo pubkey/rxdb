@@ -23,12 +23,12 @@ An Electron runtime can be divided in two parts:
 This is important to understand because choosing the right database depends on your use case and on which of these JavaScript runtimes you want to keep the data.
 
 
-### Server Side Databases
+### Server Side Databases in Electron.js
 
 Because Electron runs on a desktop computer, you might think that it should be possible to use a common "server" database like MySQL, PostgreSQL or MongoDB. In theory you could ship the correct database server binaries with your electron application and start a process on the clients device which exposes a port to the database that can be consumed by Electron. In practice this is not a viable way to go because shipping the correct binaries and opening ports is way to complicated and troublesome. Instead you should use a database that can be bundled and run **inside** of Electron, either in the *main* or in the *renderer* process.
 
 
-### Localstorage / IndexedDB / WebSQL
+### Localstorage / IndexedDB / WebSQL as alternatives to SQLite in Electron
 
 Because Electron uses a common Chrome web browser in the renderer process, you can access the common Web Storage APIs like [Localstorage](./articles/localstorage.md), IndexedDB and WebSQL. This is easy to setup and storing small sets of data can be achieved in a short span of time. 
 
@@ -148,6 +148,6 @@ The downside of SQLite (or SQL in general) is that it is lacking many features t
 
 ## Follow up
 
+- Learn how to use RxDB as database in electron with the [Quickstart Tutorial](./quickstart.md).
 - Check out the [RxDB Electron example](https://github.com/pubkey/rxdb/tree/master/examples/electron)
-- If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
 - There is a followup list of other [client side database alternatives](./alternatives.md) that you can try to use with Electron.

@@ -105,8 +105,6 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="./examples/angular">Browsers</a>
   <img height="13" src="docs-src/static/files/icons/nodejs.png" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/static/files/icons/electron.png" />
-  <a href="https://rxdb.info/electron-database.html">Electron</a>
   <img height="13" src="docs-src/static/files/icons/react-native.png" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
@@ -115,6 +113,8 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
   <img height="13" src="docs-src/static/files/icons/flutter.svg" />
   <a href="./examples/flutter">Flutter</a>
+  or as an <img height="13" src="docs-src/static/files/icons/electron.png" />
+  <a href="https://rxdb.info/electron-database.html">Electron Database</a>
 </h4>
 
 
