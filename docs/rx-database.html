@@ -15,8 +15,8 @@
 
 <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c" data-cbid="c429ebbd-6e92-4150-b700-ca186e06bc7c" data-blockingmode="auto" async></script>
 <script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.8b698b6b.css">
-<script src="/assets/js/runtime~main.4eceb2d9.js" defer="defer"></script>
-<script src="/assets/js/main.d73fc328.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.9d7a27c0.js" defer="defer"></script>
+<script src="/assets/js/main.c1041ab5.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -44,7 +44,7 @@ If you want to use encrypted fields in the collections of a database, you have t
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="multiinstance">multiInstance<a href="#multiinstance" class="hash-link" aria-label="Direct link to multiInstance" title="Direct link to multiInstance">​</a></h3>
 <p><code>(optional=true)</code>
 When you create more than one instance of the same database in a single javascript-runtime, you should set <code>multiInstance</code> to <code>true</code>. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
-<code>multiInstance</code> should be set to <code>false</code> when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.</p>
+<code>multiInstance</code> should be set to <code>false</code> when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window <a href="/electron-database.html">electron</a> app which can decrease the startup time because no instance coordination has to be done.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="eventreduce">eventReduce<a href="#eventreduce" class="hash-link" aria-label="Direct link to eventReduce" title="Direct link to eventReduce">​</a></h3>
 <p><code>(optional=false)</code></p>
 <p>One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the <a href="https://github.com/pubkey/event-reduce" target="_blank" rel="noopener noreferrer">EventReduce Algorithm</a> to optimize observer or recurring queries.</p>
