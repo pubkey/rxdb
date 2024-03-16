@@ -55,7 +55,7 @@ const myRxDatabase = await createRxDatabase({
 
 ## Usage with Webassembly in the Browser
 
-In the browser you can use the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) package to run sQLite in Webassembly. The wa-sqlite module also allows to use persistence with IndexedDB or OPFS.
+In the browser you can use the [wa-sqlite](https://github.com/rhashimoto/wa-sqlite) package to run sQLite in Webassembly. The wa-sqlite module also allows to use persistence with IndexedDB or OPFS. Notice that in general SQLite via Webassembly is slower compared to other storages like [IndexedDB](./rx-storage-indexeddb.md) or [OPFS](./rx-storage-opfs.md) because sending data from the main thread to wasm and backwards is slow in the browser. Have a look the [performance comparison](./rx-storage-performance.md).
 
 ```ts
 import {
