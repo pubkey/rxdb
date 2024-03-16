@@ -148,7 +148,7 @@ const foundDocuments = await myDatabase.todos.find({
 }).exec();
 ```
 
-More Mango query examples can be found [here](./rx-query.html#examples). In addition to the `.find()` RxQuery, RxDB has additional query methods for fetching the documents you need:
+More Mango query examples can be found at the [RxQuery Examples](./rx-query.html#examples). In addition to the `.find()` RxQuery, RxDB has additional query methods for fetching the documents you need:
 
 - [findOne()](./rx-collection.md#findone)
 - [findByIds()](./rx-collection.md#findByIds)
