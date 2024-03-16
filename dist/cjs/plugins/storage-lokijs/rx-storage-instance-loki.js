@@ -157,17 +157,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
     if (preparedQuery.sort) {
       lokiQuery = lokiQuery.sort((0, _lokijsHelper.getLokiSortComparator)(this.schema, preparedQuery));
     }
-
-    /**
-     * Offset must be used before limit in LokiJS
-     * @link https://github.com/techfort/LokiJS/issues/570
-     */
-    if (!mustRunMatcher && preparedQuery.skip) {
-      lokiQuery = lokiQuery.offset(preparedQuery.skip);
-    }
-    if (!mustRunMatcher && preparedQuery.limit) {
-      lokiQuery = lokiQuery.limit(preparedQuery.limit);
-    }
     var foundDocuments = lokiQuery.data().map(lokiDoc => (0, _lokijsHelper.stripLokiKey)(lokiDoc));
 
     /**
@@ -178,9 +167,10 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
      */
     var queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(this.schema, preparedQuery);
     foundDocuments = foundDocuments.filter(d => queryMatcher(d));
-    if (mustRunMatcher) {
-      foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
-    }
+
+    // always apply offset and limit like this, because
+    // sylvieQuery.offset() and sylvieQuery.limit() results were inconsistent
+    foundDocuments = foundDocuments.slice(skip, skipPlusLimit);
     return {
       documents: foundDocuments
     };

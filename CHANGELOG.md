@@ -2,15 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html) add support to use Webassembly SQLite in the browser
-- FIX(Lokisjs RxStorage) always use slice() for applying offset and limit [#5757](https://github.com/pubkey/rxdb/pull/5757)
-- FIX randomly failing lokijs and denokv test [#5765](https://github.com/pubkey/rxdb/pull/5765)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.12.0 (16 March 2024)
+
+- [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html) add support to use Webassembly SQLite in the browser
+- FIX(Lokisjs RxStorage) always use slice() for applying offset and limit [#5757](https://github.com/pubkey/rxdb/pull/5757)
+- FIX randomly failing lokijs and denokv test [#5765](https://github.com/pubkey/rxdb/pull/5765)
 
 ### 15.11.1 (10 March 2024)
 
