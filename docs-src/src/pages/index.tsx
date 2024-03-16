@@ -1,6 +1,7 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
+import 'lazysizes';
 
 import {
   merge,
@@ -249,10 +250,10 @@ export default function Home() {
     centerMode: true,
     centerPadding: '10px',
     infinite: true,
-      arrows:false,
-      // centerMode:true,
-      // centerPadding:'100px',
-      adaptiveHeight:true,
+    arrows: false,
+    // centerMode:true,
+    // centerPadding:'100px',
+    adaptiveHeight: true,
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
@@ -298,7 +299,7 @@ export default function Home() {
         breakpoint: 480,
         settings: {
           slidesToShow: 1.1,
-            centerPadding:'15px',
+          centerPadding: '15px',
           slidesToScroll: 1,
           infinite: false,
           dots: false,
@@ -464,7 +465,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy discord">
-              <img src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+              <img className="lazyload" data-src="./files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Chat on</div>
                 <div className="title">Discord</div>
@@ -481,74 +482,74 @@ export default function Home() {
 
           <div className="block reviews">
             <div className="content centered">
-                <div className="inner">
-                    <h2>
-                        Our <b className="underline">Success Stories</b>
-                    </h2>
-                    <br/><br/>
-                </div>
+              <div className="inner">
+                <h2>
+                  Our <b className="underline">Success Stories</b>
+                </h2>
+                <br /><br />
+              </div>
             </div>
             <Slider {...slickSettings}>
-                <div className="slider-content">
-                    <h3>
-                      "We use RxDB to create applications capable of being used in the most remote areas where Internet access is really a challenge."
-                    </h3>
-                    <div className="slider-profile">
-                        <img className="slider-logo-white" src="https://altgras.com/assets/img/logo.png"/>
-                        <div className="slider-info">
-                            <p className="developer">ALTGRAS</p>
-                            <a href="https://altgras.com/" target="_blank" className="company-link">https://altgras.com/</a>
-                        </div>
-                    </div>
+              <div className="slider-content">
+                <h3>
+                  "We use RxDB to create applications capable of being used in the most remote areas where Internet access is really a challenge."
+                </h3>
+                <div className="slider-profile">
+                  <img className="slider-logo-white lazyload" data-src="./files/companies/altgras.png" />
+                  <div className="slider-info">
+                    <p className="developer">ALTGRAS</p>
+                    <a href="https://altgras.com/" target="_blank" className="company-link">https://altgras.com/</a>
+                  </div>
                 </div>
-                <div className="slider-content">
-                    <h3>
-                      "We provide a mobile app that is used by people in the field to fill in valuable information like inspections, surveys and audits"
-                    </h3>
-                    <div className="slider-profile">
-                        <img className="slider-logo-black" src="https://moreapp.com/assets/img/logo.png"/>
-                        <div className="slider-info">
-                            <p className="developer">MoreApp</p>
-                            <a href="https://moreapp.com/" target="_blank" className="company-link">https://moreapp.com/</a>
-                        </div>
-                    </div>
+              </div>
+              <div className="slider-content">
+                <h3>
+                  "We provide a mobile app that is used by people in the field to fill in valuable information like inspections, surveys and audits"
+                </h3>
+                <div className="slider-profile">
+                  <img className="slider-logo-black lazyload" data-src="./files/companies/moreapp.png" />
+                  <div className="slider-info">
+                    <p className="developer">MoreApp</p>
+                    <a href="https://moreapp.com/" target="_blank" className="company-link">https://moreapp.com/</a>
+                  </div>
                 </div>
-                <div className="slider-content">
-                    <h3>
-                      "We use RxDB to provide an offline first, cross platform point of sale system"
-                    </h3>
-                    <div className="slider-profile">
-                        <img className="slider-logo-black" src="https://wcpos.com/wp-content/uploads/2014/06/woopos-logo.png"/>
-                        <div className="slider-info">
-                            <p className="developer">WooCommerce POS</p>
-                            <a href="https://wcpos.com/" target="_blank" className="company-link">https://wcpos.com/</a>
-                        </div>
-                    </div>
+              </div>
+              <div className="slider-content">
+                <h3>
+                  "We use RxDB to provide an offline first, cross platform point of sale system"
+                </h3>
+                <div className="slider-profile">
+                  <img className="slider-logo-black lazyload" data-src="./files/companies/woopos.png" />
+                  <div className="slider-info">
+                    <p className="developer">WooCommerce POS</p>
+                    <a href="https://wcpos.com/" target="_blank" className="company-link">https://wcpos.com/</a>
+                  </div>
                 </div>
-                <div className="slider-content">
-                    <h3>
-                      "RxDB is a main component in building offline-ready multichannel apps. It has become our default stack for this kind of apps."
-                    </h3>
-                    <div className="slider-profile">
-                        <img className="slider-logo-black" src="https://atroo.de/wp-content/uploads/2018/10/atroo-small-300x117.png"/>
-                        <div className="slider-info">
-                            <p className="developer">atroo GmbH</p>
-                            <a href="https://atroo.de/" target="_blank" className="company-link">https://atroo.de/</a>
-                        </div>
-                    </div>
+              </div>
+              <div className="slider-content">
+                <h3>
+                  "RxDB is a main component in building offline-ready multichannel apps. It has become our default stack for this kind of apps."
+                </h3>
+                <div className="slider-profile">
+                  <img className="slider-logo-black lazyload" data-src="./files/companies/atroo.png" />
+                  <div className="slider-info">
+                    <p className="developer">atroo GmbH</p>
+                    <a href="https://atroo.de/" target="_blank" className="company-link">https://atroo.de/</a>
+                  </div>
                 </div>
-                {/* <div className="slider-content"> */}
-                {/*    <h3>*/}
-                {/*      "We use RxDB to store clients network topology modifications made with our map plugin visual editor"*/}
-                {/*    </h3>*/}
-                {/*    <div className="slider-profile">*/}
-                {/*        <img className="slider-logo-black" src="https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png"/>*/}
-                {/*        <div className="slider-info">*/}
-                {/*            <p className="developer">Mapgl Grafana plugins</p>*/}
-                {/*            <a href="https://raw.githubusercontent.com/vaduga/mapgl-community/" target="_blank" className="company-link">https://raw.githubusercontent.com/vaduga/mapgl-community/</a>*/}
-                {/*        </div>*/}
-                {/*    </div>*/}
-                {/* </div> */}
+              </div>
+              {/* <div className="slider-content"> */}
+              {/*    <h3>*/}
+              {/*      "We use RxDB to store clients network topology modifications made with our map plugin visual editor"*/}
+              {/*    </h3>*/}
+              {/*    <div className="slider-profile">*/}
+              {/*        <img className="slider-logo-black" src="https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png"/>*/}
+              {/*        <div className="slider-info">*/}
+              {/*            <p className="developer">Mapgl Grafana plugins</p>*/}
+              {/*            <a href="https://raw.githubusercontent.com/vaduga/mapgl-community/" target="_blank" className="company-link">https://raw.githubusercontent.com/vaduga/mapgl-community/</a>*/}
+              {/*        </div>*/}
+              {/*    </div>*/}
+              {/* </div> */}
             </Slider>
           </div>
 
@@ -691,7 +692,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy twitter">
-              <img src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
+              <img className="lazyload" data-src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Follow on</div>
                 <div className="title">Twitter</div>
@@ -749,25 +750,25 @@ export default function Home() {
               <div className="half right">
                 <div className="replication-icons">
                   <img
-                    src="./files/logo/logo.svg"
+                    data-src="./files/logo/logo.svg"
                     alt="RxDB"
-                    className="replicate-logo tilt-to-mouse"
+                    className="replicate-logo tilt-to-mouse lazyload"
                   />
                   <a href="/replication-graphql.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
                       <img
-                        src="./files/icons/graphql-text.svg"
+                        data-src="./files/icons/graphql-text.svg"
                         alt="GraphQL"
-                        className="protocol"
+                        className="protocol lazyload"
                       />
                     </div>
                   </a>
                   <a href="/replication-couchdb.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
                       <img
-                        src="./files/icons/couchdb-text.svg"
+                        data-src="./files/icons/couchdb-text.svg"
                         alt="CouchDB"
-                        className="protocol"
+                        className="protocol lazyload"
                       />
                     </div>
                   </a>
@@ -800,7 +801,7 @@ export default function Home() {
           >
             <div className="trophy">
               <img
-                src="./files/icons/github-star-with-logo.svg"
+                className="lazyload" data-src="./files/icons/github-star-with-logo.svg"
                 alt="RxDB github star"
               />
               <div style={{ flex: 1 }}>
@@ -821,8 +822,8 @@ export default function Home() {
           <div className="block offline-first dark">
             <div className="offline-image-wrapper">
               <img
-                src="files/icons/wifi/wifi_1a202c.svg"
-                className="offline-image beating-second"
+                data-src="files/icons/wifi/wifi_1a202c.svg"
+                className="offline-image beating-second lazyload"
                 alt="offline"
               />
             </div>
@@ -872,7 +873,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img src="./files/icons/angular.svg" alt="angular" />
+                  <img className="lazyload" data-src="./files/icons/angular.svg" alt="angular" />
                   Angular
                 </div>
               </a>
@@ -880,14 +881,14 @@ export default function Home() {
                 className="neumorphism-circle-m circle centered enlarge-on-mouse"
                 style={{ top: '10%', left: '58%' }}
               >
-                <img src="./files/icons/capacitor.svg" alt="capacitor" />
+                <img className="lazyload" data-src="./files/icons/capacitor.svg" alt="capacitor" />
                 Capacitor
               </div>
               <div
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '-4%', left: '44%' }}
               >
-                <img src="./files/icons/deno.svg" alt="deno" />
+                <img className="lazyload" data-src="./files/icons/deno.svg" alt="deno" />
                 Deno
               </div>
               <a
@@ -898,7 +899,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img src="./files/icons/nodejs.svg" alt="Node.js" />
+                  <img className="lazyload" data-src="./files/icons/nodejs.svg" alt="Node.js" />
                   Node.js
                 </div>
               </a>
@@ -910,7 +911,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img src="./files/icons/react.svg" alt="React" />
+                  <img className="lazyload" data-src="./files/icons/react.svg" alt="React" />
                   React
                 </div>
               </a>
@@ -918,7 +919,7 @@ export default function Home() {
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
               >
-                <img src="./files/icons/svelte.svg" alt="Svelte" />
+                <img className="lazyload" data-src="./files/icons/svelte.svg" alt="Svelte" />
                 Svelte
               </div>
               <br />
@@ -945,7 +946,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img src="./files/icons/electron.svg" alt="electron" />
+                    <img className="lazyload" data-src="./files/icons/electron.svg" alt="electron" />
                     Electron
                   </div>
                 </a>
@@ -957,7 +958,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img src="./files/icons/vuejs.svg" alt="Vue.js" />
+                    <img className="lazyload" data-src="./files/icons/vuejs.svg" alt="Vue.js" />
                     Vue.js
                   </div>
                 </a>
@@ -969,7 +970,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img src="./files/icons/ionic.svg" alt="ionic" />
+                    <img className="lazyload" data-src="./files/icons/ionic.svg" alt="ionic" />
                     Ionic
                   </div>
                 </a>
@@ -977,7 +978,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '46%', left: '11%' }}
                 >
-                  <img src="./files/icons/nativescript.svg" alt="NativeScript" />
+                  <img className="lazyload" data-src="./files/icons/nativescript.svg" alt="NativeScript" />
                   NativeScript
                 </div>
                 <a
@@ -988,7 +989,7 @@ export default function Home() {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img src="./files/icons/react.svg" alt="React Native" />
+                    <img className="lazyload" data-src="./files/icons/react.svg" alt="React Native" />
                     React Native
                   </div>
                 </a>
@@ -996,7 +997,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img src="./files/icons/nextjs.svg" alt="Next.js" />
+                  <img className="lazyload" data-src="./files/icons/nextjs.svg" alt="Next.js" />
                   Next.js
                 </div>
                 <a
@@ -1007,7 +1008,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img src="./files/icons/flutter.svg" alt="Flutter" />
+                    <img className="lazyload" data-src="./files/icons/flutter.svg" alt="Flutter" />
                     Flutter
                   </div>
                 </a>
@@ -1022,7 +1023,7 @@ export default function Home() {
                   Trusted and <b className="underline">open source</b>
                 </h2>
                 <div className="box dark">
-                  <img src="files/icons/github-star.svg" alt="github star" />
+                  <img className="lazyload" data-src="files/icons/github-star.svg" alt="github star" />
                   <div className="label">Github Stars</div>
                   <a
                     className="value"
@@ -1035,7 +1036,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img src="files/icons/download.svg" alt="npm downloads" />
+                  <img className="lazyload" data-src="files/icons/download.svg" alt="npm downloads" />
                   <div className="label">npm downloads</div>
                   <a
                     className="value beating-number"
@@ -1049,7 +1050,7 @@ export default function Home() {
                 </div>
                 <div className="clear" />
                 <div className="box dark">
-                  <img src="files/icons/person.svg" alt="contributor" />
+                  <img className="lazyload" data-src="files/icons/person.svg" alt="contributor" />
                   <div className="label">Contributors</div>
                   <a
                     className="value"
@@ -1062,7 +1063,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img src="files/icons/commit.svg" alt="commit" />
+                  <img className="lazyload" data-src="files/icons/commit.svg" alt="commit" />
                   <div className="label">Commits</div>
                   <a
                     className="value"
@@ -1076,7 +1077,7 @@ export default function Home() {
                 </div>
                 <div className="clear" />
                 <div className="box dark">
-                  <img src="files/icons/gear.svg" alt="gear" />
+                  <img className="lazyload" data-src="files/icons/gear.svg" alt="gear" />
                   <div className="label">RxDB made Projects</div>
                   <a
                     className="value"
@@ -1089,7 +1090,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img src="files/icons/twitter.svg" alt="twitter" />
+                  <img className="lazyload" data-src="files/icons/twitter.svg" alt="twitter" />
                   <div className="label">Twitter followers</div>
                   <a
                     className="value"

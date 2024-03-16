@@ -49,7 +49,8 @@ const config: Config = {
       src: 'https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c',
       'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
       'data-blockingmode': 'auto',
-      type: 'text/javascript'
+      type: 'text/javascript',
+      async: true
     },
     {
       src: '/js/analytics.js',
