@@ -186,7 +186,9 @@ First lets look at the raw numbers. A good performance comparison can be found i
     </a>
 </center>
 
-But remember that WebTransport is a pretty new technologie based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
+:::note
+Remember that WebTransport is a pretty new technologie based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
+:::
 
 Lets also compare the Latency, the throughput and the scalability:
 
