@@ -35,7 +35,7 @@ function longPoll() {
 longPoll(); // Initiate the long polling
 ```
 
-Implementing long-polling on the client side is pretty simple, as shown in the code above. However on the backend there can be multiple difficulties to ensure the client recieves all events and does not miss out updates when the client is currently reconnecting.
+Implementing long-polling on the client side is pretty simple, as shown in the code above. However on the backend there can be multiple difficulties to ensure the client receives all events and does not miss out updates when the client is currently reconnecting.
 
 ### What are WebSockets?
 
@@ -56,7 +56,7 @@ socket.onmessage = function(event) {
 };
 ```
 
-While the basics of the WebSocket API are easy to use it has shown to be rather complex in production. A socket can loose connection and must be re-created accordingly. Especially detecting if a connection is still useable or not, can be very tricky. Mostly you would add a [ping-and-pong](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets) heartbeath to ensure that the open connection is not closed.
+While the basics of the WebSocket API are easy to use it has shown to be rather complex in production. A socket can loose connection and must be re-created accordingly. Especially detecting if a connection is still usable or not, can be very tricky. Mostly you would add a [ping-and-pong](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#pings_and_pongs_the_heartbeat_of_websockets) heartbeath to ensure that the open connection is not closed.
 This complexity is why most people use a library on top of WebSockets like [Socket.IO](https://socket.io/) which handles all these cases and even provides fallbacks to long-polling if required.
 
 ### What are Server-Sent-Events ?
@@ -126,7 +126,7 @@ app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)
 WebTransport is a cutting-edge API designed for efficient, low-latency communication between web clients and servers. It leverages the [HTTP/3 QUIC protocol](https://en.wikipedia.org/wiki/HTTP/3) to enable a variety of data transfer capabilities, such as sending data over multiple streams, in both reliable and unreliable manners, and even allowing data to be sent out of order. This makes WebTransport a powerful tool for applications requiring high-performance networking, such as real-time gaming, live streaming, and collaborative platforms. However, it's important to note that WebTransport is currently a working draft and has not yet achieved widespread adoption.
 As of now (March 2024), WebTransport is in a [Working Draft](https://w3c.github.io/webtransport/) and not widely supported. You cannot yet use WebTransport in the [Safari browser](https://caniuse.com/webtransport) and there is also no native support [in Node.js](https://github.com/w3c/webtransport/issues/511). This limits its usability across different platforms and environments.
 
-Even when WebTransport will become widely supported, its API is very complex to use and likely it would be someting where people build libraries on top of WebTransport, not using it directly in an application's sourcecode.
+Even when WebTransport will become widely supported, its API is very complex to use and likely it would be something where people build libraries on top of WebTransport, not using it directly in an application's sourcecode.
 
 ### What is WebRTC ?
 
@@ -138,23 +138,23 @@ While WebRTC is made to be used for client-client interactions, it could also be
 
 ### Sending Data in both directions
 
-Only WebSockets and WebTransport allow to send data in both directions so that you can recieve server-data and send client-data over the same connection.
+Only WebSockets and WebTransport allow to send data in both directions so that you can receive server-data and send client-data over the same connection.
 
 While it would also be possible with **Long-Polling** in theory, it is not recommended because sending "new" data to an existing long-polling connection would require
-to do an additional http-request anyway. So instead of doing that you can send data directly from the client to the server with an additional http-request without interupting
+to do an additional http-request anyway. So instead of doing that you can send data directly from the client to the server with an additional http-request without interrupting
 the long-polling connection.
 
-**Server-Sent-Events** do not support sending any additional data to the server. You can only do the initial request, and even there you cannot send POST-like data in the http-body by default with the native [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource). Instead you have to put all data inside of the url parameters which is considered a bad practice for security because credentials might leak into server logs, proxies and caches. To fix this problem, [RxDB](https://rxdb.info/) for example uses the [eventsource polyfill](https://github.com/EventSource/eventsource) instead of the native `EventSource API`. This library adds aditional functionality like sending **custom http headers**.
+**Server-Sent-Events** do not support sending any additional data to the server. You can only do the initial request, and even there you cannot send POST-like data in the http-body by default with the native [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource). Instead you have to put all data inside of the url parameters which is considered a bad practice for security because credentials might leak into server logs, proxies and caches. To fix this problem, [RxDB](https://rxdb.info/) for example uses the [eventsource polyfill](https://github.com/EventSource/eventsource) instead of the native `EventSource API`. This library adds additional functionality like sending **custom http headers**.
 
 ### 6-Requests per Domain Limit
 
-Most modern browsers allow six connections per domain () which limits the usability of all steady server-to-client messaging methods. The limitation of six connections is even shared across browser tabs so when you open the same page in multiple tabs, they would have to shared the six-connection-pool wich each other. This limitation is part of the HTTP/1.1-RFC (which even defines a lower number of only two connections).
+Most modern browsers allow six connections per domain () which limits the usability of all steady server-to-client messaging methods. The limitation of six connections is even shared across browser tabs so when you open the same page in multiple tabs, they would have to shared the six-connection-pool with each other. This limitation is part of the HTTP/1.1-RFC (which even defines a lower number of only two connections).
 
 > Quote From [RFC 2616 – Section 8.1.4](https://www.w3.org/Protocols/rfc2616/rfc2616-sec8.html#sec8.1.4): "Clients that use persistent connections SHOULD limit the number of simultaneous connections that they maintain to a given server. A single-user client SHOULD NOT maintain more than **2 connections** with any server or proxy. A proxy SHOULD use up to 2*N connections to another server or proxy, where N is the number of simultaneously active users. These guidelines are intended to improve HTTP response times and avoid congestion."
 
 While that policy makes sense to prevent website owners from using their visitors to D-DOS other websites, it can be a big problem when multiple connections are required to handle server-client communication for legitimate use cases. To workaround the limitation you have to use HTTP/2 or HTTP/3 with which the browser will only open a single connection per domain and then use multiplexing to run all data through a single connection. While this gives you a virtually infinity amount of parallel connections, there is a [SETTINGS_MAX_CONCURRENT_STREAMS](https://www.rfc-editor.org/rfc/rfc7540#section-6.5.2) setting which limits the actually connections amount. The default is 100 concurrent streams for most configurations.
 
-In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have beem marked as "wont fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
+In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have beem marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
 
 ### Connections are not kept open on mobile apps
 
@@ -176,12 +176,19 @@ From consutling many [RxDB](https://rxdb.info/) users, it was shown that in ente
 
 ## Performance Comparison
 
-Comparing the performance of WebSockets, Server-Sent Events (SSE), Long-Polling and WebTransport directly involves evaluating key aspects such as latency, throughput, server load, and scalability under various conditions. I did not do any hard performance measurements because I do not think it makes that much sense. If you can find anything like that, make a pull request to this article.
-Instead the performance comparison comes from sources I could find online. But a good timing comparison between WebSocket and WebTransport can be [found here](https://github.com/Sh3b0/realtime-web?tab=readme-ov-file#demos).
+Comparing the performance of WebSockets, Server-Sent Events (SSE), Long-Polling and WebTransport directly involves evaluating key aspects such as latency, throughput, server load, and scalability under various conditions.
 
-Lets compare the Latency, the throughput and the sccalability.
+First lets look at the raw numbers. A good performance comparison can be found in [this repo](https://github.com/Sh3b0/realtime-web?tab=readme-ov-file#demos) which tests the messages times in a [Go Lang](https://go.dev/) server implementation. Here we can see that the performance of WebSockets, WebRTC and WebTransport are comparable:
 
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/websocket-webrtc-webtransport-performance.png" alt="WebSocket WebRTC WebTransport Performance" width="360" />
+    </a>
+</center>
 
+But remember that WebTransport is a pretty new technologie based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
+
+Lets also compare the Latency, the throughput and the sccalability:
 
 ### Latency
 - **WebSockets**: Offers the lowest latency due to its full-duplex communication over a single, persistent connection. Ideal for real-time applications where immediate data exchange is critical.
