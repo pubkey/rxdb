@@ -210,7 +210,7 @@ app.get('/push', (req, res) => {
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation).
 The `pull.stream$` is implemented with server send events that are send from the server to the client.
 
-The client connects to an url and receives server-send-events that contain all ongoing writes.
+The client connects to an url and receives server-sent-events that contain all ongoing writes.
 
 ```ts
 // > client.ts

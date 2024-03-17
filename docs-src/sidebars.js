@@ -146,6 +146,7 @@ const sidebars = {
         'articles/in-memory-nosql-database',
         'articles/ionic-database',
         'articles/json-database',
+        'articles/websockets-sse-polling-webrtc-webtransport',
         'articles/localstorage',
         'articles/mobile-database',
         'articles/progressive-web-app-database',
