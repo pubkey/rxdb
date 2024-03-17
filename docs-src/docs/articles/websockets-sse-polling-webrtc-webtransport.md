@@ -177,7 +177,8 @@ From consutling many [RxDB](https://rxdb.info/) users, it was shown that in ente
 ## Performance Comparison
 
 Comparing the performance of WebSockets, Server-Sent Events (SSE), Long-Polling and WebTransport directly involves evaluating key aspects such as latency, throughput, server load, and scalability under various conditions. I did not do any hard performance measurements because I do not think it makes that much sense. If you can find anything like that, make a pull request to this article.
-Instead the performance comparison comes from sources I could find online.
+Instead the performance comparison comes from sources I could find online. But a good timing comparison between WebSocket and WebTransport can be [found here](https://github.com/Sh3b0/realtime-web?tab=readme-ov-file#demos).
+
 Lets compare the Latency, the throughput and the sccalability.
 
 
