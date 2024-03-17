@@ -300,7 +300,7 @@ const replicationState = await replicateRxCollection({
 /**
  * Creating the pull stream for realtime replication.
  * Here we use a websocket but any other way of sending data to the client can be used,
- * like long polling or server-send events.
+ * like long polling or server-sent events.
  */
 const pullStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 let firstOpen = true;
