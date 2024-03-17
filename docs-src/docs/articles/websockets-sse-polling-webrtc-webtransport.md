@@ -8,7 +8,14 @@ description: Explore the pivotal roles of WebSockets, Server-Sent Events, Long-P
 
 For modern real-time web applications, the ability to send events from the server to the client is indispensable. This necessity has led to the development of several methods over the years, each with its own set of advantages and drawbacks. Initially, [long-polling](#what-is-long-polling) was the only option available. It was then succeeded by [WebSockets](#what-are-websockets), which offered a more robust solution for bidirectional communication. Following WebSockets, [Server-Sent Events (SSE)](#what-are-server-sent-events) provided a simpler method for one-way communication from server to client. Looking ahead, the [WebTransport](#what-is-the-webtransport-api) protocol promises to revolutionize this landscape even further by providing a more efficient, flexible, and scalable approach. For niche use cases, [WebRTC](#what-is-webrtc) might also be considered for server-client events.
 
-This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications.
+This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications. It is a condensed summary of my gathered expirience when I implemented the [RxDB Replication Protocol](../replication.md) to be compatible with various backend technologies.
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
+    </a>
+</center>
+
 
 ### What is Long Polling ?
 
