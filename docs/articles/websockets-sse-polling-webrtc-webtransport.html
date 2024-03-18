@@ -15,8 +15,8 @@
 
 <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c" data-cbid="c429ebbd-6e92-4150-b700-ca186e06bc7c" data-blockingmode="auto" async></script>
 <script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.8b698b6b.css">
-<script src="/assets/js/runtime~main.97f9359e.js" defer="defer"></script>
-<script src="/assets/js/main.dbacdbb2.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b9e4f141.js" defer="defer"></script>
+<script src="/assets/js/main.55a3bed7.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -108,9 +108,9 @@ By default you likely will open one server-stream-connection per tab which is of
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="known-problems">Known Problems<a href="#known-problems" class="hash-link" aria-label="Direct link to Known Problems" title="Direct link to Known Problems">​</a></h2>
 <p>For all of the realtime streaming technologies, there are known problems. When you build anything on top of them, keep these in mind.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="a-client-can-miss-out-events-when-reconnecting">A client can miss out events when reconnecting<a href="#a-client-can-miss-out-events-when-reconnecting" class="hash-link" aria-label="Direct link to A client can miss out events when reconnecting" title="Direct link to A client can miss out events when reconnecting">​</a></h3>
-<p>When a client is connection, reconnection or offline, it can miss out events that happen on the server but could not be streamed to the client.
-This missout out events are not relevant when the server is streaming the full content each time anyway, like on a live updating stock ticker.
-When the backend is made to stream partial results, you have to account for missed out events. Fixing that on the backend scaled pretty bad because the backend would have to remember for each client which events have been successfully send already. Instead this should be implemented with client side logic.</p>
+<p>When a client is connecting, reconnecting or offline, it can miss out events that happened on the server but could not be streamed to the client.
+This missed out events are not relevant when the server is streaming the full content each time anyway, like on a live updating stock ticker.
+But when the backend is made to stream partial results, you have to account for missed out events. Fixing that on the backend scales pretty bad because the backend would have to remember for each client which events have been successfully send already. Instead this should be implemented with client side logic.</p>
 <p>The <a href="/replication.html">RxDB replication protocol</a> for example uses two modes of operation for that. One is the <a href="/replication.html#checkpoint-iteration">checkpoint iteration mode</a> where normal http requests are used to iterate over backend data, until the client is in sync again. Then it can switch to <a href="/replication.html#event-observation">event observation mode</a> where updates from the realtime-stream are used to keep the client in sync. Whenever a client disconnects or has any error, the replication shortly switches to <a href="/replication.html#checkpoint-iteration">checkpoint iteration mode</a> until the client is in sync again. This method accounts for missed out events and ensures that clients can always sync to the exact equal state of the server.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="company-firewalls-can-cause-problems">Company firewalls can cause problems<a href="#company-firewalls-can-cause-problems" class="hash-link" aria-label="Direct link to Company firewalls can cause problems" title="Direct link to Company firewalls can cause problems">​</a></h3>
 <p>There are many known problems with company infrastructure when using any of the streaming technologies. Proxies and firewall can block traffic or unintentionally break requests and responses. Whenever you implement a realtime app in such an infrastructure, make sure you first test out if the technology itself works for you.</p>
