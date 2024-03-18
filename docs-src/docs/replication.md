@@ -566,3 +566,13 @@ With this data, the backend can decide onto which attachments must be deleted, a
 
 Accordingly, the pulled document must contain the same data, if the backend has a new document state with updated attachments.
 
+
+## FAQ
+
+<details>
+    <summary>I have infinite loops in my replication, how to debug?</summary>
+    <div>
+    When you have infinite loops in your replication or random re-runs of http requests after some time, the reason is likely that your pull-handler
+    is crashing. The debug this, add a log to the error$ handler to debug it. `myRxReplicationState.error$.subscribe(err => console.log('error$', err))`.
+    </div>
+</details>
