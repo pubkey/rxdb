@@ -195,7 +195,7 @@ Comparing the performance of WebSockets, Server-Sent Events (SSE), Long-Polling 
 First lets look at the raw numbers. A good performance comparison can be found in [this repo](https://github.com/Sh3b0/realtime-web?tab=readme-ov-file#demos) which tests the messages times in a [Go Lang](https://go.dev/) server implementation. Here we can see that the performance of WebSockets, WebRTC and WebTransport are comparable:
 
 <center>
-    <a href="https://rxdb.info/">
+    <a href="https://github.com/Sh3b0/realtime-web?tab=readme-ov-file#demos" target="_blank">
         <img src="../files/websocket-webrtc-webtransport-performance.png" alt="WebSocket WebRTC WebTransport Performance" width="360" />
     </a>
 </center>
