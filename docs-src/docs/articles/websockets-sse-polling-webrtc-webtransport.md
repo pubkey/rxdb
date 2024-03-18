@@ -243,7 +243,7 @@ For all of the realtime streaming technologies, there are known problems. When y
 ### A client can miss out events when reconnecting
 
 When a client is connection, reconnection or offline, it can miss out events that happen on the server but could not be streamed to the client.
-This missout out events are not relevant when the server is streaming the full content each time anways, like on a live updating stock ticker.
+This missout out events are not relevant when the server is streaming the full content each time anyway, like on a live updating stock ticker.
 When the backend is made to stream partial results, you have to account for missed out events. Fixing that on the backend scaled pretty bad because the backend would have to remember for each client which events have been successfully send already. Instead this should be implemented with client side logic.
 
 The [RxDB replication protocol](../replication.md) for example uses two modes of operation for that. One is the [checkpoint iteration mode](../replication.md#checkpoint-iteration) where normal http requests are used to iterate over backend data, until the client is in sync again. Then it can switch to [event observation mode](../replication.md#event-observation) where updates from the realtime-stream are used to keep the client in sync. Whenever a client disconnects or has any error, the replication shortly switches to [checkpoint iteration mode](../replication.md#checkpoint-iteration) until the client is in sync again. This method accounts for missed out events and ensures that clients can always sync to the exact equal state of the server.
