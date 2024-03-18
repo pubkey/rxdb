@@ -141,6 +141,8 @@ Even when WebTransport will become widely supported, its API is very complex to 
 
 While WebRTC is made to be used for client-client interactions, it could also be leveraged for server-client communication where the server just simulated being also a client. This approach only makes sense for niche use cases which is why in the following WebRTC will be ignored as an option.
 
+The problem is that for WebRTC to work, you need a signaling-server anyway which would then again run over websockets, SSE or WebTransport. This defeats the purpose of using WebRTC as a replacement for these technologies.
+
 ## Limitations of the technologies
 
 ### Sending Data in both directions
@@ -162,6 +164,11 @@ Most modern browsers allow six connections per domain () which limits the usabil
 While that policy makes sense to prevent website owners from using their visitors to D-DOS other websites, it can be a big problem when multiple connections are required to handle server-client communication for legitimate use cases. To workaround the limitation you have to use HTTP/2 or HTTP/3 with which the browser will only open a single connection per domain and then use multiplexing to run all data through a single connection. While this gives you a virtually infinity amount of parallel connections, there is a [SETTINGS_MAX_CONCURRENT_STREAMS](https://www.rfc-editor.org/rfc/rfc7540#section-6.5.2) setting which limits the actually connections amount. The default is 100 concurrent streams for most configurations.
 
 In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have beem marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
+
+:::note Lower the amount of connections in Browser Apps
+When you build a browser application, you have to assume that your users will use the app not only once, but in multiple browser tabs in parallel.
+By default you likely will open one server-stream-connection per tab which is often not necessary at all. Instead you open only a single connection and shared it between tabs, no matter how many tabs are open. [RxDB](https://rxdb.info/) does that with the [LeaderElection](../leader-election.md) from the [broadcast-channel npm package](https://github.com/pubkey/broadcast-channel) to only have one stream of replication between server and clients. You can use that package standalone (without RxDB) for any type of application.
+:::
 
 ### Connections are not kept open on mobile apps
 
