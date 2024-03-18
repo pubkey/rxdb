@@ -236,6 +236,22 @@ However, **WebTransport**, despite its potential, faces adoption challenges. It 
 **Long-Polling**, once a common technique, is now largely outdated due to its inefficiency and the high overhead of repeatedly establishing new HTTP connections. Although it may serve as a fallback in environments lacking support for WebSockets or SSE, its use is generally discouraged due to significant performance limitations.
 
 
+## Known Problems
+
+For all of the realtime streaming technologies, there are known problems. When you build anything on top of them, keep these in mind.
+
+### A client can miss out events when reconnecting
+
+When a client is connection, reconnection or offline, it can miss out events that happen on the server but could not be streamed to the client.
+This missout out events are not relevant when the server is streaming the full content each time anways, like on a live updating stock ticker.
+When the backend is made to stream partial results, you have to account for missed out events. Fixing that on the backend scaled pretty bad because the backend would have to remember for each client which events have been successfully send already. Instead this should be implemented with client side logic.
+
+The [RxDB replication protocol](../replication.md) for example uses two modes of operation for that. One is the [checkpoint iteration mode](../replication.md#checkpoint-iteration) where normal http requests are used to iterate over backend data, until the client is in sync again. Then it can switch to [event observation mode](../replication.md#event-observation) where updates from the realtime-stream are used to keep the client in sync. Whenever a client disconnects or has any error, the replication shortly switches to [checkpoint iteration mode](../replication.md#checkpoint-iteration) until the client is in sync again. This method accounts for missed out events and ensures that clients can always sync to the exact equal state of the server.
+
+### Company firewalls can cause problems
+
+There are many known problems with company infrastructure when using any of the streaming technologies. Proxies and firewall can block traffic or unintentionally break requests and responses. Whenever you implement a realtime app in such an infrastructure, make sure you first test out if the technology itself works for you.
+
 ## Follow Up
 
 - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993)
