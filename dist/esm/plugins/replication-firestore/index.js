@@ -9,7 +9,6 @@ import { firestoreRowToDocData, getContentByIds, isoStringToServerTimestamp, ser
 export * from "./firestore-helper.js";
 export * from "./firestore-types.js";
 export var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  _inheritsLoose(RxFirestoreReplicationState, _RxReplicationState);
   function RxFirestoreReplicationState(firestore, replicationIdentifierHash, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifierHash, collection, '_deleted', pull, push, live, retryTime, autoStart) || this;
@@ -23,6 +22,7 @@ export var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationSt
     _this.autoStart = autoStart;
     return _this;
   }
+  _inheritsLoose(RxFirestoreReplicationState, _RxReplicationState);
   return RxFirestoreReplicationState;
 }(RxReplicationState);
 export function replicateFirestore(options) {

@@ -45,7 +45,6 @@ Object.keys(_couchdbTypes).forEach(function (key) {
  * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
 var RxCouchDBReplicationState = exports.RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  (0, _inheritsLoose2.default)(RxCouchDBReplicationState, _RxReplicationState);
   function RxCouchDBReplicationState(url, fetch, replicationIdentifier, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, '_deleted', pull, push, live, retryTime, autoStart) || this;
@@ -60,6 +59,7 @@ var RxCouchDBReplicationState = exports.RxCouchDBReplicationState = /*#__PURE__*
     _this.autoStart = autoStart;
     return _this;
   }
+  (0, _inheritsLoose2.default)(RxCouchDBReplicationState, _RxReplicationState);
   return RxCouchDBReplicationState;
 }(_index3.RxReplicationState);
 function replicateCouchDB(options) {

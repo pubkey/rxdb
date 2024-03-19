@@ -18,7 +18,6 @@ var _localDocumentsHelper = require("./local-documents-helper.js");
 var _rxDatabase = require("../../rx-database.js");
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
-  (0, _inheritsLoose2.default)(RxLocalDocumentClass, _RxDocumentParent);
   function RxLocalDocumentClass(id, jsonData, parent) {
     var _this2;
     _this2 = _RxDocumentParent.call(this, null, jsonData) || this;
@@ -26,6 +25,7 @@ var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
     _this2.parent = parent;
     return _this2;
   }
+  (0, _inheritsLoose2.default)(RxLocalDocumentClass, _RxDocumentParent);
   return RxLocalDocumentClass;
 }(RxDocumentParent);
 var RxLocalDocumentPrototype = {

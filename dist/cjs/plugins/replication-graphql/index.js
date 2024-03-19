@@ -69,7 +69,6 @@ Object.keys(_queryBuilderFromRxSchema).forEach(function (key) {
  * you can use it to sync collections with a remote graphql endpoint.
  */
 var RxGraphQLReplicationState = exports.RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  (0, _inheritsLoose2.default)(RxGraphQLReplicationState, _RxReplicationState);
   function RxGraphQLReplicationState(url, clientState, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart, customFetch) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart) || this;
@@ -86,6 +85,7 @@ var RxGraphQLReplicationState = exports.RxGraphQLReplicationState = /*#__PURE__*
     _this.customFetch = customFetch;
     return _this;
   }
+  (0, _inheritsLoose2.default)(RxGraphQLReplicationState, _RxReplicationState);
   var _proto = RxGraphQLReplicationState.prototype;
   _proto.setHeaders = function setHeaders(headers) {
     this.clientState.headers = (0, _index.flatClone)(headers);

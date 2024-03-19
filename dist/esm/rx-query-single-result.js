@@ -32,7 +32,7 @@ export var RxQuerySingleResult = /*#__PURE__*/function () {
    * to ensure we do not store the same data twice and fill up the memory.
    * @overwrites itself with the actual value
    */
-  _createClass(RxQuerySingleResult, [{
+  return _createClass(RxQuerySingleResult, [{
     key: "docsData",
     get: function () {
       return overwriteGetterForCaching(this, 'docsData', this.documents.map(d => d._data));
@@ -60,6 +60,5 @@ export var RxQuerySingleResult = /*#__PURE__*/function () {
       return overwriteGetterForCaching(this, 'docsMap', map);
     }
   }]);
-  return RxQuerySingleResult;
 }();
 //# sourceMappingURL=rx-query-single-result.js.map

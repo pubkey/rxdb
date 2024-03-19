@@ -10,7 +10,6 @@ import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from "./
 import { isRxDatabase } from "../../rx-database.js";
 var RxDocumentParent = createRxDocumentConstructor();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
-  _inheritsLoose(RxLocalDocumentClass, _RxDocumentParent);
   function RxLocalDocumentClass(id, jsonData, parent) {
     var _this2;
     _this2 = _RxDocumentParent.call(this, null, jsonData) || this;
@@ -18,6 +17,7 @@ var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
     _this2.parent = parent;
     return _this2;
   }
+  _inheritsLoose(RxLocalDocumentClass, _RxDocumentParent);
   return RxLocalDocumentClass;
 }(RxDocumentParent);
 var RxLocalDocumentPrototype = {

@@ -92,14 +92,13 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
       return cacheItem.last;
     }
   };
-  (0, _createClass2.default)(DocumentCache, [{
+  return (0, _createClass2.default)(DocumentCache, [{
     key: "getCachedRxDocument",
     get: function () {
       var fn = getCachedRxDocumentMonad(this);
       return (0, _index.overwriteGetterForCaching)(this, 'getCachedRxDocument', fn);
     }
   }]);
-  return DocumentCache;
 }();
 /**
  * This function is called very very often.
