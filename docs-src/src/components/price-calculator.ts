@@ -67,10 +67,10 @@ export function calculatePrice(input: PriceCalculationInput) {
      * Discount if more then one package
      */
     if (input.packages.length === 2) {
-        totalPrice = totalPrice * 0.80;
+        totalPrice = totalPrice * 0.90;
     }
     if (input.packages.length > 2) {
-        totalPrice = totalPrice * 0.70;
+        totalPrice = totalPrice * 0.80;
     }
 
     /**
@@ -78,7 +78,7 @@ export function calculatePrice(input: PriceCalculationInput) {
      * @link https://www.geogebra.org/graphing
      */
     if (input.companySize > 1) {
-        let companySizeIncrease = 1 + ((Math.pow((input.companySize * 1) - 1, 0.85) / 100) * 4.5);
+        let companySizeIncrease = 1 + ((Math.pow((input.companySize * 1) - 1, 0.45) / 100) * 4.5);
 
         const companySizeIncreaseMax = 6;
         if (companySizeIncrease > companySizeIncreaseMax) {
