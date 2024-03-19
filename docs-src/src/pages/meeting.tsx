@@ -7,22 +7,28 @@
  */
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { getDatabase, hasIndexedDB } from '../components/database';
 
 const FILE_EVENT_ID = 'meeting-link-clicked';
+const REDIRECT_TIME = 1000;
 
 export default function Meeting() {
     const { siteConfig } = useDocusaurusContext();
+
+    const [goalUrl, setGoalUrl] = useState(null);
 
     const isBrowser = useIsBrowser();
     useEffect(() => {
         if (!isBrowser || !hasIndexedDB()) {
             return;
         }
-
         (async () => {
+            const myParam = new URLSearchParams(window.location.search).get('f');
+            setGoalUrl('https://rxdb.pipedrive.com/scheduler/' + myParam + '/schedulr');
+            setTimeout(() => window.location.href = goalUrl, REDIRECT_TIME);
+
             const database = await getDatabase();
             const flagDoc = await database.getLocal(FILE_EVENT_ID);
             if (flagDoc) {
@@ -36,13 +42,6 @@ export default function Meeting() {
             }
         })();
     });
-
-
-    let goalUrl = 'https://rxdb.pipedrive.com/scheduler/';
-    if (isBrowser) {
-        const myParam = new URLSearchParams(window.location.search).get('f');
-        goalUrl += myParam + '/schedulr';
-    }
 
     return (
         <Layout
@@ -60,10 +59,11 @@ export default function Meeting() {
                     <p>
                         <b>You will be redirected in a few seconds.</b>
                     </p>
-                    <p>
-                        <a href={goalUrl}>Click here to open the meeting scheduler directly.</a>
-                    </p>
-                    <meta httpEquiv="Refresh" content={'0; url=' + goalUrl} />
+                    {!!goalUrl && <>
+                        <p>
+                            <a href={goalUrl}>Click here to open the meeting scheduler directly.</a>
+                        </p>
+                    </>}
                 </div>
             </main>
         </Layout >
