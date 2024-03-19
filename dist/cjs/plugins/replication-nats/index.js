@@ -43,7 +43,6 @@ Object.keys(_natsTypes).forEach(function (key) {
   });
 });
 var RxNatsReplicationState = exports.RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  (0, _inheritsLoose2.default)(RxNatsReplicationState, _RxReplicationState);
   function RxNatsReplicationState(replicationIdentifier, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, '_deleted', pull, push, live, retryTime, autoStart) || this;
@@ -56,6 +55,7 @@ var RxNatsReplicationState = exports.RxNatsReplicationState = /*#__PURE__*/funct
     _this.autoStart = autoStart;
     return _this;
   }
+  (0, _inheritsLoose2.default)(RxNatsReplicationState, _RxReplicationState);
   return RxNatsReplicationState;
 }(_index3.RxReplicationState);
 function replicateNats(options) {

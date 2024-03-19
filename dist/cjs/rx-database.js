@@ -385,7 +385,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
   _proto.remove = function remove() {
     return this.destroy().then(() => removeRxDatabase(this.name, this.storage, this.password));
   };
-  (0, _createClass2.default)(RxDatabaseBase, [{
+  return (0, _createClass2.default)(RxDatabaseBase, [{
     key: "$",
     get: function () {
       return this.observable$;
@@ -396,7 +396,6 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
       return this;
     }
   }]);
-  return RxDatabaseBase;
 }();
 /**
  * checks if an instance with same name and storage already exists

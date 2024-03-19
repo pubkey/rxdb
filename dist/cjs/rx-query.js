@@ -266,7 +266,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
   _proto.limit = function limit(_amount) {
     throw (0, _index.pluginMissing)('query-builder');
   };
-  (0, _createClass2.default)(RxQueryBase, [{
+  return (0, _createClass2.default)(RxQueryBase, [{
     key: "$",
     get: function () {
       if (!this._$) {
@@ -352,7 +352,6 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
       return this;
     }
   }]);
-  return RxQueryBase;
 }();
 function _getDefaultQuery() {
   return {

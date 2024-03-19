@@ -371,7 +371,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   _proto.remove = function remove() {
     return this.destroy().then(() => removeRxDatabase(this.name, this.storage, this.password));
   };
-  _createClass(RxDatabaseBase, [{
+  return _createClass(RxDatabaseBase, [{
     key: "$",
     get: function () {
       return this.observable$;
@@ -382,7 +382,6 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
       return this;
     }
   }]);
-  return RxDatabaseBase;
 }();
 
 /**

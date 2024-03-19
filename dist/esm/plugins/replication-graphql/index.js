@@ -11,7 +11,6 @@ import { addRxPlugin } from "../../index.js";
 import { removeGraphQLWebSocketRef, getGraphQLWebSocket } from "./graphql-websocket.js";
 import { Subject } from 'rxjs';
 export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  _inheritsLoose(RxGraphQLReplicationState, _RxReplicationState);
   function RxGraphQLReplicationState(url, clientState, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart, customFetch) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart) || this;
@@ -28,6 +27,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
     _this.customFetch = customFetch;
     return _this;
   }
+  _inheritsLoose(RxGraphQLReplicationState, _RxReplicationState);
   var _proto = RxGraphQLReplicationState.prototype;
   _proto.setHeaders = function setHeaders(headers) {
     this.clientState.headers = flatClone(headers);

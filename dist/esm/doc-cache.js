@@ -86,14 +86,13 @@ export var DocumentCache = /*#__PURE__*/function () {
       return cacheItem.last;
     }
   };
-  _createClass(DocumentCache, [{
+  return _createClass(DocumentCache, [{
     key: "getCachedRxDocument",
     get: function () {
       var fn = getCachedRxDocumentMonad(this);
       return overwriteGetterForCaching(this, 'getCachedRxDocument', fn);
     }
   }]);
-  return DocumentCache;
 }();
 
 /**

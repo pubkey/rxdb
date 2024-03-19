@@ -44,7 +44,6 @@ function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
-  (0, _inheritsLoose2.default)(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
   function RxError(code, message, parameters = {}) {
@@ -57,11 +56,12 @@ var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
     _this.rxdb = true; // tag them as internal
     return _this;
   }
+  (0, _inheritsLoose2.default)(RxError, _Error);
   var _proto = RxError.prototype;
   _proto.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2.default)(RxError, [{
+  return (0, _createClass2.default)(RxError, [{
     key: "name",
     get: function () {
       return 'RxError (' + this.code + ')';
@@ -72,10 +72,8 @@ var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
       return false;
     }
   }]);
-  return RxError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
 var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
-  (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
   function RxTypeError(code, message, parameters = {}) {
@@ -88,11 +86,12 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2.rxdb = true; // tag them as internal
     return _this2;
   }
+  (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   var _proto2 = RxTypeError.prototype;
   _proto2.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2.default)(RxTypeError, [{
+  return (0, _createClass2.default)(RxTypeError, [{
     key: "name",
     get: function () {
       return 'RxTypeError (' + this.code + ')';
@@ -103,7 +102,6 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
       return true;
     }
   }]);
-  return RxTypeError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);

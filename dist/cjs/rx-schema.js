@@ -106,7 +106,7 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
-  (0, _createClass2.default)(RxSchema, [{
+  return (0, _createClass2.default)(RxSchema, [{
     key: "version",
     get: function () {
       return this.jsonSchema.version;
@@ -131,7 +131,6 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
       return (0, _index.overwriteGetterForCaching)(this, 'hash', this.hashFunction(JSON.stringify(this.jsonSchema)));
     }
   }]);
-  return RxSchema;
 }();
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(index => (0, _index.isMaybeReadonlyArray)(index) ? index : [index]);

@@ -33,7 +33,6 @@ function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 export var RxError = /*#__PURE__*/function (_Error) {
-  _inheritsLoose(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
   function RxError(code, message, parameters = {}) {
@@ -46,11 +45,12 @@ export var RxError = /*#__PURE__*/function (_Error) {
     _this.rxdb = true; // tag them as internal
     return _this;
   }
+  _inheritsLoose(RxError, _Error);
   var _proto = RxError.prototype;
   _proto.toString = function toString() {
     return this.message;
   };
-  _createClass(RxError, [{
+  return _createClass(RxError, [{
     key: "name",
     get: function () {
       return 'RxError (' + this.code + ')';
@@ -61,10 +61,8 @@ export var RxError = /*#__PURE__*/function (_Error) {
       return false;
     }
   }]);
-  return RxError;
 }( /*#__PURE__*/_wrapNativeSuper(Error));
 export var RxTypeError = /*#__PURE__*/function (_TypeError) {
-  _inheritsLoose(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
   function RxTypeError(code, message, parameters = {}) {
@@ -77,11 +75,12 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2.rxdb = true; // tag them as internal
     return _this2;
   }
+  _inheritsLoose(RxTypeError, _TypeError);
   var _proto2 = RxTypeError.prototype;
   _proto2.toString = function toString() {
     return this.message;
   };
-  _createClass(RxTypeError, [{
+  return _createClass(RxTypeError, [{
     key: "name",
     get: function () {
       return 'RxTypeError (' + this.code + ')';
@@ -92,7 +91,6 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
       return true;
     }
   }]);
-  return RxTypeError;
 }( /*#__PURE__*/_wrapNativeSuper(TypeError));
 export function newRxError(code, parameters) {
   return new RxError(code, overwritable.tunnelErrorMessage(code), parameters);

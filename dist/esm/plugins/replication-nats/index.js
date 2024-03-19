@@ -10,7 +10,6 @@ import { awaitRetry } from "../replication/replication-helper.js";
 export * from "./nats-types.js";
 export * from "./nats-helper.js";
 export var RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) {
-  _inheritsLoose(RxNatsReplicationState, _RxReplicationState);
   function RxNatsReplicationState(replicationIdentifier, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, '_deleted', pull, push, live, retryTime, autoStart) || this;
@@ -23,6 +22,7 @@ export var RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) 
     _this.autoStart = autoStart;
     return _this;
   }
+  _inheritsLoose(RxNatsReplicationState, _RxReplicationState);
   return RxNatsReplicationState;
 }(RxReplicationState);
 export function replicateNats(options) {
