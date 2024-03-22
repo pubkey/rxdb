@@ -288,7 +288,6 @@ export function isSelectorSatisfiedByIndex(
             set.delete(fieldName);
         }
 
-
         const startKey = startKeys[i];
         const endKey = endKeys[i];
 

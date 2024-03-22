@@ -1641,7 +1641,6 @@ describe('rx-collection.test.ts', () => {
                     const doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.firstName, 'foobar');
 
-
                     c.database.destroy();
                 });
                 it('should work when upserting to existing document', async () => {
