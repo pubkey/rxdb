@@ -21,7 +21,7 @@ export default function Meeting() {
             } else {
                 window.trigger(
                     FILE_EVENT_ID,
-                    40
+                    100
                 );
                 await database.upsertLocal(FILE_EVENT_ID, {});
             }
@@ -45,9 +45,9 @@ export default function Meeting() {
                         <b>You will be redirected in a few seconds.</b>
                     </p>
                     <p>
-                        <a href="https://rxdb.pipedrive.com/scheduler/QBbGlDC4/schedulr">Click here</a>
+                        <a href="https://rxdb.pipedrive.com/scheduler/Z6A0M1sr/rxdb-1h-paid-consulting-session">Click here</a>
                     </p>
-                    <meta httpEquiv="Refresh" content="0; url=https://rxdb.pipedrive.com/scheduler/QBbGlDC4/schedulr" />
+                    <meta httpEquiv="Refresh" content="0; url=https://rxdb.pipedrive.com/scheduler/Z6A0M1sr/rxdb-1h-paid-consulting-session" />
                 </div>
             </main>
         </Layout >
