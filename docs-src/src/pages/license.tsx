@@ -16,40 +16,45 @@ const FILE_EVENT_ID = 'premium_license_opened';
 export default function LicensePreview() {
     const { siteConfig } = useDocusaurusContext();
 
+    const [goalUrl, setGoalUrl] = useState(null);
     const isBrowser = useIsBrowser();
     useEffect(() => {
+        console.log('use effect');
         if (!isBrowser || !hasIndexedDB()) {
             return;
         }
 
         (async () => {
-            const database = await getDatabase();
-            const flagDoc = await database.getLocal(FILE_EVENT_ID);
-            if (flagDoc) {
-                console.log('# file opening already tracked');
-            } else {
-                const myParam = new URLSearchParams(window.location.search).get('v');
-                const value = myParam ? parseInt(myParam, 10) : 300;
-                window.trigger(
-                    FILE_EVENT_ID,
-                    Math.floor(value / 3) // assume lead-to-sale-rate is 33%.
-                );
-                await database.upsertLocal(FILE_EVENT_ID, {});
+            try {
+                const database = await getDatabase();
+                const flagDoc = await database.getLocal(FILE_EVENT_ID);
+                if (flagDoc) {
+                    console.log('# file opening already tracked');
+                } else {
+                    const myParamValue = new URLSearchParams(window.location.search).get('v');
+                    const value = myParamValue ? parseInt(myParamValue, 10) : 300;
+                    window.trigger(
+                        FILE_EVENT_ID,
+                        Math.floor(value / 3) // assume lead-to-sale-rate is 33%.
+                    );
+                    await database.upsertLocal(FILE_EVENT_ID, {});
+                }
+            } catch (err) {
+                console.log(err);
+            }
+
+            const myParamFileCode = new URLSearchParams(window.location.search).get('f');
+            const newUrl = 'https://rxdb.pipedrive.com/documents/p/' + myParamFileCode;
+            if (goalUrl !== newUrl) {
+                setGoalUrl(newUrl);
+                setTimeout(() => window.location.href = newUrl, 1000);
             }
         })();
     });
 
-
-    const [goalUrl, setGoalUrl] = useState(null);
-    if (isBrowser) {
-        const myParam = new URLSearchParams(window.location.search).get('f');
-        setGoalUrl('https://rxdb.pipedrive.com/documents/p/' + myParam);
-        setTimeout(() => window.location.href = goalUrl, 1000);
-    }
-
     return (
         <Layout
-            title={`Chat - ${siteConfig.title}`}
+            title={`License Preview - ${siteConfig.title}`}
             description="License Preview"
         >
             <main>
