@@ -779,6 +779,36 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
     });
+    describe('incrementalModify', () => {
+        it('should end up with a single storage write', async () => {
+            const c = await humansCollection.create(1);
+            let doc = await c.findOne().exec(true);
+            doc = await doc.incrementalPatch({ age: 0 });
+            const bulkWriteBefore = c.storageInstance.bulkWrite.bind(c.storageInstance);
+            let count = 0;
+            c.storageInstance.bulkWrite = (writes, context) => {
+                count = count + 1;
+                return bulkWriteBefore(writes, context);
+            };
+
+
+            const modifier = (d: any) => {
+                d.age = d.age + 1;
+                return d;
+            };
+            await Promise.all([
+                doc.incrementalModify(modifier),
+                doc.incrementalModify(modifier),
+                doc.incrementalModify(modifier),
+                doc.incrementalModify(modifier),
+                doc.incrementalModify(modifier)
+            ]);
+
+            assert.strictEqual(count, 1);
+
+            c.database.destroy();
+        });
+    });
     describeParallel('Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
