@@ -7,7 +7,7 @@
  */
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { getDatabase, hasIndexedDB } from '../components/database';
 
@@ -40,10 +40,11 @@ export default function LicensePreview() {
     });
 
 
-    let goalUrl = 'https://rxdb.pipedrive.com/documents/p/';
+    const [goalUrl, setGoalUrl] = useState(null);
     if (isBrowser) {
         const myParam = new URLSearchParams(window.location.search).get('f');
-        goalUrl += myParam;
+        setGoalUrl('https://rxdb.pipedrive.com/documents/p/' + myParam);
+        setTimeout(() => window.location.href = goalUrl, 1000);
     }
 
     return (
@@ -62,10 +63,11 @@ export default function LicensePreview() {
                     <p>
                         <b>You will be redirected in a few seconds.</b>
                     </p>
-                    <p>
-                        <a href={goalUrl}>Click here to open the license agreement directly.</a>
-                    </p>
-                    <meta httpEquiv="Refresh" content={'1; url=' + goalUrl} />
+                    {!!goalUrl && <>
+                        <p>
+                            <a href={goalUrl}>Click here to open the license agreement directly.</a>
+                        </p>
+                    </>}
                 </div>
             </main>
         </Layout >
