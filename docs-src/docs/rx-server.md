@@ -313,7 +313,7 @@ The server plugin is in beta mode and some features are still missing. Make a Pu
 <details>
     <summary>Why can't endpoits be added dynamically?</summary>
     <div>
-    After `RxServer.listen()` is called, you can no longer add endpoints. This is because many of the supported
+    After `RxServer.start()` is called, you can no longer add endpoints. This is because many of the supported
     server libraries do <a href="https://github.com/fastify/fastify/issues/1771">not allow dynamic routing</a> for performance and security reasons. 
     </div>
 </details>
