@@ -13,15 +13,29 @@ The server plugin is in **beta** mode and the API might be changed without a maj
 
 ## Starting a RxServer
 
-To create an `RxServer`, you have to install the `rxdb-server` package with `npm install rxdb-server --save` and then you can import the `startRxServer()` function and create a server on a given [RxDatabase](./rx-database.md):
+To create an `RxServer`, you have to install the `rxdb-server` package with `npm install rxdb-server --save` and then you can import the `createRxServer()` function and create a server on a given [RxDatabase](./rx-database.md) and adapter.
+
+After adding the endpoints to the server, do not forget to call `myServer.start()` to start the actuall http-server.
 
 ```ts
-import { startRxServer } from 'rxdb-server/plugins/server';
+import { createRxServer } from 'rxdb-server/plugins/server';
 
-const myServer = await startRxServer({
+/**
+ * We use the express adapter which currently is the only existing one.
+ * Other adapters will be added soon.
+ */
+import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
+
+const myServer = await createRxServer({
     database: myRxDatabase,
+    adapter: RxServerAdapterExpress,
     port: 443
 });
+
+// add endpoints here (see below)
+
+// after adding the endpoints, start the server
+await myServer.start();
 ```
 
 
@@ -37,7 +51,7 @@ An endpoint is added to the server by calling the add endpoint method like `myRx
 The endpoint urls is a combination of the given `name` and schema `version` of the collection, like `/my-endpoint/0`.
 
 ```ts
-const myEndpoint = await server.addReplicationEndpoint({
+const myEndpoint = server.addReplicationEndpoint({
     name: 'my-endpoint',
     collection: myServerCollection
 });
@@ -55,7 +69,7 @@ The endpoint is added to the server with the `addReplicationEndpoint()` method. 
 
 ```ts
 // > server.ts
-const endpoint = await server.addReplicationEndpoint({
+const endpoint = server.addReplicationEndpoint({
     name: 'my-endpoint',
     collection: myServerCollection
 });
@@ -293,5 +307,13 @@ The server plugin is in beta mode and some features are still missing. Make a Pu
             It has a different license <a href="https://en.wikipedia.org/wiki/Server_Side_Public_License">(SSPL)</a> to prevent large cloud vendors from "stealing" the revenue, similar to MongoDB's license.
         </li>
     </ul>
+    </div>
+</details>
+
+<details>
+    <summary>Why can't endpoits be added dynamically?</summary>
+    <div>
+    After `RxServer.listen()` is called, you can no longer add endpoints. This is because many of the supported
+    server libraries do <a href="https://github.com/fastify/fastify/issues/1771">not allow dynamic routing</a> for performance and security reasons. 
     </div>
 </details>

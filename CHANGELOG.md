@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REFACTOR RxServer package. (Includes breaking changes of the beta RxServer!)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
