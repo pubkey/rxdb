@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- REFACTOR RxServer package. (Includes breaking changes of the beta RxServer!)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.13.0 (24 March 2024)
+
+- REFACTOR RxServer package. (Includes breaking changes of the beta RxServer!)
 
 ### 15.12.0 (16 March 2024)
 
