@@ -5,7 +5,6 @@ import React from 'react';
 
 export default function LegalNotice() {
     const { siteConfig } = useDocusaurusContext();
-
     return (
         <>
             <Head>
