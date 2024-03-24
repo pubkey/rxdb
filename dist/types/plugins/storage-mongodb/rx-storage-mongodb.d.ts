@@ -4,7 +4,7 @@ import { RxStorageInstanceMongoDB } from './rx-storage-instance-mongodb.ts';
 export declare class RxStorageMongoDB implements RxStorage<MongoDBStorageInternals, MongoDBSettings> {
     databaseSettings: MongoDBDatabaseSettings;
     name: string;
-    readonly rxdbVersion = "15.13.0";
+    readonly rxdbVersion = "15.13.1";
     constructor(databaseSettings: MongoDBDatabaseSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, MongoDBSettings>): Promise<RxStorageInstanceMongoDB<RxDocType>>;
 }
