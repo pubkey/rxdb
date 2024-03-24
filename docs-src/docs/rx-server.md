@@ -15,7 +15,7 @@ The server plugin is in **beta** mode and the API might be changed without a maj
 
 To create an `RxServer`, you have to install the `rxdb-server` package with `npm install rxdb-server --save` and then you can import the `createRxServer()` function and create a server on a given [RxDatabase](./rx-database.md) and adapter.
 
-After adding the endpoints to the server, do not forget to call `myServer.start()` to start the actuall http-server.
+After adding the endpoints to the server, do not forget to call `myServer.start()` to start the actually http-server.
 
 ```ts
 import { createRxServer } from 'rxdb-server/plugins/server';
