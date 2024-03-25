@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "15.13.0",
+  "version": "15.13.4",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -466,7 +466,7 @@
     "js-base64": "3.7.7",
     "jsonschema-key-compression": "1.7.0",
     "lokijs": "1.5.12",
-    "mingo": "6.4.12",
+    "mingo": "6.4.13",
     "mongodb": "6.4.0",
     "nats": "2.19.0",
     "oblivious-set": "1.4.0",
