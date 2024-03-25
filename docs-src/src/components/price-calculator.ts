@@ -12,7 +12,7 @@ export const PACKAGE_PRICE: { [k in PackageName]: number; } = {
     browser: 0.40,
     native: 0.40,
     performance: 0.35,
-    server: 0.15,
+    server: 0.25,
     // source-code access and others have no base price but only adds x% to the total.
     sourcecode: 0,
     perpetual: 0
