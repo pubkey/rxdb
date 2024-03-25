@@ -56,7 +56,7 @@
     "@capacitor/preferences": "5.0.7",
     "@nguniversal/express-engine": "16.2.0",
     "assert": "2.1.0",
-    "express": "4.18.3",
+    "express": "4.19.1",
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
     "material-design-icons": "3.0.1",
