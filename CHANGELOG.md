@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Fastify adapter to RxServer](https://rxdb.info/rx-server.html)
-- ADD [Koa adapter to RxServer](https://rxdb.info/rx-server.html)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.14.0 (25 March 2024)
+
+- ADD [Fastify adapter to RxServer](https://rxdb.info/rx-server.html)
+- ADD [Koa adapter to RxServer](https://rxdb.info/rx-server.html)
 
 ### 15.13.4 (24 March 2024)
 
