@@ -21,8 +21,7 @@ After adding the endpoints to the server, do not forget to call `myServer.start(
 import { createRxServer } from 'rxdb-server/plugins/server';
 
 /**
- * We use the express adapter which currently is the only existing one.
- * Other adapters will be added soon.
+ * We use the express adapter which is the one that comes with RxDB core
  */
 import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
 
@@ -38,7 +37,21 @@ const myServer = await createRxServer({
 await myServer.start();
 ```
 
+### Using RxServer with Fastify
 
+There is also a [RxDB Premium 👑](/premium) adapter to use the RxServer with [Fastify](https://fastify.dev/) instead of express. Fastify has shown to have better performance and in general is more modern.
+
+```ts
+import { createRxServer } from 'rxdb-server/plugins/server';
+import { RxServerAdapterFastify } from 'rxdb-premium/plugins/server-adapter-fastify';
+
+const myServer = await createRxServer({
+    database: myRxDatabase,
+    adapter: RxServerAdapterFastify,
+    port: 443
+});
+await myServer.start();
+```
 
 ## RxServer Endpoints
 

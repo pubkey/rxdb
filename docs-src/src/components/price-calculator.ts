@@ -12,6 +12,7 @@ export const PACKAGE_PRICE: { [k in PackageName]: number; } = {
     browser: 0.40,
     native: 0.40,
     performance: 0.35,
+    server: 0.15,
     // source-code access and others have no base price but only adds x% to the total.
     sourcecode: 0,
     perpetual: 0
@@ -22,7 +23,7 @@ export const PACKAGE_PRICE: { [k in PackageName]: number; } = {
  */
 export const INFLATION_RATE = 0.05;
 
-export type PackageName = 'perpetual' | 'sourcecode' | 'browser' | 'native' | 'performance';
+export type PackageName = 'perpetual' | 'sourcecode' | 'browser' | 'native' | 'performance' | 'server';
 export type ProjectAmount = '1' | '2' | 'infinity';
 export type LicensePeriod = 1 | 2 | 3;
 

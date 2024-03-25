@@ -221,6 +221,16 @@ export default function Premium() {
                                         </div>
                                     </div>
                                 </a>
+                                <a href="/rx-server.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
+                                        <div className="premium-block-inner">
+                                            <h4>RxServer Fastify Adapter</h4>
+                                            <p>
+                                                An adapter to use the RxServer with fastify instead of express. Used to have better performance when serving requests.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -511,6 +521,24 @@ export default function Premium() {
                                                         <li>
                                                             <a href="/rx-storage-shared-worker.html" target="_blank">
                                                                 RxStorage Shared Worker
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div className="package bg-gradient-left-top">
+                                                <div className="package-inner">
+                                                    <input
+                                                        name="package-server"
+                                                        type="checkbox"
+                                                        className="package-checkbox"
+                                                        defaultChecked={true}
+                                                    />
+                                                    <h4>Server Package</h4>
+                                                    <ul>
+                                                        <li>
+                                                            <a href="/rx-server.html" target="_blank">
+                                                                RxServer Adapter Fastify
                                                             </a>
                                                         </li>
                                                     </ul>
