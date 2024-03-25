@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [fastify adapter to RxServer](https://rxdb.info/rx-server.html)
+- ADD [Fastify adapter to RxServer](https://rxdb.info/rx-server.html)
+- ADD [Koa adapter to RxServer](https://rxdb.info/rx-server.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

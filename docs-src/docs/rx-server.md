@@ -53,6 +53,23 @@ const myServer = await createRxServer({
 await myServer.start();
 ```
 
+### Using RxServer with Koa
+
+There is also a [RxDB Premium 👑](/premium) adapter to use the RxServer with [Koa](https://koajs.com/) instead of express. Koa has shown to have better compared to express.
+
+```ts
+import { createRxServer } from 'rxdb-server/plugins/server';
+import { RxServerAdapterKoa } from 'rxdb-premium/plugins/server-adapter-koa';
+
+const myServer = await createRxServer({
+    database: myRxDatabase,
+    adapter: RxServerAdapterKoa,
+    port: 443
+});
+await myServer.start();
+```
+
+
 ## RxServer Endpoints
 
 On top of the RxServer you can add different types of **endpoints**. An endpoint is always connected to exactly one [RxCollection](./rx-collection.md) and it only serves data from that single collection.
