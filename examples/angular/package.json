@@ -12,7 +12,7 @@
     "ng": "ng",
     "type": "module",
     "dev": "ng serve",
-    "build": "npm run build:frontend && npm run build:copy && npm run build:server && echo \"BUILD SUCCESS\"",
+    "build": "npm run build:frontend && npm run build:copy && echo \"BUILD SUCCESS\"",
     "build:frontend": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --configuration production --aot",
     "build:server": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng run angular:server:production",
     "build:serve": "ws -p 8888 -d dist/angular/browser",
