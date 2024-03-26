@@ -12,9 +12,9 @@ However there are many reasons to use other reactivity libraries that use a diff
 RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-database.md) creation so that you can easily access values wrapped with your custom datatype in a convenient way.
 
 
-## Adding a custom reactivity factory
+## Adding a custom reactivity factory (in angular projects)
 
-So get custom reactivity objects out of RxDB, you have to pass a `RxReactivityFactory` during database creation. The `RxReactivityFactory` has the `fromObservable()` method that creates your custom reacitvity object based on an observable and an initial value.
+If you have an angular project, to get custom reactivity objects out of RxDB, you have to pass a `RxReactivityFactory` during database creation. The `RxReactivityFactory` has the `fromObservable()` method that creates your custom reacitvity object based on an observable and an initial value.
 
 For example to use signals in angular, you can use the angular [toSignal](https://angular.io/api/core/rxjs-interop/toSignal) function:
 
