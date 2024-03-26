@@ -20,9 +20,10 @@ For example to use signals in angular, you can use the angular [toSignal](https:
 
 ```ts
 import { RxReactivityFactory } from 'rxdb/plugins/core';
+import { Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-const reactivityFactory: RxReactivityFactory<ReactivityType> = {
-    fromObservable(obs, initialValue) {
+const reactivityFactory: RxReactivityFactory<Signal<any>> = {
+    fromObservable(obs, initialValue: any) {
         return toSignal(obs, { initialValue });
     }
 };
@@ -38,6 +39,8 @@ const database = await createRxDatabase({
     reactivity: reactivityFactory
 });
 ```
+
+An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/tree/master/examples/angular/src/app/components/heroes-list)
 
 ## Accessing custom reactivity objects
 
