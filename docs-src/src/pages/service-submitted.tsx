@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import { getDatabase, hasIndexedDB } from '../components/database';
 const FILE_EVENT_ID = 'paid-meeting-link-clicked';
 
-export default function Meeting() {
+export default function ServiceSubmitted() {
     const { siteConfig } = useDocusaurusContext();
 
     const isBrowser = useIsBrowser();
@@ -30,26 +30,35 @@ export default function Meeting() {
 
     return (
         <Layout
-            title={`Meeting - ${siteConfig.title}`}
+            title={`Service Request Submitted - ${siteConfig.title}`}
             description="RxDB Meeting Scheduler"
         >
             <main>
+                <br />
+                <br />
+                <br />
+                <br />
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
-                    <a href="/">
+                    <a href="/" target="_blank">
                         <div className="logo">
-                            <img src="/files/logo/logo_text.svg" alt="RxDB" width={160} />
+                            <img src="/files/logo/logo_text.svg" alt="RxDB" width={120} />
                         </div>
                     </a>
-                    <h1>RxDB Meeting Scheduler</h1>
-                    <p>
-                        <b>You will be redirected in a few seconds.</b>
+                    <br />
+                    <br />
+                    <h1>RxDB Service Form Submitted</h1>
+                    <br />
+                    <p style={{ padding: 50 }}>
+                        Thank you for submitting the form. You will directly get a confirmation email.
+                        <br />
+                        <b>Please check your spam folder!</b>.
+                        <br />
+                        In the next 24 hours you will get a full answer via email.
                     </p>
-                    <p>
-                        <a href="https://rxdb.pipedrive.com/scheduler/Z6A0M1sr/rxdb-1h-paid-consulting-session">Click here</a>
-                    </p>
-                    <meta httpEquiv="Refresh" content="0; url=https://rxdb.pipedrive.com/scheduler/Z6A0M1sr/rxdb-1h-paid-consulting-session" />
+                    <br />
+                    <br />
                 </div>
-            </main>
+            </main >
         </Layout >
     );
 }
