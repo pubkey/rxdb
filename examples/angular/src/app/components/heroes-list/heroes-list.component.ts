@@ -32,6 +32,13 @@ export class HeroesListComponent {
 
     public emittedFirst = false;
     public heroes$: Observable<RxHeroDocument[]>;
+
+    /**
+     * You can also get singals instead of observables
+     * @link https://rxdb.info/reactivity.html
+     */
+    public heroCount$$ = this.dbService.db.hero.count().$$;
+
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
     constructor(
