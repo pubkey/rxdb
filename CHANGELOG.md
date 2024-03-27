@@ -12,7 +12,7 @@
 ### 15.15.0 (27 March 2024)
 
 - ADD `PreactSignalsRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **preact signals** instead of observables.
-- ADD `PreactSignalsRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **vue shallow refs** instead of observables.
+- ADD `VueRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **vue shallow refs** instead of observables.
 - ADD(reactivity) pass reference to `RxDatabase` to `fromObservable()`
 
 ### 15.14.0 (25 March 2024)
