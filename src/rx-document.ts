@@ -161,7 +161,11 @@ export const basePrototype = {
     get$$(this: RxDocument, path: string) {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
-        return reactivity.fromObservable(obs, this.getLatest().get(path), this.collection.database);
+        return reactivity.fromObservable(
+            obs,
+            this.getLatest().get(path),
+            this.collection.database
+        );
     },
 
     /**

@@ -91,7 +91,8 @@ const RxLocalDocumentPrototype: any = {
         const reactivity = db.getReactivityFactory();
         return reactivity.fromObservable(
             _this.$,
-            _this.getLatest()._data
+            _this.getLatest()._data,
+            _this.collection.database
         );
     },
     get deleted$$() {
@@ -100,7 +101,8 @@ const RxLocalDocumentPrototype: any = {
         const reactivity = db.getReactivityFactory();
         return reactivity.fromObservable(
             _this.deleted$,
-            _this.getLatest().deleted
+            _this.getLatest().deleted,
+            _this.collection.database
         );
     },
     getLatest(this: RxLocalDocument<any>): RxLocalDocument<any> {
@@ -149,7 +151,8 @@ const RxLocalDocumentPrototype: any = {
         const reactivity = db.getReactivityFactory();
         return reactivity.fromObservable(
             this.get$(objPath),
-            this.getLatest().get(objPath)
+            this.getLatest().get(objPath),
+            this.collection.database
         );
     },
     async incrementalModify<DocData>(
