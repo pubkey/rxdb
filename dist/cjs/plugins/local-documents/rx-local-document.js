@@ -56,13 +56,13 @@ var RxLocalDocumentPrototype = {
     var _this = this;
     var db = getRxDatabaseFromLocalDocument(_this);
     var reactivity = db.getReactivityFactory();
-    return reactivity.fromObservable(_this.$, _this.getLatest()._data);
+    return reactivity.fromObservable(_this.$, _this.getLatest()._data, db);
   },
   get deleted$$() {
     var _this = this;
     var db = getRxDatabaseFromLocalDocument(_this);
     var reactivity = db.getReactivityFactory();
-    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted);
+    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted, db);
   },
   getLatest() {
     var state = (0, _index.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
@@ -100,7 +100,7 @@ var RxLocalDocumentPrototype = {
   get$$(objPath) {
     var db = getRxDatabaseFromLocalDocument(this);
     var reactivity = db.getReactivityFactory();
-    return reactivity.fromObservable(this.get$(objPath), this.getLatest().get(objPath));
+    return reactivity.fromObservable(this.get$(objPath), this.getLatest().get(objPath), db);
   },
   async incrementalModify(mutationFunction) {
     var state = await (0, _localDocumentsHelper.getLocalDocStateByParent)(this.parent);

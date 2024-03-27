@@ -129,7 +129,7 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
   _proto.get$$ = function get$$(path) {
     var obs = this.get$(path);
     var reactivity = this.collection.database.getReactivityFactory();
-    return reactivity.fromObservable(obs, this.get(path));
+    return reactivity.fromObservable(obs, this.get(path), this.collection.database);
   }
 
   /**

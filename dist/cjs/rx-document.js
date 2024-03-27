@@ -49,7 +49,7 @@ var basePrototype = exports.basePrototype = {
   get deleted$$() {
     var _this = this;
     var reactivity = _this.collection.database.getReactivityFactory();
-    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted);
+    return reactivity.fromObservable(_this.deleted$, _this.getLatest().deleted, _this.collection.database);
   },
   get deleted() {
     var _this = this;
@@ -72,7 +72,7 @@ var basePrototype = exports.basePrototype = {
   get $$() {
     var _this = this;
     var reactivity = _this.collection.database.getReactivityFactory();
-    return reactivity.fromObservable(_this.$, _this.getLatest()._data);
+    return reactivity.fromObservable(_this.$, _this.getLatest()._data, _this.collection.database);
   },
   /**
    * returns observable of the value of the given path
@@ -106,7 +106,7 @@ var basePrototype = exports.basePrototype = {
   get$$(path) {
     var obs = this.get$(path);
     var reactivity = this.collection.database.getReactivityFactory();
-    return reactivity.fromObservable(obs, this.getLatest().get(path));
+    return reactivity.fromObservable(obs, this.getLatest().get(path), this.collection.database);
   },
   /**
    * populate the given path

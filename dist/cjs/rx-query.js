@@ -327,7 +327,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
     key: "$$",
     get: function () {
       var reactivity = this.collection.database.getReactivityFactory();
-      return reactivity.fromObservable(this.$, undefined);
+      return reactivity.fromObservable(this.$, undefined, this.collection.database);
     }
 
     // stores the changeEvent-number of the last handled change-event
