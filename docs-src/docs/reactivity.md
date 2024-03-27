@@ -23,8 +23,8 @@ import { RxReactivityFactory } from 'rxdb/plugins/core';
 import { Signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 const reactivityFactory: RxReactivityFactory<Signal<any>> = {
-    fromObservable(obs, initialValue: any) {
-        return toSignal(obs, { initialValue });
+    fromObservable(observable, initialValue: any) {
+        return toSignal(observable, { initialValue });
     }
 };
 ```
@@ -41,6 +41,39 @@ const database = await createRxDatabase({
 ```
 
 An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/tree/master/examples/angular/src/app/components/heroes-list)
+
+## Adding reactivity for other Frameworks
+
+When adding custom reactivity for other JavaScript frameworks or libraries, make sure to correctly unsubscribe whenever you call `observable.subscribe()` in the `fromObservable()` method.
+
+There are also some [👑 Premium Plugins](/premium) that can be used with other (non-angular frameworks):
+
+### Vue Shallow Refs
+
+```ts
+// npm install vue --save
+import { VueRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-vue';
+import { createRxDatabase } from 'rxdb/plugins/core';
+const database = await createRxDatabase({
+    name: 'mydb',
+    storage: getRxStorageDexie(),
+    reactivity: VueRxReactivityFactory
+});
+```
+
+### Preact Signals
+
+```ts
+// npm install @preact/signals-core --save
+import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
+import { createRxDatabase } from 'rxdb/plugins/core';
+const database = await createRxDatabase({
+    name: 'mydb',
+    storage: getRxStorageDexie(),
+    reactivity: PreactSignalsRxReactivityFactory
+});
+```
+
 
 ## Accessing custom reactivity objects
 

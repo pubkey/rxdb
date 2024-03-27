@@ -2,6 +2,9 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD `PreactSignalsRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **preact signals** instead of observables.
+- ADD `PreactSignalsRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **vue shallow refs** instead of observables.
+- ADD(reactivity) pass reference to `RxDatabase` to `fromObservable()`
 
 <!-- ADD new changes here! -->
 

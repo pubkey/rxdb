@@ -173,7 +173,8 @@ export class RxQueryBase<
         const reactivity = this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(
             this.$,
-            undefined
+            undefined,
+            this.collection.database
         );
     }
 

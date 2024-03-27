@@ -76,7 +76,8 @@ export const basePrototype = {
         const reactivity = _this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(
             _this.deleted$,
-            _this.getLatest().deleted
+            _this.getLatest().deleted,
+            _this.collection.database
         );
     },
     get deleted() {
@@ -112,7 +113,8 @@ export const basePrototype = {
         const reactivity = _this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(
             _this.$,
-            _this.getLatest()._data
+            _this.getLatest()._data,
+            _this.collection.database
         );
     },
 
@@ -159,7 +161,11 @@ export const basePrototype = {
     get$$(this: RxDocument, path: string) {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
-        return reactivity.fromObservable(obs, this.getLatest().get(path));
+        return reactivity.fromObservable(
+            obs,
+            this.getLatest().get(path),
+            this.collection.database
+        );
     },
 
     /**
