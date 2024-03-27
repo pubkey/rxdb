@@ -37,7 +37,11 @@ describeParallel('reactivity.test.js', () => {
     };
     const reactivity: RxReactivityFactory<ReactivityType> = {
         fromObservable(obs, init, rxDatabase) {
+            // check input params
             assert.ok(isRxDatabase(rxDatabase));
+            assert.strictEqual(typeof obs.subscribe, 'function');
+
+            // return pseudo-signal
             return {
                 obs,
                 init
