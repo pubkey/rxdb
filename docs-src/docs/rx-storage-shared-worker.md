@@ -152,3 +152,17 @@ await db.addCollections({
 });
 const replicationState = db.humans.syncGraphQL({/* ... */});
 ```
+
+
+### Limitations
+
+- The SharedWorker API is [not available in some mobile browser](https://caniuse.com/sharedworkers)
+
+### FAQ
+
+<details>
+    <summary>Can I use this plugin with a Service Worker?</summary>
+    <div>
+    No. A Service Worker <a href="https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API">is not the same</a> as a Shared Worker. While you can use RxDB inside of a ServiceWorker, you cannot use the ServiceWorker as a RxStorage that gets accessed by an outside RxDatabase instance.
+    </div>
+</details>
