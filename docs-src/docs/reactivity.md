@@ -60,6 +60,12 @@ const signal = collection.find().$$; // get signal that represents the query res
 const signal = collection.findOne().$$; // get signal that represents the query result set over time
 ```
 
+```ts
+// RxLocalDocument
+const signal = myRxLocalDocument.$$; // get signal that represents the whole local document state
+const signal = myRxLocalDocument.get$$('foobar'); // get signal that represents the foobar field
+```
+
 ## Limitations
 
 - Custom reactivity is in beta mode, it might have breaking changes without a major RxDB release.
