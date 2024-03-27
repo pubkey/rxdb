@@ -191,7 +191,7 @@ export class RxStateBase<T, Reactivity = unknown> {
     get$$(path?: Paths<T>): Reactivity {
         const obs = this.get$(path);
         const reactivity = this.collection.database.getReactivityFactory();
-        return reactivity.fromObservable(obs, this.get(path));
+        return reactivity.fromObservable(obs, this.get(path), this.collection.database);
     }
 
     /**
