@@ -241,6 +241,26 @@ export default function Premium() {
                                         </div>
                                     </div>
                                 </a>
+                                <a href="/reactivity.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
+                                        <div className="premium-block-inner">
+                                            <h4>Reactivity Vue</h4>
+                                            <p>
+                                                An extension for Vue.js to get vue shallow-ref objects to observe RxDB state instead of rxjs observables.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="/reactivity.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-right-top">
+                                        <div className="premium-block-inner">
+                                            <h4>Reactivity Preact Signals</h4>
+                                            <p>
+                                                An extension for react/preact to get preact signals to observe RxDB state instead of rxjs observables.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -575,6 +595,16 @@ export default function Premium() {
                                                         <li>
                                                             <a href="/logger.html" target="_blank">
                                                                 Logger
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="/reactivity.html" target="_blank">
+                                                                Reactivity Vue
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="/reactivity.html" target="_blank">
+                                                                Reactivity Preact Signals
                                                             </a>
                                                         </li>
                                                     </ul>
