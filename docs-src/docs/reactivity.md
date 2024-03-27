@@ -42,6 +42,24 @@ const database = await createRxDatabase({
 
 An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/tree/master/examples/angular/src/app/components/heroes-list)
 
+## Adding reactivity for other Frameworks
+
+There are also some [👑 Premium Plugins](/premium) that can be used with other (non-angular frameworks):
+
+### Preact Signals
+
+```ts
+// npm install @preact/signals-core --save
+import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
+import { createRxDatabase } from 'rxdb/plugins/core';
+const database = await createRxDatabase({
+    name: 'mydb',
+    storage: getRxStorageDexie(),
+    reactivity: PreactSignalsRxReactivityFactory
+});
+```
+
+
 ## Accessing custom reactivity objects
 
 All observable data in RxDB is marked by the single dollar sign `$` like `RxCollection.$` for events or `RxDocument.myField$` to get the observable for a document field. To make custom reactivity objects distinguable, they are marked with double-dollar signs `$$` instead. Here are some example on how to get custom reactivity objects from RxDB specific instances:

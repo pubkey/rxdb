@@ -16,7 +16,8 @@ import {
     randomCouchString,
     addRxPlugin,
     RxCollection,
-    RxReactivityFactory
+    RxReactivityFactory,
+    isRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
@@ -35,7 +36,8 @@ describeParallel('reactivity.test.js', () => {
         init: any;
     };
     const reactivity: RxReactivityFactory<ReactivityType> = {
-        fromObservable(obs, init) {
+        fromObservable(obs, init, rxDatabase) {
+            assert.ok(isRxDatabase(rxDatabase));
             return {
                 obs,
                 init
