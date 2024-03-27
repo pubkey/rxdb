@@ -3,8 +3,7 @@
 If you are a **single developer** and you use RxDB in your **side project**, you can get free 2 years access to the [RxDB Premium](https://rxdb.info/premium) package by solving one Task of this list. Before you start working on that task, please make an issue where you tell about the estimated time to finish the task.
 
 
-## Open Tasks
-(This list will be regularly updated with new Tasks)
+## Open Tasks (This list will be regularly updated with new Tasks)
 
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 
