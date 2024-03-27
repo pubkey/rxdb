@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.15.1 (27 March 2024)
+
 ### 15.15.0 (27 March 2024)
 
 - ADD `PreactSignalsRxReactivityFactory` to use [custom reactivity](https://rxdb.info/reactivity.html) with **preact signals** instead of observables.
