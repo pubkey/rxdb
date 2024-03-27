@@ -46,6 +46,19 @@ An example of how signals are used in angular with RxDB, can be found at the [Rx
 
 There are also some [👑 Premium Plugins](/premium) that can be used with other (non-angular frameworks):
 
+### Vue Shallow Refs
+
+```ts
+// npm install vue --save
+import { VueRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-vue';
+import { createRxDatabase } from 'rxdb/plugins/core';
+const database = await createRxDatabase({
+    name: 'mydb',
+    storage: getRxStorageDexie(),
+    reactivity: VueRxReactivityFactory
+});
+```
+
 ### Preact Signals
 
 ```ts
