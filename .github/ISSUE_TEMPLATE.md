@@ -1,5 +1,5 @@
 <!--
-  # NOTICE: Issues are not a way to contact the maintainer, they are community driven.
+  # NOTICE: Issues are not a way to contact the maintainer, they are community driven. Do never @ the maintainer!
 
   If you need help from the maintainer, read this:
 
