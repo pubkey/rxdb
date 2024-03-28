@@ -4,6 +4,8 @@
   ],
   "statusCheckVerify": true,
   "ignoreDeps": [
+    "rxdb-old",
+    "expo"
   ],
   "automerge": true,
   "major": {
