@@ -9,7 +9,7 @@ The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) wh
 
 
 :::warning LokiJS is deprecated
-The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **deprecated**. There are known bugs like having wrong query results of loosing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage might be removed in the next major RxDB version. Using LokiJS as storage is only recommended for proof-of-concepts or quick prototype apps. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Synced](./rx-storage-memory-synced.md) storage.
+The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **deprecated**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage might be removed in the next major RxDB version. Using LokiJS as storage is only recommended for proof-of-concepts or quick prototype apps. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Synced](./rx-storage-memory-synced.md) storage.
 :::
 
 ### Pros
