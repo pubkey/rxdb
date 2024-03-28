@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Update dexie.js to version `4.0.1`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
