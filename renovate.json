@@ -5,7 +5,9 @@
   "statusCheckVerify": true,
   "ignoreDeps": [
     "rxdb-old",
-    "expo"
+    "expo",
+    "babel-preset-expo",
+    "jest-expo"
   ],
   "automerge": true,
   "major": {
