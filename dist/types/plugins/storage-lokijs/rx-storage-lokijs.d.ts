@@ -4,7 +4,7 @@ import type { LeaderElector } from 'broadcast-channel';
 export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     databaseSettings: LokiDatabaseSettings;
     name: string;
-    readonly rxdbVersion = "15.15.1";
+    readonly rxdbVersion = "15.16.0";
     /**
      * Create one leader elector by db name.
      * This is done inside of the storage, not globally
@@ -21,4 +21,8 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     constructor(databaseSettings: LokiDatabaseSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>): Promise<RxStorageInstanceLoki<RxDocType>>;
 }
+/**
+ * @deprecated The lokijs RxStorage is deprecated, more info at:
+ * @link https://rxdb.info/rx-storage-lokijs.html
+ */
 export declare function getRxStorageLoki(databaseSettings?: LokiDatabaseSettings): RxStorageLoki;

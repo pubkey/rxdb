@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Update dexie.js to version `4.0.1`
-- Deprecate LokiJS RxStorage
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.16.0 (28 March 2024)
+
+- Update dexie.js to version `4.0.1`
+- Deprecate LokiJS RxStorage
 
 ### 15.15.1 (27 March 2024)
 

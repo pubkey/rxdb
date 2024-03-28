@@ -29,6 +29,10 @@ var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
   };
   return RxStorageLoki;
 }();
+/**
+ * @deprecated The lokijs RxStorage is deprecated, more info at:
+ * @link https://rxdb.info/rx-storage-lokijs.html
+ */
 function getRxStorageLoki(databaseSettings = {}) {
   var storage = new RxStorageLoki(databaseSettings);
   return storage;
