@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "supabase": "1.151.1",
-    "local-web-server": "5.3.1",
+    "local-web-server": "5.3.3",
     "concurrently": "8.2.2",
     "async-test-util": "2.4.0",
     "css-loader": "6.10.0",
