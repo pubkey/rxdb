@@ -15,7 +15,7 @@
     "react-scripts": "5.0.1",
     "rimraf": "5.0.5",
     "testcafe": "3.5.0",
-    "local-web-server": "5.3.1"
+    "local-web-server": "5.3.3"
   },
   "scripts": {
     "preinstall": "npm run preinstall:rxdb",
