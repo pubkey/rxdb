@@ -15,11 +15,18 @@ import type {
     SyncOptionsWebRTC
 } from './webrtc-types.ts';
 
-import {
-    Instance as SimplePeerInstance,
-    Options as SimplePeerOptions,
-    default as Peer
+import type { 
+    SimplePeer as Peer, 
+    Instance as SimplePeerInstance, 
+    Options as SimplePeerOptions 
 } from 'simple-peer';
+import {
+    default as _Peer
+    // @ts-ignore
+} from 'simple-peer/simplepeer.min.js';
+
+const Peer = _Peer as Peer
+
 import type { RxError, RxTypeError } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
 
