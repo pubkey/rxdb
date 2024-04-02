@@ -68,6 +68,7 @@ export const DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOST
 let defaultServerWarningShown = false;
 
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
+export type SimplePeerConfig = SimplePeerOptions['config'];
 
 export type SimplePeerConnectionHandlerOptions = {
     /**
@@ -78,6 +79,7 @@ export type SimplePeerConnectionHandlerOptions = {
      */
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
+    config?: SimplePeerConfig;
     webSocketConstructor?: WebSocket;
 };
 
@@ -89,6 +91,7 @@ export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
 export function getConnectionHandlerSimplePeer({
     signalingServerUrl,
     wrtc,
+    config,
     webSocketConstructor
 }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer> {
     ensureProcessNextTickIsSet();
@@ -177,6 +180,7 @@ export function getConnectionHandlerSimplePeer({
                                 const newSimplePeer: SimplePeer = new Peer({
                                     initiator: remotePeerId > ownPeerId,
                                     wrtc,
+                                    config,
                                     trickle: true
                                 }) as any;
                                 newSimplePeer.id = randomCouchString(10);
