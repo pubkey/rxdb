@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX IndexedDB RxStorage: Rerun database creation when IndexedDB database was closed by [safari bug](https://bugs.webkit.org/show_bug.cgi?id=197050)
 
 <!-- ADD new changes here! -->
 
