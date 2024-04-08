@@ -22,6 +22,7 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
+    RxJsonSchema,
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -57,7 +58,7 @@ import {
     handlePulledDocuments
 } from './replication-helper.ts';
 import {
-    addConnectedStorageToCollection
+    addConnectedStorageToCollection, removeConnectedStorageFromCollection
 } from '../../rx-database-internal-store.ts';
 import { addRxPlugin } from '../../plugin.ts';
 import { hasEncryption } from '../../rx-storage-helper.ts';
@@ -85,6 +86,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
+    readonly metaInfoPromise: Promise<{ collectionName: string, schema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>> }>;
+
     public startPromise: Promise<void>;
 
     public onCancel: (() => void)[] = [];
@@ -103,6 +106,20 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         public retryTime?: number,
         public autoStart?: boolean,
     ) {
+        this.metaInfoPromise = (async () => {
+            const metaInstanceCollectionName = 'rx-replication-meta-' + await collection.database.hashFunction([
+                this.collection.name,
+                this.replicationIdentifier
+            ].join('-'));
+            const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
+                this.collection.schema.jsonSchema,
+                hasEncryption(this.collection.schema.jsonSchema)
+            );
+            return {
+                collectionName: metaInstanceCollectionName,
+                schema: metaInstanceSchema
+            };
+        })();
         const replicationStates = getFromMapOrCreate(
             REPLICATION_STATE_BY_COLLECTION,
             collection,
@@ -143,30 +160,24 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        const metaInstanceCollectionName = 'rx-replication-meta-' + await database.hashFunction([
-            this.collection.name,
-            this.replicationIdentifier
-        ].join('-'));
-        const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
-            this.collection.schema.jsonSchema,
-            hasEncryption(this.collection.schema.jsonSchema)
-        );
+
+        const metaInfo = await this.metaInfoPromise;
 
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
                 databaseName: database.name,
-                collectionName: metaInstanceCollectionName,
+                collectionName: metaInfo.collectionName,
                 databaseInstanceToken: database.token,
                 multiInstance: database.multiInstance, // TODO is this always false?
                 options: {},
-                schema: metaInstanceSchema,
+                schema: metaInfo.schema,
                 password: database.password,
                 devMode: overwritable.isDevMode()
             }),
             addConnectedStorageToCollection(
                 this.collection,
-                metaInstanceCollectionName,
-                metaInstanceSchema
+                metaInfo.collectionName,
+                metaInfo.schema
             )
         ]);
         this.metaInstance = metaInstance;
@@ -468,6 +479,17 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.sent.complete();
 
         return Promise.all(promises);
+    }
+
+    async remove() {
+        await ensureNotFalsy(this.metaInstance).remove();
+        const metaInfo = await this.metaInfoPromise;
+        await this.cancel();
+        await removeConnectedStorageFromCollection(
+            this.collection,
+            metaInfo.collectionName,
+            metaInfo.schema
+        );
     }
 }
 

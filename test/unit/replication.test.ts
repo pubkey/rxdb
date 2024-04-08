@@ -795,6 +795,39 @@ describe('replication.test.ts', () => {
             remoteCollection.database.destroy();
         });
     });
+    describeParallel('RxReplicationState.remove()', () => {
+        it('should remove the replication state and start the replication from scratch', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
+            const calledCheckpoints: any[] = [];
+            const startReplication = async () => {
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    live: true,
+                    pull: {
+                        handler: (checkpoint, batchSize) => {
+                            calledCheckpoints.push(checkpoint);
+                            return getPullHandler(remoteCollection)(checkpoint, batchSize);
+                        },
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection),
+                    }
+                });
+                await replicationState.awaitInSync();
+                return replicationState;
+            };
+            let currentReplicationState = await startReplication();
+            await currentReplicationState.remove();
+
+            currentReplicationState = await startReplication();
+
+            assert.deepStrictEqual(calledCheckpoints, [undefined, undefined]);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+    });
     describeParallel('attachment replication', () => {
         if (!config.storage.hasAttachments) {
             return;

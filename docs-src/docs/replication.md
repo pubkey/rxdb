@@ -500,6 +500,13 @@ Cancels the replication. Returns a promise that resolved when everything has bee
 await myRxReplicationState.cancel()
 ```
 
+### remove()
+
+Cancels the replication and deletes the metadata of the replication state. This can be used to restart the replication "from scratch". Calling `.remove()` will only delete the replication metadata, it will NOT delete the documents from the collection of the replication.
+
+```ts
+await myRxReplicationState.remove()
+```
 
 ### isStopped()
 

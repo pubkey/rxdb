@@ -325,6 +325,64 @@ export async function addConnectedStorageToCollection(
     }
 }
 
+export async function removeConnectedStorageFromCollection(
+    collection: RxCollection<any>,
+    storageCollectionName: string,
+    schema: RxJsonSchema<any>
+) {
+    if (collection.schema.version !== schema.version) {
+        throw newRxError('SNH', {
+            schema,
+            version: collection.schema.version,
+            name: collection.name,
+            collection,
+            args: {
+                storageCollectionName
+            }
+        });
+    }
+
+    const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+    const collectionDocId = getPrimaryKeyOfInternalDocument(
+        collectionNameWithVersion,
+        INTERNAL_CONTEXT_COLLECTION
+    );
+
+    while (true) {
+        const collectionDoc = await getSingleDocument(
+            collection.database.internalStore,
+            collectionDocId
+        );
+        const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
+
+        // do nothing if not there
+        const isThere = saveData.data.connectedStorages
+            .find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+        if (!isThere) {
+            return;
+        }
+
+        // otherwise remove from array and save
+        saveData.data.connectedStorages = saveData.data.connectedStorages.filter(item => item.collectionName !== storageCollectionName);
+        try {
+            await writeSingle(
+                collection.database.internalStore,
+                {
+                    previous: ensureNotFalsy(collectionDoc),
+                    document: saveData
+                },
+                'remove-connected-storage-from-collection'
+            );
+        } catch (err) {
+            if (!isBulkWriteConflictError(err)) {
+                throw err;
+            }
+            // retry on conflict
+        }
+    }
+}
+
+
 
 /**
  * returns the primary for a given collection-data
