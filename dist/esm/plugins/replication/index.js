@@ -11,7 +11,7 @@ import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFr
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from "../../replication-protocol/index.js";
 import { newRxError } from "../../rx-error.js";
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from "./replication-helper.js";
-import { addConnectedStorageToCollection } from "../../rx-database-internal-store.js";
+import { addConnectedStorageToCollection, removeConnectedStorageFromCollection } from "../../rx-database-internal-store.js";
 import { addRxPlugin } from "../../plugin.js";
 import { hasEncryption } from "../../rx-storage-helper.js";
 import { overwritable } from "../../overwritable.js";
@@ -52,6 +52,14 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.live = live;
     this.retryTime = retryTime;
     this.autoStart = autoStart;
+    this.metaInfoPromise = (async () => {
+      var metaInstanceCollectionName = 'rx-replication-meta-' + (await collection.database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
+      var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema, hasEncryption(this.collection.schema.jsonSchema));
+      return {
+        collectionName: metaInstanceCollectionName,
+        schema: metaInstanceSchema
+      };
+    })();
     var replicationStates = getFromMapOrCreate(REPLICATION_STATE_BY_COLLECTION, collection, () => []);
     replicationStates.push(this);
 
@@ -81,19 +89,18 @@ export var RxReplicationState = /*#__PURE__*/function () {
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
     var database = this.collection.database;
-    var metaInstanceCollectionName = 'rx-replication-meta-' + (await database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
-    var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema, hasEncryption(this.collection.schema.jsonSchema));
+    var metaInfo = await this.metaInfoPromise;
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
-      collectionName: metaInstanceCollectionName,
+      collectionName: metaInfo.collectionName,
       databaseInstanceToken: database.token,
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: metaInstanceSchema,
+      schema: metaInfo.schema,
       password: database.password,
       devMode: overwritable.isDevMode()
-    }), addConnectedStorageToCollection(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
+    }), addConnectedStorageToCollection(this.collection, metaInfo.collectionName, metaInfo.schema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = replicateRxStorageInstance({
       pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -334,6 +341,12 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.subjects.received.complete();
     this.subjects.sent.complete();
     return Promise.all(promises);
+  };
+  _proto.remove = async function remove() {
+    await ensureNotFalsy(this.metaInstance).remove();
+    var metaInfo = await this.metaInfoPromise;
+    await this.cancel();
+    await removeConnectedStorageFromCollection(this.collection, metaInfo.collectionName, metaInfo.schema);
   };
   return RxReplicationState;
 }();

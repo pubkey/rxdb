@@ -10,6 +10,7 @@ exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
 exports.isDatabaseStateVersionCompatibleWithDatabaseCode = isDatabaseStateVersionCompatibleWithDatabaseCode;
+exports.removeConnectedStorageFromCollection = removeConnectedStorageFromCollection;
 var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _rxStorageHelper = require("./rx-storage-helper.js");
@@ -218,6 +219,45 @@ async function addConnectedStorageToCollection(collection, storageCollectionName
         previous: (0, _index.ensureNotFalsy)(collectionDoc),
         document: saveData
       }, 'add-connected-storage-to-collection');
+    } catch (err) {
+      if (!(0, _rxError.isBulkWriteConflictError)(err)) {
+        throw err;
+      }
+      // retry on conflict
+    }
+  }
+}
+async function removeConnectedStorageFromCollection(collection, storageCollectionName, schema) {
+  if (collection.schema.version !== schema.version) {
+    throw (0, _rxError.newRxError)('SNH', {
+      schema,
+      version: collection.schema.version,
+      name: collection.name,
+      collection,
+      args: {
+        storageCollectionName
+      }
+    });
+  }
+  var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+  var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+  while (true) {
+    var collectionDoc = await (0, _rxStorageHelper.getSingleDocument)(collection.database.internalStore, collectionDocId);
+    var saveData = (0, _index.clone)((0, _index.ensureNotFalsy)(collectionDoc));
+
+    // do nothing if not there
+    var isThere = saveData.data.connectedStorages.find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+    if (!isThere) {
+      return;
+    }
+
+    // otherwise remove from array and save
+    saveData.data.connectedStorages = saveData.data.connectedStorages.filter(item => item.collectionName !== storageCollectionName);
+    try {
+      await (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
+        previous: (0, _index.ensureNotFalsy)(collectionDoc),
+        document: saveData
+      }, 'remove-connected-storage-from-collection');
     } catch (err) {
       if (!(0, _rxError.isBulkWriteConflictError)(err)) {
         throw err;

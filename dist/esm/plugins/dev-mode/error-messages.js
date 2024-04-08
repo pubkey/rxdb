@@ -51,7 +51,7 @@ export var ERROR_MESSAGES = {
   // rx-database
   DB1: 'RxDocument.prepare(): another instance on this adapter has a different password',
   DB2: 'RxDatabase.addCollections(): collection-names cannot start with underscore _',
-  DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase.[collectionName] to get it',
+  DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase[collectionName] to get it',
   DB4: 'RxDatabase.addCollections(): schema is missing',
   DB5: 'RxDatabase.addCollections(): collection-name not allowed',
   DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html#cant-change-the-schema',

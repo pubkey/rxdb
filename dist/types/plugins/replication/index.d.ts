@@ -5,7 +5,7 @@
  * but also can be used as standalone with a custom replication handler.
  */
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
-import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxError, RxReplicationPullStreamItem, RxStorageInstance, RxStorageInstanceReplicationState, RxStorageReplicationMeta, RxTypeError, WithDeleted } from '../../types/index.d.ts';
+import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxError, RxJsonSchema, RxReplicationPullStreamItem, RxStorageInstance, RxStorageInstanceReplicationState, RxStorageReplicationMeta, RxTypeError, WithDeleted } from '../../types/index.d.ts';
 export declare const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]>;
 export declare class RxReplicationState<RxDocType, CheckpointType> {
     /**
@@ -33,6 +33,10 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     readonly error$: Observable<RxError | RxTypeError>;
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
+    readonly metaInfoPromise: Promise<{
+        collectionName: string;
+        schema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>>;
+    }>;
     startPromise: Promise<void>;
     onCancel: (() => void)[];
     constructor(
@@ -62,6 +66,7 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     reSync(): void;
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>): void;
     cancel(): Promise<any>;
+    remove(): Promise<void>;
 }
 export declare function replicateRxCollection<RxDocType, CheckpointType>({ replicationIdentifier, collection, deletedField, pull, push, live, retryTime, waitForLeadership, autoStart, }: ReplicationOptions<RxDocType, CheckpointType>): RxReplicationState<RxDocType, CheckpointType>;
 export declare function startReplicationOnLeaderShip(waitForLeadership: boolean, replicationState: RxReplicationState<any, any>): Promise<void>;

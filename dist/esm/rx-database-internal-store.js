@@ -214,6 +214,45 @@ export async function addConnectedStorageToCollection(collection, storageCollect
     }
   }
 }
+export async function removeConnectedStorageFromCollection(collection, storageCollectionName, schema) {
+  if (collection.schema.version !== schema.version) {
+    throw newRxError('SNH', {
+      schema,
+      version: collection.schema.version,
+      name: collection.name,
+      collection,
+      args: {
+        storageCollectionName
+      }
+    });
+  }
+  var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+  var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+  while (true) {
+    var collectionDoc = await getSingleDocument(collection.database.internalStore, collectionDocId);
+    var saveData = clone(ensureNotFalsy(collectionDoc));
+
+    // do nothing if not there
+    var isThere = saveData.data.connectedStorages.find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+    if (!isThere) {
+      return;
+    }
+
+    // otherwise remove from array and save
+    saveData.data.connectedStorages = saveData.data.connectedStorages.filter(item => item.collectionName !== storageCollectionName);
+    try {
+      await writeSingle(collection.database.internalStore, {
+        previous: ensureNotFalsy(collectionDoc),
+        document: saveData
+      }, 'remove-connected-storage-from-collection');
+    } catch (err) {
+      if (!isBulkWriteConflictError(err)) {
+        throw err;
+      }
+      // retry on conflict
+    }
+  }
+}
 
 /**
  * returns the primary for a given collection-data
