@@ -5,6 +5,7 @@
 - ADD `RxReplicationState.remove()` to delete the metadata of a specific replication.
 - FIX IndexedDB RxStorage: Rerun database creation when IndexedDB database was closed by [safari bug](https://bugs.webkit.org/show_bug.cgi?id=197050)
 - FIX vite bundling error with WebRTC replication [#5841](https://github.com/pubkey/rxdb/issues/5841)
+- ADD replication-webrtc: allow passing config to simple-peer [#5838](https://github.com/pubkey/rxdb/pull/5838)
 
 <!-- ADD new changes here! -->
 
