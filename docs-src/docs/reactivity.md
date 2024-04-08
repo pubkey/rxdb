@@ -20,13 +20,22 @@ For example to use signals in angular, you can use the angular [toSignal](https:
 
 ```ts
 import { RxReactivityFactory } from 'rxdb/plugins/core';
-import { Signal } from '@angular/core';
+import { Signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-const reactivityFactory: RxReactivityFactory<Signal<any>> = {
-    fromObservable(observable, initialValue: any) {
-        return toSignal(observable, { initialValue });
+
+export function createReactivityFactory(injector: Injector): RxReactivityFactory<Signal<any>> {
+  return {
+    fromObservable(observable$, initialValue: any) {
+      return untracked(() =>
+        toSignal(observable$, {
+          initialValue,
+          injector,
+          rejectErrors: true
+        })
+      );
     }
-};
+  };
+}
 ```
 
 Then you can pass this factory when you create the [RxDatabase](./rx-database.md):
@@ -36,7 +45,7 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 const database = await createRxDatabase({
     name: 'mydb',
     storage: getRxStorageDexie(),
-    reactivity: reactivityFactory
+    reactivity: createReactivityFactory(inject(Injector))
 });
 ```
 
