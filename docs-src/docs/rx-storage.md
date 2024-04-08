@@ -17,7 +17,7 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 
 ## Configuration Examples
 
-The RxStorage layer of RxDB is very flexible. Here are some examples on how to confiugre more complex settings:
+The RxStorage layer of RxDB is very flexible. Here are some examples on how to configure more complex settings:
 
 ### Storing much data in a browser securely
 
