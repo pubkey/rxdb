@@ -60,6 +60,14 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.live = live;
     this.retryTime = retryTime;
     this.autoStart = autoStart;
+    this.metaInfoPromise = (async () => {
+      var metaInstanceCollectionName = 'rx-replication-meta-' + (await collection.database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
+      var metaInstanceSchema = (0, _index3.getRxReplicationMetaInstanceSchema)(this.collection.schema.jsonSchema, (0, _rxStorageHelper.hasEncryption)(this.collection.schema.jsonSchema));
+      return {
+        collectionName: metaInstanceCollectionName,
+        schema: metaInstanceSchema
+      };
+    })();
     var replicationStates = (0, _index2.getFromMapOrCreate)(REPLICATION_STATE_BY_COLLECTION, collection, () => []);
     replicationStates.push(this);
 
@@ -89,19 +97,18 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : _replicationHelper.DEFAULT_MODIFIER;
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : _replicationHelper.DEFAULT_MODIFIER;
     var database = this.collection.database;
-    var metaInstanceCollectionName = 'rx-replication-meta-' + (await database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
-    var metaInstanceSchema = (0, _index3.getRxReplicationMetaInstanceSchema)(this.collection.schema.jsonSchema, (0, _rxStorageHelper.hasEncryption)(this.collection.schema.jsonSchema));
+    var metaInfo = await this.metaInfoPromise;
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
-      collectionName: metaInstanceCollectionName,
+      collectionName: metaInfo.collectionName,
       databaseInstanceToken: database.token,
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: metaInstanceSchema,
+      schema: metaInfo.schema,
       password: database.password,
       devMode: _overwritable.overwritable.isDevMode()
-    }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
+    }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInfo.collectionName, metaInfo.schema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = (0, _index3.replicateRxStorageInstance)({
       pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -342,6 +349,12 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.subjects.received.complete();
     this.subjects.sent.complete();
     return Promise.all(promises);
+  };
+  _proto.remove = async function remove() {
+    await (0, _index2.ensureNotFalsy)(this.metaInstance).remove();
+    var metaInfo = await this.metaInfoPromise;
+    await this.cancel();
+    await (0, _rxDatabaseInternalStore.removeConnectedStorageFromCollection)(this.collection, metaInfo.collectionName, metaInfo.schema);
   };
   return RxReplicationState;
 }();

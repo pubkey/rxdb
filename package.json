@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "15.16.0",
+  "version": "15.17.0",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -508,8 +508,8 @@
     "@types/request": "2.48.12",
     "@types/request-promise-native": "1.0.21",
     "@types/source-map-support": "0.5.10",
-    "@typescript-eslint/eslint-plugin": "7.5.0",
-    "@typescript-eslint/parser": "7.5.0",
+    "@typescript-eslint/eslint-plugin": "7.6.0",
+    "@typescript-eslint/parser": "7.6.0",
     "assert": "2.1.0",
     "async-test-util": "2.4.0",
     "babel-loader": "9.1.3",
@@ -550,7 +550,7 @@
     "karma-spec-reporter": "0.0.36",
     "karma-webpack": "5.0.1",
     "leveldown": "6.1.1",
-    "madge": "6.1.0",
+    "madge": "7.0.0",
     "mini-css-extract-plugin": "2.8.1",
     "mocha": "10.4.0",
     "mocha.parallel": "0.15.6",

@@ -1,6 +1,9 @@
 import { Subject } from 'rxjs';
 import { ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait, randomCouchString } from "../../plugins/utils/index.js";
-import { default as Peer } from 'simple-peer';
+import { default as _Peer
+// @ts-ignore
+} from 'simple-peer/simplepeer.min.js';
+var Peer = _Peer;
 import { newRxError } from "../../rx-error.js";
 function sendMessage(ws, msg) {
   ws.send(JSON.stringify(msg));
@@ -16,6 +19,7 @@ export var SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
 export function getConnectionHandlerSimplePeer({
   signalingServerUrl,
   wrtc,
+  config,
   webSocketConstructor
 }) {
   ensureProcessNextTickIsSet();
@@ -86,6 +90,7 @@ export function getConnectionHandlerSimplePeer({
                 var newSimplePeer = new Peer({
                   initiator: remotePeerId > ownPeerId,
                   wrtc,
+                  config,
                   trickle: true
                 });
                 newSimplePeer.id = randomCouchString(10);

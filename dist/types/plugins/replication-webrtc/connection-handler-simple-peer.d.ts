@@ -1,5 +1,5 @@
 import type { WebRTCConnectionHandlerCreator } from './webrtc-types.ts';
-import { Instance as SimplePeerInstance, Options as SimplePeerOptions } from 'simple-peer';
+import type { Instance as SimplePeerInstance, Options as SimplePeerOptions } from 'simple-peer';
 export type SimplePeer = SimplePeerInstance & {
     id: string;
 };
@@ -28,6 +28,7 @@ export type SimplePeerPingMessage = {
 export type PeerMessage = SimplePeerInitMessage | SimplePeerJoinMessage | SimplePeerJoinedMessage | SimplePeerSignalMessage | SimplePeerPingMessage;
 export declare const DEFAULT_SIGNALING_SERVER: string;
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
+export type SimplePeerConfig = SimplePeerOptions['config'];
 export type SimplePeerConnectionHandlerOptions = {
     /**
      * If no server is specified, the default signaling server
@@ -37,13 +38,14 @@ export type SimplePeerConnectionHandlerOptions = {
      */
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
+    config?: SimplePeerConfig;
     webSocketConstructor?: WebSocket;
 };
 export declare const SIMPLE_PEER_PING_INTERVAL: number;
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
-export declare function getConnectionHandlerSimplePeer({ signalingServerUrl, wrtc, webSocketConstructor }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer>;
+export declare function getConnectionHandlerSimplePeer({ signalingServerUrl, wrtc, config, webSocketConstructor }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer>;
 /**
  * Multiple people had problems because it requires to have
  * the nextTick() method in the runtime. So we check here and

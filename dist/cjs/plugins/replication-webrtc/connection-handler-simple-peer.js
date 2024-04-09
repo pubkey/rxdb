@@ -9,8 +9,9 @@ exports.ensureProcessNextTickIsSet = ensureProcessNextTickIsSet;
 exports.getConnectionHandlerSimplePeer = getConnectionHandlerSimplePeer;
 var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
-var _simplePeer = _interopRequireDefault(require("simple-peer"));
+var _simplepeerMin = _interopRequireDefault(require("simple-peer/simplepeer.min.js"));
 var _rxError = require("../../rx-error.js");
+var Peer = _simplepeerMin.default;
 function sendMessage(ws, msg) {
   ws.send(JSON.stringify(msg));
 }
@@ -25,6 +26,7 @@ var SIMPLE_PEER_PING_INTERVAL = exports.SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 
 function getConnectionHandlerSimplePeer({
   signalingServerUrl,
   wrtc,
+  config,
   webSocketConstructor
 }) {
   ensureProcessNextTickIsSet();
@@ -92,9 +94,10 @@ function getConnectionHandlerSimplePeer({
                */
               var createPeerConnection = function (remotePeerId) {
                 var disconnected = false;
-                var newSimplePeer = new _simplePeer.default({
+                var newSimplePeer = new Peer({
                   initiator: remotePeerId > ownPeerId,
                   wrtc,
+                  config,
                   trickle: true
                 });
                 newSimplePeer.id = (0, _index.randomCouchString)(10);
