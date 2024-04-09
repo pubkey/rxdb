@@ -1,5 +1,5 @@
 import {
-    Injectable, Signal
+    Injector, Injectable, Signal, untracked
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -59,7 +59,7 @@ function doSync(): boolean {
 /**
  * creates the database
  */
-async function _create(): Promise<RxHeroesDatabase> {
+async function _create(injector: Injector): Promise<RxHeroesDatabase> {
     environment.addRxDBPlugins();
 
     console.log('DatabaseService: creating database..');
@@ -71,9 +71,15 @@ async function _create(): Promise<RxHeroesDatabase> {
      */
     const reactivityFactory: RxReactivityFactory<Signal<any>> = {
         fromObservable(obs, initialValue: any) {
-            return toSignal(obs, { initialValue });
+            return untracked(() =>
+                toSignal(obs, {
+                    initialValue,
+                    injector,
+                    rejectErrors: true
+                })
+            );
         }
-    };
+    }
 
 
     const db = await createRxDatabase<RxHeroesCollections>({
@@ -189,14 +195,14 @@ let DB_INSTANCE: RxHeroesDatabase;
  * This is run via APP_INITIALIZER in app.module.ts
  * to ensure the database exists before the angular-app starts up
  */
-export async function initDatabase() {
+export async function initDatabase(injector: Injector) {
     /**
      * When server side rendering is used,
      * The database might already be there
      */
     if (!initState) {
         console.log('initDatabase()');
-        initState = _create().then(db => DB_INSTANCE = db);
+        initState = _create(injector).then(db => DB_INSTANCE = db);
     }
     await initState;
 }
