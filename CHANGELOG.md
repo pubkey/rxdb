@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX memory-synced storage must be able to query encrypted fields on the in-memory side.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
