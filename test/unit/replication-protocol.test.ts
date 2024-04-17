@@ -1197,6 +1197,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             await awaitRxStorageReplicationIdle(replicationState);
             await awaitRxStorageReplicationIdle(replicationState);
+            await wait(50); // TODO we should not need this here
+
             await ensureEqualState(masterInstance, forkInstance);
             assert.strictEqual(
                 replicationState.stats.down.downstreamResyncOnce,
