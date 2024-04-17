@@ -93,7 +93,7 @@ Also the server has to respect the batchSize so that RxDB knows when there are n
 import { lastOfArray } from 'rxdb/plugins/core';
 app.get('/pull', (req, res) => {
     const id = req.query.id;
-    const updatedAt = parseInt(req.query.updatedAt, 10);
+    const updatedAt = parseFloat(req.query.updatedAt);
     const documents = await mongoCollection.find({
         $or: [
             /**

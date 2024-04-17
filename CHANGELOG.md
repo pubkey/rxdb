@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - FIX memory-synced storage must be able to query encrypted fields on the in-memory side.
 - RxServer: `updatedAt` must be `lwt` [#61](https://github.com/pubkey/rxdb-server/pull/61)
+- RxServer: Fix using `parseFloat` instead of `parseInt` [#5883](https://github.com/pubkey/rxdb/issues/5883)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
