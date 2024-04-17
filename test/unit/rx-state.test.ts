@@ -379,7 +379,7 @@ describeParallel('rx-state.test.ts', () => {
                 }
             }
             await Promise.all(promises);
-            await wait(100);
+            await wait(isFastMode() ? 100 : 300);
 
             assert.strictEqual(state1.get('a'), amount);
             assert.strictEqual(state2.get('a'), amount);
