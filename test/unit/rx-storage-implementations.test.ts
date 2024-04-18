@@ -243,9 +243,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     return;
                 }
                 const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
-                schema.attachments = {
-                    encrypted: true
-                };
+                schema.encrypted = ['value'];
                 let hasThrown = false;
                 try {
                     await config.storage.getStorage().createStorageInstance<TestDocType>({
