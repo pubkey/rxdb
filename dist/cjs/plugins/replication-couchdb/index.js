@@ -156,11 +156,10 @@ function replicateCouchDB(options) {
           }
           var realMasterState = (0, _couchdbHelper.couchDBDocToRxDocData)(primaryPath, row.doc);
           var pushRow = (0, _index.getFromMapOrThrow)(pushRowsById, row.id);
-          var conflictHandlerResult = await conflictHandler({
+          if (pushRow.assumedMasterState && (await conflictHandler({
             realMasterState,
             newDocumentState: pushRow.assumedMasterState
-          }, 'couchdb-push-1');
-          if (conflictHandlerResult.isEqual) {
+          }, 'couchdb-push-1')).isEqual) {
             remoteRevById.set(row.id, row.doc._rev);
             nonConflictRows.push(pushRow);
           } else {
