@@ -83,6 +83,7 @@ const sidebars = {
         'migration-storage'
       ],
     },
+    'schema-validation',
     'reactivity',
     'rx-state',
     'rx-local-document',
