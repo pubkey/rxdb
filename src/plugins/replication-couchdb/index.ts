@@ -78,7 +78,7 @@ export function replicateCouchDB<RxDocType>(
     options: SyncOptionsCouchDB<RxDocType>
 ) {
     const collection = options.collection;
-    const conflictHandler: RxConflictHandler<any> = collection.conflictHandler;
+    const conflictHandler: RxConflictHandler<unknown> = collection.conflictHandler;
     addRxPlugin(RxDBLeaderElectionPlugin);
     const primaryPath = options.collection.schema.primaryPath;
 
@@ -182,11 +182,14 @@ export function replicateCouchDB<RxDocType>(
                         }
                         const realMasterState: WithDeleted<RxDocType> = couchDBDocToRxDocData(primaryPath, row.doc);
                         const pushRow = getFromMapOrThrow(pushRowsById, row.id);
-                        const conflictHandlerResult = await conflictHandler({
-                            realMasterState,
-                            newDocumentState: pushRow.assumedMasterState
-                        }, 'couchdb-push-1');
-                        if (conflictHandlerResult.isEqual) {
+
+                        if (
+                            pushRow.assumedMasterState &&
+                            (await conflictHandler({
+                                realMasterState,
+                                newDocumentState: pushRow.assumedMasterState
+                            }, 'couchdb-push-1')).isEqual
+                        ) {
                             remoteRevById.set(row.id, row.doc._rev);
                             nonConflictRows.push(pushRow);
                         } else {

@@ -11,6 +11,7 @@ import {
 
 import {
     addRxPlugin,
+    createRxDatabase,
     randomCouchString,
     RxCollection
 } from './../plugins/core/index.mjs';
@@ -30,6 +31,10 @@ import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 import * as SpawnServer from './helper/spawn-server.ts';
+import { RxDBcrdtPlugin } from '../plugins/crdt/index.mjs';
+
+addRxPlugin(RxDBcrdtPlugin);
+
 
 describe('replication-couchdb.test.ts', () => {
     if (
@@ -227,8 +232,10 @@ describe('replication-couchdb.test.ts', () => {
                 const doc2 = await c2.findOne().exec(true);
 
                 // make update on both sides
-                await doc1.incrementalPatch({ firstName: 'c1' });
-                await doc2.incrementalPatch({ firstName: 'c2' });
+                await Promise.all([
+                    doc1.incrementalPatch({ firstName: 'c1' }),
+                    doc2.incrementalPatch({ firstName: 'c2' })
+                ]);
 
                 await syncOnce(c2, server);
 
@@ -239,6 +246,44 @@ describe('replication-couchdb.test.ts', () => {
                  * Must have kept the master state c2
                  */
                 assert.strictEqual(doc1.getLatest().firstName, 'c2');
+
+                c1.database.destroy();
+                c2.database.destroy();
+                server.close();
+            });
+            it('should correctly handle a conflict where the same doc is inserted on two sides', async () => {
+
+
+                const server = await SpawnServer.spawn();
+                const c1 = await humansCollection.create(0);
+                const c2 = await humansCollection.create(0);
+
+                await syncAll(c1, c2, server);
+
+                await c1.insert({
+                    passportId: 'foobar',
+                    firstName: 'c1',
+                    lastName: 'Kelso',
+                    age: 1
+                });
+                await c2.insert({
+                    passportId: 'foobar',
+                    firstName: 'c2',
+                    lastName: 'Kelso',
+                    age: 2
+                });
+
+                await syncOnce(c1, server);
+
+                // cause conflict
+                await syncOnce(c2, server);
+
+                /**
+                 * Must have kept the master state c1
+                 * because it was synced first
+                 */
+                const doc1 = await c1.findOne().exec(true);
+                assert.strictEqual(doc1.getLatest().firstName, 'c1');
 
                 c1.database.destroy();
                 c2.database.destroy();

@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX CouchDB replication error `Cannot read properties of undefined (reading '_attachments')`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
