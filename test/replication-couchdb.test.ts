@@ -11,7 +11,6 @@ import {
 
 import {
     addRxPlugin,
-    createRxDatabase,
     randomCouchString,
     RxCollection
 } from './../plugins/core/index.mjs';
