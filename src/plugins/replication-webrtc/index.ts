@@ -32,7 +32,8 @@ import type {
     WebRTCReplicationCheckpoint,
     WebRTCResponse,
     RxWebRTCReplicationState,
-    SyncOptionsWebRTC
+    SyncOptionsWebRTC,
+    WebRTCMessage
 } from './webrtc-types.ts';
 import { newRxError } from '../../rx-error.ts';
 
@@ -89,7 +90,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
         ).subscribe(data => {
             pool.connectionHandler.send(data.peer, {
                 id: data.message.id,
-                result: storageToken
+                result: storageToken,
+                collectionName: collection.name
             });
         })
     );
@@ -114,7 +116,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                     {
                         id: getRequestId(),
                         method: 'token',
-                        params: []
+                        params: [],
+                        collectionName: collection.name
                     }
                 );
                 peerToken = tokenResponse.result;
@@ -136,7 +139,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                 const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(ev => {
                     const streamResponse: WebRTCResponse = {
                         id: 'masterChangeStream$',
-                        result: ev
+                        result: ev,
+                        collectionName: collection.name
                     };
                     pool.connectionHandler.send(peer, streamResponse);
                 });
@@ -160,11 +164,14 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                          * If it is not a function,
                          * it means that the client requested the masterChangeStream$
                          */
-                        const method = (masterHandler as any)[message.method].bind(masterHandler);
+                        const methodType = message.method as Exclude<WebRTCMessage['method'], 'token' | 'masterChangeStream$'>;
+
+                        const method = masterHandler[methodType].bind(masterHandler);
                         const result = await (method as any)(...message.params);
                         const response: WebRTCResponse = {
                             id: message.id,
-                            result
+                            result,
+                            collectionName: collection.name
                         };
                         pool.connectionHandler.send(msgPeer, response);
                     });
@@ -179,6 +186,11 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                     retryTime: options.retryTime,
                     waitForLeadership: false,
                     pull: options.pull ? Object.assign({}, options.pull, {
+                        stream$: pool.connectionHandler.response$.pipe(
+                            filter(m => m.response.id === 'masterChangeStream$'),
+                            filter(m => m.response.collectionName === collection.name),
+                            map(m => m.response.result)
+                        ),
                         async handler(lastPulledCheckpoint: WebRTCReplicationCheckpoint | undefined) {
                             const answer = await sendMessageAndAwaitAnswer(
                                 pool.connectionHandler,
@@ -189,15 +201,13 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                                         lastPulledCheckpoint,
                                         ensureNotFalsy(options.pull).batchSize
                                     ],
-                                    id: getRequestId()
+                                    id: getRequestId(),
+                                    collectionName: collection.name
                                 }
                             );
+
                             return answer.result;
                         },
-                        stream$: pool.connectionHandler.response$.pipe(
-                            filter(m => m.response.id === 'masterChangeStream$'),
-                            map(m => m.response.result)
-                        )
 
                     }) : undefined,
                     push: options.push ? Object.assign({}, options.push, {
@@ -208,7 +218,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                                 {
                                     method: 'masterWrite',
                                     params: [docs],
-                                    id: getRequestId()
+                                    id: getRequestId(),
+                                    collectionName: collection.name
                                 }
                             );
                             return answer.result;
