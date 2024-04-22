@@ -72,6 +72,7 @@ function sendMessage(ws: WebSocket, msg: PeerMessage) {
 
 const DEFAULT_SIGNALING_SERVER_HOSTNAME = 'signaling.rxdb.info';
 export const DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOSTNAME + '/';
+const sockets = new Map<string, WebSocket>();
 let defaultServerWarningShown = false;
 
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
@@ -87,7 +88,7 @@ export type SimplePeerConnectionHandlerOptions = {
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
     config?: SimplePeerConfig;
-    webSocketConstructor?: WebSocket;
+    webSocketConstructor?: typeof WebSocket;
 };
 
 export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
@@ -96,15 +97,15 @@ export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export function getConnectionHandlerSimplePeer({
-    signalingServerUrl,
+    signalingServerUrl: signalingServerUrlInput,
     wrtc,
     config,
-    webSocketConstructor
+    webSocketConstructor: webSocketConstructorInput
 }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer> {
     ensureProcessNextTickIsSet();
 
-    signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
-    webSocketConstructor = webSocketConstructor ? webSocketConstructor as any : WebSocket;
+    const signalingServerUrl = signalingServerUrlInput || DEFAULT_SIGNALING_SERVER;
+    const webSocketConstructor = webSocketConstructorInput || WebSocket;
 
     if (
         signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
@@ -123,20 +124,132 @@ export function getConnectionHandlerSimplePeer({
             ].join(' ')
         );
     }
+    const connect$ = new Subject<SimplePeer>();
+    const disconnect$ = new Subject<SimplePeer>();
+    const message$ = new Subject<PeerWithMessage<SimplePeer>>();
+    const response$ = new Subject<PeerWithResponse<SimplePeer>>();
+    const error$ = new Subject<RxError | RxTypeError>();
+
+    const peers = new Map<string, SimplePeer>();
+    let closed = false;
+    let ownPeerId: string;
+
+    /**
+     * @recursive calls it self on socket disconnects
+     * so that when the user goes offline and online
+     * again, it will recreate the WebSocket connection.
+     */
+    function createSocket(roomName: string) {
+        if (closed) {
+            return;
+        }
+
+        const cachedSocket = sockets.get(signalingServerUrl);
+
+        if(cachedSocket) return cachedSocket            
+
+        const socket = new webSocketConstructor(signalingServerUrl);
+        sockets.set(signalingServerUrl, socket);
+        socket.onclose = () => createSocket(roomName);
+        socket.onopen = () => {
+            ensureNotFalsy(socket).onmessage = (msgEvent: any) => {
+                const msg: PeerMessage = JSON.parse(msgEvent.data as any);
+                switch (msg.type) {
+                    case 'init':
+                        ownPeerId = msg.yourPeerId;
+                        sendMessage(ensureNotFalsy(socket), {
+                            type: 'join',
+                            room: roomName
+                        });
+                        break;
+                    case 'joined':
+                        /**
+                         * PeerId is created by the signaling server
+                         * to prevent spoofing it.
+                         */
+                        function createPeerConnection(remotePeerId: string) {
+                            let disconnected = false;
+                            const newSimplePeer: SimplePeer = new Peer({
+                                initiator: remotePeerId > ownPeerId,
+                                wrtc,
+                                config,
+                                trickle: true
+                            }) as any;
+                            newSimplePeer.id = randomCouchString(10);
+                            peers.set(remotePeerId, newSimplePeer);
+
+
+                            newSimplePeer.on('signal', (signal: any) => {
+                                sendMessage(ensureNotFalsy(socket), {
+                                    type: 'signal',
+                                    senderPeerId: ownPeerId,
+                                    receiverPeerId: remotePeerId,
+                                    room: roomName,
+                                    data: signal
+                                });
+                            });
+
+                            newSimplePeer.on('data', (messageOrResponse: any) => {
+                                messageOrResponse = JSON.parse(messageOrResponse.toString());
+                                if (messageOrResponse.result) {
+                                    response$.next({
+                                        peer: newSimplePeer,
+                                        response: messageOrResponse
+                                    });
+                                } else {
+                                    message$.next({
+                                        peer: newSimplePeer,
+                                        message: messageOrResponse
+                                    });
+                                }
+                            });
+
+                            newSimplePeer.on('error', (error) => {
+                                error$.next(newRxError('RC_WEBRTC_PEER', {
+                                    error
+                                }));
+                                newSimplePeer.destroy();
+                                if (!disconnected) {
+                                    disconnected = true;
+                                    disconnect$.next(newSimplePeer);
+                                }
+                            });
+
+                            newSimplePeer.on('connect', () => {
+                                connect$.next(newSimplePeer);
+                            });
+
+                            newSimplePeer.on('close', () => {
+                                if (!disconnected) {
+                                    disconnected = true;
+                                    disconnect$.next(newSimplePeer);
+                                }
+                                createPeerConnection(remotePeerId);
+                            });
+                        }
+                        msg.otherPeerIds.forEach(remotePeerId => {
+                            if (
+                                remotePeerId === ownPeerId ||
+                                peers.has(remotePeerId)
+                            ) {
+                                return;
+                            } else {
+                                createPeerConnection(remotePeerId);
+                            }
+
+                        });
+                        break;
+                    case 'signal':
+                        const peer = getFromMapOrThrow(peers, msg.senderPeerId);
+                        peer.signal(msg.data);
+                        break;
+                }
+            }
+        }
+    };
 
     const creator: WebRTCConnectionHandlerCreator<SimplePeer> = async (options: SyncOptionsWebRTC<any, SimplePeer>) => {
-
-        const connect$ = new Subject<SimplePeer>();
-        const disconnect$ = new Subject<SimplePeer>();
-        const message$ = new Subject<PeerWithMessage<SimplePeer>>();
-        const response$ = new Subject<PeerWithResponse<SimplePeer>>();
-        const error$ = new Subject<RxError | RxTypeError>();
-
-        const peers = new Map<string, SimplePeer>();
-        let closed = false;
-        let ownPeerId: string;
-        let socket: WebSocket | undefined = undefined;
-        createSocket();
+        let socket: WebSocket | undefined = createSocket(options.topic);
 
 
         /**
@@ -155,113 +268,7 @@ export function getConnectionHandlerSimplePeer({
         })();
 
 
-        /**
-         * @recursive calls it self on socket disconnects
-         * so that when the user goes offline and online
-         * again, it will recreate the WebSocket connection.
-         */
-        function createSocket() {
-            if (closed) {
-                return;
-            }
-            socket = new (webSocketConstructor as any)(signalingServerUrl) as WebSocket;
-            socket.onclose = () => createSocket();
-            socket.onopen = () => {
-                ensureNotFalsy(socket).onmessage = (msgEvent: any) => {
-                    const msg: PeerMessage = JSON.parse(msgEvent.data as any);
-                    switch (msg.type) {
-                        case 'init':
-                            ownPeerId = msg.yourPeerId;
-                            sendMessage(ensureNotFalsy(socket), {
-                                type: 'join',
-                                room: options.topic
-                            });
-                            break;
-                        case 'joined':
-                            /**
-                             * PeerId is created by the signaling server
-                             * to prevent spoofing it.
-                             */
-                            function createPeerConnection(remotePeerId: string) {
-                                let disconnected = false;
-                                const newSimplePeer: SimplePeer = new Peer({
-                                    initiator: remotePeerId > ownPeerId,
-                                    wrtc,
-                                    config,
-                                    trickle: true
-                                }) as any;
-                                newSimplePeer.id = randomCouchString(10);
-                                peers.set(remotePeerId, newSimplePeer);
-
-
-                                newSimplePeer.on('signal', (signal: any) => {
-                                    sendMessage(ensureNotFalsy(socket), {
-                                        type: 'signal',
-                                        senderPeerId: ownPeerId,
-                                        receiverPeerId: remotePeerId,
-                                        room: options.topic,
-                                        data: signal
-                                    });
-                                });
-
-                                newSimplePeer.on('data', (messageOrResponse: any) => {
-                                    messageOrResponse = JSON.parse(messageOrResponse.toString());
-                                    if (messageOrResponse.result) {
-                                        response$.next({
-                                            peer: newSimplePeer,
-                                            response: messageOrResponse
-                                        });
-                                    } else {
-                                        message$.next({
-                                            peer: newSimplePeer,
-                                            message: messageOrResponse
-                                        });
-                                    }
-                                });
-
-                                newSimplePeer.on('error', (error) => {
-                                    error$.next(newRxError('RC_WEBRTC_PEER', {
-                                        error
-                                    }));
-                                    newSimplePeer.destroy();
-                                    if (!disconnected) {
-                                        disconnected = true;
-                                        disconnect$.next(newSimplePeer);
-                                    }
-                                });
-
-                                newSimplePeer.on('connect', () => {
-                                    connect$.next(newSimplePeer);
-                                });
-
-                                newSimplePeer.on('close', () => {
-                                    if (!disconnected) {
-                                        disconnected = true;
-                                        disconnect$.next(newSimplePeer);
-                                    }
-                                    createPeerConnection(remotePeerId);
-                                });
-                            }
-                            msg.otherPeerIds.forEach(remotePeerId => {
-                                if (
-                                    remotePeerId === ownPeerId ||
-                                    peers.has(remotePeerId)
-                                ) {
-                                    return;
-                                } else {
-                                    createPeerConnection(remotePeerId);
-                                }
-
-                            });
-                            break;
-                        case 'signal':
-                            const peer = getFromMapOrThrow(peers, msg.senderPeerId);
-                            peer.signal(msg.data);
-                            break;
-                    }
-                }
-            }
-        };
+        
 
         const handler: WebRTCConnectionHandler<SimplePeer> = {
             error$,
