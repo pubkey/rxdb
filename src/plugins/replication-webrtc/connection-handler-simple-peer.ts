@@ -88,7 +88,7 @@ export type SimplePeerConnectionHandlerOptions = {
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
     config?: SimplePeerConfig;
-    webSocketConstructor?: typeof WebSocket;
+    webSocketConstructor?: WebSocket;
 };
 
 export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
@@ -105,7 +105,7 @@ export function getConnectionHandlerSimplePeer({
     ensureProcessNextTickIsSet();
 
     const signalingServerUrl = signalingServerUrlInput || DEFAULT_SIGNALING_SERVER;
-    const webSocketConstructor = webSocketConstructorInput || WebSocket;
+    const webSocketConstructor = (webSocketConstructorInput || WebSocket) as typeof WebSocket;
 
     if (
         signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
