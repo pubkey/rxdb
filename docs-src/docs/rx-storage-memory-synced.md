@@ -131,10 +131,7 @@ The memory-synced storage itself does not support replication and migration. Ins
 For example when you use it on top of an [IndexedDB storage](./rx-storage-indexeddb.md), you have to run replication on that storage instead by creating a different [RxDatabase](./rx-database.md).
 
 ```js
-const parentStorage = getRxStorageIndexedDB({
-    indexedDB,
-    IDBKeyRange
-});
+const parentStorage = getRxStorageIndexedDB();
 
 const memorySyncedStorage = getMemorySyncedRxStorage({
     storage: parentStorage,
