@@ -156,7 +156,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                 const messageSub = pool.connectionHandler.message$
                     .pipe(
                         filter(data => data.peer === peer),
-                        filter(data => data.message.method !== 'token')
+                        filter(data => data.message.method !== 'token'),
+                        filter(data => data.message.collectionName === collection.name),
                     )
                     .subscribe(async (data) => {
                         const { peer: msgPeer, message } = data;
