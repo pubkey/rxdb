@@ -282,6 +282,7 @@ export function getConnectionHandlerSimplePeer({
             destroy() {
                 closed = true;
                 ensureNotFalsy(socket).close();
+                sockets.delete(signalingServerUrl);
                 error$.complete();
                 connect$.complete();
                 disconnect$.complete();
