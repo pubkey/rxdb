@@ -115,7 +115,7 @@ export var ERROR_MESSAGES = {
   DM2: 'migration of document failed final document does not match final schema',
   DM3: 'migration already running',
   DM4: 'Migration errored',
-  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See see https://rxdb.info/migration-storage.html',
+  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See https://rxdb.info/migration-storage.html',
   // plugins/attachments.js
   AT1: 'to use attachments, please define this in your schema',
   // plugins/encryption-crypto-js.js
