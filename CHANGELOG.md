@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.18.3 (25 April 2024)
+
 ### 15.18.2 (25 April 2024)
 
 - Memory RxStorage: Add `categorizedByWriteInput` property that can be used by other plugins.
