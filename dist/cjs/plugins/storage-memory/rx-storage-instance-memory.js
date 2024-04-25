@@ -20,8 +20,16 @@ var _rxQueryHelper = require("../../rx-query-helper.js");
  */
 var OPEN_MEMORY_INSTANCES = exports.OPEN_MEMORY_INSTANCES = new Set();
 var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/function () {
+  /**
+   * Used by some plugins and storage wrappers
+   * to find out details about the internals of a write operation.
+   * For example if you want to know which documents really have been replaced
+   * or newly inserted.
+   */
+
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
+    this.categorizedByWriteInput = new WeakMap();
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -54,6 +62,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       var _doc = _writeRow.document;
       success.push(_doc);
     }
+    this.categorizedByWriteInput.set(documentWrites, categorized);
     this.internals.ensurePersistenceTask = categorized;
     if (!this.internals.ensurePersistenceIdlePromise) {
       this.internals.ensurePersistenceIdlePromise = (0, _index.requestIdlePromiseNoQueue)().then(() => {
