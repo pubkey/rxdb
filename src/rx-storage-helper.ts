@@ -111,7 +111,6 @@ export function observeSingle<RxDocType>(
     return ret;
 }
 
-
 /**
  * Checkpoints must be stackable over another.
  * This is required form some RxStorage implementations

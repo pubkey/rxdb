@@ -12,6 +12,7 @@ import {
 } from '../../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
+    CategorizeBulkWriteRowsOutput,
     EventBulk,
     PreparedQuery,
     QueryMatcher,
@@ -79,6 +80,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     public closed = false;
 
+    /**
+     * Used by some plugins and storage wrappers
+     * to find out details about the internals of a write operation.
+     * For example if you want to know which documents really have been replaced
+     * or newly inserted.
+     */
+    public categorizedByWriteInput = new WeakMap<BulkWriteRow<RxDocType>[], CategorizeBulkWriteRowsOutput<RxDocType>>();
+
     constructor(
         public readonly storage: RxStorageMemory,
         public readonly databaseName: string,
@@ -124,6 +133,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             success.push(doc);
         }
 
+        this.categorizedByWriteInput.set(documentWrites, categorized);
         this.internals.ensurePersistenceTask = categorized;
         if (!this.internals.ensurePersistenceIdlePromise) {
             this.internals.ensurePersistenceIdlePromise = requestIdlePromiseNoQueue().then(() => {

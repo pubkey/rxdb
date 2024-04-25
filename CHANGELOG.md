@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Memory RxStorage: Add `categorizedByWriteInput` property that can be used by other plugins.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
