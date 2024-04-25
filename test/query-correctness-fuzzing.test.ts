@@ -20,6 +20,12 @@ import {
     mingoCollectionCreator,
     applyChangeEvent
 } from 'event-reduce-js/truth-table-generator';
+import { randomNumber } from 'async-test-util';
+
+
+function trueByChance(chance: number) {
+    return Math.random() < chance;
+}
 
 /**
  * Creates random writes, indexes and queries and tests if the results are correct.
@@ -89,15 +95,23 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 indexes
             };
             const schema = fillWithDefaultSettings(schemaPlain);
-            const storageInstance = await config.storage.getStorage().createStorageInstance({
-                collectionName: randomCouchString(10),
-                databaseName: randomCouchString(10),
-                databaseInstanceToken: randomCouchString(10),
-                multiInstance: false,
-                devMode: false,
-                options: {},
-                schema
-            });
+
+            const collectionName = randomCouchString(10);
+            const databaseName = randomCouchString(10);
+
+            const openStorageInstance = () => {
+                return config.storage.getStorage().createStorageInstance({
+                    collectionName,
+                    databaseName,
+                    databaseInstanceToken: randomCouchString(10),
+                    multiInstance: false,
+                    devMode: false,
+                    options: {},
+                    schema
+                });
+            };
+
+            let storageInstance = await openStorageInstance();
             const collection = mingoCollectionCreator();
 
 
@@ -143,6 +157,22 @@ describe('query-correctness-fuzzing.test.ts', () => {
                         }], 'randomevent');
                         assert.deepStrictEqual(writeResult.error, []);
                     }
+
+                    /**
+                     * If the storage has persistence,
+                     * close and open it randomly and check again for the correctness.
+                     * Also randomly run the cleanup
+                     */
+                    if (config.storage.hasPersistence) {
+                        if (trueByChance(0.005)) {
+                            await storageInstance.close();
+                            storageInstance = await openStorageInstance();
+                        } else if (trueByChance(0.006)) {
+                            await storageInstance.cleanup(randomNumber(0, 1000));
+                        }
+                    }
+
+
                 }
 
                 // ensure all docs are equal
