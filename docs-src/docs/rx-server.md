@@ -149,7 +149,7 @@ There is also the `client-rest` plugin that provides typesave interactions with 
 ```ts
 // using the client (optional)
 import { createRestClient } from 'rxdb-server/plugins/client-rest';
-const client = createRestClient<HumanDocumentType>('http://localhost:80/' + endpoint.urlPath, {/* headers */});
+const client = createRestClient('http://localhost:80/' + endpoint.urlPath, {/* headers */});
 const response = await client.query({ selector: {} });
 ```
 
