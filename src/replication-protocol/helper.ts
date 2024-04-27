@@ -28,9 +28,13 @@ export function docStateToWriteDoc<RxDocType>(
         docState,
         {
             _attachments: hasAttachments && docState._attachments ? docState._attachments : {},
-            _meta: keepMeta ? (docState as any)._meta : {
-                lwt: now()
-            },
+            _meta: keepMeta ? (docState as any)._meta : Object.assign(
+                {},
+                previous ? previous._meta : {},
+                {
+                    lwt: now()
+                }
+            ),
             _rev: keepMeta ? (docState as any)._rev : getDefaultRevision()
         }
     );
@@ -40,6 +44,7 @@ export function docStateToWriteDoc<RxDocType>(
             previous
         );
     }
+
     return docData;
 }
 

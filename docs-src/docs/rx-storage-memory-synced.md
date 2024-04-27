@@ -21,10 +21,11 @@ The main reason to use this is to improve initial page load and query/write time
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then `10k` documents.
 - The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
+- The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
 
 
-:::note Premium
-The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+:::note Consider using the Memory-Mapped RxStorage
+While the `memory-synced` storage works, it is not the best option for most users. Instead consider using the (newer) [memory-mapped RxStorage](./rx-storage-memory-mapped.md) which has better trade-offs and is easier to configure.
 :::
 
 ## Usage

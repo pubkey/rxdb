@@ -156,6 +156,18 @@ export default function Premium() {
                                         </div>
                                     </div>
                                 </a>
+                                <a href="/rx-storage-memory-mapped.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
+                                        <div className="premium-block-inner">
+                                            <h4>RxStorage Memory Mapped</h4>
+                                            <p>
+                                                A wrapper around any other storage that creates a mapped
+                                                in-memory copy which improves performance for the initial page
+                                                load time and write &amp; read operations.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
                                 <a href="/rx-storage-memory-synced.html" target="_blank">
                                     <div className="premium-block hover-shadow-middle bg-gradient-left-top">
                                         <div className="premium-block-inner">
@@ -528,6 +540,11 @@ export default function Premium() {
                                                         <li>
                                                             <a href="/rx-storage-sharding.html" target="_blank">
                                                                 RxStorage Sharding
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a href="/rx-storage-memory-mapped.html" target="_blank">
+                                                                RxStorage Memory Mapped
                                                             </a>
                                                         </li>
                                                         <li>

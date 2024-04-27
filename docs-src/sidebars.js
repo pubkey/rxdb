@@ -46,6 +46,7 @@ const sidebars = {
         'rx-storage-remote',
         'rx-storage-worker',
         'rx-storage-shared-worker',
+        'rx-storage-memory-mapped',
         'rx-storage-memory-synced',
         'rx-storage-sharding',
         'rx-storage-localstorage-meta-optimizer',

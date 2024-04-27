@@ -881,17 +881,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             assert.ok(masterDocs[0]._rev.startsWith('2-'));
 
-            /**
-             * Ensure it only contains the _meta fields that we really need.
-             */
-            const masterDoc = (await runQuery(masterInstance))[0];
-            // should only have the 'lwt'
-            assert.strictEqual(Object.keys(masterDoc._meta).length, 1);
-
-            // const forkDoc = (await runQuery(forkInstance))[0];
-            // should only have the 'lwt' AND the current state of the master.
-            // assert.strictEqual(Object.keys(forkDoc._meta).length, 3); // TODO
-
             cleanUp(replicationState, masterInstance);
         });
         it('both have updated the document with different values', async () => {
@@ -912,17 +901,17 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         });
                         docData._rev = createRevision(randomCouchString(10), docData);
                         docData._meta.lwt = now();
-                        await instance.bulkWrite([{
+                        const writeResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
 
                         // update
-                        const newDocData = clone(docData);
+                        const newDocData = clone(writeResult.success[0]);
                         newDocData.age = newDocData.age + 1;
                         newDocData._rev = createRevision(randomCouchString(10), docData);
                         newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
-                            previous: docData,
+                            previous: writeResult.success[0],
                             document: newDocData
                         }], testContext);
                         assert.deepStrictEqual(updateResult.error, []);

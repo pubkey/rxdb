@@ -8,7 +8,8 @@ import {
     RX_META_LWT_MINIMUM,
     sortDocumentsByLastWriteTime,
     lastOfArray,
-    ensureNotFalsy
+    ensureNotFalsy,
+    randomCouchString
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -44,11 +45,12 @@ import {
 } from './dexie-helper.ts';
 import { dexieCount, dexieQuery } from './dexie-query.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { categorizeBulkWriteRows, flatCloneDocWithMeta } from '../../rx-storage-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
+export const DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
 
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -68,7 +70,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: DexieStorageInternals,
         public readonly options: Readonly<DexieSettings>,
-        public readonly settings: DexieSettings
+        public readonly settings: DexieSettings,
+        public readonly devMode: boolean
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
@@ -95,15 +98,45 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             ) {
                 throw newRxError('SNH', { args: { row } });
             }
+
+            // ensure prev-data is set
+            if (this.devMode) {
+                if (
+                    row.previous &&
+                    (
+                        !row.previous._meta[DEXIE_TEST_META_FIELD] ||
+                        row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev
+                    )
+                ) {
+                    console.dir(row);
+                    throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
+                }
+            }
         });
-
-
 
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: [],
             error: []
         };
+
+        /**
+         * Some storages might add any _meta fields
+         * internally. To ensure RxDB can work with that in the
+         * test suite, we add a random field here.
+         * To ensure 
+         */
+        if (this.devMode) {
+            documentWrites = documentWrites.map(row => {
+                const doc = flatCloneDocWithMeta(row.document);
+                doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
+                return {
+                    previous: row.previous,
+                    document: doc
+                }
+            })
+        }
+
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
         let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined;
@@ -148,8 +181,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 if (bulkPutDocs.length > 0) {
                     await state.dexieTable.bulkPut(bulkPutDocs);
                 }
-
-
 
                 // handle attachments
                 const putAttachments: { id: string, data: string }[] = [];
@@ -339,7 +370,8 @@ export async function createDexieStorageInstance<RxDocType>(
         params.schema,
         internals,
         params.options,
-        settings
+        settings,
+        params.devMode
     );
 
     await addRxStorageMultiInstanceSupport(

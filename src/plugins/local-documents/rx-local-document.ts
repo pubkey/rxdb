@@ -199,14 +199,8 @@ const RxLocalDocumentPrototype: any = {
 
     async remove(this: RxLocalDocument<any>): Promise<RxLocalDocument<any>> {
         const state = await getLocalDocStateByParent(this.parent);
-        const writeData: RxDocumentWriteData<RxLocalDocumentData> = {
-            id: this._data.id,
-            data: {},
-            _deleted: true,
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision(),
-            _attachments: {}
-        };
+        const writeData = flatClone(this._data);
+        writeData._deleted = true;
         return writeSingle(state.storageInstance, {
             previous: this._data,
             document: writeData

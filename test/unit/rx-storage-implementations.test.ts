@@ -38,7 +38,8 @@ import {
     RxStorageChangeEvent,
     RxStorageInstance,
     prepareQuery,
-    getChangedDocumentsSince
+    getChangedDocumentsSince,
+    stripMetaDataFromDocument
 } from '../../plugins/core/index.mjs';
 import {
     getCompressionStateByRxJsonSchema
@@ -294,7 +295,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 assert.deepStrictEqual(writeResponse.error, []);
                 const first = writeResponse.success[0];
-                assert.deepStrictEqual(docData, first);
+                assert.deepStrictEqual(stripMetaDataFromDocument(docData), stripMetaDataFromDocument(first));
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
@@ -442,16 +443,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
 
                 // make an update
-                const updateData = Object.assign({}, insertData, {
-                    value: 'barfoo2',
-                    _rev: EXAMPLE_REVISION_2,
-                    _meta: {
-                        lwt: now()
-                    }
-                });
+                const updateData = flatCloneDocWithMeta(first);
+                updateData.value = 'barfoo2';
+                updateData._rev = EXAMPLE_REVISION_2;
+                updateData._meta.lwt = now();
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: insertData,
+                        previous: first,
                         document: updateData
                     }],
                     testContext
@@ -459,17 +457,14 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.deepStrictEqual(updateResponse.error, []);
 
                 // make the delete
+                const deleteData = flatCloneDocWithMeta(updateResponse.success[0]);
+                deleteData.value = 'barfoo_deleted';
+                deleteData._deleted = true;
+                deleteData._meta.lwt = now();
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: updateData,
-                        document: Object.assign({}, first, {
-                            value: 'barfoo_deleted',
-                            _deleted: true,
-                            _rev: EXAMPLE_REVISION_3,
-                            _meta: {
-                                lwt: now()
-                            }
-                        })
+                        previous: updateResponse.success[0],
+                        document: deleteData
                     }],
                     testContext
                 );
@@ -769,8 +764,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
                 assert.deepStrictEqual(
-                    getDocFromDb[0],
-                    compressedDocData
+                    stripMetaDataFromDocument(getDocFromDb[0]),
+                    stripMetaDataFromDocument(compressedDocData as any)
                 );
 
                 storageInstance.close();
@@ -808,9 +803,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(res1.error, []);
+                docData = res1.success[0];
 
                 // change once
-                let newDocData: RxDocumentData<TestDocType> = clone(docData);
+                let newDocData: RxDocumentData<TestDocType> = flatCloneDocWithMeta(docData);
                 newDocData._meta.foobar = 1;
                 newDocData._meta.lwt = now();
                 newDocData._rev = createRevision(databaseInstanceToken, docData);
@@ -823,10 +819,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(res2.error, []);
-                docData = newDocData;
+                docData = res2.success[0];
 
                 // change again
-                newDocData = clone(docData);
+                newDocData = flatCloneDocWithMeta(docData);
                 newDocData._meta.foobar = 2;
                 newDocData._meta.lwt = now();
                 newDocData._rev = createRevision(databaseInstanceToken, docData);
@@ -932,13 +928,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.deepStrictEqual(insertResponse.error, []);
 
                 // update
-                const updated = flatCloneDocWithMeta(docData);
+                const updated = flatCloneDocWithMeta(insertResponse.success[0]);
                 updated.value = 'barfoo2';
                 updated._meta.lwt = now();
                 updated._rev = EXAMPLE_REVISION_4;
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: insertResponse.success[0],
                         document: updated
                     }],
                     testContext
@@ -1674,7 +1670,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         query
                     );
                     const docsViaSort = shuffleArray(docs).sort(sortComparator);
-                    assert.deepStrictEqual(docsViaQuery, docsViaSort);
+                    assert.deepStrictEqual(
+                        docsViaQuery.map(d => stripMetaDataFromDocument(d)),
+                        docsViaSort.map(d => stripMetaDataFromDocument(d)),
+                    );
                 }
                 const queries: FilledMangoQuery<RandomDoc>[] = [
                     {
@@ -1912,7 +1911,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
                 const foundDoc = found[0];
-                assert.deepStrictEqual(foundDoc, docData);
+                assert.deepStrictEqual(
+                    stripMetaDataFromDocument(foundDoc),
+                    stripMetaDataFromDocument(docData)
+                );
 
                 storageInstance.close();
             });
@@ -2849,7 +2851,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     writeResult.success[0]._attachments.foo.digest
                 );
 
-                const deleteData = clone(writeData);
+                const deleteData = clone(writeResult.success[0]);
                 deleteData._meta.lwt = now();
                 deleteData._deleted = true;
                 deleteData._attachments = {};
@@ -2857,7 +2859,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous: await stripAttachmentsDataFromDocument(writeData),
+                        previous: await stripAttachmentsDataFromDocument(writeResult.success[0]),
                         document: deleteData
                     }],
                     testContext
@@ -3332,7 +3334,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             // find the document on B
             await waitUntil(async () => {
                 try {
-                    const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
+                    const foundAgain = await instances.a.findDocumentsById([writeData.key], false);
                     const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.key, writeData.key);
                     return true;
@@ -3356,7 +3358,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             const foundViaQueryDoc = ensureNotFalsy(foundViaQuery.documents.find(doc => doc.key === writeData.key));
 
             // update on B
-            const newDoc: typeof foundViaQueryDoc = clone(foundViaQueryDoc);
+            const newDoc: typeof foundViaQueryDoc = flatCloneDocWithMeta(foundViaQueryDoc);
             newDoc.value = 'updatedB';
             newDoc._rev = createRevision(randomCouchString(10), foundViaQueryDoc);
             const updateBResult = await instances.b.bulkWrite([{

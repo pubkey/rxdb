@@ -202,7 +202,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     query.sort = sort as any;
                     query.selector._deleted = { $eq: false };
                     // must have the same result for all indexes
-                    for (const index of ensureNotFalsy(schema.indexes)) {
+                    for (const index of ensureNotFalsy(schema.indexes, 'schema.indexes is falsy')) {
                         const useQuery = normalizeMangoQuery(schema, query as any);
                         useQuery.index = index as any;
                         const preparedQuery = prepareQuery(schema, useQuery);

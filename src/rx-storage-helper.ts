@@ -636,7 +636,10 @@ export function getWrappedStorageInstance<
                         if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
                             throw newRxError('SNH', {
                                 dataBefore: writeRow.previous,
-                                dataAfter: writeRow.document
+                                dataAfter: writeRow.document,
+                                args: {
+                                    metaFieldName
+                                }
                             });
                         }
                     });

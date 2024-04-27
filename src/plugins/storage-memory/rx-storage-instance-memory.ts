@@ -95,7 +95,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
         public readonly internals: MemoryStorageInternals<RxDocType>,
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
-        public readonly settings: RxStorageMemorySettings
+        public readonly settings: RxStorageMemorySettings,
+        public readonly devMode: boolean
     ) {
         OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
@@ -119,7 +120,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             context
         );
         const error = categorized.errors;
-        const success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
+        let success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
         const bulkInsertDocs = categorized.bulkInsertDocs;
         for (let i = 0; i < bulkInsertDocs.length; ++i) {
             const writeRow = bulkInsertDocs[i];
@@ -542,7 +543,8 @@ export function createMemoryStorageInstance<RxDocType>(
         params.schema,
         internals,
         params.options,
-        settings
+        settings,
+        params.devMode
     );
     return Promise.resolve(instance);
 }
