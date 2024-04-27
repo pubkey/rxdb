@@ -12,12 +12,12 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 
 - Improves read/write performance because these operations run against the in-memory storage.
 - Decreases initial page load because it load all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.
-- Can store encryted data on disc while still being able to run queries on the non-encrypted in-memory state.
+- Can store encrypted data on disc while still being able to run queries on the non-encrypted in-memory state.
 
 
 ## Cons
 
-- It does not support attachments because storing big attachemnts data in-memory should not be done.
+- It does not support attachments because storing big attachments data in-memory should not be done.
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - The memory-mapped storage can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial data loading from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then `10k` documents.
