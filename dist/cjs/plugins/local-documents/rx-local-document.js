@@ -135,14 +135,8 @@ var RxLocalDocumentPrototype = {
   },
   async remove() {
     var state = await (0, _localDocumentsHelper.getLocalDocStateByParent)(this.parent);
-    var writeData = {
-      id: this._data.id,
-      data: {},
-      _deleted: true,
-      _meta: (0, _index.getDefaultRxDocumentMeta)(),
-      _rev: (0, _index.getDefaultRevision)(),
-      _attachments: {}
-    };
+    var writeData = (0, _index.flatClone)(this._data);
+    writeData._deleted = true;
     return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
       previous: this._data,
       document: writeData

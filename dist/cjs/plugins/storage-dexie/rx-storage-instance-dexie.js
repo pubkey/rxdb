@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxStorageInstanceDexie = void 0;
+exports.RxStorageInstanceDexie = exports.DEXIE_TEST_META_FIELD = void 0;
 exports.createDexieStorageInstance = createDexieStorageInstance;
 var _rxjs = require("rxjs");
 var _index = require("../utils/index.js");
@@ -14,8 +14,9 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance.js");
 var _rxError = require("../../rx-error.js");
 var instanceId = (0, _index.now)();
+var DEXIE_TEST_META_FIELD = exports.DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
 var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/function () {
-  function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
+  function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings, devMode) {
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
     this.storage = storage;
@@ -25,6 +26,7 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
     this.internals = internals;
     this.options = options;
     this.settings = settings;
+    this.devMode = devMode;
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
   }
   var _proto = RxStorageInstanceDexie.prototype;
@@ -44,12 +46,37 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
           }
         });
       }
+
+      // ensure prev-data is set
+      if (this.devMode) {
+        if (row.previous && (!row.previous._meta[DEXIE_TEST_META_FIELD] || row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev)) {
+          console.dir(row);
+          throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
+        }
+      }
     });
     var state = await this.internals;
     var ret = {
       success: [],
       error: []
     };
+
+    /**
+     * Some storages might add any _meta fields
+     * internally. To ensure RxDB can work with that in the
+     * test suite, we add a random field here.
+     * To ensure 
+     */
+    if (this.devMode) {
+      documentWrites = documentWrites.map(row => {
+        var doc = (0, _rxStorageHelper.flatCloneDocWithMeta)(row.document);
+        doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
+        return {
+          previous: row.previous,
+          document: doc
+        };
+      });
+    }
     var documentKeys = documentWrites.map(writeRow => writeRow.document[this.primaryPath]);
     var categorized;
     await state.dexieDb.transaction('rw', state.dexieTable, state.dexieAttachmentsTable, async () => {
@@ -212,7 +239,7 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
 }();
 async function createDexieStorageInstance(storage, params, settings) {
   var internals = (0, _dexieHelper.getDexieDbWithTables)(params.databaseName, params.collectionName, settings, params.schema);
-  var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
+  var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings, params.devMode);
   await (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_dexieHelper.RX_STORAGE_NAME_DEXIE, params, instance);
   return Promise.resolve(instance);
 }

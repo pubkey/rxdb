@@ -12,9 +12,9 @@ var _rxStorageHelper = require("../rx-storage-helper.js");
 function docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: hasAttachments && docState._attachments ? docState._attachments : {},
-    _meta: keepMeta ? docState._meta : {
+    _meta: keepMeta ? docState._meta : Object.assign({}, previous ? previous._meta : {}, {
       lwt: (0, _index.now)()
-    },
+    }),
     _rev: keepMeta ? docState._rev : (0, _index.getDefaultRevision)()
   });
   if (!docData._rev) {

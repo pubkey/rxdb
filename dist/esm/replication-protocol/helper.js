@@ -3,9 +3,9 @@ import { stripAttachmentsDataFromDocument } from "../rx-storage-helper.js";
 export function docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: hasAttachments && docState._attachments ? docState._attachments : {},
-    _meta: keepMeta ? docState._meta : {
+    _meta: keepMeta ? docState._meta : Object.assign({}, previous ? previous._meta : {}, {
       lwt: now()
-    },
+    }),
     _rev: keepMeta ? docState._rev : getDefaultRevision()
   });
   if (!docData._rev) {

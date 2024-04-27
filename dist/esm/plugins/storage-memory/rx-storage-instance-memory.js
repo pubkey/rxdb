@@ -21,7 +21,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
    * or newly inserted.
    */
 
-  function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
+  function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings, devMode) {
     this.closed = false;
     this.categorizedByWriteInput = new WeakMap();
     this.storage = storage;
@@ -31,6 +31,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.settings = settings;
+    this.devMode = devMode;
     OPEN_MEMORY_INSTANCES.add(this);
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
   }
@@ -323,7 +324,7 @@ export function createMemoryStorageInstance(storage, params, settings) {
     }
     internals.refCount = internals.refCount + 1;
   }
-  var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
+  var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings, params.devMode);
   return Promise.resolve(instance);
 }
 //# sourceMappingURL=rx-storage-instance-memory.js.map

@@ -14,6 +14,7 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     readonly internals: MemoryStorageInternals<RxDocType>;
     readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>;
     readonly settings: RxStorageMemorySettings;
+    readonly devMode: boolean;
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     closed: boolean;
     /**
@@ -23,7 +24,7 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
      * or newly inserted.
      */
     categorizedByWriteInput: WeakMap<BulkWriteRow<RxDocType>[], CategorizeBulkWriteRowsOutput<RxDocType>>;
-    constructor(storage: RxStorageMemory, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: MemoryStorageInternals<RxDocType>, options: Readonly<RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings);
+    constructor(storage: RxStorageMemory, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: MemoryStorageInternals<RxDocType>, options: Readonly<RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings, devMode: boolean);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     /**
      * Instead of directly inserting the documents into all indexes,

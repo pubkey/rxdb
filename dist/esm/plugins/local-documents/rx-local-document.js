@@ -5,7 +5,7 @@ import { getDocumentDataOfRxChangeEvent } from "../../rx-change-event.js";
 import { basePrototype, createRxDocumentConstructor } from "../../rx-document.js";
 import { newRxError, newRxTypeError } from "../../rx-error.js";
 import { writeSingle } from "../../rx-storage-helper.js";
-import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
+import { flatClone, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from "./local-documents-helper.js";
 import { isRxDatabase } from "../../rx-database.js";
 var RxDocumentParent = createRxDocumentConstructor();
@@ -127,14 +127,8 @@ var RxLocalDocumentPrototype = {
   },
   async remove() {
     var state = await getLocalDocStateByParent(this.parent);
-    var writeData = {
-      id: this._data.id,
-      data: {},
-      _deleted: true,
-      _meta: getDefaultRxDocumentMeta(),
-      _rev: getDefaultRevision(),
-      _attachments: {}
-    };
+    var writeData = flatClone(this._data);
+    writeData._deleted = true;
     return writeSingle(state.storageInstance, {
       previous: this._data,
       document: writeData
