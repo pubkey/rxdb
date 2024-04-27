@@ -4,7 +4,7 @@ slug: rx-storage-memory-mapped.html
 ---
 
 
-# Memory Mapped RxStorage
+# Memory Mapped RxStorage (beta)
 
 The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is kept persistent with a given underlying storage.
 
@@ -21,9 +21,10 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage. This can be prevented with the `awaitWritePersistence` flag.
 - The memory-mapped storage can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial data loading from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then `10k` documents.
+- The `memory-mapped` storage is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB core module.
 
-:::note Premium
-The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB core module.
+:::warning beta
+The Memory-Mapped RxStorage is in **beta** mode and it might get breaking changes without a major RxDB release.
 :::
 
 ## Using the Memory-Mapped RxStorage
@@ -43,7 +44,7 @@ import {
  */
 const parentStorage = getRxStorageIndexedDB();
 
-// wrap the persistent storage with the memory synced one.
+// wrap the persistent storage with the memory-mapped storage.
 const storage = getMemoryMappedRxStorage({
     storage: parentStorage
 });
@@ -78,14 +79,12 @@ import {
 } from 'rxdb-premium/plugins/storage-memory-mapped';
 import { wrappedKeyEncryptionWebCryptoStorage } from 'rxdb-premium/plugins/encryption-web-crypto';
 
-// wrap the persistent storage with the encryption wrapper synced one.
 const storage = getMemoryMappedRxStorage({
     storage: wrappedKeyEncryptionWebCryptoStorage({
         storage: getRxStorageIndexedDB()
     })
 });
 
-// create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
     name: 'myDatabase,
     storage,

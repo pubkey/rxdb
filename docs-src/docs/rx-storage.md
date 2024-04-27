@@ -148,10 +148,15 @@ The Remote RxStorage is made to use a remote storage and communicate with it ove
 
 On some `RxStorage` implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other `RxStorage` into a sharded storage. [Read more](./rx-storage-sharding.md)
 
+### 👑 Memory Mapped
+
+The memory-mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance stores its data in an underlying storage for persistence.
+The main reason to use this is to improve query/write performance while still having the data stored on disc. [Read more](./rx-storage-memory-mapped.md)
+
 ### 👑 Memory Synced
 
-The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications. [Read more](./rx-storage-memory-synced.md)
+The memory-synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
+The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications. While the memory-synced storage has its use cases, by default you should use the [Memory-Mapped RxStorage](./rx-storage-memory-mapped.md) instead. [Read more](./rx-storage-memory-synced.md)
 
 ### 👑 Localstorage Meta Optimizer
 
