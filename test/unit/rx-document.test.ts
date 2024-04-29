@@ -524,7 +524,8 @@ describe('rx-document.test.js', () => {
             });
             it('should retry on conflict errors', async () => {
                 if (
-                    !config.storage.hasPersistence
+                    !config.storage.hasPersistence ||
+                    !config.storage.hasMultiInstance
                 ) {
                     return;
                 }
