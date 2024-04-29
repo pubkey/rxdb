@@ -44,6 +44,9 @@ describeParallel('rx-database.test.ts', () => {
                 db.destroy();
             });
             it('2 instances on same storage (if ignoreDuplicate is true)', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
@@ -68,13 +71,11 @@ describeParallel('rx-database.test.ts', () => {
                     db2.token
                 );
 
-                if (config.storage.hasMultiInstance) {
-                    assert.strictEqual(
-                        await isRxDatabaseFirstTimeInstantiated(db2),
-                        false,
-                        'isRxDatabaseFirstTimeInstantiated must be false'
-                    );
-                }
+                assert.strictEqual(
+                    await isRxDatabaseFirstTimeInstantiated(db2),
+                    false,
+                    'isRxDatabaseFirstTimeInstantiated must be false'
+                );
 
                 db.destroy();
                 db2.destroy();
@@ -110,7 +111,8 @@ describeParallel('rx-database.test.ts', () => {
             });
             it('2 password-instances on same adapter', async () => {
                 if (
-                    config.storage.name === 'lokijs'
+                    config.storage.name === 'lokijs' ||
+                    !config.storage.hasMultiInstance
                 ) {
                     /**
                      * TODO on lokijs this test somehow fails
