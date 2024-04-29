@@ -1,7 +1,8 @@
 # Number of days of inactivity before an issue becomes stale
-daysUntilStale: 14
-# Number of days of inactivity before a stale issue is closed
-daysUntilClose: 31
+# Yes one week is enough as the past has shown that people will anyway not continue the work if they did not answer after that time.
+daysUntilStale: 7
+daysUntilClose: 21
+
 # Issues with these labels will never be considered stale
 exemptLabels:
   - pinned
