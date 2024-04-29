@@ -253,6 +253,9 @@ describeParallel('rx-database.test.ts', () => {
                 db.destroy();
             });
             it('create 2 times on same adapter', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
