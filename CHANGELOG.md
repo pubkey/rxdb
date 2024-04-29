@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.18.5 (29 April 2024)
+
 ### 15.18.4 (27 April 2024)
 
 - ADD the new [Memory-Mapped RxStorage](https://rxdb.info/rx-storage-memory-mapped.html), a better alternative for the Memory-Synced RxStorage.
