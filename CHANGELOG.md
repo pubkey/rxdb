@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD the new [Memory-Mapped RxStorage](https://rxdb.info/rx-storage-memory-mapped.html), a better alternative for the Memory-Synced RxStorage.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.19.0 (29 April 2024)
+
+- ADD the new [Memory-Mapped RxStorage](https://rxdb.info/rx-storage-memory-mapped.html), a better alternative for the Memory-Synced RxStorage.
 
 ### 15.18.6 (29 April 2024)
 
