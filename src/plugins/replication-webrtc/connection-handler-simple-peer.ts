@@ -72,7 +72,6 @@ function sendMessage(ws: WebSocket, msg: PeerMessage) {
 
 const DEFAULT_SIGNALING_SERVER_HOSTNAME = 'signaling.rxdb.info';
 export const DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOSTNAME + '/';
-const sockets = new Map<string, WebSocket>();
 let defaultServerWarningShown = false;
 
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
@@ -130,6 +129,7 @@ export function getConnectionHandlerSimplePeer({
     const response$ = new Subject<PeerWithResponse<SimplePeer>>();
     const error$ = new Subject<RxError | RxTypeError>();
 
+    const sockets = new Map<string, WebSocket>();
     const peers = new Map<string, SimplePeer>();
     let closed = false;
     let ownPeerId: string;
@@ -246,6 +246,7 @@ export function getConnectionHandlerSimplePeer({
                 }
             }
         }
+        return socket
     };
 
     const creator: WebRTCConnectionHandlerCreator<SimplePeer> = async (options: SyncOptionsWebRTC<any, SimplePeer>) => {
