@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD check to throw helpfull error message when a Date() object is passed instead of plain json data.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

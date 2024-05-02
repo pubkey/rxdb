@@ -5,7 +5,6 @@
 import { overwritable } from './overwritable.ts';
 import { newRxError } from './rx-error.ts';
 import {
-    fillPrimaryKey,
     getPrimaryFieldOfPrimaryKey
 } from './rx-schema-helper.ts';
 import type {
@@ -50,6 +49,7 @@ import {
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 import { prepareQuery } from './rx-query.ts';
 import { normalizeMangoQuery } from './rx-query-helper.ts';
+import { runPluginHooks } from './hooks.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -559,92 +559,12 @@ export function getWrappedStorageInstance<
     rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-    const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
 
     function transformDocumentDataFromRxDBToRxStorage(
         writeRow: BulkWriteRow<RxDocType>
     ) {
-        let data = flatClone(writeRow.document);
+        const data = flatClone(writeRow.document);
         data._meta = flatClone(data._meta);
-
-        /**
-         * Do some checks in dev-mode
-         * that would be too performance expensive
-         * in production.
-         */
-        if (overwritable.isDevMode()) {
-            // ensure that the primary key has not been changed
-            data = fillPrimaryKey(
-                primaryPath,
-                rxJsonSchema,
-                data as any
-            );
-
-
-            /**
-             * Ensure it can be structured cloned
-             */
-            try {
-                /**
-                 * Notice that structuredClone() is not available
-                 * in ReactNative, so we test for JSON.stringify() instead
-                 * @link https://github.com/pubkey/rxdb/issues/5046#issuecomment-1827374498
-                 */
-                if (typeof structuredClone === 'function') {
-                    structuredClone(writeRow);
-                } else {
-                    JSON.parse(JSON.stringify(writeRow));
-                }
-            } catch (err) {
-                throw newRxError('DOC24', {
-                    collection: storageInstance.collectionName,
-                    document: writeRow.document
-                });
-            }
-
-            /**
-             * Ensure that the new revision is higher
-             * then the previous one
-             */
-            if (writeRow.previous) {
-                // TODO run this in the dev-mode plugin
-                // const prev = parseRevision(writeRow.previous._rev);
-                // const current = parseRevision(writeRow.document._rev);
-                // if (current.height <= prev.height) {
-                //     throw newRxError('SNH', {
-                //         dataBefore: writeRow.previous,
-                //         dataAfter: writeRow.document,
-                //         args: {
-                //             prev,
-                //             current
-                //         }
-                //     });
-                // }
-            }
-
-            /**
-             * Ensure that _meta fields have been merged
-             * and not replaced.
-             * This is important so that when one plugin A
-             * sets a _meta field and another plugin B does a write
-             * to the document, it must be ensured that the
-             * field of plugin A was not removed.
-             */
-            if (writeRow.previous) {
-                Object.keys(writeRow.previous._meta)
-                    .forEach(metaFieldName => {
-                        if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
-                            throw newRxError('SNH', {
-                                dataBefore: writeRow.previous,
-                                dataAfter: writeRow.document,
-                                args: {
-                                    metaFieldName
-                                }
-                            });
-                        }
-                    });
-            }
-        }
         data._meta.lwt = now();
 
         /**
@@ -676,6 +596,11 @@ export function getWrappedStorageInstance<
         ) {
             const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
                 .map(row => transformDocumentDataFromRxDBToRxStorage(row));
+
+            runPluginHooks('preStorageWrite', {
+                storageInstance: this.originalStorageInstance,
+                rows: toStorageWriteRows
+            });
 
             return database.lockedRun(
                 () => storageInstance.bulkWrite(

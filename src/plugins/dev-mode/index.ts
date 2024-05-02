@@ -25,7 +25,7 @@ import { checkMangoQuery, checkQuery } from './check-query.ts';
 import { newRxError } from '../../rx-error.ts';
 import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
-import { ensurePrimaryKeyValid } from './check-document.ts';
+import { checkWriteRows, ensurePrimaryKeyValid } from './check-document.ts';
 
 export * from './check-schema.ts';
 export * from './unallowed-properties.ts';
@@ -138,6 +138,11 @@ export const RxDBDevModePlugin: RxPlugin = {
         prePrepareQuery: {
             after: (args) => {
                 checkMangoQuery(args);
+            }
+        },
+        preStorageWrite: {
+            before: (args) => {
+                checkWriteRows(args.storageInstance, args.rows);
             }
         },
         createRxCollection: {
