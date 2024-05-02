@@ -319,7 +319,7 @@ describe('rx-collection.test.ts', () => {
                  * Passing Date() objects was done wrong by so many people so we have
                  * our own error message for that.
                  */
-                it('should throw a helpfull error message on Date() objects', async () => {
+                it('should throw a helpful error message on Date() objects', async () => {
                     const c = await humansCollection.create(1);
 
                     // inserts
