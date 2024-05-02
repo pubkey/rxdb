@@ -315,6 +315,31 @@ describe('rx-collection.test.ts', () => {
                     );
                     c.database.destroy();
                 });
+                /**
+                 * Passing Date() objects was done wrong by so many people so we have
+                 * our own error message for that.
+                 */
+                it('should throw a helpful error message on Date() objects', async () => {
+                    const c = await humansCollection.create(1);
+
+                    // inserts
+                    const doc = schemaObjects.humanData();
+                    (doc as any).lastName = new Date();
+                    await assertThrows(
+                        () => c.insert(doc),
+                        'RxError',
+                        'DOC24'
+                    );
+
+                    // updates
+                    const doc2 = await c.findOne().exec(true);
+                    await assertThrows(
+                        () => doc2.patch({ lastName: new Date() as any }),
+                        'RxError',
+                        'DOC24'
+                    );
+                    c.database.destroy();
+                });
             });
         });
         describeParallel('.bulkInsert()', () => {
