@@ -143,6 +143,11 @@ var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
         (0, _checkQuery.checkMangoQuery)(args);
       }
     },
+    preStorageWrite: {
+      before: args => {
+        (0, _checkDocument.checkWriteRows)(args.storageInstance, args.rows);
+      }
+    },
     createRxCollection: {
       after: args => {
         // check ORM-methods

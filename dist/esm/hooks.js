@@ -59,6 +59,7 @@ export var HOOKS = {
    * Notice that you have to clone stuff before mutating the inputs.
    */
   preCreateRxStorageInstance: [],
+  preStorageWrite: [],
   /**
    * runs on the document-data before the document is migrated
    * {

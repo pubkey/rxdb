@@ -19,7 +19,9 @@ import type {
     RxStorage,
     RxReplicationWriteToMasterRow,
     WithDeleted,
-    RxState
+    RxState,
+    BulkWriteRow,
+    RxStorageInstance
 } from './index.d.ts';
 import type { RxSchema } from '../rx-schema.d.ts';
 
@@ -133,6 +135,13 @@ export interface RxPlugin {
         createRxDocument?: RxPluginHooks<any>;
         postCreateRxDocument?: RxPluginHooks<any>;
         preCreateRxStorageInstance?: RxPluginHooks<RxStorageInstanceCreationParams<any, any>>;
+        /**
+         * Runs before a write to the storage instance of a RxCollection or RxDatabase.
+         */
+        preStorageWrite?: RxPluginHooks<{
+            storageInstance: RxStorageInstance<any, any, any, any>;
+            rows: BulkWriteRow<any>[];
+        }>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
         preReplicationMasterWrite?: RxPluginHooks<{

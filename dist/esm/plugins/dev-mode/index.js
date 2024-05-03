@@ -6,7 +6,7 @@ import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from "./unallowe
 import { checkMangoQuery, checkQuery } from "./check-query.js";
 import { newRxError } from "../../rx-error.js";
 import { deepFreeze } from "../../plugins/utils/index.js";
-import { ensurePrimaryKeyValid } from "./check-document.js";
+import { checkWriteRows, ensurePrimaryKeyValid } from "./check-document.js";
 export * from "./check-schema.js";
 export * from "./unallowed-properties.js";
 export * from "./check-query.js";
@@ -97,6 +97,11 @@ export var RxDBDevModePlugin = {
     prePrepareQuery: {
       after: args => {
         checkMangoQuery(args);
+      }
+    },
+    preStorageWrite: {
+      before: args => {
+        checkWriteRows(args.storageInstance, args.rows);
       }
     },
     createRxCollection: {

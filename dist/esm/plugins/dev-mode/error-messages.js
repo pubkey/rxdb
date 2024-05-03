@@ -109,7 +109,7 @@ export var ERROR_MESSAGES = {
   DOC21: 'PrimaryKey must be equal to PrimaryKey.trim(). It cannot start or end with a whitespace',
   DOC22: 'PrimaryKey must not contain a linebreak',
   DOC23: 'PrimaryKey must not contain a double-quote ["]',
-  DOC24: 'Given document data could not be structured cloned. This happens if you pass non-plain-json data into it, like a Date() or a Function. ' + 'In vue.js this happens if you use ref() on the document data which transforms it into a Proxy object.',
+  DOC24: 'Given document data could not be structured cloned. This happens if you pass non-plain-json data into it, like a Date() object or a Function. ' + 'In vue.js this happens if you use ref() on the document data which transforms it into a Proxy object.',
   // data-migrator.js
   DM1: 'migrate() Migration has already run',
   DM2: 'migration of document failed final document does not match final schema',

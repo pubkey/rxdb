@@ -149,8 +149,8 @@ function mapDocumentsDataToCacheDocs(docCache, docsData) {
   var getCachedRxDocument = docCache.getCachedRxDocument;
   var documents = [];
   for (var i = 0; i < docsData.length; i++) {
-    var _docData = docsData[i];
-    var doc = getCachedRxDocument(_docData);
+    var docData = docsData[i];
+    var doc = getCachedRxDocument(docData);
     documents.push(doc);
   }
   return documents;

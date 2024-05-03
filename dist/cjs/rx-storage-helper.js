@@ -29,6 +29,7 @@ var _index = require("./plugins/utils/index.js");
 var _rxjs = require("rxjs");
 var _rxQuery = require("./rx-query.js");
 var _rxQueryHelper = require("./rx-query-helper.js");
+var _hooks = require("./hooks.js");
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -432,83 +433,9 @@ function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
   function transformDocumentDataFromRxDBToRxStorage(writeRow) {
     var data = (0, _index.flatClone)(writeRow.document);
     data._meta = (0, _index.flatClone)(data._meta);
-
-    /**
-     * Do some checks in dev-mode
-     * that would be too performance expensive
-     * in production.
-     */
-    if (_overwritable.overwritable.isDevMode()) {
-      // ensure that the primary key has not been changed
-      data = (0, _rxSchemaHelper.fillPrimaryKey)(primaryPath, rxJsonSchema, data);
-
-      /**
-       * Ensure it can be structured cloned
-       */
-      try {
-        /**
-         * Notice that structuredClone() is not available
-         * in ReactNative, so we test for JSON.stringify() instead
-         * @link https://github.com/pubkey/rxdb/issues/5046#issuecomment-1827374498
-         */
-        if (typeof structuredClone === 'function') {
-          structuredClone(writeRow);
-        } else {
-          JSON.parse(JSON.stringify(writeRow));
-        }
-      } catch (err) {
-        throw (0, _rxError.newRxError)('DOC24', {
-          collection: storageInstance.collectionName,
-          document: writeRow.document
-        });
-      }
-
-      /**
-       * Ensure that the new revision is higher
-       * then the previous one
-       */
-      if (writeRow.previous) {
-        // TODO run this in the dev-mode plugin
-        // const prev = parseRevision(writeRow.previous._rev);
-        // const current = parseRevision(writeRow.document._rev);
-        // if (current.height <= prev.height) {
-        //     throw newRxError('SNH', {
-        //         dataBefore: writeRow.previous,
-        //         dataAfter: writeRow.document,
-        //         args: {
-        //             prev,
-        //             current
-        //         }
-        //     });
-        // }
-      }
-
-      /**
-       * Ensure that _meta fields have been merged
-       * and not replaced.
-       * This is important so that when one plugin A
-       * sets a _meta field and another plugin B does a write
-       * to the document, it must be ensured that the
-       * field of plugin A was not removed.
-       */
-      if (writeRow.previous) {
-        Object.keys(writeRow.previous._meta).forEach(metaFieldName => {
-          if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
-            throw (0, _rxError.newRxError)('SNH', {
-              dataBefore: writeRow.previous,
-              dataAfter: writeRow.document,
-              args: {
-                metaFieldName
-              }
-            });
-          }
-        });
-      }
-    }
     data._meta.lwt = (0, _index.now)();
 
     /**
@@ -531,6 +458,10 @@ rxJsonSchema) {
     options: storageInstance.options,
     bulkWrite(rows, context) {
       var toStorageWriteRows = rows.map(row => transformDocumentDataFromRxDBToRxStorage(row));
+      (0, _hooks.runPluginHooks)('preStorageWrite', {
+        storageInstance: this.originalStorageInstance,
+        rows: toStorageWriteRows
+      });
       return database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context))
       /**
        * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
