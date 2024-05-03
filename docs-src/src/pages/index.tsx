@@ -361,7 +361,7 @@ export default function Home() {
                     Quickstart »
                   </a>
                   <a
-                    className="button" href="/premium#premium-request-form-block"
+                    className="button" href="/premium#price-calculator-block"
                     onClick={() => trigger('request_premium_main_page', 3)}
                     target="_blank"
                   >

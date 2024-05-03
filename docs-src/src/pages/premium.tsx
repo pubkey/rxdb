@@ -400,7 +400,7 @@ export default function Premium() {
                             </details>
                         </div>
                     </div>
-                    <div className="block">
+                    <div className="block" id="price-calculator-block">
                         <div className="content centered">
                             <h2>
                                 RxDB Premium <b className="underline">Price Calculator</b>
