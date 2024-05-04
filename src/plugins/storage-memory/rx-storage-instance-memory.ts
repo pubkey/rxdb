@@ -112,6 +112,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
 
+
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -122,6 +123,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const error = categorized.errors;
         let success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
         const bulkInsertDocs = categorized.bulkInsertDocs;
+
+
         for (let i = 0; i < bulkInsertDocs.length; ++i) {
             const writeRow = bulkInsertDocs[i];
             const doc = writeRow.document;
@@ -136,6 +139,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.categorizedByWriteInput.set(documentWrites, categorized);
         this.internals.ensurePersistenceTask = categorized;
+
         if (!this.internals.ensurePersistenceIdlePromise) {
             this.internals.ensurePersistenceIdlePromise = requestIdlePromiseNoQueue().then(() => {
                 this.internals.ensurePersistenceIdlePromise = undefined;
@@ -158,7 +162,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 internals.changes$.next(categorized.eventBulk);
             });
         }
-
+        
         const ret = Promise.resolve({ success, error });
         return ret;
     }

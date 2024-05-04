@@ -1955,3 +1955,63 @@ AFTER:
 12.7
 12.63
 11.97
+
+
+## 4 May 2024 improve memory insert-many performance
+
+BEFORE:
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.38,
+    "insert-documents-200": 0.63,
+    "find-by-ids": 0.12,
+    "find-by-query": 1.35,
+    "find-by-query-parallel-4": 2.32,
+    "count": 0.78,
+    "property-access": 3.65
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.3,
+    "insert-documents-200": 0.68,
+    "find-by-ids": 0.12,
+    "find-by-query": 1.47,
+    "find-by-query-parallel-4": 2.18,
+    "count": 0.78,
+    "property-access": 4.85
+}
+
+
+AFTER:
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.41,
+    "insert-documents-200": 0.51,
+    "find-by-ids": 0.1,
+    "find-by-query": 1.28,
+    "find-by-query-parallel-4": 2.24,
+    "count": 0.64,
+    "property-access": 3.58
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.58,
+    "insert-documents-200": 0.47,
+    "find-by-ids": 0.09,
+    "find-by-query": 1.34,
+    "find-by-query-parallel-4": 2.16,
+    "count": 0.71,
+    "property-access": 3.69
+}

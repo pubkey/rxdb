@@ -99,7 +99,7 @@ export const HOOKS: { [k: string]: any[]; } = {
 };
 
 export function runPluginHooks(hookKey: string, obj: any) {
-    if (HOOKS[hookKey]) {
+    if (HOOKS[hookKey].length > 0) {
         HOOKS[hookKey].forEach(fun => fun(obj));
     }
 }

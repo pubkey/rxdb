@@ -95,11 +95,12 @@ export function getRxDocumentConstructor<RxDocType, ORM>(
  * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
 export function createNewRxDocument<RxDocType, ORM, Reactivity>(
-    rxCollection: RxCollection<RxDocType, ORM, any, any, Reactivity>,
+    rxCollection: RxCollection<RxDocType, ORM, {}, {}, Reactivity>,
+    documentConstructor: any,
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM, Reactivity> {
     const doc = createRxDocumentWithConstructor(
-        getRxDocumentConstructor(rxCollection),
+        documentConstructor,
         rxCollection as any,
         overwritable.deepFreezeWhenDevMode(docData as any)
     );
