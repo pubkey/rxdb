@@ -148,7 +148,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
  * This function is called very very often.
  * This is likely the most important function for RxDB overall performance
  * @hotPath This is one of the most important methods for performance.
- * It is used in many places to transfrom the raw document data into RxDocuments.
+ * It is used in many places to transform the raw document data into RxDocuments.
  */
 function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
     docCache: DocumentCache<RxDocType, OrmMethods>
