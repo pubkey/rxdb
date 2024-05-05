@@ -15,14 +15,20 @@ import {
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { Observable } from 'rxjs';
 
-declare type CacheItem<RxDocType, OrmMethods> = {
+/**
+ * Because we have to create many cache items,
+ * we use an array instead of an object with properties
+ * for better performance and less memory usage.
+ * @link https://stackoverflow.com/questions/17295056/array-vs-object-efficiency-in-javascript
+ */
+declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
      * based on their revision height.
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
-    bR: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
+    Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
 
     /**
      * Store the latest known document state.
@@ -37,8 +43,8 @@ declare type CacheItem<RxDocType, OrmMethods> = {
      * To not prevent the whole cacheItem from being garbage collected,
      * we store only the document data here, but not the RxDocument.
      */
-    l: RxDocumentData<RxDocType>;
-};
+    RxDocumentData<RxDocType>
+];
 
 
 /**
@@ -73,8 +79,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const docId = docMeta.docId;
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
-                cacheItem.bR.delete(docMeta.revisionHeight);
-                if (cacheItem.bR.size === 0) {
+                cacheItem[0].delete(docMeta.revisionHeight);
+                if (cacheItem[0].size === 0) {
                     /**
                      * No state of the document is cached anymore,
                      * so we can clean up.
@@ -98,7 +104,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
                 const documentData = getDocumentDataOfRxChangeEvent(changeEvent);
-                cacheItem.l = documentData;
+                cacheItem[1] = documentData;
             }
         });
     }
@@ -133,13 +139,13 @@ export class DocumentCache<RxDocType, OrmMethods> {
      */
     public getLatestDocumentData(docId: string): RxDocumentData<RxDocType> {
         const cacheItem = getFromMapOrThrow(this.cacheItemByDocId, docId);
-        return cacheItem.l;
+        return cacheItem[1];
     }
 
     public getLatestDocumentDataIfExists(docId: string): RxDocumentData<RxDocType> | undefined {
         const cacheItem = this.cacheItemByDocId.get(docId);
         if (cacheItem) {
-            return cacheItem.l;
+            return cacheItem[1];
         }
     }
 }
@@ -171,13 +177,13 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
             let cacheItem = cacheItemByDocId.get(docId);
             if (!cacheItem) {
                 byRev = new Map();
-                cacheItem = {
-                    bR: byRev,
-                    l: docData
-                };
+                cacheItem = [
+                    byRev,
+                    docData
+                ];
                 cacheItemByDocId.set(docId, cacheItem);
             } else {
-                byRev = cacheItem.bR;
+                byRev = cacheItem[0];
                 cachedRxDocumentWeakRef = byRev.get(revisionHeight);
             }
             let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;

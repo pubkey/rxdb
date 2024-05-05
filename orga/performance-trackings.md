@@ -2070,3 +2070,16 @@ AFTER (optimize getCachedRxDocumentMonad()):
     "count": 0.59,
     "property-access": 2.35
 }
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 0.84,
+    "insert-documents-200": 0.34,
+    "find-by-ids": 0.07,
+    "find-by-query": 0.98,
+    "find-by-query-parallel-4": 1.54,
+    "count": 0.55,
+    "property-access": 2.57
+}
