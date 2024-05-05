@@ -14,7 +14,6 @@ import type {
     EventBulk,
     RxAttachmentData,
     RxAttachmentWriteData,
-    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocumentData,
