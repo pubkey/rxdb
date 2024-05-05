@@ -126,22 +126,6 @@ export function stackCheckpoints<CheckpointType>(
     );
 }
 
-export function storageChangeEventToRxChangeEvent<DocType>(
-    isLocal: boolean,
-    rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
-    rxCollection?: RxCollection,
-): RxChangeEvent<DocType> {
-    const ret: RxChangeEvent<DocType> = {
-        documentId: rxStorageChangeEvent.documentId,
-        collectionName: rxCollection ? rxCollection.name : undefined,
-        isLocal,
-        operation: rxStorageChangeEvent.operation,
-        documentData: overwritable.deepFreezeWhenDevMode(rxStorageChangeEvent.documentData) as any,
-        previousDocumentData: overwritable.deepFreezeWhenDevMode(rxStorageChangeEvent.previousDocumentData) as any
-    };
-    return ret;
-}
-
 export function throwIfIsStorageWriteError<RxDocType>(
     collection: RxCollection<RxDocType, any, any>,
     documentId: string,

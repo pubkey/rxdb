@@ -94,7 +94,6 @@ import {
 } from './rx-document-prototype-merge.ts';
 import {
     getWrappedStorageInstance,
-    storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
@@ -234,13 +233,17 @@ export class RxCollectionBase<
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
             const events = new Array(eventBulk.events.length);
             const rawEvents = eventBulk.events;
+            const collectionName = this.name;
             for (let index = 0; index < rawEvents.length; index++) {
                 const event = rawEvents[index];
-                events[index] = storageChangeEventToRxChangeEvent(
-                    false,
-                    event,
-                    this as any
-                );
+                events[index] = {
+                    documentId: event.documentId,
+                    collectionName,
+                    isLocal: false,
+                    operation: event.operation,
+                    documentData: overwritable.deepFreezeWhenDevMode(event.documentData) as any,
+                    previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData) as any
+                };
             }
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
