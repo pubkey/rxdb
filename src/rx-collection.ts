@@ -234,6 +234,7 @@ export class RxCollectionBase<
             const events = new Array(eventBulk.events.length);
             const rawEvents = eventBulk.events;
             const collectionName = this.name;
+            const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
             for (let index = 0; index < rawEvents.length; index++) {
                 const event = rawEvents[index];
                 events[index] = {
@@ -241,8 +242,8 @@ export class RxCollectionBase<
                     collectionName,
                     isLocal: false,
                     operation: event.operation,
-                    documentData: overwritable.deepFreezeWhenDevMode(event.documentData) as any,
-                    previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData) as any
+                    documentData: deepFreezeWhenDevMode(event.documentData) as any,
+                    previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData) as any
                 };
             }
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
