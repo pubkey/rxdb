@@ -4,7 +4,6 @@ import type {
     RxDocumentData
 } from './types/index.d.ts';
 import {
-    getFromMapOrCreate,
     getFromMapOrThrow,
     getHeightOfRevision,
     overwriteGetterForCaching,
@@ -23,7 +22,7 @@ declare type CacheItem<RxDocType, OrmMethods> = {
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
-    byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
+    bR: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
 
     /**
      * Store the latest known document state.
@@ -38,7 +37,7 @@ declare type CacheItem<RxDocType, OrmMethods> = {
      * To not prevent the whole cacheItem from being garbage collected,
      * we store only the document data here, but not the RxDocument.
      */
-    last: RxDocumentData<RxDocType>;
+    l: RxDocumentData<RxDocType>;
 };
 
 
@@ -74,8 +73,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const docId = docMeta.docId;
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
-                cacheItem.byRev.delete(docMeta.revisionHeight);
-                if (cacheItem.byRev.size === 0) {
+                cacheItem.bR.delete(docMeta.revisionHeight);
+                if (cacheItem.bR.size === 0) {
                     /**
                      * No state of the document is cached anymore,
                      * so we can clean up.
@@ -99,7 +98,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
                 const documentData = getDocumentDataOfRxChangeEvent(changeEvent);
-                cacheItem.last = documentData;
+                cacheItem.l = documentData;
             }
         });
     }
@@ -134,13 +133,13 @@ export class DocumentCache<RxDocType, OrmMethods> {
      */
     public getLatestDocumentData(docId: string): RxDocumentData<RxDocType> {
         const cacheItem = getFromMapOrThrow(this.cacheItemByDocId, docId);
-        return cacheItem.last;
+        return cacheItem.l;
     }
 
     public getLatestDocumentDataIfExists(docId: string): RxDocumentData<RxDocType> | undefined {
         const cacheItem = this.cacheItemByDocId.get(docId);
         if (cacheItem) {
-            return cacheItem.last;
+            return cacheItem.l;
         }
     }
 }
@@ -148,6 +147,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
 /**
  * This function is called very very often.
  * This is likely the most important function for RxDB overall performance
+ * @hotPath This is one of the most important methods for performance.
+ * It is used in many places to transfrom the raw document data into RxDocuments.
  */
 function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
     docCache: DocumentCache<RxDocType, OrmMethods>
@@ -164,14 +165,21 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
             let docData = docsData[index];
             const docId: string = (docData as any)[primaryPath];
             const revisionHeight = getHeightOfRevision(docData._rev);
-            const cacheItem = getFromMapOrCreate<string, CacheItem<RxDocType, OrmMethods>>(
-                cacheItemByDocId,
-                docId,
-                () => getNewCacheItem<RxDocType, OrmMethods>(docData)
-            );
 
-            const byRev = cacheItem.byRev;
-            const cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined = byRev.get(revisionHeight);
+            let byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
+            let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
+            let cacheItem = cacheItemByDocId.get(docId);
+            if (!cacheItem) {
+                byRev = new Map();
+                cacheItem = {
+                    bR: byRev,
+                    l: docData
+                };
+                cacheItemByDocId.set(docId, cacheItem);
+            } else {
+                byRev = cacheItem.bR;
+                cachedRxDocumentWeakRef = byRev.get(revisionHeight);
+            }
             let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
             if (!cachedRxDocument) {
                 docData = deepFreezeWhenDevMode(docData) as any;
@@ -211,17 +219,6 @@ export function mapDocumentsDataToCacheDocs<RxDocType, OrmMethods>(
     const getCachedRxDocuments = docCache.getCachedRxDocuments;
     return getCachedRxDocuments(docsData);
 }
-
-
-function getNewCacheItem<RxDocType, OrmMethods>(docData: RxDocumentData<RxDocType>): CacheItem<RxDocType, OrmMethods> {
-    return {
-        byRev: new Map(),
-        last: docData
-    };
-}
-
-
-
 
 /**
  * Fallback for JavaScript runtimes that do not support WeakRef.

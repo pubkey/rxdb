@@ -31,7 +31,8 @@ import type {
     RxMigrationState
 } from './plugins/migration-schema/index.ts';
 import {
-    DocumentCache, mapDocumentsDataToCacheDocs
+    DocumentCache,
+    mapDocumentsDataToCacheDocs
 } from './doc-cache.ts';
 import {
     QueryCache,
@@ -334,7 +335,7 @@ export class RxCollectionBase<
 
 
         /**
-         * This code is a bit redundent for better performance.
+         * This code is a bit redundant for better performance.
          * Instead of iterating multiple times,
          * we directly transform the input to a write-row array.
          */
