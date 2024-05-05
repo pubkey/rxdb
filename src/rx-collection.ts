@@ -212,11 +212,16 @@ export class RxCollectionBase<
         );
 
         this._changeEventBuffer = createChangeEventBuffer<RxDocumentType>(this.asRxCollection);
-        const documentConstructor = getRxDocumentConstructor(this.asRxCollection);
+        let documentConstructor: any;
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
             this.$.pipe(filter(cE => !cE.isLocal)),
-            docData => createNewRxDocument(this.asRxCollection, documentConstructor, docData)
+            docData => {
+                if (!documentConstructor) {
+                    documentConstructor = getRxDocumentConstructor(this.asRxCollection);
+                }
+                return createNewRxDocument(this.asRxCollection, documentConstructor, docData);
+            }
         );
 
         /**
@@ -226,16 +231,22 @@ export class RxCollectionBase<
          */
         const databaseStorageToken = await this.database.storageToken;
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+            const events = new Array(eventBulk.events.length);
+            const rawEvents = eventBulk.events;
+            for (let index = 0; index < rawEvents.length; index++) {
+                const event = rawEvents[index];
+                events[index] = storageChangeEventToRxChangeEvent(
+                    false,
+                    event,
+                    this as any
+                );
+            }
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,
                 storageToken: databaseStorageToken,
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    false,
-                    ev,
-                    this as any
-                )),
+                events,
                 databaseToken: this.database.token,
                 checkpoint: eventBulk.checkpoint,
                 context: eventBulk.context,

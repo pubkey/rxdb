@@ -131,15 +131,13 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
     rxCollection?: RxCollection,
 ): RxChangeEvent<DocType> {
-    const documentData = rxStorageChangeEvent.documentData;
-    const previousDocumentData = rxStorageChangeEvent.previousDocumentData;
     const ret: RxChangeEvent<DocType> = {
         documentId: rxStorageChangeEvent.documentId,
         collectionName: rxCollection ? rxCollection.name : undefined,
         isLocal,
         operation: rxStorageChangeEvent.operation,
-        documentData: overwritable.deepFreezeWhenDevMode(documentData as any),
-        previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData as any)
+        documentData: overwritable.deepFreezeWhenDevMode(rxStorageChangeEvent.documentData) as any,
+        previousDocumentData: overwritable.deepFreezeWhenDevMode(rxStorageChangeEvent.previousDocumentData) as any
     };
     return ret;
 }

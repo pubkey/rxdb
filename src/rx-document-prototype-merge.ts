@@ -40,8 +40,6 @@ export function getDocumentPrototype(
         const props = Object.getOwnPropertyNames(obj);
         props.forEach(key => {
             const desc: any = Object.getOwnPropertyDescriptor(obj, key);
-
-
             /**
              * When enumerable is true, it will show on console dir(instance)
              * To not pollute the output, only getters and methods are enumerable

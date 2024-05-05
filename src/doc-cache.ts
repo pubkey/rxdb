@@ -120,6 +120,15 @@ export class DocumentCache<RxDocType, OrmMethods> {
         );
     }
 
+    get getCachedRxDocument(): (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods> {
+        const fn = getCachedRxDocumentMonad(this);
+        return overwriteGetterForCaching(
+            this,
+            'getCachedRxDocument',
+            doc => fn([doc])[0]
+        );
+    }
+
     /**
      * Throws if not exists
      */
