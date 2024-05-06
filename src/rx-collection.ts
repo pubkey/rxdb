@@ -31,7 +31,8 @@ import type {
     RxMigrationState
 } from './plugins/migration-schema/index.ts';
 import {
-    DocumentCache, mapDocumentsDataToCacheDocs
+    DocumentCache,
+    mapDocumentsDataToCacheDocs
 } from './doc-cache.ts';
 import {
     QueryCache,
@@ -88,11 +89,11 @@ import {
 } from './rx-schema.ts';
 
 import {
-    createNewRxDocument
+    createNewRxDocument,
+    getRxDocumentConstructor
 } from './rx-document-prototype-merge.ts';
 import {
     getWrappedStorageInstance,
-    storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
@@ -211,10 +212,16 @@ export class RxCollectionBase<
         );
 
         this._changeEventBuffer = createChangeEventBuffer<RxDocumentType>(this.asRxCollection);
+        let documentConstructor: any;
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
             this.$.pipe(filter(cE => !cE.isLocal)),
-            docData => createNewRxDocument(this.asRxCollection, docData)
+            docData => {
+                if (!documentConstructor) {
+                    documentConstructor = getRxDocumentConstructor(this.asRxCollection);
+                }
+                return createNewRxDocument(this.asRxCollection, documentConstructor, docData);
+            }
         );
 
         /**
@@ -224,16 +231,27 @@ export class RxCollectionBase<
          */
         const databaseStorageToken = await this.database.storageToken;
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+            const events = new Array(eventBulk.events.length);
+            const rawEvents = eventBulk.events;
+            const collectionName = this.name;
+            const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
+            for (let index = 0; index < rawEvents.length; index++) {
+                const event = rawEvents[index];
+                events[index] = {
+                    documentId: event.documentId,
+                    collectionName,
+                    isLocal: false,
+                    operation: event.operation,
+                    documentData: deepFreezeWhenDevMode(event.documentData) as any,
+                    previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData) as any
+                };
+            }
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: this.name,
                 storageToken: databaseStorageToken,
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    false,
-                    ev,
-                    this as any
-                )),
+                events,
                 databaseToken: this.database.token,
                 checkpoint: eventBulk.checkpoint,
                 context: eventBulk.context,
@@ -318,23 +336,33 @@ export class RxCollectionBase<
         }
 
         const primaryPath = this.schema.primaryPath;
-        const useDocs = docsData.map(docData => {
-            const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
-            return useDocData;
-        });
-        const docs = this.hasHooks('pre', 'insert') ?
-            await Promise.all(
-                useDocs.map(doc => {
-                    return this._runHooks('pre', 'insert', doc)
+
+
+        /**
+         * This code is a bit redundant for better performance.
+         * Instead of iterating multiple times,
+         * we directly transform the input to a write-row array.
+         */
+        let insertRows: BulkWriteRow<RxDocumentType>[];
+        if (this.hasHooks('pre', 'insert')) {
+            insertRows = await Promise.all(
+                docsData.map(docData => {
+                    const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
+                    return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
-                            return doc;
+                            return { document: useDocData };
                         });
                 })
-            ) : useDocs;
-        const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
-            const row: BulkWriteRow<RxDocumentType> = { document: doc };
-            return row;
-        });
+            );
+        } else {
+            insertRows = [];
+            for (let index = 0; index < docsData.length; index++) {
+                const docData = docsData[index];
+                const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
+                insertRows[index] = { document: useDocData };
+            }
+        }
+
         const results = await this.storageInstance.bulkWrite(
             insertRows,
             'rx-collection-bulk-insert'
@@ -345,7 +373,8 @@ export class RxCollectionBase<
 
         if (this.hasHooks('post', 'insert')) {
             const docsMap: Map<string, RxDocumentType> = new Map();
-            docs.forEach(doc => {
+            insertRows.forEach(row => {
+                const doc = row.document;
                 docsMap.set((doc as any)[primaryPath] as any, doc);
             });
             await Promise.all(
@@ -469,7 +498,7 @@ export class RxCollectionBase<
                     const id = err.documentId;
                     const writeData = getFromMapOrThrow(useJsonByDocId, id);
                     const docDataInDb = ensureNotFalsy(err.documentInDb);
-                    const doc = this._docCache.getCachedRxDocument(docDataInDb);
+                    const doc = this._docCache.getCachedRxDocuments([docDataInDb])[0];
                     const newDoc = await doc.incrementalModify(() => writeData);
                     success.push(newDoc);
                 }
@@ -709,6 +738,17 @@ export class RxCollectionBase<
     }
 
     hasHooks(when: HookWhenType, key: HookKeyType) {
+        /**
+         * Performance shortcut
+         * so that we not have to build the empty object.
+         */
+        if (
+            !this.hooks[key] ||
+            !this.hooks[key][when]
+        ) {
+            return false;
+        }
+
         const hooks = this.getHooks(when, key);
         if (!hooks) {
             return false;
@@ -737,6 +777,9 @@ export class RxCollectionBase<
      * does the same as ._runHooks() but with non-async-functions
      */
     _runHooksSync(when: HookWhenType, key: HookKeyType, data: any, instance: any) {
+        if (!this.hasHooks(when, key)) {
+            return;
+        }
         const hooks = this.getHooks(when, key);
         if (!hooks) return;
         hooks.series.forEach((hook: any) => hook(data, instance));
@@ -872,7 +915,7 @@ function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
     const docDataFromCache = rxCollection._docCache.getLatestDocumentDataIfExists(primary);
     if (docDataFromCache) {
         return Promise.resolve({
-            doc: rxCollection._docCache.getCachedRxDocument(docDataFromCache),
+            doc: rxCollection._docCache.getCachedRxDocuments([docDataFromCache])[0],
             inserted: false
         });
     }

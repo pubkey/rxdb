@@ -29,9 +29,7 @@ export function createRevision<RxDocType>(
     databaseInstanceToken: string,
     previousDocData?: RxDocumentData<RxDocType>
 ): string {
-    const previousRevision = previousDocData ? previousDocData._rev : null;
-    const previousRevisionHeight = previousRevision ? parseRevision(previousRevision).height : 0;
-    const newRevisionHeight = previousRevisionHeight + 1;
+    const newRevisionHeight = !previousDocData ? 1 : getHeightOfRevision(previousDocData._rev) + 1
     return newRevisionHeight + '-' + databaseInstanceToken;
 }
 

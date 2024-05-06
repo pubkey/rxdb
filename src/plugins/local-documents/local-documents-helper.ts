@@ -4,8 +4,7 @@ import { IncrementalWriteQueue } from '../../incremental-write.ts';
 import { newRxError } from '../../rx-error.ts';
 import { fillWithDefaultSettings } from '../../rx-schema-helper.ts';
 import {
-    getWrappedStorageInstance,
-    storageChangeEventToRxChangeEvent
+    getWrappedStorageInstance
 } from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentParent,
@@ -62,16 +61,26 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
          */
         const databaseStorageToken = await database.storageToken;
         const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+            const events = new Array(eventBulk.events.length);
+            const rawEvents = eventBulk.events;
+            const collectionName = parent.database ? parent.name : undefined;
+            for (let index = 0; index < rawEvents.length; index++) {
+                const event = rawEvents[index];
+                events[index] = {
+                    documentId: event.documentId,
+                    collectionName,
+                    isLocal: true,
+                    operation: event.operation,
+                    documentData: overwritable.deepFreezeWhenDevMode(event.documentData) as any,
+                    previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData) as any
+                };
+            }
             const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
                 id: eventBulk.id,
                 internal: false,
                 collectionName: parent.database ? parent.name : undefined,
                 storageToken: databaseStorageToken,
-                events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(
-                    true,
-                    ev,
-                    parent.database ? parent as any : undefined
-                )),
+                events,
                 databaseToken: database.token,
                 checkpoint: eventBulk.checkpoint,
                 context: eventBulk.context,

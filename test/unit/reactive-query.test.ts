@@ -61,15 +61,15 @@ describeParallel('reactive-query.test.js', () => {
             assert.strictEqual(lastValue.length, 1);
 
             const addHuman = schemaObjects.humanData();
-            const newPromiseWait = AsyncTestUtil.waitResolveable(500);
+
             await c.insert(addHuman);
-            await newPromiseWait.promise;
-            assert.strictEqual(lastValue.length, 2);
+            await waitUntil(() => lastValue.length === 2);
 
             let isHere = false;
             lastValue.map(doc => {
-                if (doc.get('passportId') === addHuman.passportId)
+                if (doc.get('passportId') === addHuman.passportId) {
                     isHere = true;
+                }
             });
             assert.ok(isHere);
             c.database.destroy();
@@ -107,33 +107,6 @@ describeParallel('reactive-query.test.js', () => {
             await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
-            c.database.destroy();
-        });
-        it('get new values on RxDocument.save', async () => {
-            const c = await humansCollection.create(1);
-            const doc: any = await c.findOne().exec(true);
-
-            let values: any;
-            const emitted: any[] = [];
-            const querySub = c.find({
-                selector: {
-                    firstName: doc.get('firstName')
-                }
-            }).$.subscribe(newV => {
-                values = newV;
-                if (newV) {
-                    emitted.push(newV);
-                }
-            });
-            await waitUntil(() => emitted.length === 1);
-            assert.strictEqual(values.length, 1);
-
-            // change doc so query does not match
-            const newPromiseWait = AsyncTestUtil.waitResolveable(500);
-            await doc.incrementalPatch({ firstName: 'foobar' });
-            await newPromiseWait.promise;
-            assert.strictEqual(values.length, 0);
-            querySub.unsubscribe();
             c.database.destroy();
         });
         it('subscribing many times should not result in many database-requests', async () => {

@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- IMPROVE performance of insert-many to the memory RxStorage by 40%
 - ADD check to throw helpfull error message when a Date() object is passed instead of plain json data.
 <!-- ADD new changes here! -->
 

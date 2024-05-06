@@ -151,7 +151,7 @@ describeParallel('rx-storage-dexie.test.js', () => {
                     data._meta = {
                         lwt: now()
                     };
-                    data._rev = createRevision(databaseInstanceToken, data);
+                    data._rev = createRevision(databaseInstanceToken);
                     return {
                         document: data
                     };

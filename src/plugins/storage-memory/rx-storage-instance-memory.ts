@@ -35,6 +35,7 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
+    promiseWait,
     randomCouchString,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
@@ -112,6 +113,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
 
+
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -121,6 +123,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const error = categorized.errors;
         let success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
+        /**
+         * @performance
+         * We have to return a Promise but we do not want to wait
+         * one tick, so we directly create the promise
+         * which makes it likely to be already resolved later.
+         */
+        const awaitMe = Promise.resolve({ success, error });
+
         const bulkInsertDocs = categorized.bulkInsertDocs;
         for (let i = 0; i < bulkInsertDocs.length; ++i) {
             const writeRow = bulkInsertDocs[i];
@@ -136,6 +146,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.categorizedByWriteInput.set(documentWrites, categorized);
         this.internals.ensurePersistenceTask = categorized;
+
         if (!this.internals.ensurePersistenceIdlePromise) {
             this.internals.ensurePersistenceIdlePromise = requestIdlePromiseNoQueue().then(() => {
                 this.internals.ensurePersistenceIdlePromise = undefined;
@@ -154,13 +165,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 lwt: lastState._meta.lwt
             };
             categorized.eventBulk.endTime = now();
-            PROMISE_RESOLVE_TRUE.then(() => {
-                internals.changes$.next(categorized.eventBulk);
-            });
+            internals.changes$.next(categorized.eventBulk);
         }
-
-        const ret = Promise.resolve({ success, error });
-        return ret;
+        return awaitMe;
     }
 
     /**

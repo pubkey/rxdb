@@ -14,7 +14,6 @@ import type {
     EventBulk,
     RxAttachmentData,
     RxAttachmentWriteData,
-    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocumentData,
@@ -124,24 +123,6 @@ export function stackCheckpoints<CheckpointType>(
         {},
         ...checkpoints
     );
-}
-
-export function storageChangeEventToRxChangeEvent<DocType>(
-    isLocal: boolean,
-    rxStorageChangeEvent: RxStorageChangeEvent<DocType>,
-    rxCollection?: RxCollection,
-): RxChangeEvent<DocType> {
-    const documentData = rxStorageChangeEvent.documentData;
-    const previousDocumentData = rxStorageChangeEvent.previousDocumentData;
-    const ret: RxChangeEvent<DocType> = {
-        documentId: rxStorageChangeEvent.documentId,
-        collectionName: rxCollection ? rxCollection.name : undefined,
-        isLocal,
-        operation: rxStorageChangeEvent.operation,
-        documentData: overwritable.deepFreezeWhenDevMode(documentData as any),
-        previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData as any)
-    };
-    return ret;
 }
 
 export function throwIfIsStorageWriteError<RxDocType>(
@@ -529,9 +510,13 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
 export function flatCloneDocWithMeta<RxDocType>(
     doc: RxDocumentData<RxDocType>
 ): RxDocumentData<RxDocType> {
-    const ret = flatClone(doc);
-    ret._meta = flatClone(doc._meta);
-    return ret;
+    return Object.assign(
+        {},
+        doc,
+        {
+            _meta: flatClone(doc._meta)
+        }
+    );
 }
 
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
@@ -560,29 +545,6 @@ export function getWrappedStorageInstance<
 ): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
 
-    function transformDocumentDataFromRxDBToRxStorage(
-        writeRow: BulkWriteRow<RxDocType>
-    ) {
-        const data = flatClone(writeRow.document);
-        data._meta = flatClone(data._meta);
-        data._meta.lwt = now();
-
-        /**
-         * Yes we really want to set the revision here.
-         * If you make a plugin that relies on having its own revision
-         * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
-         */
-        data._rev = createRevision(
-            database.token,
-            writeRow.previous
-        );
-
-        return {
-            document: data,
-            previous: writeRow.previous
-        };
-    }
-
     const ret: WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         originalStorageInstance: storageInstance,
         schema: storageInstance.schema,
@@ -594,8 +556,34 @@ export function getWrappedStorageInstance<
             rows: BulkWriteRow<RxDocType>[],
             context: string
         ) {
-            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = rows
-                .map(row => transformDocumentDataFromRxDBToRxStorage(row));
+            const databaseToken = database.token;
+            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = new Array(rows.length);
+            /**
+             * Use the same timestamp for all docs of this rows-set.
+             * This improves performance because calling Date.now() inside of the now() function
+             * is too costly.
+             */
+            const time = now();
+            for (let index = 0; index < rows.length; index++) {
+                const writeRow = rows[index];
+                const document = flatCloneDocWithMeta(writeRow.document);
+                document._meta.lwt = time;
+
+                /**
+                 * Yes we really want to set the revision here.
+                 * If you make a plugin that relies on having its own revision
+                 * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
+                 */
+                const previous = writeRow.previous;
+                document._rev = createRevision(
+                    databaseToken,
+                    previous
+                );
+                toStorageWriteRows[index] = {
+                    document,
+                    previous
+                };
+            }
 
             runPluginHooks('preStorageWrite', {
                 storageInstance: this.originalStorageInstance,
@@ -621,8 +609,9 @@ export function getWrappedStorageInstance<
                         error: [],
                         success: writeResult.success.slice(0)
                     };
-                    const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] =
-                        writeResult.error
+                    const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
+                        ? []
+                        : writeResult.error
                             .filter((error) => {
                                 if (
                                     error.status === 409 &&
@@ -664,7 +653,6 @@ export function getWrappedStorageInstance<
                             return useWriteResult;
                         });
                     }
-
                     return writeResult;
                 });
         },

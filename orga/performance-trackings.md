@@ -1955,3 +1955,131 @@ AFTER:
 12.7
 12.63
 11.97
+
+
+## 4 May 2024 improve memory insert-many performance
+
+BEFORE:
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.38,
+    "insert-documents-200": 0.63,
+    "find-by-ids": 0.12,
+    "find-by-query": 1.35,
+    "find-by-query-parallel-4": 2.32,
+    "count": 0.78,
+    "property-access": 3.65
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.3,
+    "insert-documents-200": 0.68,
+    "find-by-ids": 0.12,
+    "find-by-query": 1.47,
+    "find-by-query-parallel-4": 2.18,
+    "count": 0.78,
+    "property-access": 4.85
+}
+
+
+AFTER:
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.41,
+    "insert-documents-200": 0.51,
+    "find-by-ids": 0.1,
+    "find-by-query": 1.28,
+    "find-by-query-parallel-4": 2.24,
+    "count": 0.64,
+    "property-access": 3.58
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.58,
+    "insert-documents-200": 0.47,
+    "find-by-ids": 0.09,
+    "find-by-query": 1.34,
+    "find-by-query-parallel-4": 2.16,
+    "count": 0.71,
+    "property-access": 3.69
+}
+
+AFTER (optimize getCachedRxDocumentMonad()):
+
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.09,
+    "insert-documents-200": 0.37,
+    "find-by-ids": 0.09,
+    "find-by-query": 1.47,
+    "find-by-query-parallel-4": 2.05,
+    "count": 0.55,
+    "property-access": 3.51
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.39,
+    "insert-documents-200": 0.33,
+    "find-by-ids": 0.11,
+    "find-by-query": 1.24,
+    "find-by-query-parallel-4": 1.98,
+    "count": 0.51,
+    "property-access": 4.58
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 0.87,
+    "insert-documents-200": 0.31,
+    "find-by-ids": 0.1,
+    "find-by-query": 0.86,
+    "find-by-query-parallel-4": 1.28,
+    "count": 0.5,
+    "property-access": 2.47
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 0.92,
+    "insert-documents-200": 0.38,
+    "find-by-ids": 0.11,
+    "find-by-query": 1.07,
+    "find-by-query-parallel-4": 1.43,
+    "count": 0.59,
+    "property-access": 2.35
+}
+{
+    "description": "memory",
+    "platform": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 0.84,
+    "insert-documents-200": 0.34,
+    "find-by-ids": 0.07,
+    "find-by-query": 0.98,
+    "find-by-query-parallel-4": 1.54,
+    "count": 0.55,
+    "property-access": 2.57
+}

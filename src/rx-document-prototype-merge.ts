@@ -40,8 +40,6 @@ export function getDocumentPrototype(
         const props = Object.getOwnPropertyNames(obj);
         props.forEach(key => {
             const desc: any = Object.getOwnPropertyDescriptor(obj, key);
-
-
             /**
              * When enumerable is true, it will show on console dir(instance)
              * To not pollute the output, only getters and methods are enumerable
@@ -95,11 +93,12 @@ export function getRxDocumentConstructor<RxDocType, ORM>(
  * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
 export function createNewRxDocument<RxDocType, ORM, Reactivity>(
-    rxCollection: RxCollection<RxDocType, ORM, any, any, Reactivity>,
+    rxCollection: RxCollection<RxDocType, ORM, {}, {}, Reactivity>,
+    documentConstructor: any,
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM, Reactivity> {
     const doc = createRxDocumentWithConstructor(
-        getRxDocumentConstructor(rxCollection),
+        documentConstructor,
         rxCollection as any,
         overwritable.deepFreezeWhenDevMode(docData as any)
     );
