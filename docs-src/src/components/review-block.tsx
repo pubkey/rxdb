@@ -140,7 +140,7 @@ export function ReviewsBlock() {
                 {reviewItems.map((item) => (
                     <div className="slider-content" key={item.label}>
                         <img
-                            src="./img/quote.svg"
+                            src="/img/quote.svg"
                             className="review-img"
                             alt="quote"
                         />

@@ -323,18 +323,18 @@ function HeroBlock({ onOpenDialog, SlButton }) {
                     }}
                 >
                     <img
-                        src="./img/hero.svg"
+                        src="/img/hero.svg"
                         className="hero-img"
                         alt="rxdb-image"
                     />
                 </div>
             </div>
             <div className="hero-bottom-group">
-                <img src="./img/hero-group.svg" alt="columns" />
-                <img src="./img/hero-group.svg" alt="columns" />
+                <img src="/img/hero-group.svg" alt="columns" />
+                <img src="/img/hero-group.svg" alt="columns" />
             </div>
             <div className="hero-bottom-group-mobile">
-                <img src="./img/hero-group-mobile.svg" alt="columns" />
+                <img src="/img/hero-group-mobile.svg" alt="columns" />
             </div>
         </>
     );
@@ -548,13 +548,13 @@ function BenefitsBlock({ SlTabGroup, SlTab, SlTabPanel }) {
                         <SlTabPanel name={item.name} key={item.label}>
                             <div className="panel">
                                 <img
-                                    src="./img/benefits-column.svg"
+                                    src="/img/benefits-column.svg"
                                     className="desktop-img"
                                     alt="columns"
                                 />
                                 <div className="mobile-img">
                                     <img
-                                        src="./img/benefits-column-mobile.svg"
+                                        src="/img/benefits-column-mobile.svg"
                                         alt="columns"
                                     />
                                 </div>
@@ -634,7 +634,7 @@ function StepsBlock({ onOpenDialog, SlButton }) {
 
                 <img
                     className="mobile-button"
-                    src="./img/steps-column.svg"
+                    src="/img/steps-column.svg"
                     alt="columns"
                 />
             </div>
@@ -751,7 +751,7 @@ function NextBlock({ onOpenDialog, SlButton }) {
                     </SlButton>
                 </div>
             </div>
-            <img src="./img/next-column.svg" alt="columns" />
+            <img src="/img/next-column.svg" alt="columns" />
         </>
     );
 }
@@ -825,28 +825,28 @@ function FooterBlock({ SlButton }) {
             label: 'Discord',
             target: '_blank',
             href: '/chat',
-            logo: './img/community-links/discord-logo.svg',
+            logo: '/img/community-links/discord-logo.svg',
         },
         {
             label: 'Github',
             target: '_blank',
             href: '/code',
-            logo: './img/community-links/github-logo.svg',
+            logo: '/img/community-links/github-logo.svg',
         },
         {
             label: 'Twitter',
             href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-            logo: './img/community-links/x-logo.svg',
+            logo: '/img/community-links/x-logo.svg',
         },
         {
             label: 'LinkedIn',
             href: 'https://www.linkedin.com/company/rxdb',
-            logo: './img/community-links/linkedin-logo.svg',
+            logo: '/img/community-links/linkedin-logo.svg',
         },
         {
             label: 'Stack Overflow',
             href: 'https://stackoverflow.com/questions/tagged/rxdb',
-            logo: './img/community-links/stack-overflow-logo.svg',
+            logo: '/img/community-links/stack-overflow-logo.svg',
         },
     ];
 
@@ -926,7 +926,7 @@ function FooterBlock({ SlButton }) {
                 </div>
                 <img
                     className="footer-img desktop-img"
-                    src="./img/footer-column.svg"
+                    src="/img/footer-column.svg"
                     alt="columns"
                 />
             </div>
