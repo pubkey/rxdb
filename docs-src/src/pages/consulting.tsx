@@ -157,11 +157,11 @@ export default function Consulting() {
                                         <ContactBlock></ContactBlock>
                                     </div>
 
-                                    <div className="block footer" id="footer">
+                                    {/* <div className="block footer" id="footer">
                                         <FooterBlock
                                             SlButton={SlButton}
                                         ></FooterBlock>
-                                    </div>
+                                    </div> */}
                                     <SlDialog noHeader ref={dialogRef}>
                                         <iframe
                                             style={{

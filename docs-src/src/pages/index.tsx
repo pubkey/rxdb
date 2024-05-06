@@ -499,7 +499,7 @@ export default function Home() {
             <div className="content centered">
               <div className="inner">
                 <h2>
-                  Used by <b className="underline">Many</b>
+                  Used by <b className="underline">many</b>
                 </h2>
                 <p>
                   RxDB is a proven technology used by thousands of developers worldwide. <br />
@@ -970,7 +970,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="block fifth dark">
+          {/* <div className="block fifth dark">
             <div className="content centered">
               <div className="inner">
                 <h2>
@@ -1059,22 +1059,36 @@ export default function Home() {
                 <div className="clear" />
               </div>
             </div>
-          </div>
+          </div> */}
 
 
 
-          <div className="block sixth">
+          <div className="block sixth dark">
             <div className="content">
               <h2>Pricing Models</h2>
+              <br />
               <div className="inner">
                 <div className="buy-options">
                   <div className="buy-option bg-gradient-left-top">
                     <div className="buy-option-inner">
                       <div className="buy-option-title">
-                        <h2>RxDB Basics</h2>
-                        <div className="price">Free &amp; Open Source</div>
+                        <h2>Open Source Core</h2>
+                        <div className="price">for Hobbyists and Prototypes</div>
                       </div>
                       <div className="buy-option-features">
+                        <p>
+                          The RxDB Open Core provides a robust and reliable database engine
+                          that's freely accessible to everyone.
+                          <br />
+                          This core includes all the essential features you need to develop efficient,
+                          real-time applications like storages, replication and other plugins.
+                          <br />
+                          <br />
+                          Our open-core approach encourages a vibrant community of developers,
+                          fostering collaboration and innovation.
+                        </p>
+                      </div>
+                      {/* <div className="buy-option-features">
                         <ul>
                           <li>Basic RxStorages</li>
                           <li>Realtime Replication</li>
@@ -1084,7 +1098,7 @@ export default function Home() {
                           <li>Encryption</li>
                           <li>Compression</li>
                         </ul>
-                      </div>
+                      </div> */}
                       <a
                         href="/code"
                         target="_blank"
@@ -1102,10 +1116,21 @@ export default function Home() {
                       <div className="buy-option-title">
                         <h2>Premium Plugins</h2>
                         <div className="price">
-                          for professionals to get the most out of RxDB
+                          for professional Developers
                         </div>
                       </div>
                       <div className="buy-option-features">
+                        <p>
+                          Tailored specifically for high-stakes projects,
+                          the premium plugins enhance RxDB's core capabilities with advanced <b>performance optimizations</b>.
+                          From faster data processing to comprehensive encryption,
+                          our Premium Plugins ensure that your professional applications run smoothly.
+                          <br />
+                          <br />
+                          Elevate your project's performance and reliability to professional standards.
+                        </p>
+                      </div>
+                      {/* <div className="buy-option-features">
                         <ul>
                           <li>
                             <a
@@ -1188,7 +1213,7 @@ export default function Home() {
                             </a>
                           </li>
                         </ul>
-                      </div>
+                      </div> */}
                       <a
                         href="/premium"
                         onClick={() => trigger('request_premium_main_page', 3)}
@@ -1203,7 +1228,7 @@ export default function Home() {
                     <div className="buy-option-inner">
                       <div className="buy-option-title">
                         <h2>Consulting</h2>
-                        <div className="price">professionals</div>
+                        <div className="price">Get Professional Support</div>
                       </div>
                       <div className="buy-option-features">
 
@@ -1222,7 +1247,7 @@ export default function Home() {
                         onClick={() => trigger('consulting_session_request_main_page', 4)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
-                          Start Now
+                          Get in Contact
                         </div>
                       </a>
                     </div>
@@ -1232,7 +1257,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="block last dark">
+          <div className="block last">
             <div className="content">
               <h2>
                 Start using <b className="underline">RxDB</b> today
