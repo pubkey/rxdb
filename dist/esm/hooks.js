@@ -95,7 +95,7 @@ export var HOOKS = {
   preReplicationMasterWriteDocumentsHandle: []
 };
 export function runPluginHooks(hookKey, obj) {
-  if (HOOKS[hookKey]) {
+  if (HOOKS[hookKey].length > 0) {
     HOOKS[hookKey].forEach(fun => fun(obj));
   }
 }

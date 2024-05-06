@@ -1,13 +1,19 @@
 import type { RxChangeEvent, RxDocument, RxDocumentData } from './types/index.d.ts';
 import { Observable } from 'rxjs';
-declare type CacheItem<RxDocType, OrmMethods> = {
+/**
+ * Because we have to create many cache items,
+ * we use an array instead of an object with properties
+ * for better performance and less memory usage.
+ * @link https://stackoverflow.com/questions/17295056/array-vs-object-efficiency-in-javascript
+ */
+declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
      * based on their revision height.
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
-    byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
+    Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
     /**
      * Store the latest known document state.
      * As long as any state of the document is in the cache,
@@ -21,8 +27,8 @@ declare type CacheItem<RxDocType, OrmMethods> = {
      * To not prevent the whole cacheItem from being garbage collected,
      * we store only the document data here, but not the RxDocument.
      */
-    last: RxDocumentData<RxDocType>;
-};
+    RxDocumentData<RxDocType>
+];
 /**
  * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry
  */
@@ -55,13 +61,6 @@ export declare class DocumentCache<RxDocType, OrmMethods> {
      * but at least works.
      */
     readonly registry?: FinalizationRegistry<FinalizationRegistryValue>;
-    /**
-     * Calling registry.register(() has shown to have
-     * really bad performance. So we add the cached documents
-     * lazily.
-     */
-    registerIdlePromise?: Promise<any>;
-    registerIdleTasks: RxDocument<RxDocType, OrmMethods>[];
     constructor(primaryPath: string, changes$: Observable<RxChangeEvent<RxDocType>>, 
     /**
      * A method that can create a RxDocument by the given document data.
@@ -74,6 +73,7 @@ export declare class DocumentCache<RxDocType, OrmMethods> {
      * because this is @performance relevant.
      * It is called on each document row for each write and read.
      */
+    get getCachedRxDocuments(): (docsData: RxDocumentData<RxDocType>[]) => RxDocument<RxDocType, OrmMethods>[];
     get getCachedRxDocument(): (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>;
     /**
      * Throws if not exists

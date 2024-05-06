@@ -21,9 +21,7 @@ export function getHeightOfRevision(revision) {
  * Creates the next write revision for a given document.
  */
 export function createRevision(databaseInstanceToken, previousDocData) {
-  var previousRevision = previousDocData ? previousDocData._rev : null;
-  var previousRevisionHeight = previousRevision ? parseRevision(previousRevision).height : 0;
-  var newRevisionHeight = previousRevisionHeight + 1;
+  var newRevisionHeight = !previousDocData ? 1 : getHeightOfRevision(previousDocData._rev) + 1;
   return newRevisionHeight + '-' + databaseInstanceToken;
 }
 //# sourceMappingURL=utils-revision.js.map

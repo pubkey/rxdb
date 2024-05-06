@@ -1,7 +1,14 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import { getFromMapOrCreate, getFromMapOrThrow, getHeightOfRevision, overwriteGetterForCaching, requestIdlePromiseNoQueue } from "./plugins/utils/index.js";
+import { getFromMapOrThrow, getHeightOfRevision, overwriteGetterForCaching, requestIdlePromiseNoQueue } from "./plugins/utils/index.js";
 import { overwritable } from "./overwritable.js";
 import { getDocumentDataOfRxChangeEvent } from "./rx-change-event.js";
+
+/**
+ * Because we have to create many cache items,
+ * we use an array instead of an object with properties
+ * for better performance and less memory usage.
+ * @link https://stackoverflow.com/questions/17295056/array-vs-object-efficiency-in-javascript
+ */
 
 /**
  * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry
@@ -25,12 +32,6 @@ export var DocumentCache = /*#__PURE__*/function () {
    * but at least works.
    */
 
-  /**
-   * Calling registry.register(() has shown to have
-   * really bad performance. So we add the cached documents
-   * lazily.
-   */
-
   function DocumentCache(primaryPath, changes$,
   /**
    * A method that can create a RxDocument by the given document data.
@@ -41,8 +42,8 @@ export var DocumentCache = /*#__PURE__*/function () {
       var docId = docMeta.docId;
       var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
-        cacheItem.byRev.delete(docMeta.revisionHeight);
-        if (cacheItem.byRev.size === 0) {
+        cacheItem[0].delete(docMeta.revisionHeight);
+        if (cacheItem[0].size === 0) {
           /**
            * No state of the document is cached anymore,
            * so we can clean up.
@@ -51,7 +52,6 @@ export var DocumentCache = /*#__PURE__*/function () {
         }
       }
     }) : undefined;
-    this.registerIdleTasks = [];
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
@@ -60,7 +60,7 @@ export var DocumentCache = /*#__PURE__*/function () {
       var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
         var documentData = getDocumentDataOfRxChangeEvent(changeEvent);
-        cacheItem.last = documentData;
+        cacheItem[1] = documentData;
       }
     });
   }
@@ -78,19 +78,25 @@ export var DocumentCache = /*#__PURE__*/function () {
    */
   _proto.getLatestDocumentData = function getLatestDocumentData(docId) {
     var cacheItem = getFromMapOrThrow(this.cacheItemByDocId, docId);
-    return cacheItem.last;
+    return cacheItem[1];
   };
   _proto.getLatestDocumentDataIfExists = function getLatestDocumentDataIfExists(docId) {
     var cacheItem = this.cacheItemByDocId.get(docId);
     if (cacheItem) {
-      return cacheItem.last;
+      return cacheItem[1];
     }
   };
   return _createClass(DocumentCache, [{
+    key: "getCachedRxDocuments",
+    get: function () {
+      var fn = getCachedRxDocumentMonad(this);
+      return overwriteGetterForCaching(this, 'getCachedRxDocuments', fn);
+    }
+  }, {
     key: "getCachedRxDocument",
     get: function () {
       var fn = getCachedRxDocumentMonad(this);
-      return overwriteGetterForCaching(this, 'getCachedRxDocument', fn);
+      return overwriteGetterForCaching(this, 'getCachedRxDocument', doc => fn([doc])[0]);
     }
   }]);
 }();
@@ -98,6 +104,8 @@ export var DocumentCache = /*#__PURE__*/function () {
 /**
  * This function is called very very often.
  * This is likely the most important function for RxDB overall performance
+ * @hotPath This is one of the most important methods for performance.
+ * It is used in many places to transform the raw document data into RxDocuments.
  */
 function getCachedRxDocumentMonad(docCache) {
   var primaryPath = docCache.primaryPath;
@@ -105,56 +113,58 @@ function getCachedRxDocumentMonad(docCache) {
   var registry = docCache.registry;
   var deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
   var documentCreator = docCache.documentCreator;
-  var fn = docData => {
-    var docId = docData[primaryPath];
-    var revisionHeight = getHeightOfRevision(docData._rev);
-    var cacheItem = getFromMapOrCreate(cacheItemByDocId, docId, () => getNewCacheItem(docData));
-    var byRev = cacheItem.byRev;
-    var cachedRxDocumentWeakRef = byRev.get(revisionHeight);
-    var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
-    if (!cachedRxDocument) {
-      docData = deepFreezeWhenDevMode(docData);
-      cachedRxDocument = documentCreator(docData);
-      byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
-      if (registry) {
-        docCache.registerIdleTasks.push(cachedRxDocument);
-        if (!docCache.registerIdlePromise) {
-          docCache.registerIdlePromise = requestIdlePromiseNoQueue().then(() => {
-            docCache.registerIdlePromise = undefined;
-            var tasks = docCache.registerIdleTasks;
-            if (tasks.length === 0) {
-              return;
-            }
-            docCache.registerIdleTasks = [];
-            tasks.forEach(doc => {
-              registry.register(doc, {
-                docId: doc.primary,
-                revisionHeight: getHeightOfRevision(doc.revision)
-              });
-            });
-          });
+  var fn = docsData => {
+    var ret = new Array(docsData.length);
+    var registryTasks = [];
+    for (var index = 0; index < docsData.length; index++) {
+      var docData = docsData[index];
+      var docId = docData[primaryPath];
+      var revisionHeight = getHeightOfRevision(docData._rev);
+      var byRev = void 0;
+      var cachedRxDocumentWeakRef = void 0;
+      var cacheItem = cacheItemByDocId.get(docId);
+      if (!cacheItem) {
+        byRev = new Map();
+        cacheItem = [byRev, docData];
+        cacheItemByDocId.set(docId, cacheItem);
+      } else {
+        byRev = cacheItem[0];
+        cachedRxDocumentWeakRef = byRev.get(revisionHeight);
+      }
+      var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
+      if (!cachedRxDocument) {
+        docData = deepFreezeWhenDevMode(docData);
+        cachedRxDocument = documentCreator(docData);
+        byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
+        if (registry) {
+          registryTasks.push(cachedRxDocument);
         }
       }
+      ret[index] = cachedRxDocument;
     }
-    return cachedRxDocument;
+    if (registryTasks.length > 0 && registry) {
+      /**
+       * Calling registry.register() has shown to have
+       * really bad performance. So we add the cached documents
+       * lazily.
+       */
+      requestIdlePromiseNoQueue().then(() => {
+        for (var _index = 0; _index < registryTasks.length; _index++) {
+          var doc = registryTasks[_index];
+          registry.register(doc, {
+            docId: doc.primary,
+            revisionHeight: getHeightOfRevision(doc.revision)
+          });
+        }
+      });
+    }
+    return ret;
   };
   return fn;
 }
 export function mapDocumentsDataToCacheDocs(docCache, docsData) {
-  var getCachedRxDocument = docCache.getCachedRxDocument;
-  var documents = [];
-  for (var i = 0; i < docsData.length; i++) {
-    var docData = docsData[i];
-    var doc = getCachedRxDocument(docData);
-    documents.push(doc);
-  }
-  return documents;
-}
-function getNewCacheItem(docData) {
-  return {
-    byRev: new Map(),
-    last: docData
-  };
+  var getCachedRxDocuments = docCache.getCachedRxDocuments;
+  return getCachedRxDocuments(docsData);
 }
 
 /**

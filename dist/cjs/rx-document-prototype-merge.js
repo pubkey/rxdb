@@ -30,7 +30,6 @@ function getDocumentPrototype(rxCollection) {
     var props = Object.getOwnPropertyNames(obj);
     props.forEach(key => {
       var desc = Object.getOwnPropertyDescriptor(obj, key);
-
       /**
        * When enumerable is true, it will show on console dir(instance)
        * To not pollute the output, only getters and methods are enumerable
@@ -66,8 +65,8 @@ function getRxDocumentConstructor(rxCollection) {
  * You should never call this method directly,
  * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
-function createNewRxDocument(rxCollection, docData) {
-  var doc = (0, _rxDocument.createWithConstructor)(getRxDocumentConstructor(rxCollection), rxCollection, _overwritable.overwritable.deepFreezeWhenDevMode(docData));
+function createNewRxDocument(rxCollection, documentConstructor, docData) {
+  var doc = (0, _rxDocument.createWithConstructor)(documentConstructor, rxCollection, _overwritable.overwritable.deepFreezeWhenDevMode(docData));
   rxCollection._runHooksSync('post', 'create', docData, doc);
   (0, _hooks.runPluginHooks)('postCreateRxDocument', doc);
   return doc;

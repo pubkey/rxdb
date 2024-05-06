@@ -56,19 +56,6 @@ export function observeSingle(storageInstance, documentId) {
 export function stackCheckpoints(checkpoints) {
   return Object.assign({}, ...checkpoints);
 }
-export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
-  var documentData = rxStorageChangeEvent.documentData;
-  var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
-  var ret = {
-    documentId: rxStorageChangeEvent.documentId,
-    collectionName: rxCollection ? rxCollection.name : undefined,
-    isLocal,
-    operation: rxStorageChangeEvent.operation,
-    documentData: overwritable.deepFreezeWhenDevMode(documentData),
-    previousDocumentData: overwritable.deepFreezeWhenDevMode(previousDocumentData)
-  };
-  return ret;
-}
 export function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
     if (error.status === 409) {
@@ -392,9 +379,9 @@ export function stripAttachmentsDataFromDocument(doc) {
  * during replication etc.
  */
 export function flatCloneDocWithMeta(doc) {
-  var ret = flatClone(doc);
-  ret._meta = flatClone(doc._meta);
-  return ret;
+  return Object.assign({}, doc, {
+    _meta: flatClone(doc._meta)
+  });
 }
 /**
  * Wraps the normal storageInstance of a RxCollection
@@ -409,22 +396,6 @@ export function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-  function transformDocumentDataFromRxDBToRxStorage(writeRow) {
-    var data = flatClone(writeRow.document);
-    data._meta = flatClone(data._meta);
-    data._meta.lwt = now();
-
-    /**
-     * Yes we really want to set the revision here.
-     * If you make a plugin that relies on having its own revision
-     * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
-     */
-    data._rev = createRevision(database.token, writeRow.previous);
-    return {
-      document: data,
-      previous: writeRow.previous
-    };
-  }
   var ret = {
     originalStorageInstance: storageInstance,
     schema: storageInstance.schema,
@@ -433,7 +404,31 @@ rxJsonSchema) {
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
     bulkWrite(rows, context) {
-      var toStorageWriteRows = rows.map(row => transformDocumentDataFromRxDBToRxStorage(row));
+      var databaseToken = database.token;
+      var toStorageWriteRows = new Array(rows.length);
+      /**
+       * Use the same timestamp for all docs of this rows-set.
+       * This improves performance because calling Date.now() inside of the now() function
+       * is too costly.
+       */
+      var time = now();
+      for (var index = 0; index < rows.length; index++) {
+        var writeRow = rows[index];
+        var document = flatCloneDocWithMeta(writeRow.document);
+        document._meta.lwt = time;
+
+        /**
+         * Yes we really want to set the revision here.
+         * If you make a plugin that relies on having its own revision
+         * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
+         */
+        var previous = writeRow.previous;
+        document._rev = createRevision(databaseToken, previous);
+        toStorageWriteRows[index] = {
+          document,
+          previous
+        };
+      }
       runPluginHooks('preStorageWrite', {
         storageInstance: this.originalStorageInstance,
         rows: toStorageWriteRows
@@ -451,7 +446,7 @@ rxJsonSchema) {
           error: [],
           success: writeResult.success.slice(0)
         };
-        var reInsertErrors = writeResult.error.filter(error => {
+        var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
           if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && ensureNotFalsy(error.documentInDb)._deleted) {
             return true;
           }
