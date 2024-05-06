@@ -3230,7 +3230,7 @@ sl-button::part(base) {
     gap: 24px;
 }
 
-.footer-policy div sl-button::part(base) {
+.footer-policy div a {
     font-size: 0.85em;
     font-weight: 400;
     line-height: 150%;
@@ -3240,12 +3240,8 @@ sl-button::part(base) {
     transition: all 0.15s ease-in-out;
 }
 
-.footer-policy div sl-button::part(base):hover {
+.footer-policy div a:hover {
     color: white;
-}
-
-.footer-policy div sl-button::part(label) {
-    padding: 0;
 }
 
 .footer-rights {
