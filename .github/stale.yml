@@ -14,7 +14,9 @@ staleLabel: stale
 # Comment to post when marking an issue as stale. Set to `false` to disable
 markComment: >
   This issue has been automatically marked as stale because it has not had
-  recent activity. It will be closed soon. Please update it soon or it may be closed to keep our repository organized.
+  recent activity. It will be closed soon. Please update it or it may be closed to keep our repository organized.
+  The best way is to add some more information or make a pull request with a test case.
+  Also you might get help in fixing it at the [RxDB Community Chat](https://rxdb.info/chat)
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: "Issues are autoclosed after some time. If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem."
 
