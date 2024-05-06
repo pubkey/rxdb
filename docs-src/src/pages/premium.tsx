@@ -62,7 +62,10 @@ export default function Premium() {
                 });
 
                 // auto-submit form
-                document.getElementById('price-calculator-submit').click();
+                const priceCalculateForm = document.getElementById('price-calculator-submit');
+                if (priceCalculateForm) {
+                    priceCalculateForm.click();
+                }
             }
         })();
     });
