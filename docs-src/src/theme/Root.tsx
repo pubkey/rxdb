@@ -19,7 +19,11 @@ export default function Root({ children }) {
 function addCallToActionButton() {
 
     // do not show on landingpage
-    if(location.pathname === '/'){
+    if (
+        location.pathname === '/' ||
+        location.pathname === '/premium' ||
+        location.pathname === '/consulting'
+    ) {
         return;
     }
 
@@ -62,7 +66,7 @@ function addCallToActionButton() {
     function setCallToActionOnce() {
         console.log('set call to action button');
 
-        const tenMinutes = 1000 * 60*10;
+        const tenMinutes = 1000 * 60 * 10;
         const now = Date.now();
         const timeSlot = (now - (now % tenMinutes)) / tenMinutes;
         console.log('timeslot ' + timeSlot);

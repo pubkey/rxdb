@@ -46,23 +46,7 @@ html[data-theme="dark"] {
     display: none;
 }
 
-/* Hide Search Field on the Consulting page + Footer, Navbar */
-.consulting-page .navbar__search {
-    display: none;
-}
-.consulting-page
-    .navbarSearchContainer_node_modules-\@docusaurus-theme-classic-lib-theme-Navbar-Search-styles-module {
-    padding: 0;
-}
 .consulting-page .footer.footer--dark {
-    display: none;
-}
-.consulting-page .navbar {
-    display: none;
-}
-
-/* hide Nav Toggle for mobile */
-.consulting-page .navbar__toggle {
     display: none;
 }
 
@@ -89,6 +73,9 @@ html[data-theme="dark"] {
 
 .footer {
     background-color: var(--ifm-navbar-background-color);
+    background-image: url('/img/footer-column.svg');
+    background-position: right bottom;
+    background-repeat: no-repeat;
 }
 
 .card {
@@ -682,7 +669,7 @@ body {
 }
 
 .block.first {
-    padding-bottom: 120px;
+    padding-bottom: 70px;
     padding-top: 50px;
 }
 
@@ -719,9 +706,6 @@ body {
     .block.first .inner {
         flex-direction: column-reverse;
     }
-}
-
-.block.first .half.right .content-canvas {
 }
 
 .block.second .inner {
@@ -2167,7 +2151,7 @@ footer a:visited {
     color: var(--color-top);
 }
 
-.consulting-page .navbar__title {
+.navbar__title {
     color: white;
     font-size: 1.35rem;
     font-weight: 500;
@@ -2238,17 +2222,17 @@ sl-dialog::part(body) {
     }
 }
 /** navbar **/
-.consulting-page .navbar-home .sl-button::part(base) {
+.navbar-home .sl-button::part(base) {
     border-radius: 14px;
 }
-.consulting-page .navbar-home {
+.navbar-home {
     z-index: 10;
     background-color: var(--bg-color);
     padding: 16px 24px;
     height: auto;
     box-shadow: none;
 }
-.consulting-page .navbar-home .logo {
+.navbar-home .logo {
     color: white;
     font-weight: bold;
     text-decoration: none;
@@ -2740,7 +2724,7 @@ sl-dialog::part(body) {
     align-items: flex-start;
 }
 
-.consulting-page .block.review .slider-content h3 {
+.block.review .slider-content h3 {
     margin-top: 16px;
     margin-bottom: 32px;
     font-size: 1.2em;
@@ -2750,25 +2734,25 @@ sl-dialog::part(body) {
     color: #f6f6f7;
 }
 
-.consulting-page .slider-content .slider-profile {
+.slider-content .slider-profile {
     display: flex;
     margin-top: auto;
     gap: 16px;
     align-items: center;
 }
-.consulting-page .slick-slide {
+.slick-slide {
     padding: 0;
 }
-.consulting-page .slick-track {
+.slick-track {
     display: flex !important;
     gap: 32px;
 }
-.consulting-page .slick-initialized .slick-slide {
+.slick-initialized .slick-slide {
     display: flex !important;
     flex-grow: 1;
     height: auto;
 }
-.consulting-page .slider-content .slider-profile img {
+.slider-content .slider-profile img {
     width: 70px;
     height: 70px;
     object-fit: contain;
@@ -2776,23 +2760,23 @@ sl-dialog::part(body) {
     padding: 5px;
 }
 
-.consulting-page .slider-content .slider-profile img.slider-logo-black {
+.slider-content .slider-profile img.slider-logo-black {
     background: var(--bg-color-dark);
 }
-.consulting-page .review-img {
+.review-img {
     max-height: 24px;
 }
 
-.consulting-page .slider-content .slider-profile img.slider-logo-white {
+.slider-content .slider-profile img.slider-logo-white {
     background: #fff;
 }
 
-.consulting-page .slider-content .slider-profile .slider-info {
+.slider-content .slider-profile .slider-info {
     /* margin-left: 10px; */
     width: 70%;
 }
 
-.consulting-page .slider-content .slider-profile .developer {
+.slider-content .slider-profile .developer {
     font-size: 1em;
     margin-bottom: 0px;
     font-weight: 500;
@@ -2800,7 +2784,7 @@ sl-dialog::part(body) {
     color: #fff;
 }
 
-.consulting-page .slider-content .slider-profile .company-link {
+.slider-content .slider-profile .company-link {
     font-size: 1em;
     font-weight: 400;
     line-height: 150%;
@@ -2808,7 +2792,7 @@ sl-dialog::part(body) {
     text-decoration: underline;
 }
 
-.consulting-page .slick-slide {
+.slick-slide {
     /* padding: 0px 10px; */
     display: flex;
     flex-grow: 1;
@@ -2816,12 +2800,12 @@ sl-dialog::part(body) {
     height: auto;
 }
 
-.consulting-page .slick-list {
+.slick-list {
     padding: 0;
     height: auto !important;
     max-height: 500px;
 }
-.consulting-page .slick-dots {
+.slick-dots {
     border: 1px solid #2c3039;
     padding: 8px !important;
     border-radius: 22px;
@@ -2832,23 +2816,23 @@ sl-dialog::part(body) {
     position: static !important;
     margin: 80px auto 0 !important;
 }
-.consulting-page .slick-dots li button {
+.slick-dots li button {
     width: max-content !important;
     width: 7px !important;
     height: 7px !important;
 }
 
-.consulting-page .slick-dots li {
+.slick-dots li {
     /* width: max-content !important; */
     padding: 0 0px 0px 7px !important;
     /* margin: 0 !important; */
     width: 7px !important;
     height: 7px !important;
 }
-.consulting-page .slick-dots li.slick-active {
+.slick-dots li.slick-active {
     padding-right: 15px !important;
 }
-.consulting-page .slick-dots li button:before {
+.slick-dots li button:before {
     color: #c3c3d0 !important;
     font-size: 10px !important;
     opacity: 1 !important;
@@ -2856,7 +2840,7 @@ sl-dialog::part(body) {
     height: 7px !important;
     line-height: 7px !important;
 }
-.consulting-page .slick-dots li.slick-active button:before {
+.slick-dots li.slick-active button:before {
     background-color: var(--color-top) !important;
     width: 24px !important;
     height: 8px !important;
@@ -2865,13 +2849,13 @@ sl-dialog::part(body) {
     /* top: 5px; */
     margin: 0 7px 0px 0 !important;
 }
-.consulting-page .slick-dots li.slick-active:first-child button:before {
+.slick-dots li.slick-active:first-child button:before {
     margin: 0 50px 0px 0 !important;
 }
-.consulting-page .slick-dots li {
+.slick-dots li {
     top: 1px;
 }
-.consulting-page .slick-dots li.slick-active {
+.slick-dots li.slick-active {
     top: 0px;
 }
 /* faq */
@@ -3256,9 +3240,9 @@ sl-dialog::part(body) {
     .consulting-page .block.first h1 {
         margin-right: 80px;
     }
-    .consulting-page .block.first .half:last-child {
+    /* .consulting-page .block.first .half:last-child { */
         /* padding-top: 80px !important; */
-    }
+    /* } */
     .consulting-page .half {
         width: 100%;
     }

@@ -26,6 +26,7 @@ import { trigger } from '../components/trigger-event';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { ReviewsBlock } from '../components/review-block';
 
 type MousePositionType = {
   x: number;
@@ -498,73 +499,16 @@ export default function Home() {
             <div className="content centered">
               <div className="inner">
                 <h2>
-                  Our <b className="underline">Success Stories</b>
+                  Used by <b className="underline">Many</b>
                 </h2>
+                <p>
+                  RxDB is a proven technology used by thousands of developers worldwide. <br />
+                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                </p>
                 <br /><br />
               </div>
             </div>
-            <Slider {...slickSettings}>
-              <div className="slider-content">
-                <h3>
-                  "We use RxDB to create applications capable of being used in the most remote areas where Internet access is really a challenge."
-                </h3>
-                <div className="slider-profile">
-                  <img className="slider-logo-white lazyload" data-src="./files/companies/altgras.png" />
-                  <div className="slider-info">
-                    <p className="developer">ALTGRAS</p>
-                    <a href="https://altgras.com/" target="_blank" className="company-link">https://altgras.com/</a>
-                  </div>
-                </div>
-              </div>
-              <div className="slider-content">
-                <h3>
-                  "We provide a mobile app that is used by people in the field to fill in valuable information like inspections, surveys and audits"
-                </h3>
-                <div className="slider-profile">
-                  <img className="slider-logo-black lazyload" data-src="./files/companies/moreapp.png" />
-                  <div className="slider-info">
-                    <p className="developer">MoreApp</p>
-                    <a href="https://moreapp.com/" target="_blank" className="company-link">https://moreapp.com/</a>
-                  </div>
-                </div>
-              </div>
-              <div className="slider-content">
-                <h3>
-                  "We use RxDB to provide an offline first, cross platform point of sale system"
-                </h3>
-                <div className="slider-profile">
-                  <img className="slider-logo-black lazyload" data-src="./files/companies/woopos.png" />
-                  <div className="slider-info">
-                    <p className="developer">WooCommerce POS</p>
-                    <a href="https://wcpos.com/" target="_blank" className="company-link">https://wcpos.com/</a>
-                  </div>
-                </div>
-              </div>
-              <div className="slider-content">
-                <h3>
-                  "RxDB is a main component in building offline-ready multichannel apps. It has become our default stack for this kind of apps."
-                </h3>
-                <div className="slider-profile">
-                  <img className="slider-logo-black lazyload" data-src="./files/companies/atroo.png" />
-                  <div className="slider-info">
-                    <p className="developer">atroo GmbH</p>
-                    <a href="https://atroo.de/" target="_blank" className="company-link">https://atroo.de/</a>
-                  </div>
-                </div>
-              </div>
-              {/* <div className="slider-content"> */}
-              {/*    <h3>*/}
-              {/*      "We use RxDB to store clients network topology modifications made with our map plugin visual editor"*/}
-              {/*    </h3>*/}
-              {/*    <div className="slider-profile">*/}
-              {/*        <img className="slider-logo-black" src="https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png"/>*/}
-              {/*        <div className="slider-info">*/}
-              {/*            <p className="developer">Mapgl Grafana plugins</p>*/}
-              {/*            <a href="https://raw.githubusercontent.com/vaduga/mapgl-community/" target="_blank" className="company-link">https://raw.githubusercontent.com/vaduga/mapgl-community/</a>*/}
-              {/*        </div>*/}
-              {/*    </div>*/}
-              {/* </div> */}
-            </Slider>
+            <ReviewsBlock></ReviewsBlock>
           </div>
 
           <div className="block second dark">
@@ -1258,27 +1202,27 @@ export default function Home() {
                   <div className="buy-option bg-gradient-left-top">
                     <div className="buy-option-inner">
                       <div className="buy-option-title">
-                        <h2>Consulting Session</h2>
-                        <div className="price">fast in person consulting</div>
+                        <h2>Consulting</h2>
+                        <div className="price">professionals</div>
                       </div>
                       <div className="buy-option-features">
+
                         <p>
-                          Book a one hour consulting session with the RxDB maintainer. I
-                          will answer all your questions, give proposals for your use
-                          case and we can even do a pair programming session if you have
-                          a specific problem in your source code.
+                          Unlock the full potential of RxDB with our tailored consulting services.
+                          Our experts collaborate directly with your team to optimize your use of RxDB,
+                          ensuring seamless integration and peak performance.<br />
                           <br />
-                          You can book this by doing a one-time donation via github
-                          sponsors.
+                          From quick <b>one-time support sessions</b> to <b>full project</b> development and <b>custom feature</b> implementation,
+                          we're here to accelerate your project's success. Let's build something incredible together.
                         </p>
+
                       </div>
                       <a
-                        href="https://github.com/sponsors/pubkey?frequency=one-time&sponsor=pubkey"
-                        target="_blank"
+                        href="/consulting"
                         onClick={() => trigger('consulting_session_request_main_page', 4)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
-                          Book Now
+                          Start Now
                         </div>
                       </a>
                     </div>

@@ -1,25 +1,21 @@
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import useIsBrowser from "@docusaurus/useIsBrowser";
-import BrowserOnly from "@docusaurus/BrowserOnly";
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useIsBrowser from '@docusaurus/useIsBrowser';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
-import Layout from "@theme/Layout";
-import Head from "@docusaurus/Head";
-import "lazysizes";
+import Layout from '@theme/Layout';
+import Head from '@docusaurus/Head';
+import 'lazysizes';
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from 'react';
 
-import { getDatabase, hasIndexedDB } from "../components/database";
-const FILE_EVENT_ID = "consulting-link-clicked";
+import { getDatabase, hasIndexedDB } from '../components/database';
+const FILE_EVENT_ID = 'consulting-link-clicked';
 
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-import "@shoelace-style/shoelace/dist/themes/light.css";
-import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path.js";
-setBasePath(
-    "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/"
-);
+import '@shoelace-style/shoelace/dist/themes/light.css';
+import { ReviewsBlock } from '../components/review-block';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
@@ -34,7 +30,7 @@ export default function Consulting() {
             const database = await getDatabase();
             const flagDoc = await database.getLocal(FILE_EVENT_ID);
             if (flagDoc) {
-                console.log("# already tracked " + FILE_EVENT_ID);
+                console.log('# already tracked ' + FILE_EVENT_ID);
             } else {
                 window.trigger(FILE_EVENT_ID, 100);
                 await database.upsertLocal(FILE_EVENT_ID, {});
@@ -45,7 +41,7 @@ export default function Consulting() {
     const dialogRef = useRef(null);
 
     function handleOpenDialog() {
-        console.log("open");
+        console.log('open');
         dialogRef.current.show();
     }
     // // to prevent close
@@ -58,35 +54,30 @@ export default function Consulting() {
     return (
         <>
             <Head>
-                <body className="consulting-page" />
+                <body className="homepage" />
             </Head>
             <Layout
                 title={`${siteConfig.title}`}
                 description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js"
             >
-                <main>
+                <main className="consulting-page">
                     <BrowserOnly fallback={<div>Loading...</div>}>
                         {() => {
                             const SlDialog =
-                                require("@shoelace-style/shoelace/dist/react/dialog").default;
+                                require('@shoelace-style/shoelace/dist/react/dialog').default;
                             const SlButton =
-                                require("@shoelace-style/shoelace/dist/react/button").default;
+                                require('@shoelace-style/shoelace/dist/react/button').default;
                             const SlTabGroup =
-                                require("@shoelace-style/shoelace/dist/react/tab-group").default;
+                                require('@shoelace-style/shoelace/dist/react/tab-group').default;
                             const SlTab =
-                                require("@shoelace-style/shoelace/dist/react/tab").default;
+                                require('@shoelace-style/shoelace/dist/react/tab').default;
                             const SlTabPanel =
-                                require("@shoelace-style/shoelace/dist/react/tab-panel").default;
+                                require('@shoelace-style/shoelace/dist/react/tab-panel').default;
                             const SlDetails =
-                                require("@shoelace-style/shoelace/dist/react/details").default;
+                                require('@shoelace-style/shoelace/dist/react/details').default;
 
                             return (
                                 <>
-                                    <NavBarBlock
-                                        onOpenDialog={handleOpenDialog}
-                                        SlButton={SlButton}
-                                    ></NavBarBlock>
-
                                     <div className="block first centered dark">
                                         <HeroBlock
                                             onOpenDialog={handleOpenDialog}
@@ -126,6 +117,17 @@ export default function Consulting() {
                                     </div>
 
                                     <div className="block review" id="reviews">
+                                        <div className="content">
+                                            <div className="inner centered">
+                                                <h2>Our success stories</h2>
+                                                <h3>
+                                                    Hear what our clients have to say about their
+                                                    experiences working with RxDB. Get to know real-world
+                                                    examples of how we've helped businesses like yours
+                                                    achieve their goals and exceed expectations.
+                                                </h3>
+                                            </div>
+                                        </div>
                                         <ReviewsBlock></ReviewsBlock>
                                     </div>
 
@@ -163,15 +165,15 @@ export default function Consulting() {
                                     <SlDialog noHeader ref={dialogRef}>
                                         <iframe
                                             style={{
-                                                width: "100%",
-                                                height: "70vh",
-                                                borderRadius: "32px",
+                                                width: '100%',
+                                                height: '70vh',
+                                                borderRadius: '32px',
                                             }}
                                             id="request-project-form"
                                             src="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
                                         >
                                             Your browser doesn't support
-                                            iframes,{" "}
+                                            iframes,{' '}
                                             <a
                                                 href="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
                                                 target="_blank"
@@ -195,29 +197,29 @@ export default function Consulting() {
 function NavBarBlock({ onOpenDialog, SlButton }) {
     const items = [
         {
-            to: "/consulting#packages",
-            label: "Packages",
-            position: "left",
+            to: '/consulting#packages',
+            label: 'Packages',
+            position: 'left',
         },
         {
-            to: "/consulting#benefits",
-            label: "Benefits",
-            position: "left",
+            to: '/consulting#benefits',
+            label: 'Benefits',
+            position: 'left',
         },
         {
-            to: "/consulting#steps",
-            label: "How it works",
-            position: "left",
+            to: '/consulting#steps',
+            label: 'How it works',
+            position: 'left',
         },
         {
-            to: "/consulting#faq",
-            label: "FAQs",
-            position: "left",
+            to: '/consulting#faq',
+            label: 'FAQs',
+            position: 'left',
         },
         {
-            to: "/consulting#contact",
-            label: "Contact us",
-            position: "left",
+            to: '/consulting#contact',
+            label: 'Contact us',
+            position: 'left',
         },
     ];
 
@@ -264,7 +266,7 @@ function NavBarBlock({ onOpenDialog, SlButton }) {
                     <SlButton
                         onClick={onOpenDialog}
                         className="sl-button nav-button"
-                        style={{ maxWidth: "123px" }}
+                        style={{ maxWidth: '123px' }}
                     >
                         Get started
                     </SlButton>
@@ -275,7 +277,7 @@ function NavBarBlock({ onOpenDialog, SlButton }) {
 }
 
 function HeroBlock({ onOpenDialog, SlButton }) {
-    const title = "Expert support for local database applications";
+    const title = 'Expert support for local database applications';
     const description = `We offer custom solutions to streamline your data
     management or revolutionize your project's backend.
     Our team is here to guide you at every step.`;
@@ -290,10 +292,10 @@ function HeroBlock({ onOpenDialog, SlButton }) {
                     <div
                         className="flex-row hero-buttons"
                         style={{
-                            alignItems: "center",
-                            gap: "16px",
-                            marginTop: "40px",
-                            marginBottom: "10px",
+                            alignItems: 'center',
+                            gap: '16px',
+                            marginTop: '40px',
+                            marginBottom: '10px',
                         }}
                     >
                         {/* <a className="button" onClick={onOpenDialog}>
@@ -316,8 +318,8 @@ function HeroBlock({ onOpenDialog, SlButton }) {
                 <div
                     className="half"
                     style={{
-                        paddingTop: "42px",
-                        paddingBottom: "42px",
+                        paddingTop: '42px',
+                        paddingBottom: '42px',
                     }}
                 >
                     <img
@@ -339,7 +341,7 @@ function HeroBlock({ onOpenDialog, SlButton }) {
 }
 
 function PackagesBlock({ onOpenDialog, SlButton }) {
-    const title = "Our Service Packages";
+    const title = 'Our Service Packages';
     const description = `We offer tailored solutions to meet your needs. Whether
     you're looking to streamline your data management
     process or revolutionize your project's backend, our
@@ -347,42 +349,42 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
 
     const packageItems = [
         {
-            index: "1",
-            label: "Quick Consulting Session",
-            price: "180$",
+            index: '1',
+            label: 'Quick Consulting Session',
+            price: '180€',
             description:
-                "Schedule a quick consultancy session where the RxDB core maintainer answers all your questions and gives suggestions on how you should use RxDB or related technologies.",
-            cta: "Schedule a call",
-            href: "https://buy.stripe.com/14kdU1dN05SAfMA4gg",
-            target: "_blank",
-            rel: "",
+                'Schedule a quick consultancy session where the RxDB core maintainer answers all your questions and gives suggestions on how you should use RxDB or related technologies.',
+            cta: 'Schedule a call',
+            href: 'https://buy.stripe.com/14kdU1dN05SAfMA4gg',
+            target: '_blank',
+            rel: '',
             iframe: false,
         },
         {
-            index: "2",
-            label: "We build it with you",
-            price: "",
+            index: '2',
+            label: 'We build it with you',
+            price: '',
             description: `Let our expert team handle the heavy lifting.
             With Package 2, we take full responsibility for
             building and implementing your local JavaScript
             database solution. Sit back, relax, and watch as
             we transform your vision into reality.`,
-            cta: "Get started",
-            href: "https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F",
-            target: "_blank",
-            rel: "nofollow",
+            cta: 'Get started',
+            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
+            target: '_blank',
+            rel: 'nofollow',
             iframe: true,
         },
         {
-            index: "3",
-            label: "We build it with you",
-            price: "",
+            index: '3',
+            label: 'We build it with you',
+            price: '',
             description:
-                "Prefer a more hands-on approach? Package 3 allows you to collaborate closely with our team throughout the development process. Together, we'll fine-tune every aspect of your solution to ensure it aligns perfectly with your goals and requirements.",
-            cta: "Get started",
-            href: "https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F",
-            target: "_blank",
-            rel: "nofollow",
+                'Prefer a more hands-on approach? Package 3 allows you to collaborate closely with our team throughout the development process. Together, we\'ll fine-tune every aspect of your solution to ensure it aligns perfectly with your goals and requirements.',
+            cta: 'Get started',
+            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
+            target: '_blank',
+            rel: 'nofollow',
             iframe: true,
         },
     ];
@@ -397,8 +399,8 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
                 <div
                     className="flex-row"
                     style={{
-                        flexWrap: "wrap",
-                        alignItems: "stretch",
+                        flexWrap: 'wrap',
+                        alignItems: 'stretch',
                     }}
                 >
                     {packageItems.map((item, index) => (
@@ -406,28 +408,28 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
                             key={item.label + index}
                             className={
                                 index < 1
-                                    ? "item-package flex-row"
-                                    : "item-package flex-column"
+                                    ? 'item-package flex-row'
+                                    : 'item-package flex-column'
                             }
                             style={{
                                 // maxWidth: index > 0 ? "48.5%" : "unset",
-                                height: "auto",
+                                height: 'auto',
                                 border:
-                                    index < 1 ? "solid 1px #E6008D" : "none",
+                                    index < 1 ? 'solid 1px #E6008D' : 'none',
                             }}
                         >
                             <div
                                 className="flex-column"
                                 style={{
-                                    maxWidth: index < 1 ? "70%" : "unset",
+                                    maxWidth: index < 1 ? '70%' : 'unset',
                                 }}
                             >
                                 <h6>Package {item.index}</h6>
                                 <div
                                     className="flex-row"
                                     style={{
-                                        alignItems: "center",
-                                        gap: "16px",
+                                        alignItems: 'center',
+                                        gap: '16px',
                                     }}
                                 >
                                     <h4>{item.label}</h4>
@@ -444,15 +446,15 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
                             <div
                                 className="flex-row"
                                 style={{
-                                    alignItems: "center",
-                                    gap: "8px",
-                                    width: "auto",
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    width: 'auto',
                                 }}
                             >
                                 <SlButton
                                     variant="text"
-                                    href={item.iframe ? "" : item.href}
-                                    target={item.target ? "_blank" : "_self"}
+                                    href={item.iframe ? '' : item.href}
+                                    target={item.target ? '_blank' : '_self'}
                                     onClick={() =>
                                         item.iframe ? onOpenDialog() : null
                                     }
@@ -481,42 +483,42 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
 }
 
 function BenefitsBlock({ SlTabGroup, SlTab, SlTabPanel }) {
-    const title = "How we help you";
-    const description = `Any type of support is possible: from full development to only helping support or code review. We can do Custom RxDB features.`;
+    const title = 'How we help you';
+    const description = 'Any type of support is possible: from full development to only helping support or code review. We can do Custom RxDB features.';
 
     const benefitsPanels = [
         {
-            label: "Expert Guidance",
+            label: 'Expert Guidance',
             text: `We have years of experience with local first
             projects and can provide expert guidance. We
             can provide an optimal concept for the best
             solution for your specific use case.`,
-            name: "quidance",
+            name: 'quidance',
         },
         {
-            label: "Development support",
+            label: 'Development support',
             text: `Either you have your own team of developers
             or we can provide expert developers or we
             can have a mix where we provide some of the
             developers and the customer provides the
             others.`,
-            name: "support",
+            name: 'support',
         },
         {
-            label: "Project review",
+            label: 'Project review',
             text: `We can review your code and project and
             ensure that it uses best practices and has
             optimal performance. This can be done once
             before your big release or as an ongoing
             support.`,
-            name: "review",
+            name: 'review',
         },
         {
-            label: "Tailored features",
+            label: 'Tailored features',
             text: `We can developer tailored features for RxDB
             that are optimized for your specific use
             case.`,
-            name: "feature",
+            name: 'feature',
         },
     ];
 
@@ -570,26 +572,26 @@ function BenefitsBlock({ SlTabGroup, SlTab, SlTabPanel }) {
 }
 
 function StepsBlock({ onOpenDialog, SlButton }) {
-    const title = "How it works";
-    const description = `Here you’ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.`;
+    const title = 'How it works';
+    const description = 'Here you’ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.';
 
     const stepsItems = [
         {
-            label: "Initial contact",
+            label: 'Initial contact',
             text: `We talk about your needs and give suggestions
             for an optimal collaboration with us.`,
         },
         {
-            label: "Specification Design",
-            text: `We specify the collaboration between you and RxDB and define a roadmap.`,
+            label: 'Specification Design',
+            text: 'We specify the collaboration between you and RxDB and define a roadmap.',
         },
         {
-            label: "Development",
-            text: `Realization of the roadmap.`,
+            label: 'Development',
+            text: 'Realization of the roadmap.',
         },
         {
-            label: "Ongoing support",
-            text: `Regular project reviews and guidance when adding new features.`,
+            label: 'Ongoing support',
+            text: 'Regular project reviews and guidance when adding new features.',
         },
     ];
     return (
@@ -640,190 +642,25 @@ function StepsBlock({ onOpenDialog, SlButton }) {
     );
 }
 
-function ReviewsBlock() {
-    const title = "Our success stories";
-    const description = `Hear what our clients have to say about their
-    experiences working with RxDB. Get to know real-world
-    examples of how we've helped businesses like yours
-    achieve their goals and exceed expectations.`;
-
-    const slickSettings = {
-        dots: true,
-        centerMode: true,
-        centerPadding: "180px",
-        infinite: true,
-        arrows: false,
-        adaptiveHeight: true,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        initialSlide: 0,
-        responsive: [
-            {
-                breakpoint: 1460,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: "180px",
-                },
-            },
-            {
-                breakpoint: 1124,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: "100px",
-                },
-            },
-            {
-                breakpoint: 900,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: "40px",
-                },
-            },
-            {
-                breakpoint: 690,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerMode: false,
-                    centerPadding: "0px",
-                },
-            },
-            {
-                breakpoint: 480,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    infinite: false,
-                    dots: true,
-                    swipeToSlide: true,
-                    centerMode: false,
-                    centerPadding: "0px",
-                },
-            },
-        ],
-    };
-
-    const reviewItems = [
-        {
-            label: "ALTGRAS",
-            description: `We use RxDB to create applications capable of being
-            used in the most remote areas where Internet access is
-            really a challenge."`,
-            href: "https://altgras.com/",
-            target: "_blank",
-            logo: "./files/companies/altgras.png",
-            logoStyle: "slider-logo-white lazyload",
-        },
-        {
-            label: "MoreApp",
-            description: `We provide a mobile app that is used by people in the
-            field to fill in valuable information like inspections,
-            surveys and audits."`,
-            href: "https://moreapp.com/",
-            target: "_blank",
-            logo: "./files/companies/moreapp.png",
-            logoStyle: "slider-logo-black lazyload",
-        },
-        {
-            label: "WooCommerce POS",
-            description: `We use RxDB to provide an offline first, cross platform
-            point of sale system."`,
-            href: "https://wcpos.com/",
-            target: "_blank",
-            logo: "./files/companies/woopos.png",
-            logoStyle: "slider-logo-black lazyload",
-        },
-        {
-            label: "atroo GmbH",
-            description: `RxDB is a main component in building offline-ready
-            multichannel apps. It has become our default stack for
-            this kind of apps."`,
-            href: "https://atroo.de/",
-            target: "_blank",
-            logo: "./files/companies/atroo.png",
-            logoStyle: "slider-logo-black lazyload",
-        },
-        // {
-        //     label: "Mapgl Grafana plugins",
-        //     description: `"We use RxDB to store clients network topology modifications made with our map plugin visual editor"`,
-        //     href: "https://raw.githubusercontent.com/vaduga/mapgl-community/",
-        //     logo: "https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png",
-        //     logoStyle: 'slider-logo-black lazyload',
-        // },
-    ];
-
-    return (
-        <>
-            <div className="content">
-                <div className="inner centered">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                </div>
-            </div>
-            <Slider {...slickSettings}>
-                {reviewItems.map((item) => (
-                    <div className="slider-content" key={item.label}>
-                        <img
-                            src="./img/quote.svg"
-                            className="review-img"
-                            alt="quote"
-                        />
-                        <h3>{item.description}</h3>
-                        <div className="slider-profile">
-                            <img
-                                className={item.logoStyle}
-                                data-src={item.logo}
-                                alt="logo"
-                            />
-                            <div className="slider-info">
-                                <p className="developer">{item.label}</p>
-                                <a
-                                    href={item.href}
-                                    target={item.target ? "_blank" : "_self"}
-                                    className="company-link"
-                                >
-                                    {item.href}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </Slider>
-        </>
-    );
-}
-
 function FaqBlock({ SlDetails }) {
-    const title = "FAQs";
+    const title = 'FAQs';
     const description = `Have questions? We've got answers. Explore our FAQs to
     learn more about our services, pricing, and approach to
     local JavaScript database solutions.`;
 
     const items = [
         {
-            label: "Which frameworks can you support ?",
-            text: `Everything from react to Vue to Angular to Svelte. We know all frameworks and how to use them efficiently with RxDB.`,
+            label: 'Which frameworks can you support ?',
+            text: 'Everything from react to Vue to Angular to Svelte. We know all frameworks and how to use them efficiently with RxDB.',
         },
         {
-            label: "Which platforms are supported?",
+            label: 'Which platforms are supported?',
             text: `We can build web-apps for browsers, hybrid apps and
             progressive web apps. Even server-side RxDB projects can
             be realized.`,
         },
         {
-            label: "How much does it cost?",
+            label: 'How much does it cost?',
             text: `This depends on:
             - How much of the work is provided by us
             - Which type of development support do you need
@@ -831,8 +668,8 @@ function FaqBlock({ SlDetails }) {
             We can offer in-house developers, near-shore and off-shore developers.`,
         },
         {
-            label: "Do you provide 24/7 emergency support?",
-            text: `No, sorry. This is not provided by default but we can figure out a way with you that fits your problems.`,
+            label: 'Do you provide 24/7 emergency support?',
+            text: 'No, sorry. This is not provided by default but we can figure out a way with you that fits your problems.',
         },
     ];
 
@@ -867,7 +704,7 @@ function FaqBlock({ SlDetails }) {
                             <span
                                 slot="collapse-icon"
                                 style={{
-                                    transform: "rotate(-90deg)",
+                                    transform: 'rotate(-90deg)',
                                 }}
                             >
                                 <svg
@@ -894,7 +731,7 @@ function FaqBlock({ SlDetails }) {
 }
 
 function NextBlock({ onOpenDialog, SlButton }) {
-    const title = "Ready to take the next step?";
+    const title = 'Ready to take the next step?';
     const description = `Transform your project with RxDB. Schedule your
     consultancy session today and discover the power of
     local JavaScript database solutions.`;
@@ -920,7 +757,7 @@ function NextBlock({ onOpenDialog, SlButton }) {
 }
 
 function ContactBlock() {
-    const title = "Still have questions?";
+    const title = 'Still have questions?';
     const description = `Get in touch with us today to schedule your
     consultancy session or discuss your project
     requirements. Fill out the form below, and a
@@ -937,14 +774,14 @@ function ContactBlock() {
                     </div>
                     <iframe
                         style={{
-                            width: "100%",
-                            margin: "0 auto",
-                            maxWidth: "708px",
-                            borderRadius: "32px",
+                            width: '100%',
+                            margin: '0 auto',
+                            maxWidth: '708px',
+                            borderRadius: '32px',
                         }}
                         src="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
                     >
-                        Your browser doesn't support iframes,{" "}
+                        Your browser doesn't support iframes,{' '}
                         <a
                             href="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
                             target="_blank"
@@ -962,76 +799,76 @@ function ContactBlock() {
 function FooterBlock({ SlButton }) {
     const navLinks = [
         {
-            label: "Packages",
-            href: "/consulting#packages",
+            label: 'Packages',
+            href: '/consulting#packages',
         },
         {
-            label: "Benefits",
-            href: "/consulting#benefits",
+            label: 'Benefits',
+            href: '/consulting#benefits',
         },
         {
-            label: "How it works",
-            href: "/consulting#steps",
+            label: 'How it works',
+            href: '/consulting#steps',
         },
         {
-            label: "FAQs",
-            href: "/consulting#faq",
+            label: 'FAQs',
+            href: '/consulting#faq',
         },
         {
-            label: "Contact us",
-            href: "/consulting#contact",
+            label: 'Contact us',
+            href: '/consulting#contact',
         },
     ];
 
     const communityLinks = [
         {
-            label: "Discord",
-            target: "_blank",
-            href: "/chat",
-            logo: "./img/community-links/discord-logo.svg",
+            label: 'Discord',
+            target: '_blank',
+            href: '/chat',
+            logo: './img/community-links/discord-logo.svg',
         },
         {
-            label: "Github",
-            target: "_blank",
-            href: "/code",
-            logo: "./img/community-links/github-logo.svg",
+            label: 'Github',
+            target: '_blank',
+            href: '/code',
+            logo: './img/community-links/github-logo.svg',
         },
         {
-            label: "Twitter",
-            href: "https://twitter.com/intent/user?screen_name=rxdbjs",
-            logo: "./img/community-links/x-logo.svg",
+            label: 'Twitter',
+            href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+            logo: './img/community-links/x-logo.svg',
         },
         {
-            label: "LinkedIn",
-            href: "https://www.linkedin.com/company/rxdb",
-            logo: "./img/community-links/linkedin-logo.svg",
+            label: 'LinkedIn',
+            href: 'https://www.linkedin.com/company/rxdb',
+            logo: './img/community-links/linkedin-logo.svg',
         },
         {
-            label: "Stack Overflow",
-            href: "https://stackoverflow.com/questions/tagged/rxdb",
-            logo: "./img/community-links/stack-overflow-logo.svg",
+            label: 'Stack Overflow',
+            href: 'https://stackoverflow.com/questions/tagged/rxdb',
+            logo: './img/community-links/stack-overflow-logo.svg',
         },
     ];
 
     const policyLinks = [
+        // {
+        //     label: 'Privacy Policy',
+        //     target: '_blank',
+        //     href: '/',
+        // },
+        // {
+        //     label: 'Terms of Service',
+        //     target: '_blank',
+        //     href: '/',
+        // },
         {
-            label: "Privacy Policy",
-            target: "_blank",
-            href: "/",
-        },
-        {
-            label: "Terms of Service",
-            target: "_blank",
-            href: "/",
-        },
-        {
-            label: "Cookies Settings",
-            target: "_blank",
-            href: "/",
+            label: 'Legal Notice',
+            target: '_blank',
+            href: '/legal-notice',
         },
     ];
 
-    const rightsText = `© ${new Date().getFullYear()} RXDB. All rights reserved.`;
+    const rightsText = `© ${new Date().getFullYear()} RxDB. All rights reserved.`;
 
     return (
         <>
@@ -1052,7 +889,7 @@ function FooterBlock({ SlButton }) {
                                     key={link.href + index}
                                     variant="text"
                                     href={link.href}
-                                    target={link.target ? "_blank" : "_self"}
+                                    target={link.target ? '_blank' : '_self'}
                                 >
                                     <img src={link.logo} alt="logo" />
                                 </SlButton>
@@ -1079,7 +916,7 @@ function FooterBlock({ SlButton }) {
                                 variant="text"
                                 href={link.href}
                                 key={link.href + index}
-                                target={link.target ? "_blank" : "_self"}
+                                target={link.target ? '_blank' : '_self'}
                             >
                                 {link.label}
                             </SlButton>
