@@ -72,7 +72,7 @@ export function ReviewsBlock() {
     const reviewItems = [
         {
             label: 'myAgro, Africa',
-            description: 'Transitioning to RxDB was a breath of fresh air due to its comprehensive features, including schema migration, real-time replication, conflict resolution, and reactive programming."',
+            description: 'Transitioning to RxDB was a breath of fresh air due to its comprehensive features, including schema migration, real-time replication, conflict resolution, and reactive programming.',
             href: 'https://www.myagro.org/',
             target: '_blank',
             logo: './files/companies/myagro.svg',
@@ -82,7 +82,7 @@ export function ReviewsBlock() {
             label: 'MoreApp, Germany',
             description: `We provide a mobile app that is used by people in the
             field to fill in valuable information like inspections,
-            surveys and audits."`,
+            surveys and audits.`,
             href: 'https://moreapp.com/',
             target: '_blank',
             logo: './files/companies/moreapp.png',
@@ -92,7 +92,7 @@ export function ReviewsBlock() {
             label: 'ALTGRAS, Africa',
             description: `We use RxDB to create applications capable of being
             used in the most remote areas where Internet access is
-            really a challenge."`,
+            really a challenge.`,
             href: 'https://altgras.com/',
             target: '_blank',
             logo: './files/companies/altgras.png',
@@ -101,7 +101,7 @@ export function ReviewsBlock() {
         {
             label: 'WooCommerce POS, Australia',
             description: `We use RxDB to provide an offline first, cross platform
-            point of sale system. With RxDB we could create a web-, desktop- and mobile app using the same code base"`,
+            point of sale system. With RxDB we could create a web-, desktop- and mobile app using the same code base.`,
             href: 'https://wcpos.com/',
             target: '_blank',
             logo: './files/companies/woopos.png',
@@ -111,7 +111,7 @@ export function ReviewsBlock() {
             label: 'atroo GmbH, Germany',
             description: `RxDB is a main component in building offline-ready
             multichannel apps. It has become our default stack for
-            this kind of apps."`,
+            this kind of apps.`,
             href: 'https://atroo.de/',
             target: '_blank',
             logo: './files/companies/atroo.png',
@@ -119,7 +119,7 @@ export function ReviewsBlock() {
         },
         {
             label: 'Nutrien, Canada',
-            description: 'With RxDB we have built an offline capable Progressive Web Application that is used by our borer operators to report on conditions at the mineface."',
+            description: 'With RxDB we have built an offline capable Progressive Web Application that is used by our borer operators to report on conditions at the mineface.',
             href: 'https://www.nutrien.com/',
             target: '_blank',
             logo: './files/companies/nutrien.svg',

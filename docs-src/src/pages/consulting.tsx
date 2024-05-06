@@ -362,7 +362,7 @@ function PackagesBlock({ onOpenDialog, SlButton }) {
         },
         {
             index: '2',
-            label: 'We build it with you',
+            label: 'We build it for you',
             price: '',
             description: `Let our expert team handle the heavy lifting.
             With Package 2, we take full responsibility for
