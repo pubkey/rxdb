@@ -1,8 +1,6 @@
 import React from 'react';
-import Footer from '@theme-original/Footer';
-import SlButton from '@shoelace-style/shoelace/dist/react/button';
 
-export default function FooterWrapper(props) {
+export default function FooterWrapper() {
 
   const footerConfig = {
     navLinks: [
@@ -90,24 +88,26 @@ export default function FooterWrapper(props) {
           <div className="footer-block">
             <div className="footer-links">
               <span>
-                <SlButton
+                <a
                   variant="text"
                   href="/"
                   className="footer-logo-button"
                 >
                   <img src="/files/logo/logo.svg" alt="RxDB" />
-                  RxDB
-                </SlButton>
+                  <div>
+                    RxDB
+                  </div>
+                </a>
                 <div className="footer-community-links">
                   {footerConfig.communityLinks.map((link, index) => (
-                    <SlButton
+                    <a
                       key={link.href + index}
                       variant="text"
                       href={link.href}
-                      target={link.target ? '_blank' : '_self'}
+                      target={link.target ? '_blank' : ''}
                     >
                       <img src={link.logo} alt="logo" />
-                    </SlButton>
+                    </a>
                   ))}
                 </div>
               </span>
@@ -116,7 +116,7 @@ export default function FooterWrapper(props) {
                   <a
                     variant="text"
                     href={link.href}
-                    target={link.target ? '_blank' : '_self'}
+                    target={link.target ? '_blank' : ''}
                     key={link.href + index}
                   >
                     {link.label}
@@ -128,14 +128,14 @@ export default function FooterWrapper(props) {
             <div className="footer-policy">
               <div>
                 {footerConfig.policyLinks.map((link, index) => (
-                  <SlButton
+                  <a
                     variant="text"
                     href={link.href}
                     key={link.href + index}
-                    target={link.target ? '_blank' : '_self'}
+                    target={link.target ? '_blank' : ''}
                   >
                     {link.label}
-                  </SlButton>
+                  </a>
                 ))}
               </div>
               <span className="footer-rights">{rightsText}</span>

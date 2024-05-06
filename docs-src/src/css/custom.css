@@ -59,15 +59,15 @@ html[data-theme="dark"] {
 /**
  * Default font size was to big, decrease it here
  */
-.markdown > h1 {
+.markdown>h1 {
     font-size: 2.1rem;
 }
 
-.markdown > h2 {
+.markdown>h2 {
     font-size: 1.75rem;
 }
 
-.markdown > p {
+.markdown>p {
     font-size: 1rem;
 }
 
@@ -214,6 +214,7 @@ a:visited {
 }
 
 @media (max-width: 500px) {
+
     /**
      * Underline gets broken on mobile,
      * so better disable it.
@@ -1199,48 +1200,38 @@ body {
 }
 
 .bg-gradient-right-bottom {
-    background: linear-gradient(
-        to right bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-bottom {
-    background: linear-gradient(
-        to left bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-right-top {
-    background: linear-gradient(
-        to right top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-top {
-    background: linear-gradient(
-        to left top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-top {
-    background: linear-gradient(
-        to top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .star-at-github {
@@ -1968,8 +1959,7 @@ footer a:visited {
     color: white;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 .redirectBox .ul-container {
     text-align: center;
@@ -1984,8 +1974,7 @@ footer a:visited {
     margin: 10px 0;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 /*
  * Call to action button
@@ -2110,6 +2099,7 @@ footer a:visited {
     padding-left: 0px;
     padding-right: 0px;
 }
+
 .consulting-page .button,
 .consulting-page .button-empty {
     cursor: pointer;
@@ -2137,13 +2127,16 @@ footer a:visited {
     will-change: box-shadow text-decoration transform;
     transition: all 0.15s ease-in-out;
 }
+
 .consulting-page .button-empty {
     background-color: transparent;
     border-color: white;
 }
+
 .consulting-page .button:hover {
     color: black;
 }
+
 .consulting-page .button-empty:hover {
     color: var(--color-top);
 }
@@ -2153,6 +2146,7 @@ footer a:visited {
     font-size: 1.35rem;
     font-weight: 500;
 }
+
 .sl-button::part(base) {
     margin-right: 0px;
     padding: 0px;
@@ -2161,46 +2155,56 @@ footer a:visited {
     border-radius: 18px;
     box-sizing: border-box;
 }
+
 .sl-button::part(label) {
     display: flex;
     align-items: center;
 }
+
 .consulting-page .button-empty {
     background-color: transparent;
     border-color: white;
 }
+
 .sl-button-empty::part(base) {
     background-color: transparent;
     border-color: white;
     box-shadow: unset !important;
 }
+
 .sl-button-empty::part(label):hover {
     color: var(--color-top);
 }
+
 .consulting-page .content {
     width: 100%;
     padding: 0 64px;
     max-width: 1440px;
 }
+
 .flex-row {
     display: flex;
     flex-direction: row;
     width: 100%;
     align-items: center;
 }
+
 .flex-column {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
+
 sl-dialog::part(panel) {
     padding: 0;
     border-radius: 32px;
     background: rgb(31, 31, 31);
 }
+
 sl-dialog::part(body) {
     padding: 6px;
 }
+
 @media (max-width: 800px) {
     .consulting-page .content {
         width: 100%;
@@ -2208,20 +2212,24 @@ sl-dialog::part(body) {
         padding-right: 3%;
     }
 }
+
 @media (max-width: 560px) {
     .consulting-page .content {
         width: 100%;
         padding-left: 4%;
         padding-right: 4%;
     }
+
     .consulting-page .block {
         padding-top: 48px;
     }
 }
+
 /** navbar **/
 .navbar-home .sl-button::part(base) {
     border-radius: 14px;
 }
+
 .navbar-home {
     z-index: 10;
     background-color: var(--bg-color);
@@ -2229,6 +2237,7 @@ sl-dialog::part(body) {
     height: auto;
     box-shadow: none;
 }
+
 .navbar-home .logo {
     color: white;
     font-weight: bold;
@@ -2236,6 +2245,7 @@ sl-dialog::part(body) {
     will-change: transform;
     transition: 150ms ease-in-out;
 }
+
 .nav-logo-consulting {
     display: flex;
     gap: 9px;
@@ -2249,10 +2259,12 @@ sl-dialog::part(body) {
     margin-right: 48px !important;
     transition: all 0.15s ease-in-out;
 }
+
 .nav-logo-consulting:hover,
 .consulting-nav-links:hover {
     color: var(--color-top);
 }
+
 .consulting-nav-links {
     padding: 0 !important;
     margin-right: 0 !important;
@@ -2270,16 +2282,20 @@ sl-dialog::part(body) {
     align-items: center;
     justify-content: flex-start;
 }
+
 .consulting-page .navbar-home-links img {
     max-height: 36px;
 }
+
 .consulting-page .navbar-home a {
     margin: 0;
     padding: 8px 20px;
 }
+
 .consulting-page .navbar-home .sl-button::part(label) {
     padding: 8px 20px;
 }
+
 .consulting-page .navbar-home-links sl-button::part(base) {
     font-size: 1em;
     font-weight: 400;
@@ -2289,12 +2305,15 @@ sl-dialog::part(body) {
     align-items: center;
     transition: all 0.15s ease-in-out;
 }
+
 .consulting-page .nav-button::part(base) {
     height: 40px;
 }
+
 .consulting-page .navbar-home-links sl-button::part(base):hover {
     color: var(--color-top);
 }
+
 .consulting-page .nav-logo-button::part(label) {
     display: flex;
     gap: 9px;
@@ -2303,9 +2322,11 @@ sl-dialog::part(body) {
     line-height: 120%;
     margin-right: 48px;
 }
+
 .consulting-page .navbar-home-links sl-button::part(label) {
     padding: 0;
 }
+
 /** hero = first **/
 .consulting-page .block.first {
     position: relative;
@@ -2313,6 +2334,7 @@ sl-dialog::part(body) {
     padding-top: 48px;
     background: var(--bg-color-darkest);
 }
+
 .consulting-page .block.first .button {
     /* width: 100px; */
     float: left;
@@ -2322,12 +2344,14 @@ sl-dialog::part(body) {
     flex-grow: 0;
     margin-bottom: 10px;
 }
+
 .consulting-page .block.first .inner {
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
 }
+
 .consulting-page .block.first h1 {
     color: white;
     font-size: 4.5em;
@@ -2337,6 +2361,7 @@ sl-dialog::part(body) {
     letter-spacing: -1px;
     margin-right: 60px;
 }
+
 .consulting-page .block.first h3 {
     color: #8e8e8e;
     font-size: 1.25em;
@@ -2346,12 +2371,15 @@ sl-dialog::part(body) {
     white-space: pre-line;
     margin-bottom: 0;
 }
+
 .consulting-page .block.first .half:first-child {
     margin-right: 80px;
 }
+
 .consulting-page .block.first .half.left {
     flex: 1.6;
 }
+
 .consulting-page .block.first .button,
 .consulting-page .button-empty {
     padding: 12px 24px;
@@ -2369,12 +2397,15 @@ sl-dialog::part(body) {
     display: flex;
     justify-content: space-between;
 }
+
 .consulting-page .hero-bottom-group img:last-child {
     transform: scale(-1, 1);
 }
+
 .consulting-page .hero-img {
     max-width: fit-content;
 }
+
 .consulting-page .hero-bottom-group-mobile {
     display: none;
     position: absolute;
@@ -2382,12 +2413,15 @@ sl-dialog::part(body) {
     width: 101%;
     left: -1%;
 }
+
 .consulting-page .hero-bottom-group-mobile img {
     width: 101%;
 }
+
 .consulting-page .hero-bottom-group img {
     display: block;
 }
+
 /** packages **/
 .consulting-page .block.packages .content,
 .consulting-page .block.benefits .content,
@@ -2400,6 +2434,7 @@ sl-dialog::part(body) {
     flex-direction: column;
     gap: 80px;
 }
+
 .consulting-page .block.packages .inner,
 .consulting-page .block.benefits .inner,
 .consulting-page .block.steps .inner,
@@ -2412,6 +2447,7 @@ sl-dialog::part(body) {
     gap: 24px;
     max-width: 768px;
 }
+
 .consulting-page .block.packages h2,
 .consulting-page .block.benefits h2,
 .consulting-page .block.steps h2,
@@ -2426,6 +2462,7 @@ sl-dialog::part(body) {
     line-height: 130%;
     margin: 0;
 }
+
 .consulting-page .block.packages h3,
 .consulting-page .block.benefits h3,
 .consulting-page .block.steps h3,
@@ -2440,6 +2477,7 @@ sl-dialog::part(body) {
     line-height: 150%;
     margin: 0;
 }
+
 .consulting-page .block.packages h4 {
     color: white;
     font-size: 2.5em;
@@ -2447,6 +2485,7 @@ sl-dialog::part(body) {
     line-height: 130%;
     margin: 0;
 }
+
 .consulting-page .block.packages h6 {
     color: #e6008d;
     font-size: 1em;
@@ -2454,6 +2493,7 @@ sl-dialog::part(body) {
     line-height: 130%;
     margin: 0 0 8px;
 }
+
 .consulting-page .block.packages p {
     color: white;
     font-size: 1em;
@@ -2463,12 +2503,15 @@ sl-dialog::part(body) {
     letter-spacing: -1%;
     margin-top: 32px;
 }
+
 .consulting-page .block.packages .flex-row {
     gap: 32px;
 }
+
 .consulting-page .flex-row a {
     text-wrap: nowrap;
 }
+
 .consulting-page .block.packages .item-package {
     padding: 32px;
     border-radius: 32px;
@@ -2476,9 +2519,11 @@ sl-dialog::part(body) {
     justify-content: space-between;
     gap: 48px;
 }
+
 .consulting-page .block.packages .item-package.flex-column {
     max-width: 48.7%;
 }
+
 .consulting-page .item-label {
     padding: 0px 8px 0px 8px;
     background: #11151d;
@@ -2489,9 +2534,11 @@ sl-dialog::part(body) {
     line-height: 150%;
     text-wrap: nowrap;
 }
+
 .consulting-page .block.packages .flex-row a:hover {
     color: var(--color-top) !important;
 }
+
 .consulting-page .block.packages sl-button::part(label) {
     color: white;
     text-decoration: underline;
@@ -2499,24 +2546,27 @@ sl-dialog::part(body) {
     gap: 8px;
     align-items: center;
     text-wrap: nowrap;
-    transition: color var(--ifm-transition-fast)
-        var(--ifm-transition-timing-default);
+    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
     display: flex;
     font-size: 1.29em;
     line-height: 150%;
     font-weight: 400;
 }
+
 .consulting-page .block.packages sl-button::part(label):hover {
     color: var(--color-top) !important;
 }
+
 .consulting-page .block.packages sl-button::part(base) {
     min-height: auto;
 }
+
 /** benefits **/
 .consulting-page .block.benefits,
 .consulting-page .block.review {
     background: #131720;
 }
+
 .consulting-page .panel {
     padding: 48px 120px 48px 280px;
     background: #070a10;
@@ -2526,11 +2576,13 @@ sl-dialog::part(body) {
     display: flex;
     overflow-y: hidden;
 }
+
 .consulting-page .panel-content {
     display: flex;
     flex-direction: column;
     gap: 32px;
 }
+
 .consulting-page .panel img {
     position: absolute;
     left: -1px;
@@ -2539,12 +2591,15 @@ sl-dialog::part(body) {
     /* height: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
     /* height: fill-available;  */
 }
+
 .consulting-page .desktop-img {
     display: block;
 }
+
 .consulting-page .mobile-img {
     display: none;
 }
+
 .consulting-page .block.benefits .panel h3 {
     text-align: start;
     color: white;
@@ -2552,6 +2607,7 @@ sl-dialog::part(body) {
     font-weight: 500;
     line-height: 130%;
 }
+
 .consulting-page .block.benefits h6 {
     text-align: start;
     color: white;
@@ -2560,17 +2616,21 @@ sl-dialog::part(body) {
     line-height: 150%;
     margin: 0;
 }
+
 .consulting-page sl-tab-group::part(base) {
     gap: 40px;
 }
+
 .consulting-page sl-tab-group::part(nav) {
     display: flex;
     justify-content: space-between;
 }
+
 .consulting-page sl-tab-group::part(nav)::-webkit-scrollbar {
     display: none;
     width: 0;
-  }
+}
+
 /* .consulting-page sl-tab-group::-webkit-scrollbar {
     display: none;
     width: 0;
@@ -2583,10 +2643,12 @@ sl-dialog::part(body) {
     border-inline-end: unset;
     justify-content: space-between;
 }
+
 .consulting-page sl-tab-group::part(active-tab-indicator) {
     right: auto;
     border-inline-end: unset;
 }
+
 .consulting-page sl-tab::part(base) {
     font-size: 1.5em;
     font-weight: 400;
@@ -2596,24 +2658,30 @@ sl-dialog::part(body) {
     color: #787887;
     cursor: pointer;
 }
+
 .consulting-page sl-tab[aria-selected="false"]::part(base) {
     color: #787887;
 }
+
 .consulting-page sl-tab[aria-selected="true"]::part(base) {
     color: white;
     border-left: solid var(--track-width) var(--indicator-color);
     border-bottom: unset;
     border-radius: 0;
 }
+
 .consulting-page sl-tab-panel::part(base) {
     padding: 0;
 }
+
 .consulting-page sl-tab::part(base):hover {
     color: var(--color-top);
 }
+
 .consulting-page sl-tab {
     min-width: 280px;
 }
+
 /** steps **/
 .consulting-page .block.steps .content,
 .consulting-page .block.faq .content {
@@ -2621,22 +2689,27 @@ sl-dialog::part(body) {
     flex-direction: row;
     gap: 0;
 }
+
 .consulting-page .block.steps .inner,
 .consulting-page .block.faq .inner {
     display: flex;
     align-items: flex-start;
     padding-right: 80px;
 }
+
 .consulting-page .block.steps h3,
 .consulting-page .block.faq h3 {
     text-align: start;
 }
+
 .consulting-page .block.steps a {
     padding: 12px 24px;
 }
+
 .consulting-page .block.steps .sl-button::part(label) {
     padding: 12px 24px;
 }
+
 .consulting-page .steps-container,
 .consulting-page .faq-container {
     width: 50%;
@@ -2645,18 +2718,21 @@ sl-dialog::part(body) {
     flex-direction: column;
     gap: 12px;
 }
+
 .consulting-page .step-item {
     display: flex;
     flex-direction: row;
     gap: 40px;
     min-height: 152px;
 }
+
 .consulting-page .step-line {
     display: flex;
     flex-direction: column;
     gap: 12px;
     align-items: center;
 }
+
 .consulting-page .step-number {
     background-color: var(--ifm-color-primary-dark);
     border: 5px solid rgb(57, 26, 59);
@@ -2673,29 +2749,34 @@ sl-dialog::part(body) {
     box-sizing: content-box;
     flex-shrink: 0;
 }
+
 .consulting-page .step-number-line {
     width: 2px;
     background-color: #222939;
     height: 100%;
 }
+
 .consulting-page .step-content {
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding-top: 0px;
 }
+
 .consulting-page .step-content h5 {
     font-size: 2em;
     font-weight: 500;
     line-height: 140%;
     margin: 0;
 }
+
 .consulting-page .step-content p {
     font-size: 1em;
     font-weight: 400;
     line-height: 150%;
     margin: 0;
 }
+
 .consulting-page .mobile-button {
     display: none;
 }
@@ -2704,11 +2785,13 @@ sl-dialog::part(body) {
 .consulting-page .block.review {
     padding-bottom: 112px;
 }
+
 .consulting-page .block.review .content {
     align-items: center;
     padding-bottom: 80px;
     max-width: unset;
 }
+
 .consulting-page .slider-content {
     padding: 40px 32px;
     display: flex !important;
@@ -2737,18 +2820,22 @@ sl-dialog::part(body) {
     gap: 16px;
     align-items: center;
 }
+
 .slick-slide {
     padding: 0;
 }
+
 .slick-track {
     display: flex !important;
     gap: 32px;
 }
+
 .slick-initialized .slick-slide {
     display: flex !important;
     flex-grow: 1;
     height: auto;
 }
+
 .slider-content .slider-profile img {
     width: 70px;
     height: 70px;
@@ -2760,6 +2847,7 @@ sl-dialog::part(body) {
 .slider-content .slider-profile img.slider-logo-black {
     background: var(--bg-color-dark);
 }
+
 .review-img {
     max-height: 24px;
 }
@@ -2802,6 +2890,7 @@ sl-dialog::part(body) {
     height: auto !important;
     max-height: 500px;
 }
+
 .slick-dots {
     border: 1px solid #2c3039;
     padding: 8px !important;
@@ -2813,6 +2902,7 @@ sl-dialog::part(body) {
     position: static !important;
     margin: 80px auto 0 !important;
 }
+
 .slick-dots li button {
     width: max-content !important;
     width: 7px !important;
@@ -2826,9 +2916,11 @@ sl-dialog::part(body) {
     width: 7px !important;
     height: 7px !important;
 }
+
 .slick-dots li.slick-active {
     padding-right: 15px !important;
 }
+
 .slick-dots li button:before {
     color: #c3c3d0 !important;
     font-size: 10px !important;
@@ -2837,6 +2929,7 @@ sl-dialog::part(body) {
     height: 7px !important;
     line-height: 7px !important;
 }
+
 .slick-dots li.slick-active button:before {
     background-color: var(--color-top) !important;
     width: 24px !important;
@@ -2846,15 +2939,19 @@ sl-dialog::part(body) {
     /* top: 5px; */
     margin: 0 7px 0px 0 !important;
 }
+
 .slick-dots li.slick-active:first-child button:before {
     margin: 0 50px 0px 0 !important;
 }
+
 .slick-dots li {
     top: 1px;
 }
+
 .slick-dots li.slick-active {
     top: 0px;
 }
+
 /* faq */
 .consulting-page .block.faq {
     padding-top: 112px;
@@ -2865,6 +2962,7 @@ sl-dialog::part(body) {
     border: none;
     border-radius: 24px;
 }
+
 .consulting-page sl-details::part(header) {
     border: none;
     border-radius: 24px;
@@ -2875,6 +2973,7 @@ sl-dialog::part(body) {
     display: flex;
     gap: 16px;
 }
+
 .consulting-page sl-details::part(content) {
     padding: 0 26.5px 24px;
     font-size: 1em;
@@ -2886,37 +2985,45 @@ sl-dialog::part(body) {
 .consulting-page .block.next {
     padding-bottom: 152px;
 }
+
 .consulting-page .block.next .inner {
     background-color: #131720;
     padding: 64px;
     border-radius: 32px;
     max-width: none;
 }
+
 .consulting-page .block.next .inner h3,
 .consulting-page .block.next .inner h2 {
     max-width: 768px;
     margin: 0;
 }
+
 .consulting-page .block.next a.button {
     padding: 12px 48px;
     margin-top: 16px;
     margin-right: 0;
 }
+
 .consulting-page .block.next img {
     position: absolute;
     bottom: -1%;
     left: 0;
 }
+
 .consulting-page .block.next .sl-button::part(label) {
     padding: 12px 48px;
 }
+
 .consulting-page .block.next .sl-button {
     margin-top: 16px;
 }
+
 /* contact */
 .consulting-page .block.contact {
     background-color: var(--bg-color-darkest);
 }
+
 .consulting-page .block.contact form {
     background-color: #131720;
     padding: 64px 48px;
@@ -2924,6 +3031,7 @@ sl-dialog::part(body) {
     max-width: 708px;
     margin: 0 auto;
 }
+
 .consulting-page .iframe-form {
     background-color: #131720;
     border-radius: 32px;
@@ -2932,23 +3040,28 @@ sl-dialog::part(body) {
     align-items: center;
     flex-direction: column;
 }
+
 .consulting-page .iframe-form .inner {
     padding: 64px 48px 0;
     max-height: 1100px;
 }
+
 .consulting-page .content iframe {
     height: 840px;
     max-height: 1000px;
 }
+
 .consulting-page .contact-form {
     display: flex;
     flex-direction: column;
     gap: 24px;
     margin-top: 56px;
 }
+
 .sl-button::part(base) {
     transition: all 0.15s ease-in-out;
 }
+
 .block.contact sl-button[disabled]::part(base):hover {
     box-shadow: unset;
     color: white;
@@ -2962,78 +3075,94 @@ sl-dialog::part(body) {
 .consulting-page .block.contact .sl-button::part(label) {
     padding: 12px 62.5px;
 }
+
 .consulting-page .block.contact .sl-button,
 .consulting-page .block.contact sl-checkbox {
     align-self: center;
 }
+
 .consulting-page .block.contact sl-checkbox {
     margin-bottom: 17.5px;
     color: #9494a7;
     font-size: 0.9em;
 }
+
 .consulting-page sl-checkbox::part(control--checked) {
     background-color: var(--color-top);
 }
+
 .consulting-page .block.contact sl-checkbox a {
     color: #9494a7;
     text-decoration: underline;
 }
+
 .consulting-page .block.contact sl-input::part(base) {
     min-height: 60px;
     background-color: #dbdbe6;
     display: flex;
     align-items: center;
 }
+
 .consulting-page sl-input::part(base),
 .consulting-page sl-textarea::part(base) {
     border-radius: 16px;
 }
+
 .consulting-page sl-input::part(input),
 .consulting-page sl-textarea::part(textarea) {
     padding: 18px 20px;
     border-radius: 16px;
     background-color: #dbdbe6;
 }
+
 /* footer */
 sl-button::part(label) {
     padding: 0;
     display: flex;
     align-items: center;
 }
+
 sl-button::part(base) {
     display: flex;
     align-items: center;
 }
+
 .block.footer {
     background-color: var(--bg-color-dark);
     padding: 80px 64px 144px;
     position: relative;
 }
+
 .block.footer .footer-block {
     display: flex;
     flex-direction: column;
     gap: 64px;
 }
+
 .block.footer .footer-links {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
+
 .block.footer .footer-links span {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 18.42px 0;
 }
+
 .block.footer .footer-links .footer-community-links {
     display: flex;
     gap: 24px;
 }
+
 .block.footer .footer-links .footer-policy {
     display: flex;
     gap: 32px;
 }
-.footer-logo-button::part(base) {
+
+.footer-logo-button {
     font-size: 2em;
     font-weight: 500;
     line-height: 120%;
@@ -3041,28 +3170,35 @@ sl-button::part(base) {
     display: flex;
     align-items: center;
 }
+
 .footer-logo-button img {
     max-height: 54px;
 }
-.footer-logo-button::part(label) {
+
+.footer-logo-button div {
     display: flex;
     gap: 13px;
     align-items: center;
     cursor: pointer;
     padding: 0;
+    padding-left: 3px;
 }
+
 .footer-community-links sl-button::part(base) {
     transition: all 0.15s ease-in-out;
 }
+
 .footer-community-links sl-button::part(base):hover {
     opacity: 0.6;
 }
+
 .footer-nav-links {
     display: flex;
     flex-wrap: wrap;
     gap: 22px;
     align-items: center;
 }
+
 .footer-nav-links a {
     font-size: 1em;
     font-weight: 400;
@@ -3072,9 +3208,11 @@ sl-button::part(base) {
     align-items: center;
     transition: all 0.15s ease-in-out;
 }
+
 .footer-nav-links a:hover {
     color: var(--color-top);
 }
+
 .footer-nav-links a::part(label) {
     padding: 0;
 }
@@ -3091,6 +3229,7 @@ sl-button::part(base) {
     display: flex;
     gap: 24px;
 }
+
 .footer-policy div sl-button::part(base) {
     font-size: 0.85em;
     font-weight: 400;
@@ -3100,59 +3239,76 @@ sl-button::part(base) {
     align-items: center;
     transition: all 0.15s ease-in-out;
 }
+
 .footer-policy div sl-button::part(base):hover {
     color: white;
 }
+
 .footer-policy div sl-button::part(label) {
     padding: 0;
 }
+
 .footer-rights {
     font-size: 0.85em;
     font-weight: 400;
     line-height: 150%;
     color: #5c5c75;
 }
+
 .footer-img {
     position: absolute;
     bottom: 0;
     right: 0;
 }
+
 @media (max-width: 1360px) {
+
     /** packages **/
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 48.5%;
     }
 }
+
 @media (max-width: 1280px) {
+
     /** hero **/
     .consulting-page .block.first .inner {
         margin-top: 38px;
     }
+
     .consulting-page .hero-img {
         max-width: 100%;
     }
+
     .consulting-page .block.first .inner {
         flex-direction: column-reverse;
     }
+
     .consulting-page .block.first {
         padding-bottom: 120px;
     }
+
     .consulting-page .block.first h1 {
         font-size: 3.5em;
     }
+
     .consulting-page .consulting-page .block.first h3 {
         font-size: 1em;
     }
+
     .consulting-page .item-package .flex-row:last-child {
         justify-content: unset !important;
     }
+
     /** reviews **/
     .consulting-page .slick-dots li {
         top: 1px;
     }
+
     .consulting-page .slick-dots li.slick-active {
         top: 0px;
     }
+
     /** contacts **/
     /* .content iframe {
         height: 100vh;
@@ -3164,68 +3320,87 @@ sl-button::part(base) {
 }
 
 @media (max-width: 1200px) {
+
     /** packages **/
     .consulting-page .block.packages .flex-row {
         gap: 20px;
         justify-content: space-between;
     }
+
     /** benefits **/
     .consulting-page sl-tab-group::part(tabs) {
         min-width: unset;
     }
+
     .consulting-page .block.benefits .panel h3 {
         font-size: 2.2em;
     }
+
     .consulting-page .block.benefits h6 {
         font-size: 1.2em;
     }
+
     .consulting-page .panel {
         padding: 40px 50px 40px 200px;
     }
+
     .consulting-page sl-tab::part(base) {
         font-size: 1.2em;
     }
+
     /** steps **/
     .consulting-page .block.steps .inner {
         padding-right: 55px;
     }
+
     .consulting-page .iframe-form .inner {
         max-height: 1100px;
     }
 }
+
 @media (max-width: 920px) {
     .consulting-page .block.first {
         padding-bottom: 180px;
     }
+
     .consulting-page .navbar-home-links-mobile {
         display: none;
     }
+
     .consulting-page .nav-logo-button::part(label) {
         margin-right: 20px;
     }
+
     .nav-logo-consulting {
         margin-right: 20px;
     }
+
     /** hero **/
     .consulting-page .block.first .half:first-child {
         margin-right: 0px;
     }
+
     .consulting-page .block.first .content.flex-row {
         flex-direction: column;
     }
+
     .consulting-page .block.first .half:last-child {
         display: flex;
         justify-content: center;
     }
+
     .consulting-page .hero-bottom-group-mobile {
         display: flex;
     }
+
     .consulting-page .hero-bottom-group {
         display: none;
     }
+
     .consulting-page .block.first .sl-button {
         max-width: unset;
     }
+
     .consulting-page .block.first .button {
         /* width: 100px; */
         float: left;
@@ -3235,89 +3410,114 @@ sl-button::part(base) {
         flex-grow: 0;
         /* margin-bottom: 10px; */
     }
+
     .consulting-page .block.first h1 {
         margin-right: 80px;
     }
+
     /* .consulting-page .block.first .half:last-child { */
-        /* padding-top: 80px !important; */
+    /* padding-top: 80px !important; */
     /* } */
     .consulting-page .half {
         width: 100%;
     }
+
     /** packages **/
     .consulting-page .block.packages h4 {
         margin: 0;
     }
+
     .consulting-page .block.packages .flex-row {
         gap: 24px;
     }
+
     .consulting-page .block.packages .flex-column .flex-row {
         gap: 8px !important;
     }
+
     .consulting-page .block.packages p {
         margin-top: 32px;
     }
+
     .consulting-page .item-package {
         max-width: 100% !important;
     }
+
     .consulting-page .item-package.flex-column {
         max-width: 100% !important;
     }
+
     .consulting-page .block.packages .flex-row:first-child {
         flex-direction: column;
         align-items: flex-start;
         width: 100%;
     }
+
     .consulting-page .block.packages .flex-row {
         gap: 20px;
         justify-content: unset;
         flex-wrap: wrap;
     }
+
     .consulting-page .block.packages .flex-column:first-child {
         max-width: 100% !important;
     }
+
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 100%;
     }
+
     /** benefits **/
     .consulting-page sl-tab-group {
         width: 100%;
-        width: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
+        width: -webkit-fill-available;
+        /* Mozilla-based browsers will ignore this. */
         /* width: fill-available; */
         width: stretch;
     }
+
     .consulting-page sl-tab-group::part(nav) {
         overflow: scroll;
     }
+
     .consulting-page sl-tab-group::part(nav)::-webkit-scrollbar {
         width: 0;
     }
+
     .consulting-page sl-tab-group::part(tabs) {
         flex-direction: row;
     }
+
     .consulting-page sl-tab-group::part(base) {
         flex-direction: column;
     }
+
     .consulting-page .block.benefits .panel h3 {
         font-size: 2.2em;
     }
+
     .consulting-page .block.benefits h6 {
         font-size: 1.2em;
     }
+
     .consulting-page .panel {
         padding: 40px 50px 40px 200px;
     }
+
     .consulting-page sl-tab::part(base) {
         font-size: 1.2em;
         padding: 24px 16px;
     }
+
     .consulting-page sl-tab[aria-selected="true"]::part(base) {
         border-left: unset;
         border-bottom: solid var(--track-width) var(--indicator-color);
     }
+
     .consulting-page sl-tab {
         min-width: unset;
     }
+
     /** steps **/
     .consulting-page .block.steps .content,
     .consulting-page .block.faq .content {
@@ -3325,6 +3525,7 @@ sl-button::part(base) {
         flex-direction: column;
         gap: 60px;
     }
+
     .consulting-page .steps-container,
     .consulting-page .faq-container {
         width: 100%;
@@ -3335,44 +3536,55 @@ sl-button::part(base) {
     .consulting-page a.button.mobile-button {
         margin: 0;
     }
+
     .consulting-page .navbar-home-links-mobile {
         display: none;
     }
+
     /** hero **/
     .consulting-page .block.first {
         padding-top: 32px;
         padding-bottom: 120px;
     }
+
     .consulting-page .block.first .half {
         padding: 0;
     }
+
     .consulting-page .block.first .half:last-child {
         padding-top: 70px !important;
     }
+
     .consulting-page .block.first h1 {
         font-size: 3em;
         margin-right: 50px;
         margin-bottom: 24px;
     }
+
     .consulting-page .block.first h3 {
         font-size: 1.1em;
         white-space: normal;
     }
+
     .consulting-page .block.first .half:first-child {
         margin: 0;
     }
+
     .consulting-page .half {
         width: 100%;
     }
+
     .consulting-page .block.first .flex-row {
         justify-content: space-between;
         flex-grow: 1;
     }
+
     .consulting-page .block.first .button,
     .consulting-page .block.first .button-empty {
         width: 100%;
         /* flex-grow: 1; */
     }
+
     .consulting-page .block.first .sl-button {
         width: 100%;
         width: -webkit-fill-available;
@@ -3383,14 +3595,17 @@ sl-button::part(base) {
         max-width: none;
         width: auto;
     }
+
     /** packages **/
     .consulting-page .block.packages {
         padding-bottom: 80px;
     }
+
     .consulting-page .block.packages .item-package {
         padding: 24px;
         gap: 24px;
     }
+
     .consulting-page .block.packages h2,
     .consulting-page .block.benefits h2,
     .consulting-page .block.steps h2,
@@ -3399,6 +3614,7 @@ sl-button::part(base) {
         font-size: 2.5em;
         margin: 0;
     }
+
     .consulting-page .block.packages h3,
     .consulting-page .block.benefits h3,
     .consulting-page .block.steps h3,
@@ -3406,33 +3622,42 @@ sl-button::part(base) {
     .consulting-page .block.faq h3 {
         font-size: 1em;
     }
+
     .consulting-page .block.packages h4,
     .consulting-page .block.benefits h4 {
         font-size: 1.9em;
         margin: 0;
     }
+
     .consulting-page .block.packages h6,
     .consulting-page p {
         font-size: 1em;
     }
+
     .consulting-page .block.packages p {
         margin-top: 32px;
     }
+
     .consulting-page .item-label {
         font-size: 1.25em;
     }
+
     .consulting-page .block.benefits .content {
         gap: 48px;
     }
+
     .consulting-page .block.packages .content {
         gap: 56px;
     }
+
     .consulting-page .block.packages .flex-row {
         gap: 24px;
     }
+
     .consulting-page .block.packages .flex-column .flex-row {
         gap: 8px !important;
     }
+
     /** benefits **/
     .consulting-page .panel {
         padding: 120px 32px 32px;
@@ -3440,9 +3665,11 @@ sl-button::part(base) {
         display: flex;
         min-height: 400px;
     }
+
     .consulting-page .desktop-img {
         display: none;
     }
+
     .consulting-page .mobile-img {
         display: flex;
         position: absolute;
@@ -3453,6 +3680,7 @@ sl-button::part(base) {
         /* width: fill-available; */
         /* width: stretch; */
     }
+
     .consulting-page .mobile-img img {
         position: static;
         width: 101%;
@@ -3460,147 +3688,187 @@ sl-button::part(base) {
         /* width: fill-available; */
         /* width: stretch; */
     }
+
     .consulting-page .block.benefits .panel h3 {
         font-size: 1.9em;
     }
+
     .consulting-page sl-tab::part(base) {
         font-size: 1.3em;
         padding: 16px 0px;
     }
+
     .consulting-page sl-tab-group::part(tabs) {
         gap: 16px;
     }
+
     .consulting-page sl-tab-group::part(base) {
         gap: 32px;
     }
+
     .consulting-page .block.benefits {
         padding-bottom: 48px;
     }
+
     /** steps **/
     .consulting-page .mobile-button {
         display: block;
         align-self: center;
     }
+
     .consulting-page .block.steps img {
         display: flex;
         position: absolute;
         bottom: 0;
         left: 0;
         width: 100%;
-        width: -webkit-fill-available; /* Mozilla-based browsers will ignore this. */
+        width: -webkit-fill-available;
+        /* Mozilla-based browsers will ignore this. */
         /* width: fill-available; */
         width: stretch;
     }
+
     .consulting-page .block.steps {
         padding-bottom: 80px;
     }
+
     .consulting-page .block.steps .inner {
         padding: 0px;
         align-items: center;
         padding-bottom: 40px;
     }
+
     .consulting-page .block.faq .inner {
         padding: 0px;
         align-items: center;
         padding-bottom: 48px;
     }
+
     .consulting-page .block.steps h2,
     .consulting-page .block.steps h3,
     .consulting-page .block.faq h2,
     .consulting-page .block.faq h3 {
         text-align: center;
     }
+
     .consulting-page .step-content h5 {
         font-size: 1.8em;
     }
+
     .consulting-page .block.steps .content,
     .consulting-page .block.faq .content {
         gap: 0px;
     }
+
     .consulting-page a.button.mobile-button {
         padding: 12px 24px;
     }
+
     /* reviews */
     .consulting-page .block.review .content {
         padding-bottom: 48px;
     }
+
     .consulting-page .slick-track {
         gap: 0;
     }
+
     .consulting-page .slick-slide {
         padding: 0px 16px;
     }
+
     .consulting-page .block.review {
         padding-bottom: 48px;
     }
+
     .consulting-page .slick-list {
         padding: 0 !important;
     }
+
     .consulting-page .slider-content {
         padding: 42px 24px 24px;
     }
+
     .consulting-page .slider-content .slider-profile img {
         width: 45px;
         height: 45px;
     }
+
     .consulting-page .slider-content .slider-profile .slider-info {
         width: 100%;
     }
+
     .consulting-page .slick-slider {
         padding-bottom: 0;
     }
+
     .consulting-page .slick-dots li {
         top: 1px;
     }
+
     .consulting-page .slick-dots li.slick-active {
         top: 0px;
     }
+
     /* faq */
     .consulting-page .block.faq {
         padding-top: 48px;
         padding-bottom: 48px;
     }
+
     .consulting-page .block.faq h2 {
         font-size: 3.5em;
     }
+
     .consulting-page .block.faq h3 {
         font-size: 1.15em;
     }
+
     /* next */
     .consulting-page .block.next {
         padding-top: 72px;
         padding-bottom: 142px;
     }
+
     .consulting-page .block.next img {
         bottom: 0;
     }
+
     .consulting-page .block.next .inner {
         padding: 56px 24px;
     }
+
     .consulting-page .block.next h2 {
         letter-spacing: -3px;
     }
+
     /* contact */
     .consulting-page .block.contact {
         padding-top: 76px;
         padding-bottom: 27px;
     }
+
     .consulting-page .block.contact form {
         padding: 40px 24px;
     }
+
     .consulting-page .contact-form {
         margin-top: 48px;
     }
+
     .consulting-page .block.contact h2 {
         font-size: 2.5em;
     }
+
     .consulting-page .block.contact h3 {
         font-size: 1em;
         margin-bottom: 40px;
     }
+
     .consulting-page .iframe-form .inner {
         padding: 40px 12px 0;
     }
+
     .consulting-page .content iframe {
         max-height: 740px;
     }
@@ -3609,29 +3877,36 @@ sl-button::part(base) {
     .block.footer {
         padding: 80px 16px 40px;
     }
+
     .block.footer .footer-links span {
         flex-direction: column;
         align-items: flex-start;
         gap: 24px;
     }
+
     .block.footer .footer-links .footer-community-links {
         gap: 24px;
     }
+
     .footer-nav-links {
         gap: 0;
         justify-content: space-between;
     }
+
     .footer-nav-links sl-button:last-child {
         display: none;
     }
+
     .block.footer .footer-block {
         gap: 56px;
     }
+
     .footer-policy {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
     }
+
     .footer-policy div {
         gap: 4px;
         width: 100%;
@@ -3643,19 +3918,23 @@ sl-button::part(base) {
     .consulting-page .block.first h1 {
         font-size: 2.7em;
     }
+
     /** steps **/
     .consulting-page .step-item {
         gap: 30px;
     }
+
     .consulting-page .content iframe {
         height: 100vh;
         max-height: 760px;
         height: 770px;
     }
+
     /** reviews **/
     .consulting-page .slick-dots li {
         top: 1px;
     }
+
     .consulting-page .slick-dots li.slick-active {
         top: 0px;
     }
