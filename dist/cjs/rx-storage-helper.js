@@ -17,7 +17,6 @@ exports.hasEncryption = hasEncryption;
 exports.observeSingle = observeSingle;
 exports.randomDelayStorage = randomDelayStorage;
 exports.stackCheckpoints = stackCheckpoints;
-exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
 exports.stripAttachmentsDataFromRow = stripAttachmentsDataFromRow;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
@@ -79,19 +78,6 @@ function observeSingle(storageInstance, documentId) {
  */
 function stackCheckpoints(checkpoints) {
   return Object.assign({}, ...checkpoints);
-}
-function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
-  var documentData = rxStorageChangeEvent.documentData;
-  var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
-  var ret = {
-    documentId: rxStorageChangeEvent.documentId,
-    collectionName: rxCollection ? rxCollection.name : undefined,
-    isLocal,
-    operation: rxStorageChangeEvent.operation,
-    documentData: _overwritable.overwritable.deepFreezeWhenDevMode(documentData),
-    previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(previousDocumentData)
-  };
-  return ret;
 }
 function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
@@ -416,9 +402,9 @@ function stripAttachmentsDataFromDocument(doc) {
  * during replication etc.
  */
 function flatCloneDocWithMeta(doc) {
-  var ret = (0, _index.flatClone)(doc);
-  ret._meta = (0, _index.flatClone)(doc._meta);
-  return ret;
+  return Object.assign({}, doc, {
+    _meta: (0, _index.flatClone)(doc._meta)
+  });
 }
 /**
  * Wraps the normal storageInstance of a RxCollection
@@ -433,22 +419,6 @@ function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(rxJsonSchema);
-  function transformDocumentDataFromRxDBToRxStorage(writeRow) {
-    var data = (0, _index.flatClone)(writeRow.document);
-    data._meta = (0, _index.flatClone)(data._meta);
-    data._meta.lwt = (0, _index.now)();
-
-    /**
-     * Yes we really want to set the revision here.
-     * If you make a plugin that relies on having its own revision
-     * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
-     */
-    data._rev = (0, _index.createRevision)(database.token, writeRow.previous);
-    return {
-      document: data,
-      previous: writeRow.previous
-    };
-  }
   var ret = {
     originalStorageInstance: storageInstance,
     schema: storageInstance.schema,
@@ -457,7 +427,31 @@ rxJsonSchema) {
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
     bulkWrite(rows, context) {
-      var toStorageWriteRows = rows.map(row => transformDocumentDataFromRxDBToRxStorage(row));
+      var databaseToken = database.token;
+      var toStorageWriteRows = new Array(rows.length);
+      /**
+       * Use the same timestamp for all docs of this rows-set.
+       * This improves performance because calling Date.now() inside of the now() function
+       * is too costly.
+       */
+      var time = (0, _index.now)();
+      for (var index = 0; index < rows.length; index++) {
+        var writeRow = rows[index];
+        var document = flatCloneDocWithMeta(writeRow.document);
+        document._meta.lwt = time;
+
+        /**
+         * Yes we really want to set the revision here.
+         * If you make a plugin that relies on having its own revision
+         * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
+         */
+        var previous = writeRow.previous;
+        document._rev = (0, _index.createRevision)(databaseToken, previous);
+        toStorageWriteRows[index] = {
+          document,
+          previous
+        };
+      }
       (0, _hooks.runPluginHooks)('preStorageWrite', {
         storageInstance: this.originalStorageInstance,
         rows: toStorageWriteRows
@@ -475,7 +469,7 @@ rxJsonSchema) {
           error: [],
           success: writeResult.success.slice(0)
         };
-        var reInsertErrors = writeResult.error.filter(error => {
+        var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
           if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _index.ensureNotFalsy)(error.documentInDb)._deleted) {
             return true;
           }

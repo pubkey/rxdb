@@ -35,12 +35,26 @@ function createLocalDocStateByParent(parent) {
      */
     var databaseStorageToken = await database.storageToken;
     var subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+      var events = new Array(eventBulk.events.length);
+      var rawEvents = eventBulk.events;
+      var collectionName = parent.database ? parent.name : undefined;
+      for (var index = 0; index < rawEvents.length; index++) {
+        var event = rawEvents[index];
+        events[index] = {
+          documentId: event.documentId,
+          collectionName,
+          isLocal: true,
+          operation: event.operation,
+          documentData: _overwritable.overwritable.deepFreezeWhenDevMode(event.documentData),
+          previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(event.previousDocumentData)
+        };
+      }
       var changeEventBulk = {
         id: eventBulk.id,
         internal: false,
         collectionName: parent.database ? parent.name : undefined,
         storageToken: databaseStorageToken,
-        events: eventBulk.events.map(ev => (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(true, ev, parent.database ? parent : undefined)),
+        events,
         databaseToken: database.token,
         checkpoint: eventBulk.checkpoint,
         context: eventBulk.context,

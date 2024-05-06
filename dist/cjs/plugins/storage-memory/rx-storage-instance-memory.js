@@ -51,6 +51,16 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, primaryPath, documentsById, documentWrites, context);
     var error = categorized.errors;
     var success = new Array(categorized.bulkInsertDocs.length);
+    /**
+     * @performance
+     * We have to return a Promise but we do not want to wait
+     * one tick, so we directly create the promise
+     * which makes it likely to be already resolved later.
+     */
+    var awaitMe = Promise.resolve({
+      success,
+      error
+    });
     var bulkInsertDocs = categorized.bulkInsertDocs;
     for (var i = 0; i < bulkInsertDocs.length; ++i) {
       var writeRow = bulkInsertDocs[i];
@@ -83,15 +93,9 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
         lwt: lastState._meta.lwt
       };
       categorized.eventBulk.endTime = (0, _index.now)();
-      _index.PROMISE_RESOLVE_TRUE.then(() => {
-        internals.changes$.next(categorized.eventBulk);
-      });
+      internals.changes$.next(categorized.eventBulk);
     }
-    var ret = Promise.resolve({
-      success,
-      error
-    });
-    return ret;
+    return awaitMe;
   }
 
   /**

@@ -3,7 +3,7 @@ import { DocumentCache } from "../../doc-cache.js";
 import { IncrementalWriteQueue } from "../../incremental-write.js";
 import { newRxError } from "../../rx-error.js";
 import { fillWithDefaultSettings } from "../../rx-schema-helper.js";
-import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from "../../rx-storage-helper.js";
+import { getWrappedStorageInstance } from "../../rx-storage-helper.js";
 import { randomCouchString } from "../../plugins/utils/index.js";
 import { createRxLocalDocument } from "./rx-local-document.js";
 import { overwritable } from "../../overwritable.js";
@@ -23,12 +23,26 @@ export function createLocalDocStateByParent(parent) {
      */
     var databaseStorageToken = await database.storageToken;
     var subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+      var events = new Array(eventBulk.events.length);
+      var rawEvents = eventBulk.events;
+      var collectionName = parent.database ? parent.name : undefined;
+      for (var index = 0; index < rawEvents.length; index++) {
+        var event = rawEvents[index];
+        events[index] = {
+          documentId: event.documentId,
+          collectionName,
+          isLocal: true,
+          operation: event.operation,
+          documentData: overwritable.deepFreezeWhenDevMode(event.documentData),
+          previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData)
+        };
+      }
       var changeEventBulk = {
         id: eventBulk.id,
         internal: false,
         collectionName: parent.database ? parent.name : undefined,
         storageToken: databaseStorageToken,
-        events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(true, ev, parent.database ? parent : undefined)),
+        events,
         databaseToken: database.token,
         checkpoint: eventBulk.checkpoint,
         context: eventBulk.context,

@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys, RxStorage, FilledMangoQuery } from './types/index.d.ts';
+import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys, RxStorage, FilledMangoQuery } from './types/index.d.ts';
 import { Observable } from 'rxjs';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
@@ -23,7 +23,6 @@ export declare function observeSingle<RxDocType>(storageInstance: RxStorageInsta
  * the document state from some, but not all shards.
  */
 export declare function stackCheckpoints<CheckpointType>(checkpoints: CheckpointType[]): CheckpointType;
-export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType, any, any>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
 /**
  * Analyzes a list of BulkWriteRows and determines
