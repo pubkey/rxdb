@@ -135,6 +135,11 @@ const config: Config = {
             position: 'right',
           },
           {
+            href: '/consulting',
+            label: 'Consulting',
+            position: 'right',
+          },
+          {
             to: '/chat',
             target: '_blank',
             label: 'Chat',
@@ -196,6 +201,11 @@ const config: Config = {
                 label: 'Pricing',
                 target: '_blank',
                 href: '/premium'
+              },
+              {
+                href: '/consulting',
+                label: 'Consulting',
+                position: 'right',
               },
               {
                 label: 'Legal Notice',
