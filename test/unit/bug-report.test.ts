@@ -9,19 +9,19 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+import { isNode } from '../../plugins/test-utils/index.mjs';
+import { pullQueryBuilderFromRxSchema } from '../../plugins/replication-graphql/index.mjs';
+
+const normalize = (str: string) => str.trim().replace(/[\n\s]+/g, '');
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
-
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
@@ -45,20 +45,37 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+                updatedAt: {
+                    type: 'string',
+                },
+                address: {
+                    type: 'object',
+                    properties: {
+                        street: {
+                            type: 'string',
+                        },
+                        city: {
+                            type: 'string',
+                        },
+                        zip: {
+                            type: 'string',
+                        },
+                    },
+                },
+            },
         };
 
         /**
@@ -76,13 +93,13 @@ describe('bug-report.test.js', () => {
              */
             storage: config.storage.getStorage(),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // insert a document
@@ -90,7 +107,12 @@ describe('bug-report.test.js', () => {
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
-            age: 56
+            age: 56,
+            address: {
+                street: '24 Kelso BLVD',
+                city: 'Sacramento',
+                zip: '12345',
+            },
         });
 
         /**
@@ -101,17 +123,17 @@ describe('bug-report.test.js', () => {
             name,
             storage: config.storage.getStorage(),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collectionInOtherTab = await dbInOtherTab.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
+        await collectionInOtherTab.mycollection
             .findOne()
             .where('firstName')
             .eq('Bob')
@@ -121,20 +143,45 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
 
+        // same issue for pushQueryBuilderFromRxSchema & pullStreamBuilderFromRxSchema
+        const builder = pullQueryBuilderFromRxSchema('human', {
+            schema: mySchema,
+            checkpointFields: ['passportId', 'updatedAt'],
+        });
 
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        const output = await builder(
+            { passportId: 'foo', updatedAt: 12343 },
+            10
+        );
 
-        // clean up afterwards
-        sub.unsubscribe();
+        const got = normalize(output.query);
+        const want =
+            normalize(`query PullHuman($checkpoint: HumanInputCheckpoint, $limit: Int!) {
+                pullHuman(checkpoint: $checkpoint, limit: $limit) {
+                    documents {
+                        passportId
+                        firstName
+                        lastName
+                        age
+                        updatedAt
+                        address {
+                            street
+                            city
+                            zip
+                        }
+                        _deleted
+                    }
+                    checkpoint {
+                        passportId
+                        updatedAt
+                    }
+                }
+            }
+        `);
+
+        assert.equal(got, want);
+
         db.destroy();
         dbInOtherTab.destroy();
     });
