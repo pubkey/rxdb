@@ -46,7 +46,7 @@ html[data-theme="dark"] {
     display: none;
 }
 
-.consulting-page .footer.footer--dark {
+.footer.footer--dark {
     display: none;
 }
 
@@ -333,7 +333,7 @@ body {
 
     /** font **/
     color: white;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .navbar {
@@ -1438,7 +1438,7 @@ body {
 }
 
 .samp-wrapper {
-    background-color: var(--bg-color--dark);
+    background-color: var(--bg-color-dark);
     border-style: solid;
     border-width: 1px;
     border-radius: 15px;
@@ -2104,9 +2104,6 @@ footer a:visited {
 
 /** CONSULTING PAGE **/
 /** common **/
-.consulting-page {
-    font-family: "Inter";
-}
 .consulting-page .half {
     flex: 1;
     width: 50%;
@@ -2156,7 +2153,7 @@ footer a:visited {
     font-size: 1.35rem;
     font-weight: 500;
 }
-.consulting-page .sl-button::part(base) {
+.sl-button::part(base) {
     margin-right: 0px;
     padding: 0px;
     line-height: 150%;
@@ -2164,7 +2161,7 @@ footer a:visited {
     border-radius: 18px;
     box-sizing: border-box;
 }
-.consulting-page .sl-button::part(label) {
+.sl-button::part(label) {
     display: flex;
     align-items: center;
 }
@@ -2172,12 +2169,12 @@ footer a:visited {
     background-color: transparent;
     border-color: white;
 }
-.consulting-page .sl-button-empty::part(base) {
+.sl-button-empty::part(base) {
     background-color: transparent;
     border-color: white;
     box-shadow: unset !important;
 }
-.consulting-page .sl-button-empty::part(label):hover {
+.sl-button-empty::part(label):hover {
     color: var(--color-top);
 }
 .consulting-page .content {
@@ -2185,13 +2182,13 @@ footer a:visited {
     padding: 0 64px;
     max-width: 1440px;
 }
-.consulting-page .flex-row {
+.flex-row {
     display: flex;
     flex-direction: row;
     width: 100%;
     align-items: center;
 }
-.consulting-page .flex-column {
+.flex-column {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -2918,7 +2915,7 @@ sl-dialog::part(body) {
 }
 /* contact */
 .consulting-page .block.contact {
-    background-color: #0d0f18;
+    background-color: var(--bg-color-darkest);
 }
 .consulting-page .block.contact form {
     background-color: #131720;
@@ -2949,15 +2946,15 @@ sl-dialog::part(body) {
     gap: 24px;
     margin-top: 56px;
 }
-.consulting-page .sl-button::part(base) {
+.sl-button::part(base) {
     transition: all 0.15s ease-in-out;
 }
-.consulting-page .block.contact sl-button[disabled]::part(base):hover {
+.block.contact sl-button[disabled]::part(base):hover {
     box-shadow: unset;
     color: white;
 }
 
-.consulting-page .sl-button::part(base):hover {
+.sl-button::part(base):hover {
     box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
     color: #000;
 }
@@ -2998,45 +2995,45 @@ sl-dialog::part(body) {
     background-color: #dbdbe6;
 }
 /* footer */
-.consulting-page sl-button::part(label) {
+sl-button::part(label) {
     padding: 0;
     display: flex;
     align-items: center;
 }
-.consulting-page sl-button::part(base) {
+sl-button::part(base) {
     display: flex;
     align-items: center;
 }
-.consulting-page .block.footer {
-    background-color: #0d0f18;
+.block.footer {
+    background-color: var(--bg-color-dark);
     padding: 80px 64px 144px;
     position: relative;
 }
-.consulting-page .block.footer .footer-block {
+.block.footer .footer-block {
     display: flex;
     flex-direction: column;
     gap: 64px;
 }
-.consulting-page .block.footer .footer-links {
+.block.footer .footer-links {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
-.consulting-page .block.footer .footer-links span {
+.block.footer .footer-links span {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 18.42px 0;
 }
-.consulting-page .block.footer .footer-links .footer-community-links {
+.block.footer .footer-links .footer-community-links {
     display: flex;
     gap: 24px;
 }
-.consulting-page .block.footer .footer-links .footer-policy {
+.block.footer .footer-links .footer-policy {
     display: flex;
     gap: 32px;
 }
-.consulting-page .footer-logo-button::part(base) {
+.footer-logo-button::part(base) {
     font-size: 2em;
     font-weight: 500;
     line-height: 120%;
@@ -3044,28 +3041,29 @@ sl-dialog::part(body) {
     display: flex;
     align-items: center;
 }
-.consulting-page .footer-logo-button img {
+.footer-logo-button img {
     max-height: 54px;
 }
-.consulting-page .footer-logo-button::part(label) {
+.footer-logo-button::part(label) {
     display: flex;
     gap: 13px;
     align-items: center;
     cursor: pointer;
     padding: 0;
 }
-.consulting-page .footer-community-links sl-button::part(base) {
+.footer-community-links sl-button::part(base) {
     transition: all 0.15s ease-in-out;
 }
-.consulting-page .footer-community-links sl-button::part(base):hover {
+.footer-community-links sl-button::part(base):hover {
     opacity: 0.6;
 }
-.consulting-page .footer-nav-links {
+.footer-nav-links {
     display: flex;
-    gap: 32px;
+    flex-wrap: wrap;
+    gap: 22px;
     align-items: center;
 }
-.consulting-page .footer-nav-links sl-button::part(base) {
+.footer-nav-links a {
     font-size: 1em;
     font-weight: 400;
     line-height: 150%;
@@ -3074,14 +3072,14 @@ sl-dialog::part(body) {
     align-items: center;
     transition: all 0.15s ease-in-out;
 }
-.consulting-page .footer-nav-links sl-button::part(base):hover {
+.footer-nav-links a:hover {
     color: var(--color-top);
 }
-.consulting-page .footer-nav-links sl-button::part(label) {
+.footer-nav-links a::part(label) {
     padding: 0;
 }
 
-.consulting-page .footer-policy {
+.footer-policy {
     border-top: 1px solid #5c5c75;
     display: flex;
     justify-content: space-between;
@@ -3089,11 +3087,11 @@ sl-dialog::part(body) {
     padding-top: 32px;
 }
 
-.consulting-page .footer-policy div {
+.footer-policy div {
     display: flex;
     gap: 24px;
 }
-.consulting-page .footer-policy div sl-button::part(base) {
+.footer-policy div sl-button::part(base) {
     font-size: 0.85em;
     font-weight: 400;
     line-height: 150%;
@@ -3102,19 +3100,19 @@ sl-dialog::part(body) {
     align-items: center;
     transition: all 0.15s ease-in-out;
 }
-.consulting-page .footer-policy div sl-button::part(base):hover {
+.footer-policy div sl-button::part(base):hover {
     color: white;
 }
-.consulting-page .footer-policy div sl-button::part(label) {
+.footer-policy div sl-button::part(label) {
     padding: 0;
 }
-.consulting-page .footer-rights {
+.footer-rights {
     font-size: 0.85em;
     font-weight: 400;
     line-height: 150%;
     color: #5c5c75;
 }
-.consulting-page .footer-img {
+.footer-img {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -3608,33 +3606,33 @@ sl-dialog::part(body) {
     }
 
     /* footer */
-    .consulting-page .block.footer {
+    .block.footer {
         padding: 80px 16px 40px;
     }
-    .consulting-page .block.footer .footer-links span {
+    .block.footer .footer-links span {
         flex-direction: column;
         align-items: flex-start;
         gap: 24px;
     }
-    .consulting-page .block.footer .footer-links .footer-community-links {
+    .block.footer .footer-links .footer-community-links {
         gap: 24px;
     }
-    .consulting-page .footer-nav-links {
+    .footer-nav-links {
         gap: 0;
         justify-content: space-between;
     }
-    .consulting-page .footer-nav-links sl-button:last-child {
+    .footer-nav-links sl-button:last-child {
         display: none;
     }
-    .consulting-page .block.footer .footer-block {
+    .block.footer .footer-block {
         gap: 56px;
     }
-    .consulting-page .footer-policy {
+    .footer-policy {
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
     }
-    .consulting-page .footer-policy div {
+    .footer-policy div {
         gap: 4px;
         width: 100%;
         justify-content: space-between;

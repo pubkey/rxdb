@@ -149,72 +149,7 @@ const config: Config = {
       },
       footer: {
         style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: '🚀 Quickstart',
-                to: '/quickstart.html',
-              },
-              {
-                label: '💾 Storage',
-                to: '/rx-storage.html',
-              },
-              {
-                label: '🔄 Replication',
-                to: '/replication.html',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Github',
-                target: '_blank',
-                href: '/code',
-              },
-              {
-                label: 'Discord',
-                target: '_blank',
-                href: '/chat',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-              },
-              {
-                label: 'LinkedIn',
-                href: 'https://www.linkedin.com/company/rxdb',
-              },
-              {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/rxdb',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'Pricing',
-                target: '_blank',
-                href: '/premium'
-              },
-              {
-                href: '/consulting',
-                label: 'Consulting',
-                position: 'right',
-              },
-              {
-                label: 'Legal Notice',
-                target: '_blank',
-                href: '/legal-notice',
-              },
-            ],
-          },
-        ],
+        links: [],
         copyright: ' ',
       },
       prism: {

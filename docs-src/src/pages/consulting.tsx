@@ -54,13 +54,13 @@ export default function Consulting() {
     return (
         <>
             <Head>
-                <body className="homepage" />
+                <body className="homepage consulting-page" />
             </Head>
             <Layout
                 title={`${siteConfig.title}`}
                 description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js"
             >
-                <main className="consulting-page">
+                <main>
                     <BrowserOnly fallback={<div>Loading...</div>}>
                         {() => {
                             const SlDialog =
@@ -156,12 +156,6 @@ export default function Consulting() {
                                     >
                                         <ContactBlock></ContactBlock>
                                     </div>
-
-                                    {/* <div className="block footer" id="footer">
-                                        <FooterBlock
-                                            SlButton={SlButton}
-                                        ></FooterBlock>
-                                    </div> */}
                                     <SlDialog noHeader ref={dialogRef}>
                                         <iframe
                                             style={{
@@ -233,12 +227,12 @@ function NavBarBlock({ onOpenDialog, SlButton }) {
                             href="/"
                             className="nav-logo-button"
                         >
-                            <img src="./files/logo/logo.svg" alt="RxDB" />
+                            <img src="/files/logo/logo.svg" alt="RxDB" />
                             RxDB
                         </SlButton> */}
 
                         <a className="nav-logo-consulting" href="/">
-                            <img src="./files/logo/logo.svg" alt="RxDB" />
+                            <img src="/files/logo/logo.svg" alt="RxDB" />
                             RxDB
                         </a>
 
@@ -279,7 +273,7 @@ function NavBarBlock({ onOpenDialog, SlButton }) {
 function HeroBlock({ onOpenDialog, SlButton }) {
     const title = 'Expert support for local database applications';
     const description = `We offer custom solutions to streamline your data
-    management or revolutionize your project's backend.
+    management or revolutionize your local first project.
     Our team is here to guide you at every step.`;
 
     return (
@@ -791,144 +785,6 @@ function ContactBlock() {
                         </a>
                     </iframe>
                 </div>
-            </div>
-        </>
-    );
-}
-
-function FooterBlock({ SlButton }) {
-    const navLinks = [
-        {
-            label: 'Packages',
-            href: '/consulting#packages',
-        },
-        {
-            label: 'Benefits',
-            href: '/consulting#benefits',
-        },
-        {
-            label: 'How it works',
-            href: '/consulting#steps',
-        },
-        {
-            label: 'FAQs',
-            href: '/consulting#faq',
-        },
-        {
-            label: 'Contact us',
-            href: '/consulting#contact',
-        },
-    ];
-
-    const communityLinks = [
-        {
-            label: 'Discord',
-            target: '_blank',
-            href: '/chat',
-            logo: '/img/community-links/discord-logo.svg',
-        },
-        {
-            label: 'Github',
-            target: '_blank',
-            href: '/code',
-            logo: '/img/community-links/github-logo.svg',
-        },
-        {
-            label: 'Twitter',
-            href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-            logo: '/img/community-links/x-logo.svg',
-        },
-        {
-            label: 'LinkedIn',
-            href: 'https://www.linkedin.com/company/rxdb',
-            logo: '/img/community-links/linkedin-logo.svg',
-        },
-        {
-            label: 'Stack Overflow',
-            href: 'https://stackoverflow.com/questions/tagged/rxdb',
-            logo: '/img/community-links/stack-overflow-logo.svg',
-        },
-    ];
-
-    const policyLinks = [
-        // {
-        //     label: 'Privacy Policy',
-        //     target: '_blank',
-        //     href: '/',
-        // },
-        // {
-        //     label: 'Terms of Service',
-        //     target: '_blank',
-        //     href: '/',
-        // },
-        {
-            label: 'Legal Notice',
-            target: '_blank',
-            href: '/legal-notice',
-        },
-    ];
-
-    const rightsText = `© ${new Date().getFullYear()} RxDB. All rights reserved.`;
-
-    return (
-        <>
-            <div className="footer-block">
-                <div className="footer-links">
-                    <span>
-                        <SlButton
-                            variant="text"
-                            href="/"
-                            className="footer-logo-button"
-                        >
-                            <img src="./files/logo/logo.svg" alt="RxDB" />
-                            RxDB
-                        </SlButton>
-                        <div className="footer-community-links">
-                            {communityLinks.map((link, index) => (
-                                <SlButton
-                                    key={link.href + index}
-                                    variant="text"
-                                    href={link.href}
-                                    target={link.target ? '_blank' : '_self'}
-                                >
-                                    <img src={link.logo} alt="logo" />
-                                </SlButton>
-                            ))}
-                        </div>
-                    </span>
-                    <div className="footer-nav-links">
-                        {navLinks.map((link, index) => (
-                            <SlButton
-                                variant="text"
-                                href={link.href}
-                                key={link.href + index}
-                            >
-                                {link.label}
-                            </SlButton>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="footer-policy">
-                    <div>
-                        {policyLinks.map((link, index) => (
-                            <SlButton
-                                variant="text"
-                                href={link.href}
-                                key={link.href + index}
-                                target={link.target ? '_blank' : '_self'}
-                            >
-                                {link.label}
-                            </SlButton>
-                        ))}
-                    </div>
-                    <span className="footer-rights">{rightsText}</span>
-                </div>
-                <img
-                    className="footer-img desktop-img"
-                    src="/img/footer-column.svg"
-                    alt="columns"
-                />
             </div>
         </>
     );
