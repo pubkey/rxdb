@@ -75,7 +75,7 @@ export function ReviewsBlock() {
             description: 'Transitioning to RxDB was a breath of fresh air due to its comprehensive features, including schema migration, real-time replication, conflict resolution, and reactive programming.',
             href: 'https://www.myagro.org/',
             target: '_blank',
-            logo: './files/companies/myagro.svg',
+            logo: '/files/companies/myagro.svg',
             logoStyle: 'slider-logo-black lazyload',
         },
         {
@@ -85,7 +85,7 @@ export function ReviewsBlock() {
             surveys and audits.`,
             href: 'https://moreapp.com/',
             target: '_blank',
-            logo: './files/companies/moreapp.png',
+            logo: '/files/companies/moreapp.png',
             logoStyle: 'slider-logo-black lazyload',
         },
         {
@@ -95,7 +95,7 @@ export function ReviewsBlock() {
             really a challenge.`,
             href: 'https://altgras.com/',
             target: '_blank',
-            logo: './files/companies/altgras.png',
+            logo: '/files/companies/altgras.png',
             logoStyle: 'slider-logo-white lazyload',
         },
         {
@@ -104,7 +104,7 @@ export function ReviewsBlock() {
             point of sale system. With RxDB we could create a web-, desktop- and mobile app using the same code base.`,
             href: 'https://wcpos.com/',
             target: '_blank',
-            logo: './files/companies/woopos.png',
+            logo: '/files/companies/woopos.png',
             logoStyle: 'slider-logo-black lazyload',
         },
         {
@@ -114,7 +114,7 @@ export function ReviewsBlock() {
             this kind of apps.`,
             href: 'https://atroo.de/',
             target: '_blank',
-            logo: './files/companies/atroo.png',
+            logo: '/files/companies/atroo.png',
             logoStyle: 'slider-logo-black lazyload',
         },
         {
@@ -122,7 +122,7 @@ export function ReviewsBlock() {
             description: 'With RxDB we have built an offline capable Progressive Web Application that is used by our borer operators to report on conditions at the mineface.',
             href: 'https://www.nutrien.com/',
             target: '_blank',
-            logo: './files/companies/nutrien.svg',
+            logo: '/files/companies/nutrien.svg',
             logoStyle: 'slider-logo-black lazyload',
         },
         // {
