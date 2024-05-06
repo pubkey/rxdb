@@ -127,12 +127,12 @@ function addCommunityChatButton() {
         'right: 0;' +
         'bottom: 0;' +
         'background-color: var(--color-top);' +
-        'padding-left: 17px;' +
-        'padding-right: 17px;' +
-        'padding-top: 10px;' +
-        'padding-bottom: 5px;' +
+        'padding-left: 14px;' +
+        'padding-right: 14px;' +
+        'padding-top: 2px;' +
+        'padding-bottom: 2px;' +
         'text-align: center;' +
-        'margin-right: 50px;' +
+        'margin-right: 0px;' +
         'font-weight: bold;' +
         'border-top-left-radius: 9px;' +
         'border-top-right-radius: 9px;' +
