@@ -10,4 +10,4 @@ slug: third-party-plugins.html
 * [rxdb-orion](https://github.com/serenysoft/rxdb-orion) Enables replication with [Laravel Orion](https://tailflow.github.io/laravel-orion-docs).
 * [rxdb-supabase](https://github.com/marceljuenemann/rxdb-supabase) Enables replication with [Supabase](https://supabase.com/).
 * [rxdb-utils](https://github.com/rafamel/rxdb-utils) Additional features for RxDB like models, timestamps, default values, view and more.
-
+* [loki-async-reference-adapter](https://github.com/jonnyreeves/loki-async-reference-adapter) Simple async adapter for LokiJS, suitable to use RxDB's [Lokijs RxStorage](./rx-storage-lokijs.md) with React Native.
