@@ -257,7 +257,7 @@ export default function Home() {
           <div className="block first centered dark">
             <div className="content">
               <h1 style={{
-                fontSize: '4.5em',
+                fontSize: '3.5em',
                 fontWeight: 400,
                 textAlign: 'left',
                 lineHeight: '120%',
@@ -338,7 +338,7 @@ export default function Home() {
                 >
                   <img
                     src="/img/hero.svg"
-                    className="hero-img tilt-to-mouse"
+                    className="hero-img"
                     style={{ padding: 40 }}
                     alt="rxdb-image"
                   />
