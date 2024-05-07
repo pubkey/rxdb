@@ -19,7 +19,7 @@ import {
     ensureNotFalsy,
     getFromMapOrCreate,
     getFromMapOrThrow,
-    parseRevision,
+    getHeightOfRevision,
     stripMetaDataFromDocument
 } from './plugins/utils/index.ts';
 
@@ -214,9 +214,9 @@ export function findNewestOfDocumentStates<RxDocType>(
 ): RxDocumentData<RxDocType> {
 
     let newest = docs[0];
-    let newestRevisionHeight = parseRevision(newest._rev).height;
+    let newestRevisionHeight = getHeightOfRevision(newest._rev);
     docs.forEach(doc => {
-        const height = parseRevision(doc._rev).height;
+        const height = getHeightOfRevision(doc._rev);
         if (height > newestRevisionHeight) {
             newest = doc;
             newestRevisionHeight = height;
