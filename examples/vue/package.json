@@ -39,7 +39,7 @@
     "async-test-util": "2.4.0",
     "concurrently": "8.2.2",
     "copy-webpack-plugin": "12.0.2",
-    "eslint": "8.57.0",
+    "eslint": "9.2.0",
     "eslint-plugin-vue": "9.25.0",
     "local-web-server": "5.3.3",
     "node-sass": "9.0.0",
