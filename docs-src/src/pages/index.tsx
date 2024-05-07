@@ -23,7 +23,6 @@ import {
 import React, { useEffect } from 'react';
 import { trigger } from '../components/trigger-event';
 
-import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
@@ -246,68 +245,6 @@ export default function Home() {
       animationStarted = false;
     };
   });
-  const slickSettings = {
-    dots: true,
-    centerMode: true,
-    centerPadding: '10px',
-    infinite: true,
-    arrows: false,
-    // centerMode:true,
-    // centerPadding:'100px',
-    adaptiveHeight: true,
-    speed: 500,
-    slidesToShow: 4,
-    slidesToScroll: 1,
-    initialSlide: 0,
-    responsive: [
-      {
-        breakpoint: 1250,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 900,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1.1,
-          centerPadding: '15px',
-          slidesToScroll: 1,
-          infinite: false,
-          dots: false,
-        },
-      },
-    ],
-  };
   return (
     <>
       <Head>
@@ -319,7 +256,13 @@ export default function Home() {
         <main>
           <div className="block first centered dark">
             <div className="content">
-              <h1>
+              <h1 style={{
+                fontSize: '4.5em',
+                fontWeight: 400,
+                textAlign: 'left',
+                lineHeight: '120%',
+                letterSpacing: -1
+              }}>
                 The local <b className="underline">Database</b> for{' '}
                 <b className="underline">JavaScript</b> Applications
               </h1>
@@ -329,19 +272,14 @@ export default function Home() {
                   <br />
                   <ul className="checked">
                     <li>
-                      <b>Realtime Queries</b>:
-                      From results of queries to single document fields, with RxDB you can
-                      observe everything which makes building <u>realtime applications</u> effortless.
-                    </li>
-                    <li>
                       <b>Realtime Replication</b>:
                       Run a two-way realtime replication with one of the many replication plugins.
                       Also making your <u>custom backend compatible</u> is pretty simple.
                     </li>
                     <li>
                       <b>Offline Support</b>:
-                      Store data locally on your clients device to build applications that still work when
-                      there is <u>no internet access</u>. Running queries locally also improves your user experience.
+                      Store data locally on your users device to build applications that work even when
+                      there is <u>no internet access</u>.
                     </li>
                     <li>
                       <b>Supports all JavaScript runtimes</b>:
@@ -350,24 +288,16 @@ export default function Home() {
                       <u>React-Native</u>, <u>Capacitor</u>, <u>Bun</u> and <u>Deno</u>.
                     </li>
                     <li>
+                      <b>Realtime Queries</b>:
+                      With RxDB you can
+                      observe query results and even single document fields everything which makes building <u>realtime applications</u> effortless.
+                    </li>
+                    <li>
                       <b>Great Performance</b>:
                       Years of performance optimization made RxDB one of the <u>fastest</u> ways
                       to store and query data inside of JavaScript.
                     </li>
                   </ul>
-                  <a
-                    className="button" href="/quickstart.html"
-                    target="_blank" onClick={() => trigger('start_now', 0.4)}
-                  >
-                    Quickstart »
-                  </a>
-                  <a
-                    className="button" href="/premium#price-calculator-block"
-                    onClick={() => trigger('request_premium_main_page', 3)}
-                    target="_blank"
-                  >
-                    Buy Premium
-                  </a>
                   {/* <a
                     className="button light" href="/code"
                     target="_blank"
@@ -406,70 +336,38 @@ export default function Home() {
                     justifyContent: 'center'
                   }}
                 >
-                  <div
-                    className="content-canvas"
-                    style={{ marginTop: 0, marginBottom: 30, marginLeft: 20 }}
-                  >
-                    <div
-                      className="device tablet"
-                      style={{ marginLeft: 481, marginTop: 117 }}
-                    >
-                      <div
-                        className="beating-color"
-                        style={{ backgroundColor: 'rgb(141, 32, 137)' }}
-                      >
-                        <img
-                          src="./files/logo/logo.svg"
-                          className="beating logo animation"
-                          alt="RxDB"
-                          style={{ animationDuration: '851ms' }}
-                        />
-                      </div>
-                    </div>
-                    <div className="device desktop" style={{ marginTop: '0%' }}>
-                      <div
-                        className="beating-color"
-                        style={{ backgroundColor: 'rgb(141, 32, 137)' }}
-                      >
-                        <img
-                          src="/files/logo/logo_text.svg"
-                          className="beating logo animation"
-                          alt="RxDB"
-                          style={{ animationDuration: '851ms', width: '52%' }}
-                        />
-                      </div>
-                    </div>
-                    <div
-                      className="device server"
-                      style={{ marginLeft: 0, marginTop: 168 }}
-                    >
-                      <div
-                        className="beating-color one"
-                        style={{ backgroundColor: 'rgb(141, 32, 137)' }}
-                      ></div>
-                      <div
-                        className="beating-color two"
-                        style={{ backgroundColor: 'rgb(141, 32, 137)' }}
-                      ></div>
-                      <div
-                        className="beating-color three"
-                        style={{ backgroundColor: 'rgb(141, 32, 137)' }}
-                      ></div>
-                    </div>
-                  </div>
+                  <img
+                    src="/img/hero.svg"
+                    className="hero-img tilt-to-mouse"
+                    style={{ padding: 40 }}
+                    alt="rxdb-image"
+                  />
                   {/* <img
               src="/files/logo/logo_text.svg"
-              class="tilt-to-mouse"
               id="heartbeat-logo"
               alt="RxDB"
           /> */}
                 </div>
+                <div className='clear'></div>
               </div>
             </div>
+            <div className='content'>
+              <a
+                className="button" href="/quickstart.html"
+                target="_blank" onClick={() => trigger('start_now', 0.4)}
+              >
+                Quickstart »
+              </a>
+              <a
+                className="button" href="/premium#price-calculator-block"
+                onClick={() => trigger('request_premium_main_page', 3)}
+                target="_blank"
+              >
+                Buy Premium
+              </a>
+              <div className="clear"></div>
+            </div>
           </div>
-
-
-
           <a
             href="/code"
             target="_blank"

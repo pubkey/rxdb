@@ -201,6 +201,10 @@ a:visited {
     position: relative;
 }
 
+h1 .underline {
+    font-weight: normal;
+}
+
 .underline::after {
     content: "";
     position: absolute;
@@ -670,6 +674,7 @@ body {
 }
 
 .block.first {
+    background-color: var(--bg-color-darkest);
     padding-bottom: 70px;
     padding-top: 50px;
 }
@@ -705,7 +710,7 @@ body {
     }
 
     .block.first .inner {
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
 }
 
