@@ -22,8 +22,8 @@ import {
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
+    getHeightOfRevision,
     now,
-    parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils/index.ts';
 import {
@@ -337,7 +337,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 (assumedMaster.docData as any)._rev &&
                                 forkStateFullDoc &&
                                 forkStateFullDoc._meta[state.input.identifier] &&
-                                parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]
+                                getHeightOfRevision(forkStateFullDoc._rev) === forkStateFullDoc._meta[state.input.identifier]
                             )
                         ) {
                             isAssumedMasterEqualToForkState = true;
@@ -425,7 +425,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                          * This is used for example in the CouchDB replication plugin.
                          */
                         if ((masterState as any)._rev) {
-                            const nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
+                            const nextRevisionHeight = !forkStateFullDoc ? 1 : getHeightOfRevision(forkStateFullDoc._rev) + 1;
                             newForkState._meta[state.input.identifier] = nextRevisionHeight;
                             if (state.input.keepMeta) {
                                 newForkState._rev = (masterState as any)._rev;

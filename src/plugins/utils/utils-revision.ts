@@ -2,6 +2,11 @@ import type {
     RxDocumentData
 } from '../../types/index.d.ts';
 
+/**
+ * Parses the full revision.
+ * Do NOT use this if you only need the revision height,
+ * then use getHeightOfRevision() instead which is faster.
+ */
 export function parseRevision(revision: string): { height: number; hash: string; } {
     const split = revision.split('-');
     if (split.length !== 2) {

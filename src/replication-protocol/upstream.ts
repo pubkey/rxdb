@@ -20,7 +20,7 @@ import {
     batchArray,
     clone,
     ensureNotFalsy,
-    parseRevision,
+    getHeightOfRevision,
     PROMISE_RESOLVE_FALSE
 } from '../plugins/utils/index.ts';
 import {
@@ -307,7 +307,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         (
                             assumedMasterDoc &&
                             (assumedMasterDoc.docData as any)._rev &&
-                            parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]
+                            getHeightOfRevision(fullDocData._rev) === fullDocData._meta[state.input.identifier]
                         )
                     ) {
                         return;
