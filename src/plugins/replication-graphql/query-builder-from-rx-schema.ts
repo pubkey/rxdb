@@ -9,6 +9,8 @@ import type {
     RxGraphQLReplicationPullQueryBuilder,
     RxGraphQLReplicationPullStreamQueryBuilder,
     RxGraphQLReplicationPushQueryBuilder,
+    RxJsonSchema,
+    TopLevelProperty,
     WithDeleted
 } from '../../types/index.d.ts';
 
@@ -17,23 +19,22 @@ export function pullQueryBuilderFromRxSchema(
     input: GraphQLSchemaFromRxSchemaInputSingleCollection,
 ): RxGraphQLReplicationPullQueryBuilder<any> {
     input = fillUpOptionals(input);
-    const schema = input.schema;
+    const schema = input.schema
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.pull + ucCollectionName;
     const operationName = ucfirst(queryName);
 
-    const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
-    // outputFields.push(input.deletedField);
-
+    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys})
+    
+    // outputFields.push(input.deletedField);    
     const checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
-
     const builder: RxGraphQLReplicationPullQueryBuilder<any> = (checkpoint: any, limit: number) => {
         const query = 'query ' + operationName + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' +
             SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' +
-            SPACING + SPACING + SPACING + 'documents {\n' +
-            SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
+            SPACING + SPACING + SPACING + 'documents {\n' + 
+            outputFields  + '\n' +
             SPACING + SPACING + SPACING + '}\n' +
             SPACING + SPACING + SPACING + 'checkpoint {\n' +
             SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
@@ -63,14 +64,14 @@ export function pullStreamBuilderFromRxSchema(
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.stream + ucCollectionName;
-    const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
+    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys})
 
     const headersName = ucCollectionName + 'Input' + prefixes.headers;
 
     const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' +
         SPACING + queryName + '(headers: $headers) {\n' +
         SPACING + SPACING + SPACING + 'documents {\n' +
-        SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
+        outputFields  + '\n' +
         SPACING + SPACING + SPACING + '}\n' +
         SPACING + SPACING + SPACING + 'checkpoint {\n' +
         SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
@@ -102,14 +103,13 @@ export function pushQueryBuilderFromRxSchema(
     const operationName = ucfirst(queryName);
 
     const variableName = collectionName + prefixes.pushRow;
-
-    const returnFields: string[] = Object.keys(input.schema.properties);
-
+    const returnFields = generateGQLOutputFields({ schema: input.schema, spaceCount: 2 })
+    
     const builder: RxGraphQLReplicationPushQueryBuilder = (pushRows) => {
         const query = '' +
             'mutation ' + operationName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' +
             SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' +
-            SPACING + SPACING + returnFields.join(',\n' + SPACING + SPACING) + '\n' +
+            returnFields  + '\n' +
             SPACING + '}\n' +
             '}';
 
@@ -147,3 +147,42 @@ export function pushQueryBuilderFromRxSchema(
 
     return builder;
 }
+
+type GenerateGQLOutputFieldsOptions = {
+    schema: RxJsonSchema<any> | TopLevelProperty,
+    spaceCount?: number,
+    depth?: number
+    ignoreOutputKeys?: string[]
+}
+
+function generateGQLOutputFields(options: GenerateGQLOutputFieldsOptions) {
+    const { schema, spaceCount = 4, depth = 0, ignoreOutputKeys = [] } = options;
+
+    const outputFields: string[] = [];
+    const properties = schema.properties 
+    const NESTED_SPACING = SPACING.repeat(depth);
+    const LINE_SPACING = SPACING.repeat(spaceCount);
+  
+    for (const key in properties) {
+        //only skipping top level keys that are in ignoreOutputKeys list
+        if (ignoreOutputKeys.includes(key)) {
+            continue;
+        }
+
+        const value = properties[key];
+        if (value.type === "object") {
+          outputFields.push(
+            LINE_SPACING + NESTED_SPACING + key + " {",
+            generateGQLOutputFields({ schema: value, spaceCount, depth: depth + 1 }),
+            LINE_SPACING + NESTED_SPACING + "}"
+          );
+        } else {
+            outputFields.push(LINE_SPACING + NESTED_SPACING + key);
+        }
+    }
+    
+    return outputFields.join('\n');
+}
+
+
+
