@@ -339,6 +339,18 @@ export function refHumanNestedData(bestFriend?: string): RefHumanNestedDocumentT
         } as any
     };
 }
+export interface HumanWithTimestampNestedDocumentType extends HumanWithTimestampDocumentType {
+    address?: {
+        street: string;
+        suite: string;
+        city: string;
+        zipcode: string;
+        geo: {
+            lat: string;
+            lng: string;
+        };
+    }
+}
 
 export interface HumanWithTimestampDocumentType {
     id: string;
