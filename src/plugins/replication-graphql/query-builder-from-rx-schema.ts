@@ -26,9 +26,9 @@ export function pullQueryBuilderFromRxSchema(
     const queryName = prefixes.pull + ucCollectionName;
     const operationName = ucfirst(queryName);
 
-    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys})
-    
+    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys })
     // outputFields.push(input.deletedField);    
+    
     const checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
     const builder: RxGraphQLReplicationPullQueryBuilder<any> = (checkpoint: any, limit: number) => {
         const query = 'query ' + operationName + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' +
@@ -64,7 +64,7 @@ export function pullStreamBuilderFromRxSchema(
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.stream + ucCollectionName;
-    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys})
+    const outputFields = generateGQLOutputFields({ schema, ignoreOutputKeys: input.ignoreOutputKeys })
 
     const headersName = ucCollectionName + 'Input' + prefixes.headers;
 
