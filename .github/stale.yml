@@ -17,6 +17,7 @@ markComment: >
   recent activity. It will be closed soon. Please update it or it may be closed to keep our repository organized.
   The best way is to add some more information or make a pull request with a test case.
   Also you might get help in fixing it at the [RxDB Community Chat](https://rxdb.info/chat)
+  If you know you will continue working on this, just write any message to the issue (like "ping") to remove the stale tag.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: "Issues are autoclosed after some time. If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem."
 
