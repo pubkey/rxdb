@@ -444,16 +444,16 @@ export class RxQueryBase<
             (doc) => doc.patch(patch),
         );
     }
-    modify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult> {
-        return runQueryUpdateFunction(
-            this.asRxQuery,
-            (doc) => doc.modify(mutationFunction),
-        );
-    }
     incrementalPatch(patch: Partial<RxDocType>): Promise<RxQueryResult> {
         return runQueryUpdateFunction(
             this.asRxQuery,
             (doc) => doc.incrementalPatch(patch),
+        );
+    }
+    modify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.modify(mutationFunction),
         );
     }
     incrementalModify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult> {
