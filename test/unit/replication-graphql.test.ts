@@ -2893,7 +2893,7 @@ describe('replication-graphql.test.ts', () => {
                     const found = docsEnd.find(d => d.id === addDoc.id);
                     return !!found;
                 });
-                db2.destroy();
+                await db2.destroy();
             });
         });
     });
