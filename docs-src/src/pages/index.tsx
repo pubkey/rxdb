@@ -26,6 +26,7 @@ import { trigger } from '../components/trigger-event';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
+import { BrowserWindow } from '../components/browser-window';
 
 type MousePositionType = {
   x: number;
@@ -272,11 +273,6 @@ export default function Home() {
                   <br />
                   <ul className="checked">
                     <li>
-                      <b>Realtime Replication</b>:
-                      Run a two-way realtime replication with one of the many replication plugins.
-                      Also making your <u>custom backend compatible</u> is pretty simple.
-                    </li>
-                    <li>
                       <b>Offline Support</b>:
                       Store data locally on your users device to build applications that work even when
                       there is <u>no internet access</u>.
@@ -293,27 +289,16 @@ export default function Home() {
                       observe query results and even single document fields everything which makes building <u>realtime applications</u> effortless.
                     </li>
                     <li>
+                      <b>Realtime Replication</b>:
+                      Run a two-way realtime replication with one of the many replication plugins.
+                      Also making your <u>custom backend compatible</u> is pretty simple.
+                    </li>
+                    <li>
                       <b>Great Performance</b>:
                       Years of performance optimization made RxDB one of the <u>fastest</u> ways
                       to store and query data inside of JavaScript.
                     </li>
                   </ul>
-                  {/* <a
-                    className="button light" href="/code"
-                    target="_blank"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      className="star-icon"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
-                    >
-                      <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
-                    </svg>
-                    Star (20,172)
-                  </a> */}
                   {/*
               <div class="text">
                   The
@@ -336,12 +321,17 @@ export default function Home() {
                     justifyContent: 'center'
                   }}
                 >
-                  <img
-                    src="/img/hero.svg"
-                    className="hero-img"
-                    style={{ padding: 40 }}
-                    alt="rxdb-image"
-                  />
+                  <div style={{ paddingLeft: 80, paddingRight: 80 }}>
+                    <BrowserWindow opacity={0.3}>
+                      <img
+                        // src="/img/hero.svg"
+                        src="/files/logo/logo_text.svg"
+                        className="hero-img"
+                        style={{ padding: 40, paddingLeft: 80, paddingRight: 80 }}
+                        alt="rxdb-image"
+                      />
+                    </BrowserWindow>
+                  </div>
                   {/* <img
               src="/files/logo/logo_text.svg"
               id="heartbeat-logo"
@@ -365,26 +355,42 @@ export default function Home() {
               >
                 Buy Premium
               </a>
+              <a
+                className="button light" href="/code"
+                target="_blank"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  className="star-icon"
+                  aria-hidden="true"
+                  fill="currentColor"
+                  style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
+                >
+                  <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+                </svg>
+                Star (20,172)
+              </a>
               <div className="clear"></div>
+              <br />
+              <br />
             </div>
           </div>
+
           <a
-            href="/code"
+            href="/chat"
             target="_blank"
           >
-            <div className="trophy github">
-              <img
-                className="lazyload" data-src="./files/icons/github-star-with-logo.svg"
-                alt="RxDB github star"
-              />
+            <div className="trophy discord">
+              <img className="lazyload" data-src="./files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Open Source on</div>
-                <div className="title">GitHub</div>
+                <div className="subtitle">Chat on</div>
+                <div className="title">Discord</div>
               </div>
               <div>
-                <div className="valuetitle">stars</div>
+                <div className="valuetitle">members</div>
                 <div className="value">
-                  20172
+                  747
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -650,24 +656,28 @@ export default function Home() {
           </div>
 
           <a
-            href="/chat"
+            href="/code"
             target="_blank"
           >
-            <div className="trophy discord">
-              <img className="lazyload" data-src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+            <div className="trophy github">
+              <img
+                className="lazyload" data-src="./files/icons/github-star-with-logo.svg"
+                alt="RxDB github star"
+              />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Chat on</div>
-                <div className="title">Discord</div>
+                <div className="subtitle">Open Source on</div>
+                <div className="title">GitHub</div>
               </div>
               <div>
-                <div className="valuetitle">members</div>
+                <div className="valuetitle">stars</div>
                 <div className="value">
-                  747
+                  20172
                   <div className="arrow-up"> </div>
                 </div>
               </div>
             </div>
           </a>
+
 
 
 
