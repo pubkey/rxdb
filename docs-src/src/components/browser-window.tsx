@@ -63,7 +63,7 @@ export function BrowserWindow(props) {
         },
         'content': {
             'padding': '10px',
-            'backgroundColor': 'var(--bg-color-dark)',
+            'backgroundColor': 'var(--bg-color)',
             'minWidth': 360
         }
     } as any;
