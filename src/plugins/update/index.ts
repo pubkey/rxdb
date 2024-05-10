@@ -3,6 +3,7 @@
  * It's using mingo internally
  * @link https://github.com/kofrasa/mingo
  */
+import { runQueryUpdateFunction } from '../../rx-query-helper.ts';
 import type {
     RxDocument,
     RxQuery,
@@ -30,24 +31,14 @@ export function update<RxDocType>(
     return this._saveData(newDocData, oldDocData);
 }
 
-export function RxQueryUpdate(
+export async function RxQueryUpdate(
     this: RxQuery,
     updateObj: UpdateQuery<any>
 ): Promise<any> {
-    return this.exec()
-        .then(docs => {
-            if (!docs) {
-                return null;
-            }
-            if (Array.isArray(docs)) {
-                return Promise.all(
-                    docs.map(doc => doc.update(updateObj))
-                ).then(() => docs);
-            } else {
-                // via findOne()
-                return docs.update(updateObj).then(() => docs);
-            }
-        });
+    return runQueryUpdateFunction(
+        this.asRxQuery,
+        (doc) => doc.update(updateObj),
+    );
 }
 
 
