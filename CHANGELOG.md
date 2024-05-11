@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD `RxQuery.patch()` `RxQuery.incrementalPatch()` `RxQuery.modify()` `RxQuery.incrementalModify()` and `RxQuery.incrementalRemove()`.
 - FIX `RxDocument.update()` must return the latest revision of the `RxDocument`.
+- ADD `queryModifier` to SQLite RxStorage
 - IMPROVE performance of insert-many to the memory RxStorage by 40%.
 - IMPROVE performance of `getHeightOfRevision()`.
 - ADD check to throw helpfull error message when a Date() object is passed instead of plain json data.
