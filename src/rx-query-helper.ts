@@ -7,8 +7,10 @@ import type {
     MangoQuery,
     MangoQuerySortDirection,
     QueryMatcher,
+    RxDocument,
     RxDocumentData,
-    RxJsonSchema
+    RxJsonSchema,
+    RxQuery
 } from './types/index.d.ts';
 import {
     clone,
@@ -224,4 +226,25 @@ export function getQueryMatcher<RxDocType>(
         return mingoQuery.test(doc);
     };
     return fun;
+}
+
+
+export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
+    rxQuery: RxQuery<RxDocType, RxQueryResult>,
+    fn: (doc: RxDocument<RxDocType>) => Promise<RxDocument<RxDocType>>
+): Promise<RxQueryResult> {
+    const docs = await rxQuery.exec();
+    if (!docs) {
+        // only findOne() queries can return null
+        return null as any;
+    }
+    if (Array.isArray(docs)) {
+        return Promise.all(
+            docs.map(doc => fn(doc))
+        ) as any;
+    } else {
+        // via findOne()
+        const result = await fn(docs as any);
+        return result as any;
+    }
 }
