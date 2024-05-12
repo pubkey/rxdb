@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD `RxQuery.patch()` `RxQuery.incrementalPatch()` `RxQuery.modify()` `RxQuery.incrementalModify()` and `RxQuery.incrementalRemove()`.
 - FIX `RxDocument.update()` must return the latest revision of the `RxDocument`.
+- ADD(GraphQL replication) change GraphQL query builder functions to generate output fields for nested queries [#5976](https://github.com/pubkey/rxdb/pull/5976)
 - ADD `queryModifier` to SQLite RxStorage
 - IMPROVE performance of insert-many to the memory RxStorage by 40%.
 - IMPROVE performance of `getHeightOfRevision()`.
