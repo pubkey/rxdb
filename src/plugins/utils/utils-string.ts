@@ -96,3 +96,8 @@ export function stringToArrayBuffer(str: string): ArrayBuffer {
     }
     return buf;
 }
+
+
+export function normalizeString(str: string) : string {
+    return str.trim().replace(/[\n\s]+/g, '');
+}

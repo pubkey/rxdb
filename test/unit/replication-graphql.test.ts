@@ -66,6 +66,7 @@ import {
 } from 'graphql';
 import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
 import { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
+import { normalizeString } from '../../plugins/utils/index.mjs';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
 
@@ -1928,12 +1929,54 @@ describe('replication-graphql.test.ts', () => {
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
             });
+            it('builder should work with nested schemas', async () => {
+                const builder = pullQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestampNested,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
+
+                const output = await builder(null, batchSize);
+                const parsed = parseQuery(output.query);
+                const want =`query PullHuman($checkpoint: HumanInputCheckpoint, $limit: Int!) {
+                    pullHuman(checkpoint: $checkpoint, limit: $limit) {
+                        documents {
+                            id
+                            name
+                            age
+                            updatedAt
+                            deletedAt
+                            address {
+                                street
+                                suite
+                                city
+                                zipcode
+                                geo {
+                                    lat
+                                    lng
+                                }
+                            }
+                            _deleted
+                        }
+                        checkpoint {
+                            id
+                            updatedAt
+                        }
+                    }
+                }
+                `;
+                assert.ok(parsed);
+                assert.equal(normalizeString(output.query), normalizeString(want));
+            });
         });
         describeParallel('.pullStreamBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
                 const builder = pullStreamBuilderFromRxSchema(
                     'human', {
-                    schema: schemas.humanWithTimestamp,
+                    schema: schemas.humanWithTimestampNested,
                     checkpointFields: [
                         'id',
                         'updatedAt'
@@ -1962,6 +2005,48 @@ describe('replication-graphql.test.ts', () => {
                 const output = await builder({});
                 const parsed = parseQuery(output.query);
                 assert.ok(parsed);
+            });
+            it('builder should work with nested schemas', async () => {
+                const builder = pullStreamBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestampNested,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
+
+                const output = await builder({});
+                const parsed = parseQuery(output.query);
+                const want =`subscription onStream($headers:HumanInputHeaders) {
+                    streamHuman(headers:$headers) {
+                        documents {
+                            id
+                            name
+                            age
+                            updatedAt
+                            deletedAt
+                            address {
+                                street
+                                suite
+                                city
+                                zipcode
+                                geo {
+                                    lat
+                                    lng
+                                }
+                            }
+                            _deleted
+                        }
+                        checkpoint {
+                            id
+                            updatedAt
+                        }
+                    }
+                }
+                `;
+                assert.ok(parsed);
+                assert.equal(normalizeString(output.query), normalizeString(want));
             });
         });
         describeParallel('.pushQueryBuilderFromRxSchema()', () => {
@@ -2012,6 +2097,63 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDocDeleted, '_deleted'));
 
                 assert.ok(parsed);
+            });
+            it('builder should work with nested schemas', async () => {
+                const builder = pushQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.humanWithTimestampNested,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ],
+                    deletedField: 'deleted'
+                });
+
+                const output = await builder([{
+                    newDocumentState: {
+                        id: 'foo',
+                        name: 'foo',
+                        age: 1234,
+                        updatedAt: 12343,
+                        address:{
+                            street: 'street',
+                            suite: 'suite',
+                            city: 'city',
+                            zipcode: 'zipcode',
+                            geo: {
+                                lat: 1,
+                                lng: 2
+                            }
+                        },
+                        _attachments: {},
+                        _rev: '1-foobar'
+                    }
+                }]);
+
+                const parsed = parseQuery(output.query);
+                const want = `mutation PushHuman($humanPushRow: [HumanInputPushRow!]) {
+                    pushHuman(humanPushRow: $humanPushRow) {
+                      id
+                      name
+                      age
+                      updatedAt
+                      deletedAt
+                      address {
+                        street
+                        suite
+                        city
+                        zipcode
+                        geo {
+                          lat
+                          lng
+                        }
+                      }
+                      deleted
+                    }
+                  }`;
+
+                assert.ok(parsed);
+                assert.equal(normalizeString(output.query), normalizeString(want));
             });
             it('should keep the deleted value', async () => {
                 const docData = schemaObjects.humanWithTimestampData();
@@ -2751,7 +2893,7 @@ describe('replication-graphql.test.ts', () => {
                     const found = docsEnd.find(d => d.id === addDoc.id);
                     return !!found;
                 });
-                db2.destroy();
+                await db2.destroy();
             });
         });
     });
