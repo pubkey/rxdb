@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher, RxJsonSchema, FilledMangoQuery } from './types/index.d.ts';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher, RxJsonSchema, FilledMangoQuery, ModifyFunction } from './types/index.d.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reactivity = unknown> {
     op: RxQueryOP;
@@ -83,6 +83,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reac
      * @return promise with deleted documents
      */
     remove(): Promise<RxQueryResult>;
+    incrementalRemove(): Promise<RxQueryResult>;
     /**
      * helper function to transform RxQueryBase to RxQuery type
      */
@@ -92,6 +93,10 @@ export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reac
      * @overwritten by plugin (optional)
      */
     update(_updateObj: any): Promise<RxQueryResult>;
+    patch(patch: Partial<RxDocType>): Promise<RxQueryResult>;
+    incrementalPatch(patch: Partial<RxDocType>): Promise<RxQueryResult>;
+    modify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult>;
+    incrementalModify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult>;
     where(_queryObj: MangoQuerySelector<RxDocType> | keyof RxDocType | string): RxQuery<RxDocType, RxQueryResult>;
     sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult>;
     skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;

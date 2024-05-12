@@ -7,6 +7,7 @@ exports.RANDOM_STRING = void 0;
 exports.arrayBufferToString = arrayBufferToString;
 exports.isFolderPath = isFolderPath;
 exports.lastCharOfString = lastCharOfString;
+exports.normalizeString = normalizeString;
 exports.randomCouchString = randomCouchString;
 exports.stringToArrayBuffer = stringToArrayBuffer;
 exports.trimDots = trimDots;
@@ -97,5 +98,8 @@ function stringToArrayBuffer(str) {
     bufView[i] = str.charCodeAt(i);
   }
   return buf;
+}
+function normalizeString(str) {
+  return str.trim().replace(/[\n\s]+/g, '');
 }
 //# sourceMappingURL=utils-string.js.map

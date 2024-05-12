@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { getChangedDocumentsSince, stackCheckpoints } from "../rx-storage-helper.js";
-import { appendToArray, batchArray, clone, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from "../plugins/utils/index.js";
+import { appendToArray, batchArray, clone, ensureNotFalsy, getHeightOfRevision, PROMISE_RESOLVE_FALSE } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { resolveConflictError } from "./conflicts.js";
 import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from "./helper.js";
@@ -201,7 +201,7 @@ export async function startReplicationUpstream(state) {
          * is different from the assumedMasterDoc.
          */
 
-        assumedMasterDoc && assumedMasterDoc.docData._rev && parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier])) {
+        assumedMasterDoc && assumedMasterDoc.docData._rev && getHeightOfRevision(fullDocData._rev) === fullDocData._meta[state.input.identifier])) {
           return;
         }
         writeRowsToMasterIds.push(docId);

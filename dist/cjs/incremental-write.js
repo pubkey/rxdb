@@ -156,9 +156,9 @@ function modifierFromPublicToInternal(publicModifier) {
 }
 function findNewestOfDocumentStates(docs) {
   var newest = docs[0];
-  var newestRevisionHeight = (0, _index.parseRevision)(newest._rev).height;
+  var newestRevisionHeight = (0, _index.getHeightOfRevision)(newest._rev);
   docs.forEach(doc => {
-    var height = (0, _index.parseRevision)(doc._rev).height;
+    var height = (0, _index.getHeightOfRevision)(doc._rev);
     if (height > newestRevisionHeight) {
       newest = doc;
       newestRevisionHeight = height;

@@ -146,6 +146,18 @@ export interface RefHumanNestedDocumentType {
     };
 }
 export declare function refHumanNestedData(bestFriend?: string): RefHumanNestedDocumentType;
+export interface HumanWithTimestampNestedDocumentType extends HumanWithTimestampDocumentType {
+    address?: {
+        street: string;
+        suite: string;
+        city: string;
+        zipcode: string;
+        geo: {
+            lat: string;
+            lng: string;
+        };
+    };
+}
 export interface HumanWithTimestampDocumentType {
     id: string;
     name: string;

@@ -189,4 +189,18 @@ export function getQueryMatcher(_schema, query) {
   };
   return fun;
 }
+export async function runQueryUpdateFunction(rxQuery, fn) {
+  var docs = await rxQuery.exec();
+  if (!docs) {
+    // only findOne() queries can return null
+    return null;
+  }
+  if (Array.isArray(docs)) {
+    return Promise.all(docs.map(doc => fn(doc)));
+  } else {
+    // via findOne()
+    var result = await fn(docs);
+    return result;
+  }
+}
 //# sourceMappingURL=rx-query-helper.js.map

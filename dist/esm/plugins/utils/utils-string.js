@@ -85,4 +85,7 @@ export function stringToArrayBuffer(str) {
   }
   return buf;
 }
+export function normalizeString(str) {
+  return str.trim().replace(/[\n\s]+/g, '');
+}
 //# sourceMappingURL=utils-string.js.map

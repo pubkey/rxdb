@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.averageSchema = averageSchema;
 exports.empty = exports.deepNestedHuman = exports.compoundIndexNoString = exports.compoundIndex = exports.bigHuman = void 0;
 exports.enableKeyCompression = enableKeyCompression;
-exports.simpleHumanV3 = exports.simpleHuman = exports.simpleArrayHero = exports.refHumanNested = exports.refHuman = exports.primaryHumanLiteral = exports.primaryHuman = exports.point = exports.notExistingIndex = exports.noStringIndex = exports.noIndexHuman = exports.nestedHuman = exports.humanWithTimestampAllIndex = exports.humanWithTimestamp = exports.humanWithSimpleAndCompoundIndexes = exports.humanWithDeepNestedIndexes = exports.humanWithAllIndex = exports.humanSubIndex = exports.humanSchemaLiteral = exports.humanNormalizeSchema2 = exports.humanNormalizeSchema1Literal = exports.humanNormalizeSchema1 = exports.humanMinimalBroken = exports.humanMinimal = exports.humanIdAndAgeIndex = exports.humanFinal = exports.humanDefault = exports.humanCompositePrimarySchemaLiteral = exports.humanCompositePrimary = exports.humanAgeIndex = exports.human = exports.heroArray = exports.encryptedObjectHuman = exports.encryptedHuman = exports.encryptedDeepHuman = void 0;
+exports.simpleHumanV3 = exports.simpleHuman = exports.simpleArrayHero = exports.refHumanNested = exports.refHuman = exports.primaryHumanLiteral = exports.primaryHuman = exports.point = exports.notExistingIndex = exports.noStringIndex = exports.noIndexHuman = exports.nestedHuman = exports.humanWithTimestampNested = exports.humanWithTimestampAllIndex = exports.humanWithTimestamp = exports.humanWithSimpleAndCompoundIndexes = exports.humanWithDeepNestedIndexes = exports.humanWithAllIndex = exports.humanSubIndex = exports.humanSchemaLiteral = exports.humanNormalizeSchema2 = exports.humanNormalizeSchema1Literal = exports.humanNormalizeSchema1 = exports.humanMinimalBroken = exports.humanMinimal = exports.humanIdAndAgeIndex = exports.humanFinal = exports.humanDefault = exports.humanCompositePrimarySchemaLiteral = exports.humanCompositePrimary = exports.humanAgeIndex = exports.human = exports.heroArray = exports.encryptedObjectHuman = exports.encryptedHuman = exports.encryptedDeepHuman = void 0;
 var _asyncTestUtil = _interopRequireDefault(require("async-test-util"));
 var _overwritable = require("../../overwritable.js");
 var _rxSchema = require("../../rx-schema.js");
@@ -1002,6 +1002,63 @@ var humanWithTimestamp = exports.humanWithTimestamp = _overwritable.overwritable
     },
     deletedAt: {
       type: 'number'
+    }
+  },
+  indexes: ['updatedAt'],
+  required: ['id', 'name', 'age', 'updatedAt']
+});
+var humanWithTimestampNested = exports.humanWithTimestampNested = _overwritable.overwritable.deepFreezeWhenDevMode({
+  version: 0,
+  type: 'object',
+  primaryKey: 'id',
+  properties: {
+    id: {
+      type: 'string',
+      maxLength: 100
+    },
+    name: {
+      type: 'string',
+      maxLength: 1000
+    },
+    age: {
+      type: 'number'
+    },
+    updatedAt: {
+      type: 'number',
+      minimum: 0,
+      maximum: 10000000000000000,
+      multipleOf: 1
+    },
+    deletedAt: {
+      type: 'number'
+    },
+    address: {
+      type: 'object',
+      properties: {
+        street: {
+          type: 'string'
+        },
+        suite: {
+          type: 'string'
+        },
+        city: {
+          type: 'string'
+        },
+        zipcode: {
+          type: 'string'
+        },
+        geo: {
+          type: 'object',
+          properties: {
+            lat: {
+              type: 'string'
+            },
+            lng: {
+              type: 'string'
+            }
+          }
+        }
+      }
     }
   },
   indexes: ['updatedAt'],

@@ -238,6 +238,9 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
         return docs.remove();
       }
     });
+  };
+  _proto.incrementalRemove = function incrementalRemove() {
+    return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.incrementalRemove());
   }
 
   /**
@@ -249,6 +252,18 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
    */
   _proto.update = function update(_updateObj) {
     throw (0, _index.pluginMissing)('update');
+  };
+  _proto.patch = function patch(_patch) {
+    return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.patch(_patch));
+  };
+  _proto.incrementalPatch = function incrementalPatch(patch) {
+    return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.incrementalPatch(patch));
+  };
+  _proto.modify = function modify(mutationFunction) {
+    return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.modify(mutationFunction));
+  };
+  _proto.incrementalModify = function incrementalModify(mutationFunction) {
+    return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.incrementalModify(mutationFunction));
   }
 
   // we only set some methods of query-builder here
