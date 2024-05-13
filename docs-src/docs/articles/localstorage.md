@@ -92,7 +92,7 @@ While **localStorage** serves as a reliable storage solution for simpler data ne
 complex queries can pose a challenge with IndexedDB, and while its performance is acceptable, IndexedDB can be [too slow](../slow-indexeddb.md) for some use cases.
 
 ```js
-// localStorage can observe chanes with the storage event.
+// localStorage can observe changes with the storage event.
 // This feature is missing in IndexedDB
 addEventListener("storage", (event) => {});
 ```
