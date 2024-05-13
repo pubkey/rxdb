@@ -64,7 +64,7 @@ export function BrowserWindow(props) {
         'content': {
             'padding': '10px',
             'backgroundColor': 'var(--bg-color)',
-            'minWidth': 360
+            'minWidth': 335
         }
     } as any;
 
