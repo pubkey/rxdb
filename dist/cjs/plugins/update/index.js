@@ -7,6 +7,7 @@ exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
 exports.incrementalUpdate = incrementalUpdate;
 exports.update = update;
+var _rxQueryHelper = require("../../rx-query-helper.js");
 var _mingoUpdater = require("./mingo-updater.js");
 /**
  * this plugin allows delta-updates with mongo-like-syntax
@@ -25,18 +26,8 @@ function update(updateObj) {
   var newDocData = (0, _mingoUpdater.mingoUpdater)(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
-function RxQueryUpdate(updateObj) {
-  return this.exec().then(docs => {
-    if (!docs) {
-      return null;
-    }
-    if (Array.isArray(docs)) {
-      return Promise.all(docs.map(doc => doc.update(updateObj))).then(() => docs);
-    } else {
-      // via findOne()
-      return docs.update(updateObj).then(() => docs);
-    }
-  });
+async function RxQueryUpdate(updateObj) {
+  return (0, _rxQueryHelper.runQueryUpdateFunction)(this.asRxQuery, doc => doc.update(updateObj));
 }
 var RxDBUpdatePlugin = exports.RxDBUpdatePlugin = {
   name: 'update',

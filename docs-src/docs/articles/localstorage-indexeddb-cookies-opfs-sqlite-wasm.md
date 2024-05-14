@@ -17,7 +17,9 @@ In this article we have look at all previous and new technologies to store and q
 ## What is OPFS
 ## What is wasm sqlite
 
-## Things this does not talk about
+
+
+### Things this does not talk about
 WebSQL
 session storage.
 Web Storage API

@@ -997,6 +997,63 @@ export var humanWithTimestamp = overwritable.deepFreezeWhenDevMode({
   indexes: ['updatedAt'],
   required: ['id', 'name', 'age', 'updatedAt']
 });
+export var humanWithTimestampNested = overwritable.deepFreezeWhenDevMode({
+  version: 0,
+  type: 'object',
+  primaryKey: 'id',
+  properties: {
+    id: {
+      type: 'string',
+      maxLength: 100
+    },
+    name: {
+      type: 'string',
+      maxLength: 1000
+    },
+    age: {
+      type: 'number'
+    },
+    updatedAt: {
+      type: 'number',
+      minimum: 0,
+      maximum: 10000000000000000,
+      multipleOf: 1
+    },
+    deletedAt: {
+      type: 'number'
+    },
+    address: {
+      type: 'object',
+      properties: {
+        street: {
+          type: 'string'
+        },
+        suite: {
+          type: 'string'
+        },
+        city: {
+          type: 'string'
+        },
+        zipcode: {
+          type: 'string'
+        },
+        geo: {
+          type: 'object',
+          properties: {
+            lat: {
+              type: 'string'
+            },
+            lng: {
+              type: 'string'
+            }
+          }
+        }
+      }
+    }
+  },
+  indexes: ['updatedAt'],
+  required: ['id', 'name', 'age', 'updatedAt']
+});
 
 /**
  * each field is an index,

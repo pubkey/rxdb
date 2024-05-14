@@ -6,7 +6,7 @@ import { newRxError } from "./rx-error.js";
 import { runPluginHooks } from "./hooks.js";
 import { calculateNewResults } from "./event-reduce.js";
 import { triggerCacheReplacement } from "./query-cache.js";
-import { getQueryMatcher, normalizeMangoQuery } from "./rx-query-helper.js";
+import { getQueryMatcher, normalizeMangoQuery, runQueryUpdateFunction } from "./rx-query-helper.js";
 import { RxQuerySingleResult } from "./rx-query-single-result.js";
 import { getQueryPlan } from "./query-planner.js";
 var _queryCount = 0;
@@ -224,6 +224,9 @@ export var RxQueryBase = /*#__PURE__*/function () {
         return docs.remove();
       }
     });
+  };
+  _proto.incrementalRemove = function incrementalRemove() {
+    return runQueryUpdateFunction(this.asRxQuery, doc => doc.incrementalRemove());
   }
 
   /**
@@ -235,6 +238,18 @@ export var RxQueryBase = /*#__PURE__*/function () {
    */
   _proto.update = function update(_updateObj) {
     throw pluginMissing('update');
+  };
+  _proto.patch = function patch(_patch) {
+    return runQueryUpdateFunction(this.asRxQuery, doc => doc.patch(_patch));
+  };
+  _proto.incrementalPatch = function incrementalPatch(patch) {
+    return runQueryUpdateFunction(this.asRxQuery, doc => doc.incrementalPatch(patch));
+  };
+  _proto.modify = function modify(mutationFunction) {
+    return runQueryUpdateFunction(this.asRxQuery, doc => doc.modify(mutationFunction));
+  };
+  _proto.incrementalModify = function incrementalModify(mutationFunction) {
+    return runQueryUpdateFunction(this.asRxQuery, doc => doc.incrementalModify(mutationFunction));
   }
 
   // we only set some methods of query-builder here

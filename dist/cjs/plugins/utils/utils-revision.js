@@ -6,6 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.createRevision = createRevision;
 exports.getHeightOfRevision = getHeightOfRevision;
 exports.parseRevision = parseRevision;
+/**
+ * Parses the full revision.
+ * Do NOT use this if you only need the revision height,
+ * then use getHeightOfRevision() instead which is faster.
+ */
 function parseRevision(revision) {
   var split = revision.split('-');
   if (split.length !== 2) {
@@ -18,11 +23,21 @@ function parseRevision(revision) {
 }
 
 /**
- * @hotPath
+ * @hotPath Performance is very important here
+ * because we need to parse the revision height very often.
+ * Do not use `parseInt(revision.split('-')[0], 10)` because
+ * only fetching the start-number chars is faster.
  */
 function getHeightOfRevision(revision) {
-  var ret = parseInt(revision.split('-')[0], 10);
-  return ret;
+  var useChars = '';
+  for (var index = 0; index < revision.length; index++) {
+    var char = revision[index];
+    if (char === '-') {
+      return parseInt(useChars, 10);
+    }
+    useChars += char;
+  }
+  throw new Error('malformatted revision: ' + revision);
 }
 
 /**

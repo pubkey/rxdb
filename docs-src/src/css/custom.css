@@ -59,21 +59,21 @@ html[data-theme="dark"] {
 /**
  * Default font size was to big, decrease it here
  */
-.markdown>h1 {
+.markdown > h1 {
     font-size: 2.1rem;
 }
 
-.markdown>h2 {
+.markdown > h2 {
     font-size: 1.75rem;
 }
 
-.markdown>p {
+.markdown > p {
     font-size: 1rem;
 }
 
 .footer {
     background-color: var(--ifm-navbar-background-color);
-    background-image: url('/img/footer-column.svg');
+    background-image: url("/img/footer-column.svg");
     background-position: right bottom;
     background-repeat: no-repeat;
 }
@@ -218,7 +218,6 @@ h1 .underline {
 }
 
 @media (max-width: 500px) {
-
     /**
      * Underline gets broken on mobile,
      * so better disable it.
@@ -233,8 +232,7 @@ h1 .underline {
     background-color: var(--bg-color-dark);
 }
 
-.button,
-.sl-button::part(base) {
+.button {
     cursor: pointer;
     box-sizing: content-box;
     background-color: var(--color-top);
@@ -1075,7 +1073,7 @@ body {
 }
 
 .block.sixth .buy-option-features {
-    padding-bottom: 40px;
+    padding-bottom: 50px;
     font-size: 1em;
 }
 
@@ -1204,38 +1202,48 @@ body {
 }
 
 .bg-gradient-right-bottom {
-    background: linear-gradient(to right bottom,
-            var(--color-top),
-            var(--color-middle),
-            var(--color-bottom));
+    background: linear-gradient(
+        to right bottom,
+        var(--color-top),
+        var(--color-middle),
+        var(--color-bottom)
+    );
 }
 
 .bg-gradient-left-bottom {
-    background: linear-gradient(to left bottom,
-            var(--color-top),
-            var(--color-middle),
-            var(--color-bottom));
+    background: linear-gradient(
+        to left bottom,
+        var(--color-top),
+        var(--color-middle),
+        var(--color-bottom)
+    );
 }
 
 .bg-gradient-right-top {
-    background: linear-gradient(to right top,
-            var(--color-top),
-            var(--color-middle),
-            var(--color-bottom));
+    background: linear-gradient(
+        to right top,
+        var(--color-top),
+        var(--color-middle),
+        var(--color-bottom)
+    );
 }
 
 .bg-gradient-left-top {
-    background: linear-gradient(to left top,
-            var(--color-top),
-            var(--color-middle),
-            var(--color-bottom));
+    background: linear-gradient(
+        to left top,
+        var(--color-top),
+        var(--color-middle),
+        var(--color-bottom)
+    );
 }
 
 .bg-gradient-top {
-    background: linear-gradient(to top,
-            var(--color-top),
-            var(--color-middle),
-            var(--color-bottom));
+    background: linear-gradient(
+        to top,
+        var(--color-top),
+        var(--color-middle),
+        var(--color-bottom)
+    );
 }
 
 .star-at-github {
@@ -1963,7 +1971,8 @@ footer a:visited {
     color: white;
 }
 
-@media (min-width: 576px) {}
+@media (min-width: 576px) {
+}
 
 .redirectBox .ul-container {
     text-align: center;
@@ -1978,7 +1987,8 @@ footer a:visited {
     margin: 10px 0;
 }
 
-@media (min-width: 576px) {}
+@media (min-width: 576px) {
+}
 
 /*
  * Call to action button
@@ -2151,33 +2161,9 @@ footer a:visited {
     font-weight: 500;
 }
 
-.sl-button::part(base) {
-    margin-right: 0px;
-    padding: 0px;
-    line-height: 150%;
-    font-weight: 400;
-    border-radius: 18px;
-    box-sizing: border-box;
-}
-
-.sl-button::part(label) {
-    display: flex;
-    align-items: center;
-}
-
 .consulting-page .button-empty {
     background-color: transparent;
     border-color: white;
-}
-
-.sl-button-empty::part(base) {
-    background-color: transparent;
-    border-color: white;
-    box-shadow: unset !important;
-}
-
-.sl-button-empty::part(label):hover {
-    color: var(--color-top);
 }
 
 .consulting-page .content {
@@ -2199,14 +2185,9 @@ footer a:visited {
     width: 100%;
 }
 
-sl-dialog::part(panel) {
-    padding: 0;
-    border-radius: 32px;
-    background: rgb(31, 31, 31);
-}
-
-sl-dialog::part(body) {
-    padding: 6px;
+/* dialog */
+.modal-consulting-page .ant-modal-content {
+    background-color: transparent;
 }
 
 @media (max-width: 800px) {
@@ -2230,9 +2211,6 @@ sl-dialog::part(body) {
 }
 
 /** navbar **/
-.navbar-home .sl-button::part(base) {
-    border-radius: 14px;
-}
 
 .navbar-home {
     z-index: 10;
@@ -2296,41 +2274,6 @@ sl-dialog::part(body) {
     padding: 8px 20px;
 }
 
-.consulting-page .navbar-home .sl-button::part(label) {
-    padding: 8px 20px;
-}
-
-.consulting-page .navbar-home-links sl-button::part(base) {
-    font-size: 1em;
-    font-weight: 400;
-    line-height: 150%;
-    color: white;
-    display: flex;
-    align-items: center;
-    transition: all 0.15s ease-in-out;
-}
-
-.consulting-page .nav-button::part(base) {
-    height: 40px;
-}
-
-.consulting-page .navbar-home-links sl-button::part(base):hover {
-    color: var(--color-top);
-}
-
-.consulting-page .nav-logo-button::part(label) {
-    display: flex;
-    gap: 9px;
-    font-size: 1.35em;
-    font-weight: 500;
-    line-height: 120%;
-    margin-right: 48px;
-}
-
-.consulting-page .navbar-home-links sl-button::part(label) {
-    padding: 0;
-}
-
 /** hero = first **/
 .consulting-page .block.first {
     position: relative;
@@ -2388,10 +2331,6 @@ sl-dialog::part(body) {
 .consulting-page .button-empty {
     padding: 12px 24px;
     margin-right: 0;
-}
-
-.consulting-page .block.first .sl-button::part(label) {
-    padding: 12px 24px;
 }
 
 .consulting-page .hero-bottom-group {
@@ -2516,6 +2455,21 @@ sl-dialog::part(body) {
     text-wrap: nowrap;
 }
 
+.consulting-page .block.packages .flex-row a {
+    color: white;
+    text-decoration: underline;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    text-wrap: nowrap;
+    transition: color var(--ifm-transition-fast)
+        var(--ifm-transition-timing-default);
+    display: flex;
+    font-size: 1.14em;
+    line-height: 150%;
+    font-weight: 400;
+}
+
 .consulting-page .block.packages .item-package {
     padding: 32px;
     border-radius: 32px;
@@ -2543,32 +2497,53 @@ sl-dialog::part(body) {
     color: var(--color-top) !important;
 }
 
-.consulting-page .block.packages sl-button::part(label) {
-    color: white;
-    text-decoration: underline;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    text-wrap: nowrap;
-    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
-    display: flex;
-    font-size: 1.29em;
-    line-height: 150%;
-    font-weight: 400;
-}
-
-.consulting-page .block.packages sl-button::part(label):hover {
-    color: var(--color-top) !important;
-}
-
-.consulting-page .block.packages sl-button::part(base) {
-    min-height: auto;
-}
-
 /** benefits **/
 .consulting-page .block.benefits,
 .consulting-page .block.review {
     background: #131720;
+}
+
+.consulting-page .block.benefits .ant-tabs {
+    flex-direction: row;
+    gap: 40px;
+}
+.consulting-page .block.benefits .ant-tabs-nav {
+    min-width: 371px;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+.consulting-page .block.benefits .ant-tabs-nav-list {
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: scroll;
+}
+.consulting-page .block.benefits .ant-tabs-nav-list::-webkit-scrollbar {
+    display: none;
+}
+.consulting-page .block.benefits .ant-tabs-nav::before,
+.consulting-page .block.benefits .ant-tabs-ink-bar {
+    display: none;
+}
+.consulting-page .block.benefits .ant-tabs-tab-active {
+    margin: 0;
+    border-left: 2px solid #e6008d;
+}
+.consulting-page .block.benefits .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: white !important;
+}
+
+.consulting-page .block.benefits .ant-tabs-tab {
+    margin: 0;
+    color: #787887;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 140%;
+    padding: 24px 32px;
+}
+.consulting-page .block.benefits .ant-tabs-nav-operations {
+    display: none;
 }
 
 .consulting-page .panel {
@@ -2620,70 +2595,17 @@ sl-dialog::part(body) {
     line-height: 150%;
     margin: 0;
 }
-
-.consulting-page sl-tab-group::part(base) {
+.consulting-page .benefit-tabs-content {
+    display: flex;
+    flex-direction: row;
     gap: 40px;
 }
-
-.consulting-page sl-tab-group::part(nav) {
-    display: flex;
-    justify-content: space-between;
-}
-
-.consulting-page sl-tab-group::part(nav)::-webkit-scrollbar {
-    display: none;
-    width: 0;
-}
-
-/* .consulting-page sl-tab-group::-webkit-scrollbar {
-    display: none;
-    width: 0;
-} */
-.consulting-page sl-tab-group::part(tabs) {
+.consulting-page .benefit-tabs {
     min-width: 371px;
-    height: 100%;
+    height: auto;
     display: flex;
-    --indicator-color: var(--color-top);
-    border-inline-end: unset;
     justify-content: space-between;
-}
-
-.consulting-page sl-tab-group::part(active-tab-indicator) {
-    right: auto;
-    border-inline-end: unset;
-}
-
-.consulting-page sl-tab::part(base) {
-    font-size: 1.5em;
-    font-weight: 400;
-    line-height: 130%;
-    padding: 24px 32px;
-    transition: all 0.15s ease-in-out;
-    color: #787887;
-    cursor: pointer;
-}
-
-.consulting-page sl-tab[aria-selected="false"]::part(base) {
-    color: #787887;
-}
-
-.consulting-page sl-tab[aria-selected="true"]::part(base) {
-    color: white;
-    border-left: solid var(--track-width) var(--indicator-color);
-    border-bottom: unset;
-    border-radius: 0;
-}
-
-.consulting-page sl-tab-panel::part(base) {
-    padding: 0;
-}
-
-.consulting-page sl-tab::part(base):hover {
-    color: var(--color-top);
-}
-
-.consulting-page sl-tab {
-    min-width: 280px;
+    flex-grow: 1;
 }
 
 /** steps **/
@@ -2707,10 +2629,6 @@ sl-dialog::part(body) {
 }
 
 .consulting-page .block.steps a {
-    padding: 12px 24px;
-}
-
-.consulting-page .block.steps .sl-button::part(label) {
     padding: 12px 24px;
 }
 
@@ -2961,28 +2879,43 @@ sl-dialog::part(body) {
     padding-top: 112px;
 }
 
-.consulting-page sl-details::part(base) {
-    background-color: #222834;
-    border: none;
-    border-radius: 24px;
+.block.faq .ant-collapse {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: transparent;
 }
-
-.consulting-page sl-details::part(header) {
+.block.faq .ant-collapse-header {
+    font-size: 1.15em;
+    font-weight: 600;
+    line-height: 150%;
+    color: white;
+    flex-direction: row-reverse;
+    align-items: center;
+    padding: 0;
+    gap: 16px;
+}
+.block.faq .ant-collapse-item {
     border: none;
     border-radius: 24px;
     font-size: 1.15em;
     font-weight: 600;
     line-height: 150%;
+
+    color: white;
+    background-color: #222834;
+    border: none;
+    border-radius: 24px;
     padding: 26.5px 24px;
-    display: flex;
-    gap: 16px;
 }
 
-.consulting-page sl-details::part(content) {
-    padding: 0 26.5px 24px;
+.block.faq .ant-collapse-content-box {
+    padding: 12px 0 0 !important;
     font-size: 1em;
     line-height: 150%;
     white-space: pre-line;
+    color: white;
+    font-weight: 400;
 }
 
 /* next */
@@ -3013,14 +2946,6 @@ sl-dialog::part(body) {
     position: absolute;
     bottom: -1%;
     left: 0;
-}
-
-.consulting-page .block.next .sl-button::part(label) {
-    padding: 12px 48px;
-}
-
-.consulting-page .block.next .sl-button {
-    margin-top: 16px;
 }
 
 /* contact */
@@ -3062,74 +2987,7 @@ sl-dialog::part(body) {
     margin-top: 56px;
 }
 
-.sl-button::part(base) {
-    transition: all 0.15s ease-in-out;
-}
-
-.block.contact sl-button[disabled]::part(base):hover {
-    box-shadow: unset;
-    color: white;
-}
-
-.sl-button::part(base):hover {
-    box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
-    color: #000;
-}
-
-.consulting-page .block.contact .sl-button::part(label) {
-    padding: 12px 62.5px;
-}
-
-.consulting-page .block.contact .sl-button,
-.consulting-page .block.contact sl-checkbox {
-    align-self: center;
-}
-
-.consulting-page .block.contact sl-checkbox {
-    margin-bottom: 17.5px;
-    color: #9494a7;
-    font-size: 0.9em;
-}
-
-.consulting-page sl-checkbox::part(control--checked) {
-    background-color: var(--color-top);
-}
-
-.consulting-page .block.contact sl-checkbox a {
-    color: #9494a7;
-    text-decoration: underline;
-}
-
-.consulting-page .block.contact sl-input::part(base) {
-    min-height: 60px;
-    background-color: #dbdbe6;
-    display: flex;
-    align-items: center;
-}
-
-.consulting-page sl-input::part(base),
-.consulting-page sl-textarea::part(base) {
-    border-radius: 16px;
-}
-
-.consulting-page sl-input::part(input),
-.consulting-page sl-textarea::part(textarea) {
-    padding: 18px 20px;
-    border-radius: 16px;
-    background-color: #dbdbe6;
-}
-
 /* footer */
-sl-button::part(label) {
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-sl-button::part(base) {
-    display: flex;
-    align-items: center;
-}
 
 .block.footer {
     background-color: var(--bg-color-dark);
@@ -3188,14 +3046,6 @@ sl-button::part(base) {
     padding-left: 3px;
 }
 
-.footer-community-links sl-button::part(base) {
-    transition: all 0.15s ease-in-out;
-}
-
-.footer-community-links sl-button::part(base):hover {
-    opacity: 0.6;
-}
-
 .footer-nav-links {
     display: flex;
     flex-wrap: wrap;
@@ -3217,7 +3067,7 @@ sl-button::part(base) {
     color: var(--color-top);
 }
 
-.footer-nav-links a::part(label) {
+.footer-nav-links {
     padding: 0;
 }
 
@@ -3262,7 +3112,6 @@ sl-button::part(base) {
 }
 
 @media (max-width: 1360px) {
-
     /** packages **/
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 48.5%;
@@ -3270,7 +3119,6 @@ sl-button::part(base) {
 }
 
 @media (max-width: 1280px) {
-
     /** hero **/
     .consulting-page .block.first .inner {
         margin-top: 38px;
@@ -3320,7 +3168,6 @@ sl-button::part(base) {
 }
 
 @media (max-width: 1200px) {
-
     /** packages **/
     .consulting-page .block.packages .flex-row {
         gap: 20px;
@@ -3328,8 +3175,9 @@ sl-button::part(base) {
     }
 
     /** benefits **/
-    .consulting-page sl-tab-group::part(tabs) {
-        min-width: unset;
+
+    .consulting-page .benefit-tabs {
+        min-width: 300px;
     }
 
     .consulting-page .block.benefits .panel h3 {
@@ -3344,10 +3192,6 @@ sl-button::part(base) {
         padding: 40px 50px 40px 200px;
     }
 
-    .consulting-page sl-tab::part(base) {
-        font-size: 1.2em;
-    }
-
     /** steps **/
     .consulting-page .block.steps .inner {
         padding-right: 55px;
@@ -3358,17 +3202,13 @@ sl-button::part(base) {
     }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 950px) {
     .consulting-page .block.first {
         padding-bottom: 180px;
     }
 
     .consulting-page .navbar-home-links-mobile {
         display: none;
-    }
-
-    .consulting-page .nav-logo-button::part(label) {
-        margin-right: 20px;
     }
 
     .nav-logo-consulting {
@@ -3395,10 +3235,6 @@ sl-button::part(base) {
 
     .consulting-page .hero-bottom-group {
         display: none;
-    }
-
-    .consulting-page .block.first .sl-button {
-        max-width: unset;
     }
 
     .consulting-page .block.first .button {
@@ -3468,28 +3304,32 @@ sl-button::part(base) {
     }
 
     /** benefits **/
-    .consulting-page sl-tab-group {
+    .consulting-page .benefit-tabs-content {
         width: 100%;
         width: -webkit-fill-available;
-        /* Mozilla-based browsers will ignore this. */
-        /* width: fill-available; */
         width: stretch;
     }
-
-    .consulting-page sl-tab-group::part(nav) {
-        overflow: scroll;
+    .consulting-page .benefit-tabs-content, .consulting-page .block.benefits .ant-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+        width: 100%;
+        width: -webkit-fill-available;
+        width: stretch;
     }
-
-    .consulting-page sl-tab-group::part(nav)::-webkit-scrollbar {
-        width: 0;
-    }
-
-    .consulting-page sl-tab-group::part(tabs) {
+    .consulting-page .block.benefits .ant-tabs-nav-list {
         flex-direction: row;
     }
-
-    .consulting-page sl-tab-group::part(base) {
-        flex-direction: column;
+    .consulting-page .block.benefits .ant-tabs-tab-active {
+        margin: 0;
+        border-left: unset;
+        border-bottom: 2px solid #e6008d;
+    }
+    .consulting-page .block.benefits .ant-tabs-tab {
+        padding: 12px 24px;
+    }
+    .consulting-page .benefit-tabs, .consulting-page .block.benefits .ant-tabs-nav {
+        min-width: unset;
     }
 
     .consulting-page .block.benefits .panel h3 {
@@ -3502,20 +3342,6 @@ sl-button::part(base) {
 
     .consulting-page .panel {
         padding: 40px 50px 40px 200px;
-    }
-
-    .consulting-page sl-tab::part(base) {
-        font-size: 1.2em;
-        padding: 24px 16px;
-    }
-
-    .consulting-page sl-tab[aria-selected="true"]::part(base) {
-        border-left: unset;
-        border-bottom: solid var(--track-width) var(--indicator-color);
-    }
-
-    .consulting-page sl-tab {
-        min-width: unset;
     }
 
     /** steps **/
@@ -3583,11 +3409,6 @@ sl-button::part(base) {
     .consulting-page .block.first .button-empty {
         width: 100%;
         /* flex-grow: 1; */
-    }
-
-    .consulting-page .block.first .sl-button {
-        width: 100%;
-        width: -webkit-fill-available;
     }
 
     .consulting-page .hero-img {
@@ -3693,21 +3514,17 @@ sl-button::part(base) {
         font-size: 1.9em;
     }
 
-    .consulting-page sl-tab::part(base) {
-        font-size: 1.3em;
-        padding: 16px 0px;
-    }
-
-    .consulting-page sl-tab-group::part(tabs) {
-        gap: 16px;
-    }
-
-    .consulting-page sl-tab-group::part(base) {
-        gap: 32px;
-    }
-
     .consulting-page .block.benefits {
         padding-bottom: 48px;
+    }
+    .consulting-page .block.benefits .ant-tabs-tab {
+        padding: 16px 0px;
+    }
+    .consulting-page .block.benefits .ant-tabs-nav-list {
+        gap: 16px;
+    }
+    .consulting-page .block.benefits .ant-tabs-tab {
+        font-size: 20px;
     }
 
     /** steps **/
@@ -3889,12 +3706,10 @@ sl-button::part(base) {
     }
 
     .footer-nav-links {
-        gap: 0;
-        justify-content: space-between;
-    }
-
-    .footer-nav-links sl-button:last-child {
-        display: none;
+        gap: 20px;
+        justify-content: unset;
+        /* gap: 0px;
+        justify-content: space-between; */
     }
 
     .block.footer .footer-block {

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.getQueryMatcher = getQueryMatcher;
 exports.getSortComparator = getSortComparator;
 exports.normalizeMangoQuery = normalizeMangoQuery;
+exports.runQueryUpdateFunction = runQueryUpdateFunction;
 var _queryPlanner = require("./query-planner.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _index = require("./plugins/utils/index.js");
@@ -195,5 +196,19 @@ function getQueryMatcher(_schema, query) {
     return mingoQuery.test(doc);
   };
   return fun;
+}
+async function runQueryUpdateFunction(rxQuery, fn) {
+  var docs = await rxQuery.exec();
+  if (!docs) {
+    // only findOne() queries can return null
+    return null;
+  }
+  if (Array.isArray(docs)) {
+    return Promise.all(docs.map(doc => fn(doc)));
+  } else {
+    // via findOne()
+    var result = await fn(docs);
+    return result;
+  }
 }
 //# sourceMappingURL=rx-query-helper.js.map

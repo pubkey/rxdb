@@ -1,7 +1,7 @@
 import { firstValueFrom, filter, mergeMap } from 'rxjs';
 import { newRxError } from "../rx-error.js";
 import { stackCheckpoints } from "../rx-storage-helper.js";
-import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, now, parseRevision, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
+import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getHeightOfRevision, now, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from "./helper.js";
 import { getAssumedMasterState, getMetaWriteRow } from "./meta-instance.js";
@@ -200,7 +200,7 @@ export async function startReplicationDownstream(state) {
             realMasterState: assumedMaster.docData,
             newDocumentState: forkStateDocData
           }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc && forkStateFullDoc._meta[state.input.identifier] && parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc && forkStateFullDoc._meta[state.input.identifier] && getHeightOfRevision(forkStateFullDoc._rev) === forkStateFullDoc._meta[state.input.identifier]) {
             isAssumedMasterEqualToForkState = true;
           }
           if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
@@ -255,7 +255,7 @@ export async function startReplicationDownstream(state) {
            * This is used for example in the CouchDB replication plugin.
            */
           if (masterState._rev) {
-            var nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
+            var nextRevisionHeight = !forkStateFullDoc ? 1 : getHeightOfRevision(forkStateFullDoc._rev) + 1;
             newForkState._meta[state.input.identifier] = nextRevisionHeight;
             if (state.input.keepMeta) {
               newForkState._rev = masterState._rev;

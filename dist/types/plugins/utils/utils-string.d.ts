@@ -29,3 +29,4 @@ export declare function isFolderPath(name: string): boolean;
  */
 export declare function arrayBufferToString(arrayBuffer: ArrayBuffer): string;
 export declare function stringToArrayBuffer(str: string): ArrayBuffer;
+export declare function normalizeString(str: string): string;

@@ -1,4 +1,4 @@
-import { SimpleHumanV3DocumentType, HumanWithSubOtherDocumentType, NestedHumanDocumentType, DeepNestedHumanDocumentType, EncryptedHumanDocumentType, EncryptedObjectHumanDocumentType, EncryptedDeepHumanDocumentType, CompoundIndexDocumentType, CompoundIndexNoStringDocumentType, HeroArrayDocumentType, SimpleHeroArrayDocumentType, RefHumanDocumentType, RefHumanNestedDocumentType, AverageSchemaDocumentType, PointDocumentType, HumanWithTimestampDocumentType, BigHumanDocumentType, NostringIndexDocumentType, NoIndexHumanDocumentType, HumanWithCompositePrimary } from './schema-objects.ts';
+import { SimpleHumanV3DocumentType, HumanWithSubOtherDocumentType, NestedHumanDocumentType, DeepNestedHumanDocumentType, EncryptedHumanDocumentType, EncryptedObjectHumanDocumentType, EncryptedDeepHumanDocumentType, CompoundIndexDocumentType, CompoundIndexNoStringDocumentType, HeroArrayDocumentType, SimpleHeroArrayDocumentType, RefHumanDocumentType, RefHumanNestedDocumentType, AverageSchemaDocumentType, PointDocumentType, HumanWithTimestampDocumentType, BigHumanDocumentType, NostringIndexDocumentType, NoIndexHumanDocumentType, HumanWithCompositePrimary, HumanWithTimestampNestedDocumentType } from './schema-objects.ts';
 import type { ExtractDocumentTypeFromTypedRxJsonSchema, RxJsonSchema } from '../../types/rx-schema';
 export declare const humanSchemaLiteral: import("../../index.ts").DeepReadonlyObject<{
     readonly title: "human schema";
@@ -328,6 +328,7 @@ export declare const humanMinimalBroken: RxJsonSchema<{
  * contains timestamp
  */
 export declare const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType>;
+export declare const humanWithTimestampNested: RxJsonSchema<HumanWithTimestampNestedDocumentType>;
 /**
  * each field is an index,
  * use this to slow down inserts in tests

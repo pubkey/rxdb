@@ -206,7 +206,7 @@ async function startReplicationUpstream(state) {
          * is different from the assumedMasterDoc.
          */
 
-        assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _index.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier])) {
+        assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _index.getHeightOfRevision)(fullDocData._rev) === fullDocData._meta[state.input.identifier])) {
           return;
         }
         writeRowsToMasterIds.push(docId);

@@ -104,7 +104,6 @@ Runs an [update](./rx-document.md#update) on every RxDocument of the query-resul
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
-
 const query = myCollection.find({
   selector: {
     age: {
@@ -119,7 +118,43 @@ await query.update({
 });
 ```
 
-## remove()
+## patch() / incrementalPatch()
+
+Runs the [RxDocument.patch()](./rx-document.md#patch) function on every RxDocument of the query result.
+
+```js
+const query = myCollection.find({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+});
+await query.patch({
+  age: 12 // set the age of every found to 12
+});
+```
+
+## modify() / incrementalModify()
+
+Runs the [RxDocument.modify()](./rx-document.md#modify) function on every RxDocument of the query result.
+
+```js
+const query = myCollection.find({
+  selector: {
+    age: {
+      $gt: 18
+    }
+  }
+});
+await query.modify((docData) => {
+  docData.age = docData.age + 1; // increases age of every found document by 1
+  return docData;
+});
+```
+
+
+## remove() / incrementalRemove()
 
 Deletes all found documents. Returns a promise which resolves to the deleted documents.
 

@@ -205,7 +205,7 @@ async function startReplicationDownstream(state) {
             realMasterState: assumedMaster.docData,
             newDocumentState: forkStateDocData
           }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc && forkStateFullDoc._meta[state.input.identifier] && (0, _index.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc && forkStateFullDoc._meta[state.input.identifier] && (0, _index.getHeightOfRevision)(forkStateFullDoc._rev) === forkStateFullDoc._meta[state.input.identifier]) {
             isAssumedMasterEqualToForkState = true;
           }
           if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
@@ -260,7 +260,7 @@ async function startReplicationDownstream(state) {
            * This is used for example in the CouchDB replication plugin.
            */
           if (masterState._rev) {
-            var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _index.parseRevision)(forkStateFullDoc._rev).height + 1;
+            var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _index.getHeightOfRevision)(forkStateFullDoc._rev) + 1;
             newForkState._meta[state.input.identifier] = nextRevisionHeight;
             if (state.input.keepMeta) {
               newForkState._rev = masterState._rev;

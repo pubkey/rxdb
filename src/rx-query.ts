@@ -43,11 +43,12 @@ import type {
     RxDocumentData,
     QueryMatcher,
     RxJsonSchema,
-    FilledMangoQuery
+    FilledMangoQuery,
+    ModifyFunction
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
-import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
+import { getQueryMatcher, normalizeMangoQuery, runQueryUpdateFunction } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 import { getQueryPlan } from './query-planner.ts';
 
@@ -414,6 +415,12 @@ export class RxQueryBase<
                 }
             });
     }
+    incrementalRemove(): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.incrementalRemove(),
+        );
+    }
 
 
     /**
@@ -429,6 +436,31 @@ export class RxQueryBase<
      */
     update(_updateObj: any): Promise<RxQueryResult> {
         throw pluginMissing('update');
+    }
+
+    patch(patch: Partial<RxDocType>): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.patch(patch),
+        );
+    }
+    incrementalPatch(patch: Partial<RxDocType>): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.incrementalPatch(patch),
+        );
+    }
+    modify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.modify(mutationFunction),
+        );
+    }
+    incrementalModify(mutationFunction: ModifyFunction<RxDocType>): Promise<RxQueryResult> {
+        return runQueryUpdateFunction(
+            this.asRxQuery,
+            (doc) => doc.incrementalModify(mutationFunction),
+        );
     }
 
 

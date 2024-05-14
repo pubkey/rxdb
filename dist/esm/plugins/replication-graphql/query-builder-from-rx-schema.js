@@ -7,12 +7,15 @@ export function pullQueryBuilderFromRxSchema(collectionName, input) {
   var ucCollectionName = ucfirst(collectionName);
   var queryName = prefixes.pull + ucCollectionName;
   var operationName = ucfirst(queryName);
-  var outputFields = Object.keys(schema.properties).filter(k => !input.ignoreOutputKeys.includes(k));
-  // outputFields.push(input.deletedField);
+  var outputFields = generateGQLOutputFields({
+    schema,
+    ignoreOutputKeys: input.ignoreOutputKeys
+  });
+  // outputFields.push(input.deletedField);    
 
   var checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
   var builder = (checkpoint, limit) => {
-    var query = 'query ' + operationName + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' + SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + '}\n' + '}';
+    var query = 'query ' + operationName + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' + SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + outputFields + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + '}\n' + '}';
     return {
       query,
       operationName,
@@ -30,9 +33,12 @@ export function pullStreamBuilderFromRxSchema(collectionName, input) {
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
   var queryName = prefixes.stream + ucCollectionName;
-  var outputFields = Object.keys(schema.properties).filter(k => !input.ignoreOutputKeys.includes(k));
+  var outputFields = generateGQLOutputFields({
+    schema,
+    ignoreOutputKeys: input.ignoreOutputKeys
+  });
   var headersName = ucCollectionName + 'Input' + prefixes.headers;
-  var query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' + SPACING + queryName + '(headers: $headers) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + '}' + '}';
+  var query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' + SPACING + queryName + '(headers: $headers) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + outputFields + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + '}' + '}';
   var builder = headers => {
     return {
       query,
@@ -50,9 +56,12 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
   var queryName = prefixes.push + ucCollectionName;
   var operationName = ucfirst(queryName);
   var variableName = collectionName + prefixes.pushRow;
-  var returnFields = Object.keys(input.schema.properties);
+  var returnFields = generateGQLOutputFields({
+    schema: input.schema,
+    spaceCount: 2
+  });
   var builder = pushRows => {
-    var query = '' + 'mutation ' + operationName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' + SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' + SPACING + SPACING + returnFields.join(',\n' + SPACING + SPACING) + '\n' + SPACING + '}\n' + '}';
+    var query = '' + 'mutation ' + operationName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' + SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' + returnFields + '\n' + SPACING + '}\n' + '}';
     var sendRows = [];
     function transformPushDoc(doc) {
       var sendDoc = {};
@@ -84,5 +93,34 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
     };
   };
   return builder;
+}
+function generateGQLOutputFields(options) {
+  var {
+    schema,
+    spaceCount = 4,
+    depth = 0,
+    ignoreOutputKeys = []
+  } = options;
+  var outputFields = [];
+  var properties = schema.properties;
+  var NESTED_SPACING = SPACING.repeat(depth);
+  var LINE_SPACING = SPACING.repeat(spaceCount);
+  for (var key in properties) {
+    //only skipping top level keys that are in ignoreOutputKeys list
+    if (ignoreOutputKeys.includes(key)) {
+      continue;
+    }
+    var value = properties[key];
+    if (value.type === "object") {
+      outputFields.push(LINE_SPACING + NESTED_SPACING + key + " {", generateGQLOutputFields({
+        schema: value,
+        spaceCount,
+        depth: depth + 1
+      }), LINE_SPACING + NESTED_SPACING + "}");
+    } else {
+      outputFields.push(LINE_SPACING + NESTED_SPACING + key);
+    }
+  }
+  return outputFields.join('\n');
 }
 //# sourceMappingURL=query-builder-from-rx-schema.js.map

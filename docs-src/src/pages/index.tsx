@@ -260,7 +260,7 @@ export default function Home() {
               <h1 style={{
                 fontSize: '3.5em',
                 fontWeight: 400,
-                textAlign: 'left',
+                textAlign: 'center',
                 lineHeight: '120%',
                 letterSpacing: -1
               }}>
@@ -377,6 +377,22 @@ export default function Home() {
             </div>
           </div>
 
+          <div className="block reviews">
+            <div className="content centered">
+              <div className="inner">
+                <h2>
+                  Used by <b className="underline">many</b>
+                </h2>
+                <p>
+                  RxDB is a proven technology used by thousands of developers worldwide. <br />
+                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                </p>
+                <br /><br />
+              </div>
+            </div>
+            <ReviewsBlock></ReviewsBlock>
+          </div>
+
           <a
             href="/chat"
             target="_blank"
@@ -397,23 +413,6 @@ export default function Home() {
             </div>
           </a>
 
-
-
-          <div className="block reviews">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Used by <b className="underline">many</b>
-                </h2>
-                <p>
-                  RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of apps and services.
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
 
           <div className="block second dark">
             <div className="content">
@@ -1029,14 +1028,20 @@ export default function Home() {
                       </div>
                       <div className="buy-option-features">
                         <p>
-                          Tailored specifically for high-stakes projects,
-                          the premium plugins enhance RxDB's core capabilities with advanced <b>performance optimizations</b>.
-                          From faster data processing to comprehensive encryption,
-                          our Premium Plugins ensure that your professional applications run smoothly.
-                          <br />
-                          <br />
-                          Elevate your project's performance and reliability to professional standards.
+                          Our Premium Plugins are essential for professionals using RxDB.
+                          They boost the basic features of RxDB with significant performance improvements and reduced bundle size.
                         </p>
+                        <ul>
+                          <li>
+                            <b>Enhanced Storage Plugins</b> to speed up data processing significantly.
+                          </li>
+                          <li>
+                            <b>Robust Encryption</b> secures your data with state-of-the-art encryption methods.
+                          </li>
+                          <li>
+                            <b>Advanced Metrics Logging</b> provides detailed insights for performance monitoring.
+                          </li>
+                        </ul>
                       </div>
                       {/* <div className="buy-option-features">
                         <ul>

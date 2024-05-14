@@ -1,5 +1,5 @@
 import { isBulkWriteConflictError, rxStorageWriteErrorToRxError } from "./rx-error.js";
-import { clone, ensureNotFalsy, getFromMapOrCreate, getFromMapOrThrow, parseRevision, stripMetaDataFromDocument } from "./plugins/utils/index.js";
+import { clone, ensureNotFalsy, getFromMapOrCreate, getFromMapOrThrow, getHeightOfRevision, stripMetaDataFromDocument } from "./plugins/utils/index.js";
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -148,9 +148,9 @@ export function modifierFromPublicToInternal(publicModifier) {
 }
 export function findNewestOfDocumentStates(docs) {
   var newest = docs[0];
-  var newestRevisionHeight = parseRevision(newest._rev).height;
+  var newestRevisionHeight = getHeightOfRevision(newest._rev);
   docs.forEach(doc => {
-    var height = parseRevision(doc._rev).height;
+    var height = getHeightOfRevision(doc._rev);
     if (height > newestRevisionHeight) {
       newest = doc;
       newestRevisionHeight = height;

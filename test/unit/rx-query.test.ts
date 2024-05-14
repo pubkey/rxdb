@@ -701,19 +701,29 @@ describe('rx-query.test.ts', () => {
             c.database.destroy();
         });
     });
-    describeParallel('update', () => {
-        describe('positive', () => {
+    describeParallel('updates to the result of the query', () => {
+        describe('RxQuery.update()', () => {
             it('updates a value on a query', async () => {
                 const c = await humansCollection.create(2);
                 const query = c.find();
-                await query.update({
+                const updateResult = await query.update({
                     $set: {
                         firstName: 'new first name'
                     }
                 });
+                assert.strictEqual(updateResult.length, 2);
+
+                // the returned docs must the at the "latest" revision
+                for (const doc of updateResult) {
+                    const latest = doc.getLatest();
+                    assert.ok(latest === doc, 'doc must be latest');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
                 const docs = await query.exec();
-                for (const doc of docs)
+                for (const doc of docs) {
                     assert.strictEqual(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
                 c.database.destroy();
             });
             it('$unset a value on a query', async () => {
@@ -732,13 +742,120 @@ describe('rx-query.test.ts', () => {
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
                 const query = c.findOne().where('age').gt(1000000);
-                await query.update({
+                const updateResult = await query.update({
                     $set: {
                         firstName: 'new first name'
                     }
                 });
+                assert.strictEqual(updateResult, null);
                 const doc = await query.exec();
                 assert.strictEqual(doc, null);
+                c.database.destroy();
+            });
+        });
+        describe('RxQuery.patch()', () => {
+            it('updates a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                const updateResult = await query.patch({
+                    firstName: 'new first name'
+                });
+                // the returned docs must the at the "latest" revision
+                for (const doc of updateResult) {
+                    const latest = doc.getLatest();
+                    assert.ok(latest === doc, 'doc must be latest');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                c.database.destroy();
+            });
+            it('unset a value on a query by patching with undefined', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                await query.patch({
+                    age: undefined
+                });
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.age, undefined);
+                }
+                c.database.destroy();
+            });
+            it('dont crash when findOne with no result', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.findOne().where('age').gt(1000000);
+                await query.patch({
+                    firstName: 'new first name'
+                });
+                const doc = await query.exec();
+                assert.strictEqual(doc, null);
+                c.database.destroy();
+            });
+        });
+        describe('RxQuery.modify()', () => {
+            it('updates a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                const updateResult = await query.modify(docData => {
+                    docData.firstName = 'new first name';
+                    return docData;
+                });
+                // the returned docs must the at the "latest" revision
+                for (const doc of updateResult) {
+                    const latest = doc.getLatest();
+                    assert.ok(latest === doc, 'doc must be latest');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                c.database.destroy();
+            });
+        });
+        describe('incremental functions', () => {
+            it('.incrementalPatch()', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                const updateResult = await query.incrementalPatch({
+                    firstName: 'new first name'
+                });
+                // the returned docs must the at the "latest" revision
+                for (const doc of updateResult) {
+                    const latest = doc.getLatest();
+                    assert.ok(latest === doc, 'doc must be latest');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                c.database.destroy();
+            });
+            it('.incrementalModify()', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                const updateResult = await query.incrementalModify(docData => {
+                    docData.firstName = 'new first name';
+                    return docData;
+                });
+                // the returned docs must the at the "latest" revision
+                for (const doc of updateResult) {
+                    const latest = doc.getLatest();
+                    assert.ok(latest === doc, 'doc must be latest');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.firstName, 'new first name');
+                    assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
                 c.database.destroy();
             });
         });
