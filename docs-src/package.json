@@ -18,7 +18,7 @@
     "@docusaurus/plugin-google-gtag": "3.0.1",
     "@docusaurus/preset-classic": "3.0.1",
     "@mdx-js/react": "3.0.0",
-    "@shoelace-style/shoelace": "2.15.0",
+    "antd": "5.17.1",
     "autocomplete.js": "0.37.0",
     "clsx": "2.1.0",
     "gauge": "5.0.1",
