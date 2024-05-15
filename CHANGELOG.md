@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- IMPROVE performance of insert to [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html)
 
 <!-- ADD new changes here! -->
 
