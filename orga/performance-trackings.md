@@ -2083,3 +2083,50 @@ AFTER (optimize getCachedRxDocumentMonad()):
     "count": 0.55,
     "property-access": 2.57
 }
+
+
+## Faster indexeddb inserts (15 May 2024)
+
+BEFORE:
+
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 22.85,
+    "insert-documents-200": 2.63,
+    "find-by-ids": 13.55,
+    "find-by-query": 12.55,
+    "find-by-query-parallel-4": 9.4,
+    "count": 2.8,
+    "property-access": 2.05
+}
+
+AFTER:
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 23.6,
+    "insert-documents-200": 2.33,
+    "find-by-ids": 13.8,
+    "find-by-query": 14.2,
+    "find-by-query-parallel-4": 10.85,
+    "count": 2.75,
+    "property-access": 2.65
+}'
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 22.65,
+    "insert-documents-200": 2.17,
+    "find-by-ids": 13.35,
+    "find-by-query": 12.55,
+    "find-by-query-parallel-4": 10.25,
+    "count": 2.95,
+    "property-access": 2.4
+}

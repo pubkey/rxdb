@@ -84,29 +84,28 @@ describe('performance.test.ts', () => {
 
             // create collections
             const collectionData: any = {};
-            let firstCollectionName: string = '';
+            const collectionNames: string[] = [];
             new Array(collectionsAmount)
                 .fill(0)
                 .forEach((_v, idx) => {
                     const name = randomCouchString(10) + '_' + idx;
-                    if (!firstCollectionName) {
-                        firstCollectionName = name;
-                    }
+                    collectionNames.push(name);
                     collectionData[name] = {
                         schema: schemas.averageSchema(),
                         statics: {}
                     };
                 });
+            const firstCollectionName: string = collectionNames[0];
             const collections = await db.addCollections(collectionData);
             const collection = collections[firstCollectionName];
-
+            const collection2 = collections[collectionNames[1]];
 
             /**
              * Many storages have a lazy initialization.
              * So it makes no sense to measure the time of database/collection creation.
              * Insert we do a single insert an measure the time to the first insert.
              */
-            await collection.insert(schemaObjects.averageSchemaData());
+            await collection2.insert(schemaObjects.averageSchemaData());
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
