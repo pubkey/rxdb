@@ -47,17 +47,27 @@ The first option is to use the [BroadcastChannel API](https://github.com/pubkey/
 The other solution is to use the [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) and do all writes inside of the worker. All browser tabs can then subscribe to messages from that SharedWorker and know about changes.
 
 ### Indexing
-- IndexedDB does not support boolean indexes
+
+The big difference between a database and storing data in a plain file, is that a database is writing data in a format that allows running operations over indexes to facilitate fast queries.
+
 #### iterable indexes
+- IndexedDB does not support boolean indexes
+
 #### secondary indexes
+- Only IndexedDB and SQLite WASM has secondary indexes
+
+
 ### Storing complex JSON documents
+
+- IndexedDB can store JSON natively
+- SQLite can [store JSON](https://www.sqlite.org/json1.html) from version 3.38.0 (2022-02-22).
 
 ### Worker Support
 
 - Localstorage and Cookies [cannot be used in WebWorker or SharedWorker](https://stackoverflow.com/questions/6179159/accessing-localstorage-from-a-webworker).
 
 - OPFS with the fast `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations).
-
+  2
 ## Performance Comparison
 
 Now that we know about the basics of the various storage solutions, lets compare their performance. As mentioned above, we not only want to store a few documents, instead lets store **many** of them and run **heavy and complex queries**.
