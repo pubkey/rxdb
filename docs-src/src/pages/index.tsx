@@ -255,7 +255,7 @@ export default function Home() {
         title={`${siteConfig.title}`}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
-          <div className="block first centered dark">
+          <div className="block first hero centered dark">
             <div className="content">
               <h1 style={{
                 fontSize: '3.5em',
