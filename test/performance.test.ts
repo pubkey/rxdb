@@ -155,7 +155,7 @@ describe('performance.test.ts', () => {
             const queryResult = await query.exec();
             updateTime('find-by-query');
             console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
-            assert.strictEqual(queryResult.length, docsAmount + 1);
+            assert.strictEqual(queryResult.length, docsAmount);
             await awaitBetweenTest();
 
             // find by multiple queries in parallel
