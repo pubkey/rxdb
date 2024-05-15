@@ -707,7 +707,7 @@ body {
         margin-top: 38px;
     }
 
-    .block.first .inner {
+    .block.first.hero .inner {
         flex-direction: column-reverse;
     }
 }
