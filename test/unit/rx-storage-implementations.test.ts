@@ -296,7 +296,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.deepStrictEqual(writeResponse.error, []);
                 const first = writeResponse.success[0];
                 assert.deepStrictEqual(stripMetaDataFromDocument(docData), stripMetaDataFromDocument(first));
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -360,7 +360,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 assert.ok(first.writeRow);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('when inserting the same document at the same time, the first call must succeed while the second has a conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -408,7 +408,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(first.success[0].value, 'first');
                 assert.strictEqual(second.error[0].status, 409);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should not find the deleted document when findDocumentsById(false)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -473,7 +473,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const foundDoc = await storageInstance.findDocumentsById(['foobar'], false);
                 assert.deepStrictEqual(foundDoc, []);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should NOT be able to overwrite a deleted the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -586,7 +586,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(foundDoc[0]);
                 assert.deepStrictEqual(foundDoc[0].value, 'aaa');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Updating a deleted document can happen
@@ -655,7 +655,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(doc);
                 assert.strictEqual(doc.value, 'barfoo2');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to unset a property', async () => {
                 const schema = getTestDataSchema();
@@ -724,7 +724,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to store a complex document with key compression', async () => {
                 const databaseName = randomCouchString(12);
@@ -768,7 +768,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     stripMetaDataFromDocument(compressedDocData as any)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to do a write where only _meta fields are changed', async () => {
                 const databaseInstanceToken = randomCouchString(10);
@@ -843,7 +843,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const viaStorageDoc = ensureNotFalsy(viaStorage[0]);
                 assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to create another instance after a write', async () => {
                 const databaseName = randomCouchString(12);
@@ -1151,7 +1151,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     [doc1, doc2].sort(comparator)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should still sort in correct order when docs do not match the selector', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1200,7 +1200,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.strictEqual(result, -1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should work with a more complex query', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1257,7 +1257,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.strictEqual(result, -1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.getQueryMatcher()', () => {
@@ -1300,7 +1300,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(queryMatcher(doc1), false);
                 assert.strictEqual(queryMatcher(doc2), true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
@@ -1333,7 +1333,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     true
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should match the nested document', () => {
                 const schema = getNestedDocSchema();
@@ -1454,7 +1454,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(first);
                 assert.strictEqual(first.value, 'barfoo');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should sort in the correct order', async () => {
                 const storageInstance = await config.storage
@@ -1498,7 +1498,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(allDocs.documents[1].value, 'b');
                 assert.strictEqual(allDocs.documents[2].value, 'a');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Notice that the RxStorage itself runs whatever query you give it,
@@ -1564,7 +1564,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(first);
                 assert.strictEqual(first.value, 'barfoo');
 
-                storageInstance.close();
+                storageInstance.remove();
 
             });
             /**
@@ -1769,7 +1769,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const results = await storageInstance.query(preparedQuery);
                 assert.strictEqual(results.documents.length, 1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * This failed on some storages when there are more
@@ -1877,7 +1877,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 // must still be 2 because the storage itself also counts deleted docs
                 await ensureCountIs(2);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.findDocumentsById()', () => {
@@ -1916,7 +1916,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     stripMetaDataFromDocument(docData)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should find deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1970,7 +1970,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
                 assert.strictEqual(foundDeleted._deleted, true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('if withDeleted=true then even the non-deleted document must be found', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2041,7 +2041,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     2
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Some storage implementations ran into some limits
@@ -2162,7 +2162,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(resTotal.documents[0].key, 'foobar');
                 assert.strictEqual(resTotal.documents[0]._deleted, true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should return the correct amount of documents', async () => {
                 const databaseInstanceToken = randomCouchString(10);
@@ -2545,7 +2545,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('attachments', () => {
@@ -2722,7 +2722,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(firstChange.key, 'foobar');
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to add multiple attachments, one each write', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2808,7 +2808,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 }
 
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('_deleted documents must loose all attachments', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2876,7 +2876,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 }
                 assert.ok(hasThrown);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('must be able to load multiple attachments data in parallel', async () => {
                 const collectionsAmount = 3;
@@ -3132,7 +3132,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     done = await storageInstance.cleanup(0);
                 }
 
-                await storageInstance.close();
+                await storageInstance.remove();
             });
         });
         describe('.close()', () => {
@@ -3204,7 +3204,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
                 assert.strictEqual(Object.keys(docs).length, 0);
 
-                storageInstance2.close();
+                storageInstance2.remove();
             });
             it('should throw on call to .remove() after .close()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -3422,7 +3422,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             // the query should still resolve.
             await queryResultPromise;
 
-            await instances.b.close();
+            await instances.b.remove();
         });
         it('should not mix up documents stored with different schema versions', async () => {
             const databaseName = randomCouchString(10);
@@ -3645,8 +3645,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             assert.strictEqual(docsOne.documents.length, 1);
             assert.strictEqual(docsOne.documents[0].value, 'one');
 
-            storageInstanceZero.close();
-            storageInstanceOne.close();
+            storageInstanceZero.remove();
+            storageInstanceOne.remove();
         });
     });
 });
