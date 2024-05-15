@@ -59,15 +59,15 @@ html[data-theme="dark"] {
 /**
  * Default font size was to big, decrease it here
  */
-.markdown > h1 {
+.markdown>h1 {
     font-size: 2.1rem;
 }
 
-.markdown > h2 {
+.markdown>h2 {
     font-size: 1.75rem;
 }
 
-.markdown > p {
+.markdown>p {
     font-size: 1rem;
 }
 
@@ -218,6 +218,7 @@ h1 .underline {
 }
 
 @media (max-width: 500px) {
+
     /**
      * Underline gets broken on mobile,
      * so better disable it.
@@ -1202,48 +1203,38 @@ body {
 }
 
 .bg-gradient-right-bottom {
-    background: linear-gradient(
-        to right bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-bottom {
-    background: linear-gradient(
-        to left bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-right-top {
-    background: linear-gradient(
-        to right top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-top {
-    background: linear-gradient(
-        to left top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-top {
-    background: linear-gradient(
-        to top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .star-at-github {
@@ -1706,7 +1697,7 @@ a:hover {
     border-radius: 6px;
     padding: 3px;
     width: 80%;
-    margin-top: 50px;
+    margin-top: 20px;
     border-style: solid;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.3);
@@ -1852,6 +1843,7 @@ a:hover {
     border-color: red;
 }
 
+
 #price-calculator-result {
     font-size: 120%;
 }
@@ -1890,9 +1882,13 @@ a:hover {
     border-bottom: double 3px;
 }
 
-#price-calculator-result .proceed-hint {
+#price-calculator-block .button {
     width: 100%;
-    text-align: right;
+    text-align: center;
+    box-sizing: border-box;
+    margin: 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 #price-calculator-result a {
@@ -1971,8 +1967,7 @@ footer a:visited {
     color: white;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 .redirectBox .ul-container {
     text-align: center;
@@ -1987,8 +1982,7 @@ footer a:visited {
     margin: 10px 0;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 /*
  * Call to action button
@@ -2462,8 +2456,7 @@ footer a:visited {
     gap: 8px;
     align-items: center;
     text-wrap: nowrap;
-    transition: color var(--ifm-transition-fast)
-        var(--ifm-transition-timing-default);
+    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
     display: flex;
     font-size: 1.14em;
     line-height: 150%;
@@ -2507,6 +2500,7 @@ footer a:visited {
     flex-direction: row;
     gap: 40px;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav {
     min-width: 371px;
     height: auto;
@@ -2514,22 +2508,27 @@ footer a:visited {
     justify-content: space-between;
     flex-grow: 1;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-list {
     flex-direction: column;
     justify-content: space-between;
     overflow: scroll;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-list::-webkit-scrollbar {
     display: none;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav::before,
 .consulting-page .block.benefits .ant-tabs-ink-bar {
     display: none;
 }
+
 .consulting-page .block.benefits .ant-tabs-tab-active {
     margin: 0;
     border-left: 2px solid #e6008d;
 }
+
 .consulting-page .block.benefits .ant-tabs-tab-active .ant-tabs-tab-btn {
     color: white !important;
 }
@@ -2542,6 +2541,7 @@ footer a:visited {
     line-height: 140%;
     padding: 24px 32px;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-operations {
     display: none;
 }
@@ -2595,11 +2595,13 @@ footer a:visited {
     line-height: 150%;
     margin: 0;
 }
+
 .consulting-page .benefit-tabs-content {
     display: flex;
     flex-direction: row;
     gap: 40px;
 }
+
 .consulting-page .benefit-tabs {
     min-width: 371px;
     height: auto;
@@ -2885,6 +2887,7 @@ footer a:visited {
     gap: 16px;
     background-color: transparent;
 }
+
 .block.faq .ant-collapse-header {
     font-size: 1.15em;
     font-weight: 600;
@@ -2895,6 +2898,7 @@ footer a:visited {
     padding: 0;
     gap: 16px;
 }
+
 .block.faq .ant-collapse-item {
     border: none;
     border-radius: 24px;
@@ -3112,6 +3116,7 @@ footer a:visited {
 }
 
 @media (max-width: 1360px) {
+
     /** packages **/
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 48.5%;
@@ -3119,6 +3124,7 @@ footer a:visited {
 }
 
 @media (max-width: 1280px) {
+
     /** hero **/
     .consulting-page .block.first .inner {
         margin-top: 38px;
@@ -3168,6 +3174,7 @@ footer a:visited {
 }
 
 @media (max-width: 1200px) {
+
     /** packages **/
     .consulting-page .block.packages .flex-row {
         gap: 20px;
@@ -3309,7 +3316,9 @@ footer a:visited {
         width: -webkit-fill-available;
         width: stretch;
     }
-    .consulting-page .benefit-tabs-content, .consulting-page .block.benefits .ant-tabs {
+
+    .consulting-page .benefit-tabs-content,
+    .consulting-page .block.benefits .ant-tabs {
         display: flex;
         flex-direction: column;
         gap: 40px;
@@ -3317,18 +3326,23 @@ footer a:visited {
         width: -webkit-fill-available;
         width: stretch;
     }
+
     .consulting-page .block.benefits .ant-tabs-nav-list {
         flex-direction: row;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab-active {
         margin: 0;
         border-left: unset;
         border-bottom: 2px solid #e6008d;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         padding: 12px 24px;
     }
-    .consulting-page .benefit-tabs, .consulting-page .block.benefits .ant-tabs-nav {
+
+    .consulting-page .benefit-tabs,
+    .consulting-page .block.benefits .ant-tabs-nav {
         min-width: unset;
     }
 
@@ -3517,12 +3531,15 @@ footer a:visited {
     .consulting-page .block.benefits {
         padding-bottom: 48px;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         padding: 16px 0px;
     }
+
     .consulting-page .block.benefits .ant-tabs-nav-list {
         gap: 16px;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         font-size: 20px;
     }

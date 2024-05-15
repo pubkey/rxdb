@@ -1,24 +1,24 @@
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import useIsBrowser from "@docusaurus/useIsBrowser";
-import BrowserOnly from "@docusaurus/BrowserOnly";
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useIsBrowser from '@docusaurus/useIsBrowser';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
-import Layout from "@theme/Layout";
-import Head from "@docusaurus/Head";
-import "lazysizes";
+import Layout from '@theme/Layout';
+import Head from '@docusaurus/Head';
+import 'lazysizes';
 
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 
-import { Modal } from "antd";
-import { Tabs } from "antd";
-import { Collapse } from "antd";
+import { Modal } from 'antd';
+import { Tabs } from 'antd';
+import { Collapse } from 'antd';
 
-import { getDatabase, hasIndexedDB } from "../components/database";
-const FILE_EVENT_ID = "consulting-link-clicked";
+import { getDatabase, hasIndexedDB } from '../components/database';
+const FILE_EVENT_ID = 'consulting-link-clicked';
 
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-import { ReviewsBlock } from "../components/review-block";
+import { ReviewsBlock } from '../components/review-block';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
@@ -33,7 +33,7 @@ export default function Consulting() {
             const database = await getDatabase();
             const flagDoc = await database.getLocal(FILE_EVENT_ID);
             if (flagDoc) {
-                console.log("# already tracked " + FILE_EVENT_ID);
+                console.log('# already tracked ' + FILE_EVENT_ID);
             } else {
                 window.trigger(FILE_EVENT_ID, 100);
                 await database.upsertLocal(FILE_EVENT_ID, {});
@@ -119,29 +119,29 @@ export default function Consulting() {
 function NavBarBlock({ onOpenDialog }) {
     const items = [
         {
-            to: "/consulting#packages",
-            label: "Packages",
-            position: "left",
+            to: '/consulting#packages',
+            label: 'Packages',
+            position: 'left',
         },
         {
-            to: "/consulting#benefits",
-            label: "Benefits",
-            position: "left",
+            to: '/consulting#benefits',
+            label: 'Benefits',
+            position: 'left',
         },
         {
-            to: "/consulting#steps",
-            label: "How it works",
-            position: "left",
+            to: '/consulting#steps',
+            label: 'How it works',
+            position: 'left',
         },
         {
-            to: "/consulting#faq",
-            label: "FAQs",
-            position: "left",
+            to: '/consulting#faq',
+            label: 'FAQs',
+            position: 'left',
         },
         {
-            to: "/consulting#contact",
-            label: "Contact us",
-            position: "left",
+            to: '/consulting#contact',
+            label: 'Contact us',
+            position: 'left',
         },
     ];
 
@@ -171,7 +171,7 @@ function NavBarBlock({ onOpenDialog }) {
                     <a
                         className="nav-button"
                         onClick={onOpenDialog}
-                        style={{ maxWidth: "123px" }}
+                        style={{ maxWidth: '123px' }}
                     >
                         Get started
                     </a>
@@ -182,7 +182,7 @@ function NavBarBlock({ onOpenDialog }) {
 }
 
 function HeroBlock({ onOpenDialog }) {
-    const title = "Expert support for local database applications";
+    const title = 'Expert support for local database applications';
     const description = `We offer custom solutions to streamline your data
     management or revolutionize your local first project.
     Our team is here to guide you at every step.`;
@@ -197,10 +197,10 @@ function HeroBlock({ onOpenDialog }) {
                     <div
                         className="flex-row hero-buttons"
                         style={{
-                            alignItems: "center",
-                            gap: "16px",
-                            marginTop: "40px",
-                            marginBottom: "10px",
+                            alignItems: 'center',
+                            gap: '16px',
+                            marginTop: '40px',
+                            marginBottom: '10px',
                         }}
                     >
                         <a className="button" onClick={onOpenDialog}>
@@ -214,8 +214,8 @@ function HeroBlock({ onOpenDialog }) {
                 <div
                     className="half"
                     style={{
-                        paddingTop: "42px",
-                        paddingBottom: "42px",
+                        paddingTop: '42px',
+                        paddingBottom: '42px',
                     }}
                 >
                     <img
@@ -237,7 +237,7 @@ function HeroBlock({ onOpenDialog }) {
 }
 
 function PackagesBlock({ onOpenDialog }) {
-    const title = "Our Service Packages";
+    const title = 'Our Service Packages';
     const description = `We offer tailored solutions to meet your needs. Whether
     you're looking to streamline your data management
     process or revolutionize your project's backend, our
@@ -245,42 +245,42 @@ function PackagesBlock({ onOpenDialog }) {
 
     const packageItems = [
         {
-            index: "1",
-            label: "Quick Consulting Session",
-            price: "180€",
+            index: '1',
+            label: 'Quick Consulting Session',
+            price: '180€',
             description:
-                "Schedule a quick consultancy session where the RxDB core maintainer answers all your questions and gives suggestions on how you should use RxDB or related technologies.",
-            cta: "Schedule a call",
-            href: "https://buy.stripe.com/14kdU1dN05SAfMA4gg",
-            target: "_blank",
-            rel: "",
+                'Schedule a quick consultancy session where the RxDB core maintainer answers all your questions and gives suggestions on how you should use RxDB or related technologies.',
+            cta: 'Schedule a call',
+            href: 'https://buy.stripe.com/14kdU1dN05SAfMA4gg',
+            target: '_blank',
+            rel: '',
             iframe: false,
         },
         {
-            index: "2",
-            label: "We build it for you",
-            price: "",
+            index: '2',
+            label: 'We build it for you',
+            price: '',
             description: `Let our expert team handle the heavy lifting.
             With Package 2, we take full responsibility for
             building and implementing your local JavaScript
             database solution. Sit back, relax, and watch as
             we transform your vision into reality.`,
-            cta: "Get started",
-            href: "https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F",
-            target: "_blank",
-            rel: "nofollow",
+            cta: 'Get started',
+            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
+            target: '_blank',
+            rel: 'nofollow',
             iframe: true,
         },
         {
-            index: "3",
-            label: "We build it with you",
-            price: "",
+            index: '3',
+            label: 'We build it with you',
+            price: '',
             description:
-                "Prefer a more hands-on approach? Package 3 allows you to collaborate closely with our team throughout the development process. Together, we'll fine-tune every aspect of your solution to ensure it aligns perfectly with your goals and requirements.",
-            cta: "Get started",
-            href: "https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F",
-            target: "_blank",
-            rel: "nofollow",
+                'Prefer a more hands-on approach? Package 3 allows you to collaborate closely with our team throughout the development process. Together, we\'ll fine-tune every aspect of your solution to ensure it aligns perfectly with your goals and requirements.',
+            cta: 'Get started',
+            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
+            target: '_blank',
+            rel: 'nofollow',
             iframe: true,
         },
     ];
@@ -295,8 +295,8 @@ function PackagesBlock({ onOpenDialog }) {
                 <div
                     className="flex-row"
                     style={{
-                        flexWrap: "wrap",
-                        alignItems: "stretch",
+                        flexWrap: 'wrap',
+                        alignItems: 'stretch',
                     }}
                 >
                     {packageItems.map((item, index) => (
@@ -304,28 +304,28 @@ function PackagesBlock({ onOpenDialog }) {
                             key={item.label + index}
                             className={
                                 index < 1
-                                    ? "item-package flex-row"
-                                    : "item-package flex-column"
+                                    ? 'item-package flex-row'
+                                    : 'item-package flex-column'
                             }
                             style={{
                                 // maxWidth: index > 0 ? "48.5%" : "unset",
-                                height: "auto",
+                                height: 'auto',
                                 border:
-                                    index < 1 ? "solid 1px #E6008D" : "none",
+                                    index < 1 ? 'solid 1px #E6008D' : 'none',
                             }}
                         >
                             <div
                                 className="flex-column"
                                 style={{
-                                    maxWidth: index < 1 ? "70%" : "unset",
+                                    maxWidth: index < 1 ? '70%' : 'unset',
                                 }}
                             >
                                 <h6>Package {item.index}</h6>
                                 <div
                                     className="flex-row"
                                     style={{
-                                        alignItems: "center",
-                                        gap: "16px",
+                                        alignItems: 'center',
+                                        gap: '16px',
                                     }}
                                 >
                                     <h4>{item.label}</h4>
@@ -342,9 +342,9 @@ function PackagesBlock({ onOpenDialog }) {
                             <div
                                 className="flex-row"
                                 style={{
-                                    alignItems: "center",
-                                    gap: "8px",
-                                    width: "auto",
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    width: 'auto',
                                 }}
                             >
                                 <a
@@ -354,8 +354,8 @@ function PackagesBlock({ onOpenDialog }) {
                                     href={item.iframe ? null : item.href}
                                     target={
                                         item.target && !item.iframe
-                                            ? "_blank"
-                                            : "_self"
+                                            ? '_blank'
+                                            : '_self'
                                     }
                                 >
                                     {item.cta}
@@ -382,64 +382,64 @@ function PackagesBlock({ onOpenDialog }) {
 }
 
 function BenefitsBlock() {
-    const title = "How we help you";
+    const title = 'How we help you';
     const description =
-        "Any type of support is possible: from full development to only helping support or code review. We can do Custom RxDB features.";
+        'Any type of support is possible: from full development to only helping support or code review. We can do Custom RxDB features.';
 
     const benefitsPanels = [
         {
-            label: "Expert Guidance",
+            label: 'Expert Guidance',
             text: `We have years of experience with local first
             projects and can provide expert guidance. We
             can provide an optimal concept for the best
             solution for your specific use case.`,
-            name: "quidance",
+            name: 'quidance',
         },
         {
-            label: "Development support",
+            label: 'Development support',
             text: `Either you have your own team of developers
             or we can provide expert developers or we
             can have a mix where we provide some of the
             developers and the customer provides the
             others.`,
-            name: "support",
+            name: 'support',
         },
         {
-            label: "Project review",
+            label: 'Project review',
             text: `We can review your code and project and
             ensure that it uses best practices and has
             optimal performance. This can be done once
             before your big release or as an ongoing
             support.`,
-            name: "review",
+            name: 'review',
         },
         {
-            label: "Tailored features",
+            label: 'Tailored features',
             text: `We can developer tailored features for RxDB
             that are optimized for your specific use
             case.`,
-            name: "feature",
+            name: 'feature',
         },
     ];
 
     const items = [
         {
-            key: "0",
+            key: '0',
             label: benefitsPanels[0].label,
             children: <BenefitTabPanel item={benefitsPanels[0]} />,
         },
         {
-            key: "1",
+            key: '1',
             label: benefitsPanels[1].label,
             children: <BenefitTabPanel item={benefitsPanels[1]} />,
         },
         {
-            key: "2",
+            key: '2',
             label: benefitsPanels[2].label,
             children: <BenefitTabPanel item={benefitsPanels[2]} />,
         },
         {
-            key: "3",
+            key: '3',
             label: benefitsPanels[3].label,
             children: <BenefitTabPanel item={benefitsPanels[3]} />,
         },
@@ -460,27 +460,27 @@ function BenefitsBlock() {
 }
 
 function StepsBlock({ onOpenDialog }) {
-    const title = "How it works";
+    const title = 'How it works';
     const description =
-        "Here you’ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.";
+        'Here you’ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.';
 
     const stepsItems = [
         {
-            label: "Initial contact",
+            label: 'Initial contact',
             text: `We talk about your needs and give suggestions
             for an optimal collaboration with us.`,
         },
         {
-            label: "Specification Design",
-            text: "We specify the collaboration between you and RxDB and define a roadmap.",
+            label: 'Specification Design',
+            text: 'We specify the collaboration between you and RxDB and define a roadmap.',
         },
         {
-            label: "Development",
-            text: "Realization of the roadmap.",
+            label: 'Development',
+            text: 'Realization of the roadmap.',
         },
         {
-            label: "Ongoing support",
-            text: "Regular project reviews and guidance when adding new features.",
+            label: 'Ongoing support',
+            text: 'Regular project reviews and guidance when adding new features.',
         },
     ];
     return (
@@ -523,25 +523,25 @@ function StepsBlock({ onOpenDialog }) {
 }
 
 function FaqBlock() {
-    const title = "FAQs";
+    const title = 'FAQs';
     const description = `Have questions? We've got answers. Explore our FAQs to
     learn more about our services, pricing, and approach to
     local JavaScript database solutions.`;
 
     const items = [
         {
-            key: "1",
-            label: "Which frameworks can you support ?",
-            children: `Everything from react to Vue to Angular to Svelte. We know all frameworks and how to use them efficiently with RxDB.`,
+            key: '1',
+            label: 'Which frameworks can you support ?',
+            children: 'Everything from react to Vue to Angular to Svelte. We know all frameworks and how to use them efficiently with RxDB.',
         },
         {
-            key: "2",
-            label: "Which platforms are supported?",
-            children: `We can build web-apps for browsers, hybrid apps and progressive web apps. Even server-side RxDB projects can be realized.`,
+            key: '2',
+            label: 'Which platforms are supported?',
+            children: 'We can build web-apps for browsers, hybrid apps and progressive web apps. Even server-side RxDB projects can be realized.',
         },
         {
-            key: "3",
-            label: "How much does it cost?",
+            key: '3',
+            label: 'How much does it cost?',
             children: `This depends on:
             - How much of the work is provided by us
             - Which type of development support do you need
@@ -549,9 +549,9 @@ function FaqBlock() {
             We can offer in-house developers, near-shore and off-shore developers.`,
         },
         {
-            key: "4",
-            label: "Do you provide 24/7 emergency support?",
-            children: `No, sorry. This is not provided by default but we can figure out a way with you that fits your problems.`,
+            key: '4',
+            label: 'Do you provide 24/7 emergency support?',
+            children: 'No, sorry. This is not provided by default but we can figure out a way with you that fits your problems.',
         },
     ];
 
@@ -579,7 +579,7 @@ function FaqBlock() {
 }
 
 function NextBlock({ onOpenDialog }) {
-    const title = "Ready to take the next step?";
+    const title = 'Ready to take the next step?';
     const description = `Transform your project with RxDB. Schedule your
     consultancy session today and discover the power of
     local JavaScript database solutions.`;
@@ -600,7 +600,7 @@ function NextBlock({ onOpenDialog }) {
     );
 }
 function ContactBlock() {
-    const title = "Still have questions?";
+    const title = 'Still have questions?';
     const description = `Get in touch with us today to schedule your
     consultancy session or discuss your project
     requirements. Fill out the form below, and a
@@ -620,14 +620,14 @@ function ContactBlock() {
                             return (
                                 <iframe
                                     style={{
-                                        width: "100%",
-                                        margin: "0 auto",
-                                        maxWidth: "708px",
-                                        borderRadius: "32px",
+                                        width: '100%',
+                                        margin: '0 auto',
+                                        maxWidth: '708px',
+                                        borderRadius: '32px',
                                     }}
                                     src="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
                                 >
-                                    Your browser doesn't support iframes,{" "}
+                                    Your browser doesn't support iframes,{' '}
                                     <a
                                         href="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
                                         target="_blank"
@@ -654,20 +654,21 @@ function FormDialog({ onClose, open }) {
         <Modal
             className="modal-consulting-page"
             open={open}
+            width={'auto'}
             onCancel={handleClose}
             closeIcon={null}
             footer={null}
         >
             <iframe
                 style={{
-                    width: "100%",
-                    height: "70vh",
-                    borderRadius: "32px",
+                    width: '100%',
+                    height: '70vh',
+                    borderRadius: '32px',
                 }}
                 id="request-project-form"
                 src="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
             >
-                Your browser doesn't support iframes,{" "}
+                Your browser doesn't support iframes,{' '}
                 <a
                     href="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
                     target="_blank"
@@ -681,8 +682,8 @@ function FormDialog({ onClose, open }) {
 }
 function ArrowDownwardIcon({ rotate }) {
     const style = {
-        transform: rotate ? "rotate(180deg)" : "",
-        transition: "transform 150ms ease",
+        transform: rotate ? 'rotate(180deg)' : '',
+        transition: 'transform 150ms ease',
     };
 
     return (
