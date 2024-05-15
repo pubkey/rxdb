@@ -73,6 +73,7 @@ export default function Premium() {
     // for dialog
     const [open, setOpen] = React.useState(false);
     const handleOpenDialog = () => {
+        trigger('open_premium_submit_popup', 20);
         setOpen(true);
     };
     const handleClose = () => {
