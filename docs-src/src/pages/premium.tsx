@@ -17,7 +17,6 @@ import {
 import { trigger } from '../components/trigger-event';
 import { getDatabase, hasIndexedDB } from '../components/database';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import BrowserOnly from '@docusaurus/BrowserOnly';
 
 export type FormValueDocData = {
     homeCountry?: string;

@@ -18,12 +18,8 @@ export default function Root({ children }) {
 
 function addCallToActionButton() {
 
-    // do not show on landingpage
-    if (
-        location.pathname === '/' ||
-        location.pathname === '/premium' ||
-        location.pathname === '/consulting'
-    ) {
+    // do only show on docs-pages, not on landingpages like premium or consulting page.
+    if (!location.pathname.includes('.html')) {
         return;
     }
 
