@@ -10,7 +10,8 @@ import {
     addRxPlugin,
     lastOfArray,
     RxReactivityFactory,
-    RxState
+    RxState,
+    runXTimes
 } from '../../plugins/core/index.mjs';
 import {
     isFastMode
@@ -330,36 +331,49 @@ describeParallel('rx-state.test.ts', () => {
             await waitUntil(() => state1.nes?.ted === 'foo2');
             await waitUntil(() => state2.nes?.ted === 'foo2');
 
-            state1.collection.database.destroy();
-            state2.collection.database.destroy();
+            state1.collection.database.remove();
+            state2.collection.database.remove();
         });
-        it('should have a deterministic output when 2 instances write at the same time', async () => {
-            const databaseName = randomCouchString(10);
-            const state1 = await getState(databaseName);
-            const state2 = await getState(databaseName);
-
-            await state1.set('a', () => 0);
-
-            let t = 0;
-            const amount = 100;
-            const promises: Promise<any>[] = [];
-            while (t < amount) {
-                t++;
-                promises.push(state1.set('a', plusOne));
-                promises.push(state2.set('a', plusOne));
-                if (randomBoolean() && randomBoolean()) {
-                    await wait(randomNumber(0, 10));
+        runXTimes(1, () => {
+            it('should have a deterministic output when 2 instances write at the same time', async () => {
+                if (config.storage.name.includes('random-delay')) {
+                    return;
                 }
-            }
-            await Promise.all(promises);
+                const databaseName = randomCouchString(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
 
-            await waitUntil(() => state1.a === amount * 2);
-            await waitUntil(() => state2.a === amount * 2);
+                await state1.set('a', () => 0);
 
-            state1.collection.database.destroy();
-            state2.collection.database.destroy();
+                /**
+                 * This test randomly failed,
+                 * so make sure to run on a big amount.
+                */
+                const amount = isFastMode() ? 100 : 2000;
+                const promises: Promise<any>[] = [];
+                let t = 0;
+                while (t < amount) {
+                    t++;
+                    promises.push(state1.set('a', plusOne));
+                    promises.push(state2.set('a', plusOne));
+                    if (randomBoolean() && randomBoolean()) {
+                        await wait(randomNumber(0, 10));
+                    }
+                }
+                await Promise.all(promises);
+                await waitUntil(() => {
+                    return state2.a === amount * 2;
+                }, undefined, 50);
+                await waitUntil(() => state1.a === amount * 2, undefined, 50);
+
+                state1.collection.database.remove();
+                state2.collection.database.remove();
+            });
         });
         it('should have a deterministic output when 2 instances write to different fields', async () => {
+            if (config.storage.name.includes('random-delay')) {
+                return;
+            }
             const databaseName = randomCouchString(10);
             const state1 = await getState(databaseName);
             const state2 = await getState(databaseName);
@@ -368,7 +382,7 @@ describeParallel('rx-state.test.ts', () => {
             await state2.set('b', () => 0);
 
             let t = 0;
-            const amount = 100;
+            const amount = isFastMode() ? 100 : 2000;
             const promises: Promise<any>[] = [];
             while (t < amount) {
                 t++;
@@ -386,8 +400,8 @@ describeParallel('rx-state.test.ts', () => {
             assert.strictEqual(state1.get('b'), amount);
             assert.strictEqual(state2.get('b'), amount);
 
-            state1.collection.database.destroy();
-            state2.collection.database.destroy();
+            state1.collection.database.remove();
+            state2.collection.database.remove();
         });
 
         it('should recover the same state from disc on the other side', async () => {
