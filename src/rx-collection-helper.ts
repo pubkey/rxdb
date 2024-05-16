@@ -25,7 +25,7 @@ import { runAsyncPluginHooks } from './hooks.ts';
 import { getAllCollectionDocuments } from './rx-database-internal-store.ts';
 import { flatCloneDocWithMeta } from './rx-storage-helper.ts';
 import { overwritable } from './overwritable.ts';
-import { RxCollectionBase } from './rx-collection.ts';
+import type { RxCollectionBase } from './rx-collection.ts';
 import { newRxError } from './rx-error.ts';
 
 /**

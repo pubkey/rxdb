@@ -1120,7 +1120,7 @@ describe('rx-collection.test.ts', () => {
 
                     db2.destroy();
                 });
-                it('#5721 should remove the RxCollection instance accross tabs and emit the .$removed event', async () => {
+                it('#5721 should remove the RxCollection instance across tabs and emit the .$removed event', async () => {
                     if (!config.storage.hasMultiInstance) {
                         return;
                     }
