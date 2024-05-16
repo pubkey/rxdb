@@ -331,8 +331,8 @@ describeParallel('rx-state.test.ts', () => {
             await waitUntil(() => state1.nes?.ted === 'foo2');
             await waitUntil(() => state2.nes?.ted === 'foo2');
 
-            state1.collection.database.remove();
-            state2.collection.database.remove();
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
         });
         runXTimes(1, () => {
             it('should have a deterministic output when 2 instances write at the same time', async () => {
@@ -366,8 +366,8 @@ describeParallel('rx-state.test.ts', () => {
                 }, undefined, 50);
                 await waitUntil(() => state1.a === amount * 2, undefined, 50);
 
-                state1.collection.database.remove();
-                state2.collection.database.remove();
+                state1.collection.database.destroy();
+                state2.collection.database.destroy();
             });
         });
         it('should have a deterministic output when 2 instances write to different fields', async () => {
@@ -400,8 +400,8 @@ describeParallel('rx-state.test.ts', () => {
             assert.strictEqual(state1.get('b'), amount);
             assert.strictEqual(state2.get('b'), amount);
 
-            state1.collection.database.remove();
-            state2.collection.database.remove();
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
         });
 
         it('should recover the same state from disc on the other side', async () => {
