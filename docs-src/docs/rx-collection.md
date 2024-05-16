@@ -278,6 +278,18 @@ Destroys the collection's object instance. This is to free up memory and stop al
 await myCollection.destroy();
 ```
 
+### onDestroy / onRemove()
+With these you can add a function that is run when the collection was destroyed or removed.
+This works even across multiple browser tabs so you can detect when another tab removes the collection
+and you application can behave accordingly.
+
+```js
+await myCollection.onDestroy(() => console.log('I am destroyed'));
+await myCollection.onRemove(() => console.log('I am removed'));
+```
+
+
+
 
 ### isRxCollection
 Returns true if the given object is an instance of RxCollection. Returns false if not.

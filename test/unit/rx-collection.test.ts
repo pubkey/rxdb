@@ -1120,6 +1120,54 @@ describe('rx-collection.test.ts', () => {
 
                     db2.destroy();
                 });
+                it('#5721 should remove the RxCollection instance across tabs and emit the .$removed event', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
+
+                    const dbName = randomCouchString();
+
+                    async function createDb() {
+                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                            name: dbName,
+                            storage: config.storage.getStorage(),
+                            ignoreDuplicate: true
+                        });
+                        await db.addCollections({
+                            humans: { schema: schemas.human }
+                        });
+                        await db.collections.humans.insert(schemaObjects.humanData());
+                        return db;
+                    }
+
+                    const db1 = await createDb();
+                    const db2 = await createDb();
+                    const col1 = db1.humans;
+                    const col2 = db2.humans;
+
+                    // remember the emitted events
+                    let emitted1 = false;
+                    let emitted2 = false;
+                    col1.onRemove.push(() => emitted1 = true);
+                    col2.onRemove.push(() => emitted2 = true);
+
+                    // remove collection2
+                    await col2.remove();
+
+                    await waitUntil(() => emitted1);
+                    await waitUntil(() => emitted2);
+
+                    // calling operations on other collection should also fail
+                    await assertThrows(
+                        () => col1.insert(schemaObjects.humanData()),
+                        'RxError',
+                        'COL21'
+                    );
+
+                    assert.deepStrictEqual(emitted1, emitted2);
+                    db1.destroy();
+                    db2.destroy();
+                });
             });
             describeParallel('.bulkRemove()', () => {
                 describe('positive', () => {
