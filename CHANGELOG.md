@@ -2,6 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX `collection.remove()` must end up with the correct RxCollection state across tabs. [5721](https://github.com/pubkey/rxdb/issues/5721)
+- ADD `RxCollection.onRemove` hooks to detect the removing of a RxCollection across tabs.
 - IMPROVE performance of insert to [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html)
 
 <!-- ADD new changes here! -->

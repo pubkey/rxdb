@@ -1,6 +1,7 @@
 import type {
     HashFunction,
     InternalStoreDocType,
+    RxCollection,
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
@@ -24,6 +25,8 @@ import { runAsyncPluginHooks } from './hooks.ts';
 import { getAllCollectionDocuments } from './rx-database-internal-store.ts';
 import { flatCloneDocWithMeta } from './rx-storage-helper.ts';
 import { overwritable } from './overwritable.ts';
+import { RxCollectionBase } from './rx-collection.ts';
+import { newRxError } from './rx-error.ts';
 
 /**
  * fills in the default data.
@@ -164,6 +167,21 @@ export async function removeCollectionStorages(
         await databaseInternalStorage.bulkWrite(
             writeRows,
             'rx-database-remove-collection-all'
+        );
+    }
+}
+
+
+export function ensureRxCollectionIsNotDestroyed(
+    collection: RxCollection | RxCollectionBase<any, any, any, any, any>
+) {
+    if (collection.destroyed) {
+        throw newRxError(
+            'COL21',
+            {
+                collection: collection.name,
+                version: collection.schema.version
+            }
         );
     }
 }

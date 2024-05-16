@@ -96,6 +96,7 @@ export const ERROR_MESSAGES = {
     COL18: 'collection-method not allowed because fieldname is in the schema',
     // removed in 14.0.0, use CONFLICT instead - COL19: 'Document update conflict. When changing a document you must work on the previous revision',
     COL20: 'Storage write error',
+    COL21: 'The RxCollection is destroyed or removed already, either from this JavaScript realm or from another, like a browser tab',
     CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
 
     // rx-document.js

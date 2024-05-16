@@ -17,7 +17,8 @@ import {
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
-    removeCollectionStorages
+    removeCollectionStorages,
+    ensureRxCollectionIsNotDestroyed
 } from './rx-collection-helper.ts';
 import {
     createRxQuery,
@@ -184,9 +185,11 @@ export class RxCollectionBase<
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
-     */
+    */
     public onDestroy: (() => MaybePromise<any>)[] = [];
     public destroyed = false;
+
+    public onRemove: (() => MaybePromise<any>)[] = [];
 
     public async prepare(): Promise<void> {
         this.storageInstance = getWrappedStorageInstance(
@@ -224,8 +227,28 @@ export class RxCollectionBase<
             }
         );
 
+
+        const listenToRemoveSub = this.database.internalStore.changeStream().pipe(
+            filter(bulk => {
+                const key = this.name + '-' + this.schema.version;
+                const found = bulk.events.find(event => {
+                    return (
+                        event.documentData.context === 'collection' &&
+                        event.documentData.key === key &&
+                        event.operation === 'DELETE'
+                    );
+                });
+                return !!found;
+            })
+        ).subscribe(async () => {
+            await this.destroy();
+            await Promise.all(this.onRemove.map(fn => fn()));
+        });
+        this._subs.push(listenToRemoveSub);
+
+
         /**
-         * Instead of resolving the EventBulk array here and spit it into
+         * TODO Instead of resolving the EventBulk array here and spit it into
          * single events, we should fully work with event bulks internally
          * to save performance.
          */
@@ -290,6 +313,7 @@ export class RxCollectionBase<
      * @link https://rxdb.info/cleanup.html
      */
     cleanup(_minimumDeletedTime?: number): Promise<boolean> {
+        ensureRxCollectionIsNotDestroyed(this);
         throw pluginMissing('cleanup');
     }
 
@@ -301,6 +325,7 @@ export class RxCollectionBase<
         throw pluginMissing('migration-schema');
     }
     startMigration(batchSize: number = 10): Promise<void> {
+        ensureRxCollectionIsNotDestroyed(this);
         return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {
@@ -310,6 +335,7 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        ensureRxCollectionIsNotDestroyed(this);
         const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
@@ -324,6 +350,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        ensureRxCollectionIsNotDestroyed(this);
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -400,6 +427,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        ensureRxCollectionIsNotDestroyed(this);
         const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
@@ -469,6 +497,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        ensureRxCollectionIsNotDestroyed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
@@ -514,6 +543,7 @@ export class RxCollectionBase<
      * same as insert but overwrites existing document with same primary
      */
     async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        ensureRxCollectionIsNotDestroyed(this);
         const bulkResult = await this.bulkUpsert([json]);
         throwIfIsStorageWriteError<RxDocumentType>(
             this.asRxCollection,
@@ -528,6 +558,7 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
     incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        ensureRxCollectionIsNotDestroyed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
@@ -560,6 +591,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
+        ensureRxCollectionIsNotDestroyed(this);
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
@@ -582,6 +614,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
+        ensureRxCollectionIsNotDestroyed(this);
 
         // TODO move this check to dev-mode plugin
         if (
@@ -628,6 +661,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
+        ensureRxCollectionIsNotDestroyed(this);
         if (!queryObj) {
             queryObj = _getDefaultQuery();
         }
@@ -647,6 +681,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
+        ensureRxCollectionIsNotDestroyed(this);
         const mangoQuery: MangoQuery<RxDocumentType> = {
             selector: {
                 [this.schema.primaryPath]: {
@@ -849,6 +884,7 @@ export class RxCollectionBase<
      */
     async remove(): Promise<any> {
         await this.destroy();
+        await Promise.all(this.onRemove.map(fn => fn()));
         await removeCollectionStorages(
             this.database.storage,
             this.database.internalStore,
