@@ -93,6 +93,30 @@ window.rdt('track', 'PageVisit');
 
 
 
+// pipedrive chat
+window.pipedriveLeadboosterConfig = {
+    base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
+        '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
+}; (function () {
+    var w = window; if (w.LeadBooster) {
+        console.warn('LeadBooster already exists');
+    } else {
+        w.LeadBooster = {
+            q: [], on: function (n, h) {
+                this.q.push({ t: 'o', n: n, h: h });
+            }, trigger: function (n) {
+                this.q.push({ t: 't', n: n });
+            },
+        };
+    }
+})();
+var my_awesome_script = document.createElement('script');
+my_awesome_script.setAttribute('src', 'https://leadbooster-chat.pipedrive.com/assets/loader.js');
+document.head.appendChild(my_awesome_script);
+// /pipedrive chat
+
+
+
 function parseQueryParams(url) {
     const urlSearchParams = new URL(url).searchParams;
     const queryParams = Object.fromEntries(urlSearchParams.entries());
