@@ -8,7 +8,9 @@ export default function Root({ children }) {
         if (!isBrowser) {
             return;
         }
-        addCommunityChatButton();
+
+        // addCommunityChatButton();
+
         addCallToActionButton();
 
     });
