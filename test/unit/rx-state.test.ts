@@ -337,7 +337,7 @@ describeParallel('rx-state.test.ts', () => {
         });
         runXTimes(1, () => {
             it('should have a deterministic output when 2 instances write at the same time', async () => {
-                if (config.storage.name.includes('random-delay') || isDeno) {
+                if (config.storage.name === 'remote' || isDeno) {
                     return;
                 }
                 const databaseName = randomCouchString(10);
@@ -372,7 +372,7 @@ describeParallel('rx-state.test.ts', () => {
             });
         });
         it('should have a deterministic output when 2 instances write to different fields', async () => {
-            if (config.storage.name.includes('random-delay') || isDeno) {
+            if (config.storage.name === 'remote' || isDeno) {
                 return;
             }
             const databaseName = randomCouchString(10);
