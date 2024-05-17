@@ -1190,6 +1190,36 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 c.database.destroy();
             });
+            it('should push documents from a custom dataPath if one is specified', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
+                    collection: c,
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        dataPath: 'data.writeHumans',
+                        queryBuilder: pushQueryBuilder,
+                    },
+                    live: false,
+                    retryTime: 1000,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                assert.strictEqual(replicationState.isStopped(), false);
+
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === batchSize;
+                });
+
+                server.close();
+                c.database.destroy();
+            });
         });
         describeParallel('push and pull', () => {
             it('should push and pull all docs; live: false', async () => {
