@@ -898,14 +898,14 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 options: storageInstance.options,
                 schema: storageInstance.schema,
                 collectionName: storageInstance.collectionName,
-                async bulkWrite(a, b) {
+                bulkWrite(a, b) {
                     randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
                         await promiseWait(input.delayTimeBefore());
                         const response = await storageInstance.bulkWrite(a, b);
                         await promiseWait(input.delayTimeAfter());
                         return response;
                     });
-                    const ret = await randomDelayStorageWriteQueue;
+                    const ret = randomDelayStorageWriteQueue;
                     return ret;
                 },
                 async findDocumentsById(a, b) {
