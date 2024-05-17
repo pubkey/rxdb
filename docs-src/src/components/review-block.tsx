@@ -90,7 +90,7 @@ export function ReviewsBlock() {
             label: 'MoreApp, Germany',
             description: `We provide a mobile app that is used by people in the
             field to fill in valuable information like inspections,
-            surveys and audits.`,
+            surveys and audits. Our users don't always have access to the internet, building from an Offline-first approach with RxDB allows us to have the data integrity we need without being online.`,
             href: 'https://moreapp.com/',
             target: '_blank',
             logo: '/files/companies/moreapp.png',
