@@ -280,7 +280,10 @@ describeParallel('rx-state.test.ts', () => {
             const state = await getState();
 
             let t = 0;
-            const amount = isFastMode() ? 20 : 100;
+            let amount = isFastMode() ? 20 : 100;
+            if (config.storage.name.includes('random-delay')) {
+                amount = 5;
+            }
             while (t < amount) {
                 t++;
                 await state.set('a', () => t);
