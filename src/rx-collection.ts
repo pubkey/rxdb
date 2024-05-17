@@ -836,10 +836,13 @@ export class RxCollectionBase<
         return ret;
     }
 
-    destroy(): Promise<boolean> {
+    async destroy(): Promise<boolean> {
         if (this.destroyed) {
             return PROMISE_RESOLVE_FALSE;
         }
+
+
+        await Promise.all(this.onDestroy.map(fn => fn()));
 
         /**
          * Settings destroyed = true
@@ -863,7 +866,6 @@ export class RxCollectionBase<
          * but the change is not added to the changes collection.
          */
         return this.database.requestIdlePromise()
-            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
             .then(() => this.storageInstance.close())
             .then(() => {
                 /**
