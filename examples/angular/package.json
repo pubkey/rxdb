@@ -54,7 +54,7 @@
     "@capacitor/angular": "2.0.3",
     "@capacitor/core": "6.0.0",
     "@capacitor/ios": "6.0.0",
-    "@capacitor/preferences": "5.0.7",
+    "@capacitor/preferences": "6.0.0",
     "assert": "2.1.0",
     "express": "4.19.2",
     "express-pouchdb": "4.2.0",
