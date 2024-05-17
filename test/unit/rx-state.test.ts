@@ -282,7 +282,7 @@ describeParallel('rx-state.test.ts', () => {
             let t = 0;
             let amount = isFastMode() ? 20 : 100;
             if (config.storage.name.includes('random-delay')) {
-                amount = 5;
+                amount = 10;
             }
             while (t < amount) {
                 t++;
