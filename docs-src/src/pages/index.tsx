@@ -353,7 +353,7 @@ export default function Home() {
                 onClick={() => trigger('request_premium_main_page', 3)}
                 target="_blank"
               >
-                Buy Premium
+                Buy Now
               </a>
               <a
                 className="button light" href="/code"
