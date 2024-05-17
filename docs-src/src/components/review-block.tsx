@@ -71,6 +71,14 @@ export function ReviewsBlock() {
 
     const reviewItems = [
         {
+            label: 'Readwise, USA',
+            description: 'We use RxDB because it works across multiple platforms and we need to store of a great deal of data, some users have tens of thousands of documents! RxDB was the only cross-platform, offline-first solution with good enough performance to meet our needs.',
+            href: 'https://readwise.io/',
+            target: '_blank',
+            logo: '/files/companies/readwise.svg',
+            logoStyle: 'slider-logo-black lazyload'
+        },
+        {
             label: 'myAgro, Africa',
             description: 'Transitioning to RxDB was a breath of fresh air due to its comprehensive features, including schema migration, real-time replication, conflict resolution, and reactive programming.',
             href: 'https://www.myagro.org/',
