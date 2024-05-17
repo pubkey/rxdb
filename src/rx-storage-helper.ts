@@ -867,12 +867,6 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 
 
 /**
- * Ensure writes to a delay storage
- * are still correctly run in order.
- */
-let randomDelayStorageWriteQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
-
-/**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.
  */
@@ -883,6 +877,11 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
         delayTimeAfter: () => number;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
+    /**
+     * Ensure writes to a delay storage
+     * are still correctly run in order.
+     */
+    let randomDelayStorageWriteQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
 
     const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
         name: 'random-delay-' + input.storage.name,
