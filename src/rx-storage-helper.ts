@@ -877,6 +877,11 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
         delayTimeAfter: () => number;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
+    /**
+     * Ensure writes to a delay storage
+     * are still correctly run in order.
+     */
+    let randomDelayStorageWriteQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
 
     const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
         name: 'random-delay-' + input.storage.name,
@@ -886,23 +891,20 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
             const storageInstance = await input.storage.createStorageInstance(params);
             await promiseWait(input.delayTimeAfter());
 
-            // write still must be processed in order
-            let writeQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
-
             return {
                 databaseName: storageInstance.databaseName,
                 internals: storageInstance.internals,
                 options: storageInstance.options,
                 schema: storageInstance.schema,
                 collectionName: storageInstance.collectionName,
-                async bulkWrite(a, b) {
-                    writeQueue = writeQueue.then(async () => {
+                bulkWrite(a, b) {
+                    randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
                         await promiseWait(input.delayTimeBefore());
                         const response = await storageInstance.bulkWrite(a, b);
                         await promiseWait(input.delayTimeAfter());
                         return response;
                     });
-                    const ret = await writeQueue;
+                    const ret = randomDelayStorageWriteQueue;
                     return ret;
                 },
                 async findDocumentsById(a, b) {

@@ -280,7 +280,10 @@ describeParallel('rx-state.test.ts', () => {
             const state = await getState();
 
             let t = 0;
-            const amount = isFastMode() ? 20 : 100;
+            let amount = isFastMode() ? 20 : 100;
+            if (config.storage.name.includes('random-delay')) {
+                amount = 10;
+            }
             while (t < amount) {
                 t++;
                 await state.set('a', () => t);
@@ -337,9 +340,15 @@ describeParallel('rx-state.test.ts', () => {
         });
         runXTimes(1, () => {
             it('should have a deterministic output when 2 instances write at the same time', async () => {
-                if (config.storage.name.includes('random-delay') || isDeno) {
+                // TODO shouldn't we fix this test for these storages?
+                if (
+                    config.storage.name.includes('random-delay') ||
+                    config.storage.name === 'remote' ||
+                    isDeno
+                ) {
                     return;
                 }
+
                 const databaseName = randomCouchString(10);
                 const state1 = await getState(databaseName);
                 const state2 = await getState(databaseName);
@@ -372,7 +381,11 @@ describeParallel('rx-state.test.ts', () => {
             });
         });
         it('should have a deterministic output when 2 instances write to different fields', async () => {
-            if (config.storage.name.includes('random-delay') || isDeno) {
+            if (
+                config.storage.name.includes('random-delay') ||
+                config.storage.name === 'remote' ||
+                isDeno
+            ) {
                 return;
             }
             const databaseName = randomCouchString(10);

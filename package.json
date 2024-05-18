@@ -363,6 +363,7 @@
     "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:mongodb:loop": "npm run test:node:mongodb && npm run test:node:mongodb:loop",
     "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:remote:loop": "npm run test:node:remote && npm run test:node:remote:loop",
     "test:node:lokijs:loop": "npm run test:node:lokijs && npm run test:node:lokijs:loop",
     "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
     "test:node:dexie:loop": "npm run test:node:dexie && npm run test:node:dexie:loop",

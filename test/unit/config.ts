@@ -111,9 +111,7 @@ export function getStorage(storageKey: string): RxTestStorage {
             return {
                 name: storageKey,
                 getStorage: () => randomDelayStorage({
-                    storage: getRxStorageDexie({
-                        indexedDB: fakeIndexedDB,
-                        IDBKeyRange: fakeIDBKeyRange
+                    storage: getRxStorageMemory({
                     }),
                     delayTimeBefore: delayFn,
                     delayTimeAfter: delayFn
@@ -122,9 +120,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                     return {
                         description: 'memory-random-delay',
                         storage: randomDelayStorage({
-                            storage: getRxStorageDexie({
-                                indexedDB: fakeIndexedDB,
-                                IDBKeyRange: fakeIDBKeyRange
+                            storage: getRxStorageMemory({
                             }),
                             delayTimeBefore: delayFn,
                             delayTimeAfter: delayFn
