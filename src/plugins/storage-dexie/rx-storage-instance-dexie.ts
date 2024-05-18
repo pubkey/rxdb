@@ -4,12 +4,9 @@ import {
 } from 'rxjs';
 import {
     now,
-    PROMISE_RESOLVE_VOID,
-    RX_META_LWT_MINIMUM,
-    sortDocumentsByLastWriteTime,
-    lastOfArray,
     ensureNotFalsy,
-    randomCouchString
+    defaultHashSha256,
+    RXDB_UTILS_GLOBAL
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -37,7 +34,6 @@ import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
     attachmentObjectId,
     closeDexieDb,
-    fromDexieToStorage,
     fromStorageToDexie,
     getDexieDbWithTables,
     getDocsInDb,
@@ -51,6 +47,9 @@ import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
 export const DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
+
+let shownNonPremiumLog = false;
+
 
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -81,6 +80,31 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotClosed(this);
+
+
+        if (
+            !shownNonPremiumLog &&
+            (
+                !RXDB_UTILS_GLOBAL.premium ||
+                typeof RXDB_UTILS_GLOBAL.premium !== 'string' ||
+                (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) !== '6da4936d1425ff3a5c44c02342c6daf791d266be3ae8479b8ec59e261df41b93')
+            )
+        ) {
+            console.warn(
+                [
+                    '-------------- RxDB Open Core RxStorage -------------------------------',
+                    'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html ',
+                    'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.',
+                    'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.',
+                    ' https://rxdb.info/premium ',
+                    'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.',
+                    '---------------------------------------------------------------------'
+                ].join('\n')
+            );
+            shownNonPremiumLog = true;
+        } else {
+            shownNonPremiumLog = true;
+        }
 
 
         /**
