@@ -93,7 +93,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             console.warn(
                 [
                     '-------------- RxDB Open Core RxStorage -------------------------------',
-                    'You are using the free Dexie.js based RxStorage implementation from RxDB.',
+                    'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html ',
                     'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.',
                     'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.',
                     ' https://rxdb.info/premium ',
@@ -101,6 +101,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     '---------------------------------------------------------------------'
                 ].join('\n')
             );
+            shownNonPremiumLog = true;
+        } else {
             shownNonPremiumLog = true;
         }
 
