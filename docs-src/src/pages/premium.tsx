@@ -17,6 +17,9 @@ import {
 import { trigger } from '../components/trigger-event';
 import { getDatabase, hasIndexedDB } from '../components/database';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import {
+    Select
+} from 'antd';
 
 export type FormValueDocData = {
     homeCountry?: string;
@@ -32,16 +35,24 @@ export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
+    const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
+    const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
+
+    const [initDone, setInitDone] = React.useState<boolean>(false);
     useEffect(() => {
+        if (!isBrowser || !hasIndexedDB()) {
+            return;
+        }
+
+
+        if (initDone) {
+            return;
+        }
         if (isBrowser) {
             window.trigger('open_pricing_page', 1);
         }
 
         (async () => {
-            if (!isBrowser || !hasIndexedDB()) {
-                return;
-            }
-
             // load previous form data
             const database = await getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
@@ -49,7 +60,8 @@ export default function Premium() {
                 console.log('formValueDoc:');
                 console.dir(formValueDoc);
 
-                setToInput('home-country', formValueDoc._data.data.homeCountry);
+                setHomeCountryInitial(formValueDoc._data.data.homeCountry);
+                setHomeCountry(formValueDoc._data.data.homeCountry);
                 setToInput('company-size', formValueDoc._data.data.companySize);
                 setToInput('project-amount', formValueDoc._data.data.projectAmount);
                 setToInput('license-period', formValueDoc._data.data.licensePeriod);
@@ -67,6 +79,7 @@ export default function Premium() {
                     priceCalculateForm.click();
                 }
             }
+            setInitDone(true);
         })();
     });
 
@@ -79,6 +92,8 @@ export default function Premium() {
     const handleClose = () => {
         setOpen(false);
     };
+
+
 
     return (
         <>
@@ -107,24 +122,28 @@ export default function Premium() {
                                         <div className="field">
                                             <label htmlFor="home-country">Company Home Country:</label>
                                             <div className="input">
-                                                <input
-                                                    list="home-country"
-                                                    name="home-country"
-                                                    pattern="[A-Za-z \-\,]{2,}"
-                                                    required={true}
-                                                    style={{ width: '100%', maxWidth: 240 }}
-                                                    autoComplete="off"
+                                                <Select
+                                                    id="home-country"
+                                                    style={{ width: '100%' }}
+                                                    popupMatchSelectWidth
+                                                    optionFilterProp="value"
+                                                    showSearch={true}
                                                     placeholder="Company Home Country"
-                                                />
-                                                <datalist id="home-country">
+                                                    value={homeCountry ? homeCountry : homeCountryInitial}
+                                                    onChange={(value) => {
+                                                        if (value !== homeCountry) {
+                                                            setHomeCountry(value);
+                                                        }
+                                                    }}
+                                                >
                                                     {
                                                         AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
                                                             .sort((a, b) => a.name >= b.name ? 1 : -1)
                                                             .map((country, idx) => {
-                                                                return <option key={idx} value={country.name} >{country.name}</option>;
+                                                                return <Select.Option key={idx} value={country.name}>{country.name}</Select.Option>;
                                                             })
                                                     }
-                                                </datalist>
+                                                </Select>
                                             </div>
                                         </div>
                                         <br />
@@ -411,11 +430,20 @@ export default function Premium() {
 
                                                 console.log('formData:');
                                                 console.dir(formData);
+                                                console.dir(homeCountry);
 
 
-                                                const homeCountry = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-                                                    .find(o => o.name.toLowerCase() === (formData['home-country'] as string).toLowerCase());
+                                                if (!homeCountry && initDone && isBrowser) {
+                                                    alert('Please fill out the Home Country Field');
+                                                    return;
+                                                }
                                                 if (!homeCountry) {
+                                                    return;
+                                                }
+
+                                                const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+                                                    .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
+                                                if (!homeCountryObject) {
                                                     return;
                                                 }
 
@@ -429,7 +457,7 @@ export default function Premium() {
                                                     teamSize: formData['developer-count'] as any,
                                                     projectAmount: '1', // formData['project-amount'] as any,
                                                     licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
-                                                    homeCountryCode: homeCountry.code,
+                                                    homeCountryCode: homeCountryObject.code,
                                                     packages
                                                 };
 
@@ -466,7 +494,7 @@ export default function Premium() {
                                                     companySize: formData['company-size'] as any,
                                                     projectAmount: formData['project-amount'] as any,
                                                     licensePeriod: formData['license-period'] as any,
-                                                    homeCountry: homeCountry.name,
+                                                    homeCountry: homeCountryObject.name,
                                                     packages,
                                                     price: priceResult.totalPrice,
                                                     formSubmitted: false
