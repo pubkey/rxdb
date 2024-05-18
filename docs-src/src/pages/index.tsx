@@ -354,7 +354,7 @@ export default function Home() {
                 href="/premium#price-calculator-block"
                 onClick={() => trigger('request_premium_main_page', 3)}
               >
-                Buy Now
+                Get Now
               </a>
               <a
                 className="button light"
