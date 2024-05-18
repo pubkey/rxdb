@@ -343,20 +343,22 @@ export default function Home() {
             </div>
             <div className='content'>
               <a
-                className="button" href="/quickstart.html"
-                target="_blank" onClick={() => trigger('start_now', 0.4)}
+                className="button"
+                href="/quickstart.html"
+                onClick={() => trigger('start_now', 0.4)}
               >
-                Quickstart »
+                Try RxDB for free
               </a>
               <a
-                className="button" href="/premium#price-calculator-block"
+                className="button"
+                href="/premium#price-calculator-block"
                 onClick={() => trigger('request_premium_main_page', 3)}
-                target="_blank"
               >
                 Buy Now
               </a>
               <a
-                className="button light" href="/code"
+                className="button light"
+                href="/code"
                 target="_blank"
               >
                 <svg
