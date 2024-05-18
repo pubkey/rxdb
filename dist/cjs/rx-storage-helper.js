@@ -653,6 +653,11 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
  * delays. Mostly used in tests.
  */
 function randomDelayStorage(input) {
+  /**
+   * Ensure writes to a delay storage
+   * are still correctly run in order.
+   */
+  var randomDelayStorageWriteQueue = _index.PROMISE_RESOLVE_TRUE;
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
     rxdbVersion: _index.RXDB_VERSION,
@@ -660,23 +665,20 @@ function randomDelayStorage(input) {
       await (0, _index.promiseWait)(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);
       await (0, _index.promiseWait)(input.delayTimeAfter());
-
-      // write still must be processed in order
-      var writeQueue = _index.PROMISE_RESOLVE_TRUE;
       return {
         databaseName: storageInstance.databaseName,
         internals: storageInstance.internals,
         options: storageInstance.options,
         schema: storageInstance.schema,
         collectionName: storageInstance.collectionName,
-        async bulkWrite(a, b) {
-          writeQueue = writeQueue.then(async () => {
+        bulkWrite(a, b) {
+          randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
             await (0, _index.promiseWait)(input.delayTimeBefore());
             var response = await storageInstance.bulkWrite(a, b);
             await (0, _index.promiseWait)(input.delayTimeAfter());
             return response;
           });
-          var ret = await writeQueue;
+          var ret = randomDelayStorageWriteQueue;
           return ret;
         },
         async findDocumentsById(a, b) {

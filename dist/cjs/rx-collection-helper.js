@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
+exports.ensureRxCollectionIsNotDestroyed = ensureRxCollectionIsNotDestroyed;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = removeCollectionStorages;
 var _index = require("./plugins/utils/index.js");
@@ -12,6 +13,7 @@ var _hooks = require("./hooks.js");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store.js");
 var _rxStorageHelper = require("./rx-storage-helper.js");
 var _overwritable = require("./overwritable.js");
+var _rxError = require("./rx-error.js");
 /**
  * fills in the default data.
  * This also clones the data.
@@ -116,6 +118,14 @@ hashFunction) {
       };
     });
     await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
+  }
+}
+function ensureRxCollectionIsNotDestroyed(collection) {
+  if (collection.destroyed) {
+    throw (0, _rxError.newRxError)('COL21', {
+      collection: collection.name,
+      version: collection.schema.version
+    });
   }
 }
 //# sourceMappingURL=rx-collection-helper.js.map

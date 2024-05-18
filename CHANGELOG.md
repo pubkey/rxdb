@@ -2,16 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX `collection.remove()` must end up with the correct RxCollection state across tabs. [5721](https://github.com/pubkey/rxdb/issues/5721)
-- ADD `RxCollection.onRemove` hooks to detect the removing of a RxCollection across tabs.
-- IMPROVE performance of insert to [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html)
-- ADD non-premium console.log on the [Dexie.js RxStorage](https://rxdb.info/rx-storage-dexie.html#disabling-the-non-premium-console-log)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.21.0 (18 May 2024)
+
+- FIX `collection.remove()` must end up with the correct RxCollection state across tabs. [5721](https://github.com/pubkey/rxdb/issues/5721)
+- ADD `RxCollection.onRemove` hooks to detect the removing of a RxCollection across tabs.
+- IMPROVE performance of insert to [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html)
+- ADD non-premium console.log on the [Dexie.js RxStorage](https://rxdb.info/rx-storage-dexie.html#disabling-the-non-premium-console-log)
 
 ### 15.20.0 (12 May 2024)
 

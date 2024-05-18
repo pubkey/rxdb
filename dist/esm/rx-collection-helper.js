@@ -4,6 +4,7 @@ import { runAsyncPluginHooks } from "./hooks.js";
 import { getAllCollectionDocuments } from "./rx-database-internal-store.js";
 import { flatCloneDocWithMeta } from "./rx-storage-helper.js";
 import { overwritable } from "./overwritable.js";
+import { newRxError } from "./rx-error.js";
 
 /**
  * fills in the default data.
@@ -109,6 +110,14 @@ hashFunction) {
       };
     });
     await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
+  }
+}
+export function ensureRxCollectionIsNotDestroyed(collection) {
+  if (collection.destroyed) {
+    throw newRxError('COL21', {
+      collection: collection.name,
+      version: collection.schema.version
+    });
   }
 }
 //# sourceMappingURL=rx-collection-helper.js.map

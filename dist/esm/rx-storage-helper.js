@@ -630,6 +630,11 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
  * delays. Mostly used in tests.
  */
 export function randomDelayStorage(input) {
+  /**
+   * Ensure writes to a delay storage
+   * are still correctly run in order.
+   */
+  var randomDelayStorageWriteQueue = PROMISE_RESOLVE_TRUE;
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
     rxdbVersion: RXDB_VERSION,
@@ -637,23 +642,20 @@ export function randomDelayStorage(input) {
       await promiseWait(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);
       await promiseWait(input.delayTimeAfter());
-
-      // write still must be processed in order
-      var writeQueue = PROMISE_RESOLVE_TRUE;
       return {
         databaseName: storageInstance.databaseName,
         internals: storageInstance.internals,
         options: storageInstance.options,
         schema: storageInstance.schema,
         collectionName: storageInstance.collectionName,
-        async bulkWrite(a, b) {
-          writeQueue = writeQueue.then(async () => {
+        bulkWrite(a, b) {
+          randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
             await promiseWait(input.delayTimeBefore());
             var response = await storageInstance.bulkWrite(a, b);
             await promiseWait(input.delayTimeAfter());
             return response;
           });
-          var ret = await writeQueue;
+          var ret = randomDelayStorageWriteQueue;
           return ret;
         },
         async findDocumentsById(a, b) {

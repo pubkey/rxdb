@@ -1,5 +1,6 @@
-import type { HashFunction, InternalStoreDocType, RxDatabase, RxDocumentData, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from './types/index.d.ts';
+import type { HashFunction, InternalStoreDocType, RxCollection, RxDatabase, RxDocumentData, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from './types/index.d.ts';
 import type { RxSchema } from './rx-schema.ts';
+import type { RxCollectionBase } from './rx-collection.ts';
 /**
  * fills in the default data.
  * This also clones the data.
@@ -20,3 +21,4 @@ export declare function removeCollectionStorages(storage: RxStorage<any, any>, d
  * so we do not have to delete the meta documents.
  */
 hashFunction?: HashFunction): Promise<void>;
+export declare function ensureRxCollectionIsNotDestroyed(collection: RxCollection | RxCollectionBase<any, any, any, any, any>): void;

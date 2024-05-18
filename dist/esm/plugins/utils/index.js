@@ -15,4 +15,5 @@ export * from "./utils-error.js";
 export * from "./utils-time.js";
 export * from "./utils-other.js";
 export * from "./utils-rxdb-version.js";
+export * from "./utils-global.js";
 //# sourceMappingURL=index.js.map

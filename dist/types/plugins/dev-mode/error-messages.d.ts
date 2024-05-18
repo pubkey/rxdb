@@ -64,6 +64,7 @@ export declare const ERROR_MESSAGES: {
     COL17: string;
     COL18: string;
     COL20: string;
+    COL21: string;
     CONFLICT: string;
     DOC1: string;
     DOC2: string;

@@ -25,4 +25,15 @@ Object.keys(_rxStorageIpcMain).forEach(function (key) {
     }
   });
 });
+var _electronHelper = require("./electron-helper.js");
+Object.keys(_electronHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _electronHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _electronHelper[key];
+    }
+  });
+});
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { now, ensureNotFalsy } from "../utils/index.js";
+import { now, ensureNotFalsy, defaultHashSha256, RXDB_UTILS_GLOBAL } from "../utils/index.js";
 import { attachmentObjectId, closeDexieDb, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
 import { dexieCount, dexieQuery } from "./dexie-query.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -8,6 +8,7 @@ import { addRxStorageMultiInstanceSupport } from "../../rx-storage-multiinstance
 import { newRxError } from "../../rx-error.js";
 var instanceId = now();
 export var DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
+var shownNonPremiumLog = false;
 export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings, devMode) {
     this.changes$ = new Subject();
@@ -25,6 +26,12 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceDexie.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     ensureNotClosed(this);
+    if (!shownNonPremiumLog && (!RXDB_UTILS_GLOBAL.premium || typeof RXDB_UTILS_GLOBAL.premium !== 'string' || (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) !== '6da4936d1425ff3a5c44c02342c6daf791d266be3ae8479b8ec59e261df41b93')) {
+      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
+      shownNonPremiumLog = true;
+    } else {
+      shownNonPremiumLog = true;
+    }
 
     /**
      * Check some assumptions to ensure RxDB

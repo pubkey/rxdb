@@ -59,9 +59,10 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
-     */
+    */
     onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
+    onRemove: (() => MaybePromise<any>)[];
     prepare(): Promise<void>;
     /**
      * Manually call the cleanup function of the storage.
