@@ -15,3 +15,4 @@ export * from './utils-error.ts';
 export * from './utils-time.ts';
 export * from './utils-other.ts';
 export * from './utils-rxdb-version.ts';
+export * from './utils-global.ts';
