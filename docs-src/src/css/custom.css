@@ -1014,7 +1014,6 @@ body {
 
 .block.sixth .buy-option-inner {
     box-sizing: content-box;
-    min-height: 565px;
     background-color: var(--bg-color);
     padding: 10px;
     border-radius: 4px;
