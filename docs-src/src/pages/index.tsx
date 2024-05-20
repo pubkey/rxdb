@@ -349,13 +349,13 @@ export default function Home() {
               >
                 Try RxDB for free
               </a>
-              <a
+              {/* <a
                 className="button"
                 href="/premium#price-calculator-block"
                 onClick={() => trigger('request_premium_main_page', 3)}
               >
                 Get Now
-              </a>
+              </a> */}
               <a
                 className="button light"
                 href="/code"
