@@ -21,7 +21,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
 
+    # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:
+      contents: write
       # @link https://docs.npmjs.com/generating-provenance-statements#about-npm-provenance
       id-token: write
     # Steps represent a sequence of tasks that will be executed as part of the job
