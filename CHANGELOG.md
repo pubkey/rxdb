@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD publish the npm package with the [provenance statements](https://docs.npmjs.com/generating-provenance-statements)
 
 <!-- ADD new changes here! -->
 
