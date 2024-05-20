@@ -995,6 +995,11 @@ body {
 .block.sixth .buy-options {
     width: 100%;
 
+    /**
+     * @link https://stackoverflow.com/a/50917807
+     */
+    align-items: center;
+
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     column-gap: 10px;
