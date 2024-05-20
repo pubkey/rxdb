@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD publish the npm package with the [provenance statements](https://docs.npmjs.com/generating-provenance-statements)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.21.3 (20 May 2024)
+
+- ADD publish the npm package with the [provenance statements](https://docs.npmjs.com/generating-provenance-statements)
 
 ### 15.21.0 (18 May 2024)
 
