@@ -1,5 +1,6 @@
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect } from 'react';
+import { getDatabase } from '../components/database';
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
@@ -12,6 +13,7 @@ export default function Root({ children }) {
         // addCommunityChatButton();
 
         addCallToActionButton();
+        triggerClickEventWhenFromCode();
 
     });
     return <>{children}</>;
@@ -102,6 +104,30 @@ function addCallToActionButton() {
         insertAfter(positionReferenceElement, newElementWrapper);
     }
     setCallToActionOnce();
+}
+
+/**
+ * There are some logs that RxDB prints out to the console of the developers.
+ * These logs can contain links with the query param ?console=foobar
+ * which allows us to detect that a user has really installed and started RxDB.
+ */
+async function triggerClickEventWhenFromCode() {
+    const TRIGGER_CONSOLE_EVENT_ID = 'console-log-click';
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('console')) {
+        return;
+    }
+    const database = await getDatabase();
+    const flagDoc = await database.getLocal(TRIGGER_CONSOLE_EVENT_ID);
+    if (flagDoc) {
+        console.log('# already tracked ' + TRIGGER_CONSOLE_EVENT_ID);
+    } else {
+        window.trigger(
+            TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'),
+            10
+        );
+        await database.upsertLocal(TRIGGER_CONSOLE_EVENT_ID, {});
+    }
 }
 
 function addCommunityChatButton() {
