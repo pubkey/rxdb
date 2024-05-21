@@ -48,7 +48,6 @@ export function getMingoQuery<RxDocType>(
     selector?: MangoQuerySelector<RxDocType>
 ) {
     if (!mingoInitDone) {
-
         useOperators(OperatorType.PIPELINE, {
             $sort,
             $project

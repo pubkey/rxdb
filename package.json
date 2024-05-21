@@ -410,7 +410,7 @@
     "nats:start": "docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js",
     "nats:stop": "docker rm -f rxdb-nats",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
-    "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=memory NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.mjs",
+    "profile": "npm run transpile && rm -f isolate-* && cross-env DEFAULT_STORAGE=memory NODE_PROF=true mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.mjs",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint . --ext .js,.ts --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts",
