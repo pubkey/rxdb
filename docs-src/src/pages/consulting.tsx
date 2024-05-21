@@ -4,7 +4,6 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
-import 'lazysizes';
 
 import React, { useEffect } from 'react';
 

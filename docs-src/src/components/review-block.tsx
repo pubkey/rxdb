@@ -76,7 +76,7 @@ export function ReviewsBlock() {
             href: 'https://readwise.io/',
             target: '_blank',
             logo: '/files/companies/readwise.svg',
-            logoStyle: 'slider-logo-black lazyload'
+            logoStyle: 'slider-logo-black '
         },
         {
             label: 'myAgro, Africa',
@@ -84,7 +84,7 @@ export function ReviewsBlock() {
             href: 'https://www.myagro.org/',
             target: '_blank',
             logo: '/files/companies/myagro.svg',
-            logoStyle: 'slider-logo-black lazyload',
+            logoStyle: 'slider-logo-black ',
         },
         {
             label: 'MoreApp, Germany',
@@ -94,7 +94,7 @@ export function ReviewsBlock() {
             href: 'https://moreapp.com/',
             target: '_blank',
             logo: '/files/companies/moreapp.png',
-            logoStyle: 'slider-logo-black lazyload',
+            logoStyle: 'slider-logo-black ',
         },
         {
             label: 'ALTGRAS, Africa',
@@ -104,7 +104,7 @@ export function ReviewsBlock() {
             href: 'https://altgras.com/',
             target: '_blank',
             logo: '/files/companies/altgras.png',
-            logoStyle: 'slider-logo-white lazyload',
+            logoStyle: 'slider-logo-white ',
         },
         {
             label: 'WooCommerce POS, Australia',
@@ -113,7 +113,7 @@ export function ReviewsBlock() {
             href: 'https://wcpos.com/',
             target: '_blank',
             logo: '/files/companies/woopos.png',
-            logoStyle: 'slider-logo-black lazyload',
+            logoStyle: 'slider-logo-black ',
         },
         {
             label: 'atroo GmbH, Germany',
@@ -123,7 +123,7 @@ export function ReviewsBlock() {
             href: 'https://atroo.de/',
             target: '_blank',
             logo: '/files/companies/atroo.png',
-            logoStyle: 'slider-logo-black lazyload',
+            logoStyle: 'slider-logo-black ',
         },
         {
             label: 'Nutrien, Canada',
@@ -131,14 +131,14 @@ export function ReviewsBlock() {
             href: 'https://www.nutrien.com/',
             target: '_blank',
             logo: '/files/companies/nutrien.svg',
-            logoStyle: 'slider-logo-black lazyload',
+            logoStyle: 'slider-logo-black ',
         },
         // {
         //     label: "Mapgl Grafana plugins",
         //     description: `"We use RxDB to store clients network topology modifications made with our map plugin visual editor"`,
         //     href: "https://raw.githubusercontent.com/vaduga/mapgl-community/",
         //     logo: "https://raw.githubusercontent.com/vaduga/mapgl-community/main/src/img/logo.png",
-        //     logoStyle: 'slider-logo-black lazyload',
+        //     logoStyle: 'slider-logo-black ',
         // },
     ];
 
@@ -156,7 +156,8 @@ export function ReviewsBlock() {
                         <div className="slider-profile">
                             <img
                                 className={item.logoStyle}
-                                data-src={item.logo}
+                                src={item.logo}
+                                loading="lazy"
                                 alt="logo"
                             />
                             <div className="slider-info">

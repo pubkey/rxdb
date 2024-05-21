@@ -1,7 +1,6 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
-import 'lazysizes';
 
 import {
   merge,
@@ -400,7 +399,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy discord">
-              <img className="lazyload" data-src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+              <img loading="lazy" src="./files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Chat on</div>
                 <div className="title">Discord</div>
@@ -555,7 +554,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy twitter">
-              <img className="lazyload" data-src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
+              <img loading="lazy" src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Follow on</div>
                 <div className="title">Twitter</div>
@@ -613,25 +612,28 @@ export default function Home() {
               <div className="half right">
                 <div className="replication-icons">
                   <img
-                    data-src="./files/logo/logo.svg"
+                    src="./files/logo/logo.svg"
                     alt="RxDB"
-                    className="replicate-logo tilt-to-mouse lazyload"
+                    className="replicate-logo tilt-to-mouse"
+                    loading="lazy"
                   />
                   <a href="/replication-graphql.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
                       <img
-                        data-src="./files/icons/graphql-text.svg"
+                        src="./files/icons/graphql-text.svg"
                         alt="GraphQL"
-                        className="protocol lazyload"
+                        className="protocol"
+                        loading="lazy"
                       />
                     </div>
                   </a>
                   <a href="/replication-couchdb.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
                       <img
-                        data-src="./files/icons/couchdb-text.svg"
+                        src="./files/icons/couchdb-text.svg"
                         alt="CouchDB"
-                        className="protocol lazyload"
+                        className="protocol"
+                        loading="lazy"
                       />
                     </div>
                   </a>
@@ -662,7 +664,7 @@ export default function Home() {
           >
             <div className="trophy github">
               <img
-                className="lazyload" data-src="./files/icons/github-star-with-logo.svg"
+                loading="lazy" src="./files/icons/github-star-with-logo.svg"
                 alt="RxDB github star"
               />
               <div style={{ flex: 1 }}>
@@ -685,8 +687,9 @@ export default function Home() {
           <div className="block offline-first dark">
             <div className="offline-image-wrapper">
               <img
-                data-src="files/icons/wifi/wifi_1a202c.svg"
-                className="offline-image beating-second lazyload"
+                src="files/icons/wifi/wifi_1a202c.svg"
+                className="offline-image beating-second"
+                loading="lazy"
                 alt="offline"
               />
             </div>
@@ -736,7 +739,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img className="lazyload" data-src="./files/icons/angular.svg" alt="angular" />
+                  <img loading="lazy" src="./files/icons/angular.svg" alt="angular" />
                   Angular
                 </div>
               </a>
@@ -744,14 +747,14 @@ export default function Home() {
                 className="neumorphism-circle-m circle centered enlarge-on-mouse"
                 style={{ top: '10%', left: '58%' }}
               >
-                <img className="lazyload" data-src="./files/icons/capacitor.svg" alt="capacitor" />
+                <img loading="lazy" src="./files/icons/capacitor.svg" alt="capacitor" />
                 Capacitor
               </div>
               <div
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '-4%', left: '44%' }}
               >
-                <img className="lazyload" data-src="./files/icons/deno.svg" alt="deno" />
+                <img loading="lazy" src="./files/icons/deno.svg" alt="deno" />
                 Deno
               </div>
               <a
@@ -762,7 +765,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img className="lazyload" data-src="./files/icons/nodejs.svg" alt="Node.js" />
+                  <img loading="lazy" src="./files/icons/nodejs.svg" alt="Node.js" />
                   Node.js
                 </div>
               </a>
@@ -774,7 +777,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img className="lazyload" data-src="./files/icons/react.svg" alt="React" />
+                  <img loading="lazy" src="./files/icons/react.svg" alt="React" />
                   React
                 </div>
               </a>
@@ -782,7 +785,7 @@ export default function Home() {
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
               >
-                <img className="lazyload" data-src="./files/icons/svelte.svg" alt="Svelte" />
+                <img loading="lazy" src="./files/icons/svelte.svg" alt="Svelte" />
                 Svelte
               </div>
               <br />
@@ -809,7 +812,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img className="lazyload" data-src="./files/icons/electron.svg" alt="electron" />
+                    <img loading="lazy" src="./files/icons/electron.svg" alt="electron" />
                     Electron
                   </div>
                 </a>
@@ -821,7 +824,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img className="lazyload" data-src="./files/icons/vuejs.svg" alt="Vue.js" />
+                    <img loading="lazy" src="./files/icons/vuejs.svg" alt="Vue.js" />
                     Vue.js
                   </div>
                 </a>
@@ -833,7 +836,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img className="lazyload" data-src="./files/icons/ionic.svg" alt="ionic" />
+                    <img loading="lazy" src="./files/icons/ionic.svg" alt="ionic" />
                     Ionic
                   </div>
                 </a>
@@ -841,7 +844,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '46%', left: '11%' }}
                 >
-                  <img className="lazyload" data-src="./files/icons/nativescript.svg" alt="NativeScript" />
+                  <img loading="lazy" src="./files/icons/nativescript.svg" alt="NativeScript" />
                   NativeScript
                 </div>
                 <a
@@ -852,7 +855,7 @@ export default function Home() {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img className="lazyload" data-src="./files/icons/react.svg" alt="React Native" />
+                    <img loading="lazy" src="./files/icons/react.svg" alt="React Native" />
                     React Native
                   </div>
                 </a>
@@ -860,7 +863,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img className="lazyload" data-src="./files/icons/nextjs.svg" alt="Next.js" />
+                  <img loading="lazy" src="./files/icons/nextjs.svg" alt="Next.js" />
                   Next.js
                 </div>
                 <a
@@ -871,7 +874,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img className="lazyload" data-src="./files/icons/flutter.svg" alt="Flutter" />
+                    <img loading="lazy" src="./files/icons/flutter.svg" alt="Flutter" />
                     Flutter
                   </div>
                 </a>
@@ -886,7 +889,7 @@ export default function Home() {
                   Trusted and <b className="underline">open source</b>
                 </h2>
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/github-star.svg" alt="github star" />
+                  <img loading="lazy" src="files/icons/github-star.svg" alt="github star" />
                   <div className="label">Github Stars</div>
                   <a
                     className="value"
@@ -899,7 +902,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/download.svg" alt="npm downloads" />
+                  <img loading="lazy" src="files/icons/download.svg" alt="npm downloads" />
                   <div className="label">npm downloads</div>
                   <a
                     className="value beating-number"
@@ -913,7 +916,7 @@ export default function Home() {
                 </div>
                 <div className="clear" />
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/person.svg" alt="contributor" />
+                  <img loading="lazy" src="files/icons/person.svg" alt="contributor" />
                   <div className="label">Contributors</div>
                   <a
                     className="value"
@@ -926,7 +929,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/commit.svg" alt="commit" />
+                  <img loading="lazy" src="files/icons/commit.svg" alt="commit" />
                   <div className="label">Commits</div>
                   <a
                     className="value"
@@ -940,7 +943,7 @@ export default function Home() {
                 </div>
                 <div className="clear" />
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/gear.svg" alt="gear" />
+                  <img loading="lazy" src="files/icons/gear.svg" alt="gear" />
                   <div className="label">RxDB made Projects</div>
                   <a
                     className="value"
@@ -953,7 +956,7 @@ export default function Home() {
                   <div className="clear" />
                 </div>
                 <div className="box dark">
-                  <img className="lazyload" data-src="files/icons/twitter.svg" alt="twitter" />
+                  <img loading="lazy" src="files/icons/twitter.svg" alt="twitter" />
                   <div className="label">Twitter followers</div>
                   <a
                     className="value"
