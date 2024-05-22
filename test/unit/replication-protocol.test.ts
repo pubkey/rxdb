@@ -1114,6 +1114,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
+            ensureReplicationHasNoErrors(replicationState);
 
 
             // insert
