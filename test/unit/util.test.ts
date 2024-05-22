@@ -24,7 +24,8 @@ import {
     toWithDeleted,
     stringToArrayBuffer,
     arrayBufferToString,
-    clone
+    clone,
+    errorToPlainJson
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -502,6 +503,29 @@ describe('util.test.js', () => {
             const buffer = stringToArrayBuffer(str);
             const back = arrayBufferToString(buffer);
             assert.strictEqual(str, back);
+        });
+    });
+    describe('.errorToPlainJson()', () => {
+        it('should return the correct result for an error containing all possible fields', () => {
+            const customError = {
+                name: 'CustomError',
+                message: 'This is a custom error',
+                rxdb: false,
+                extensions: { code: 'CUSTOM_ERR_CODE' },
+                parameters: { value: 'value' },
+                code: 'CUSTOM_ERR_CODE',
+                stack: 'CustomError: This is a custom error\n at someFile.js'
+            };
+
+            const result = errorToPlainJson(customError);
+
+            assert.strictEqual(result.name, customError.name);
+            assert.strictEqual(result.message, customError.message);
+            assert.strictEqual(result.rxdb, customError.rxdb);
+            assert.deepStrictEqual(result.extensions, customError.extensions);
+            assert.deepStrictEqual(result.parameters, customError.parameters);
+            assert.strictEqual(result.code, customError.code);
+            assert.strictEqual(result.stack, 'CustomError: This is a custom error \n  at someFile.js');
         });
     });
 });
