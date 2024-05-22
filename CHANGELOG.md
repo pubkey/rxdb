@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD non-premium console.log on the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html#disabling-the-non-premium-console-log)
+- FIX randomly failing replication test
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
