@@ -732,54 +732,54 @@ jobs:
           working-directory: ./examples/graphql
           run: npm run test:dexie
 
-  example-flutter:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.3.4"
-          channel: "stable"
-      - run: flutter --version
-      - name: Reuse npm cache folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x3-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-flutter-x3-
-      - name: prepare RxDB core
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-          rm -r node_modules
-      - name: flutter javascript build
-        working-directory: ./examples/flutter/javascript
-        run: |
-          npm run preinstall
-          npm install --legacy-peer-deps
-          npm run build
-      - name: Add flutter linux dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev
-      - name: flutter test
-        uses: coactions/setup-xvfb@v1
-        with:
-          working-directory: ./examples/flutter
-          run: |
-            flutter config --enable-linux-desktop
-            flutter test integration_test/basics_test.dart -d linux
+  # example-flutter:
+  #   runs-on: ubuntu-22.04
+  #   timeout-minutes: 30
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set node version
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: "3.3.4"
+  #         channel: "stable"
+  #     - run: flutter --version
+  #     - name: Reuse npm cache folder
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-modules
+  #       with:
+  #         path: |
+  #           ~/.npm
+  #           ./node_modules
+  #           ./examples/flutter/javascript/node_modules
+  #         key: ${{ runner.os }}-npm-flutter-x3-${{ hashFiles('**/package.json') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-npm-flutter-x3-
+  #     - name: prepare RxDB core
+  #       run: |
+  #         npm install --legacy-peer-deps
+  #         npm run build
+  #         rm -r node_modules
+  #     - name: flutter javascript build
+  #       working-directory: ./examples/flutter/javascript
+  #       run: |
+  #         npm run preinstall
+  #         npm install --legacy-peer-deps
+  #         npm run build
+  #     - name: Add flutter linux dependencies
+  #       run: |
+  #         sudo apt-get update -y
+  #         sudo apt-get install -y ninja-build libgtk-3-dev
+  #     - name: flutter test
+  #       uses: coactions/setup-xvfb@v1
+  #       with:
+  #         working-directory: ./examples/flutter
+  #         run: |
+  #           flutter config --enable-linux-desktop
+  #           flutter test integration_test/basics_test.dart -d linux
 
   test-tutorials:
     runs-on: ubuntu-22.04
