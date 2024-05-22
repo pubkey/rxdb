@@ -35,8 +35,7 @@ import {
     requestIdlePromise,
     promiseSeries,
     prepareQuery,
-    runXTimes,
-    defaultConflictHandler
+    runXTimes
 } from '../../plugins/core/index.mjs';
 
 
@@ -57,8 +56,7 @@ import {
     clone,
     wait,
     waitUntil,
-    randomBoolean,
-    randomNumber
+    randomBoolean
 } from 'async-test-util';
 
 const testContext = 'replication-protocol.test.ts';
