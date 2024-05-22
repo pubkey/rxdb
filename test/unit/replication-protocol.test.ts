@@ -34,7 +34,9 @@ import {
     flatClone,
     requestIdlePromise,
     promiseSeries,
-    prepareQuery
+    prepareQuery,
+    runXTimes,
+    defaultConflictHandler
 } from '../../plugins/core/index.mjs';
 
 
@@ -55,7 +57,8 @@ import {
     clone,
     wait,
     waitUntil,
-    randomBoolean
+    randomBoolean,
+    randomNumber
 } from 'async-test-util';
 
 const testContext = 'replication-protocol.test.ts';
@@ -95,9 +98,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
         }
 
-        // console.log('THROWING_CONFLICT_HANDLER will throw with input:');
-        // console.log(JSON.stringify(input, null, 4));
-
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     };
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
@@ -129,9 +129,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         const ageA = docA.age ? docA.age : 0;
         const ageB = docB.age ? docB.age : 0;
         if (ageA > ageB) {
+
+            // flag the conflict solution  document state the for easier debugging
+            const documentData = clone(docA);
+            documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
             return Promise.resolve({
                 isEqual: false,
-                documentData: clone(docA)
+                documentData
             });
         } else if (ageB > ageA) {
             const documentData: typeof docB = clone(docB);
@@ -304,9 +308,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     cleanDocToCompare(docB)
                 );
             } catch (err) {
-                console.log('## ERROR: State not equal');
-                console.log(JSON.stringify(docA, null, 4));
-                console.log(JSON.stringify(docB, null, 4));
+                console.log('## ERROR: State not equal (docs count: ' + resA.length + ')');
+                console.log(JSON.stringify({ col: instanceA.collectionName, docA }, null, 4));
+                console.log(JSON.stringify({ col: instanceB.collectionName, docB }, null, 4));
                 throw new Error('STATE not equal');
             }
         });
@@ -1096,97 +1100,103 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         });
     });
     describe('stability', () => {
-        it('do many writes while replication is running', async () => {
-            const writeAmount = isFastMode() ? 5 : 10;
+        let updateId = 0;
+        async function updateDocOnce(
+            instance: RxStorageInstance<HumanDocumentType, any, any>,
+            docId: string,
+            waitOneTick: boolean,
+            setTo?: number
+        ) {
+            if (typeof setTo === 'undefined') {
+                setTo = updateId++;
+            }
+            let done = false;
+            if (waitOneTick) {
+                // console.log('wait');
+                await wait(0);
+            }
+            while (!done) {
+                const current = await instance.findDocumentsById([docId], true);
+                const currentDocState = current[0];
+                const newDocState: typeof currentDocState = clone(currentDocState);
+                newDocState._meta.lwt = now();
+                newDocState.firstName = instance.collectionName;
+                newDocState.lastName = randomCouchString(10);
+                newDocState.age = setTo;
+                newDocState._rev = createRevision(randomCouchString(10), currentDocState);
 
-            const masterInstance = await createRxStorageInstance(0);
-            const forkInstance = await createRxStorageInstance(0);
+                const writeResult = await instance.bulkWrite([{
+                    previous: currentDocState,
+                    document: newDocState
+                }], testContext);
+                if (Object.keys(writeResult.success).length > 0) {
+                    done = true;
+                } else {
+                    // console.log('-- one write conflict age:' + newDocState.age + ' (' + instance.collectionName + ')');
+                    // console.dir(writeResult.error);
+                }
+            }
+        }
+
+        it('BUG: writes to both sides can make it not end up with the correct state', async () => {
+            updateId = 0;
+
+            const masterInstance = await createRxStorageInstance(0, undefined, 'masterInstance');
+            const forkInstance = await createRxStorageInstance(0, undefined, 'forkInstance');
             const metaInstance = await createMetaInstance(forkInstance.schema);
+            await ensureEqualState(masterInstance, forkInstance);
 
-            const instances = [masterInstance, forkInstance];
-            const replicationState = replicateRxStorageInstance({
-                identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, randomCouchString(10)),
+            const instances = [
+                masterInstance,
                 forkInstance,
-                metaInstance,
-                pullBatchSize: Math.ceil(writeAmount / 4),
-                pushBatchSize: Math.ceil(writeAmount / 4),
-                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
-                hashFunction: defaultHashSha256
-            });
+            ];
 
 
             // insert
-            const document = getDocData();
-            document.passportId = 'foobar';
+            const document = getDocData({ passportId: 'foobar' });
             const docId = document.passportId;
-            await promiseSeries(
-                instances
-                    .map((instance, idx) => async () => {
-                        // insert
-                        const docData = Object.assign({}, clone(document), {
-                            firstName: idx === 0 ? 'master' : 'fork',
-                            age: idx
-                        });
-                        docData._rev = createRevision(randomCouchString(10), docData);
-                        docData._meta.lwt = now();
-                        const insertResult = await instance.bulkWrite([{
-                            document: docData
-                        }], testContext);
-                        assert.deepStrictEqual(insertResult.error, []);
-                    })
-            );
-            await awaitRxStorageReplicationIdle(replicationState);
-            await ensureEqualState(masterInstance, forkInstance);
-
-            // do many updates
-            let updateId = 10;
-            async function updateDocOnce(
-                instance: RxStorageInstance<HumanDocumentType, any, any>,
-                flag: string
-            ) {
-                let done = false;
-                while (!done) {
-                    if (randomBoolean()) {
-                        await wait(0);
-                    }
-                    const current = await instance.findDocumentsById([docId], true);
-                    const currentDocState = current[0];
-                    const newDocState: typeof currentDocState = clone(currentDocState);
-                    newDocState._meta.lwt = now();
-                    newDocState.lastName = randomCouchString(12);
-                    newDocState.firstName = flag;
-                    newDocState.age = updateId++;
-                    newDocState._rev = createRevision(randomCouchString(10), currentDocState);
-
-                    const writeResult = await instance.bulkWrite([{
-                        previous: currentDocState,
-                        document: newDocState
-                    }], testContext);
-                    if (Object.keys(writeResult.success).length > 0) {
-                        done = true;
-                    }
-                }
+            for (const instance of instances) {
+                // insert
+                const docData = Object.assign({}, clone(document), {
+                    firstName: 'insert-' + instance.collectionName,
+                    age: updateId++
+                });
+                docData._rev = createRevision(randomCouchString(10), docData);
+                docData._meta.lwt = now();
+                const insertResult = await instance.bulkWrite([{
+                    document: docData
+                }], testContext);
+                assert.deepStrictEqual(insertResult.error, []);
             }
 
-            const promises: Promise<any>[] = [];
-            new Array(writeAmount)
-                .fill(0)
-                .forEach(() => {
-                    instances.forEach((instance, idx) => {
-                        promises.push(
-                            updateDocOnce(
-                                instance,
-                                idx === 0 ? 'master' : 'fork'
-                            )
-                        );
-                    });
-                });
-            await Promise.all(promises);
+            // start replication
+            const conflictHandler = HIGHER_AGE_CONFLICT_HANDLER;
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, conflictHandler, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 8,
+                pushBatchSize: 8,
+                conflictHandler,
+                hashFunction: defaultHashSha256,
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await awaitRxStorageReplicationIdle(replicationState);
+
+
+            // master must contain a resolved conflict
+            const docsMaster = await runQuery(masterInstance);
+            assert.ok(docsMaster[0].lastName.includes('resolved-conflict'));
+            await ensureEqualState(masterInstance, forkInstance);
+
+
+
+            await Promise.all([
+                updateDocOnce(masterInstance, docId, false, 10),
+            ]);
 
             await awaitRxStorageReplicationIdle(replicationState);
-            await awaitRxStorageReplicationIdle(replicationState);
-            await wait(50); // TODO we should not need this here
 
             await ensureEqualState(masterInstance, forkInstance);
             assert.strictEqual(
@@ -1195,6 +1205,75 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             );
 
             cleanUp(replicationState, masterInstance);
+        });
+        runXTimes(isFastMode() ? 2 : 10, n => {
+            it('do many writes while replication is running (' + n + ')', async () => {
+                updateId = 0;
+                const writeAmount = isFastMode() ? 2 : 10;
+                const masterInstance = await createRxStorageInstance(0, undefined, 'masterInstance');
+                const forkInstance = await createRxStorageInstance(0, undefined, 'forkInstance');
+                const metaInstance = await createMetaInstance(forkInstance.schema);
+
+                const instances = [masterInstance, forkInstance];
+                const conflictHandler = HIGHER_AGE_CONFLICT_HANDLER;
+                const replicationState = replicateRxStorageInstance({
+                    identifier: randomCouchString(10),
+                    replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, conflictHandler, randomCouchString(10)),
+                    forkInstance,
+                    metaInstance,
+                    pullBatchSize: Math.ceil(writeAmount / 4),
+                    pushBatchSize: Math.ceil(writeAmount / 4),
+                    conflictHandler,
+                    hashFunction: defaultHashSha256,
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+                // insert
+                const document = getDocData();
+                document.passportId = 'foobar';
+                const docId = document.passportId;
+                await promiseSeries(
+                    instances
+                        .map((instance) => async () => {
+                            // insert
+                            const docData = Object.assign({}, clone(document), {
+                                firstName: instance.collectionName,
+                                age: updateId++
+                            });
+                            docData._rev = createRevision(randomCouchString(10), docData);
+                            docData._meta.lwt = now();
+                            const insertResult = await instance.bulkWrite([{
+                                document: docData
+                            }], testContext);
+                            assert.deepStrictEqual(insertResult.error, []);
+                        })
+                );
+                await awaitRxStorageReplicationIdle(replicationState);
+                await ensureEqualState(masterInstance, forkInstance);
+
+
+                const promises: Promise<any>[] = [];
+                new Array(writeAmount)
+                    .fill(0)
+                    .forEach(() => {
+                        instances.forEach((instance) => {
+                            promises.push(
+                                updateDocOnce(instance, docId, randomBoolean())
+                            );
+                        });
+                    });
+                await Promise.all(promises);
+
+                await awaitRxStorageReplicationIdle(replicationState);
+
+                await ensureEqualState(masterInstance, forkInstance);
+                assert.strictEqual(
+                    replicationState.stats.down.downstreamResyncOnce,
+                    1
+                );
+
+                cleanUp(replicationState, masterInstance);
+            });
         });
     });
     describe('issues', () => {

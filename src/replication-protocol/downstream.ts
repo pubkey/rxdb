@@ -112,8 +112,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
                     useTasks.push(innerTaskWithTime.task);
                 }
-
-                if (useTasks.length === 0) return;
+                if (useTasks.length === 0) {
+                    return;
+                }
 
                 if (useTasks[0] === 'RESYNC') {
                     return downstreamResyncOnce();
@@ -320,7 +321,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * that first must be send to the master in the upstream.
                              * All conflicts are resolved by the upstream.
                              */
-                            return PROMISE_RESOLVE_VOID;
+                            // return PROMISE_RESOLVE_VOID;
+                            await state.streamQueue.up;
                         }
 
                         let isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ?
@@ -329,7 +331,6 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-
                         if (
                             !isAssumedMasterEqualToForkState &&
                             (
