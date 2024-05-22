@@ -38,6 +38,7 @@ export function errorToPlainJson(err: Error | TypeError | RxError | RxTypeError)
         message: err.message,
         rxdb: (err as any).rxdb,
         parameters: (err as RxError).parameters,
+        extensions: (err as any).extensions,
         code: (err as RxError).code,
         /**
          * stack must be last to make it easier to read the json in a console.

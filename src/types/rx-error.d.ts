@@ -125,6 +125,7 @@ export type PlainJsonError = {
     message: string;
     rxdb?: true;
     code?: RxErrorKey;
+    extensions?: Record<string, any>;
     parameters?: RxErrorParameters;
     stack?: string;
 };
