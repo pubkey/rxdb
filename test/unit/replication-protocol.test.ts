@@ -1183,7 +1183,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             // ensureReplicationHasNoErrors(replicationState);
             await awaitRxStorageReplicationIdle(replicationState);
 
-
             // master must contain a resolved conflict
             const docsMaster = await runQuery(masterInstance);
             assert.ok(docsMaster[0].lastName.includes('resolved-conflict'));
