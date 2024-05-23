@@ -50,6 +50,7 @@ function messageForError(
 export class RxError extends Error {
     public code: RxErrorKey;
     public message: string;
+    public url: string;
     public parameters: RxErrorParameters;
     // always true, use this to detect if its an rxdb-error
     public rxdb: true;
@@ -62,6 +63,7 @@ export class RxError extends Error {
         super(mes);
         this.code = code;
         this.message = mes;
+        this.url = getErrorUrl(code);
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
     }
@@ -79,6 +81,7 @@ export class RxError extends Error {
 export class RxTypeError extends TypeError {
     public code: RxErrorKey;
     public message: string;
+    public url: string;
     public parameters: RxErrorParameters;
     // always true, use this to detect if its an rxdb-error
     public rxdb: true;
@@ -91,6 +94,7 @@ export class RxTypeError extends TypeError {
         super(mes);
         this.code = code;
         this.message = mes;
+        this.url = getErrorUrl(code);
         this.parameters = parameters;
         this.rxdb = true; // tag them as internal
     }
@@ -106,8 +110,12 @@ export class RxTypeError extends TypeError {
 }
 
 
+export function getErrorUrl(code: RxErrorKey) {
+    return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+}
+
 export function errorUrlHint(code: RxErrorKey) {
-    return '\n You can find out more about this error here: https://rxdb.info/errors.html?code=' + code + '&console=errors ';
+    return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
 }
 
 export function newRxError(
