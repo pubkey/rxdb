@@ -105,13 +105,18 @@ export class RxTypeError extends TypeError {
     }
 }
 
+
+export function errorUrlHint(code: RxErrorKey) {
+    return ' You can find out more about this error here: https://rxdb.info/errors.html?code=' + code + '&console=errors ';
+}
+
 export function newRxError(
     code: RxErrorKey,
     parameters?: RxErrorParameters
 ): RxError {
     return new RxError(
         code,
-        overwritable.tunnelErrorMessage(code),
+        overwritable.tunnelErrorMessage(code) + errorUrlHint(code),
         parameters
     );
 }
@@ -122,7 +127,7 @@ export function newRxTypeError(
 ): RxTypeError {
     return new RxTypeError(
         code,
-        overwritable.tunnelErrorMessage(code),
+        overwritable.tunnelErrorMessage(code) + errorUrlHint(code),
         parameters
     );
 }

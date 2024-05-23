@@ -3,10 +3,6 @@
  * @link https://www.w3schools.com/howto/howto_css_browser_window.asp
  */
 export function BrowserWindow(props) {
-
-    console.log('----');
-    console.dir(props);
-
     const opacity = props.opacity ? props.opacity : 1;
 
     const styles = {
@@ -97,5 +93,5 @@ export function BrowserWindow(props) {
         <div style={styles.content}>
             {props.children}
         </div>
-    </div >;
+    </div>;
 }
