@@ -108,7 +108,7 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
 function getErrorUrl(code) {
-  return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+  return 'https://rxdb.info/errors.html?console=errors#' + code;
 }
 function errorUrlHint(code) {
   return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';

@@ -95,7 +95,7 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
 }( /*#__PURE__*/_wrapNativeSuper(TypeError));
 export function getErrorUrl(code) {
-  return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+  return 'https://rxdb.info/errors.html?console=errors#' + code;
 }
 export function errorUrlHint(code) {
   return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
