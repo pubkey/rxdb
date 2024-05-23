@@ -62,7 +62,9 @@ async function startReplicationDownstream(state) {
         }
         useTasks.push(innerTaskWithTime.task);
       }
-      if (useTasks.length === 0) return;
+      if (useTasks.length === 0) {
+        return;
+      }
       if (useTasks[0] === 'RESYNC') {
         return downstreamResyncOnce();
       } else {
@@ -199,7 +201,8 @@ async function startReplicationDownstream(state) {
              * that first must be send to the master in the upstream.
              * All conflicts are resolved by the upstream.
              */
-            return _index.PROMISE_RESOLVE_VOID;
+            // return PROMISE_RESOLVE_VOID;
+            await state.streamQueue.up;
           }
           var isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ? false : await state.input.conflictHandler({
             realMasterState: assumedMaster.docData,

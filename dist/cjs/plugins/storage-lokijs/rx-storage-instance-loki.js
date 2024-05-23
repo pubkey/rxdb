@@ -15,6 +15,7 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance.js");
 var _rxQueryHelper = require("../../rx-query-helper.js");
 var instanceId = (0, _index.now)();
+var shownNonPremiumLog = false;
 var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     this.changes$ = new _rxjs.Subject();
@@ -62,6 +63,12 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
   }
   var _proto = RxStorageInstanceLoki.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
+    if (!shownNonPremiumLog && (!_index.RXDB_UTILS_GLOBAL.premium || typeof _index.RXDB_UTILS_GLOBAL.premium !== 'string' || (await (0, _index.defaultHashSha256)(_index.RXDB_UTILS_GLOBAL.premium)) !== _index.PREMIUM_FLAG_HASH)) {
+      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free LokiJS based RxStorage implementation from RxDB https://rxdb.info/rx-storage-lokijs.html?console=loki ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium?console=loki ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
+      shownNonPremiumLog = true;
+    } else {
+      shownNonPremiumLog = true;
+    }
     if (documentWrites.length === 0) {
       throw (0, _rxError.newRxError)('P2', {
         args: {

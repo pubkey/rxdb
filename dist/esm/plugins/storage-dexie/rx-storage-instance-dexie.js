@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { now, ensureNotFalsy, defaultHashSha256, RXDB_UTILS_GLOBAL } from "../utils/index.js";
+import { now, ensureNotFalsy, defaultHashSha256, RXDB_UTILS_GLOBAL, PREMIUM_FLAG_HASH } from "../utils/index.js";
 import { attachmentObjectId, closeDexieDb, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
 import { dexieCount, dexieQuery } from "./dexie-query.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -26,8 +26,8 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceDexie.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     ensureNotClosed(this);
-    if (!shownNonPremiumLog && (!RXDB_UTILS_GLOBAL.premium || typeof RXDB_UTILS_GLOBAL.premium !== 'string' || (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) !== '6da4936d1425ff3a5c44c02342c6daf791d266be3ae8479b8ec59e261df41b93')) {
-      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
+    if (!shownNonPremiumLog && (!RXDB_UTILS_GLOBAL.premium || typeof RXDB_UTILS_GLOBAL.premium !== 'string' || (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) !== PREMIUM_FLAG_HASH)) {
+      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html?console=dexie ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium?console=dexie ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
       shownNonPremiumLog = true;
     } else {
       shownNonPremiumLog = true;

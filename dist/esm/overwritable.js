@@ -27,7 +27,7 @@ export var overwritable = {
    * overwritten to map error-codes to text-messages
    */
   tunnelErrorMessage(message) {
-    return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
+    return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        ";
   }
 };
 //# sourceMappingURL=overwritable.js.map

@@ -2,15 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Add missing extensions error field to errorToPlainJson [#6029](https://github.com/pubkey/rxdb/pull/6029)
-- ADD dedicated [errors page](https://rxdb.info/errors.html)
-- FIX randomly failing replication test
-- ADD non-premium console.log on the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html#disabling-the-non-premium-console-log)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.22.0 (23 May 2024)
+
+- Add missing extensions error field to errorToPlainJson [#6029](https://github.com/pubkey/rxdb/pull/6029)
+- ADD dedicated [errors page](https://rxdb.info/errors.html)
+- FIX randomly failing replication test
+- ADD non-premium console.log on the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html#disabling-the-non-premium-console-log)
 
 ### 15.21.3 (20 May 2024)
 

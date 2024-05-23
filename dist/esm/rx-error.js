@@ -41,6 +41,7 @@ export var RxError = /*#__PURE__*/function (_Error) {
     _this = _Error.call(this, mes) || this;
     _this.code = code;
     _this.message = mes;
+    _this.url = getErrorUrl(code);
     _this.parameters = parameters;
     _this.rxdb = true; // tag them as internal
     return _this;
@@ -71,6 +72,7 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
     _this2.message = mes;
+    _this2.url = getErrorUrl(code);
     _this2.parameters = parameters;
     _this2.rxdb = true; // tag them as internal
     return _this2;
@@ -92,11 +94,17 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
     }
   }]);
 }( /*#__PURE__*/_wrapNativeSuper(TypeError));
+export function getErrorUrl(code) {
+  return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+}
+export function errorUrlHint(code) {
+  return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
+}
 export function newRxError(code, parameters) {
-  return new RxError(code, overwritable.tunnelErrorMessage(code), parameters);
+  return new RxError(code, overwritable.tunnelErrorMessage(code) + errorUrlHint(code), parameters);
 }
 export function newRxTypeError(code, parameters) {
-  return new RxTypeError(code, overwritable.tunnelErrorMessage(code), parameters);
+  return new RxTypeError(code, overwritable.tunnelErrorMessage(code) + errorUrlHint(code), parameters);
 }
 
 /**

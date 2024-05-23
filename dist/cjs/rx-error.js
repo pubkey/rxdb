@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxTypeError = exports.RxError = void 0;
+exports.errorUrlHint = errorUrlHint;
+exports.getErrorUrl = getErrorUrl;
 exports.isBulkWriteConflictError = isBulkWriteConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
@@ -52,6 +54,7 @@ var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
     _this = _Error.call(this, mes) || this;
     _this.code = code;
     _this.message = mes;
+    _this.url = getErrorUrl(code);
     _this.parameters = parameters;
     _this.rxdb = true; // tag them as internal
     return _this;
@@ -82,6 +85,7 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
     _this2.message = mes;
+    _this2.url = getErrorUrl(code);
     _this2.parameters = parameters;
     _this2.rxdb = true; // tag them as internal
     return _this2;
@@ -103,11 +107,17 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
     }
   }]);
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
+function getErrorUrl(code) {
+  return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+}
+function errorUrlHint(code) {
+  return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
+}
 function newRxError(code, parameters) {
-  return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
+  return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code) + errorUrlHint(code), parameters);
 }
 function newRxTypeError(code, parameters) {
-  return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
+  return new RxTypeError(code, _overwritable.overwritable.tunnelErrorMessage(code) + errorUrlHint(code), parameters);
 }
 
 /**

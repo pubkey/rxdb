@@ -5,6 +5,7 @@ import type { RxErrorParameters, RxErrorKey, RxStorageWriteError, RxStorageWrite
 export declare class RxError extends Error {
     code: RxErrorKey;
     message: string;
+    url: string;
     parameters: RxErrorParameters;
     rxdb: true;
     constructor(code: RxErrorKey, message: string, parameters?: RxErrorParameters);
@@ -15,6 +16,7 @@ export declare class RxError extends Error {
 export declare class RxTypeError extends TypeError {
     code: RxErrorKey;
     message: string;
+    url: string;
     parameters: RxErrorParameters;
     rxdb: true;
     constructor(code: RxErrorKey, message: string, parameters?: RxErrorParameters);
@@ -22,6 +24,8 @@ export declare class RxTypeError extends TypeError {
     toString(): string;
     get typeError(): boolean;
 }
+export declare function getErrorUrl(code: RxErrorKey): string;
+export declare function errorUrlHint(code: RxErrorKey): string;
 export declare function newRxError(code: RxErrorKey, parameters?: RxErrorParameters): RxError;
 export declare function newRxTypeError(code: RxErrorKey, parameters?: RxErrorParameters): RxTypeError;
 /**
