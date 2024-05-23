@@ -103,6 +103,7 @@ const sidebars = {
     'logger',
     'plugins',
     'nosql-performance-tips',
+    'errors',
     'third-party-plugins',
     {
       type: 'category',

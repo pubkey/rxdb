@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD non-premium console.log on the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html#disabling-the-non-premium-console-log)
 - FIX randomly failing replication test
+- ADD dedicated [errors page](https://rxdb.info/errors.html)
 - Add missing extensions error field to errorToPlainJson [#6029](https://github.com/pubkey/rxdb/pull/6029)
 <!-- ADD new changes here! -->
 
