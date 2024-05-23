@@ -111,7 +111,7 @@ export class RxTypeError extends TypeError {
 
 
 export function getErrorUrl(code: RxErrorKey) {
-    return 'https://rxdb.info/errors.html?code=' + code + '&console=errors';
+    return 'https://rxdb.info/errors.html?console=errors#' + code;
 }
 
 export function errorUrlHint(code: RxErrorKey) {

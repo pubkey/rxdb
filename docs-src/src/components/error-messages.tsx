@@ -37,17 +37,15 @@ export function ErrorMessages() {
         },
     } as any;
 
-    const markedError = new URLSearchParams(location.search).get('code');
-
     return <ul style={styles.ul}>
         {
             errorEntries.map(([errorCode, errorMessage]) => {
                 return <li
                     key={errorCode}
                     id={errorCode}
-                    style={markedError === errorCode ? { ...styles.li, ...styles.liHighlight } : styles.li}
+                    style={location.hash === '#' + errorCode ? { ...styles.li, ...styles.liHighlight } : styles.li}
                 >
-                    <h6 style={styles.errorCode}>Code: <b>{errorCode}</b></h6>
+                    <h6 style={styles.errorCode}>Code: <a href={'#' + errorCode}>{errorCode}</a></h6>
                     {ucfirst(errorMessage)}
                     <ul style={styles.innerUl}>
                         <li>
