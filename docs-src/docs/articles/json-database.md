@@ -92,7 +92,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 2. **Scalability:** As your application grows and your JSON dataset expands, RxDB scales gracefully. Its performance remains consistent, enabling you to handle increasingly larger volumes of data without compromising on speed or responsiveness. This scalability is essential for applications that need to accommodate growing user bases and evolving data needs.
 
-3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queris are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly-instand UI updates on data changes.
+3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queries are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly-instand UI updates on data changes.
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
