@@ -354,22 +354,17 @@ export default function Home() {
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
           <div className="block first hero centered dark">
-            <div className="content">
-              <h1 style={{
-                fontSize: '3.5em',
-                fontWeight: 400,
-                textAlign: 'center',
-                lineHeight: '120%',
-                letterSpacing: -1
-              }}>
-                The local <b className="underline">Database</b> for{' '}
-                <b className="underline">JavaScript</b> Applications
-              </h1>
+            <div className="content" style={{ marginTop: 90 }}>
               <div className="inner">
                 <div className="half left">
+                  <h1 style={{
+                  }}>
+                    The local <b className="underline">Database</b> for{' '}
+                    <b className="underline">JavaScript</b> Applications
+                  </h1>
                   <br />
                   <br />
-                  <ul className="checked">
+                  {/* <ul className="checked">
                     <li>
                       <b>Offline Support</b>:
                       Store data locally on your users device to build applications that work even when
@@ -396,18 +391,10 @@ export default function Home() {
                       Years of performance optimization made RxDB one of the <u>fastest</u> ways
                       to store and query data inside of JavaScript.
                     </li>
-                  </ul>
-                  {/*
-              <div class="text">
-                  The
-                  </br />
-                  <b id="swap-out-first">JavaScript</b>
-                  </br />
-                  Database
-                  </br />
-                  <b id="swap-out-second">you deserve</b>
-              </div>
-          */}
+                  </ul> */}
+                  <div className="text">
+                    Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.
+                  </div>
                   <div className="clear" />
                   <br />
                 </div>
@@ -445,7 +432,7 @@ export default function Home() {
                 href="/quickstart.html"
                 onClick={() => trigger('start_now', 0.4)}
               >
-                Try RxDB for free
+                Get Started
               </a>
               {/* <a
                 className="button"
@@ -475,26 +462,32 @@ export default function Home() {
               <br />
               <br />
             </div>
-          </div>
+          </div >
+
           <a
-            href="/chat"
+            href="/code"
             target="_blank"
           >
-            <div className="trophy discord">
-              <img loading="lazy" src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+            <div className="trophy github">
+              <img
+                loading="lazy" src="./files/icons/github-star-with-logo.svg"
+                alt="RxDB github star"
+              />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Chat on</div>
-                <div className="title">Discord</div>
+                <div className="subtitle">Open Source on</div>
+                <div className="title">GitHub</div>
               </div>
               <div>
-                <div className="valuetitle">members</div>
+                <div className="valuetitle">stars</div>
                 <div className="value">
-                  747
+                  20172
                   <div className="arrow-up"> </div>
                 </div>
               </div>
             </div>
           </a>
+
+
 
 
           <div className="block second dark">
@@ -505,9 +498,10 @@ export default function Home() {
               <p>
                 From the results of a query, to a single field of a document, with RxDB
                 you can <b>observe everything</b>. This enables you to build realtime
-                applications <b>fast</b> and <b>reliable</b>. It does not matter if the data was changed by{' '}
-                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b>.{' '}
-                Whenever your data changes, your UI reflects the new state. You can either use <b>RxJS</b> or add <a href="/reactivity.html" target="_blank">custom reactiveness libraries</a> like signals or other state management.
+                applications fast and reliable.{' '}
+                {/* It does not matter if the data was changed by{' '}                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b> */}
+                Whenever your data changes, your UI reflects the new state.{' '}
+                RxDB supports <b>RxJS</b> and other <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like signals, hooks or vue.js-refs.
               </p>
               <div className="inner">
                 {/*
@@ -667,6 +661,7 @@ export default function Home() {
                   run a realtime replication between clients and servers. While there are many plugins for specific endpoints like{' '}
                   <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
                   <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
+                  <a href="/replication-webrtc.html">P2P</a>,{' '}
                   <a href="/replication-firestore.html" target="_blank">Firestore</a> or <a href="/replication-nats.html" target="_blank">NATS</a>,{' '}
                   the protocol is not bound to a specific backend and can be used with any <a href="/replication-http.html" target="_blank">existing infrastructure</a>.
                 </p>
@@ -721,22 +716,19 @@ export default function Home() {
           </div>
 
           <a
-            href="/code"
+            href="/chat"
             target="_blank"
           >
-            <div className="trophy github">
-              <img
-                loading="lazy" src="./files/icons/github-star-with-logo.svg"
-                alt="RxDB github star"
-              />
+            <div className="trophy discord">
+              <img loading="lazy" src="./files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Open Source on</div>
-                <div className="title">GitHub</div>
+                <div className="subtitle">Chat on</div>
+                <div className="title">Discord</div>
               </div>
               <div>
-                <div className="valuetitle">stars</div>
+                <div className="valuetitle">members</div>
                 <div className="value">
-                  20172
+                  747
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -1372,7 +1364,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </main>
+        </main >
       </Layout >
     </>
   );

@@ -713,6 +713,44 @@ body {
     }
 }
 
+
+
+
+
+
+
+
+
+.block.first.hero h1 {
+    color: #fff;
+    font-size: 4.5em;
+    font-weight: 400;
+    letter-spacing: -1px;
+    line-height: 140%;
+    text-align: left;
+}
+
+
+.block.first.hero .text {
+    color: #8e8e8e;
+    font-size: 1.25em;
+    font-weight: 400;
+    line-height: 150%;
+    margin-bottom: 0;
+    text-align: left;
+    white-space: pre-line;
+}
+
+
+
+
+
+
+
+
+
+
+
 .block.second .inner {
     margin-top: 70px;
     display: flex;
