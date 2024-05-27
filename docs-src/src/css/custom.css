@@ -3784,3 +3784,12 @@ footer a:visited {
         top: 0px;
     }
 }
+
+
+.tag-cloud {
+    text-align: center;
+}
+
+.tag-cloud a:hover {
+    text-decoration: underline;
+}

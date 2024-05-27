@@ -12,20 +12,23 @@ import {
   ensureNotFalsy,
   RxLocalDocument,
   now,
-  promiseWait
+  promiseWait,
+  ucfirst,
+  hashStringToNumber
 } from '../../../';
 import {
   colors,
   getDatabase,
   hasIndexedDB
 } from '../components/database';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { trigger } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import { BrowserWindow } from '../components/browser-window';
+import { TagCloud } from 'react-tagcloud';
 
 type MousePositionType = {
   x: number;
@@ -238,6 +241,102 @@ async function startLandingpageAnimation() {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
 
+  const [tags] = useState([
+    {
+      value: 'attachments',
+      count: 38,
+      url: '/rx-attachment.html'
+    },
+    {
+      value: 'server',
+      count: 38,
+      url: '/rx-server.html'
+    },
+    {
+      value: 'migration',
+      count: 38,
+      url: '/migration-schema.html'
+    },
+    {
+      value: 'schema Validation',
+      count: 38,
+      url: '/schema-validation.html'
+    },
+    {
+      value: 'signals',
+      count: 38,
+      url: '/reactivity.html'
+    },
+    {
+      value: 'state',
+      count: 38,
+      url: '/rx-state.html'
+    },
+    {
+      value: 'local Documents',
+      count: 38,
+      url: '/rx-local-document.html'
+    },
+    {
+      value: 'encryption',
+      count: 38,
+      url: '/encryption.html'
+    },
+    {
+      value: 'compression',
+      count: 38,
+      url: '/key-compression.html'
+    },
+    {
+      value: 'backup',
+      count: 38,
+      url: '/backup.html'
+    },
+    {
+      value: 'middleware',
+      count: 38,
+      url: '/middleware.html'
+    },
+    {
+      value: 'CRDT',
+      count: 38,
+      url: '/crdt.html'
+    },
+    {
+      value: 'population',
+      count: 38,
+      url: '/population.html'
+    },
+    {
+      value: 'ORM',
+      count: 38,
+      url: '/orm.html'
+    },
+    {
+      value: 'logging',
+      count: 38,
+      url: '/logger.html'
+    },
+    {
+      value: 'conflict Handling',
+      count: 10,
+      url: '/transactions-conflicts-revisions.html'
+    },
+    {
+      value: 'replication',
+      count: 10,
+      url: '/replication.html'
+    },
+    {
+      value: 'storages',
+      count: 10,
+      url: '/rx-storage.html'
+    }
+  ].map((i: any) => {
+    i.count = hashStringToNumber(i.value) % 54;
+    return i;
+  }));
+
   useEffect(() => {
     startLandingpageAnimation();
     return () => {
@@ -377,23 +476,6 @@ export default function Home() {
               <br />
             </div>
           </div>
-
-          <div className="block reviews">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Used by <b className="underline">many</b>
-                </h2>
-                <p>
-                  RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of apps and services.
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
-
           <a
             href="/chat"
             target="_blank"
@@ -577,36 +659,16 @@ export default function Home() {
                 <br />
                 <br />
                 <h2>
-                  Replicate <b>with your existing infrastructure</b>
+                  Sync with <b>any backend</b>
                 </h2>
                 <p>
-                  RxDB supports replication with a{' '}
-                  <a href="/replication-couchdb.html" target="_blank">
-                    CouchDB
-                  </a>{' '}
-                  server or any custom{' '}
-                  <a href="/replication-graphql.html" target="_blank">
-                    GraphQL
-                  </a>{' '}
-                  endpoint which smoothly integrates with your existing infrastructure.
-                  Also you can use the replication primitives plugin to create custom
-                  replications over any protocol like{' '}
-                  <a href="/replication-http.html" target="_blank">
-                    HTTP
-                  </a>
-                  ,{' '}
-                  <a href="/replication-websocket.html" target="_blank">
-                    Websocket
-                  </a>
-                  ,{' '}
-                  <a href="/replication-webrtc.html" target="_blank">
-                    WebRTC
-                  </a>{' '}
-                  or{' '}
-                  <a href="/replication-firestore.html" target="_blank">
-                    Firestore
-                  </a>
-                  .
+
+                  RxDB has a simple yet hight performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
+                  run a realtime replication between clients and servers. While there are many plugins for specific endpoints like{' '}
+                  <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
+                  <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
+                  <a href="/replication-firestore.html" target="_blank">Firestore</a> or <a href="/replication-nats.html" target="_blank">NATS</a>,{' '}
+                  the protocol is not bound to a specific backend and can be used with any <a href="/replication-http.html" target="_blank">existing infrastructure</a>.
                 </p>
               </div>
               <div className="half right">
@@ -882,6 +944,48 @@ export default function Home() {
             </div>
           </div>
 
+          <div className="block features dark">
+            <div className="content">
+              <h2>All the <b className="underline">features</b> that you need</h2>
+              <p>
+                RxDB has a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building.
+              </p>
+              <div style={{
+                marginTop: 65,
+                marginBottom: 5,
+                width: '100%',
+                maxWidth: 1200,
+                padding: 10
+              }}>
+
+                <TagCloud
+                  minSize={18}
+                  maxSize={55}
+                  tags={tags}
+                  randomSeed={145}
+                  renderer={(tag, size, _color) => {
+                    console.dir(tag);
+                    return (
+                      <a key={tag.value}
+                        style={{
+                          color: 'white',
+                          fontSize: size,
+                          margin: '0px ' + size + 'px',
+                          verticalAlign: 'middle',
+                          display: 'inline-block'
+                        }}
+                        className="tag-cloud-tag"
+                        href={tag.url}
+                      >
+                        {ucfirst(tag.value)}
+                      </a>
+                    );
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* <div className="block fifth dark">
             <div className="content centered">
               <div className="inner">
@@ -973,11 +1077,25 @@ export default function Home() {
             </div>
           </div> */}
 
-
+          <div className="block reviews">
+            <div className="content centered">
+              <div className="inner">
+                <h2>
+                  Used by <b className="underline">many</b>
+                </h2>
+                <p>
+                  RxDB is a proven technology used by thousands of developers worldwide. <br />
+                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                </p>
+                <br /><br />
+              </div>
+            </div>
+            <ReviewsBlock></ReviewsBlock>
+          </div>
 
           <div className="block sixth dark">
             <div className="content">
-              <h2>Pricing Models</h2>
+              <h2>Free <b className='underline'>Open Core</b> Model</h2>
               <br />
               <div className="inner">
                 <div className="buy-options">

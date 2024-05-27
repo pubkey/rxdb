@@ -39,3 +39,14 @@ export const canUseCryptoSubtle = typeof crypto !== 'undefined' &&
  */
 
 export const defaultHashSha256: HashFunction = canUseCryptoSubtle ? nativeSha256 : jsSha256;
+
+
+export function hashStringToNumber(str: string): number {
+    let nr = 0;
+    const len = str.length;
+    for (let i = 0; i < len; i++) {
+        nr = nr + str.charCodeAt(i);
+        nr |= 0; // Convert to 32bit integer, improves performance
+    }
+    return nr;
+}

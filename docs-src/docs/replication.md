@@ -10,7 +10,7 @@ The RxDB replication protocol provides the ability to replicate the database sta
 The backend server does not have to be a RxDB instance; you can build a replication with **any infrastructure**.
 For example you can replicate with a custom GraphQL endpoint or a [http server](./replication-http.md) on top of a PostgreSQL database.
 
-The replication is made to support the [Offline-First](http://offlinefirst.org/) paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.
+The replication is made to support the [Offline-First](./offline-first.md) paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.
 
 
 ## Replication protocol on the document level
