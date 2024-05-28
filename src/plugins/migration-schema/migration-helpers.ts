@@ -35,7 +35,7 @@ export async function getOldCollectionMeta(
         false
     );
     if (found.length > 1) {
-        throw new Error('more the one old collection meta found');
+        throw new Error('more than one old collection meta found');
     }
     return found[0];
 }
