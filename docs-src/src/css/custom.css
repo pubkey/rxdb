@@ -404,7 +404,7 @@ body {
     width: 96%;
     padding-left: 2%;
     padding-right: 2%;
-    max-width: 1248px;
+    max-width: 1348px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -709,7 +709,7 @@ body {
     }
 
     .block.first.hero .inner {
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
 }
 
@@ -739,8 +739,26 @@ body {
     margin-bottom: 0;
     text-align: left;
     white-space: pre-line;
+    width: 80%;
 }
 
+.block.first.hero .review-small {
+    height: 60px;
+    width: 60px;
+    margin-left: 30px;
+}
+
+.block.first.hero .buy-premium-hero {
+    display: inline-block;
+    margin-top: 7px;
+    margin-left: 20px;
+}
+
+@media (max-width: 900px) {
+    .block.first.hero .text {
+        width: 100%;
+    }
+}
 
 
 
