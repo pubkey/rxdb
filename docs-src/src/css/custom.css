@@ -1448,6 +1448,7 @@ body {
     font-weight: bold;
     margin-top: 3px;
     line-height: normal;
+    font-variant-numeric: tabular-nums;
 }
 
 .trophy .arrow-up {

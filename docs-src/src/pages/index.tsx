@@ -26,9 +26,11 @@ import { trigger } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { REVIEW_ITEMS, ReviewsBlock } from '../components/review-block';
+import { ReviewsBlock } from '../components/review-block';
 import { BrowserWindow } from '../components/browser-window';
 import { TagCloud } from 'react-tagcloud';
+import CountUp from 'react-countup';
+import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
 
 type MousePositionType = {
   x: number;
@@ -402,7 +404,7 @@ export default function Home() {
                     href="/quickstart.html"
                     onClick={() => trigger('start_now', 0.4)}
                   >
-                    Get Started »
+                    Get Started &#x27A4;
                   </a>
                   <a
                     href="/premium#price-calculator-block"
@@ -482,7 +484,11 @@ export default function Home() {
               <div>
                 <div className="valuetitle">stars</div>
                 <div className="value">
-                  20172
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.github}
+                    start={SOCIAL_PROOF_VALUES.github - 30}
+                    duration={2}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -640,7 +646,11 @@ export default function Home() {
               <div>
                 <div className="valuetitle">followers</div>
                 <div className="value">
-                  2843
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.twitter}
+                    start={SOCIAL_PROOF_VALUES.twitter - 30}
+                    duration={2}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -659,7 +669,7 @@ export default function Home() {
                 </h2>
                 <p>
 
-                  RxDB has a simple yet hight performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
+                  RxDB has a simple yet high performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
                   run a realtime replication between clients and servers. While there are many plugins for specific endpoints like{' '}
                   <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
                   <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
@@ -730,7 +740,11 @@ export default function Home() {
               <div>
                 <div className="valuetitle">members</div>
                 <div className="value">
-                  747
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.discord}
+                    start={SOCIAL_PROOF_VALUES.discord - 30}
+                    duration={2}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -942,7 +956,8 @@ export default function Home() {
             <div className="content">
               <h2>All the <b className="underline">features</b> that you need</h2>
               <p>
-                RxDB has a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building.
+                Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building.
+                Every feature that you need now or might need in the future is already there.
               </p>
               <div style={{
                 marginTop: 65,
@@ -1303,7 +1318,7 @@ export default function Home() {
                     className="button get-premium"
                     style={{ left: '50%', top: '20%', marginLeft: '-122px' }}
                   >
-                    Start now
+                    Quickstart
                   </div>
                 </a>
                 <a
