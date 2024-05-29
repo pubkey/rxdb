@@ -14,9 +14,9 @@
 
 
 <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c" data-cbid="c429ebbd-6e92-4150-b700-ca186e06bc7c" data-blockingmode="auto" async></script>
-<script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.0bd0feed.css">
-<script src="/assets/js/runtime~main.546ffcdb.js" defer="defer"></script>
-<script src="/assets/js/main.6e6008b6.js" defer="defer"></script>
+<script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.7d47edbc.css">
+<script src="/assets/js/runtime~main.8b2f89a6.js" defer="defer"></script>
+<script src="/assets/js/main.ce1ae28b.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -25,7 +25,7 @@
 <p>The RxDB replication protocol provides the ability to replicate the database state in <strong>realtime</strong> between the clients and the server.</p>
 <p>The backend server does not have to be a RxDB instance; you can build a replication with <strong>any infrastructure</strong>.
 For example you can replicate with a custom GraphQL endpoint or a <a href="/replication-http.html">http server</a> on top of a PostgreSQL database.</p>
-<p>The replication is made to support the <a href="http://offlinefirst.org/" target="_blank" rel="noopener noreferrer">Offline-First</a> paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.</p>
+<p>The replication is made to support the <a href="/offline-first.html">Offline-First</a> paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="replication-protocol-on-the-document-level">Replication protocol on the document level<a href="#replication-protocol-on-the-document-level" class="hash-link" aria-label="Direct link to Replication protocol on the document level" title="Direct link to Replication protocol on the document level">​</a></h2>
 <p>On the RxDocument level, the replication works like git, where the fork/client contains all new writes and must be merged with the master/server before it can push its new state to the master/server.</p>
 <div class="codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">A---B-----------D   master/server state</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">     \         /</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      B---C---D     fork/client state</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>

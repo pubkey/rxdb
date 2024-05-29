@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.defaultHashSha256 = exports.canUseCryptoSubtle = void 0;
+exports.hashStringToNumber = hashStringToNumber;
 exports.jsSha256 = jsSha256;
 exports.nativeSha256 = nativeSha256;
 var _ohash = require("ohash");
@@ -36,4 +37,13 @@ var canUseCryptoSubtle = exports.canUseCryptoSubtle = typeof crypto !== 'undefin
  */
 
 var defaultHashSha256 = exports.defaultHashSha256 = canUseCryptoSubtle ? nativeSha256 : jsSha256;
+function hashStringToNumber(str) {
+  var nr = 0;
+  var len = str.length;
+  for (var i = 0; i < len; i++) {
+    nr = nr + str.charCodeAt(i);
+    nr |= 0; // Convert to 32bit integer, improves performance
+  }
+  return nr;
+}
 //# sourceMappingURL=utils-hash.js.map

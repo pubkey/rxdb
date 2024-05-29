@@ -1,29 +1,30 @@
-/**
+// @ts-nocheck
+        /**
  * this is the main entry-point
  * for when the you call "import from 'rxdb'".
  */
-export * from './plugin.ts';
-export * from './rx-database.ts';
-export * from './rx-error.ts';
-export * from './rx-database-internal-store.ts';
-export * from './overwritable.ts';
-export * from './rx-collection.ts';
-export * from './rx-collection-helper.ts';
-export * from './rx-document.ts';
-export * from './rx-change-event.ts';
-export * from './rx-document-prototype-merge.ts';
-export * from './rx-query.ts';
-export * from './rx-query-single-result.ts';
-export * from './rx-query-helper.ts';
-export * from './rx-schema.ts';
-export * from './rx-schema-helper.ts';
-export * from './rx-storage-helper.ts';
-export * from './replication-protocol/index.ts';
-export * from './rx-storage-multiinstance.ts';
-export * from './custom-index.ts';
-export * from './query-planner.ts';
-export * from './plugin-helpers.ts';
-export * from './plugins/utils/index.ts';
-export * from './hooks.ts';
-export * from './query-cache.ts';
-export type * from './types/index.ts';
+export * from './plugin.d.ts';
+export * from './rx-database.d.ts';
+export * from './rx-error.d.ts';
+export * from './rx-database-internal-store.d.ts';
+export * from './overwritable.d.ts';
+export * from './rx-collection.d.ts';
+export * from './rx-collection-helper.d.ts';
+export * from './rx-document.d.ts';
+export * from './rx-change-event.d.ts';
+export * from './rx-document-prototype-merge.d.ts';
+export * from './rx-query.d.ts';
+export * from './rx-query-single-result.d.ts';
+export * from './rx-query-helper.d.ts';
+export * from './rx-schema.d.ts';
+export * from './rx-schema-helper.d.ts';
+export * from './rx-storage-helper.d.ts';
+export * from './replication-protocol/index.d.ts';
+export * from './rx-storage-multiinstance.d.ts';
+export * from './custom-index.d.ts';
+export * from './query-planner.d.ts';
+export * from './plugin-helpers.d.ts';
+export * from './plugins/utils/index.d.ts';
+export * from './hooks.d.ts';
+export * from './query-cache.d.ts';
+export type * from './types/index.d.ts';

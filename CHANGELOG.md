@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX type resolving in webpack [#6051](https://github.com/pubkey/rxdb/pull/6051)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.23.0 (29 May 2024)
+
+- FIX type resolving in webpack [#6051](https://github.com/pubkey/rxdb/pull/6051)
 
 ### 15.22.0 (23 May 2024)
 
