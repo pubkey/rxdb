@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX type resolving in webpack [#6051](https://github.com/pubkey/rxdb/pull/6051)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
