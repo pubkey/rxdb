@@ -3845,6 +3845,8 @@ footer a:visited {
 
 .tag-cloud {
     text-align: center;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .tag-cloud a:hover {

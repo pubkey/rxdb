@@ -486,8 +486,8 @@ export default function Home() {
                 <div className="value">
                   <CountUp
                     end={SOCIAL_PROOF_VALUES.github}
-                    start={SOCIAL_PROOF_VALUES.github - 30}
-                    duration={2}
+                    start={SOCIAL_PROOF_VALUES.github - 20}
+                    duration={6}
                   ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
@@ -973,7 +973,6 @@ export default function Home() {
                   tags={tags}
                   randomSeed={145}
                   renderer={(tag, size, _color) => {
-                    console.dir(tag);
                     return (
                       <a key={tag.value}
                         style={{
