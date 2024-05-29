@@ -12,20 +12,25 @@ import {
   ensureNotFalsy,
   RxLocalDocument,
   now,
-  promiseWait
+  promiseWait,
+  ucfirst,
+  hashStringToNumber
 } from '../../../';
 import {
   colors,
   getDatabase,
   hasIndexedDB
 } from '../components/database';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { trigger } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import { BrowserWindow } from '../components/browser-window';
+import { TagCloud } from 'react-tagcloud';
+import CountUp from 'react-countup';
+import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
 
 type MousePositionType = {
   x: number;
@@ -235,8 +240,104 @@ async function startLandingpageAnimation() {
   });
 }
 
-export default function Home() {
+export default function Home(props) {
   const { siteConfig } = useDocusaurusContext();
+
+  const [tags] = useState([
+    {
+      value: 'attachments',
+      count: 38,
+      url: '/rx-attachment.html'
+    },
+    {
+      value: 'server',
+      count: 38,
+      url: '/rx-server.html'
+    },
+    {
+      value: 'migration',
+      count: 38,
+      url: '/migration-schema.html'
+    },
+    {
+      value: 'schema Validation',
+      count: 38,
+      url: '/schema-validation.html'
+    },
+    {
+      value: 'signals',
+      count: 38,
+      url: '/reactivity.html'
+    },
+    {
+      value: 'state',
+      count: 38,
+      url: '/rx-state.html'
+    },
+    {
+      value: 'local Documents',
+      count: 38,
+      url: '/rx-local-document.html'
+    },
+    {
+      value: 'encryption',
+      count: 38,
+      url: '/encryption.html'
+    },
+    {
+      value: 'compression',
+      count: 38,
+      url: '/key-compression.html'
+    },
+    {
+      value: 'backup',
+      count: 38,
+      url: '/backup.html'
+    },
+    {
+      value: 'middleware',
+      count: 38,
+      url: '/middleware.html'
+    },
+    {
+      value: 'CRDT',
+      count: 38,
+      url: '/crdt.html'
+    },
+    {
+      value: 'population',
+      count: 38,
+      url: '/population.html'
+    },
+    {
+      value: 'ORM',
+      count: 38,
+      url: '/orm.html'
+    },
+    {
+      value: 'logging',
+      count: 38,
+      url: '/logger.html'
+    },
+    {
+      value: 'conflict Handling',
+      count: 10,
+      url: '/transactions-conflicts-revisions.html'
+    },
+    {
+      value: 'replication',
+      count: 10,
+      url: '/replication.html'
+    },
+    {
+      value: 'storages',
+      count: 10,
+      url: '/rx-storage.html'
+    }
+  ].map((i: any) => {
+    i.count = hashStringToNumber(i.value) % 54;
+    return i;
+  }));
 
   useEffect(() => {
     startLandingpageAnimation();
@@ -255,22 +356,17 @@ export default function Home() {
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
           <div className="block first hero centered dark">
-            <div className="content">
-              <h1 style={{
-                fontSize: '3.5em',
-                fontWeight: 400,
-                textAlign: 'center',
-                lineHeight: '120%',
-                letterSpacing: -1
-              }}>
-                The local <b className="underline">Database</b> for{' '}
-                <b className="underline">JavaScript</b> Applications
-              </h1>
+            <div className="content" style={{ marginTop: 90 }}>
               <div className="inner">
                 <div className="half left">
-                  <br />
-                  <br />
-                  <ul className="checked">
+                  <h1 style={{
+                  }}>
+                    {
+                      props.title ? props.title : <>The local <b className="underline">Database</b> for{' '}
+                        <b className="underline">JavaScript</b> Applications</>
+                    }
+                  </h1>
+                  {/* <ul className="checked">
                     <li>
                       <b>Offline Support</b>:
                       Store data locally on your users device to build applications that work even when
@@ -297,18 +393,48 @@ export default function Home() {
                       Years of performance optimization made RxDB one of the <u>fastest</u> ways
                       to store and query data inside of JavaScript.
                     </li>
-                  </ul>
-                  {/*
-              <div class="text">
-                  The
-                  </br />
-                  <b id="swap-out-first">JavaScript</b>
-                  </br />
-                  Database
-                  </br />
-                  <b id="swap-out-second">you deserve</b>
-              </div>
-          */}
+                  </ul> */}
+                  <div className="text">
+                    {
+                      props.text ? props.text : <>Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.</>
+                    }
+                  </div>
+
+                  <br />
+                  <br />
+
+                  <a
+                    className="button"
+                    href="/quickstart.html"
+                    onClick={() => trigger('start_now', 0.4)}
+                  >
+                    Get Started &#x27A4;
+                  </a>
+                  <a
+                    href="/premium#price-calculator-block"
+                    onClick={() => trigger('request_premium_main_page', 3)}
+                    className='buy-premium-hero'
+                  >
+                    Buy Premium
+                  </a>
+                  {/* <a
+                    className="button light"
+                    href="/code"
+                    target="_blank"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 16 16"
+                      className="star-icon"
+                      aria-hidden="true"
+                      fill="currentColor"
+                      style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
+                    >
+                      <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
+                    </svg>
+                    Star (20,172)
+                  </a> */}
+
                   <div className="clear" />
                   <br />
                 </div>
@@ -340,79 +466,40 @@ export default function Home() {
                 <div className='clear'></div>
               </div>
             </div>
-            <div className='content'>
-              <a
-                className="button"
-                href="/quickstart.html"
-                onClick={() => trigger('start_now', 0.4)}
-              >
-                Try RxDB for free
-              </a>
-              {/* <a
-                className="button"
-                href="/premium#price-calculator-block"
-                onClick={() => trigger('request_premium_main_page', 3)}
-              >
-                Get Now
-              </a> */}
-              <a
-                className="button light"
-                href="/code"
-                target="_blank"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  className="star-icon"
-                  aria-hidden="true"
-                  fill="currentColor"
-                  style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
-                >
-                  <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
-                </svg>
-                Star (20,172)
-              </a>
-              <div className="clear"></div>
-              <br />
-              <br />
-            </div>
-          </div>
-
-          <div className="block reviews">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Used by <b className="underline">many</b>
-                </h2>
-                <p>
-                  RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of apps and services.
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
+            <br />
+            <br />
+            <br />
+            <br />
+          </div >
 
           <a
-            href="/chat"
+            href="/code"
             target="_blank"
           >
-            <div className="trophy discord">
-              <img loading="lazy" src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+            <div className="trophy github">
+              <img
+                loading="lazy" src="/files/icons/github-star-with-logo.svg"
+                alt="RxDB github star"
+              />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Chat on</div>
-                <div className="title">Discord</div>
+                <div className="subtitle">Open Source on</div>
+                <div className="title">GitHub</div>
               </div>
               <div>
-                <div className="valuetitle">members</div>
+                <div className="valuetitle">stars</div>
                 <div className="value">
-                  747
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.github}
+                    start={SOCIAL_PROOF_VALUES.github - 20}
+                    duration={6}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
             </div>
           </a>
+
+
 
 
           <div className="block second dark">
@@ -423,9 +510,10 @@ export default function Home() {
               <p>
                 From the results of a query, to a single field of a document, with RxDB
                 you can <b>observe everything</b>. This enables you to build realtime
-                applications <b>fast</b> and <b>reliable</b>. It does not matter if the data was changed by{' '}
-                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b>.{' '}
-                Whenever your data changes, your UI reflects the new state. You can either use <b>RxJS</b> or add <a href="/reactivity.html" target="_blank">custom reactiveness libraries</a> like signals or other state management.
+                applications fast and reliable.{' '}
+                {/* It does not matter if the data was changed by{' '}                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b> */}
+                Whenever your data changes, your UI reflects the new state.{' '}
+                RxDB supports <b>RxJS</b> and <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like signals, hooks or vue.js-refs.
               </p>
               <div className="inner">
                 {/*
@@ -493,7 +581,7 @@ export default function Home() {
                     >
                       <div className="beating-color">
                         <img
-                          src="./files/logo/logo.svg"
+                          src="/files/logo/logo.svg"
                           className="beating logo"
                           alt="RxDB"
                         />
@@ -502,7 +590,7 @@ export default function Home() {
                     <div className="device desktop" style={{ marginTop: '0%' }}>
                       <div className="beating-color">
                         <img
-                          src="./files/logo/logo.svg"
+                          src="/files/logo/logo.svg"
                           className="beating logo"
                           alt="RxDB"
                         />
@@ -518,7 +606,7 @@ export default function Home() {
                     </div>
                     {/* <div class="left third centered">
                   <img
-                      src="./files/logo/logo.svg"
+                      src="/files/logo/logo.svg"
                       class="beating logo"
                       alt="RxDB"
                   />
@@ -528,12 +616,12 @@ export default function Home() {
                   style="padding-left: 0px;"
               >
                   <img
-                      src="./files/icons/arrows/left-arrow.svg"
+                      src="/files/icons/arrows/left-arrow.svg"
                       alt="left"
                       class="beating-first arrow"
                   />
                   <img
-                      src="./files/icons/arrows/right-arrow.svg"
+                      src="/files/icons/arrows/right-arrow.svg"
                       alt="right"
                       class="beating-second arrow arrow-right"
                   />
@@ -554,7 +642,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy twitter">
-              <img loading="lazy" src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
+              <img loading="lazy" src="/files/icons/twitter-blue.svg" alt="RxDB Twitter" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Follow on</div>
                 <div className="title">Twitter</div>
@@ -562,7 +650,11 @@ export default function Home() {
               <div>
                 <div className="valuetitle">followers</div>
                 <div className="value">
-                  2843
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.twitter}
+                    start={SOCIAL_PROOF_VALUES.twitter - 30}
+                    duration={2}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -577,42 +669,23 @@ export default function Home() {
                 <br />
                 <br />
                 <h2>
-                  Replicate <b>with your existing infrastructure</b>
+                  Sync with <b>any backend</b>
                 </h2>
                 <p>
-                  RxDB supports replication with a{' '}
-                  <a href="/replication-couchdb.html" target="_blank">
-                    CouchDB
-                  </a>{' '}
-                  server or any custom{' '}
-                  <a href="/replication-graphql.html" target="_blank">
-                    GraphQL
-                  </a>{' '}
-                  endpoint which smoothly integrates with your existing infrastructure.
-                  Also you can use the replication primitives plugin to create custom
-                  replications over any protocol like{' '}
-                  <a href="/replication-http.html" target="_blank">
-                    HTTP
-                  </a>
-                  ,{' '}
-                  <a href="/replication-websocket.html" target="_blank">
-                    Websocket
-                  </a>
-                  ,{' '}
-                  <a href="/replication-webrtc.html" target="_blank">
-                    WebRTC
-                  </a>{' '}
-                  or{' '}
-                  <a href="/replication-firestore.html" target="_blank">
-                    Firestore
-                  </a>
-                  .
+
+                  RxDB has a simple yet high performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
+                  run a realtime replication between clients and servers. While there are many plugins for specific endpoints like{' '}
+                  <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
+                  <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
+                  <a href="/replication-webrtc.html">P2P</a>,{' '}
+                  <a href="/replication-firestore.html" target="_blank">Firestore</a> or <a href="/replication-nats.html" target="_blank">NATS</a>,{' '}
+                  the protocol is not bound to a specific backend and can be used with any <a href="/replication-http.html" target="_blank">existing infrastructure</a>.
                 </p>
               </div>
               <div className="half right">
                 <div className="replication-icons">
                   <img
-                    src="./files/logo/logo.svg"
+                    src="/files/logo/logo.svg"
                     alt="RxDB"
                     className="replicate-logo tilt-to-mouse"
                     loading="lazy"
@@ -620,7 +693,7 @@ export default function Home() {
                   <a href="/replication-graphql.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
                       <img
-                        src="./files/icons/graphql-text.svg"
+                        src="/files/icons/graphql-text.svg"
                         alt="GraphQL"
                         className="protocol"
                         loading="lazy"
@@ -630,7 +703,7 @@ export default function Home() {
                   <a href="/replication-couchdb.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
                       <img
-                        src="./files/icons/couchdb-text.svg"
+                        src="/files/icons/couchdb-text.svg"
                         alt="CouchDB"
                         className="protocol"
                         loading="lazy"
@@ -659,22 +732,23 @@ export default function Home() {
           </div>
 
           <a
-            href="/code"
+            href="/chat"
             target="_blank"
           >
-            <div className="trophy github">
-              <img
-                loading="lazy" src="./files/icons/github-star-with-logo.svg"
-                alt="RxDB github star"
-              />
+            <div className="trophy discord">
+              <img loading="lazy" src="/files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
-                <div className="subtitle">Open Source on</div>
-                <div className="title">GitHub</div>
+                <div className="subtitle">Chat on</div>
+                <div className="title">Discord</div>
               </div>
               <div>
-                <div className="valuetitle">stars</div>
+                <div className="valuetitle">members</div>
                 <div className="value">
-                  20172
+                  <CountUp
+                    end={SOCIAL_PROOF_VALUES.discord}
+                    start={SOCIAL_PROOF_VALUES.discord - 30}
+                    duration={2}
+                  ></CountUp>
                   <div className="arrow-up"> </div>
                 </div>
               </div>
@@ -739,7 +813,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img loading="lazy" src="./files/icons/angular.svg" alt="angular" />
+                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular" />
                   Angular
                 </div>
               </a>
@@ -747,14 +821,14 @@ export default function Home() {
                 className="neumorphism-circle-m circle centered enlarge-on-mouse"
                 style={{ top: '10%', left: '58%' }}
               >
-                <img loading="lazy" src="./files/icons/capacitor.svg" alt="capacitor" />
+                <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
                 Capacitor
               </div>
               <div
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '-4%', left: '44%' }}
               >
-                <img loading="lazy" src="./files/icons/deno.svg" alt="deno" />
+                <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
                 Deno
               </div>
               <a
@@ -765,7 +839,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nodejs.svg" alt="Node.js" />
+                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js" />
                   Node.js
                 </div>
               </a>
@@ -777,7 +851,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img loading="lazy" src="./files/icons/react.svg" alt="React" />
+                  <img loading="lazy" src="/files/icons/react.svg" alt="React" />
                   React
                 </div>
               </a>
@@ -785,7 +859,7 @@ export default function Home() {
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
               >
-                <img loading="lazy" src="./files/icons/svelte.svg" alt="Svelte" />
+                <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
                 Svelte
               </div>
               <br />
@@ -812,7 +886,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img loading="lazy" src="./files/icons/electron.svg" alt="electron" />
+                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron" />
                     Electron
                   </div>
                 </a>
@@ -824,7 +898,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img loading="lazy" src="./files/icons/vuejs.svg" alt="Vue.js" />
+                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js" />
                     Vue.js
                   </div>
                 </a>
@@ -836,7 +910,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img loading="lazy" src="./files/icons/ionic.svg" alt="ionic" />
+                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic" />
                     Ionic
                   </div>
                 </a>
@@ -844,7 +918,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '46%', left: '11%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nativescript.svg" alt="NativeScript" />
+                  <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
                   NativeScript
                 </div>
                 <a
@@ -855,7 +929,7 @@ export default function Home() {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img loading="lazy" src="./files/icons/react.svg" alt="React Native" />
+                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native" />
                     React Native
                   </div>
                 </a>
@@ -863,7 +937,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nextjs.svg" alt="Next.js" />
+                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js" />
                   Next.js
                 </div>
                 <a
@@ -874,10 +948,52 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img loading="lazy" src="./files/icons/flutter.svg" alt="Flutter" />
+                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter" />
                     Flutter
                   </div>
                 </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="block features dark">
+            <div className="content">
+              <h2>All the <b className="underline">features</b> that you need</h2>
+              <p>
+                Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building.
+                Every feature that you need now or might need in the future is already there.
+              </p>
+              <div style={{
+                marginTop: 65,
+                marginBottom: 5,
+                width: '100%',
+                maxWidth: 1200,
+                padding: 10
+              }}>
+
+                <TagCloud
+                  minSize={18}
+                  maxSize={55}
+                  tags={tags}
+                  randomSeed={145}
+                  renderer={(tag, size, _color) => {
+                    return (
+                      <a key={tag.value}
+                        style={{
+                          color: 'white',
+                          fontSize: size,
+                          margin: '0px ' + size + 'px',
+                          verticalAlign: 'middle',
+                          display: 'inline-block'
+                        }}
+                        className="tag-cloud-tag"
+                        href={tag.url}
+                      >
+                        {ucfirst(tag.value)}
+                      </a>
+                    );
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -973,11 +1089,25 @@ export default function Home() {
             </div>
           </div> */}
 
-
+          <div className="block reviews">
+            <div className="content centered">
+              <div className="inner">
+                <h2>
+                  Used by <b className="underline">many</b>
+                </h2>
+                <p>
+                  RxDB is a proven technology used by thousands of developers worldwide. <br />
+                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                </p>
+                <br /><br />
+              </div>
+            </div>
+            <ReviewsBlock></ReviewsBlock>
+          </div>
 
           <div className="block sixth dark">
             <div className="content">
-              <h2>Pricing Models</h2>
+              <h2>Free <b className='underline'>Open Core</b> Model</h2>
               <br />
               <div className="inner">
                 <div className="buy-options">
@@ -1191,7 +1321,7 @@ export default function Home() {
                     className="button get-premium"
                     style={{ left: '50%', top: '20%', marginLeft: '-122px' }}
                   >
-                    Start now
+                    Quickstart
                   </div>
                 </a>
                 <a
@@ -1254,7 +1384,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </main>
+        </main >
       </Layout >
     </>
   );
