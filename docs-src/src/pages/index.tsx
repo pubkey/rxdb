@@ -240,7 +240,7 @@ async function startLandingpageAnimation() {
   });
 }
 
-export default function Home() {
+export default function Home(props) {
   const { siteConfig } = useDocusaurusContext();
 
   const [tags] = useState([
@@ -361,8 +361,10 @@ export default function Home() {
                 <div className="half left">
                   <h1 style={{
                   }}>
-                    The local <b className="underline">Database</b> for{' '}
-                    <b className="underline">JavaScript</b> Applications
+                    {
+                      props.title ? props.title : <>The local <b className="underline">Database</b> for{' '}
+                        <b className="underline">JavaScript</b> Applications</>
+                    }
                   </h1>
                   {/* <ul className="checked">
                     <li>
@@ -393,7 +395,9 @@ export default function Home() {
                     </li>
                   </ul> */}
                   <div className="text">
-                    Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.
+                    {
+                      props.text ? props.text : <>Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.</>
+                    }
                   </div>
 
                   <br />
@@ -474,7 +478,7 @@ export default function Home() {
           >
             <div className="trophy github">
               <img
-                loading="lazy" src="./files/icons/github-star-with-logo.svg"
+                loading="lazy" src="/files/icons/github-star-with-logo.svg"
                 alt="RxDB github star"
               />
               <div style={{ flex: 1 }}>
@@ -577,7 +581,7 @@ export default function Home() {
                     >
                       <div className="beating-color">
                         <img
-                          src="./files/logo/logo.svg"
+                          src="/files/logo/logo.svg"
                           className="beating logo"
                           alt="RxDB"
                         />
@@ -586,7 +590,7 @@ export default function Home() {
                     <div className="device desktop" style={{ marginTop: '0%' }}>
                       <div className="beating-color">
                         <img
-                          src="./files/logo/logo.svg"
+                          src="/files/logo/logo.svg"
                           className="beating logo"
                           alt="RxDB"
                         />
@@ -602,7 +606,7 @@ export default function Home() {
                     </div>
                     {/* <div class="left third centered">
                   <img
-                      src="./files/logo/logo.svg"
+                      src="/files/logo/logo.svg"
                       class="beating logo"
                       alt="RxDB"
                   />
@@ -612,12 +616,12 @@ export default function Home() {
                   style="padding-left: 0px;"
               >
                   <img
-                      src="./files/icons/arrows/left-arrow.svg"
+                      src="/files/icons/arrows/left-arrow.svg"
                       alt="left"
                       class="beating-first arrow"
                   />
                   <img
-                      src="./files/icons/arrows/right-arrow.svg"
+                      src="/files/icons/arrows/right-arrow.svg"
                       alt="right"
                       class="beating-second arrow arrow-right"
                   />
@@ -638,7 +642,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy twitter">
-              <img loading="lazy" src="./files/icons/twitter-blue.svg" alt="RxDB Twitter" />
+              <img loading="lazy" src="/files/icons/twitter-blue.svg" alt="RxDB Twitter" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Follow on</div>
                 <div className="title">Twitter</div>
@@ -681,7 +685,7 @@ export default function Home() {
               <div className="half right">
                 <div className="replication-icons">
                   <img
-                    src="./files/logo/logo.svg"
+                    src="/files/logo/logo.svg"
                     alt="RxDB"
                     className="replicate-logo tilt-to-mouse"
                     loading="lazy"
@@ -689,7 +693,7 @@ export default function Home() {
                   <a href="/replication-graphql.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
                       <img
-                        src="./files/icons/graphql-text.svg"
+                        src="/files/icons/graphql-text.svg"
                         alt="GraphQL"
                         className="protocol"
                         loading="lazy"
@@ -699,7 +703,7 @@ export default function Home() {
                   <a href="/replication-couchdb.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
                       <img
-                        src="./files/icons/couchdb-text.svg"
+                        src="/files/icons/couchdb-text.svg"
                         alt="CouchDB"
                         className="protocol"
                         loading="lazy"
@@ -732,7 +736,7 @@ export default function Home() {
             target="_blank"
           >
             <div className="trophy discord">
-              <img loading="lazy" src="./files/icons/discord.svg" alt="RxDB Discord chat" />
+              <img loading="lazy" src="/files/icons/discord.svg" alt="RxDB Discord chat" />
               <div style={{ flex: 1 }}>
                 <div className="subtitle">Chat on</div>
                 <div className="title">Discord</div>
@@ -809,7 +813,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img loading="lazy" src="./files/icons/angular.svg" alt="angular" />
+                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular" />
                   Angular
                 </div>
               </a>
@@ -817,14 +821,14 @@ export default function Home() {
                 className="neumorphism-circle-m circle centered enlarge-on-mouse"
                 style={{ top: '10%', left: '58%' }}
               >
-                <img loading="lazy" src="./files/icons/capacitor.svg" alt="capacitor" />
+                <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
                 Capacitor
               </div>
               <div
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '-4%', left: '44%' }}
               >
-                <img loading="lazy" src="./files/icons/deno.svg" alt="deno" />
+                <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
                 Deno
               </div>
               <a
@@ -835,7 +839,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nodejs.svg" alt="Node.js" />
+                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js" />
                   Node.js
                 </div>
               </a>
@@ -847,7 +851,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img loading="lazy" src="./files/icons/react.svg" alt="React" />
+                  <img loading="lazy" src="/files/icons/react.svg" alt="React" />
                   React
                 </div>
               </a>
@@ -855,7 +859,7 @@ export default function Home() {
                 className="neumorphism-circle-s circle centered enlarge-on-mouse"
                 style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
               >
-                <img loading="lazy" src="./files/icons/svelte.svg" alt="Svelte" />
+                <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
                 Svelte
               </div>
               <br />
@@ -882,7 +886,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img loading="lazy" src="./files/icons/electron.svg" alt="electron" />
+                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron" />
                     Electron
                   </div>
                 </a>
@@ -894,7 +898,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img loading="lazy" src="./files/icons/vuejs.svg" alt="Vue.js" />
+                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js" />
                     Vue.js
                   </div>
                 </a>
@@ -906,7 +910,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img loading="lazy" src="./files/icons/ionic.svg" alt="ionic" />
+                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic" />
                     Ionic
                   </div>
                 </a>
@@ -914,7 +918,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '46%', left: '11%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nativescript.svg" alt="NativeScript" />
+                  <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
                   NativeScript
                 </div>
                 <a
@@ -925,7 +929,7 @@ export default function Home() {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img loading="lazy" src="./files/icons/react.svg" alt="React Native" />
+                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native" />
                     React Native
                   </div>
                 </a>
@@ -933,7 +937,7 @@ export default function Home() {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img loading="lazy" src="./files/icons/nextjs.svg" alt="Next.js" />
+                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js" />
                   Next.js
                 </div>
                 <a
@@ -944,7 +948,7 @@ export default function Home() {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img loading="lazy" src="./files/icons/flutter.svg" alt="Flutter" />
+                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter" />
                     Flutter
                   </div>
                 </a>
