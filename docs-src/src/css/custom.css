@@ -718,7 +718,9 @@ body {
 
 
 
-
+.block.first.hero .content {
+    margin-top: 90px;
+}
 
 
 .block.first.hero h1 {
@@ -758,8 +760,17 @@ body {
     .block.first.hero .text {
         width: 100%;
     }
+
+    .block.first.hero .content {
+        margin-top: 0px;
+    }
 }
 
+@media (max-width: 500px) {
+    .block.first.hero h1 {
+        font-size: 3em;
+    }
+}
 
 
 
@@ -3851,4 +3862,10 @@ footer a:visited {
 
 .tag-cloud a:hover {
     text-decoration: underline;
+}
+
+@media (max-width: 400px) {
+    .tag-cloud-tag {
+        margin: 0 10px;
+    }
 }

@@ -356,7 +356,7 @@ export default function Home(props) {
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
           <div className="block first hero centered dark">
-            <div className="content" style={{ marginTop: 90 }}>
+            <div className="content">
               <div className="inner">
                 <div className="half left">
                   <h1 style={{
