@@ -352,7 +352,7 @@ export default function Home(props) {
         <body className="homepage" />
       </Head>
       <Layout
-        title={`${siteConfig.title}`}
+        title={props.metaTitle ? props.metaTitle : siteConfig.title}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
           <div className="block first hero centered dark">
