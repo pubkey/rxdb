@@ -54,7 +54,7 @@ export var ERROR_MESSAGES = {
   DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase[collectionName] to get it',
   DB4: 'RxDatabase.addCollections(): schema is missing',
   DB5: 'RxDatabase.addCollections(): collection-name not allowed',
-  DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html#cant-change-the-schema',
+  DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html?console=qa#cant-change-the-schema ',
   // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' + 'This often happens in react projects with hot reload that reloads the code without reloading the process.',
   // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
@@ -116,7 +116,7 @@ export var ERROR_MESSAGES = {
   DM2: 'migration of document failed final document does not match final schema',
   DM3: 'migration already running',
   DM4: 'Migration errored',
-  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See https://rxdb.info/migration-storage.html',
+  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See https://rxdb.info/migration-storage.html?console=storage ',
   // plugins/attachments.js
   AT1: 'to use attachments, please define this in your schema',
   // plugins/encryption-crypto-js.js
@@ -146,7 +146,7 @@ export var ERROR_MESSAGES = {
   RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
   RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
   RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
-  RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html',
+  RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html?console=webrtc ',
   RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
   RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
   RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
