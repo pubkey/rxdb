@@ -67,6 +67,8 @@ export const RxDBMigrationPlugin: RxPlugin = {
     }
 };
 
+export const RxDBMigrationSchemaPlugin = RxDBMigrationPlugin;
+
 
 export * from './rx-migration-state.ts';
 export * from './migration-helpers.ts';
