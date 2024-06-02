@@ -836,10 +836,25 @@ body {
     margin-left: 10%;
 }
 
+.block.replication .replicate-firestore {
+    position: absolute;
+    margin-top: -47.5px;
+    margin-left: 0%;
+    top: 51%;
+}
+
+.block.replication .replicate-supabase {
+    position: absolute;
+    margin-top: -47.5px;
+    margin-left: 81%;
+    top: 51%;
+}
+
+
 @media (max-width: 500px) {
     .block.replication .replicate-graphql {
         margin-left: 0%;
-    }
+    }    
 }
 
 .block.replication .replicate-couchdb {

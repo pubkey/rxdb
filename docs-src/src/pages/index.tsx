@@ -700,6 +700,26 @@ export default function Home(props) {
                       />
                     </div>
                   </a>
+                  <a href="/replication-firestore.html" target="_blank">
+                    <div className="neumorphism-circle-m centered replicate-firestore enlarge-on-mouse">
+                      <img
+                        src="/files/icons/firebase.svg"
+                        alt="Firebase"
+                        className="protocol"
+                        loading="lazy"
+                      />
+                    </div>
+                  </a>
+                  <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
+                    <div className="neumorphism-circle-m centered replicate-supabase enlarge-on-mouse">
+                      <img
+                        src="/files/icons/supabase.svg"
+                        alt="supabase"
+                        className="protocol"
+                        loading="lazy"
+                      />
+                    </div>
+                  </a>
                   <a href="/replication-couchdb.html" target="_blank">
                     <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
                       <img
