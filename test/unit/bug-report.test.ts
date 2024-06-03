@@ -434,7 +434,7 @@ describe('replication-firestore.test.ts', function () {
             await replicationState.awaitInitialReplication();
 
             // test local docs have been pushed to firestore
-            let docsOnServer = await getAllDocsOfFirestore(firestoreState);
+            const docsOnServer = await getAllDocsOfFirestore(firestoreState);
             assert.strictEqual(docsOnServer.length, 2);
 
             // insert another one in firestore
