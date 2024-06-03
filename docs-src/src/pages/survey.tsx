@@ -24,9 +24,9 @@ export default function Home() {
                         <b>You will be redirected in a few seconds.</b>
                     </p>
                     <p>
-                        <a href="https://forms.gle/NxcBzMoRvLLzzrES7">Click here to open the Survey</a>
+                        <a href="https://forms.gle/pe8vxaXez1A6X95EA">Click here to open the Survey</a>
                     </p>
-                    <meta httpEquiv="Refresh" content="0; url=https://forms.gle/NxcBzMoRvLLzzrES7" />
+                    <meta httpEquiv="Refresh" content="0; url=https://forms.gle/pe8vxaXez1A6X95EA" />
                 </div>
             </main>
         </Layout >
