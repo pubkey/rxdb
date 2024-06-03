@@ -5,9 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   DATA_MIGRATOR_BY_COLLECTION: true,
-  RxDBMigrationPlugin: true
+  RxDBMigrationPlugin: true,
+  RxDBMigrationSchemaPlugin: true
 };
-exports.RxDBMigrationPlugin = exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
+exports.RxDBMigrationSchemaPlugin = exports.RxDBMigrationPlugin = exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
 var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
 var _rxMigrationState = require("./rx-migration-state.js");
@@ -79,4 +80,5 @@ var RxDBMigrationPlugin = exports.RxDBMigrationPlugin = {
     }
   }
 };
+var RxDBMigrationSchemaPlugin = exports.RxDBMigrationSchemaPlugin = RxDBMigrationPlugin;
 //# sourceMappingURL=index.js.map

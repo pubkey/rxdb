@@ -35,6 +35,7 @@ export var RxDBMigrationPlugin = {
     }
   }
 };
+export var RxDBMigrationSchemaPlugin = RxDBMigrationPlugin;
 export * from "./rx-migration-state.js";
 export * from "./migration-helpers.js";
 export * from "./migration-types.js";
