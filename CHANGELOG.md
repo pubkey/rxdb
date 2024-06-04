@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Opened the [RxDB User Survey 2024](https://rxdb.info/survey)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

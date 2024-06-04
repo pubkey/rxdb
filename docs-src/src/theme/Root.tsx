@@ -28,35 +28,41 @@ function addCallToActionButton() {
     }
 
     const callToActions = [
+        // {
+        //     text: 'Follow',
+        //     keyword: '@twitter',
+        //     url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+        //     icon: '🐦'
+        // },
+        // {
+        //     text: 'Follow',
+        //     keyword: '@LinkedIn',
+        //     url: 'https://www.linkedin.com/company/rxdb',
+        //     icon: '[in]'
+        // },
+        // {
+        //     text: 'Chat',
+        //     keyword: '@discord',
+        //     url: 'https://rxdb.info/chat',
+        //     icon: '💬'
+        // },
+        // {
+        //     text: 'Star',
+        //     keyword: '@github',
+        //     url: 'https://rxdb.info/code',
+        //     icon: '🐙💻'
+        // },
+        // {
+        //     text: 'Subscribe',
+        //     keyword: '@newsletter',
+        //     url: 'https://rxdb.info/newsletter',
+        //     icon: '📰'
+        // }
         {
-            text: 'Follow',
-            keyword: '@twitter',
-            url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-            icon: '🐦'
-        },
-        {
-            text: 'Follow',
-            keyword: '@LinkedIn',
-            url: 'https://www.linkedin.com/company/rxdb',
-            icon: '[in]'
-        },
-        {
-            text: 'Chat',
-            keyword: '@discord',
-            url: 'https://rxdb.info/chat',
-            icon: '💬'
-        },
-        {
-            text: 'Star',
-            keyword: '@github',
-            url: 'https://rxdb.info/code',
-            icon: '🐙💻'
-        },
-        {
-            text: 'Subscribe',
-            keyword: '@newsletter',
-            url: 'https://rxdb.info/newsletter',
-            icon: '📰'
+            text: 'Take Part in the',
+            keyword: 'User Survey 2024',
+            url: 'https://rxdb.info/survey',
+            icon: '📝'
         }
     ];
     function insertAfter(referenceNode, newNode) {
