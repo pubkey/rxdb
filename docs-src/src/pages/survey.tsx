@@ -9,7 +9,7 @@ export default function Home() {
 
     return (
         <Layout
-            title={`Chat - ${siteConfig.title}`}
+            title={`RxDB User Survey - ${siteConfig.title}`}
             description="RxDB User Survey"
         >
             <main>
