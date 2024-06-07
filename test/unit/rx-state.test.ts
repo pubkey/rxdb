@@ -338,6 +338,41 @@ describeParallel('rx-state.test.ts', () => {
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
+        it('should emit the correct data for all states', async () => {
+            const databaseName = randomCouchString(10);
+            const state1 = await getState(databaseName);
+            const state2 = await getState(databaseName);
+
+            const emitted1: any[] = [];
+            state1.get$('a').subscribe(v => {
+                emitted1.push(v);
+            });
+            const emitted2: any[] = [];
+            state2.get$('a').subscribe(v => {
+                emitted2.push(v);
+            });
+
+            await state1.set('a', () => 0);
+            await state2.set('a', () => 1);
+            await state1.set('a', () => 2);
+
+            assert.deepStrictEqual(emitted1, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+            assert.deepStrictEqual(emitted2, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+
+            state1.collection.database.remove();
+            state2.collection.database.remove();
+        });
+
         runXTimes(1, () => {
             it('should have a deterministic output when 2 instances write at the same time', async () => {
                 // TODO shouldn't we fix this test for these storages?
