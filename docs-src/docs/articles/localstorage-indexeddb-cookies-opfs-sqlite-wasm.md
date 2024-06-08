@@ -1,22 +1,39 @@
 # Localstorage vs. IndexedDB vs. Cookies vs. OPFS vs. Wasm-SQLite
 
-So it is 2024 and you want to build your this awesome Web Application. To make you app fast and even work [offline](../offline-first.md), you want to store all data on the client device and run operations there, instead of awaiting requests to a backend server.
 
-But there is a problem:
+Welcome to 2024, a time when building powerful, responsive web applications has never been more exciting. As developers, we constantly seek ways to make our apps faster and more efficient, and one crucial aspect of this is data storage. To ensure our apps not only perform well but also work seamlessly [offline](../offline-first.md), we aim to store data on the client device, minimizing the need to interact with backend servers.
 
-> Browser are slow and weren't made to run huge database operations.
+However, a common belief persists:
 
-Or are they? Over the last few years, a lot of features have been added to JavaScript. New storage APIs such as OPFS and new features like the BroadcastChannel are here to let us reach the limits of JavaScript performance.
+> Browser are slow and weren't designed to run extensive database operations.
 
-In this article we have look at all previous and new technologies to store and query data in a browser. We will run performance tests and combine many performance hacks to find out how fast we can write and read a **huge amount of data** in a Web App.
+Is this really the case? Over recent years, JavaScript has evolved significantly. New storage APIs like the Origin Private File System (OPFS) and new features like the BroadcastChannel have pushed the boundaries of what JavaScript can achieve in terms of performance.
 
+
+In this article, we will delve into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative hacks to reach the performance limits of a browser in terms of database operations.
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
+    </a>
+</center>
 
 ## What is localstorage
-## What is indexeddb
-## What are cookies
-## What is OPFS
-## What is wasm sqlite
 
+LocalStorage provides a simple way to store key-value pairs in a web browser. It's suitable for storing small amounts of data that need to persist across sessions but is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage) and the inability to store complex data types beyond strings.
+
+## What are cookies
+
+Cookies store small pieces of data that are sent with every HTTP request. They are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1).
+So we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
+
+## What is IndexedDB
+
+
+## What is OPFS
+
+## What is wasm sqlite
+https://www.fermyon.com/blog/webassembly-wasi-and-the-component-model
 
 
 ### Things this does not talk about
