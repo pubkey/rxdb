@@ -473,8 +473,8 @@ describeParallel('rx-state.test.ts', () => {
             assert.strictEqual(state1.get('a'), 2);
             assert.strictEqual(state2.get('a'), 2);
 
-            state1.collection.database.remove();
-            state2.collection.database.remove();
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
         });
     });
 });
