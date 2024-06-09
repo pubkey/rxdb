@@ -1139,6 +1139,7 @@ body {
 
 .block.sixth .buy-option-features p {
     font-size: 1em;
+    text-align: justify;
 }
 
 .block.sixth .buy-option-action {

@@ -1149,6 +1149,8 @@ export default function Home(props) {
                           Our open-core approach encourages a vibrant community of developers,
                           fostering collaboration and innovation.
                         </p>
+                        <br />
+
                       </div>
                       {/* <div className="buy-option-features">
                         <ul>
@@ -1197,6 +1199,8 @@ export default function Home(props) {
                             <b>Advanced Metrics Logging</b> provides detailed insights for performance monitoring.
                           </li>
                         </ul>
+                        <br />
+
                       </div>
                       {/* <div className="buy-option-features">
                         <ul>
@@ -1299,16 +1303,15 @@ export default function Home(props) {
                         <div className="price">Get Professional Support</div>
                       </div>
                       <div className="buy-option-features">
-
                         <p>
-                          Unlock the full potential of RxDB with our tailored consulting services.
-                          Our experts collaborate directly with your team to optimize your use of RxDB,
-                          ensuring seamless integration and peak performance.<br />
+                          Using new technologies can be hard. If you lack the capacity or skill to build your application, we are here to help.
+                          <br />
                           <br />
                           From quick <b>one-time support sessions</b> to <b>full project</b> development and <b>custom feature</b> implementation,
-                          we're here to accelerate your project's success. Let's build something incredible together.
+                          we're here to ensure your project's success. Let's build something incredible together.
+                          <br />
+                          <br />
                         </p>
-
                       </div>
                       <a
                         href="/consulting"
