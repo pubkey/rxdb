@@ -2,18 +2,15 @@ import {
     Observable,
     Subject,
     distinctUntilChanged,
-    filter,
     map,
     merge,
     shareReplay,
     startWith,
-    tap,
-    zip
+    tap
 } from 'rxjs';
 import { overwritable } from '../../overwritable.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import type {
-    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -44,6 +41,9 @@ import { newRxError } from '../../rx-error.ts';
 import { runPluginHooks } from '../../hooks.ts';
 
 
+let debugId = 0;
+
+
 /**
  * RxDB internally used properties are
  * prefixed with lodash _ to make them less
@@ -51,6 +51,8 @@ import { runPluginHooks } from '../../hooks.ts';
  * from the user.
  */
 export class RxStateBase<T, Reactivity = unknown> {
+    // used for debugging
+    public _id: number = debugId++;
     public _state: T | any = {};
     public $: Observable<T>;
     public _lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
@@ -76,7 +78,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         // make it "hot" for better write performance
         this._lastIdQuery.$.subscribe();
 
-        this.$ = zip([
+        this.$ = merge(
             this._ownEmits$,
             this.collection.$.pipe(
                 tap(event => {
@@ -89,7 +91,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     }
                 })
             )
-        ]).pipe(
+        ).pipe(
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
             map(() => this._state)
         );

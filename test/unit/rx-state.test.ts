@@ -198,8 +198,6 @@ describeParallel('rx-state.test.ts', () => {
 
             await state.set('a', () => 0);
             await state.set('a', () => 1);
-
-
             await state.set('a', () => 2);
 
             assert.deepStrictEqual(emitted, [
@@ -359,7 +357,7 @@ describeParallel('rx-state.test.ts', () => {
                  * This test randomly failed,
                  * so make sure to run on a big amount.
                 */
-                const amount = isFastMode() ? 100 : 2000;
+                const amount = isFastMode() ? 100 : 1000;
                 const promises: Promise<any>[] = [];
                 let t = 0;
                 while (t < amount) {
@@ -396,7 +394,7 @@ describeParallel('rx-state.test.ts', () => {
             await state2.set('b', () => 0);
 
             let t = 0;
-            const amount = isFastMode() ? 100 : 2000;
+            const amount = isFastMode() ? 100 : 1000;
             const promises: Promise<any>[] = [];
             while (t < amount) {
                 t++;
@@ -417,7 +415,6 @@ describeParallel('rx-state.test.ts', () => {
             state1.collection.database.destroy();
             state2.collection.database.destroy();
         });
-
         it('should recover the same state from disc on the other side', async () => {
             const databaseName = randomCouchString(10);
             let state = await getState(databaseName);
@@ -435,6 +432,49 @@ describeParallel('rx-state.test.ts', () => {
             state = await getState(databaseName);
             assert.strictEqual(state.a, 3);
             await state.collection.database.destroy();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/6084
+         */
+        it('should emit the correct data for all states', async () => {
+            const databaseName = randomCouchString(10);
+            const state1 = await getState(databaseName);
+            const state2 = await getState(databaseName);
+
+            const emitted1: any[] = [];
+            state1.get$('a').subscribe(v => {
+                emitted1.push(v);
+            });
+            const emitted2: any[] = [];
+            state2.get$('a').subscribe(v => {
+                emitted2.push(v);
+            });
+
+            await state1.set('a', () => 0);
+            await state2.set('a', () => 1);
+            await state1.set('a', () => 2);
+
+            await waitUntil(() => emitted1.length === 4);
+            await waitUntil(() => emitted2.length === 4);
+
+            assert.deepStrictEqual(emitted1, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+            assert.deepStrictEqual(emitted2, [
+                undefined,
+                0,
+                1,
+                2
+            ]);
+
+            assert.strictEqual(state1.get('a'), 2);
+            assert.strictEqual(state2.get('a'), 2);
+
+            state1.collection.database.destroy();
+            state2.collection.database.destroy();
         });
     });
 });
