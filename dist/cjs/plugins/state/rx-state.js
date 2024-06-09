@@ -13,6 +13,8 @@ var _index = require("../utils/index.js");
 var _helpers = require("./helpers.js");
 var _rxError = require("../../rx-error.js");
 var _hooks = require("../../hooks.js");
+var debugId = 0;
+
 /**
  * RxDB internally used properties are
  * prefixed with lodash _ to make them less
@@ -20,7 +22,10 @@ var _hooks = require("../../hooks.js");
  * from the user.
  */
 var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
+  // used for debugging
+
   function RxStateBase(prefix, collection) {
+    this._id = debugId++;
     this._state = {};
     this._nonPersisted = [];
     this._writeQueue = _index.PROMISE_RESOLVE_VOID;
@@ -37,11 +42,11 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     });
     // make it "hot" for better write performance
     this._lastIdQuery.$.subscribe();
-    this.$ = (0, _rxjs.zip)([this._ownEmits$, this.collection.$.pipe((0, _rxjs.tap)(event => {
+    this.$ = (0, _rxjs.merge)(this._ownEmits$, this.collection.$.pipe((0, _rxjs.tap)(event => {
       if (this._initDone && event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
         mergeOperationsIntoState(this._state, event.documentData.ops);
       }
-    }))]).pipe((0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS), (0, _rxjs.map)(() => this._state));
+    }))).pipe((0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS), (0, _rxjs.map)(() => this._state));
     // directly subscribe because of the tap() side effect
     this.$.subscribe();
   }

@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Opened the [RxDB User Survey 2024](https://rxdb.info/survey)
-- FIX rx-state multi instance observable broken [#6084](https://github.com/pubkey/rxdb/pull/6084)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.24.0 (9 June 2024)
+
+- Opened the [RxDB User Survey 2024](https://rxdb.info/survey)
+- FIX rx-state multi instance observable broken [#6084](https://github.com/pubkey/rxdb/pull/6084)
 
 ### 15.23.0 (29 May 2024)
 
