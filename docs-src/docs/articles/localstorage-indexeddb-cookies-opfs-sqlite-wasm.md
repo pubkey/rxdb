@@ -10,7 +10,7 @@ However, a common belief persists:
 Is this really the case? Over recent years, JavaScript has evolved significantly. New storage APIs like the Origin Private File System (OPFS) and new features like the BroadcastChannel have pushed the boundaries of what JavaScript can achieve in terms of performance.
 
 
-In this article, we will delve into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative hacks to reach the performance limits of a browser in terms of database operations.
+In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative hacks to reach the performance limits of a browser in terms of database operations.
 
 <center>
     <a href="https://rxdb.info/">
@@ -18,22 +18,34 @@ In this article, we will delve into the various technologies available for stori
     </a>
 </center>
 
-## What is localstorage
+## What is Localstorage
 
 LocalStorage provides a simple way to store key-value pairs in a web browser. It's suitable for storing small amounts of data that need to persist across sessions but is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage) and the inability to store complex data types beyond strings.
 
-## What are cookies
+## What are Cookies
 
 Cookies store small pieces of data that are sent with every HTTP request. They are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1).
-So we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
+This means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
 
 ## What is IndexedDB
 
+IndexedDB is a low-level API for storing large amounts of structured (JSON) data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries. The performance of basic IndexedDB operations can be problematic but there exist [several hacks](../slow-indexeddb.md) to improve writes and query speed.
+
 
 ## What is OPFS
+The [Origin Private File System](../rx-storage-opfs.md) (OPFS) is a relatively new API that allows web applications to store large files directly in the browser. It is designed for data-intensive applications that want to write and read binary data.
+OPFS can be used in two modes: Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) or in a WebWorker with the faster, aynchronous access.
+Because only binary data can be processed, OPFS is made to be as a base filesystem for database libraries. You will unlikely directly want to use the OPFS in your applications code.
 
-## What is wasm sqlite
-https://www.fermyon.com/blog/webassembly-wasi-and-the-component-model
+
+## What is WASM-SQLite
+
+SQLite is a small, fast, self-contained SQL database written in the C programming language.
+Because browsers cannot run an applications C code directly, [WebAssembly](https://webassembly.org/) (WASM) is used to compile the SQLite C code into WASM byte code. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+The compiled byte code has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load.
+
+WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
+
 
 
 ### Things this does not talk about
