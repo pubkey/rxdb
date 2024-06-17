@@ -196,6 +196,10 @@ let DB_INSTANCE: RxHeroesDatabase;
  * to ensure the database exists before the angular-app starts up
  */
 export async function initDatabase(injector: Injector) {
+    if (!injector) {
+        throw new Error('initDatabase() injector missing');
+    }
+
     /**
      * When server side rendering is used,
      * The database might already be there
