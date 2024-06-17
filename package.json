@@ -505,7 +505,7 @@
     "@types/cors": "2.8.17",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.6",
-    "@types/node": "20.14.3",
+    "@types/node": "20.14.4",
     "@types/request": "2.48.12",
     "@types/request-promise-native": "1.0.21",
     "@types/source-map-support": "0.5.10",
