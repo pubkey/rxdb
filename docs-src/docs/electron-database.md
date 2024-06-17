@@ -100,7 +100,7 @@ To learn more about using RxDB with Electron, you might want to check out [this 
 
 ### SQLite in Electron.js without RxDB
 
-SQLite is a SQL based relational database written in the C programming language that was crafted to be embeded inside of applications and stores data locally. Operations are written in the SQL query language similar to the PostgreSQL syntax.
+SQLite is a SQL based relational database written in the C programming language that was crafted to be embedded inside of applications and stores data locally. Operations are written in the SQL query language similar to the PostgreSQL syntax.
 
 Using SQLite in Electron is not possible in the *renderer process*, only in the *main process*. To communicate data operations between your main and your renderer processes, you have to use either [@electron/remote](https://github.com/electron/remote) (not recommended) or the [ipcRenderer](https://www.electronjs.org/de/docs/latest/api/ipc-renderer) (recommended). So you start up SQLite in your main process and whenever you want to read or write data, you send the SQL queries to the main process and retrieve the result back as JSON data.
 
