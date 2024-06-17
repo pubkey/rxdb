@@ -57,7 +57,7 @@ import {
       provide: APP_INITIALIZER,
       useFactory: (injector: Injector) => () => initDatabase(injector),
       multi: true,
-      deps: [/* your dependencies */]
+      deps: [Injector]
     },
     DatabaseService,
     {
