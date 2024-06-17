@@ -36,9 +36,6 @@ addRxPlugin(RxDBJsonDumpPlugin);
  */
 [true, false].forEach(useSchemaValidator => {
     describeParallel('rx-state.test.ts (useSchemaValidator: ' + useSchemaValidator + ')', () => {
-        const storage = useSchemaValidator ? wrappedValidateAjvStorage({
-            storage: config.storage.getStorage()
-        }) : config.storage.getStorage();
         type TestState = {
             foo?: string;
             a?: number;
@@ -60,6 +57,9 @@ addRxPlugin(RxDBJsonDumpPlugin);
             }
         };
         async function getDatabase(databaseName: string = randomCouchString(10)) {
+            const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+                storage: config.storage.getStorage()
+            }) : config.storage.getStorage();
             const database = await createRxDatabase<{}, {}, {}, ReactivityType>({
                 name: databaseName,
                 storage,
