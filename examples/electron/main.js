@@ -69,6 +69,10 @@ app.on('ready', async function () {
     //     ));
     // });
 
+    /**
+     * Here we create two windows, just to play around and test the cross-tab behavior.
+     * In your production app you likely only want one window.
+     */
     createWindow();
     createWindow();
 });

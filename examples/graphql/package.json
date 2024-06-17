@@ -20,7 +20,9 @@
   "private": true,
   "author": "pubkey",
   "license": "MIT",
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
     "@apollo/server": "4.10.4",
     "concurrently": "8.2.2",
     "cors": "2.8.5",
@@ -31,7 +33,6 @@
     "local-web-server": "5.3.3",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "8.0.1",
-    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "ws": "8.16.0"
   },

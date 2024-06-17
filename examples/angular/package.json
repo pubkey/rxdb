@@ -35,7 +35,9 @@
   "private": true,
   "author": "pubkey",
   "license": "MIT",
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
     "@angular/animations": "17.3.11",
     "@angular/cdk": "18.0.2",
     "@angular/common": "17.3.11",
@@ -63,7 +65,6 @@
     "mocha": "10.4.0",
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
-    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "stream": "0.0.2",
     "tslib": "2.6.3",

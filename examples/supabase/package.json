@@ -18,11 +18,12 @@
   "private": true,
   "author": "pubkey",
   "license": "MIT",
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
     "@supabase/supabase-js": "2.43.2",
     "html-webpack-plugin": "5.6.0",
     "mini-css-extract-plugin": "2.9.0",
-    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1"
   },
   "devDependencies": {

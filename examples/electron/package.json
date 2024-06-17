@@ -10,9 +10,10 @@
     "electron": "electron . -enable-logging",
     "test": "mocha"
   },
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
-    "electron": "30.0.9",
     "rxdb": "file:rxdb-local.tgz",
+    "electron": "30.0.9",
     "rxjs": "7.8.1"
   },
   "devDependencies": {
