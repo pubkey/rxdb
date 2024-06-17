@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX RxState sometimes does writes to the storage that do not match the schema.
 
 <!-- ADD new changes here! -->
 

@@ -36,12 +36,15 @@ export const RX_STATE_COLLECTION_SCHEMA: DeepReadonly<RxJsonSchema<RxStateDocume
                         type: 'string'
                     },
                     v: {
-                        type: 'object'
+                        /**
+                         * Do not define a type for the value
+                         * because anything is allowed.
+                         */
                     }
                 },
                 required: [
-                    'key',
-                    'value'
+                    'k',
+                    'v'
                 ]
             }
         }
