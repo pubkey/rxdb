@@ -33,6 +33,7 @@
     "react-native": "0.74.2",
     "react-native-get-random-values": "1.11.0",
     "react-native-quick-base64": "2.1.2",
+    "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "stream": "0.0.2"

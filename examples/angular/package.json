@@ -63,6 +63,7 @@
     "mocha": "10.4.0",
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
+    "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "stream": "0.0.2",

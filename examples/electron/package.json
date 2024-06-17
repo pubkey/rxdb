@@ -11,7 +11,12 @@
     "test": "mocha"
   },
   "dependencies": {
+<<<<<<< Updated upstream
     "electron": "30.0.9",
+=======
+    "electron": "29.3.3",
+    "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
+>>>>>>> Stashed changes
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1"
   },
