@@ -20,7 +20,7 @@ In this article, we will dive into the various technologies available for storin
 
 ## What is Localstorage
 
-LocalStorage provides a simple way to store key-value pairs in a web browser. It's suitable for storing small amounts of data that need to persist across sessions but is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage) and the inability to store complex data types beyond strings.
+LocalStorage provides a simple API to store key-value pairs in a web browser. It's suitable for storing small amounts of data that need to persist across sessions but is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage) and the inability to store complex data types beyond strings.
 
 ## What are Cookies
 
@@ -47,11 +47,23 @@ The compiled byte code has a size of [about 938.9 kB](https://sqlite.org/downlo
 WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
 
 
+## Test Setup
 
-### Things this does not talk about
-WebSQL
-session storage.
-Web Storage API
+As mentioned above, we will focus on the performance differences of the various technologies.
+But we not only want to store a few documents, instead lets store **many** of them and run **heavy and complex queries** to find out about the limits of what can be done in a browser.
+
+TODO add github repo url with performance tests. https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm
+
+### Running many small operations
+
+One aspect of performance is the latency. The time to run a small database operation, either read or write.
+Depending on your use case, it might be relevant that many small operations run fast, like when you have a browser game and want to store the game's state.
+
+### Running single big operations
+
+### Initial page load
+How fast does the first query load when there are many documents
+stored already.
 
 
 
@@ -97,22 +109,6 @@ The big difference between a database and storing data in a plain file, is that 
 
 - OPFS with the fast `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations).
   2
-## Performance Comparison
-
-Now that we know about the basics of the various storage solutions, lets compare their performance. As mentioned above, we not only want to store a few documents, instead lets store **many** of them and run **heavy and complex queries**.
-
-TODO add github repo url with performance tests.
-
-### Running many small operations
-
-One aspect of performance is the latency. The time to run a small database operation, either read or write.
-Depending on your use case, it might be relevant that many small operations run fast, like when you have a browser game and want to store the game's state.
-
-### Running single big operations
-
-### Initial page load
-How fast does the first query load when there are many documents
-stored already.
 
 
 
@@ -129,6 +125,15 @@ stored already.
 
 - is OPFS faster then indexeddb?
 
+### Things this article does not talk about
+
+WebSQL
+session storage.
+Web Storage API
+Cross tab support
+Observability
+
+
 
 
 ## Read further
@@ -136,6 +141,9 @@ stored already.
 TODO fix links
 - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993)
 - Shared/Like my [announcement tweet](https://twitter.com/rxdbjs/status/1769507055298064818)
+- Reproduce the benchmarks at the [github repo](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm)
 
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
+
+
