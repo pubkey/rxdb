@@ -35,12 +35,10 @@ addRxPlugin(RxDBJsonDumpPlugin);
  * So we test is once with a schema validator and once without.
  */
 [true, false].forEach(useSchemaValidator => {
-    const storage = useSchemaValidator ? wrappedValidateAjvStorage({
-        storage: config.storage.getStorage()
-    }) : config.storage.getStorage();
-
-
     describeParallel('rx-state.test.ts (useSchemaValidator: ' + useSchemaValidator + ')', () => {
+        const storage = useSchemaValidator ? wrappedValidateAjvStorage({
+            storage: config.storage.getStorage()
+        }) : config.storage.getStorage();
         type TestState = {
             foo?: string;
             a?: number;
