@@ -1,4 +1,4 @@
-import { NgModule, APP_INITIALIZER } from '@angular/core';
+import { NgModule, APP_INITIALIZER, Injector } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -55,7 +55,7 @@ import {
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: () => initDatabase,
+      useFactory: (injector: Injector) => () => initDatabase(injector),
       multi: true,
       deps: [/* your dependencies */]
     },
