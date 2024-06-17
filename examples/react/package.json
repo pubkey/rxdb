@@ -1,20 +1,15 @@
 {
   "name": "rxdb-example-react",
   "version": "3.0.0",
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
+    "rxdb": "file:rxdb-local.tgz",
     "async-test-util": "2.5.0",
     "babel-polyfill": "6.26.0",
     "concurrently": "8.2.2",
     "pouchdb-server": "4.2.0",
-<<<<<<< Updated upstream
     "react": "18.3.1",
     "react-dom": "18.3.1",
-=======
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
->>>>>>> Stashed changes
-    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1"
   },
   "devDependencies": {
