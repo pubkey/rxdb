@@ -32,7 +32,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
 /**
  * The RxState sometimes did non valid writes to the storage.
- * So we test is once with a schema validatior and once without.
+ * So we test is once with a schema validator and once without.
  */
 [true, false].forEach(useSchemaValidator => {
     const storage = useSchemaValidator ? wrappedValidateAjvStorage({
