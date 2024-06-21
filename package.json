@@ -469,7 +469,7 @@
     "lokijs": "1.5.12",
     "mingo": "6.4.13",
     "mongodb": "6.7.0",
-    "nats": "2.26.0",
+    "nats": "2.27.0",
     "oblivious-set": "1.4.0",
     "ohash": "1.1.3",
     "reconnecting-websocket": "4.4.0",
