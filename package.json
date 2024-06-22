@@ -477,7 +477,11 @@
     "unload": "2.4.1",
     "util": "0.12.5",
     "ws": "8.16.0",
-    "z-schema": "6.0.1"
+    "z-schema": "6.0.1",
+    "rxdb": "15.19.0",
+    "rxdb-hooks": "^5.0.2",
+    "rxjs": "7.8.1",
+    "web-vitals": "^1.1.2"
   },
   "devDependencies": {
     "@babel/cli": "7.24.7",
