@@ -19,6 +19,7 @@ import './unit/internal-indexes.test.ts';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
+import './unit/onRemove-missing.test.js'
 import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
