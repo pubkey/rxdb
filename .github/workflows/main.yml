@@ -841,7 +841,7 @@ jobs:
           npm run test:replication-nats
 
       # bun
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - run: npm run test:bun:dexie
