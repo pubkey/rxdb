@@ -32,7 +32,7 @@
     "graphql-ws": "5.16.0",
     "local-web-server": "5.3.3",
     "normalize.css": "8.0.1",
-    "pouchdb-adapter-idb": "8.0.1",
+    "pouchdb-adapter-idb": "9.0.0",
     "rxjs": "7.8.1",
     "ws": "8.16.0"
   },
