@@ -48,7 +48,12 @@ import type {
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
-import { getQueryMatcher, normalizeMangoQuery, runQueryUpdateFunction } from './rx-query-helper.ts';
+import {
+    getQueryMatcher,
+    normalizeMangoQuery,
+    runQueryUpdateFunction
+
+} from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 import { getQueryPlan } from './query-planner.ts';
 

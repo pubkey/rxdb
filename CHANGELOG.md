@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX RxState sometimes does writes to the storage that do not match the schema.
+- FIX Query Builder does not work on queries created by `.findByIds()` [#6148](https://github.com/pubkey/rxdb/issues/6148)
 
 <!-- ADD new changes here! -->
 
