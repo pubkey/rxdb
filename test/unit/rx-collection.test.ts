@@ -2019,6 +2019,29 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(res.size, 5);
                 c.database.destroy();
             });
+            /**
+             * @link https://github.com/pubkey/rxdb/issues/6148
+             */
+            it('#6148 using chained queries on a find-by-id-query should throw a proper error message', async () => {
+                const c = await humansCollection.create();
+                const query = c.findByIds([
+                    'foo',
+                    'bar'
+                ]);
+
+                await assertThrows(
+                    () => query.where('foo'),
+                    'RxError',
+                    'QU17'
+                );
+                await assertThrows(
+                    () => query.gt(5),
+                    'RxError',
+                    'QU17'
+                );
+
+                c.database.destroy();
+            });
         });
     });
     describeParallel('.findByIds.$()', () => {
