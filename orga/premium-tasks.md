@@ -6,7 +6,7 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 ## Open Tasks (This list will be regularly updated with new Tasks)
 
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
-
+- Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115)
 
 ## Tasks already in progress (do no work on these!)
 
