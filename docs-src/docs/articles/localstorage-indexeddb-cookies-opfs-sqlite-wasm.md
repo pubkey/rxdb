@@ -10,7 +10,7 @@ However, a common belief persists:
 Is this really the case? Over recent years, JavaScript has evolved significantly. New storage APIs like the Origin Private File System (OPFS) and new features like the BroadcastChannel have pushed the boundaries of what JavaScript can achieve in terms of performance.
 
 
-In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative hacks to reach the performance limits of a browser in terms of database operations.
+In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative concepts to reach the performance limits of a browser in terms of database operations.
 
 <center>
     <a href="https://rxdb.info/">
@@ -24,8 +24,9 @@ LocalStorage provides a simple API to store key-value pairs in a web browser. It
 
 ## What are Cookies
 
-Cookies store small pieces of data that are sent with every HTTP request. They are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1).
-This means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
+Cookies store small pieces of data that are sent with every HTTP request. They are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html).
+
+This limitations means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
 
 ## What is IndexedDB
 
@@ -64,7 +65,6 @@ Depending on your use case, it might be relevant that many small operations run 
 ### Initial page load
 How fast does the first query load when there are many documents
 stored already.
-
 
 
 
@@ -147,3 +147,9 @@ TODO fix links
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
 
 
+
+
+
+## TODOs
+
+- Is indexeddb faster with storage buckets? https://developer.chrome.com/blog/maximum-idb-performance-with-storage-buckets?hl=en
