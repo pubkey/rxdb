@@ -7,10 +7,10 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115)
+- [#5589](https://github.com/pubkey/rxdb/issues/5589) Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
 
 ## Tasks already in progress (do no work on these!)
 
-- [#5589](https://github.com/pubkey/rxdb/issues/5589) Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
 - [#3935](https://github.com/pubkey/rxdb/pull/3935) Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
 
 ## Solved Tasks
