@@ -18,8 +18,11 @@ export type WebRTCReplicationCheckpoint = RxStorageDefaultCheckpoint;
 
 export type WebRTCMessage = Omit<WebsocketMessageType, 'method' | 'collection'> & {
     method: StringKeys<RxReplicationHandler<any, any>> | 'token';
+    collectionName: string
 };
-export type WebRTCResponse = Omit<WebsocketMessageResponseType, 'collection'>;
+export type WebRTCResponse = Omit<WebsocketMessageResponseType, 'collection'> & {
+    collectionName: string
+};
 export type PeerWithMessage<PeerType> = {
     peer: PeerType;
     message: WebRTCMessage;
