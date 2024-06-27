@@ -462,7 +462,7 @@ myReplicationState.active$.pipe(
 
 // observe the flag and toggle loading spinner
 await showLoadingSpinner();
-const oneDay = 1000 * 60 * 60 *24;
+const oneDay = 1000 * 60 * 60 * 24;
 await firstValueFrom(
     myCollection.getLocal$('last-in-sync').pipe(
         filter(d => d.get('time') > (Date.now() - oneDay))
