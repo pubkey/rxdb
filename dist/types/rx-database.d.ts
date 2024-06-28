@@ -29,7 +29,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly allowSlowCount?: boolean | undefined;
     readonly reactivity?: RxReactivityFactory<any> | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "15.24.0";
+    readonly rxdbVersion = "15.25.0";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
@@ -168,7 +168,7 @@ export declare function createRxDatabase<Collections = {
  * Returns the names of the removed collections.
  */
 export declare function removeRxDatabase(databaseName: string, storage: RxStorage<any, any>, password?: string): Promise<string[]>;
-export declare function isRxDatabase(obj: any): boolean;
+export declare function isRxDatabase(obj: any): obj is RxDatabaseBase<any, any, any, any>;
 export declare function dbCount(): number;
 /**
  * Returns true if the given RxDatabase was the first
