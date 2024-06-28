@@ -468,7 +468,7 @@
     "jsonschema-key-compression": "1.7.0",
     "lokijs": "1.5.12",
     "mingo": "6.4.13",
-    "mongodb": "6.7.0",
+    "mongodb": "6.8.0",
     "nats": "2.27.0",
     "oblivious-set": "1.4.0",
     "ohash": "1.1.3",
