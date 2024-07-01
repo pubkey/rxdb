@@ -3,7 +3,8 @@ import type {
     RxCollectionCreator,
     RxDatabaseCreator,
     RxErrorKey,
-    RxDocument
+    RxDocument,
+    RxDatabase
 } from '../../types/index.d.ts';
 
 import {
@@ -26,6 +27,7 @@ import { newRxError } from '../../rx-error.ts';
 import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
 import { checkWriteRows, ensurePrimaryKeyValid } from './check-document.ts';
+import { addDevModeTrackingIframe } from './dev-mode-tracking.ts';
 
 export * from './check-schema.ts';
 export * from './unallowed-properties.ts';
@@ -68,22 +70,22 @@ export const RxDBDevModePlugin: RxPlugin = {
     init: () => {
         if (showDevModeWarning) {
             console.warn(
-            [
-                '-------------- RxDB dev-mode warning -------------------------------',
-                'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html?console=dev-mode ',
-                'This is great in development mode, because it will run many checks to ensure',
-                'that you use RxDB correct. If you see this in production mode,',
-                'you did something wrong because the dev-mode plugin will decrease the performance.',
-                '',
-                '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
-                'to get access to faster storages and more professional features: https://rxdb.info/premium?console=dev-mode ',
-                '',
-                'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
-                // '',
-                // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
-                '---------------------------------------------------------------------'
-            ].join('\n')
-        );
+                [
+                    '-------------- RxDB dev-mode warning -------------------------------',
+                    'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html?console=dev-mode ',
+                    'This is great in development mode, because it will run many checks to ensure',
+                    'that you use RxDB correct. If you see this in production mode,',
+                    'you did something wrong because the dev-mode plugin will decrease the performance.',
+                    '',
+                    '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
+                    'to get access to faster storages and more professional features: https://rxdb.info/premium?console=dev-mode ',
+                    '',
+                    'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
+                    // '',
+                    // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
+                    '---------------------------------------------------------------------'
+                ].join('\n')
+            );
         }
     },
     overwritable: {
@@ -106,6 +108,11 @@ export const RxDBDevModePlugin: RxPlugin = {
         preCreateRxDatabase: {
             after: function (args: RxDatabaseCreator<any, any>) {
                 ensureDatabaseNameIsValid(args);
+            }
+        },
+        createRxDatabase: {
+            after: async function (args) {
+                addDevModeTrackingIframe(args.database);
             }
         },
         preCreateRxCollection: {
