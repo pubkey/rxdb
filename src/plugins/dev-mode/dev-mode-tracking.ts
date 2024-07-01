@@ -30,9 +30,9 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
 
     // do not show if premium flag is set.
     if (
-        !RXDB_UTILS_GLOBAL.premium ||
-        typeof RXDB_UTILS_GLOBAL.premium !== 'string' ||
-        (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) !== PREMIUM_FLAG_HASH)
+        RXDB_UTILS_GLOBAL.premium &&
+        typeof RXDB_UTILS_GLOBAL.premium === 'string' &&
+        (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) === PREMIUM_FLAG_HASH)
     ) {
         return;
     }
