@@ -87,7 +87,7 @@
     "testcafe": "3.6.1",
     "ts-mocha": "10.0.0",
     "tslint": "6.1.3",
-    "typescript": "5.5.2",
+    "typescript": "5.5.3",
     "webpack-bundle-analyzer": "4.10.2"
   }
 }
