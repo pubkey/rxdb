@@ -31,7 +31,6 @@ export default function ServiceSubmitted() {
     return (
         <Layout
             title={`Dev Mode Tracking Iframe - ${siteConfig.title}`}
-            description="RxDB Meeting Scheduler"
         >
             <main>
                 <br />
