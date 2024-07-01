@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- IMPROVE performance of `.appendToArray()`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

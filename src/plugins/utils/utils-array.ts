@@ -144,10 +144,21 @@ export function maxOfNumbers(arr: number[]): number {
  * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
  */
 export function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void {
-    const amount = add.length;
-    for (let i = 0; i < amount; ++i) {
+    /**
+     * Pre-increasing the array size has turned out
+     * to be way faster when big arrays must be handled.
+     * @link https://dev.to/uilicious/javascript-array-push-is-945x-faster-than-array-concat-1oki
+     */
+    const baseSize = ar.length;
+    const addSize = add.length;
+    if (addSize === 0) {
+        return;
+    }
+    ar.length = baseSize + add.length;
+
+    for (let i = 0; i < addSize; ++i) {
         const element = add[i];
-        ar.push(element);
+        ar[baseSize + i] = element;
     }
 }
 
