@@ -149,11 +149,11 @@ export function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void {
      * to be way faster when big arrays must be handled.
      * @link https://dev.to/uilicious/javascript-array-push-is-945x-faster-than-array-concat-1oki
      */
-    const baseSize = ar.length;
     const addSize = add.length;
     if (addSize === 0) {
         return;
     }
+    const baseSize = ar.length;
     ar.length = baseSize + add.length;
 
     for (let i = 0; i < addSize; ++i) {
