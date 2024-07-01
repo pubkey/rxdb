@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - IMPROVE performance of `.appendToArray()`
+- ADD iframe tracking to dev-mode plugin.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
