@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD iframe tracking to dev-mode plugin.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
