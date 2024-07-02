@@ -2130,3 +2130,21 @@ AFTER:
     "count": 2.95,
     "property-access": 2.4
 }
+
+
+
+
+## 1 July 2024 : Improve sharding in-memory performance
+
+Insert 200k documents
+
+BEFORE:
+59
+57
+57
+54
+
+AFTER:
+10
+8
+10
