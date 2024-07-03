@@ -119,14 +119,14 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       var writeRow = bulkInsertDocs[i];
       var doc = writeRow.document;
       var docId = doc[primaryPath];
-      putWriteRowToState(docId, internals, stateByIndex, writeRow, undefined);
+      putWriteRowToState(docId, internals, stateByIndex, doc, undefined);
     }
     var bulkUpdateDocs = categorized.bulkUpdateDocs;
     for (var _i2 = 0; _i2 < bulkUpdateDocs.length; ++_i2) {
       var _writeRow2 = bulkUpdateDocs[_i2];
       var _doc2 = _writeRow2.document;
       var _docId = _doc2[primaryPath];
-      putWriteRowToState(_docId, internals, stateByIndex, _writeRow2, documentsById.get(_docId));
+      putWriteRowToState(_docId, internals, stateByIndex, _doc2, documentsById.get(_docId));
     }
 
     /**
@@ -193,12 +193,8 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       throw new Error('index does not exist ' + indexName);
     }
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(docsWithIndex, {
-      indexString: lowerBoundString
-    }, compareDocsWithIndex);
-    var indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(docsWithIndex, {
-      indexString: upperBoundString
-    }, compareDocsWithIndex);
+    var indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(docsWithIndex, [lowerBoundString], compareDocsWithIndex);
+    var indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(docsWithIndex, [upperBoundString], compareDocsWithIndex);
     var rows = [];
     var done = false;
     while (!done) {
@@ -206,7 +202,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       if (!currentRow || indexOfLower > indexOfUpper) {
         break;
       }
-      var currentDoc = currentRow.doc;
+      var currentDoc = currentRow[1];
       if (!queryMatcher || queryMatcher(currentDoc)) {
         rows.push(currentDoc);
       }
@@ -241,16 +237,14 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, [true, 0, '']);
-    var indexOfLower = boundGT(docsWithIndex, {
-      indexString: lowerBoundString
-    }, compareDocsWithIndex);
+    var indexOfLower = boundGT(docsWithIndex, [lowerBoundString], compareDocsWithIndex);
     var done = false;
     while (!done) {
       var currentDoc = docsWithIndex[indexOfLower];
-      if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+      if (!currentDoc || currentDoc[1]._meta.lwt > maxDeletionTime) {
         done = true;
       } else {
-        removeDocFromState(this.primaryPath, this.schema, this.internals, currentDoc.doc);
+        removeDocFromState(this.primaryPath, this.schema, this.internals, currentDoc[1]);
         indexOfLower++;
       }
     }

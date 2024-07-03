@@ -71,8 +71,8 @@ export type MemoryStorageInternals<RxDocType> = {
     conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
     changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
 };
-export type DocWithIndexString<RxDocType> = {
-    id: string;
-    doc: RxDocumentData<RxDocType>;
-    indexString: string;
-};
+export type DocWithIndexString<RxDocType> = [
+    string,
+    RxDocumentData<RxDocType>,
+    string
+];

@@ -7,6 +7,7 @@ import { checkMangoQuery, checkQuery } from "./check-query.js";
 import { newRxError } from "../../rx-error.js";
 import { deepFreeze } from "../../plugins/utils/index.js";
 import { checkWriteRows, ensurePrimaryKeyValid } from "./check-document.js";
+import { addDevModeTrackingIframe } from "./dev-mode-tracking.js";
 export * from "./check-schema.js";
 export * from "./unallowed-properties.js";
 export * from "./check-query.js";
@@ -65,6 +66,11 @@ export var RxDBDevModePlugin = {
     preCreateRxDatabase: {
       after: function (args) {
         ensureDatabaseNameIsValid(args);
+      }
+    },
+    createRxDatabase: {
+      after: async function (args) {
+        addDevModeTrackingIframe(args.database);
       }
     },
     preCreateRxCollection: {

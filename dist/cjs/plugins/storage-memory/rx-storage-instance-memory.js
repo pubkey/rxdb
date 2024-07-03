@@ -125,14 +125,14 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       var writeRow = bulkInsertDocs[i];
       var doc = writeRow.document;
       var docId = doc[primaryPath];
-      (0, _memoryHelper.putWriteRowToState)(docId, internals, stateByIndex, writeRow, undefined);
+      (0, _memoryHelper.putWriteRowToState)(docId, internals, stateByIndex, doc, undefined);
     }
     var bulkUpdateDocs = categorized.bulkUpdateDocs;
     for (var _i2 = 0; _i2 < bulkUpdateDocs.length; ++_i2) {
       var _writeRow2 = bulkUpdateDocs[_i2];
       var _doc2 = _writeRow2.document;
       var _docId = _doc2[primaryPath];
-      (0, _memoryHelper.putWriteRowToState)(_docId, internals, stateByIndex, _writeRow2, documentsById.get(_docId));
+      (0, _memoryHelper.putWriteRowToState)(_docId, internals, stateByIndex, _doc2, documentsById.get(_docId));
     }
 
     /**
@@ -199,12 +199,8 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       throw new Error('index does not exist ' + indexName);
     }
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = (queryPlan.inclusiveStart ? _binarySearchBounds.boundGE : _binarySearchBounds.boundGT)(docsWithIndex, {
-      indexString: lowerBoundString
-    }, _memoryHelper.compareDocsWithIndex);
-    var indexOfUpper = (queryPlan.inclusiveEnd ? _binarySearchBounds.boundLE : _binarySearchBounds.boundLT)(docsWithIndex, {
-      indexString: upperBoundString
-    }, _memoryHelper.compareDocsWithIndex);
+    var indexOfLower = (queryPlan.inclusiveStart ? _binarySearchBounds.boundGE : _binarySearchBounds.boundGT)(docsWithIndex, [lowerBoundString], _memoryHelper.compareDocsWithIndex);
+    var indexOfUpper = (queryPlan.inclusiveEnd ? _binarySearchBounds.boundLE : _binarySearchBounds.boundLT)(docsWithIndex, [upperBoundString], _memoryHelper.compareDocsWithIndex);
     var rows = [];
     var done = false;
     while (!done) {
@@ -212,7 +208,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       if (!currentRow || indexOfLower > indexOfUpper) {
         break;
       }
-      var currentDoc = currentRow.doc;
+      var currentDoc = currentRow[1];
       if (!queryMatcher || queryMatcher(currentDoc)) {
         rows.push(currentDoc);
       }
@@ -247,16 +243,14 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, 0, '']);
-    var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
-      indexString: lowerBoundString
-    }, _memoryHelper.compareDocsWithIndex);
+    var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, [lowerBoundString], _memoryHelper.compareDocsWithIndex);
     var done = false;
     while (!done) {
       var currentDoc = docsWithIndex[indexOfLower];
-      if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+      if (!currentDoc || currentDoc[1]._meta.lwt > maxDeletionTime) {
         done = true;
       } else {
-        (0, _memoryHelper.removeDocFromState)(this.primaryPath, this.schema, this.internals, currentDoc.doc);
+        (0, _memoryHelper.removeDocFromState)(this.primaryPath, this.schema, this.internals, currentDoc[1]);
         indexOfLower++;
       }
     }

@@ -142,10 +142,20 @@ function maxOfNumbers(arr) {
  * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
  */
 function appendToArray(ar, add) {
-  var amount = add.length;
-  for (var i = 0; i < amount; ++i) {
+  /**
+   * Pre-increasing the array size has turned out
+   * to be way faster when big arrays must be handled.
+   * @link https://dev.to/uilicious/javascript-array-push-is-945x-faster-than-array-concat-1oki
+   */
+  var addSize = add.length;
+  if (addSize === 0) {
+    return;
+  }
+  var baseSize = ar.length;
+  ar.length = baseSize + add.length;
+  for (var i = 0; i < addSize; ++i) {
     var element = add[i];
-    ar.push(element);
+    ar[baseSize + i] = element;
   }
 }
 

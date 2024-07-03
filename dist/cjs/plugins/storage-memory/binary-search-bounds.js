@@ -93,10 +93,7 @@ function eq(a, y, c, l, h) {
   return -1;
 }
 function norm(a, y, c, l, h, f) {
-  if (typeof c === 'function') {
-    return f(a, y, c, l === undefined ? 0 : l | 0, h === undefined ? a.length - 1 : h | 0);
-  }
-  return f(a, y, undefined, c === undefined ? 0 : c | 0, l === undefined ? a.length - 1 : l | 0);
+  return f(a, y, c, l === undefined ? 0 : l | 0, h === undefined ? a.length - 1 : h | 0);
 }
 function boundGE(a, y, c, l, h) {
   return norm(a, y, c, l, h, ge);

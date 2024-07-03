@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- IMPROVE performance of `.appendToArray()`
-- IMPROVE performance of writes to the memory RxStorage
-- ADD iframe tracking to dev-mode plugin.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.26.0 (3 July 2024)
+
+- IMPROVE performance of `.appendToArray()`
+- IMPROVE performance of writes to the memory RxStorage
+- ADD iframe tracking to dev-mode plugin.
 
 ### 15.25.0 (28 June 2024)
 

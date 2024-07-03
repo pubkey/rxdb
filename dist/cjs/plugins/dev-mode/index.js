@@ -54,6 +54,7 @@ Object.keys(_checkQuery).forEach(function (key) {
 var _rxError = require("../../rx-error.js");
 var _index = require("../../plugins/utils/index.js");
 var _checkDocument = require("./check-document.js");
+var _devModeTracking = require("./dev-mode-tracking.js");
 var showDevModeWarning = true;
 
 /**
@@ -109,6 +110,11 @@ var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
     preCreateRxDatabase: {
       after: function (args) {
         (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);
+      }
+    },
+    createRxDatabase: {
+      after: async function (args) {
+        (0, _devModeTracking.addDevModeTrackingIframe)(args.database);
       }
     },
     preCreateRxCollection: {
