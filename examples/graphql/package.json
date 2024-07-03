@@ -48,7 +48,7 @@
     "rimraf": "5.0.7",
     "source-map-loader": "5.0.0",
     "style-loader": "4.0.0",
-    "testcafe": "3.6.1",
+    "testcafe": "3.6.2",
     "testcafe-hammerhead": "31.7.2",
     "webpack": "5.92.1",
     "webpack-cli": "5.1.4",
