@@ -35,7 +35,6 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    promiseWait,
     randomCouchString,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
@@ -205,7 +204,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 docId as any,
                 internals,
                 stateByIndex,
-                writeRow,
+                doc,
                 undefined
             );
         }
@@ -219,7 +218,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 docId as any,
                 internals,
                 stateByIndex,
-                writeRow,
+                doc,
                 documentsById.get(docId as any)
             );
         }
@@ -331,17 +330,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
+            [
+                lowerBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
         const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
             docsWithIndex,
-            {
-                indexString: upperBoundString
-            } as any,
+            [
+                upperBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
@@ -355,7 +354,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             ) {
                 break;
             }
-            const currentDoc = currentRow.doc;
+            const currentDoc = currentRow[1];
 
             if (!queryMatcher || queryMatcher(currentDoc)) {
                 rows.push(currentDoc);
@@ -412,23 +411,23 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let indexOfLower = boundGT(
             docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
+            [
+                lowerBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
         let done = false;
         while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
-            if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+            if (!currentDoc || currentDoc[1]._meta.lwt > maxDeletionTime) {
                 done = true;
             } else {
                 removeDocFromState(
                     this.primaryPath as any,
                     this.schema,
                     this.internals,
-                    currentDoc.doc
+                    currentDoc[1]
                 );
                 indexOfLower++;
             }

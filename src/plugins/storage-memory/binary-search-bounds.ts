@@ -85,10 +85,7 @@ function eq<T>(a: T[], y: T, c: Compare<T>, l?: any, h?: any): number {
 }
 
 function norm<T>(a: T[], y: T, c: Compare<T>, l: any, h: any, f: any) {
-    if (typeof c === 'function') {
-        return f(a, y, c, (l === undefined) ? 0 : l | 0, (h === undefined) ? a.length - 1 : h | 0);
-    }
-    return f(a, y, undefined, (c === undefined) ? 0 : c | 0, (l === undefined) ? a.length - 1 : l | 0);
+    return f(a, y, c, (l === undefined) ? 0 : l | 0, (h === undefined) ? a.length - 1 : h | 0);
 }
 
 
