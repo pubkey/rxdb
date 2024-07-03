@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - IMPROVE performance of `.appendToArray()`
+- IMPROVE performance of writes to the memory RxStorage
 - ADD iframe tracking to dev-mode plugin.
 <!-- ADD new changes here! -->
 

@@ -2148,3 +2148,43 @@ AFTER:
 10
 8
 10
+
+
+## 2 July 2024 : Memory Cleanup Speed
+
+BEFORE:
+"insert-documents-1200": 6.71
+"insert-documents-1200": 7.3,
+"insert-documents-1200": 7.06,
+"insert-documents-1200": 6.43,
+
+
+AFTER: (use array as item instead of object)
+"insert-documents-1200": 7.12
+insert-documents-1200": 7.18
+"insert-documents-1200": 6.45
+"insert-documents-1200": 6.33
+"insert-documents-1200": 6.44
+"insert-documents-1200": 6.28
+
+## 2 July 2024 : Improve memory mapped initialization
+
+BEFORE:
+
+
+LOG LOG: 'MEMORY BULK WRITE'
+LOG LOG: 'MEMORY BULK WRITE'
+LOG LOG: 'MEMORY BULK WRITE'
+LOG LOG: 'STEP START 10419.5'
+LOG LOG: 'STEP CREATED DB 10421.79999999702'
+LOG LOG: 'MEMORY BULK WRITE'
+LOG LOG: 'MEMORY BULK WRITE'
+LOG LOG: 'STEP CREATED COL 10435.79999999702'
+LOG LOG: 'STEP FIRST QUERY 10436.10000000149'
+LOG LOG: 'count: 40000'
+LOG LOG: 'STEP COUNT DONE 15062.19999999553'
+
+
+
+AFTER:
+

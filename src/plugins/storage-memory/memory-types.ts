@@ -90,8 +90,8 @@ export type MemoryStorageInternals<RxDocType> = {
     changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
 };
 
-export type DocWithIndexString<RxDocType> = {
-    id: string;
-    doc: RxDocumentData<RxDocType>;
-    indexString: string;
-};
+export type DocWithIndexString<RxDocType> = [
+    string, // indexString, must be first because often we only need that one.
+    RxDocumentData<RxDocType>, // document
+    string, // id
+];
