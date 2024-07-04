@@ -1,0 +1,39 @@
+<html>
+
+<head>
+    <meta
+        name="robots"
+        content="noindex"
+    />
+    <script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0"
+    ></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-62D63SY3S0');
+    </script>
+
+    <script src="/js/analytics.js"></script>
+    <script>
+        const EVENT_ID = 'dev_mode_tracking_iframe';
+        if (!localStorage.getItem(EVENT_ID)) {
+            console.log('track me');
+            localStorage.setItem(EVENT_ID, '1');
+            window.trigger(EVENT_ID, 10);
+        } else {
+            console.log('tracked already');
+        }
+    </script>
+</head>
+
+<body>
+    This is the tracking page for dev-mode. <a
+        href="https://rxdb.info/dev-mode.html#disable-the-tracking-iframe"
+        target="_blank"
+    >Read More</a>.
+</body>
+
+</html>
