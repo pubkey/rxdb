@@ -2178,3 +2178,19 @@ AFTER: (processing change-event-buffer events in bulks)
 
 "insert-documents-50000": 111.91
 "insert-documents-50000": 112.28
+
+AFTER: (DocCache processing events in bulks)
+
+"insert-documents-50000": 106.87
+"insert-documents-50000": 109.35
+
+AFTER: (lazy processing change-event-buffer tasks)
+
+"insert-documents-50000": 103.24
+"insert-documents-50000": 105.59
+
+
+AFTER: (lazy processing doc-cache tasks):
+
+"insert-documents-50000": 102.15
+"insert-documents-50000": 100.35

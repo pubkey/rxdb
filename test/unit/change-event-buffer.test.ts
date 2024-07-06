@@ -12,7 +12,7 @@ describeParallel('change-event-buffer.test.js', () => {
     describe('basic', () => {
         it('should contains some events', async () => {
             const col = await humansCollection.create(10);
-            assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
+            assert.strictEqual(col._changeEventBuffer.getBuffer().length, 10);
             col.database.destroy();
         });
         it('should delete older events when buffer get over limit', async () => {
@@ -21,12 +21,12 @@ describeParallel('change-event-buffer.test.js', () => {
             await Promise.all(
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
-            assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
+            assert.strictEqual(col._changeEventBuffer.getBuffer().length, 10);
 
             await Promise.all(
                 new Array(11).fill(0).map(() => col.insert(schemaObjects.humanData()))
             );
-            assert.strictEqual(col._changeEventBuffer.buffer.length, 10);
+            assert.strictEqual(col._changeEventBuffer.getBuffer().length, 10);
 
             col.database.remove();
         });
@@ -40,7 +40,7 @@ describeParallel('change-event-buffer.test.js', () => {
 
             const last = schemaObjects.humanData();
             await col.insert(last);
-            const lastBufferEvent = col._changeEventBuffer.buffer[col._changeEventBuffer.buffer.length - 1];
+            const lastBufferEvent = col._changeEventBuffer.getBuffer()[col._changeEventBuffer.getBuffer().length - 1];
             assert.strictEqual(last.passportId, lastBufferEvent.documentData.passportId);
 
             col.database.remove();
@@ -103,8 +103,8 @@ describeParallel('change-event-buffer.test.js', () => {
             const lastDoc = schemaObjects.humanData();
             await col.insert(lastDoc);
 
-            const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.counter);
-            assert.strictEqual(col._changeEventBuffer.buffer[gotIndex].documentData.firstName, lastDoc.firstName);
+            const gotIndex: any = col._changeEventBuffer.getArrayIndexByPointer(col._changeEventBuffer.getCounter());
+            assert.strictEqual(col._changeEventBuffer.getBuffer()[gotIndex].documentData.firstName, lastDoc.firstName);
 
             col.database.remove();
         });
@@ -170,7 +170,7 @@ describeParallel('change-event-buffer.test.js', () => {
             // remove the doc
             const doc: any = await col.findOne().exec();
             await doc.remove();
-            await AsyncTestUtil.waitUntil(() => col._changeEventBuffer.counter === 2);
+            await AsyncTestUtil.waitUntil(() => col._changeEventBuffer.getCounter() === 2);
 
             const evs: any[] = col._changeEventBuffer.getFrom(q._latestChangeEvent + 1) as any;
             assert.strictEqual(evs.length, 1);

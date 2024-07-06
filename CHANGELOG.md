@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 - IMPROVE performance of ChangeEventBuffer by processing events in bulks.
+- IMPROVE performance of DocCache by processing events in bulks.
+- IMPROVE perofrmance of ChangeEventBuffer and DocCache by lazily processing tasks.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

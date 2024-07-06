@@ -9,21 +9,35 @@ import type {
     RxChangeEvent,
     RxCollection
 } from './types/index.d.ts';
-import { appendToArray } from './plugins/utils/index.ts';
+import { appendToArray, requestIdlePromiseNoQueue } from './plugins/utils/index.ts';
 
+/**
+ * This buffer rembemers previous change events
+ * so that queries can use them on .exec()
+ * to calculate the new result set via event-reduce instead
+ * of running the query against the storage.
+ */
 export class ChangeEventBuffer<RxDocType> {
+    /**
+     * These properties are private to ensure they cannot
+     * be read without first processing the lazy tasks.
+     */
     private subs: Subscription[] = [];
-    public limit: number = 100;
-    public counter: number = 0;
+    private counter: number = 0;
     private eventCounterMap: WeakMap<
         RxChangeEvent<RxDocType>, number
     > = new WeakMap();
-
     /**
      * array with changeEvents
      * starts with oldest known event, ends with newest
-     */
-    public buffer: RxChangeEvent<RxDocType>[] = [];
+    */
+    private buffer: RxChangeEvent<RxDocType>[] = [];
+
+    public limit: number = 100;
+
+
+
+    private tasks = new Set<Function>();
 
     constructor(
         public collection: RxCollection
@@ -36,12 +50,26 @@ export class ChangeEventBuffer<RxDocType> {
                     return !first.isLocal;
                 })
             ).subscribe(eventBulk => {
-                this._handleChangeEvents(eventBulk.events);
+                this.tasks.add(() => this._handleChangeEvents(eventBulk.events));
+                if (this.tasks.size <= 1) {
+                    requestIdlePromiseNoQueue().then(() => {
+                        this.processTasks();
+                    });
+                }
             })
         );
     }
 
-    _handleChangeEvents(events: RxChangeEvent<RxDocType>[]) {
+    private processTasks() {
+        if (this.tasks.size === 0) {
+            return;
+        }
+        const tasks = Array.from(this.tasks);
+        tasks.forEach(task => task());
+        this.tasks.clear();
+    }
+
+    private _handleChangeEvents(events: RxChangeEvent<RxDocType>[]) {
         const counterBefore = this.counter;
         this.counter = this.counter + events.length;
         if (events.length > this.limit) {
@@ -58,11 +86,21 @@ export class ChangeEventBuffer<RxDocType> {
         }
     }
 
+    getCounter() {
+        this.processTasks();
+        return this.counter;
+    }
+    getBuffer() {
+        this.processTasks();
+        return this.buffer;
+    }
+
     /**
      * gets the array-index for the given pointer
      * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound
      */
     getArrayIndexByPointer(pointer: number): number | null {
+        this.processTasks();
         const oldestEvent = this.buffer[0];
         const oldestCounter = this.eventCounterMap.get(
             oldestEvent
@@ -80,6 +118,7 @@ export class ChangeEventBuffer<RxDocType> {
      * @return array with change-events. If null, pointer out of bounds
      */
     getFrom(pointer: number): RxChangeEvent<RxDocType>[] | null {
+        this.processTasks();
         const ret = [];
         let currentIndex = this.getArrayIndexByPointer(pointer);
         if (currentIndex === null) // out of bounds
@@ -97,6 +136,7 @@ export class ChangeEventBuffer<RxDocType> {
     }
 
     runFrom(pointer: number, fn: Function) {
+        this.processTasks();
         const ret = this.getFrom(pointer);
         if (ret === null) {
             throw new Error('out of bounds');
@@ -111,6 +151,7 @@ export class ChangeEventBuffer<RxDocType> {
      * this function reduces the events to the last ChangeEvent of each doc
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent<RxDocType>[]): RxChangeEvent<RxDocType>[] {
+        this.processTasks();
         return changeEvents.slice(0);
         // TODO the old implementation was wrong
         // because it did not correctly reassigned the previousData of the changeevents
@@ -123,6 +164,7 @@ export class ChangeEventBuffer<RxDocType> {
     }
 
     destroy() {
+        this.tasks.clear();
         this.subs.forEach(sub => sub.unsubscribe());
     }
 }
