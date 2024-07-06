@@ -12,7 +12,6 @@ import {
 import {
     overwritable
 } from './overwritable.ts';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { Observable } from 'rxjs';
 
 /**
