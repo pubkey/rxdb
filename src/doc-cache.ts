@@ -27,7 +27,7 @@ declare type CacheItem<RxDocType, OrmMethods> = [
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
-    WeakRef<RxDocument<RxDocType, OrmMethods>>[],
+    Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
 
     /**
      * Store the latest known document state.
@@ -84,8 +84,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const docId = docMeta.docId;
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
-                cacheItem[0][docMeta.revisionHeight] = undefined as any;
-                if (cacheItem[0].length === 0) {
+                cacheItem[0].delete(docMeta.revisionHeight);
+                if (cacheItem[0].size === 0) {
                     /**
                      * No state of the document is cached anymore,
                      * so we can clean up.
@@ -202,11 +202,11 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
             const revisionHeight = getHeightOfRevision(docData._rev);
 
             // array, indexed by revision height number
-            let byRev: WeakRef<RxDocument<RxDocType, OrmMethods>>[];
+            let byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
             let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
             let cacheItem = cacheItemByDocId.get(docId);
             if (!cacheItem) {
-                byRev = [];
+                byRev = new Map();
                 cacheItem = [
                     byRev,
                     docData
@@ -214,13 +214,13 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                 cacheItemByDocId.set(docId, cacheItem);
             } else {
                 byRev = cacheItem[0];
-                cachedRxDocumentWeakRef = byRev[revisionHeight];
+                cachedRxDocumentWeakRef = byRev.get(revisionHeight);
             }
             let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
             if (!cachedRxDocument) {
                 docData = deepFreezeWhenDevMode(docData) as any;
                 cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-                byRev[revisionHeight] = createWeakRefWithFallback(cachedRxDocument);
+                byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
                 if (registry) {
                     registryTasks.push(cachedRxDocument);
                 }
