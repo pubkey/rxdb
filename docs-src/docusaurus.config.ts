@@ -62,7 +62,6 @@ const config: Config = {
       type: 'text/javascript',
       async: true
     }
-  
     // {
     //   src: 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0',
     //   async: true,
