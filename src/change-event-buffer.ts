@@ -9,6 +9,7 @@ import type {
     RxChangeEvent,
     RxCollection
 } from './types/index.d.ts';
+import { appendToArray } from './plugins/utils/index.ts';
 
 export class ChangeEventBuffer<RxDocType> {
     private subs: Subscription[] = [];
@@ -28,18 +29,32 @@ export class ChangeEventBuffer<RxDocType> {
         public collection: RxCollection
     ) {
         this.subs.push(
-            this.collection.$.pipe(
-                filter(cE => !cE.isLocal)
-            ).subscribe((cE: any) => this._handleChangeEvent(cE))
+            this.collection.database.eventBulks$.pipe(
+                filter(changeEventBulk => changeEventBulk.collectionName === this.collection.name),
+                filter(bulk => {
+                    const first = bulk.events[0];
+                    return !first.isLocal;
+                })
+            ).subscribe(eventBulk => {
+                this._handleChangeEvents(eventBulk.events);
+            })
         );
     }
 
-    _handleChangeEvent(changeEvent: RxChangeEvent<RxDocType>) {
-        this.counter++;
-        this.buffer.push(changeEvent);
-        this.eventCounterMap.set(changeEvent, this.counter);
-        while (this.buffer.length > this.limit) {
-            this.buffer.shift();
+    _handleChangeEvents(events: RxChangeEvent<RxDocType>[]) {
+        const counterBefore = this.counter;
+        this.counter = this.counter + events.length;
+        if (events.length > this.limit) {
+            this.buffer = events.slice(events.length * -1);
+        } else {
+            appendToArray(this.buffer, events);
+            this.buffer = this.buffer.slice(this.limit * -1);
+        }
+        const counterBase = counterBefore + 1;
+        const eventCounterMap = this.eventCounterMap;
+        for (let index = 0; index < events.length; index++) {
+            const event = events[index];
+            eventCounterMap.set(event, counterBase + index);
         }
     }
 

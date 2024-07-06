@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- IMPROVE performance of ChangeEventBuffer by processing events in bulks.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

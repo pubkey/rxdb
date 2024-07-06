@@ -2167,24 +2167,14 @@ insert-documents-1200": 7.18
 "insert-documents-1200": 6.44
 "insert-documents-1200": 6.28
 
-## 2 July 2024 : Improve memory mapped initialization
+## 6 July 2024 : Insert many to memory storage
+Insert 50000 docs at once to an empty database.
 
 BEFORE:
+"insert-documents-50000": 122.65
+"insert-documents-50000": 121.41
 
+AFTER: (processing change-event-buffer events in bulks)
 
-LOG LOG: 'MEMORY BULK WRITE'
-LOG LOG: 'MEMORY BULK WRITE'
-LOG LOG: 'MEMORY BULK WRITE'
-LOG LOG: 'STEP START 10419.5'
-LOG LOG: 'STEP CREATED DB 10421.79999999702'
-LOG LOG: 'MEMORY BULK WRITE'
-LOG LOG: 'MEMORY BULK WRITE'
-LOG LOG: 'STEP CREATED COL 10435.79999999702'
-LOG LOG: 'STEP FIRST QUERY 10436.10000000149'
-LOG LOG: 'count: 40000'
-LOG LOG: 'STEP COUNT DONE 15062.19999999553'
-
-
-
-AFTER:
-
+"insert-documents-50000": 111.91
+"insert-documents-50000": 112.28
