@@ -397,7 +397,7 @@ describe('rx-query.test.ts', () => {
             const addObj = schemaObjects.humanData();
             addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
             await col.insert(addObj);
-            assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
+            assert.strictEqual(query.collection._changeEventBuffer.getCounter(), 3);
 
             await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3, 1000);
             assert.strictEqual(query._latestChangeEvent, 3);
@@ -428,7 +428,7 @@ describe('rx-query.test.ts', () => {
             addDoc.firstName = 'NotAliceFoobar';
 
             await col.insert(addDoc);
-            assert.strictEqual(q.collection._changeEventBuffer.counter, 3);
+            assert.strictEqual(q.collection._changeEventBuffer.getCounter(), 3);
 
             assert.strictEqual(q._latestChangeEvent, 2);
 
