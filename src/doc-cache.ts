@@ -201,7 +201,6 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
             const docId: string = (docData as any)[primaryPath];
             const revisionHeight = getHeightOfRevision(docData._rev);
 
-            // array, indexed by revision height number
             let byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
             let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
             let cacheItem = cacheItemByDocId.get(docId);
