@@ -414,7 +414,7 @@ export class RxCollectionBase<
                 return rxDocuments;
             },
             error: results.error
-        }
+        };
 
         if (this.hasHooks('post', 'insert')) {
             const docsMap: Map<string, RxDocumentType> = new Map();
