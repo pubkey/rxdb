@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
-     * based on their revision height.
+     * based on their revision height (rev height = array index).
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
@@ -48,12 +48,17 @@ declare type FinalizationRegistryValue = {
  */
 export declare class DocumentCache<RxDocType, OrmMethods> {
     readonly primaryPath: string;
-    readonly changes$: Observable<RxChangeEvent<RxDocType>>;
+    readonly changes$: Observable<RxChangeEvent<RxDocType>[]>;
     /**
      * A method that can create a RxDocument by the given document data.
      */
     documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>;
-    cacheItemByDocId: Map<string, CacheItem<RxDocType, OrmMethods>>;
+    readonly cacheItemByDocId: Map<string, CacheItem<RxDocType, OrmMethods>>;
+    /**
+     * Process stuff lazy to not block the CPU
+     * on critical paths.
+     */
+    readonly tasks: Set<Function>;
     /**
      * Some JavaScript runtimes like QuickJS,
      * so not have a FinalizationRegistry or WeakRef.
@@ -61,11 +66,12 @@ export declare class DocumentCache<RxDocType, OrmMethods> {
      * but at least works.
      */
     readonly registry?: FinalizationRegistry<FinalizationRegistryValue>;
-    constructor(primaryPath: string, changes$: Observable<RxChangeEvent<RxDocType>>, 
+    constructor(primaryPath: string, changes$: Observable<RxChangeEvent<RxDocType>[]>, 
     /**
      * A method that can create a RxDocument by the given document data.
      */
     documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>);
+    processTasks(): void;
     /**
      * Get the RxDocument from the cache
      * and create a new one if not exits before.

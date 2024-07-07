@@ -12,7 +12,7 @@ export declare const basePrototype: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
-    readonly deleted$$: any;
+    readonly deleted$$: unknown;
     readonly deleted: boolean | undefined;
     getLatest(this: RxDocument): RxDocument;
     /**
@@ -24,7 +24,7 @@ export declare const basePrototype: {
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any>;
-    get$$(this: RxDocument, path: string): any;
+    get$$(this: RxDocument, path: string): unknown;
     /**
      * populate the given path
      */
@@ -100,7 +100,7 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
-    readonly deleted$$: any;
+    readonly deleted$$: unknown;
     readonly deleted: boolean | undefined;
     getLatest(this: RxDocument): RxDocument;
     /**
@@ -112,7 +112,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any>;
-    get$$(this: RxDocument, path: string): any;
+    get$$(this: RxDocument, path: string): unknown;
     /**
      * populate the given path
      */
@@ -189,7 +189,7 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: any;
-        readonly deleted$$: any;
+        readonly deleted$$: unknown;
         readonly deleted: boolean | undefined;
         getLatest(this: RxDocument): RxDocument;
         /**
@@ -201,7 +201,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * returns observable of the value of the given path
          */
         get$(this: RxDocument, path: string): Observable<any>;
-        get$$(this: RxDocument, path: string): any;
+        get$$(this: RxDocument, path: string): unknown;
         /**
          * populate the given path
          */
