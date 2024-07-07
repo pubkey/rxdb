@@ -413,7 +413,10 @@ describe('typings.test.ts', function () {
             lastName: string;
             passportId: string;
         };
-        it('should know the type of the custom reactivity object', () => {
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/6189
+         */
+        it('#6189 should know the type of the custom reactivity object', () => {
             type DbCollections = {
                 smth: RxCollection<DocType, unknown, unknown, unknown, MyCustomReactivity<unknown>>;
             };
