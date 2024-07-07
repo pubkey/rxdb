@@ -181,7 +181,7 @@ export class RxQueryBase<
             this.$,
             undefined,
             this.collection.database
-        );
+        ) as any;
     }
 
     // stores the changeEvent-number of the last handled change-event
