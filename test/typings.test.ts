@@ -413,12 +413,12 @@ describe('typings.test.ts', function () {
             lastName: string;
             passportId: string;
         };
-        it('should know the type of the custom reactivity object', async () => {
+        it('should know the type of the custom reactivity object', () => {
             type DbCollections = {
                 smth: RxCollection<DocType, unknown, unknown, unknown, MyCustomReactivity<unknown>>;
-            }
+            };
             type Db = RxDatabase<DbCollections, unknown, unknown, MyCustomReactivity<unknown>>;
-            let db: Db = {} as any;
+            const db: Db = {} as any;
             const data: MyCustomReactivity<any> = db.smth.find().$$;
 
             // @ts-expect-error should be invalid because MyCustomReactivity is not a number
