@@ -25,7 +25,6 @@ import {
     createBlob
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
-import { Observable } from 'rxjs';
 
 type DefaultDocType = {
     passportId: string;
@@ -404,6 +403,26 @@ describe('typings.test.ts', function () {
                 };
                 return newData;
             });
+        });
+    });
+    describe('reactivity', () => {
+        type MyCustomReactivity<T> = Set<T>;
+        type DocType = {
+            age: number;
+            firstName: string;
+            lastName: string;
+            passportId: string;
+        };
+        it('should know the type of the custom reactivity object', async () => {
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, MyCustomReactivity<unknown>>;
+            }
+            type Db = RxDatabase<DbCollections, unknown, unknown, MyCustomReactivity<unknown>>;
+            let db: Db = {} as any;
+            const data: MyCustomReactivity<any> = db.smth.find().$$;
+
+            // @ts-expect-error should be invalid because MyCustomReactivity is not a number
+            const dataWrong: number = db.smth.find().$$;
         });
     });
 });

@@ -197,7 +197,7 @@ export class RxStateBase<T, Reactivity = unknown> {
             obs,
             this.get(path),
             this.collection.database
-        );
+        ) as any;
     }
 
     /**

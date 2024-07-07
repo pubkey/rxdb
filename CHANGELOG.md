@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX Wrong Reactivity generics passed by RxCollection extending RxCollectionBase [#6188](https://github.com/pubkey/rxdb/issues/6188)
 - IMPROVE performance of ChangeEventBuffer by processing events in bulks.
 - IMPROVE performance of DocCache by processing events in bulks.
 - IMPROVE performance of ChangeEventBuffer and DocCache by lazily processing tasks.
