@@ -399,8 +399,22 @@ export class RxCollectionBase<
             'rx-collection-bulk-insert'
         );
 
-        // create documents
-        const rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(this._docCache, results.success);
+
+        /**
+         * Often the user does not need to access the RxDocuments of the bulkInsert() call.
+         * So we transform the data to RxDocuments only if needed to use less CPU performance.
+         */
+        let rxDocuments: RxDocument<RxDocumentType, OrmMethods>[];
+        const collection = this;
+        const ret = {
+            get success() {
+                if (!rxDocuments) {
+                    rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(collection._docCache, results.success);
+                }
+                return rxDocuments;
+            },
+            error: results.error
+        }
 
         if (this.hasHooks('post', 'insert')) {
             const docsMap: Map<string, RxDocumentType> = new Map();
@@ -409,9 +423,10 @@ export class RxCollectionBase<
                 docsMap.set((doc as any)[primaryPath] as any, doc);
             });
             await Promise.all(
-                rxDocuments.map(doc => {
+                ret.success.map(doc => {
                     return this._runHooks(
-                        'post', 'insert',
+                        'post',
+                        'insert',
                         docsMap.get(doc.primary),
                         doc
                     );
@@ -419,10 +434,7 @@ export class RxCollectionBase<
             );
         }
 
-        return {
-            success: rxDocuments,
-            error: results.error
-        };
+        return ret;
     }
 
     async bulkRemove(
