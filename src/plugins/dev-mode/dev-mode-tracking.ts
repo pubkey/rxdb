@@ -3,6 +3,7 @@ import type { RxDatabase } from '../../types';
 import {
     PREMIUM_FLAG_HASH,
     RXDB_UTILS_GLOBAL,
+    RXDB_VERSION,
     defaultHashSha256
 } from '../utils/index.ts';
 
@@ -48,7 +49,7 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
 
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
-    iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html'
+    iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + RXDB_VERSION;
     document.body.appendChild(iframe);
 }
 

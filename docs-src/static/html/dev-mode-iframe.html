@@ -19,10 +19,13 @@
     <script src="/js/analytics.js"></script>
     <script>
         const EVENT_ID = 'dev_mode_tracking_iframe';
+        const searchParams = new URLSearchParams(window.location.search);
+        const version = searchParams.get('version');
         if (!localStorage.getItem(EVENT_ID)) {
             console.log('track me');
             localStorage.setItem(EVENT_ID, '1');
             window.trigger(EVENT_ID, 10);
+            window.trigger(EVENT_ID + '_' + version, 10);
         } else {
             console.log('tracked already');
         }
