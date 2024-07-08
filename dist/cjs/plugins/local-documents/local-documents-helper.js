@@ -27,7 +27,18 @@ function createLocalDocStateByParent(parent) {
   var statePromise = (async () => {
     var storageInstance = await createLocalDocumentStorageInstance(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance);
     storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(database, storageInstance, RX_LOCAL_DOCUMENT_SCHEMA);
-    var docCache = new _docCache.DocumentCache('id', parent.$.pipe((0, _rxjs.filter)(cE => cE.isLocal)), docData => (0, _rxLocalDocument.createRxLocalDocument)(docData, parent));
+    var docCache = new _docCache.DocumentCache('id', database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => {
+      var ret = false;
+      if (
+      // parent is database
+      collectionName === '' && !changeEventBulk.collectionName ||
+      // parent is collection
+
+      collectionName !== '' && changeEventBulk.collectionName === collectionName) {
+        ret = true;
+      }
+      return ret && changeEventBulk.events[0].isLocal;
+    }), (0, _rxjs.map)(b => b.events)), docData => (0, _rxLocalDocument.createRxLocalDocument)(docData, parent));
     var incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
 
     /**

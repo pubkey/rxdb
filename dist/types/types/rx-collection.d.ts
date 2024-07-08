@@ -80,7 +80,7 @@ export type RxCollection<
     InstanceCreationOptions = {},
     Reactivity = unknown
 > = StaticMethods &
-    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods, Reactivity> &
+    RxCollectionBase<InstanceCreationOptions, RxDocumentType, OrmMethods, StaticMethods, Reactivity> &
     RxCollectionGenerated<RxDocumentType, OrmMethods, Reactivity>;
 
 export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Reactivity = unknown> extends RxLocalDocumentMutation<RxCollection<RxDocumentType, OrmMethods, any, any, Reactivity>> {

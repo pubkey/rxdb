@@ -33,7 +33,7 @@ async function addDevModeTrackingIframe(db) {
   iframeShown = true;
   var iframe = document.createElement('iframe');
   iframe.style.display = 'none';
-  iframe.src = 'https://rxdb.info/dev-mode-iframe';
+  iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + _index.RXDB_VERSION;
   document.body.appendChild(iframe);
 }
 function isLocalHost() {

@@ -401,7 +401,7 @@ function createRxQuery(op, queryObj, collection, other) {
  * @return false if not which means it should re-execute
  */
 function _isResultsInSync(rxQuery) {
-  var currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+  var currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
   if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
     return true;
   } else {
@@ -456,7 +456,7 @@ function __ensureEqual(rxQuery) {
       // changeEventBuffer is of bounds -> we must re-execute over the database
       mustReExec = true;
     } else {
-      rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+      rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
       if (rxQuery.op === 'count') {
         // 'count' query
@@ -499,7 +499,7 @@ function __ensureEqual(rxQuery) {
        * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
        * has been run, not the one from before.
        */
-      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
+      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.getCounter();
 
       // A count query needs a different has-changed check.
       if (typeof newResultData === 'number') {

@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- IMPROVE performance of ChangeEventBuffer by processing events in bulks.
-- IMPROVE performance of DocCache by processing events in bulks.
-- IMPROVE performance of ChangeEventBuffer and DocCache by lazily processing tasks.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.27.0 (7 July 2024)
+
+- FIX Wrong Reactivity generics passed by RxCollection extending RxCollectionBase [#6188](https://github.com/pubkey/rxdb/issues/6188)
+- IMPROVE performance of ChangeEventBuffer by processing events in bulks.
+- IMPROVE performance of DocCache by processing events in bulks.
+- IMPROVE performance of ChangeEventBuffer and DocCache by lazily processing tasks.
 
 ### 15.26.0 (3 July 2024)
 

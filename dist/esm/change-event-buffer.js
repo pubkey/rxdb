@@ -3,29 +3,77 @@
  */
 
 import { filter } from 'rxjs/operators';
+import { appendToArray, requestIdlePromiseNoQueue } from "./plugins/utils/index.js";
+
+/**
+ * This buffer rembemers previous change events
+ * so that queries can use them on .exec()
+ * to calculate the new result set via event-reduce instead
+ * of running the query against the storage.
+ */
 export var ChangeEventBuffer = /*#__PURE__*/function () {
+  /**
+   * These properties are private to ensure they cannot
+   * be read without first processing the lazy tasks.
+   */
+
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest
-   */
+  */
 
   function ChangeEventBuffer(collection) {
     this.subs = [];
-    this.limit = 100;
     this.counter = 0;
     this.eventCounterMap = new WeakMap();
     this.buffer = [];
+    this.limit = 100;
+    this.tasks = new Set();
     this.collection = collection;
-    this.subs.push(this.collection.$.pipe(filter(cE => !cE.isLocal)).subscribe(cE => this._handleChangeEvent(cE)));
+    this.subs.push(this.collection.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.collection.name), filter(bulk => {
+      var first = bulk.events[0];
+      return !first.isLocal;
+    })).subscribe(eventBulk => {
+      this.tasks.add(() => this._handleChangeEvents(eventBulk.events));
+      if (this.tasks.size <= 1) {
+        requestIdlePromiseNoQueue().then(() => {
+          this.processTasks();
+        });
+      }
+    }));
   }
   var _proto = ChangeEventBuffer.prototype;
-  _proto._handleChangeEvent = function _handleChangeEvent(changeEvent) {
-    this.counter++;
-    this.buffer.push(changeEvent);
-    this.eventCounterMap.set(changeEvent, this.counter);
-    while (this.buffer.length > this.limit) {
-      this.buffer.shift();
+  _proto.processTasks = function processTasks() {
+    if (this.tasks.size === 0) {
+      return;
     }
+    var tasks = Array.from(this.tasks);
+    tasks.forEach(task => task());
+    this.tasks.clear();
+  };
+  _proto._handleChangeEvents = function _handleChangeEvents(events) {
+    var counterBefore = this.counter;
+    this.counter = this.counter + events.length;
+    if (events.length > this.limit) {
+      this.buffer = events.slice(events.length * -1);
+    } else {
+      appendToArray(this.buffer, events);
+      this.buffer = this.buffer.slice(this.limit * -1);
+    }
+    var counterBase = counterBefore + 1;
+    var eventCounterMap = this.eventCounterMap;
+    for (var index = 0; index < events.length; index++) {
+      var event = events[index];
+      eventCounterMap.set(event, counterBase + index);
+    }
+  };
+  _proto.getCounter = function getCounter() {
+    this.processTasks();
+    return this.counter;
+  };
+  _proto.getBuffer = function getBuffer() {
+    this.processTasks();
+    return this.buffer;
   }
 
   /**
@@ -33,6 +81,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
    * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound
    */;
   _proto.getArrayIndexByPointer = function getArrayIndexByPointer(pointer) {
+    this.processTasks();
     var oldestEvent = this.buffer[0];
     var oldestCounter = this.eventCounterMap.get(oldestEvent);
     if (pointer < oldestCounter) return null; // out of bounds
@@ -46,6 +95,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
    * @return array with change-events. If null, pointer out of bounds
    */;
   _proto.getFrom = function getFrom(pointer) {
+    this.processTasks();
     var ret = [];
     var currentIndex = this.getArrayIndexByPointer(pointer);
     if (currentIndex === null)
@@ -62,6 +112,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
     }
   };
   _proto.runFrom = function runFrom(pointer, fn) {
+    this.processTasks();
     var ret = this.getFrom(pointer);
     if (ret === null) {
       throw new Error('out of bounds');
@@ -76,6 +127,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
    * this function reduces the events to the last ChangeEvent of each doc
    */;
   _proto.reduceByLastOfDoc = function reduceByLastOfDoc(changeEvents) {
+    this.processTasks();
     return changeEvents.slice(0);
     // TODO the old implementation was wrong
     // because it did not correctly reassigned the previousData of the changeevents
@@ -87,6 +139,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
     return Object.values(docEventMap);
   };
   _proto.destroy = function destroy() {
+    this.tasks.clear();
     this.subs.forEach(sub => sub.unsubscribe());
   };
   return ChangeEventBuffer;

@@ -21,7 +21,9 @@ var _rxError = require("./rx-error.js");
 function fillObjectDataBeforeInsert(schema, data) {
   data = (0, _index.flatClone)(data);
   data = (0, _rxSchemaHelper.fillObjectWithDefaults)(schema, data);
-  data = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, data);
+  if (typeof schema.jsonSchema.primaryKey !== 'string') {
+    data = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, data);
+  }
   data._meta = (0, _index.getDefaultRxDocumentMeta)();
   if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
     data._deleted = false;

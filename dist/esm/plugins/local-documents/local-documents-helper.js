@@ -1,4 +1,4 @@
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { DocumentCache } from "../../doc-cache.js";
 import { IncrementalWriteQueue } from "../../incremental-write.js";
 import { newRxError } from "../../rx-error.js";
@@ -15,7 +15,18 @@ export function createLocalDocStateByParent(parent) {
   var statePromise = (async () => {
     var storageInstance = await createLocalDocumentStorageInstance(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance);
     storageInstance = getWrappedStorageInstance(database, storageInstance, RX_LOCAL_DOCUMENT_SCHEMA);
-    var docCache = new DocumentCache('id', parent.$.pipe(filter(cE => cE.isLocal)), docData => createRxLocalDocument(docData, parent));
+    var docCache = new DocumentCache('id', database.eventBulks$.pipe(filter(changeEventBulk => {
+      var ret = false;
+      if (
+      // parent is database
+      collectionName === '' && !changeEventBulk.collectionName ||
+      // parent is collection
+
+      collectionName !== '' && changeEventBulk.collectionName === collectionName) {
+        ret = true;
+      }
+      return ret && changeEventBulk.events[0].isLocal;
+    }), map(b => b.events)), docData => createRxLocalDocument(docData, parent));
     var incrementalWriteQueue = new IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
 
     /**

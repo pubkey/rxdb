@@ -13,7 +13,9 @@ import { newRxError } from "./rx-error.js";
 export function fillObjectDataBeforeInsert(schema, data) {
   data = flatClone(data);
   data = fillObjectWithDefaults(schema, data);
-  data = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, data);
+  if (typeof schema.jsonSchema.primaryKey !== 'string') {
+    data = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, data);
+  }
   data._meta = getDefaultRxDocumentMeta();
   if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
     data._deleted = false;
