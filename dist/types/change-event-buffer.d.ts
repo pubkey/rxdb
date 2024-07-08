@@ -1,17 +1,31 @@
 import type { RxChangeEvent, RxCollection } from './types/index.d.ts';
+/**
+ * This buffer rembemers previous change events
+ * so that queries can use them on .exec()
+ * to calculate the new result set via event-reduce instead
+ * of running the query against the storage.
+ */
 export declare class ChangeEventBuffer<RxDocType> {
     collection: RxCollection;
+    /**
+     * These properties are private to ensure they cannot
+     * be read without first processing the lazy tasks.
+     */
     private subs;
-    limit: number;
-    counter: number;
+    private counter;
     private eventCounterMap;
     /**
      * array with changeEvents
      * starts with oldest known event, ends with newest
-     */
-    buffer: RxChangeEvent<RxDocType>[];
+    */
+    private buffer;
+    limit: number;
+    private tasks;
     constructor(collection: RxCollection);
-    _handleChangeEvent(changeEvent: RxChangeEvent<RxDocType>): void;
+    private processTasks;
+    private _handleChangeEvents;
+    getCounter(): number;
+    getBuffer(): RxChangeEvent<RxDocType>[];
     /**
      * gets the array-index for the given pointer
      * @return arrayIndex which can be used to iterate from there. If null, pointer is out of lower bound

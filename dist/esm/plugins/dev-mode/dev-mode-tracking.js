@@ -1,5 +1,5 @@
 import { isRxDatabaseFirstTimeInstantiated } from "../../rx-database.js";
-import { PREMIUM_FLAG_HASH, RXDB_UTILS_GLOBAL, defaultHashSha256 } from "../utils/index.js";
+import { PREMIUM_FLAG_HASH, RXDB_UTILS_GLOBAL, RXDB_VERSION, defaultHashSha256 } from "../utils/index.js";
 var iframeShown = false;
 
 /**
@@ -27,7 +27,7 @@ export async function addDevModeTrackingIframe(db) {
   iframeShown = true;
   var iframe = document.createElement('iframe');
   iframe.style.display = 'none';
-  iframe.src = 'https://rxdb.info/dev-mode-iframe';
+  iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + RXDB_VERSION;
   document.body.appendChild(iframe);
 }
 function isLocalHost() {

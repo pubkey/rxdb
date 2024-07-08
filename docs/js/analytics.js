@@ -36,8 +36,6 @@ window.trigger = trigger;
 
 console.log('load analytics code');
 
-
-
 setTimeout(function () {
     trigger('spend_20_seconds_on_page', 0.01);
 }, 20 * 1000);
@@ -110,9 +108,6 @@ window.pipedriveLeadboosterConfig = {
         };
     }
 })();
-var my_awesome_script = document.createElement('script');
-my_awesome_script.setAttribute('src', 'https://leadbooster-chat.pipedrive.com/assets/loader.js');
-document.head.appendChild(my_awesome_script);
 // /pipedrive chat
 
 

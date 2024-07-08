@@ -61,7 +61,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this.checkpoint$ = collectionEventBulks$.pipe(map(changeEventBulk => changeEventBulk.checkpoint));
     this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
     var documentConstructor;
-    this._docCache = new DocumentCache(this.schema.primaryPath, this.$.pipe(filter(cE => !cE.isLocal)), docData => {
+    this._docCache = new DocumentCache(this.schema.primaryPath, this.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.name && !changeEventBulk.events[0].isLocal), map(b => b.events)), docData => {
       if (!documentConstructor) {
         documentConstructor = getRxDocumentConstructor(this.asRxCollection);
       }
@@ -194,10 +194,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         });
       }));
     } else {
-      insertRows = [];
+      insertRows = new Array(docsData.length);
+      var _schema = this.schema;
       for (var index = 0; index < docsData.length; index++) {
         var docData = docsData[index];
-        var useDocData = fillObjectDataBeforeInsert(this.schema, docData);
+        var useDocData = fillObjectDataBeforeInsert(_schema, docData);
         insertRows[index] = {
           document: useDocData
         };
@@ -205,22 +206,32 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     }
     var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
 
-    // create documents
-    var rxDocuments = mapDocumentsDataToCacheDocs(this._docCache, results.success);
+    /**
+     * Often the user does not need to access the RxDocuments of the bulkInsert() call.
+     * So we transform the data to RxDocuments only if needed to use less CPU performance.
+     */
+    var rxDocuments;
+    var collection = this;
+    var ret = {
+      get success() {
+        if (!rxDocuments) {
+          rxDocuments = mapDocumentsDataToCacheDocs(collection._docCache, results.success);
+        }
+        return rxDocuments;
+      },
+      error: results.error
+    };
     if (this.hasHooks('post', 'insert')) {
       var docsMap = new Map();
       insertRows.forEach(row => {
         var doc = row.document;
         docsMap.set(doc[primaryPath], doc);
       });
-      await Promise.all(rxDocuments.map(doc => {
+      await Promise.all(ret.success.map(doc => {
         return this._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
       }));
     }
-    return {
-      success: rxDocuments,
-      error: results.error
-    };
+    return ret;
   };
   _proto.bulkRemove = async function bulkRemove(ids) {
     ensureRxCollectionIsNotDestroyed(this);
