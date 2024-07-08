@@ -2,7 +2,6 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
