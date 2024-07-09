@@ -24,7 +24,6 @@ import {
     createBlob,
     defaultHashSha256,
     RxJsonSchema,
-    clone,
     BulkWriteRow,
     getWrittenDocumentsFromBulkWriteResponse
 } from '../../plugins/core/index.mjs';
