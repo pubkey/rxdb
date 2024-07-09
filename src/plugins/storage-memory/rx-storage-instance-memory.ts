@@ -121,27 +121,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             context
         );
         const error = categorized.errors;
-        let success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
         /**
          * @performance
          * We have to return a Promise but we do not want to wait
          * one tick, so we directly create the promise
          * which makes it likely to be already resolved later.
          */
-        const awaitMe = Promise.resolve({ success, error });
-
-        const bulkInsertDocs = categorized.bulkInsertDocs;
-        for (let i = 0; i < bulkInsertDocs.length; ++i) {
-            const writeRow = bulkInsertDocs[i];
-            const doc = writeRow.document;
-            success[i] = doc;
-        }
-        const bulkUpdateDocs = categorized.bulkUpdateDocs;
-        for (let i = 0; i < bulkUpdateDocs.length; ++i) {
-            const writeRow = bulkUpdateDocs[i];
-            const doc = writeRow.document;
-            success.push(doc);
-        }
+        const awaitMe = Promise.resolve({ error });
 
         this.categorizedByWriteInput.set(documentWrites, categorized);
         this.internals.ensurePersistenceTask = categorized;
