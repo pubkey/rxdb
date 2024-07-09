@@ -903,7 +903,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         });
                         docData._rev = createRevision(randomCouchString(10), docData);
                         docData._meta.lwt = now();
-                        const writeResult = await instance.bulkWrite([{
+                        await instance.bulkWrite([{
                             document: docData
                         }], testContext);
 

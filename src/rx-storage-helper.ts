@@ -41,7 +41,6 @@ import {
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    getFromMapOrCreate,
     lastOfArray,
     now,
     promiseWait,

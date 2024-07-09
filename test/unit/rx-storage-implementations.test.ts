@@ -682,7 +682,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 };
-                const writeResponse = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         document: insertData
                     }],
@@ -705,7 +705,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 };
-                const updateResponse = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         previous: insertDataAfterWrite,
                         document: updateDoc
@@ -1529,7 +1529,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 };
 
-                const insertResult = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         document: writeData
                     }],
@@ -1861,7 +1861,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 await ensureCountIs(1);
 
                 const writeData = getWriteData();
-                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await storageInstance.bulkWrite([{ document: writeData }], testContext);
                 await ensureCountIs(2);
 
 
@@ -1945,7 +1945,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 };
-                const insertResult = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         document: doc1
                     }],
@@ -2127,7 +2127,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 };
-                const insertResult = await storageInstance.bulkWrite([
+                await storageInstance.bulkWrite([
                     {
                         document: doc1
                     }
@@ -2457,7 +2457,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 };
 
                 // insert
-                const firstWriteResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
                 }], testContext);
@@ -2471,7 +2471,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 });
-                const updateResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     previous,
                     document: doc2
                 }], testContext);
@@ -3049,7 +3049,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     },
                     _deleted: false
                 };
-                const insertResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     document: doc1
                 }], testContext);
                 const previous = doc1;
@@ -3135,7 +3135,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     },
                     _deleted: false
                 };
-                const insertResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     document: doc1
                 }], testContext);
                 const previous = doc1;
