@@ -887,8 +887,6 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 }
 
 
-const detectDuplicateUse = new WeakSet<BulkWriteRow<any>[]>();
-
 export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
     primaryPath: string,
     writeRows: BulkWriteRow<RxDocType>[],
@@ -898,13 +896,6 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
     if (fromMap) {
         return fromMap;
     }
-
-
-    // TODO remove this check
-    if (detectDuplicateUse.has(writeRows)) {
-        throw new Error('duplicate use!!!!');
-    }
-    detectDuplicateUse.add(writeRows);
 
     const ret: RxDocumentData<RxDocType>[] = new Array(writeRows.length - response.error.length);
     if (response.error.length > 0) {
