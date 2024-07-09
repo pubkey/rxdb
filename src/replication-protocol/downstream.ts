@@ -4,7 +4,7 @@ import {
     mergeMap
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
-import { stackCheckpoints } from '../rx-storage-helper.ts';
+import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxStorageInstanceReplicationState,
     BulkWriteRow,
@@ -463,7 +463,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         writeRowsToFork,
                         await state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
-                        forkWriteResult.success.forEach(doc => {
+                        const success = getWrittenDocumentsFromBulkWriteResponse(
+                            state.primaryPath,
+                            writeRowsToFork,
+                            forkWriteResult
+                        );
+                        success.forEach(doc => {
                             const docId = (doc as any)[primaryPath];
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);

@@ -1,6 +1,7 @@
 import { firstValueFrom, filter } from 'rxjs';
 import {
     getChangedDocumentsSince,
+    getWrittenDocumentsFromBulkWriteResponse,
     stackCheckpoints
 } from '../rx-storage-helper.ts';
 import type {
@@ -451,7 +452,12 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                      * that will then resolved the conflict again.
                      */
                     const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
-                    forkWriteResult.success
+                    const success = getWrittenDocumentsFromBulkWriteResponse(
+                        state.primaryPath,
+                        conflictWriteFork,
+                        forkWriteResult
+                    );
+                    success
                         .forEach(docData => {
                             const docId = (docData as any)[state.primaryPath];
                             useMetaWrites.push(

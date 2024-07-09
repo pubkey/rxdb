@@ -503,7 +503,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 document: docData
             }], testContext);
             assert.deepStrictEqual(writeResult.error, []);
-            let previous = writeResult.success[0];
+            let previous = docData;
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
@@ -524,7 +524,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 document: updateData
             }], testContext);
             assert.deepStrictEqual(updateResult.error, []);
-            previous = updateResult.success[0];
+            previous = updateData;
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
@@ -903,17 +903,17 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         });
                         docData._rev = createRevision(randomCouchString(10), docData);
                         docData._meta.lwt = now();
-                        const writeResult = await instance.bulkWrite([{
+                        await instance.bulkWrite([{
                             document: docData
                         }], testContext);
 
                         // update
-                        const newDocData = clone(writeResult.success[0]);
+                        const newDocData = clone(docData);
                         newDocData.age = newDocData.age + 1;
                         newDocData._rev = createRevision(randomCouchString(10), docData);
                         newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
-                            previous: writeResult.success[0],
+                            previous: docData,
                             document: newDocData
                         }], testContext);
                         assert.deepStrictEqual(updateResult.error, []);
@@ -1013,7 +1013,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         document: newDocState
                     };
                     const writeResult = await forkInstance.bulkWrite([writeRow], testContext);
-                    if (Object.keys(writeResult.success).length > 0) {
+                    if (writeResult.error.length === 0) {
                         done = true;
                     }
                 }
@@ -1127,7 +1127,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     previous: currentDocState,
                     document: newDocState
                 }], testContext);
-                if (Object.keys(writeResult.success).length > 0) {
+                if (writeResult.error.length === 0) {
                     done = true;
                 } else {
                     // console.log('-- one write conflict age:' + newDocState.age + ' (' + instance.collectionName + ')');

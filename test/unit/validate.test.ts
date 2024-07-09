@@ -77,8 +77,8 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.success, []);
             const errors = result.error;
+            assert.ok(errors[0]);
             errors.forEach(err => {
                 assert.strictEqual(err.status, 422);
                 if (errorMustContain) {

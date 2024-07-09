@@ -6,7 +6,7 @@ import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
 } from './rx-schema-helper.ts';
-import { getSingleDocument, writeSingle } from './rx-storage-helper.ts';
+import { getSingleDocument, getWrittenDocumentsFromBulkWriteResponse, writeSingle } from './rx-storage-helper.ts';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
@@ -185,12 +185,17 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         _attachments: {}
     };
 
+    const writeRows = [{ document: docData }];
     const writeResult = await rxDatabase.internalStore.bulkWrite(
-        [{ document: docData }],
+        writeRows,
         'internal-add-storage-token'
     );
-    if (writeResult.success[0]) {
-        return writeResult.success[0];
+    if (!writeResult.error[0]) {
+        return getWrittenDocumentsFromBulkWriteResponse(
+            'id',
+            writeRows,
+            writeResult
+        )[0];
     }
 
     /**
