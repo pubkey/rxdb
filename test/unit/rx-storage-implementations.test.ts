@@ -995,7 +995,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             // Some storages had problems storing non-utf-8 chars like "é"
             it('write and read with umlauts', async () => {
-
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1055,6 +1054,73 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
                 assert.ok(getDocFromDb2[0]);
 
+                storageInstance.close();
+            });
+            it('the plain storage should throw when overwriting a deleted doc with an insert without passing the previous', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                // insert
+                const docData: RxDocumentData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'value',
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {}
+                };
+                const insertResponse = await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(insertResponse.error, []);
+
+                // delete
+                const deletedDoc = Object.assign({}, clone(docData), {
+                    _rev: EXAMPLE_REVISION_2,
+                    _deleted: true,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                const deleteResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: deletedDoc
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(deleteResponse.error, []);
+
+                // insert deleted
+                const insert2Doc = Object.assign({}, clone(docData), {
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                const insert2WriteRows = [{
+                    document: insert2Doc
+                }];
+                const insert2Response = await storageInstance.bulkWrite(
+                    insert2WriteRows,
+                    testContext
+                );
+                const error = insert2Response.error[0];
+                assert.ok(error);
+                assert.strictEqual(error.status, 409);
                 storageInstance.close();
             });
         });

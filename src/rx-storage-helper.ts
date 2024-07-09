@@ -616,6 +616,11 @@ export function getWrappedStorageInstance<
                     const useWriteResult: typeof writeResult = {
                         error: []
                     };
+
+                    /**
+                     * TODO do we really have to build up the successArray
+                     * here directly? Maybe we only need it when it is really accessed.
+                     */
                     const successArray = getWrittenDocumentsFromBulkWriteResponse(
                         primaryPath,
                         toStorageWriteRows,
@@ -635,6 +640,8 @@ export function getWrappedStorageInstance<
                                 ) {
                                     return true;
                                 }
+
+                                // add the "normal" errors to the parent error array.
                                 useWriteResult.error.push(error);
                                 return false;
                             }) as any;
