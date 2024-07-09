@@ -159,7 +159,7 @@ export type RxAttachmentWriteData = RxAttachmentData & {
  * 
  * We do not longer return the written documents. We only return the errors.
  * This is because we construct the written docs array from the input+errors anyway
- * and transfering large amounts of data has bad performance when the storage
+ * and transferring large amounts of data has bad performance when the storage
  * is running in a different realm like a WebWorker or remote.
  */
 export type RxStorageBulkWriteResponse<RxDocType> = {
