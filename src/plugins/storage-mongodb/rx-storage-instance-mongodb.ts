@@ -186,7 +186,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             }
             const primaryPath = this.primaryPath;
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: [],
                 error: []
             };
 
@@ -259,7 +258,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             if (event) {
                                 eventBulk.events.push(event);
                             }
-                            ret.success.push(writeRow.document);
                         }
                     })
                 ),
@@ -296,7 +294,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                         } else {
                             const event = getFromMapOrThrow(changeByDocId, docId);
                             eventBulk.events.push(event);
-                            ret.success.push(writeRow.document);
                         }
 
                     })

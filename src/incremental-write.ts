@@ -22,6 +22,7 @@ import {
     getHeightOfRevision,
     stripMetaDataFromDocument
 } from './plugins/utils/index.ts';
+import { getWrittenDocumentsFromBulkWriteResponse } from './rx-storage-helper.ts';
 
 
 
@@ -136,11 +137,11 @@ export class IncrementalWriteQueue<RxDocType> {
         );
         const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
             await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
-            { error: [], success: [] };
+            { error: [] };
 
         // process success
         await Promise.all(
-            writeResult.success.map(result => {
+            getWrittenDocumentsFromBulkWriteResponse(this.primaryPath, writeRows, writeResult).map(result => {
                 const docId = result[this.primaryPath] as string;
                 this.postWrite(result);
                 const items = getFromMapOrThrow(itemsById, docId);

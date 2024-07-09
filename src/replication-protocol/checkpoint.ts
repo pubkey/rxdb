@@ -1,5 +1,5 @@
 import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper.ts';
-import { stackCheckpoints } from '../rx-storage-helper.ts';
+import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxDocumentData,
     RxStorageInstanceReplicationInput,
@@ -111,14 +111,18 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                     return;
                 }
 
-                const result = await state.input.metaInstance.bulkWrite([{
+                const writeRows = [{
                     previous: previousCheckpointDoc,
                     document: newDoc
-                }], 'replication-set-checkpoint');
-
-                const sucessDoc = result.success[0];
-                if (sucessDoc) {
-                    state.lastCheckpointDoc[direction] = sucessDoc;
+                }];
+                const result = await state.input.metaInstance.bulkWrite(writeRows, 'replication-set-checkpoint');
+                const successDoc = getWrittenDocumentsFromBulkWriteResponse(
+                    state.primaryPath,
+                    writeRows,
+                    result
+                )[0];
+                if (successDoc) {
+                    state.lastCheckpointDoc[direction] = successDoc;
                     return;
                 } else {
                     const error = result.error[0];

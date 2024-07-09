@@ -90,7 +90,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -130,7 +129,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {
                         const docId: string = writeRow.document[this.primaryPath] as any;
-                        ret.success.push(writeRow.document);
 
                         // insert document data
                         mainTx.set(docId, writeRow.document);
@@ -159,7 +157,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                                 indexTx.set(newIndexString, docId);
                             }
                         });
-                        ret.success.push(writeRow.document as any);
                     });
 
                     // attachments

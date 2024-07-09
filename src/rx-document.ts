@@ -37,7 +37,7 @@ import type {
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { overwritable } from './overwritable.ts';
 import { getSchemaByObjectPath } from './rx-schema-helper.ts';
-import { throwIfIsStorageWriteError } from './rx-storage-helper.ts';
+import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import { modifierFromPublicToInternal } from './incremental-write.ts';
 
 export const basePrototype = {
@@ -384,17 +384,22 @@ export const basePrototype = {
             });
         }
         await beforeDocumentUpdateWrite(this.collection, newData, oldData);
-        const writeResult = await this.collection.storageInstance.bulkWrite([{
+        const writeRows = [{
             previous: oldData,
             document: newData
-        }], 'rx-document-save-data');
+        }];
+        const writeResult = await this.collection.storageInstance.bulkWrite(writeRows, 'rx-document-save-data');
 
         const isError = writeResult.error[0];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
 
         await this.collection._runHooks('post', 'save', newData, this);
         return this.collection._docCache.getCachedRxDocument(
-            writeResult.success[0]
+            getWrittenDocumentsFromBulkWriteResponse(
+                this.collection.schema.primaryPath,
+                writeRows,
+                writeResult
+            )[0]
         );
     },
 
@@ -417,13 +422,18 @@ export const basePrototype = {
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
-                const writeResult = await collection.storageInstance.bulkWrite([{
+                const writeRows = [{
                     previous: this._data,
                     document: deletedData
-                }], 'rx-document-remove');
+                }];
+                const writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
                 const isError = writeResult.error[0];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return writeResult.success[0];
+                return getWrittenDocumentsFromBulkWriteResponse(
+                    this.collection.schema.primaryPath,
+                    writeRows,
+                    writeResult
+                )[0];
             })
             .then((removed) => {
                 removedDocData = removed;

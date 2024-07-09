@@ -95,6 +95,7 @@ import {
 } from './rx-document-prototype-merge.ts';
 import {
     getWrappedStorageInstance,
+    getWrittenDocumentsFromBulkWriteResponse,
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
@@ -409,7 +410,12 @@ export class RxCollectionBase<
         const ret = {
             get success() {
                 if (!rxDocuments) {
-                    rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(collection._docCache, results.success);
+                    const success = getWrittenDocumentsFromBulkWriteResponse(
+                        collection.schema.primaryPath,
+                        insertRows,
+                        results
+                    );
+                    rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(collection._docCache, success);
                 }
                 return rxDocuments;
             },
@@ -484,7 +490,13 @@ export class RxCollectionBase<
             'rx-collection-bulk-remove'
         );
 
-        const successIds: string[] = results.success.map(d => d[primaryPath] as string);
+
+        const success = getWrittenDocumentsFromBulkWriteResponse(
+            this.schema.primaryPath,
+            removeDocs,
+            results
+        );
+        const successIds: string[] = success.map(d => d[primaryPath] as string);
 
         // run hooks
         await Promise.all(

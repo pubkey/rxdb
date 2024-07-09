@@ -16,7 +16,7 @@ import {
     newRxError,
     newRxTypeError
 } from '../../rx-error.ts';
-import { writeSingle } from '../../rx-storage-helper.ts';
+import { getWrittenDocumentsFromBulkWriteResponse, writeSingle } from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentModifyFunction,
     RxCollection,
@@ -183,17 +183,18 @@ const RxLocalDocumentPrototype: any = {
         const state = await getLocalDocStateByParent(this.parent);
         const oldData: RxDocumentData<RxLocalDocumentData> = this._data;
         newData.id = (this as any).id;
-        return state.storageInstance.bulkWrite([{
+        const writeRows = [{
             previous: oldData,
             document: newData
-        }], 'local-document-save-data')
+        }];
+        return state.storageInstance.bulkWrite(writeRows, 'local-document-save-data')
             .then((res) => {
-                const docResult = res.success[0];
-                if (!docResult) {
+                if (res.error[0]) {
                     throw res.error[0];
                 }
+                const success = getWrittenDocumentsFromBulkWriteResponse(this.collection.schema.primaryPath, writeRows, res)[0];
                 newData = flatClone(newData);
-                newData._rev = docResult._rev;
+                newData._rev = success._rev;
             });
     },
 

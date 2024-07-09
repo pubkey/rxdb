@@ -141,7 +141,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -195,11 +194,9 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                  */
                 let bulkPutDocs: any[] = [];
                 categorized.bulkInsertDocs.forEach(row => {
-                    ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 categorized.bulkUpdateDocs.forEach(row => {
-                    ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));

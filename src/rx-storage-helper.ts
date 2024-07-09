@@ -28,7 +28,8 @@ import type {
     RxStorageWriteErrorAttachment,
     RxStorage,
     RxStorageDefaultCheckpoint,
-    FilledMangoQuery
+    FilledMangoQuery,
+    RxStorageBulkWriteResponse
 } from './types/index.d.ts';
 import {
     PROMISE_RESOLVE_TRUE,
@@ -40,6 +41,7 @@ import {
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    getFromMapOrCreate,
     lastOfArray,
     now,
     promiseWait,
@@ -83,7 +85,9 @@ export async function writeSingle<RxDocType>(
         const error = writeResult.error[0];
         throw error;
     } else {
-        const ret = writeResult.success[0];
+        const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
+        const success = getWrittenDocumentsFromBulkWriteResponse(primaryPath, [writeRow], writeResult);
+        const ret = success[0];
         return ret;
     }
 }
@@ -523,6 +527,9 @@ export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreation
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
 
+
+const BULK_WRITE_SUCCESS_MAP = new WeakMap<RxStorageBulkWriteResponse<any>, RxDocumentData<any>>();
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -544,6 +551,8 @@ export function getWrappedStorageInstance<
     rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+
+    const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
 
     const ret: WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         originalStorageInstance: storageInstance,
@@ -606,9 +615,15 @@ export function getWrappedStorageInstance<
                  */
                 .then(writeResult => {
                     const useWriteResult: typeof writeResult = {
-                        error: [],
-                        success: writeResult.success.slice(0)
+                        error: []
                     };
+                    const successArray = getWrittenDocumentsFromBulkWriteResponse(
+                        primaryPath,
+                        toStorageWriteRows,
+                        writeResult
+                    );
+                    BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
+
                     const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
                         ? []
                         : writeResult.error
@@ -649,11 +664,18 @@ export function getWrappedStorageInstance<
                             )
                         ).then(subResult => {
                             appendToArray(useWriteResult.error, subResult.error);
-                            appendToArray(useWriteResult.success, subResult.success);
+
+                            const subSuccess = getWrittenDocumentsFromBulkWriteResponse(
+                                primaryPath,
+                                reInserts,
+                                subResult
+                            );
+                            appendToArray(successArray, subSuccess);
+
                             return useWriteResult;
                         });
                     }
-                    return writeResult;
+                    return useWriteResult;
                 });
         },
         query(preparedQuery) {
@@ -863,6 +885,50 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
             lwt: 0
         }
     };
+}
+
+
+const detectDuplicateUse = new WeakSet<BulkWriteRow<any>[]>();
+
+export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
+    primaryPath: string,
+    writeRows: BulkWriteRow<RxDocType>[],
+    response: RxStorageBulkWriteResponse<RxDocType>
+): RxDocumentData<RxDocType>[] {
+    const fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
+    if (fromMap) {
+        return fromMap;
+    }
+
+
+    // TODO remove this check
+    if (detectDuplicateUse.has(writeRows)) {
+        throw new Error('duplicate use!!!!');
+    }
+    detectDuplicateUse.add(writeRows);
+
+    const ret: RxDocumentData<RxDocType>[] = new Array(writeRows.length - response.error.length);
+    if (response.error.length > 0) {
+        const errorIds = new Set();
+        for (let index = 0; index < response.error.length; index++) {
+            const error = response.error[index];
+            errorIds.add(error.documentId);
+        }
+
+        for (let index = 0; index < writeRows.length; index++) {
+            const doc = writeRows[index].document;
+            if (!errorIds.has((doc as any)[primaryPath])) {
+                ret[index] = stripAttachmentsDataFromDocument(doc);
+            }
+        }
+    } else {
+        for (let index = 0; index < writeRows.length; index++) {
+            const doc = writeRows[index].document;
+            ret[index] = stripAttachmentsDataFromDocument(doc);
+        }
+    }
+
+    return ret;
 }
 
 

@@ -93,7 +93,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -148,7 +147,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 // INSERTS
                 categorized.bulkInsertDocs.forEach(writeRow => {
                     const docId: string = writeRow.document[this.primaryPath] as any;
-                    ret.success.push(writeRow.document);
 
                     // insert document data
                     tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
@@ -175,7 +173,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             tx = tx.set([this.keySpace, indexMeta.indexId, newIndexString], docId);
                         }
                     });
-                    ret.success.push(writeRow.document as any);
                 });
 
                 const txResult = await tx.commit();
