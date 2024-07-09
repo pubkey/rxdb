@@ -23,7 +23,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageQueryResult,
     RxJsonSchema,
-    MangoQuery,
     LokiStorageInternals,
     RxStorageInstanceCreationParams,
     LokiDatabaseSettings,

@@ -47,7 +47,6 @@ import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance
 import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
-export const DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
 
 let shownNonPremiumLog = false;
 
@@ -123,20 +122,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             ) {
                 throw newRxError('SNH', { args: { row } });
             }
-
-            // ensure prev-data is set
-            if (this.devMode) {
-                if (
-                    row.previous &&
-                    (
-                        !row.previous._meta[DEXIE_TEST_META_FIELD] ||
-                        row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev
-                    )
-                ) {
-                    console.dir(row);
-                    throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
-                }
-            }
         });
 
         const state = await this.internals;
@@ -153,7 +138,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         if (this.devMode) {
             documentWrites = documentWrites.map(row => {
                 const doc = flatCloneDocWithMeta(row.document);
-                doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
                 return {
                     previous: row.previous,
                     document: doc

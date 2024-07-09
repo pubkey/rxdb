@@ -33,7 +33,6 @@ import {
     requestIdlePromise
 } from '../../plugins/utils/index.ts';
 import {
-    MongoDBPreparedQuery,
     MongoDBStorageInternals,
     MongoQuerySelector,
     RxStorageMongoDBInstanceCreationOptions,

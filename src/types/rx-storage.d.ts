@@ -164,10 +164,6 @@ export type RxAttachmentWriteData = RxAttachmentData & {
  */
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
-     * contains all succeeded writes.
-     */
-    // success: RxDocumentData<RxDocType>[];
-    /**
      * contains all errored writes.
      */
     error: RxStorageWriteError<RxDocType>[];
