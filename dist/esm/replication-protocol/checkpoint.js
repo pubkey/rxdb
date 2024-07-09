@@ -1,5 +1,5 @@
 import { getComposedPrimaryKeyOfDocumentData } from "../rx-schema-helper.js";
-import { stackCheckpoints } from "../rx-storage-helper.js";
+import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from "../rx-storage-helper.js";
 import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, now } from "../plugins/utils/index.js";
 export async function getLastCheckpointDoc(state, direction) {
   var checkpointDocId = getComposedPrimaryKeyOfDocumentData(state.input.metaInstance.schema, {
@@ -65,13 +65,14 @@ export async function setCheckpoint(state, direction, checkpoint) {
         if (state.events.canceled.getValue()) {
           return;
         }
-        var result = await state.input.metaInstance.bulkWrite([{
+        var writeRows = [{
           previous: previousCheckpointDoc,
           document: newDoc
-        }], 'replication-set-checkpoint');
-        var sucessDoc = result.success[0];
-        if (sucessDoc) {
-          state.lastCheckpointDoc[direction] = sucessDoc;
+        }];
+        var result = await state.input.metaInstance.bulkWrite(writeRows, 'replication-set-checkpoint');
+        var successDoc = getWrittenDocumentsFromBulkWriteResponse(state.primaryPath, writeRows, result)[0];
+        if (successDoc) {
+          state.lastCheckpointDoc[direction] = successDoc;
           return;
         } else {
           var error = result.error[0];

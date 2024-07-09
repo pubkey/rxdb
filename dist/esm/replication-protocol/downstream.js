@@ -1,6 +1,6 @@
 import { firstValueFrom, filter, mergeMap } from 'rxjs';
 import { newRxError } from "../rx-error.js";
-import { stackCheckpoints } from "../rx-storage-helper.js";
+import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from "../rx-storage-helper.js";
 import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getHeightOfRevision, now, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from "./helper.js";
@@ -279,7 +279,8 @@ export async function startReplicationDownstream(state) {
       }).then(async () => {
         if (writeRowsToFork.length > 0) {
           return state.input.forkInstance.bulkWrite(writeRowsToFork, await state.downstreamBulkWriteFlag).then(forkWriteResult => {
-            forkWriteResult.success.forEach(doc => {
+            var success = getWrittenDocumentsFromBulkWriteResponse(state.primaryPath, writeRowsToFork, forkWriteResult);
+            success.forEach(doc => {
               var docId = doc[primaryPath];
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);

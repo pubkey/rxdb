@@ -2,7 +2,6 @@ import { Observable } from 'rxjs';
 import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxConflictResultionTask, RxConflictResultionTaskSolution, RxStorageDefaultCheckpoint, RxStorageCountResult, PreparedQuery } from '../../types/index.d.ts';
 import type { DexieSettings, DexieStorageInternals } from '../../types/plugins/dexie.d.ts';
 import { RxStorageDexie } from './rx-storage-dexie.ts';
-export declare const DEXIE_TEST_META_FIELD = "dexieTestMetaField";
 export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<RxDocType, DexieStorageInternals, DexieSettings, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageDexie;
     readonly databaseName: string;

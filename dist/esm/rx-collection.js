@@ -9,7 +9,7 @@ import { createQueryCache, defaultCacheReplacementPolicy } from "./query-cache.j
 import { createChangeEventBuffer } from "./change-event-buffer.js";
 import { runAsyncPluginHooks, runPluginHooks } from "./hooks.js";
 import { createNewRxDocument, getRxDocumentConstructor } from "./rx-document-prototype-merge.js";
-import { getWrappedStorageInstance, throwIfIsStorageWriteError } from "./rx-storage-helper.js";
+import { getWrappedStorageInstance, getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from "./rx-storage-helper.js";
 import { defaultConflictHandler } from "./replication-protocol/index.js";
 import { IncrementalWriteQueue } from "./incremental-write.js";
 import { beforeDocumentUpdateWrite } from "./rx-document.js";
@@ -215,7 +215,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var ret = {
       get success() {
         if (!rxDocuments) {
-          rxDocuments = mapDocumentsDataToCacheDocs(collection._docCache, results.success);
+          var success = getWrittenDocumentsFromBulkWriteResponse(collection.schema.primaryPath, insertRows, results);
+          rxDocuments = mapDocumentsDataToCacheDocs(collection._docCache, success);
         }
         return rxDocuments;
       },
@@ -267,7 +268,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       };
     });
     var results = await this.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove');
-    var successIds = results.success.map(d => d[primaryPath]);
+    var success = getWrittenDocumentsFromBulkWriteResponse(this.schema.primaryPath, removeDocs, results);
+    var successIds = success.map(d => d[primaryPath]);
 
     // run hooks
     await Promise.all(successIds.map(id => {

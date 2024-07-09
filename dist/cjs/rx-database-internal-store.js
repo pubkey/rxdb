@@ -136,11 +136,12 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
     _rev: (0, _index.getDefaultRevision)(),
     _attachments: {}
   };
-  var writeResult = await rxDatabase.internalStore.bulkWrite([{
+  var writeRows = [{
     document: docData
-  }], 'internal-add-storage-token');
-  if (writeResult.success[0]) {
-    return writeResult.success[0];
+  }];
+  var writeResult = await rxDatabase.internalStore.bulkWrite(writeRows, 'internal-add-storage-token');
+  if (!writeResult.error[0]) {
+    return (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)('id', writeRows, writeResult)[0];
   }
 
   /**

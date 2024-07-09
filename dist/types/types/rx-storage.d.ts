@@ -156,12 +156,13 @@ export type RxAttachmentWriteData = RxAttachmentData & {
  * but only plain arrays. Because most of the time
  * RxDB anyway only need the array data and we can save performance
  * by not indexing the results.
+ *
+ * We do not longer return the written documents. We only return the errors.
+ * This is because we construct the written docs array from the input+errors anyway
+ * and transferring large amounts of data has bad performance when the storage
+ * is running in a different realm like a WebWorker or remote.
  */
 export type RxStorageBulkWriteResponse<RxDocType> = {
-    /**
-     * contains all succeeded writes.
-     */
-    success: RxDocumentData<RxDocType>[];
     /**
      * contains all errored writes.
      */

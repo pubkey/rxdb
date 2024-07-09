@@ -224,7 +224,8 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     var ret = {
       get success() {
         if (!rxDocuments) {
-          rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(collection._docCache, results.success);
+          var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(collection.schema.primaryPath, insertRows, results);
+          rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(collection._docCache, success);
         }
         return rxDocuments;
       },
@@ -276,7 +277,8 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
       };
     });
     var results = await this.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove');
-    var successIds = results.success.map(d => d[primaryPath]);
+    var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.schema.primaryPath, removeDocs, results);
+    var successIds = success.map(d => d[primaryPath]);
 
     // run hooks
     await Promise.all(successIds.map(id => {

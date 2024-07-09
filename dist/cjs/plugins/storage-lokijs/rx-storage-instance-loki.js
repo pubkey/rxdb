@@ -81,7 +81,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
       return (0, _lokijsHelper.requestRemoteInstance)(this, 'bulkWrite', [documentWrites]);
     }
     var ret = {
-      success: [],
       error: []
     };
     var docsInDb = new Map();
@@ -98,7 +97,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
     ret.error = categorized.errors;
     categorized.bulkInsertDocs.forEach(writeRow => {
       localState.collection.insert((0, _index.flatClone)(writeRow.document));
-      ret.success.push(writeRow.document);
     });
     categorized.bulkUpdateDocs.forEach(writeRow => {
       var docId = writeRow.document[this.primaryPath];
@@ -107,7 +105,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
         $loki: documentInDbWithLokiKey.$loki
       });
       localState.collection.update(writeDoc);
-      ret.success.push(writeRow.document);
     });
     localState.databaseState.saveQueue.addWrite();
     if (categorized.eventBulk.events.length > 0) {

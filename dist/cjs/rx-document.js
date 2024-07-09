@@ -279,14 +279,15 @@ var basePrototype = exports.basePrototype = {
       });
     }
     await beforeDocumentUpdateWrite(this.collection, newData, oldData);
-    var writeResult = await this.collection.storageInstance.bulkWrite([{
+    var writeRows = [{
       previous: oldData,
       document: newData
-    }], 'rx-document-save-data');
+    }];
+    var writeResult = await this.collection.storageInstance.bulkWrite(writeRows, 'rx-document-save-data');
     var isError = writeResult.error[0];
     (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, newData, isError);
     await this.collection._runHooks('post', 'save', newData, this);
-    return this.collection._docCache.getCachedRxDocument(writeResult.success[0]);
+    return this.collection._docCache.getCachedRxDocument((0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, writeResult)[0]);
   },
   /**
    * Remove the document.
@@ -305,13 +306,14 @@ var basePrototype = exports.basePrototype = {
     var removedDocData;
     return collection._runHooks('pre', 'remove', deletedData, this).then(async () => {
       deletedData._deleted = true;
-      var writeResult = await collection.storageInstance.bulkWrite([{
+      var writeRows = [{
         previous: this._data,
         document: deletedData
-      }], 'rx-document-remove');
+      }];
+      var writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
       var isError = writeResult.error[0];
       (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, this.primary, deletedData, isError);
-      return writeResult.success[0];
+      return (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, writeResult)[0];
     }).then(removed => {
       removedDocData = removed;
       return this.collection._runHooks('post', 'remove', deletedData, this);

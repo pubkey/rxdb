@@ -32,7 +32,9 @@ export async function writeSingle(instance, writeRow, context) {
     var error = writeResult.error[0];
     throw error;
   } else {
-    var ret = writeResult.success[0];
+    var primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
+    var success = getWrittenDocumentsFromBulkWriteResponse(primaryPath, [writeRow], writeResult);
+    var ret = success[0];
     return ret;
   }
 }
@@ -383,6 +385,8 @@ export function flatCloneDocWithMeta(doc) {
     _meta: flatClone(doc._meta)
   });
 }
+var BULK_WRITE_SUCCESS_MAP = new WeakMap();
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -396,6 +400,7 @@ export function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+  var primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
   var ret = {
     originalStorageInstance: storageInstance,
     schema: storageInstance.schema,
@@ -443,13 +448,21 @@ rxJsonSchema) {
        * @link https://github.com/pubkey/rxdb/pull/3839
        */.then(writeResult => {
         var useWriteResult = {
-          error: [],
-          success: writeResult.success.slice(0)
+          error: []
         };
+
+        /**
+         * TODO do we really have to build up the successArray
+         * here directly? Maybe we only need it when it is really accessed.
+         */
+        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, writeResult);
+        BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
         var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
           if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && ensureNotFalsy(error.documentInDb)._deleted) {
             return true;
           }
+
+          // add the "normal" errors to the parent error array.
           useWriteResult.error.push(error);
           return false;
         });
@@ -464,11 +477,12 @@ rxJsonSchema) {
           });
           return database.lockedRun(() => storageInstance.bulkWrite(reInserts, context)).then(subResult => {
             appendToArray(useWriteResult.error, subResult.error);
-            appendToArray(useWriteResult.success, subResult.success);
+            var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
+            appendToArray(successArray, subSuccess);
             return useWriteResult;
           });
         }
-        return writeResult;
+        return useWriteResult;
       });
     },
     query(preparedQuery) {
@@ -623,6 +637,32 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
       lwt: 0
     }
   };
+}
+export function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response) {
+  var fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
+  if (fromMap) {
+    return fromMap;
+  }
+  var ret = new Array(writeRows.length - response.error.length);
+  if (response.error.length > 0) {
+    var errorIds = new Set();
+    for (var index = 0; index < response.error.length; index++) {
+      var error = response.error[index];
+      errorIds.add(error.documentId);
+    }
+    for (var _index = 0; _index < writeRows.length; _index++) {
+      var doc = writeRows[_index].document;
+      if (!errorIds.has(doc[primaryPath])) {
+        ret[_index] = stripAttachmentsDataFromDocument(doc);
+      }
+    }
+  } else {
+    for (var _index2 = 0; _index2 < writeRows.length; _index2++) {
+      var _doc = writeRows[_index2].document;
+      ret[_index2] = stripAttachmentsDataFromDocument(_doc);
+    }
+  }
+  return ret;
 }
 
 /**

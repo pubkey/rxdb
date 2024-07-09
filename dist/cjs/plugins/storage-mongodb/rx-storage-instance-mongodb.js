@@ -117,7 +117,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       }
       var primaryPath = this.primaryPath;
       var ret = {
-        success: [],
         error: []
       };
       var docIds = documentWrites.map(d => d.document[primaryPath]);
@@ -170,7 +169,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           if (event) {
             eventBulk.events.push(event);
           }
-          ret.success.push(writeRow.document);
         }
       })),
       /**
@@ -201,7 +199,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
         } else {
           var event = (0, _index.getFromMapOrThrow)(changeByDocId, docId);
           eventBulk.events.push(event);
-          ret.success.push(writeRow.document);
         }
       }))]);
       if (categorized.eventBulk.events.length > 0) {

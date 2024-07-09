@@ -140,13 +140,9 @@ export function wrapRxStorageInstance(originalSchema, instance, modifyToStorage,
       }));
       var writeResult = await instance.bulkWrite(useRows, context);
       var ret = {
-        success: [],
         error: []
       };
       var promises = [];
-      writeResult.success.forEach(v => {
-        promises.push(fromStorage(v).then(v2 => ret.success.push(v2)));
-      });
       writeResult.error.forEach(error => {
         promises.push(errorFromStorage(error).then(err => ret.error.push(err)));
       });

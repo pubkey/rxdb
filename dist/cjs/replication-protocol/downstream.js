@@ -284,7 +284,8 @@ async function startReplicationDownstream(state) {
       }).then(async () => {
         if (writeRowsToFork.length > 0) {
           return state.input.forkInstance.bulkWrite(writeRowsToFork, await state.downstreamBulkWriteFlag).then(forkWriteResult => {
-            forkWriteResult.success.forEach(doc => {
+            var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(state.primaryPath, writeRowsToFork, forkWriteResult);
+            success.forEach(doc => {
               var docId = doc[primaryPath];
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);

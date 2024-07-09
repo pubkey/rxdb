@@ -7,7 +7,6 @@ import { categorizeBulkWriteRows, flatCloneDocWithMeta } from "../../rx-storage-
 import { addRxStorageMultiInstanceSupport } from "../../rx-storage-multiinstance.js";
 import { newRxError } from "../../rx-error.js";
 var instanceId = now();
-export var DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
 var shownNonPremiumLog = false;
 export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings, devMode) {
@@ -46,18 +45,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
           }
         });
       }
-
-      // ensure prev-data is set
-      if (this.devMode) {
-        if (row.previous && (!row.previous._meta[DEXIE_TEST_META_FIELD] || row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev)) {
-          console.dir(row);
-          throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
-        }
-      }
     });
     var state = await this.internals;
     var ret = {
-      success: [],
       error: []
     };
 
@@ -70,7 +60,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     if (this.devMode) {
       documentWrites = documentWrites.map(row => {
         var doc = flatCloneDocWithMeta(row.document);
-        doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
         return {
           previous: row.previous,
           document: doc
@@ -98,11 +87,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
        */
       var bulkPutDocs = [];
       categorized.bulkInsertDocs.forEach(row => {
-        ret.success.push(row.document);
         bulkPutDocs.push(row.document);
       });
       categorized.bulkUpdateDocs.forEach(row => {
-        ret.success.push(row.document);
         bulkPutDocs.push(row.document);
       });
       bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));

@@ -44,7 +44,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var primaryPath = this.primaryPath;
     var categorized = categorizeBulkWriteRows(this, primaryPath, documentsById, documentWrites, context);
     var error = categorized.errors;
-    var success = new Array(categorized.bulkInsertDocs.length);
     /**
      * @performance
      * We have to return a Promise but we do not want to wait
@@ -52,21 +51,8 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * which makes it likely to be already resolved later.
      */
     var awaitMe = Promise.resolve({
-      success,
       error
     });
-    var bulkInsertDocs = categorized.bulkInsertDocs;
-    for (var i = 0; i < bulkInsertDocs.length; ++i) {
-      var writeRow = bulkInsertDocs[i];
-      var doc = writeRow.document;
-      success[i] = doc;
-    }
-    var bulkUpdateDocs = categorized.bulkUpdateDocs;
-    for (var _i = 0; _i < bulkUpdateDocs.length; ++_i) {
-      var _writeRow = bulkUpdateDocs[_i];
-      var _doc = _writeRow.document;
-      success.push(_doc);
-    }
     this.categorizedByWriteInput.set(documentWrites, categorized);
     this.internals.ensurePersistenceTask = categorized;
     if (!this.internals.ensurePersistenceIdlePromise) {
@@ -122,11 +108,11 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       putWriteRowToState(docId, internals, stateByIndex, doc, undefined);
     }
     var bulkUpdateDocs = categorized.bulkUpdateDocs;
-    for (var _i2 = 0; _i2 < bulkUpdateDocs.length; ++_i2) {
-      var _writeRow2 = bulkUpdateDocs[_i2];
-      var _doc2 = _writeRow2.document;
-      var _docId = _doc2[primaryPath];
-      putWriteRowToState(_docId, internals, stateByIndex, _doc2, documentsById.get(_docId));
+    for (var _i = 0; _i < bulkUpdateDocs.length; ++_i) {
+      var _writeRow = bulkUpdateDocs[_i];
+      var _doc = _writeRow.document;
+      var _docId = _doc[primaryPath];
+      putWriteRowToState(_docId, internals, stateByIndex, _doc, documentsById.get(_docId));
     }
 
     /**

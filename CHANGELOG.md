@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- CHANGE RxStorage interface: For better performance on remote storages, `RxStorageInstance.bulkWrite()` must only return errors, not the written documents data.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.28.0 (9 July 2024)
+
+- CHANGE RxStorage interface: For better performance on remote storages, `RxStorageInstance.bulkWrite()` must only return errors, not the written documents data.
 
 ### 15.27.0 (7 July 2024)
 

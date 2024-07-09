@@ -57,7 +57,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
     var kv = await this.kvPromise;
     var primaryPath = this.primaryPath;
     var ret = {
-      success: [],
       error: []
     };
     var batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
@@ -100,7 +99,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
         // INSERTS
         categorized.bulkInsertDocs.forEach(writeRow => {
           var docId = writeRow.document[_this.primaryPath];
-          ret.success.push(writeRow.document);
 
           // insert document data
           tx = tx.set([_this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
@@ -127,7 +125,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
               tx = tx.set([_this.keySpace, indexMeta.indexId, newIndexString], docId);
             }
           });
-          ret.success.push(writeRow.document);
         });
         var txResult = await tx.commit();
         if (txResult.ok) {

@@ -303,7 +303,8 @@ async function startReplicationUpstream(state) {
            * that will then resolved the conflict again.
            */
           var useMetaWrites = [];
-          forkWriteResult.success.forEach(docData => {
+          var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(state.primaryPath, conflictWriteFork, forkWriteResult);
+          success.forEach(docData => {
             var docId = docData[state.primaryPath];
             useMetaWrites.push(conflictWriteMeta[docId]);
           });
