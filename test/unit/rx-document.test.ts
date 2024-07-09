@@ -8,7 +8,8 @@ import {
     schemas,
     humansCollection,
     isFastMode,
-    isNode
+    isNode,
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -22,7 +23,9 @@ import {
     RxCollection,
     createBlob,
     defaultHashSha256,
-    RxJsonSchema
+    RxJsonSchema,
+    BulkWriteRow,
+    getWrittenDocumentsFromBulkWriteResponse
 } from '../../plugins/core/index.mjs';
 
 
@@ -234,6 +237,40 @@ describe('rx-document.test.js', () => {
                 assert.strictEqual(docsAfter.length, 0);
 
                 c.database.destroy();
+            });
+            it('inserting to overwrite a deleted document should have the correct errors', async () => {
+                const c = await humansCollection.create(0);
+                const docData = schemaObjects.humanData('foobar');
+                const doc = await c.insert(docData);
+                await doc.remove();
+
+                // insert again by using the plain wrapped storage instance
+                const writeRows: BulkWriteRow<HumanDocumentType>[] = [{
+                    document: {
+                        passportId: 'foobar',
+                        firstName: 'a',
+                        lastName: 'b',
+                        _rev: '',
+                        age: 1,
+                        _attachments: {},
+                        _deleted: false,
+                        _meta: {
+                            lwt: 0
+                        }
+
+                    }
+                }];
+                const writeResult = await c.storageInstance.bulkWrite(writeRows, 'insert-deleted');
+                const writeResultDocs = getWrittenDocumentsFromBulkWriteResponse(
+                    c.schema.primaryPath,
+                    writeRows,
+                    writeResult
+                );
+                assert.deepStrictEqual(writeResult.error, []);
+                assert.ok(writeResultDocs[0]._rev.startsWith('3-'));
+
+                c.database.destroy();
+
             });
         });
         describe('negative', () => {
