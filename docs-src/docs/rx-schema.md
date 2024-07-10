@@ -318,17 +318,20 @@ For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-
 
 <details>
     <summary>How can I store a Date?</summary>
-    <div>
+<div>
     With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date()` is a mutable thing where changeing it at any time might cause strange problem that are hard to debug.
 
     To store a date in RxDB, you have to define a string field with a `format` attribute:
     ```json
     {
        "type": "string",
-        "format": "date-time"
+       "format": "date-time"
     }
     ```
 
     When storing the data you have to first transform your `Date` object into a string `Date.toISOString()`.
     Because the `date-time` is sortable, you can do whatever query operations on that field and even use it as an index.
+
+
+</div>
 </details>
