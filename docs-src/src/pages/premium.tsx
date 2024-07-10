@@ -114,7 +114,8 @@ export default function Premium() {
                             <p style={{ width: '80%' }}>
                                 RxDB's Premium plugins offer advanced features and optimizations that enhance application <b>performance</b>{' '}
                                 and are backed by dedicated support and regular updates. Using the premium plugins is recommended for users
-                                that use RxDB in a professional context.
+                                that use RxDB in a professional context. If you use RxDB in your side project,
+                                you likely want to stay on the Open Core.
                             </p>
                             <div className="price-calculator">
                                 <div className="price-calculator-inner">
