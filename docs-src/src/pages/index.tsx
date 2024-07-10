@@ -888,12 +888,13 @@ export default function Home(props) {
               <br />
               <br />
               <h2>
-                Flexible <b className="underline">storage layer</b>
+                Runs in <b className="underline">any JavaScript Runtime</b>
               </h2>
               <p>
-                RxDB is based on a storage interface that enables you to swap out the
-                underlying storage engine. This increases code reuse because the same
-                database code can be used in <b>any JavaScript runtime</b>{' '}
+                RxDB is based on storage plugins that enables you to swap out the
+                underlying storage engine depending on your runtime. We have storages for <b>Browsers</b>, <b>ReactNative</b>, <b>Node.js</b>, <b>Electron</b> and any other.
+                This increases code reuse because the same
+                database and replication logic can be used in all your apps
                 by just switching out the storage settings.
                 <br />
               </p>
