@@ -837,20 +837,30 @@ export default function Home(props) {
                   Angular
                 </div>
               </a>
-              <div
-                className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                style={{ top: '10%', left: '58%' }}
+              <a
+                href="https://rxdb.info/capacitor-database.html#rxdb"
+                target="_blank"
               >
-                <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
-                Capacitor
-              </div>
-              <div
-                className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                style={{ top: '-4%', left: '44%' }}
+                <div
+                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
+                  style={{ top: '10%', left: '58%' }}
+                >
+                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
+                  Capacitor
+                </div>
+              </a>
+              <a
+                href="https://rxdb.info/rx-storage-denokv.html"
+                target="_blank"
               >
-                <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
-                Deno
-              </div>
+                <div
+                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
+                  style={{ top: '-4%', left: '44%' }}
+                >
+                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
+                  Deno
+                </div>
+              </a>
               <a
                 href="https://github.com/pubkey/rxdb/tree/master/examples/node"
                 target="_blank"
@@ -875,13 +885,18 @@ export default function Home(props) {
                   React
                 </div>
               </a>
-              <div
-                className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
+              <a
+                href="https://github.com/pubkey/rxdb/tree/master/examples/svelte"
+                target="_blank"
               >
-                <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
-                Svelte
-              </div>
+                <div
+                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
+                  style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
+                >
+                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
+                  Svelte
+                </div>
+              </a>
               <br />
               <br />
               <br />
@@ -892,7 +907,16 @@ export default function Home(props) {
               </h2>
               <p>
                 RxDB is based on storage plugins that enables you to swap out the
-                underlying storage engine depending on your runtime. We have storages for <b>Browsers</b>, <b>ReactNative</b>, <b>Node.js</b>, <b>Electron</b> and any other.
+                underlying storage engine depending on your runtime. We have storages for <b>Browsers</b>, <a
+                  href="https://github.com/pubkey/rxdb/tree/master/examples/react-native"
+                  target="_blank"
+                >ReactNative</a>,{' '}<a
+                  href="https://github.com/pubkey/rxdb/tree/master/examples/node"
+                  target="_blank"
+                >Node.js</a>,{' '}<a
+                  href="https://github.com/pubkey/rxdb/tree/master/examples/electron"
+                  target="_blank"
+                >Electron</a> and any other.
                 This increases code reuse because the same
                 database and replication logic can be used in all your apps
                 by just switching out the storage settings.
@@ -935,13 +959,18 @@ export default function Home(props) {
                     Ionic
                   </div>
                 </a>
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '46%', left: '11%' }}
+                <a
+                  href="https://github.com/herefishyfish/rxdb-nativescript"
+                  target="_blank"
                 >
-                  <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
-                  NativeScript
-                </div>
+                  <div
+                    className="neumorphism-circle-m circle centered enlarge-on-mouse"
+                    style={{ top: '46%', left: '11%' }}
+                  >
+                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
+                    NativeScript
+                  </div>
+                </a>
                 <a
                   href="https://github.com/pubkey/rxdb/tree/master/examples/react-native"
                   target="_blank"
