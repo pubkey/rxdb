@@ -8,6 +8,7 @@ import type {
     RxDatabase
 } from 'rxdb';
 import { RxHeroDocumentType } from './schemas/hero.schema';
+import { Signal } from '@angular/core';
 
 // ORM methods
 type RxHeroDocMethods = {
@@ -16,10 +17,15 @@ type RxHeroDocMethods = {
 
 export type RxHeroDocument = RxDocument<RxHeroDocumentType, RxHeroDocMethods>;
 
-export type RxHeroCollection = RxCollection<RxHeroDocumentType, RxHeroDocMethods, {}>;
+export type RxHeroCollection = RxCollection<RxHeroDocumentType, RxHeroDocMethods, unknown, unknown, Signal<unknown>>;
 
 export type RxHeroesCollections = {
     hero: RxHeroCollection;
 };
 
-export type RxHeroesDatabase = RxDatabase<RxHeroesCollections>;
+export type RxHeroesDatabase = RxDatabase<
+    RxHeroesCollections,
+    unknown,
+    unknown,
+    Signal<unknown>
+>;

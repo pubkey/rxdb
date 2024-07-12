@@ -184,7 +184,7 @@ async function _create(injector: Injector): Promise<RxHeroesDatabase> {
 
     console.log('DatabaseService: created');
 
-    return db;
+    return db as any;
 }
 
 
