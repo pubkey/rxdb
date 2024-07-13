@@ -3,6 +3,11 @@
 This list contains things that have to be done but will create breaking changes.
 
 
+## Split conflict handler into "isEqual" and "mergeConflict" functions
+Because the handler is used in so many places it becomes confusing to write a proper conflict handler.
+Also having a handler that requires user interaction is only possible by hackingly using the context param.
+By splitting the functionalities it will become easier to learn where the handlers are used and how to define them properly.
+
 ## OPFS storage has defualt jsonPositionSize=8 but should be 14
 
 Set the default to 14 and also remove all occurences of `jsonPositionSize`.
