@@ -17,7 +17,7 @@
     "rimraf": "5.0.9",
     "testcafe": "3.6.2",
     "local-web-server": "5.3.3",
-    "ajv": "8.16.0"
+    "ajv": "8.17.1"
   },
   "scripts": {
     "preinstall": "npm run preinstall:rxdb",
