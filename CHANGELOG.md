@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD storage bucket support to the [IndexedDB RxStorage](https://rxdb.info/rx-storage-indexeddb.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

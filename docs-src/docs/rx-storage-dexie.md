@@ -5,16 +5,22 @@ slug: rx-storage-dexie.html
 
 # RxStorage Dexie.js
 
-To store the data inside of IndexedDB in the browser, you can also use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md).
-
-Dexie.js is a minimal wrapper around IndexedDB.
-For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/mingo) query handler.
+To store the data inside of IndexedDB in the browser, you can use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to store RxDB data in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default. For professional projects that care about performance and stability, use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) instead.
 
 ## Pros 
   - Can use [Dexie.js addons](https://dexie.org/docs/Tutorial/Building-Addons).
 
 ## Cons
   - Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
+  - Does not support the [Storage Buckets API](./rx-storage-indexeddb.md#storage-buckets)
+
+## Performance comparison with other RxStorage plugins
+
+The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
+
+<p align="center">
+  <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser Dexie.js" width="700" />
+</p>
 
 ## Usage
 

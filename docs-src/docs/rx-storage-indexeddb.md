@@ -73,6 +73,29 @@ const db = await createRxDatabase({
 ```
 
 
+## Storage Buckets
+
+The [Storage Buckets API](https://wicg.github.io/storage-buckets/) provides a way for sites to organize locally stored data into groupings called "storage buckets". This allows the user agent or sites to manage and delete buckets independently rather than applying the same treatment to all the data from a single origin. [Read More](https://developer.chrome.com/docs/web-platform/storage-buckets?hl=en)
+
+To use different storage buckets with the RxDB IndexedDB Storage, you can use a function instead of a plain object when providing the  `indexedDB` attribute:
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+
+const db = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageIndexedDB({
+        indexedDB: async(params) => {
+            const myStorageBucket = await navigator.storageBuckets.open('myApp-' + params.databaseName);
+            return myStorageBucket.indexedDB;
+        },
+        IDBKeyRange
+    })
+});
+```
+
+
 
 ## Limitations of the IndexedDB RxStorage
 
