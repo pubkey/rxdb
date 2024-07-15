@@ -682,7 +682,7 @@ export default function Home(props) {
                   the protocol is not bound to a specific backend and can be used with any <a href="/replication-http.html" target="_blank">existing infrastructure</a>.
                 </p>
               </div>
-              <div className="half right">
+              <div className="half left">
                 <div className="replication-icons">
                   <img
                     src="/files/logo/logo.svg"
@@ -701,7 +701,7 @@ export default function Home(props) {
                     </div>
                   </a>
                   <a href="/replication-firestore.html" target="_blank">
-                    <div className="neumorphism-circle-m centered replicate-firestore enlarge-on-mouse">
+                    <div className="neumorphism-circle-s centered replicate-firestore enlarge-on-mouse">
                       <img
                         src="/files/icons/firebase.svg"
                         alt="Firebase"
@@ -711,7 +711,7 @@ export default function Home(props) {
                     </div>
                   </a>
                   <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
-                    <div className="neumorphism-circle-m centered replicate-supabase enlarge-on-mouse">
+                    <div className="neumorphism-circle-s centered replicate-supabase enlarge-on-mouse">
                       <img
                         src="/files/icons/supabase.svg"
                         alt="supabase"

@@ -839,7 +839,7 @@ body {
 .block.replication .replicate-firestore {
     position: absolute;
     margin-top: -47.5px;
-    margin-left: 0%;
+    margin-left: 2%;
     top: 51%;
 }
 
@@ -901,6 +901,10 @@ body {
 
 .block.replication img.protocol {
     width: 80px;
+}
+
+.block.replication .neumorphism-circle-s img.protocol {
+    width: 40px;
 }
 
 .block.offline-first {
