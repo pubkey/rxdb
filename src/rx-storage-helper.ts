@@ -904,7 +904,7 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
         return fromMap;
     }
 
-    let ret: RxDocumentData<RxDocType>[] = [];
+    const ret: RxDocumentData<RxDocType>[] = [];
     if (response.error.length > 0) {
         const errorIds = new Set();
         for (let index = 0; index < response.error.length; index++) {
