@@ -1501,6 +1501,33 @@ describe('rx-collection.test.ts', () => {
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
                 c.database.destroy();
             });
+            /**
+             * @link https://discord.com/channels/@me/1249794180826271857/1263119230929211504
+             */
+            it('issue: insert and update+insert breaks', async () => {
+                const c = await humansCollection.create(0);
+
+                // insert
+                await c.bulkUpsert([schemaObjects.humanData('a')]);
+                let allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 1);
+
+                // update+insert
+                const writeData = [
+                    {
+                        ...allDocs[0].toMutableJSON(),
+                        age: 100
+                    },
+                    schemaObjects.humanData('b')
+                ];
+                const result = await c.bulkUpsert(writeData);
+                assert.deepStrictEqual(result.error, []);
+                allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 2);
+                assert.strictEqual(allDocs[0].age, 100);
+
+                c.database.destroy();
+            });
         });
         describeParallel('.upsert()', () => {
             describe('positive', () => {
