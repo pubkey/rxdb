@@ -6,13 +6,16 @@ import {
     humansCollection,
     ENV_VARIABLES,
     ensureCollectionsHaveEqualState,
-    isNode
+    isNode,
+    schemas,
+    HumanWithCompositePrimary
 } from '../plugins/test-utils/index.mjs';
 
 import {
     addRxPlugin,
     randomCouchString,
-    RxCollection
+    RxCollection,
+    RxDocumentData
 } from './../plugins/core/index.mjs';
 
 import {
@@ -362,6 +365,90 @@ describe('replication-couchdb.test.ts', () => {
             await doc2.incrementalPatch({ age: 22 });
             await awaitInSync();
             await waitUntil(() => doc1.getLatest().age === 22);
+
+            c1.database.destroy();
+            c2.database.destroy();
+            server.close();
+        });
+
+        it('should stream changes for composite primary key', async () => {
+            const server  = await SpawnServer.spawn();
+            const c1 = await humansCollection.createBySchema(schemas.humanCompositePrimary);
+            const c2 = await humansCollection.createBySchema(schemas.humanCompositePrimary);
+
+            const replicationState1 = await syncLive(c1, server);
+            ensureReplicationHasNoErrors(replicationState1);
+            const replicationState2 = await syncLive(c2, server);
+            ensureReplicationHasNoErrors(replicationState2);
+
+            const awaitInSync = () => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]).then(() => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]));
+
+            const state1Data: RxDocumentData<HumanWithCompositePrimary>[] = [];
+            replicationState1.received$.subscribe((data) => {
+                state1Data.push(data);
+            });
+
+            const state2Data: RxDocumentData<HumanWithCompositePrimary>[] = [];
+            replicationState2.received$.subscribe((data) => {
+                state2Data.push(data);
+            });
+
+            const foundPromise = firstValueFrom(
+                c2.find().$.pipe(
+                    filter(results => results.length === 1)
+                )
+            );
+
+            await c1.insert({
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                info: {
+                    age: 56
+                },
+            });
+
+            await awaitInSync();
+
+            // wait until it is on the server
+            await waitUntil(async () => {
+                const serverDocsInner = await getAllServerDocs(server.url);
+                return serverDocsInner.length === 1;
+            });
+
+            const endResult = await foundPromise;
+            assert.strictEqual(endResult[0].firstName, 'Bob');
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+
+            // edit on one side<
+            await doc1.incrementalPatch({ lastName: 'Doe' });
+            await awaitInSync();
+            await waitUntil(() => doc2.getLatest().lastName === 'Doe');
+
+            // edit on one side again
+            await doc1.incrementalPatch({ lastName: 'Doe2' });
+            await awaitInSync();
+            await waitUntil(() => doc2.getLatest().lastName === 'Doe2');
+            // edit on other side
+            await doc2.incrementalPatch({ lastName: 'Doe3' });
+            await awaitInSync();
+            await waitUntil(() => doc1.getLatest().lastName === 'Doe3');
+
+            // console.log('data1');
+            // console.log(JSON.stringify(state1Data, null, 2));
+
+            // console.log('data2');
+            // console.log(JSON.stringify(state2Data, null, 2));
+
+            // should have the same data
+            assert.strictEqual(state1Data.length, state2Data.length);
 
             c1.database.destroy();
             c2.database.destroy();
