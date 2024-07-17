@@ -904,7 +904,7 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
         return fromMap;
     }
 
-    const ret: RxDocumentData<RxDocType>[] = new Array(writeRows.length - response.error.length);
+    let ret: RxDocumentData<RxDocType>[] = [];
     if (response.error.length > 0) {
         const errorIds = new Set();
         for (let index = 0; index < response.error.length; index++) {
@@ -915,10 +915,12 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
         for (let index = 0; index < writeRows.length; index++) {
             const doc = writeRows[index].document;
             if (!errorIds.has((doc as any)[primaryPath])) {
-                ret[index] = stripAttachmentsDataFromDocument(doc);
+                ret.push(stripAttachmentsDataFromDocument(doc));
             }
         }
     } else {
+        // pre-set array size for better performance
+        ret.length = writeRows.length - response.error.length;
         for (let index = 0; index < writeRows.length; index++) {
             const doc = writeRows[index].document;
             ret[index] = stripAttachmentsDataFromDocument(doc);
