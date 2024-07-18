@@ -330,7 +330,6 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "rimraf": "./node_modules/rimraf/bin.js",
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
