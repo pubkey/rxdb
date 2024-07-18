@@ -43,7 +43,6 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: |
-            ~/.npm
             ./node_modules
           key: ${{ runner.os }}-npm-core-x5-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/.nvmrc') }}
           restore-keys: |
