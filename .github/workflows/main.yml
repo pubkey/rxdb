@@ -49,8 +49,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-core-x5-
 
-      - name: install npm dependencies
-        run: npm install
+      - run: npm install --verbose
 
       - name: build
         run: npm run build
