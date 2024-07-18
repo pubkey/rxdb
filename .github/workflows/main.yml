@@ -49,7 +49,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-core-x5-
 
-      - run: npm install --verbose
+      - run: npm install --verbose --no-package-lock
 
       - name: build
         run: npm run build
