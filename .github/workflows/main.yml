@@ -45,7 +45,7 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x5-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x5-${{ hashFiles('**/package.json') }}-${{ hashFiles('**/.nvmrc') }}
           restore-keys: |
             ${{ runner.os }}-npm-core-x5-
 
