@@ -31,6 +31,11 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
+      - name: log versions
+        run: |
+          node --version
+          npm -v
+
       - name: Reuse npm cache folder
         uses: actions/cache@v4
         env:
