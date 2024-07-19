@@ -5,7 +5,7 @@
     "preinstall": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/graphql/rxdb-local.tgz)",
     "dev": "webpack serve",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
-    "server": "node -r esm ./server/index.js",
+    "server": "node ./server/index.js",
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
@@ -20,6 +20,7 @@
   "private": true,
   "author": "pubkey",
   "license": "MIT",
+  "type": "module",
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",

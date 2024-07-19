@@ -1,9 +1,10 @@
 import express from 'express';
 import * as path from 'path';
-const { graphqlHTTP } = require('express-graphql');
-const cors = require('cors');
+import { graphqlHTTP } from 'express-graphql';
+import cors from 'cors';
 import { PubSub } from 'graphql-subscriptions';
 import { buildSchema, execute, subscribe } from 'graphql';
+import { WebSocketServer } from "ws";
 
 import * as ws from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
@@ -16,11 +17,13 @@ import {
     GRAPHQL_SUBSCRIPTION_PATH,
     graphQLGenerationInput,
     JWT_BEARER_TOKEN,
-} from '../shared';
+} from '../shared.js';
 
 import { graphQLSchemaFromRxSchema } from 'rxdb/plugins/replication-graphql';
 
 import { lastOfArray } from 'rxdb';
+
+const __dirname = import.meta.dirname;
 
 function log(msg) {
     const prefix = '# GraphQL Server: ';
@@ -234,7 +237,7 @@ export async function run() {
                 GRAPHQL_SUBSCRIPTION_PORT +
                 GRAPHQL_SUBSCRIPTION_PATH
         );
-        const wsServer = new ws.Server({
+        const wsServer = new WebSocketServer({
             server: serverSubscription,
             path: GRAPHQL_SUBSCRIPTION_PATH,
         });
