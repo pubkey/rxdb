@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD storage bucket support to the [IndexedDB RxStorage](https://rxdb.info/rx-storage-indexeddb.html).
-- FIX error when calling bulkUpsert() with multiple docs where one fails and one suceeds.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.28.1 (19 July 2024)
+
+- ADD storage bucket support to the [IndexedDB RxStorage](https://rxdb.info/rx-storage-indexeddb.html).
+- FIX error when calling bulkUpsert() with multiple docs where one fails and one suceeds.
 
 ### 15.28.0 (9 July 2024)
 
