@@ -67,8 +67,34 @@ if (location.pathname === '/') {
             trigger('scroll_to_bottom', 0.12);
         }
     });
-
 }
+
+
+// track dev_mode_tracking_iframe event
+const DEV_MODE_EVENT_ID = 'dev_mode_tracking_iframe';
+function checkDevModeEvent() {
+    const hasCookie = document.cookie.split(';').find(v => v.startsWith(DEV_MODE_EVENT_ID));
+    if (!hasCookie) {
+        console.log(DEV_MODE_EVENT_ID + 'no cookie');
+        return;
+    }
+    const version = hasCookie.split('=')[1];
+    const storageKey = DEV_MODE_EVENT_ID + '=' + version;
+    if (localStorage.getItem(storageKey)) {
+        console.log(DEV_MODE_EVENT_ID + 'tracked already');
+        return;
+    }
+
+    console.log(DEV_MODE_EVENT_ID + 'track me version ' + version);
+    localStorage.setItem(storageKey, '1');
+    window.trigger(DEV_MODE_EVENT_ID, 10);
+    window.trigger(DEV_MODE_EVENT_ID + '_' + version, 10);
+}
+checkDevModeEvent();
+// also listen for upcoming events
+const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
+bc.onmessage = () => checkDevModeEvent();
+// /track dev_mode_tracking_iframe event
 
 // reddit pixel
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
@@ -109,6 +135,8 @@ window.pipedriveLeadboosterConfig = {
     }
 })();
 // /pipedrive chat
+
+
 
 
 
