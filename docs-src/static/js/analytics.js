@@ -73,7 +73,10 @@ if (location.pathname === '/') {
 // track dev_mode_tracking_iframe event
 const DEV_MODE_EVENT_ID = 'dev_mode_tracking_iframe';
 function checkDevModeEvent() {
-    const hasCookie = document.cookie.split(';').find(v => v.startsWith(DEV_MODE_EVENT_ID));
+    const hasCookie = document.cookie
+        .split(';')
+        .map(str => str.trim())
+        .find(v => v.startsWith(DEV_MODE_EVENT_ID));
     if (!hasCookie) {
         console.log(DEV_MODE_EVENT_ID + 'no cookie');
         return;
