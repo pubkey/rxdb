@@ -260,7 +260,7 @@ export function fillUpOptionals(
     const schema = fillWithDefaultSettings(input.schema);
     // strip internal attributes
     Object.keys(schema.properties).forEach(key => {
-        if (key.startsWith('_')) {
+        if (key.startsWith('_') && schema.primaryKey !== key) {
             delete schema.properties[key];
         }
     });
