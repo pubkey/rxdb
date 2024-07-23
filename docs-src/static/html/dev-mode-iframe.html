@@ -5,7 +5,27 @@
         name="robots"
         content="noindex"
     />
-    <script
+
+    <script>
+        /**
+         * Instead of directly creating analytics events inside of the iframe,
+         * we first set a cookie here that can be later read out when the user
+         * visits the RxDB docs page.
+         * This prevents us from creating events from non-developers when the dev-mode
+         * is accidentally used in production.
+         * Also it fixies problems with the origins of the google tag manager.
+         */
+        const DEV_MODE_EVENT_ID = 'dev_mode_tracking_iframe';
+        const searchParams = new URLSearchParams(window.location.search);
+        const version = searchParams.get('version');
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + 3);
+        document.cookie = DEV_MODE_EVENT_ID + "=" + version + "; expires=" + expiryDate.toGMTString();
+        const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
+        bc.postMessage({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() });
+        // console.dir({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() })
+    </script>
+    <!-- <script
         async
         src="https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0"
     ></script>
@@ -17,7 +37,6 @@
     </script>
 
 
-    <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
             w[l] = w[l] || []; w[l].push({
                 'gtm.start':
@@ -26,7 +45,6 @@
                 j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-PL63TR5');</script>
-    <!-- End Google Tag Manager -->
 
     <script src="/js/analytics.js"></script>
     <script>
@@ -41,24 +59,21 @@
         } else {
             console.log('tracked already');
         }
-    </script>
+    </script> -->
 </head>
 
 <body>
-
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe
+    <!-- <noscript><iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5"
             height="0"
             width="0"
             style="display:none;visibility:hidden"
         ></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
 
     This is the tracking page for dev-mode. <a
         href="https://rxdb.info/dev-mode.html#disable-the-tracking-iframe"
         target="_blank"
-    >Read More</a>.
+    >Read More</a>. -->
 </body>
 
 </html>
