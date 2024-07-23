@@ -643,7 +643,7 @@ export function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows,
   if (fromMap) {
     return fromMap;
   }
-  var ret = new Array(writeRows.length - response.error.length);
+  var ret = [];
   if (response.error.length > 0) {
     var errorIds = new Set();
     for (var index = 0; index < response.error.length; index++) {
@@ -653,10 +653,12 @@ export function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows,
     for (var _index = 0; _index < writeRows.length; _index++) {
       var doc = writeRows[_index].document;
       if (!errorIds.has(doc[primaryPath])) {
-        ret[_index] = stripAttachmentsDataFromDocument(doc);
+        ret.push(stripAttachmentsDataFromDocument(doc));
       }
     }
   } else {
+    // pre-set array size for better performance
+    ret.length = writeRows.length - response.error.length;
     for (var _index2 = 0; _index2 < writeRows.length; _index2++) {
       var _doc = writeRows[_index2].document;
       ret[_index2] = stripAttachmentsDataFromDocument(_doc);

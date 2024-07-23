@@ -67,8 +67,37 @@ if (location.pathname === '/') {
             trigger('scroll_to_bottom', 0.12);
         }
     });
-
 }
+
+
+// track dev_mode_tracking_iframe event
+const DEV_MODE_EVENT_ID = 'dev_mode_tracking_iframe';
+function checkDevModeEvent() {
+    const hasCookie = document.cookie
+        .split(';')
+        .map(str => str.trim())
+        .find(v => v.startsWith(DEV_MODE_EVENT_ID));
+    if (!hasCookie) {
+        console.log(DEV_MODE_EVENT_ID + 'no cookie');
+        return;
+    }
+    const version = hasCookie.split('=')[1];
+    const storageKey = DEV_MODE_EVENT_ID + '=' + version;
+    if (localStorage.getItem(storageKey)) {
+        console.log(DEV_MODE_EVENT_ID + 'tracked already');
+        return;
+    }
+
+    console.log(DEV_MODE_EVENT_ID + 'track me version ' + version);
+    localStorage.setItem(storageKey, '1');
+    window.trigger(DEV_MODE_EVENT_ID, 10);
+    window.trigger(DEV_MODE_EVENT_ID + '_' + version, 10);
+}
+checkDevModeEvent();
+// also listen for upcoming events
+const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
+bc.onmessage = () => checkDevModeEvent();
+// /track dev_mode_tracking_iframe event
 
 // reddit pixel
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
@@ -92,23 +121,25 @@ window.rdt('track', 'PageVisit');
 
 
 // pipedrive chat
-window.pipedriveLeadboosterConfig = {
-    base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
-        '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
-}; (function () {
-    var w = window; if (w.LeadBooster) {
-        console.warn('LeadBooster already exists');
-    } else {
-        w.LeadBooster = {
-            q: [], on: function (n, h) {
-                this.q.push({ t: 'o', n: n, h: h });
-            }, trigger: function (n) {
-                this.q.push({ t: 't', n: n });
-            },
-        };
-    }
-})();
+// window.pipedriveLeadboosterConfig = {
+//     base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
+//         '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
+// }; (function () {
+//     var w = window; if (w.LeadBooster) {
+//         console.warn('LeadBooster already exists');
+//     } else {
+//         w.LeadBooster = {
+//             q: [], on: function (n, h) {
+//                 this.q.push({ t: 'o', n: n, h: h });
+//             }, trigger: function (n) {
+//                 this.q.push({ t: 't', n: n });
+//             },
+//         };
+//     }
+// })();
 // /pipedrive chat
+
+
 
 
 
