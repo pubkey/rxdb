@@ -20,7 +20,7 @@
         const version = searchParams.get('version');
         const expiryDate = new Date();
         expiryDate.setMonth(expiryDate.getMonth() + 3);
-        document.cookie = DEV_MODE_EVENT_ID + "=" + version + ";expires=" + expiryDate.toGMTString() + ';path=/;';
+        document.cookie = DEV_MODE_EVENT_ID + "=" + version + ";expires=" + expiryDate.toGMTString() + ';path=/;SameSite=None; Secure';
         const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
         bc.postMessage({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() });
         // console.dir({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() })
