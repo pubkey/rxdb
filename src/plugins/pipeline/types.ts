@@ -18,4 +18,5 @@ export type RxPipelineOptions<RxDocType> = {
     destination: RxCollection<any>;
     handler: RxPipelineHandler<RxDocType>;
     waitForLeadership?: boolean;
+    batchSize?: number;
 }
