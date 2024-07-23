@@ -8,7 +8,6 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115)
 - [#5589](https://github.com/pubkey/rxdb/issues/5589) Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
-- UPDATE node.js in the `.nvmrc` file to version 22 and fix all CI issues that come with that.
 
 ## Tasks already in progress (do no work on these!)
 
@@ -18,3 +17,4 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 - Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage https://github.com/pubkey/rxdb/pull/5429https://github.com/pubkey/rxdb/pull/5429
 - Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version. https://github.com/pubkey/rxdb/pull/5469
+- UPDATE node.js in the `.nvmrc` file to version 22 and fix all CI issues that come with that. [#6231](https://github.com/pubkey/rxdb/pull/6231)
