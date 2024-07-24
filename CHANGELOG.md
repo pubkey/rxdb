@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD support for the `node:sqlite` module to the SQLite RxStorage
 
 <!-- ADD new changes here! -->
 

@@ -20,7 +20,7 @@ The SQLite storage is a bit slower compared to other Node.js based storages like
 
 To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
-## Usage with **Node.js SQLite**
+## Usage with the **sqlite3 npm package**
 
 ```ts
 import {
@@ -49,6 +49,24 @@ const myRxDatabase = await createRxDatabase({
          * sqlite operations.
          */
         sqliteBasics: getSQLiteBasicsNode(sqlite3)
+    })
+});
+```
+
+## Usage with the **node:sqlite** package
+
+With Node.js version 22 and newer, you can use the "native" [sqlite module](https://nodejs.org/api/sqlite.html) that comes shipped with Node.js.
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsNodeNative
+} from 'rxdb-premium/plugins/storage-sqlite';
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsNodeNative()
     })
 });
 ```
