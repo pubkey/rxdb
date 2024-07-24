@@ -20,3 +20,9 @@ export type RxPipelineOptions<RxDocType> = {
     waitForLeadership?: boolean;
     batchSize?: number;
 }
+
+
+export type CheckpointDocData<CheckpointType = any> = {
+    checkpoint: CheckpointType;
+    lastDocTime: number;
+};
