@@ -16,7 +16,7 @@
     "react-scripts": "5.0.1",
     "rimraf": "5.0.9",
     "testcafe": "3.6.2",
-    "local-web-server": "5.3.3",
+    "local-web-server": "5.3.4",
     "ajv": "8.17.1"
   },
   "scripts": {

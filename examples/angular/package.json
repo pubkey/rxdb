@@ -83,7 +83,7 @@
     "browser-sync": "^3.0.0",
     "concurrently": "8.2.2",
     "copyfiles": "2.4.1",
-    "local-web-server": "5.3.3",
+    "local-web-server": "5.3.4",
     "testcafe": "3.6.2",
     "ts-mocha": "10.0.0",
     "tslint": "6.1.3",
