@@ -1849,6 +1849,29 @@ describe('replication-graphql.test.ts', () => {
                 const build = buildSchema(output.asString);
                 assert.ok(build);
             });
+            it('should create a valid output with the underscore primary key', () => {
+                const { id: _id, ...restProperties } =  schemas.humanWithTimestamp.properties;
+
+                const schema: RxJsonSchema<any> = {
+                    ...schemas.humanWithTimestamp,
+                    primaryKey: '_id',
+                    properties: { _id, ...restProperties }
+                };
+
+                const output = graphQLSchemaFromRxSchema({
+                    human: {
+                        schema,
+                        checkpointFields: [
+                            '_id',
+                            'updatedAt'
+                        ]
+                    }
+                });
+
+                assert.ok(output.asString.includes('_id'));
+                const build = buildSchema(output.asString);
+                assert.ok(build);
+            });
             it('should create a valid output with subscription params', () => {
                 const output = graphQLSchemaFromRxSchema({
                     human: {
