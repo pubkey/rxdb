@@ -2,14 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD support for the `node:sqlite` module to the SQLite RxStorage
-- FIX several problem with the memory-mapped RxStorage in ReactNative
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.29.0 (29 July 2024)
+
+- ADD support for the `node:sqlite` module to the SQLite RxStorage
+- FIX several problem with the memory-mapped RxStorage in ReactNative
 
 ### 15.28.1 (19 July 2024)
 

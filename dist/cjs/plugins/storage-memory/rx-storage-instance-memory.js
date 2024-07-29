@@ -1,10 +1,12 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageInstanceMemory = exports.OPEN_MEMORY_INSTANCES = void 0;
 exports.createMemoryStorageInstance = createMemoryStorageInstance;
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
 var _rxjs = require("rxjs");
 var _customIndex = require("../../custom-index.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");

@@ -1,3 +1,4 @@
+import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";

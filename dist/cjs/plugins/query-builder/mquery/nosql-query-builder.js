@@ -1,5 +1,6 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -7,6 +8,7 @@ exports.OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_ATTRIBUTES = exports.NoSqlQu
 exports.canMerge = canMerge;
 exports.createQueryBuilder = createQueryBuilder;
 exports.mQuerySortToRxDBSort = mQuerySortToRxDBSort;
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
 var _mqueryUtils = require("./mquery-utils.js");
 var _rxError = require("../../../rx-error.js");
 /**

@@ -1,10 +1,12 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageInstanceMongoDB = void 0;
 exports.createMongoDBStorageInstance = createMongoDBStorageInstance;
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
 var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var _index = require("../../plugins/utils/index.js");

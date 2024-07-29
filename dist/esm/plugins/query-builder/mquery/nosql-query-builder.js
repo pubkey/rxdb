@@ -1,3 +1,4 @@
+import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 /**
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js

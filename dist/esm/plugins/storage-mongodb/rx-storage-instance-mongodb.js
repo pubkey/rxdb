@@ -1,3 +1,4 @@
+import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 import { BehaviorSubject, Subject, filter, firstValueFrom } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { ensureNotFalsy, getFromMapOrThrow, isMaybeReadonlyArray, now, PROMISE_RESOLVE_VOID, requestIdlePromise } from "../../plugins/utils/index.js";
