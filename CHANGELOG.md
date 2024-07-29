@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD support for the `node:sqlite` module to the SQLite RxStorage
+- FIX several problem with the memory-mapped RxStorage in ReactNative
 
 <!-- ADD new changes here! -->
 
