@@ -20,8 +20,7 @@ You should disable that when creating the database and check if the behavior cha
 ```ts
 const db = await createRxDatabase({
     name,
-    adapter: 'memory'
-    eventReduce: true,
+    eventReduce: false,
 });
 ```
 
@@ -36,7 +35,6 @@ By default, RxDB propagates events between different browser tabs of the same we
 ```ts
 const db = await createRxDatabase({
     name,
-    adapter: 'memory'
     multiInstance: false,
 });
 ```
