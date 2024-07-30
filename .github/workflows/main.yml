@@ -89,8 +89,7 @@ jobs:
       - name: install npm dependencies
         run: npm install
 
-      - name: build
-        run: npm run build
+      - run: npm run build && cat ./test_tmp/package.json
 
       - run: npm run test:node:memory
 
