@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX quotes problem on windows with the scripts of the `package.json`
+- CHANGE `getSQLiteBasicsNodeNative()` requires the constructor as param
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
