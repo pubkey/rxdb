@@ -1,9 +1,8 @@
 import { Subscription, filter } from 'rxjs';
-import {
+import type {
     InternalStoreDocType,
     RxCollection,
     RxDocumentData
-
 } from '../../types';
 import type {
     CheckpointDocData,
@@ -17,11 +16,11 @@ import {
     ensureNotFalsy,
     lastOfArray,
     now
-} from '../utils';
-import { getChangedDocumentsSince } from '../../rx-storage-helper';
-import { mapDocumentsDataToCacheDocs } from '../../doc-cache';
-import { getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store';
-export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
+} from '../utils/index.ts';
+import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
+import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
+import { getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
+export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint.ts';
 
 
 export class RxPipeline<RxDocType> {
@@ -70,6 +69,7 @@ export class RxPipeline<RxDocType> {
     }
 
     trigger() {
+        console.log('TRIGGER');
         /**
          * Do not stack up too many
          * so that fast writes to the source collection
@@ -99,7 +99,8 @@ export class RxPipeline<RxDocType> {
                     await this.handler(rxDocuments);
                     lastTime = ensureNotFalsy(lastOfArray(docs.documents))._meta.lwt;
                 }
-                await setCheckpointDoc(this, { checkpoint, lastDocTime: lastTime }, docs.checkpoint);
+
+                await setCheckpointDoc(this, { checkpoint, lastDocTime: lastTime }, checkpointDoc);
 
                 if (docs.documents.length < this.batchSize) {
                     done = true;
@@ -113,7 +114,7 @@ export class RxPipeline<RxDocType> {
         while (!done) {
             await this.processQueue;
             if (this.lastProcessedDocTime <= this.lastSourceDocTime) {
-                
+
             }
         }
     }
@@ -144,14 +145,14 @@ export class RxPipeline<RxDocType> {
 
 export async function getCheckpointDoc<RxDocType>(
     pipeline: RxPipeline<RxDocType>
-): Promise<RxDocumentData<InternalStoreDocType<CheckpointDocData>> | null> {
+): Promise<RxDocumentData<InternalStoreDocType<CheckpointDocData>> | undefined> {
     const insternalStore = pipeline.destination.database.internalStore;
     const results = await insternalStore.findDocumentsById([pipeline.checkpointId], false);
     const result: RxDocumentData<InternalStoreDocType> = results[0];
     if (result) {
         return result;
     } else {
-        return null;
+        return undefined;
     }
 }
 
@@ -178,13 +179,20 @@ export async function setCheckpointDoc<RxDocType>(
         key: pipeline.checkpointId
     };
 
+    console.dir({
+        previous,
+        document: newDoc,
+    });
     await insternalStore.bulkWrite([{
         previous,
         document: newDoc,
     }], RX_PIPELINE_CHECKPOINT_CONTEXT);
 }
 
-export async function addPipeline<RxDocType>(this: RxCollection<RxDocType>, options: RxPipelineOptions<RxDocType>) {
+export async function addPipeline<RxDocType>(
+    this: RxCollection<RxDocType>,
+    options: RxPipelineOptions<RxDocType>
+): Promise<RxPipeline<RxDocType>> {
     const pipeline = new RxPipeline<RxDocType>(
         options.identifier,
         this,
@@ -192,9 +200,11 @@ export async function addPipeline<RxDocType>(this: RxCollection<RxDocType>, opti
         options.handler,
         options.batchSize
     );
+    console.log('ADD PIPELINE ' + typeof options.waitForLeadership);
     const waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const startPromise = waitForLeadership ? this.database.waitForLeadership() : PROMISE_RESOLVE_VOID;
     startPromise.then(() => {
+        console.log('START !!');
         pipeline.trigger();
         pipeline.subs.push(
             this.database.eventBulks$.pipe(

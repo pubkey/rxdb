@@ -303,6 +303,12 @@
       "import": "./dist/esm/plugins/state/index.js",
       "default": "./dist/esm/plugins/state/index.js"
     },
+    "./plugins/pipeline": {
+      "types": "./dist/types/plugins/pipeline/index.d.ts",
+      "require": "./dist/cjs/plugins/pipeline/index.js",
+      "import": "./dist/esm/plugins/pipeline/index.js",
+      "default": "./dist/esm/plugins/pipeline/index.js"
+    },
     "./plugins/validate-ajv": {
       "types": "./dist/types/plugins/validate-ajv/index.d.ts",
       "require": "./dist/cjs/plugins/validate-ajv/index.js",

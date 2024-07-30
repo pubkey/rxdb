@@ -103,6 +103,7 @@ import { defaultConflictHandler } from './replication-protocol/index.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
+import type { RxPipelineOptions } from './plugins/pipeline/types.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -740,6 +741,11 @@ export class RxCollectionBase<
 
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
         throw pluginMissing('crdt');
+    }
+
+
+    addPipeline(_options: RxPipelineOptions<RxDocumentType>) {
+        throw pluginMissing('pipeline');
     }
 
     /**

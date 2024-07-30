@@ -4,12 +4,10 @@ import type {
     RxState
 } from '../../types/index.d.ts';
 import { getFromMapOrCreate } from '../utils/utils-map.ts';
+import { addPipeline } from './rx-pipeline.ts';
+import type { RxPipelineOptions } from './types.ts';
 
 export type * from './types.ts';
-
-export async function addPipeline() {
-
-}
 
 export const RxDBPipelinePlugin: RxPlugin = {
     name: 'pipeline',
