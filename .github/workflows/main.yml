@@ -57,6 +57,43 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
+  # We have to run all major scripts once on windows to ensure windows-devs can
+  # run the test suite.
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: log versions
+        run: |
+          node --version
+          npm -v
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-windows-x3-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-windows-x3-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - run: npm run test:node:memory
+
   storage-dexie:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
