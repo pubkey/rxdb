@@ -64,8 +64,7 @@ import {
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4,
-    HumanDocumentType,
-    isBun
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
