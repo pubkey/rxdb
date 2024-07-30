@@ -64,7 +64,8 @@ import {
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4,
-    HumanDocumentType
+    HumanDocumentType,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
@@ -1849,6 +1850,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * documents then the batchSize of the RxStorage
              */
             it('querying many documents should work', async () => {
+                if (isBun) {
+                    // too slow in bun
+                    return;
+                }
                 const schema = getTestDataSchema();
                 const storageInstance = await config.storage
                     .getStorage()
