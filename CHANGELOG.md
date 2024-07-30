@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX quotes problem on windows with the scripts of the `package.json`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
