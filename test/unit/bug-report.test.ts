@@ -8,134 +8,101 @@
  * - 'npm run test:node' so it runs in nodejs
  * - 'npm run test:browser' so it runs in the browser
  */
-import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
-import config from './config.ts';
 
-import {
-    createRxDatabase,
-    randomCouchString
-} from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+import assert from 'assert';
+import { addRxPlugin, createRxDatabase, MangoQuery, } from '../../plugins/core/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mts';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mts';
+import { isNode } from '../../plugins/test-utils/index.mjs';
+import { RxJsonSchema } from '../../src/index.ts';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mts';
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
 
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
+        if ( isNode ) {
             return;
         }
 
         // create a schema
-        const mySchema = {
+        const schema = {
             version: 0,
+            keyCompression: true,
             primaryKey: 'passportId',
             type: 'object',
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 128,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 128,
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 128,
                 },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
+                adult: {
+                    type: 'boolean'
                 }
-            }
-        };
+            },
+            required: [ 'passportId', 'adult' ],
+            indexes: [
+                'firstName',
+                'lastName',
+                'adult',
+                [ 'firstName', 'lastName', 'adult' ]
+            ]
+        } as const satisfies RxJsonSchema<any>;
 
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
-        const name = randomCouchString(10);
+        const name = `a${(Math.random() + 1).toString(36).substring(7)}`;
+        const storage = wrappedKeyCompressionStorage({ storage: getRxStorageDexie() });
 
-        // create a database
+        addRxPlugin(RxDBDevModePlugin);
+
         const db = await createRxDatabase({
             name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
+            storage,
             eventReduce: true,
             ignoreDuplicate: true
         });
-        // create a collection
         const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
+            ['test-collection']: {
+                schema
             }
         });
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        await collections['test-collection'].bulkUpsert([
+            {
+                passportId: '1',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                adult: true
+            },
+            {
+                passportId: '2',
+                firstName: 'Andrew',
+                lastName: 'Wright',
+                adult: true
+            },
+            {
+                passportId: '3',
+                firstName: 'Tommy',
+                lastName: 'Little',
+                adult: false
             }
-        });
+        ] );
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const queryObject: MangoQuery = {
+            selector:{
+                adult: true
+            },
+            index: [ 'adult' ]
+        };
+        assert.ok( ( await collections['test-collection'].find(queryObject).exec() ).length === 2 );
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
