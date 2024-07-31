@@ -494,7 +494,7 @@
     "@babel/plugin-transform-template-literals": "7.24.7",
     "@babel/plugin-transform-typescript": "7.25.2",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.25.2",
+    "@babel/preset-env": "7.25.3",
     "@babel/preset-typescript": "7.24.7",
     "@babel/types": "7.25.2",
     "@faker-js/faker": "8.4.1",
