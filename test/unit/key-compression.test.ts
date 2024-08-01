@@ -552,7 +552,7 @@ describeParallel('key-compression.test.js', () => {
             const query = collections['test-collection'].find(queryObject);
             const result = await query.exec();
 
-            assert.deepStrictEqual(result.map(d => d.passportId), [1, 2]);
+            assert.deepStrictEqual(result.map(d => d.passportId), ['1', '2']);
             db.destroy();
         });
     });
