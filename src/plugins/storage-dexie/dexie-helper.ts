@@ -120,18 +120,19 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
  */
 export function fromStorageToDexie<RxDocType>(
     booleanIndexes: string[],
-    d: RxDocumentData<RxDocType>
+    inputDoc: RxDocumentData<RxDocType>
 ): any {
-    if (!d) {
-        return d;
+    if (!inputDoc) {
+        return inputDoc;
     }
-    d = flatClone(d);
+    let d = flatClone(inputDoc);
     d = fromStorageToDexieField(d);
 
     booleanIndexes.forEach(idx => {
-        const val = getProperty(d, idx);
+        const val = getProperty(inputDoc, idx);
         const newVal = val ? '1' : '0';
-        setProperty(d, idx, newVal);
+        const useIndex = dexieReplaceIfStartsWithPipe(idx);
+        setProperty(d, useIndex, newVal);
     });
 
     return d;
@@ -247,6 +248,7 @@ export function getDexieStoreSchema(
         }
     });
     dexieSchemaRows = dexieSchemaRows.filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
+
     const dexieSchema = dexieSchemaRows.join(', ');
 
     return dexieSchema;
