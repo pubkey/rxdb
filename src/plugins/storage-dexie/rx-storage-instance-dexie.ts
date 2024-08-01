@@ -184,6 +184,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     bulkPutDocs.push(row.document);
                 });
                 bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));
+
                 if (bulkPutDocs.length > 0) {
                     await state.dexieTable.bulkPut(bulkPutDocs);
                 }

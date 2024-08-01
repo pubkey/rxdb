@@ -48,7 +48,6 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
-
     const startKeys = queryPlan.startKeys
         .map((v, i) => {
             const fieldName = queryPlan.index[i];
