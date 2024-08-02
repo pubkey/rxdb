@@ -22,7 +22,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reac
      */
     _result: RxQuerySingleResult<RxDocType> | null;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>, other?: any);
-    get $(): BehaviorSubject<RxQueryResult>;
+    get $(): Observable<RxQueryResult>;
     get $$(): Reactivity;
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;

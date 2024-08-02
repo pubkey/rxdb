@@ -105,16 +105,17 @@ function dexieReplaceIfStartsWithPipeRevert(str) {
  * So we have to replace true/false with '1'/'0'
  * @param d 
  */
-function fromStorageToDexie(booleanIndexes, d) {
-  if (!d) {
-    return d;
+function fromStorageToDexie(booleanIndexes, inputDoc) {
+  if (!inputDoc) {
+    return inputDoc;
   }
-  d = (0, _index.flatClone)(d);
+  var d = (0, _index.flatClone)(inputDoc);
   d = fromStorageToDexieField(d);
   booleanIndexes.forEach(idx => {
-    var val = (0, _index.getProperty)(d, idx);
+    var val = (0, _index.getProperty)(inputDoc, idx);
     var newVal = val ? '1' : '0';
-    (0, _index.setProperty)(d, idx, newVal);
+    var useIndex = dexieReplaceIfStartsWithPipe(idx);
+    (0, _index.setProperty)(d, useIndex, newVal);
   });
   return d;
 }
@@ -213,6 +214,7 @@ function getDexieStoreSchema(rxJsonSchema) {
     }
   });
   dexieSchemaRows = dexieSchemaRows.filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
+
   var dexieSchema = dexieSchemaRows.join(', ');
   return dexieSchema;
 }
