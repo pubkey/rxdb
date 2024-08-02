@@ -111,7 +111,7 @@ export class RxQueryBase<
             mangoQuery
         );
     }
-    get $(): BehaviorSubject<RxQueryResult> {
+    get $(): Observable<RxQueryResult> {
         if (!this._$) {
 
             const results$ = this.collection.$.pipe(

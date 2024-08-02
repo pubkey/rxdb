@@ -5,6 +5,7 @@
 - FIX quotes problem on windows with the scripts of the `package.json`
 - CHANGE `getSQLiteBasicsNodeNative()` requires the constructor as param
 - FIX key-compression broken with boolean indexes on dexie [#6267](https://github.com/pubkey/rxdb/pull/6267)
+- FIX type of `RxQuery.$` must be `Observable` [#6285](https://github.com/pubkey/rxdb/issues/6285)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
