@@ -17,7 +17,7 @@
     "@rollup/plugin-node-resolve": "15.2.3",
     "async-test-util": "2.5.0",
     "concurrently": "8.2.2",
-    "rollup": "4.19.2",
+    "rollup": "4.20.0",
     "rollup-plugin-css-only": "4.5.2",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",
