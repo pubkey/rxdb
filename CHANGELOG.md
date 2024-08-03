@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX `node:sqlite` couldn't be found in react native [#6291](https://github.com/pubkey/rxdb/issues/6291)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.30.1 (3 August 2024)
+
+- FIX `node:sqlite` couldn't be found in react native [#6291](https://github.com/pubkey/rxdb/issues/6291)
 
 ### 15.30.0 (2 August 2024)
 
