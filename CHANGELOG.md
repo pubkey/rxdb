@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX `node:sqlite` couldn't be found in react native [#6291](https://github.com/pubkey/rxdb/issues/6291)
 
 <!-- ADD new changes here! -->
 
