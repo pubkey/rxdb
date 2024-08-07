@@ -151,7 +151,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
             },
             batchSize: pull.batchSize,
             modifier: pull.modifier,
-            stream$: pullStream$.asObservable()
+            stream$: pullStream$.asObservable(),
+            initialCheckpoint: pull.initialCheckpoint
         };
     }
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
@@ -178,7 +179,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 return data;
             },
             batchSize: push.batchSize,
-            modifier: push.modifier
+            modifier: push.modifier,
+            initialCheckpoint: push.initialCheckpoint
         };
     }
 
