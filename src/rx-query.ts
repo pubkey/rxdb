@@ -189,6 +189,7 @@ export class RxQueryBase<
 
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
+    // TODO do we still need these properties?
     public _lastExecStart: number = 0;
     public _lastExecEnd: number = 0;
 
@@ -542,13 +543,17 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+    if (rxQuery.collection.awaitBeforeReads.size > 0) {
+        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+    }
+
     // Optimisation shortcut
     if (
         rxQuery.collection.database.destroyed ||
         _isResultsInSync(rxQuery)
     ) {
-        return PROMISE_RESOLVE_FALSE;
+        return false;
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue

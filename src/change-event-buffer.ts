@@ -9,7 +9,10 @@ import type {
     RxChangeEvent,
     RxCollection
 } from './types/index.d.ts';
-import { appendToArray, requestIdlePromiseNoQueue } from './plugins/utils/index.ts';
+import {
+    appendToArray,
+    requestIdlePromiseNoQueue
+} from './plugins/utils/index.ts';
 
 /**
  * This buffer rembemers previous change events

@@ -103,6 +103,8 @@ import { defaultConflictHandler } from './replication-protocol/index.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
+import type { RxPipelineOptions } from './plugins/pipeline/types.ts';
+import { RxPipeline } from './plugins/pipeline/rx-pipeline.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -125,6 +127,13 @@ export class RxCollectionBase<
     public storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
     public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
+
+
+    /**
+     * Before reads, all these methods are awaited. Used to "block" reads
+     * depending on other processes, like when the RxPipeline is running.
+     */
+    public readonly awaitBeforeReads = new Set<() => MaybePromise<any>>();
 
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>,
@@ -740,6 +749,11 @@ export class RxCollectionBase<
 
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
         throw pluginMissing('crdt');
+    }
+
+
+    addPipeline(_options: RxPipelineOptions<RxDocumentType>): Promise<RxPipeline<RxDocumentType>> {
+        throw pluginMissing('pipeline');
     }
 
     /**
