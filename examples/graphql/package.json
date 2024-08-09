@@ -24,7 +24,7 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "@apollo/server": "4.10.5",
+    "@apollo/server": "4.11.0",
     "concurrently": "8.2.2",
     "cors": "2.8.5",
     "express-graphql": "0.12.0",
