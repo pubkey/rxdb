@@ -79,7 +79,7 @@
     "datastore"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=18.18.0"
   },
   "license": "Apache-2.0",
   "types": "./dist/types/index.d.ts",
@@ -412,7 +412,7 @@
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run transpile && rm -f isolate-* && cross-env DEFAULT_STORAGE=memory NODE_PROF=true mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.mjs",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
-    "lint": "eslint . --ext .js,.ts --cache",
+    "lint": "eslint . --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "lint:debug:files": "DEBUG=eslint:cli-engine eslint --ext .js,.ts,.json .",
     "lint:debug:time": "TIMING=1 eslint --ext .js,.ts,.json .",
@@ -497,6 +497,7 @@
     "@babel/preset-env": "7.25.3",
     "@babel/preset-typescript": "7.24.7",
     "@babel/types": "7.25.2",
+    "@eslint/js": "9.9.0",
     "@faker-js/faker": "8.4.1",
     "@rollup/plugin-commonjs": "26.0.1",
     "@rollup/plugin-node-resolve": "15.2.3",
@@ -509,8 +510,8 @@
     "@types/request": "2.48.12",
     "@types/request-promise-native": "1.0.21",
     "@types/source-map-support": "0.5.10",
-    "@typescript-eslint/eslint-plugin": "7.18.0",
-    "@typescript-eslint/parser": "7.18.0",
+    "@typescript-eslint/eslint-plugin": "8.0.1",
+    "@typescript-eslint/parser": "8.0.1",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
     "babel-loader": "9.1.3",
@@ -525,7 +526,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "8.57.0",
+    "eslint": "9.9.0",
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsdoc": "50.0.0",
     "exists-file": "3.0.2",
