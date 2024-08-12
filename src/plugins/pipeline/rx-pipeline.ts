@@ -145,7 +145,7 @@ export class RxPipeline<RxDocType> {
                     // `);
                     // await o[this.secretFunctionName](rxDocuments);
                     try {
-                        await (FLAGGED_FUNCTIONS as any)[fnKey](() => _this.handler(rxDocuments));
+                        await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } finally {
                         releaseFlaggedFunctionKey(fnKey);
                     }
@@ -179,10 +179,11 @@ export class RxPipeline<RxDocType> {
         }
     }
 
-    destroy() {
+    async destroy() {
         this.stopped = true;
         this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
         this.subs.forEach(s => s.unsubscribe());
+        await this.processQueue;
     }
 
     /**
