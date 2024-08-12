@@ -66,7 +66,7 @@ describeParallel('rx-pipeline.test.js', () => {
             /**
              * Here we run the query on the destination directly after
              * a write to the source. The pipeline should automatically halt
-             * the reads to the destionation until the pipeline is idle.
+             * the reads to the destination until the pipeline is idle.
              */
             const doc2 = await c2.findOne().exec(true);
             assert.strictEqual(doc2.passportId, 'foobar');
@@ -259,7 +259,7 @@ describeParallel('rx-pipeline.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('should be able to do writes dependend on reads', async () => {
+        it('should be able to do writes dependent on reads', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(1);
