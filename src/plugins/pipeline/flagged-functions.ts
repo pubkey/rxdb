@@ -119,7 +119,7 @@ const ids: (keyof typeof FLAGGED_FUNCTIONS)[] = Object.keys(FLAGGED_FUNCTIONS) a
 export function blockFlaggedFunctionKey(): keyof typeof FLAGGED_FUNCTIONS {
     /**
      * If this happens and we have no more flagged keys left
-     * it means that more pipeline handlers are running in parrallel.
+     * it means that more pipeline handlers are running in parallel.
      * To fix this, add more functions.
      */
     const id = ensureNotFalsy(ids.pop(), 'no flagged keys left');
