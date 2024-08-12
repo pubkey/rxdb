@@ -31,6 +31,7 @@ import {
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
 import { getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
+import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
 export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 
 
@@ -50,9 +51,9 @@ export class RxPipeline<RxDocType> {
     secretFunctionName = 'tx_fn_' + randomCouchString(10)
 
     waitBeforeWriteFn = async () => {
-        console.log('waitBeforeWriteFn!!!! 1');
+        console.log('waitBeforeWriteFn!!!! 1 ' + this.secretFunctionName);
         const stack = new Error().stack;
-        // console.dir(stack);
+        console.dir(stack);
         if (stack && stack.includes(this.secretFunctionName)) {
             console.log('called in tx!!');
         } else {
@@ -134,26 +135,20 @@ export class RxPipeline<RxDocType> {
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docs.documents);
 
                     const _this = this;
-                    // const namedFn = nameFunction('foobarfunction', (docs: RxDocument<RxDocType>[]) => _this.handler(rxDocuments));
-                    // await namedFn(rxDocuments);
+                    const fnKey = blockFlaggedFunctionKey();
 
-                    // const fn = Object.defineProperty(async function () {
-                    //     await _this.handler(rxDocuments);
-                    //     /* ... */
-                    // }, 'name', { value: 'foobarfunction' })
-                    // console.log(fn.name);
-                    // await fn();
+                    this.secretFunctionName = fnKey;
 
-                    // (process as any).a = () => _this.handler(rxDocuments);
-                    // var func = new Function(
-                    //     "return function " + name + "(){ return process.a(); }"
-                    // )();
-                    const o: any = {};
-                    eval(`
-                        async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
-                        o.${this.secretFunctionName} = ${this.secretFunctionName};
-                    `);
-                    await o[this.secretFunctionName](rxDocuments);
+                    // eval(`
+                    //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
+                    //     o.${this.secretFunctionName} = ${this.secretFunctionName};
+                    // `);
+                    // await o[this.secretFunctionName](rxDocuments);
+                    try {
+                        await (FLAGGED_FUNCTIONS as any)[fnKey](() => _this.handler(rxDocuments));
+                    } finally {
+                        releaseFlaggedFunctionKey(fnKey);
+                    }
 
 
                     lastTime = ensureNotFalsy(lastOfArray(docs.documents))._meta.lwt;
