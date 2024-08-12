@@ -1,7 +1,15 @@
-import { BehaviorSubject, Subject, Subscription, filter, firstValueFrom, race } from 'rxjs';
+import {
+    BehaviorSubject,
+    Subject,
+    Subscription,
+    filter,
+    firstValueFrom,
+    race
+} from 'rxjs';
 import type {
     InternalStoreDocType,
     RxCollection,
+    RxDocument,
     RxDocumentData
 } from '../../types';
 import type {
@@ -15,8 +23,10 @@ import {
     createRevision,
     ensureNotFalsy,
     lastOfArray,
+    nameFunction,
     now,
-    promiseWait
+    promiseWait,
+    randomCouchString
 } from '../utils/index.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
@@ -36,9 +46,18 @@ export class RxPipeline<RxDocType> {
     lastProcessedDocTime = new BehaviorSubject(0);
     somethingChanged = new Subject();
 
+
+    secretFunctionName = 'tx_fn_' + randomCouchString(10)
+
     waitBeforeWriteFn = async () => {
         console.log('waitBeforeWriteFn!!!! 1');
-        await this.awaitIdle();
+        const stack = new Error().stack;
+        // console.dir(stack);
+        if (stack && stack.includes(this.secretFunctionName)) {
+            console.log('called in tx!!');
+        } else {
+            await this.awaitIdle();
+        }
         console.log('waitBeforeWriteFn!!!! 2');
     }
 
@@ -113,7 +132,30 @@ export class RxPipeline<RxDocType> {
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
                 if (docs.documents.length > 0) {
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docs.documents);
-                    await this.handler(rxDocuments);
+
+                    const _this = this;
+                    // const namedFn = nameFunction('foobarfunction', (docs: RxDocument<RxDocType>[]) => _this.handler(rxDocuments));
+                    // await namedFn(rxDocuments);
+
+                    // const fn = Object.defineProperty(async function () {
+                    //     await _this.handler(rxDocuments);
+                    //     /* ... */
+                    // }, 'name', { value: 'foobarfunction' })
+                    // console.log(fn.name);
+                    // await fn();
+
+                    // (process as any).a = () => _this.handler(rxDocuments);
+                    // var func = new Function(
+                    //     "return function " + name + "(){ return process.a(); }"
+                    // )();
+                    const o: any = {};
+                    eval(`
+                        async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
+                        o.${this.secretFunctionName} = ${this.secretFunctionName};
+                    `);
+                    await o[this.secretFunctionName](rxDocuments);
+
+
                     lastTime = ensureNotFalsy(lastOfArray(docs.documents))._meta.lwt;
                 }
                 await setCheckpointDoc(this, { checkpoint, lastDocTime: lastTime }, checkpointDoc);

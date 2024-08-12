@@ -142,6 +142,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.insert(schemaObjects.humanWithTimestampData());
 
             cDestination.database.destroy();
+            c1.database.destroy();
         });
     });
     describe('multiInstance', () => {
@@ -206,6 +207,80 @@ describeParallel('rx-pipeline.test.js', () => {
             runAt.push('doneQuery');
 
             assert.deepStrictEqual(runAt, ['doneInsert', 'c1.1', 'c1.2', 'doneQuery']);
+
+            c1.database.destroy();
+            c2.database.destroy();
+        });
+    });
+    describe('transactional behavior', () => {
+        it('should not block reads/writes that come from inside the pipeline handler', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async function myHandler(docs) {
+                    await c1.find().exec();
+                    await c2.find().exec();
+
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomCouchString(10)
+            });
+
+            await c1.insert(schemaObjects.humanData('foobar'));
+            await pipeline.awaitIdle();
+
+            c1.database.destroy();
+            c2.database.destroy();
+        });
+        it('should not block reads that come from inside the pipeline handler when already cached outside', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+
+
+            const cachedQuery = c2.find({ selector: { passportId: { $ne: 'foobar' } } });
+            await cachedQuery.exec();
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async function myHandler(docs) {
+                    await cachedQuery.exec();
+                },
+                identifier: randomCouchString(10)
+            });
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            await pipeline.awaitIdle();
+
+            c1.database.destroy();
+            c2.database.destroy();
+        });
+        it('should be able to do writes dependend on reads', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(1);
+
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async function myHandler() {
+                    const c2Docs = await c2.find().exec();
+                    for (const doc of c2Docs) {
+                        const useData = doc.toMutableJSON(true);
+                        useData.firstName = 'foobar';
+                        await c2.upsert(useData);
+                    }
+                },
+                identifier: randomCouchString(10)
+            });
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            const c2After = await c2.findOne({ selector: { firstName: 'foobar' } }).exec(true);
+            assert.strictEqual(c2After.firstName, 'foobar');
+
 
             c1.database.destroy();
             c2.database.destroy();
