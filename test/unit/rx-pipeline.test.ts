@@ -1,23 +1,18 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 
 import {
     RxDocument,
     addRxPlugin,
-    createRxDatabase,
     promiseWait,
     randomCouchString
 } from '../../plugins/core/index.mjs';
 import {
-    HumanWithTimestampDocumentType,
-    isNode
+    HumanWithTimestampDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
     schemaObjects,
-    schemas,
-    humansCollection,
-    HumanDocumentType
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import { RxDBPipelinePlugin } from '../../plugins/pipeline/index.mjs';
 addRxPlugin(RxDBPipelinePlugin);
@@ -48,7 +43,7 @@ describeParallel('rx-pipeline.test.js', () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(0);
-            const pipeline = await c1.addPipeline({
+            await c1.addPipeline({
                 destination: c2,
                 handler: async (docs) => {
                     console.log('H1');
@@ -126,7 +121,7 @@ describeParallel('rx-pipeline.test.js', () => {
             const cDestination = await humansCollection.create(0);
             const c1 = await humansCollection.createHumanWithTimestamp(1, dbName);
             const ids: string[] = [];
-            const handler = async (docs: RxDocument<HumanWithTimestampDocumentType>[]) => {
+            const handler = (docs: RxDocument<HumanWithTimestampDocumentType>[]) => {
                 for (const doc of docs) {
                     if (ids.includes(doc.primary)) {
                         throw new Error('duplicate id ' + doc.primary);
@@ -134,7 +129,7 @@ describeParallel('rx-pipeline.test.js', () => {
                     ids.push(doc.primary);
                 }
             };
-            const pipeline = await c1.addPipeline({
+            await c1.addPipeline({
                 destination: cDestination,
                 handler,
                 identifier
@@ -158,14 +153,14 @@ describeParallel('rx-pipeline.test.js', () => {
             const runAt: string[] = [];
             await c1.addPipeline({
                 destination: c2,
-                handler: async (docs) => {
+                handler: () => {
                     runAt.push('c1');
                 },
                 identifier
             });
             await c2.addPipeline({
                 destination: c2,
-                handler: async (docs) => {
+                handler: () => {
                     runAt.push('c2');
                 },
                 identifier
@@ -187,7 +182,7 @@ describeParallel('rx-pipeline.test.js', () => {
             const runAt: string[] = [];
             await c1.addPipeline({
                 destination: c2,
-                handler: async (docs) => {
+                handler: async () => {
                     runAt.push('c1.1');
                     await promiseWait(50);
                     runAt.push('c1.2');
@@ -196,7 +191,7 @@ describeParallel('rx-pipeline.test.js', () => {
             });
             await c2.addPipeline({
                 destination: c2,
-                handler: async (docs) => {
+                handler: () => {
                     runAt.push('c2');
                 },
                 identifier
@@ -247,7 +242,7 @@ describeParallel('rx-pipeline.test.js', () => {
 
             const pipeline = await c1.addPipeline({
                 destination: c2,
-                handler: async function myHandler(docs) {
+                handler: async function myHandler() {
                     await cachedQuery.exec();
                 },
                 identifier: randomCouchString(10)
@@ -264,7 +259,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(1);
 
-            const pipeline = await c1.addPipeline({
+            await c1.addPipeline({
                 destination: c2,
                 handler: async function myHandler() {
                     const c2Docs = await c2.find().exec();
