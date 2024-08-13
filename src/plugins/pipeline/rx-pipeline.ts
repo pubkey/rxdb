@@ -171,7 +171,9 @@ export class RxPipeline<RxDocType> {
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
                     console.log('processQueue 2 E ' + lastTime);
                 }
-                await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
+                if (!this.destination.destroyed) {
+                    await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
+                }
                 if (docsSinceResult.documents.length < this.batchSize) {
                     done = true;
                 }
