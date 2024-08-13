@@ -64,7 +64,8 @@ import {
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4,
-    HumanDocumentType
+    HumanDocumentType,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
@@ -2129,7 +2130,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * has to workaround any problems with that.
              */
             it('should be able to insert and fetch many documents', async () => {
-                if (config.storage.name === 'denokv') {
+                if (isDeno) {
                     // TODO
                     return;
                 }
