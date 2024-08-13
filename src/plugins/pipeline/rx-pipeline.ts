@@ -78,7 +78,7 @@ export class RxPipeline<RxDocType> {
             this.source.database.eventBulks$.pipe(
                 filter(changeEventBulk => changeEventBulk.collectionName === this.source.name)
             ).subscribe((bulk) => {
-                this.lastSourceDocTime.next(bulk.startTime);
+                this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
                 this.somethingChanged.next({});
             })
         );
@@ -189,7 +189,7 @@ export class RxPipeline<RxDocType> {
                 lastSourceDocTime: this.lastSourceDocTime.getValue(),
                 lastProcessedDocTime: this.lastProcessedDocTime.getValue()
             });
-            if (this.lastProcessedDocTime.getValue() <= this.lastSourceDocTime.getValue()) {
+            if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
                 done = true;
             } else {
                 console.log('v1');
