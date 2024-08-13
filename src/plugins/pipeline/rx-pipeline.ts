@@ -86,6 +86,11 @@ export class RxPipeline<RxDocType> {
             this.destination.database.internalStore
                 .changeStream()
                 .subscribe(eventBulk => {
+
+
+                    console.log('## this.destination.database.internalStore EMIOTTED;');
+                    console.dir(eventBulk);
+
                     const events = eventBulk.events;
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
@@ -93,6 +98,7 @@ export class RxPipeline<RxDocType> {
                             event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT &&
                             event.documentData.key === this.checkpointId
                         ) {
+                            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAA');
                             this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
                             this.somethingChanged.next({});
                         }
@@ -134,9 +140,11 @@ export class RxPipeline<RxDocType> {
                     checkpoint
                 );
 
-                console.log('processQueue 2 ' + docsSinceResult.documents.length);
+                console.log('processQueue 2 A');
+                console.dir(docsSinceResult);
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
                 if (docsSinceResult.documents.length > 0) {
+                    console.log('processQueue 2 B');
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docsSinceResult.documents);
                     const _this = this;
 
@@ -149,6 +157,7 @@ export class RxPipeline<RxDocType> {
                     // `);
                     // await o[this.secretFunctionName](rxDocuments);
 
+                    console.log('processQueue 2 C');
                     const fnKey = blockFlaggedFunctionKey();
                     this.secretFunctionName = fnKey;
                     try {
@@ -157,8 +166,10 @@ export class RxPipeline<RxDocType> {
                         releaseFlaggedFunctionKey(fnKey);
                     }
 
+                    console.log('processQueue 2 D');
 
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
+                    console.log('processQueue 2 E ' + lastTime);
                 }
                 await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
                 if (docsSinceResult.documents.length < this.batchSize) {
@@ -238,13 +249,13 @@ export async function setCheckpointDoc<RxDocType>(
     previous?: RxDocumentData<InternalStoreDocType>
 ): Promise<void> {
     const insternalStore = pipeline.destination.database.internalStore;
-    const newDoc: RxDocumentData<InternalStoreDocType<CheckpointDocData>> = previous ? clone(previous) : {
+    const newDoc: RxDocumentData<InternalStoreDocType<CheckpointDocData>> = {
         _attachments: {},
         _deleted: false,
         _meta: {
             lwt: now()
         },
-        _rev: createRevision(pipeline.destination.database.token),
+        _rev: createRevision(pipeline.destination.database.token, previous),
         context: RX_PIPELINE_CHECKPOINT_CONTEXT,
         data: newCheckpoint,
         id: getPrimaryKeyOfInternalDocument(
@@ -258,6 +269,7 @@ export async function setCheckpointDoc<RxDocType>(
     console.dir({
         previous,
         document: newDoc,
+        newCheckpoint
     });
     const writeResult = await insternalStore.bulkWrite([{
         previous,
