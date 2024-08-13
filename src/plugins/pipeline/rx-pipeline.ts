@@ -114,6 +114,7 @@ export class RxPipeline<RxDocType> {
         this.toRun = this.toRun + 1;
 
         this.processQueue = this.processQueue.then(async () => {
+            console.log('processQueue 1');
             this.toRun = this.toRun - 1;
 
             let done = false;
@@ -123,15 +124,17 @@ export class RxPipeline<RxDocType> {
                 !this.destination.destroyed &&
                 !this.source.destroyed
             ) {
+                console.log('processQueue loop');
                 const checkpointDoc = await getCheckpointDoc(this);
                 console.dir({ checkpointDoc, a: 1 })
-                const checkpoint = checkpointDoc ? checkpointDoc.data : undefined;
+                const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
                 const docs = await getChangedDocumentsSince(
                     this.source.storageInstance,
                     this.batchSize,
                     checkpoint
                 );
 
+                console.log('processQueue 2 ' + docs.documents.length);
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
                 if (docs.documents.length > 0) {
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docs.documents);
