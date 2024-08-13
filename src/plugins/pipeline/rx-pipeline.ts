@@ -53,8 +53,10 @@ export class RxPipeline<RxDocType> {
     waitBeforeWriteFn = async () => {
         console.log('waitBeforeWriteFn!!!! 1 ' + this.secretFunctionName);
         const stack = new Error().stack;
-        console.dir(stack);
-        if (stack && stack.includes(this.secretFunctionName)) {
+        console.log(stack);
+        if (stack && (
+            stack.includes(this.secretFunctionName)
+        )) {
             console.log('called in tx!!');
         } else {
             await this.awaitIdle();
@@ -133,17 +135,19 @@ export class RxPipeline<RxDocType> {
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
                 if (docs.documents.length > 0) {
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docs.documents);
-
                     const _this = this;
-                    const fnKey = blockFlaggedFunctionKey();
 
-                    this.secretFunctionName = fnKey;
 
+
+                    // const o: any = {};
                     // eval(`
                     //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
                     //     o.${this.secretFunctionName} = ${this.secretFunctionName};
                     // `);
                     // await o[this.secretFunctionName](rxDocuments);
+
+                    const fnKey = blockFlaggedFunctionKey();
+                    this.secretFunctionName = fnKey;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
                     } finally {

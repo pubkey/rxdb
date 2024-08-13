@@ -113,7 +113,6 @@ export class RxQueryBase<
     }
     get $(): BehaviorSubject<RxQueryResult> {
         if (!this._$) {
-
             const results$ = this.collection.$.pipe(
                 /**
                  * Performance shortcut.
@@ -145,19 +144,7 @@ export class RxQueryBase<
                  * depending on query type
                  */
                 map((result) => {
-                    const useResult = ensureNotFalsy(result);
-                    if (this.op === 'count') {
-                        return useResult.count;
-                    } else if (this.op === 'findOne') {
-                        // findOne()-queries emit RxDocument or null
-                        return useResult.documents.length === 0 ? null : useResult.documents[0];
-                    } else if (this.op === 'findByIds') {
-                        return useResult.docsMap;
-                    } else {
-                        // find()-queries emit RxDocument[]
-                        // Flat copy the array so it won't matter if the user modifies it.
-                        return useResult.documents.slice(0);
-                    }
+                    return ensureNotFalsy(result).getValue();
                 })
             );
 
@@ -215,7 +202,7 @@ export class RxQueryBase<
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
         if (typeof newResultData === 'number') {
             this._result = new RxQuerySingleResult<RxDocType>(
-                this.collection,
+                this as any,
                 [],
                 newResultData
             );
@@ -225,7 +212,7 @@ export class RxQueryBase<
         }
 
         const newQueryResult = new RxQuerySingleResult<RxDocType>(
-            this.collection,
+            this as any,
             newResultData,
             newResultData.length
         );
@@ -296,7 +283,7 @@ export class RxQueryBase<
      */
     public exec(throwIfMissing: true): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     public exec(): Promise<RxQueryResult>;
-    public exec(throwIfMissing?: boolean): Promise<any> {
+    public async exec(throwIfMissing?: boolean): Promise<any> {
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
                 collection: this.collection.name,
@@ -305,25 +292,15 @@ export class RxQueryBase<
             });
         }
 
-
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of the RxStorage,
          * will be thrown at this execution context and not in the background.
          */
-        return _ensureEqual(this as any)
-            .then(() => firstValueFrom(this.$))
-            .then(result => {
-                if (!result && throwIfMissing) {
-                    throw newRxError('QU10', {
-                        collection: this.collection.name,
-                        query: this.mangoQuery,
-                        op: this.op
-                    });
-                } else {
-                    return result;
-                }
-            });
+        await _ensureEqual(this as any);
+        await firstValueFrom(this.$);
+        const useResult = ensureNotFalsy(this._result);
+        return useResult.getValue(throwIfMissing);
     }
 
 
@@ -485,6 +462,7 @@ export class RxQueryBase<
         throw pluginMissing('query-builder');
     }
 }
+
 
 export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {
