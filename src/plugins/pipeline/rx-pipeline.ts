@@ -128,16 +128,16 @@ export class RxPipeline<RxDocType> {
                 const checkpointDoc = await getCheckpointDoc(this);
                 console.dir({ checkpointDoc, a: 1 })
                 const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
-                const docs = await getChangedDocumentsSince(
+                const docsSinceResult = await getChangedDocumentsSince(
                     this.source.storageInstance,
                     this.batchSize,
                     checkpoint
                 );
 
-                console.log('processQueue 2 ' + docs.documents.length);
+                console.log('processQueue 2 ' + docsSinceResult.documents.length);
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
-                if (docs.documents.length > 0) {
-                    const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docs.documents);
+                if (docsSinceResult.documents.length > 0) {
+                    const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docsSinceResult.documents);
                     const _this = this;
 
 
@@ -158,10 +158,10 @@ export class RxPipeline<RxDocType> {
                     }
 
 
-                    lastTime = ensureNotFalsy(lastOfArray(docs.documents))._meta.lwt;
+                    lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
                 }
-                await setCheckpointDoc(this, { checkpoint, lastDocTime: lastTime }, checkpointDoc);
-                if (docs.documents.length < this.batchSize) {
+                await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
+                if (docsSinceResult.documents.length < this.batchSize) {
                     done = true;
                 }
             }
