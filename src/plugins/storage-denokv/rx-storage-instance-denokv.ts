@@ -179,7 +179,10 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 try {
                     txResult = await tx.commit();
                 } catch (err: any) {
-                    if (err.message.includes('Error code 5:')) {
+                    if (
+                        err.message.includes('Error code 5:') ||
+                        err.message.includes('Error code 517:')
+                    ) {
                         // retry
                     } else {
                         throw err;
