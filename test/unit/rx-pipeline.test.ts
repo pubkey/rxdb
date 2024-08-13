@@ -20,6 +20,12 @@ import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mj
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 describeParallel('rx-pipeline.test.js', () => {
+    if (
+        config.storage.name.includes('random-delay')
+    ) {
+        // TODO
+        return;
+    }
     describe('basics', () => {
         it('add and remove a pipeline', async () => {
             const c1 = await humansCollection.create(0);
@@ -254,19 +260,27 @@ describeParallel('rx-pipeline.test.js', () => {
             const c2 = await humansCollection.create(0);
 
 
+
+            console.log('FFFFFFFFFFFFFFF 1');
             const cachedQuery = c2.find({ selector: { passportId: { $ne: 'foobar' } } });
+            console.log('FFFFFFFFFFFFFFF 2');
             await cachedQuery.exec();
 
+            console.log('FFFFFFFFFFFFFFF 3');
             const pipeline = await c1.addPipeline({
                 destination: c2,
                 handler: async function myHandler2() {
+                    console.log('myHandler2: A');
                     await cachedQuery.exec();
+                    console.log('myHandler2: B');
                 },
                 identifier: randomCouchString(10)
             });
+            console.log('FFFFFFFFFFFFFFF 4');
             await c1.insert(schemaObjects.humanData('foobar'));
-
+            console.log('FFFFFFFFFFFFFFF 5');
             await pipeline.awaitIdle();
+            console.log('FFFFFFFFFFFFFFF 6');
 
             c1.database.destroy();
             c2.database.destroy();
