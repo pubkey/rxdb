@@ -43,20 +43,27 @@ describeParallel('rx-pipeline.test.js', () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(0);
+            console.log('########################################################');
+            console.log('########################################################');
+            console.log('########################################################');
+            console.log('########################################################');
             await c1.addPipeline({
                 destination: c2,
                 handler: async (docs) => {
-                    console.log('H1');
-                    console.dir(docs.map(d => d.toJSON()));
+                    console.log('+++++++++++++++++++++++ H1');
+                    console.dir(docs.map(d => d.toJSON(true)));
+                    console.log('+++++++++++++++++++++++ H2 ' + docs.length);
                     for (const doc of docs) {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
-                    console.log('H2');
+                    console.log('+++++++++++++++++++++++ H3');
                 },
                 identifier: randomCouchString(10)
             });
 
+            console.log('------------------------------ 1');
             await c1.insert(schemaObjects.humanData('foobar'));
+            console.log('------------------------------ 2');
 
             /**
              * Here we run the query on the destination directly after
@@ -64,6 +71,7 @@ describeParallel('rx-pipeline.test.js', () => {
              * the reads to the destination until the pipeline is idle.
              */
             const doc2 = await c2.findOne().exec(true);
+            console.log('------------------------------ 3');
             assert.strictEqual(doc2.passportId, 'foobar');
 
             await c1.database.destroy();
@@ -107,6 +115,7 @@ describeParallel('rx-pipeline.test.js', () => {
             assert.strictEqual(doc2.passportId, 'foobar');
 
             assert.ok(pipeline.lastSourceDocTime.getValue() > 10);
+            console.log('pipeline.lastProcessedDocTime.getValue(): ' + pipeline.lastProcessedDocTime.getValue());
             assert.ok(pipeline.lastProcessedDocTime.getValue() > 10);
 
             c1.database.destroy();
@@ -136,8 +145,11 @@ describeParallel('rx-pipeline.test.js', () => {
             });
             await c1.insert(schemaObjects.humanWithTimestampData());
 
-            cDestination.database.destroy();
-            c1.database.destroy();
+            console.log('DESTRYOY 1');
+            await cDestination.database.destroy();
+            console.log('DESTRYOY 2');
+            await c1.database.destroy();
+            console.log('DESTRYOY 3');
         });
     });
     describe('multiInstance', () => {
@@ -145,6 +157,7 @@ describeParallel('rx-pipeline.test.js', () => {
             return;
         }
         it('should only run the pipeline at the leader', async () => {
+            console.log('aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
             const identifier = randomCouchString(10);
             const name = randomCouchString(10);
             const c1 = await humansCollection.createMultiInstance(name);
@@ -209,14 +222,18 @@ describeParallel('rx-pipeline.test.js', () => {
     });
     describe('transactional behavior', () => {
         it('should not block reads/writes that come from inside the pipeline handler', async () => {
+            console.log('aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA11');
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(0);
             const pipeline = await c1.addPipeline({
                 destination: c2,
-                handler: async function myHandler(docs) {
-                    await c1.find().exec();
+                handler: async function myHandler1(docs) {
+                    console.log('# h1');
                     await c2.find().exec();
+                    console.log('# h2');
+                    await c1.find().exec();
+                    console.log('# h3');
 
                     for (const doc of docs) {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
@@ -242,7 +259,7 @@ describeParallel('rx-pipeline.test.js', () => {
 
             const pipeline = await c1.addPipeline({
                 destination: c2,
-                handler: async function myHandler() {
+                handler: async function myHandler2() {
                     await cachedQuery.exec();
                 },
                 identifier: randomCouchString(10)
@@ -261,7 +278,7 @@ describeParallel('rx-pipeline.test.js', () => {
 
             await c1.addPipeline({
                 destination: c2,
-                handler: async function myHandler() {
+                handler: async function myHandler3() {
                     const c2Docs = await c2.find().exec();
                     for (const doc of c2Docs) {
                         const useData = doc.toMutableJSON(true);
