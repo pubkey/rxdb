@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX (denoKV RxStorage) retry writes when db is locked.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

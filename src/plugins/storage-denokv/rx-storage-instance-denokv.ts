@@ -175,8 +175,17 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                     });
                 });
 
-                const txResult = await tx.commit();
-                if (txResult.ok) {
+                let txResult;
+                try {
+                    txResult = await tx.commit();
+                } catch (err: any) {
+                    if (err.message.includes('Error code 5:')) {
+                        // retry
+                    } else {
+                        throw err;
+                    }
+                }
+                if (txResult && txResult.ok) {
                     appendToArray(ret.error, categorized.errors);
                     if (categorized.eventBulk.events.length > 0) {
                         const lastState = ensureNotFalsy(categorized.newestRow).document;
