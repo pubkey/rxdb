@@ -3,11 +3,8 @@ import { now, overwriteGetterForCaching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 import { RxQueryBase } from './rx-query.ts';
 import type {
-    RxCollection,
     RxDocument,
-    RxDocumentData,
-    RxQuery,
-    RxQueryOP
+    RxDocumentData
 } from './types';
 
 /**

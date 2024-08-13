@@ -1,6 +1,5 @@
 import {
     BehaviorSubject,
-    firstValueFrom,
     Observable,
     merge
 } from 'rxjs';
