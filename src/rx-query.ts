@@ -298,7 +298,6 @@ export class RxQueryBase<
          * will be thrown at this execution context and not in the background.
          */
         await _ensureEqual(this as any);
-        await firstValueFrom(this.$);
         const useResult = ensureNotFalsy(this._result);
         return useResult.getValue(throwIfMissing);
     }
