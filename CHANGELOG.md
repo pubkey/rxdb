@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [RxPipeline Plugin](https://rxdb.info/rx-pipeline.html).
-- FIX (denoKV RxStorage) retry writes when db is locked.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.31.0 (14 August 2024)
+
+- ADD [RxPipeline Plugin](https://rxdb.info/rx-pipeline.html).
+- FIX (denoKV RxStorage) retry writes when db is locked.
 
 ### 15.30.2 (5 August 2024)
 

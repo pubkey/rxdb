@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RXJS_SHARE_REPLAY_DEFAULTS = void 0;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
+exports.nameFunction = nameFunction;
 exports.runXTimes = runXTimes;
 function runXTimes(xTimes, fn) {
   new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
@@ -36,4 +37,18 @@ var RXJS_SHARE_REPLAY_DEFAULTS = exports.RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
+
+/**
+ * Dynamically add a name to a function
+ * so that it can later be found in the stack.
+ * @link https://stackoverflow.com/a/41854075/3443137
+ */
+function nameFunction(name, body) {
+  // @ts-ignore
+  return {
+    [name](...args) {
+      return body.apply(this, args);
+    }
+  }[name];
+}
 //# sourceMappingURL=utils-other.js.map

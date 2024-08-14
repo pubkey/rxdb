@@ -78,12 +78,12 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
    */
   _proto._setResultData = function _setResultData(newResultData) {
     if (typeof newResultData === 'number') {
-      this._result = new _rxQuerySingleResult.RxQuerySingleResult(this.collection, [], newResultData);
+      this._result = new _rxQuerySingleResult.RxQuerySingleResult(this, [], newResultData);
       return;
     } else if (newResultData instanceof Map) {
       newResultData = Array.from(newResultData.values());
     }
-    var newQueryResult = new _rxQuerySingleResult.RxQuerySingleResult(this.collection, newResultData, newResultData.length);
+    var newQueryResult = new _rxQuerySingleResult.RxQuerySingleResult(this, newResultData, newResultData.length);
     this._result = newQueryResult;
   }
 
@@ -144,7 +144,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
    * To have an easier implementations,
    * just subscribe and use the first result
    */;
-  _proto.exec = function exec(throwIfMissing) {
+  _proto.exec = async function exec(throwIfMissing) {
     if (throwIfMissing && this.op !== 'findOne') {
       throw (0, _rxError.newRxError)('QU9', {
         collection: this.collection.name,
@@ -158,17 +158,9 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
      * this will make sure that errors in the query which throw inside of the RxStorage,
      * will be thrown at this execution context and not in the background.
      */
-    return _ensureEqual(this).then(() => (0, _rxjs.firstValueFrom)(this.$)).then(result => {
-      if (!result && throwIfMissing) {
-        throw (0, _rxError.newRxError)('QU10', {
-          collection: this.collection.name,
-          query: this.mangoQuery,
-          op: this.op
-        });
-      } else {
-        return result;
-      }
-    });
+    await _ensureEqual(this);
+    var useResult = (0, _index.ensureNotFalsy)(this._result);
+    return useResult.getValue(throwIfMissing);
   }
 
   /**
@@ -315,19 +307,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
          * depending on query type
          */
         (0, _operators.map)(result => {
-          var useResult = (0, _index.ensureNotFalsy)(result);
-          if (this.op === 'count') {
-            return useResult.count;
-          } else if (this.op === 'findOne') {
-            // findOne()-queries emit RxDocument or null
-            return useResult.documents.length === 0 ? null : useResult.documents[0];
-          } else if (this.op === 'findByIds') {
-            return useResult.docsMap;
-          } else {
-            // find()-queries emit RxDocument[]
-            // Flat copy the array so it won't matter if the user modifies it.
-            return useResult.documents.slice(0);
-          }
+          return (0, _index.ensureNotFalsy)(result).getValue();
         }));
         this._$ = (0, _rxjs.merge)(results$,
         /**
@@ -349,6 +329,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
 
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
+    // TODO do we still need these properties?
 
     /**
      * ensures that the exec-runs
@@ -414,10 +395,14 @@ function _isResultsInSync(rxQuery) {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery) {
+async function _ensureEqual(rxQuery) {
+  if (rxQuery.collection.awaitBeforeReads.size > 0) {
+    await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+  }
+
   // Optimisation shortcut
   if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
-    return _index.PROMISE_RESOLVE_FALSE;
+    return false;
   }
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(() => __ensureEqual(rxQuery));
   return rxQuery._ensureEqualQueue;

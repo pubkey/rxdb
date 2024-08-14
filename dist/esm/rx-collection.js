@@ -22,10 +22,16 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    * Stores all 'normal' documents
    */
 
+  /**
+   * Before reads, all these methods are awaited. Used to "block" reads
+   * depending on other processes, like when the RxPipeline is running.
+   */
+
   function RxCollectionBase(database, name, schema, internalStorageInstance, instanceCreationOptions = {}, migrationStrategies = {}, methods = {}, attachments = {}, options = {}, cacheReplacementPolicy = defaultCacheReplacementPolicy, statics = {}, conflictHandler = defaultConflictHandler) {
     this.storageInstance = {};
     this.timeouts = new Set();
     this.incrementalWriteQueue = {};
+    this.awaitBeforeReads = new Set();
     this._incrementalUpsertQueues = new Map();
     this.synced = false;
     this.hooks = {};
@@ -450,6 +456,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
   _proto.insertCRDT = function insertCRDT(_updateObj) {
     throw pluginMissing('crdt');
+  };
+  _proto.addPipeline = function addPipeline(_options) {
+    throw pluginMissing('pipeline');
   }
 
   /**

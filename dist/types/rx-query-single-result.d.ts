@@ -1,4 +1,5 @@
-import type { RxCollection, RxDocument, RxDocumentData } from './types';
+import { RxQueryBase } from './rx-query.ts';
+import type { RxDocument, RxDocumentData } from './types';
 /**
  * RxDB needs the query results in multiple formats.
  * Sometimes as a Map or an array with only the documentData.
@@ -7,7 +8,7 @@ import type { RxCollection, RxDocument, RxDocumentData } from './types';
  * we can directly work with the query results after RxQuery.exec()
  */
 export declare class RxQuerySingleResult<RxDocType> {
-    readonly collection: RxCollection<RxDocType>;
+    readonly query: RxQueryBase<RxDocType, unknown>;
     readonly count: number;
     /**
      * Time at which the current _result state was created.
@@ -16,7 +17,7 @@ export declare class RxQuerySingleResult<RxDocType> {
      */
     readonly time: number;
     readonly documents: RxDocument<RxDocType>[];
-    constructor(collection: RxCollection<RxDocType>, docsDataFromStorageInstance: RxDocumentData<RxDocType>[], count: number);
+    constructor(query: RxQueryBase<RxDocType, unknown>, docsDataFromStorageInstance: RxDocumentData<RxDocType>[], count: number);
     /**
      * Instead of using the newResultData in the result cache,
      * we directly use the objects that are stored in the RxDocument
@@ -26,4 +27,5 @@ export declare class RxQuerySingleResult<RxDocType> {
     get docsData(): RxDocumentData<RxDocType>[];
     get docsDataMap(): Map<string, RxDocumentData<RxDocType>>;
     get docsMap(): Map<string, RxDocument<RxDocType>>;
+    getValue(throwIfMissing?: boolean): number | RxDocument<RxDocType> | RxDocument<RxDocType>[] | Map<string, RxDocument<RxDocType>> | null;
 }
