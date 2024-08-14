@@ -103,8 +103,7 @@ import { defaultConflictHandler } from './replication-protocol/index.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
-import type { RxPipelineOptions } from './plugins/pipeline/types.ts';
-import { RxPipeline } from './plugins/pipeline/rx-pipeline.ts';
+import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
