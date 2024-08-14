@@ -1,7 +1,8 @@
 import { mapDocumentsDataToCacheDocs } from './doc-cache.ts';
 import { now, overwriteGetterForCaching } from './plugins/utils/index.ts';
+import { newRxError } from './rx-error.ts';
+import { RxQueryBase } from './rx-query.ts';
 import type {
-    RxCollection,
     RxDocument,
     RxDocumentData
 } from './types';
@@ -13,7 +14,7 @@ import type {
  * that initializes stuff lazily so that
  * we can directly work with the query results after RxQuery.exec()
  */
-export class RxQuerySingleResult<RxDocType>{
+export class RxQuerySingleResult<RxDocType> {
     /**
      * Time at which the current _result state was created.
      * Used to determine if the result set has changed since X
@@ -22,13 +23,13 @@ export class RxQuerySingleResult<RxDocType>{
     public readonly time = now();
     public readonly documents: RxDocument<RxDocType>[];
     constructor(
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly query: RxQueryBase<RxDocType, unknown>,
         // only used internally, do not use outside, use this.docsData instead
         docsDataFromStorageInstance: RxDocumentData<RxDocType>[],
         // can be overwritten for count-queries
         public readonly count: number,
     ) {
-        this.documents = mapDocumentsDataToCacheDocs<RxDocType, any>(this.collection._docCache, docsDataFromStorageInstance);
+        this.documents = mapDocumentsDataToCacheDocs<RxDocType, any>(this.query.collection._docCache, docsDataFromStorageInstance);
     }
 
 
@@ -72,5 +73,30 @@ export class RxQuerySingleResult<RxDocType>{
             'docsMap',
             map
         );
+    }
+
+    getValue(throwIfMissing?: boolean) {
+        const op = this.query.op;
+        if (op === 'count') {
+            return this.count;
+        } else if (op === 'findOne') {
+            // findOne()-queries emit RxDocument or null
+            const doc = this.documents.length === 0 ? null : this.documents[0];
+            if (!doc && throwIfMissing) {
+                throw newRxError('QU10', {
+                    collection: this.query.collection.name,
+                    query: this.query.mangoQuery,
+                    op
+                });
+            } else {
+                return doc;
+            }
+        } else if (op === 'findByIds') {
+            return this.docsMap;
+        } else {
+            // find()-queries emit RxDocument[]
+            // Flat copy the array so it won't matter if the user modifies it.
+            return this.documents.slice(0);
+        }
     }
 }

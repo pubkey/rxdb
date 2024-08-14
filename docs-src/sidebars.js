@@ -27,6 +27,7 @@ const sidebars = {
     'rx-document',
     'rx-query',
     'rx-attachment',
+    'rx-pipeline',
     {
       type: 'category',
       label: '💾 RxStorage',
