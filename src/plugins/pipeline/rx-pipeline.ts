@@ -51,17 +51,13 @@ export class RxPipeline<RxDocType> {
     secretFunctionName = 'tx_fn_' + randomCouchString(10)
 
     waitBeforeWriteFn = async () => {
-        console.log('waitBeforeWriteFn!!!! 1 ' + this.secretFunctionName);
         const stack = new Error().stack;
-        console.log(stack);
         if (stack && (
             stack.includes(this.secretFunctionName)
         )) {
-            console.log('called in tx!!');
         } else {
             await this.awaitIdle();
         }
-        console.log('waitBeforeWriteFn!!!! 2');
     }
 
     constructor(
@@ -86,11 +82,6 @@ export class RxPipeline<RxDocType> {
             this.destination.database.internalStore
                 .changeStream()
                 .subscribe(eventBulk => {
-
-
-                    console.log('## this.destination.database.internalStore EMIOTTED;');
-                    console.dir(eventBulk);
-
                     const events = eventBulk.events;
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
@@ -98,7 +89,6 @@ export class RxPipeline<RxDocType> {
                             event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT &&
                             event.documentData.key === this.checkpointId
                         ) {
-                            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAA');
                             this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
                             this.somethingChanged.next({});
                         }
@@ -108,7 +98,6 @@ export class RxPipeline<RxDocType> {
     }
 
     trigger() {
-        console.log('TRIGGER');
         /**
          * Do not stack up too many
          * so that fast writes to the source collection
@@ -120,7 +109,6 @@ export class RxPipeline<RxDocType> {
         this.toRun = this.toRun + 1;
 
         this.processQueue = this.processQueue.then(async () => {
-            console.log('processQueue 1');
             this.toRun = this.toRun - 1;
 
             let done = false;
@@ -130,9 +118,7 @@ export class RxPipeline<RxDocType> {
                 !this.destination.destroyed &&
                 !this.source.destroyed
             ) {
-                console.log('processQueue loop');
                 const checkpointDoc = await getCheckpointDoc(this);
-                console.dir({ checkpointDoc, a: 1 })
                 const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
                 const docsSinceResult = await getChangedDocumentsSince(
                     this.source.storageInstance,
@@ -140,11 +126,8 @@ export class RxPipeline<RxDocType> {
                     checkpoint
                 );
 
-                console.log('processQueue 2 A');
-                console.dir(docsSinceResult);
                 let lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
                 if (docsSinceResult.documents.length > 0) {
-                    console.log('processQueue 2 B');
                     const rxDocuments = mapDocumentsDataToCacheDocs(this.source._docCache, docsSinceResult.documents);
                     const _this = this;
 
@@ -157,7 +140,6 @@ export class RxPipeline<RxDocType> {
                     // `);
                     // await o[this.secretFunctionName](rxDocuments);
 
-                    console.log('processQueue 2 C');
                     const fnKey = blockFlaggedFunctionKey();
                     this.secretFunctionName = fnKey;
                     try {
@@ -166,10 +148,7 @@ export class RxPipeline<RxDocType> {
                         releaseFlaggedFunctionKey(fnKey);
                     }
 
-                    console.log('processQueue 2 D');
-
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
-                    console.log('processQueue 2 E ' + lastTime);
                 }
                 if (!this.destination.destroyed) {
                     await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
@@ -185,16 +164,10 @@ export class RxPipeline<RxDocType> {
         let done = false;
         while (!done) {
             await this.processQueue;
-            console.dir({
-                lastSourceDocTime: this.lastSourceDocTime.getValue(),
-                lastProcessedDocTime: this.lastProcessedDocTime.getValue()
-            });
             if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
                 done = true;
             } else {
-                console.log('v1');
                 await firstValueFrom(this.somethingChanged);
-                console.log('v2');
             }
         }
     }
@@ -267,12 +240,6 @@ export async function setCheckpointDoc<RxDocType>(
         key: pipeline.checkpointId
     };
 
-    console.log('setCheckpointDoc:');
-    console.dir({
-        previous,
-        document: newDoc,
-        newCheckpoint
-    });
     const writeResult = await insternalStore.bulkWrite([{
         previous,
         document: newDoc,
@@ -294,11 +261,9 @@ export async function addPipeline<RxDocType>(
         options.handler,
         options.batchSize
     );
-    console.log('ADD PIPELINE ' + typeof options.waitForLeadership);
     const waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const startPromise = waitForLeadership ? this.database.waitForLeadership() : PROMISE_RESOLVE_VOID;
     startPromise.then(() => {
-        console.log('START !!');
         pipeline.trigger();
         pipeline.subs.push(
             this.database.eventBulks$.pipe(
