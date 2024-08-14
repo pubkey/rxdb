@@ -1,3 +1,8 @@
+---
+title: Pipelines
+slug: rx-pipeline.html
+---
+
 # RxPipeline (beta)
 
 The RxPipeline plugin enables you to run operations depending on writes to a collection.
