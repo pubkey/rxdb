@@ -76,7 +76,7 @@ const pipeline = await emailCollection.addPipeline({
             // add new mapping
             if(!doc.deleted) {
                 await emailByReceiverCollection.bulkInsert(
-                    doc.recievers.map(receiver => ({
+                    doc.receivers.map(receiver => ({
                         emailId: doc.primary,
                         receiver: receiver
                     }))
@@ -120,7 +120,7 @@ const pipeline = await emailCollection.addPipeline({
 });
 ```
 
-With this you can efficiently query for "all emails that contain a given workd" by running:
+With this you can efficiently query for "all emails that contain a given word" by running:
 
 ```ts
 const mailIds = await emailByReceiverCollection.find({word: 'foobar'}).exec();
