@@ -17,7 +17,15 @@ mySourceCollection.$.subscribe(event => {/* ...process...*/});
 While this could work in some cases, it causes many problems that are fixed by using the pipeline plugin instead:
 - In a RxPipeline, only the [Leading Instance](./leader-election.md) runs the operations. For example when you have multiple browser tabs open, only one will run the processing and when that tab is closed, another tab will become elected leader and continue the pipeline processing.
 - On sudden stops and restarts of the JavaScript process, the processing will continue at the correct checkpoint and not miss out any documents even on unexpected crashes.
-- Reads/Writes on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results.
+- Reads/Writes on the destination collection are halted while the pipeline is processing. This ensures your queries only return fully processed documents and no partial results. So when you do a query to the destination collection directly after a write to the source collection, you can be sure you query results are up to date and the pipeline has already been run at the moment the query resolved:
+
+```ts
+await mySourceCollection.insert({/* ... */});
+
+// because our pipeline blocks reads to the destination, we know that the result array
+// contains data created on top of the previously inserted documents.
+const result = myDestinationCollection.find().exec();
+```
 
 
 
