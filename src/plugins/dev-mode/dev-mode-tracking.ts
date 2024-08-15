@@ -1,4 +1,3 @@
-import { isRxDatabaseFirstTimeInstantiated } from '../../rx-database.ts';
 import type { RxDatabase } from '../../types';
 import {
     PREMIUM_FLAG_HASH,
@@ -22,8 +21,8 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
     if (
         iframeShown ||
         typeof window === 'undefined' ||
-        typeof location === 'undefined' ||
-        !isLocalHost()
+        typeof location === 'undefined'
+        // !isLocalHost()
     ) {
         return;
     }
