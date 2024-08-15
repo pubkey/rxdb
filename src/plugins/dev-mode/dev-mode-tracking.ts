@@ -38,13 +38,6 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
         return;
     }
 
-
-    // Only run if db was created for the first time.
-    const isFirstTime = await isRxDatabaseFirstTimeInstantiated(db);
-    if (!isFirstTime) {
-        return;
-    }
-
     iframeShown = true;
 
     const iframe = document.createElement('iframe');
@@ -57,6 +50,7 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
 function isLocalHost() {
     return (
         location.hostname === 'localhost' ||
+        location.hostname.includes('localhost') ||
         location.hostname === '127.0.0.1' ||
         location.hostname === '0.0.0.0' ||
         location.hostname === '[::1]'  // IPv6
