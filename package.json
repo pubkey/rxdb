@@ -558,7 +558,7 @@
     "karma-webpack": "5.0.1",
     "leveldown": "6.1.1",
     "madge": "8.0.0",
-    "mini-css-extract-plugin": "2.9.0",
+    "mini-css-extract-plugin": "2.9.1",
     "mocha": "10.7.3",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.1",
