@@ -90,6 +90,7 @@ var HOOKS = exports.HOOKS = {
    * @async
    */
   postRemoveRxDatabase: [],
+  postCleanup: [],
   /**
    * runs before the replication writes the rows to master
    * but before the rows have been modified

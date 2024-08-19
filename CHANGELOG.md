@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD `postCleanup` hook.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.31.1 (19 August 2024)
+
+- ADD `postCleanup` hook.
 
 ### 15.31.0 (14 August 2024)
 

@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.addDevModeTrackingIframe = addDevModeTrackingIframe;
-var _rxDatabase = require("../../rx-database.js");
 var _index = require("../utils/index.js");
 var iframeShown = false;
 
@@ -16,18 +15,14 @@ async function addDevModeTrackingIframe(db) {
    * Only run this in browser AND localhost AND dev-mode.
    * Make sure this is never used in production by someone.
    */
-  if (iframeShown || typeof window === 'undefined' || typeof location === 'undefined' || !isLocalHost()) {
+  if (iframeShown || typeof window === 'undefined' || typeof location === 'undefined'
+  // !isLocalHost()
+  ) {
     return;
   }
 
   // do not show if premium flag is set.
   if (_index.RXDB_UTILS_GLOBAL.premium && typeof _index.RXDB_UTILS_GLOBAL.premium === 'string' && (await (0, _index.defaultHashSha256)(_index.RXDB_UTILS_GLOBAL.premium)) === _index.PREMIUM_FLAG_HASH) {
-    return;
-  }
-
-  // Only run if db was created for the first time.
-  var isFirstTime = await (0, _rxDatabase.isRxDatabaseFirstTimeInstantiated)(db);
-  if (!isFirstTime) {
     return;
   }
   iframeShown = true;
@@ -37,7 +32,7 @@ async function addDevModeTrackingIframe(db) {
   document.body.appendChild(iframe);
 }
 function isLocalHost() {
-  return location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '0.0.0.0' || location.hostname === '[::1]' // IPv6
+  return location.hostname === 'localhost' || location.hostname.includes('localhost') || location.hostname === '127.0.0.1' || location.hostname === '0.0.0.0' || location.hostname === '[::1]' // IPv6
   ;
 }
 //# sourceMappingURL=dev-mode-tracking.js.map

@@ -78,17 +78,17 @@ function checkDevModeEvent() {
         .map(str => str.trim())
         .find(v => v.startsWith(DEV_MODE_EVENT_ID));
     if (!hasCookie) {
-        console.log(DEV_MODE_EVENT_ID + 'no cookie');
+        console.log(DEV_MODE_EVENT_ID + ': no cookie');
         return;
     }
     const version = hasCookie.split('=')[1];
     const storageKey = DEV_MODE_EVENT_ID + '=' + version;
     if (localStorage.getItem(storageKey)) {
-        console.log(DEV_MODE_EVENT_ID + 'tracked already');
+        console.log(DEV_MODE_EVENT_ID + ': tracked already');
         return;
     }
 
-    console.log(DEV_MODE_EVENT_ID + 'track me version ' + version);
+    console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
     localStorage.setItem(storageKey, '1');
     window.trigger(DEV_MODE_EVENT_ID, 10);
     window.trigger(DEV_MODE_EVENT_ID + '_' + version, 10);
