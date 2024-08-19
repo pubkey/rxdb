@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD `postCleanup` hook.
 
 <!-- ADD new changes here! -->
 

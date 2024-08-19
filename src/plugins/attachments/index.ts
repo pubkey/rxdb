@@ -19,7 +19,10 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../../types/index.ts';
-import { assignMethodsToAttachment, ensureSchemaSupportsAttachments } from './attachments-utils.ts';
+import {
+    assignMethodsToAttachment,
+    ensureSchemaSupportsAttachments
+} from './attachments-utils.ts';
 
 
 
