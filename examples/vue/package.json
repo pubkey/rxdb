@@ -44,7 +44,7 @@
     "eslint-plugin-vue": "9.27.0",
     "local-web-server": "5.4.0",
     "node-sass": "9.0.0",
-    "sass-loader": "16.0.0",
+    "sass-loader": "16.0.1",
     "testcafe": "3.6.2",
     "typescript": "5.5.4"
   },
