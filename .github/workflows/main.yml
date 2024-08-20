@@ -467,28 +467,28 @@ jobs:
             ${{ runner.os }}-npm-test-code-style-x3-
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           skip: legal-notice.tsx
           path: docs-src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
