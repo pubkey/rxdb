@@ -184,14 +184,14 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.createMultiInstance(name);
             const runAt: string[] = [];
-            await c1.addPipeline({
+            const p1 = await c1.addPipeline({
                 destination: c2,
                 handler: () => {
                     runAt.push('c1');
                 },
                 identifier
             });
-            await c2.addPipeline({
+            const p2 = await c2.addPipeline({
                 destination: c2,
                 handler: () => {
                     runAt.push('c2');
@@ -200,6 +200,9 @@ describeParallel('rx-pipeline.test.js', () => {
             });
             await c1.insert(schemaObjects.humanData());
             await c2.insert(schemaObjects.humanData());
+
+            await p1.awaitIdle();
+            await p2.awaitIdle();
 
             assert.deepStrictEqual(runAt, ['c1']);
 
