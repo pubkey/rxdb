@@ -19,6 +19,9 @@ import {
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
 import { createRequire } from 'node:module';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
+addRxPlugin(RxDBCleanupPlugin);
+
 
 describeParallel('plugin.test.js', () => {
     if (!isNode) return;
@@ -167,6 +170,28 @@ describeParallel('plugin.test.js', () => {
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
             await col.database.destroy();
             _clearHook('postCreateRxDocument', postCreateRxDocument);
+        });
+        it('postCleanup', async () => {
+            let runs: any[] = [];
+            const hook = (input: any) => {
+                runs.push(input);
+            };
+            const plugin: RxPlugin = {
+                rxdb: true,
+                name: randomCouchString(12),
+                hooks: {
+                    postCleanup: {
+                        after: hook
+                    }
+                }
+            };
+            addRxPlugin(plugin);
+            const col = await humansCollection.create(5);
+            await col.cleanup();
+            assert.strictEqual(runs.length, 1);
+
+            await col.database.destroy();
+            _clearHook('postCleanup', hook);
         });
     });
 });

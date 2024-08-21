@@ -94,7 +94,6 @@ export async function cleanupRxCollection(
             });
         isDone = await RXSTORAGE_CLEANUP_QUEUE;
     }
-
     await runAsyncPluginHooks('postCleanup', {
         collectionName: rxCollection.name,
         databaseName: rxDatabase.name

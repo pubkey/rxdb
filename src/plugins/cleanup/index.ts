@@ -1,3 +1,4 @@
+import { runAsyncPluginHooks } from '../../hooks.ts';
 import type {
     RxCollection,
     RxPlugin
@@ -27,6 +28,11 @@ export const RxDBCleanupPlugin: RxPlugin = {
                 while (!isDone && !this.destroyed) {
                     isDone = await this.storageInstance.cleanup(minimumDeletedTime);
                 }
+
+                await runAsyncPluginHooks('postCleanup', {
+                    collectionName: this.name,
+                    databaseName: this.database.name
+                });
             };
         }
     },

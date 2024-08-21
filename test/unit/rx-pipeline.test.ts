@@ -47,7 +47,6 @@ describeParallel('rx-pipeline.test.js', () => {
         });
         it('write some document depending on another', async () => {
             const c1 = await humansCollection.create(0);
-            await c1.database.waitForLeadership();
             const c2 = await humansCollection.create(0);
             await c1.addPipeline({
                 destination: c2,
@@ -72,6 +71,34 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.database.destroy();
             await c2.database.destroy();
         });
+        // it('write some document depending on another', async () => {
+        //     const dbs = await multipleOnSameDB(0);
+        //     const c1 = dbs.collection;
+        //     const c2 = dbs.collection2;
+        //     await c1.addPipeline({
+        //         destination: c2,
+        //         handler: async (docs) => {
+        //             for (const doc of docs) {
+        //                 const insertData = schemaObjects.humanData(doc.passportId);
+        //                 console.dir({ insertData });
+        //                 await c2.insert(insertData);
+        //             }
+        //         },
+        //         identifier: randomCouchString(10)
+        //     });
+        //     await c1.insert(schemaObjects.humanData('foobar'));
+
+        //     /**
+        //      * Here we run the query on the destination directly after
+        //      * a write to the source. The pipeline should automatically halt
+        //      * the reads to the destination until the pipeline is idle.
+        //      */
+        //     const doc2 = await c2.findOne().exec(true);
+        //     assert.strictEqual(doc2.passportId, 'foobar');
+
+        //     await c1.database.destroy();
+        //     await c2.database.destroy();
+        // });
         it('should store the transformed data to the destination', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();

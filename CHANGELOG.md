@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX `postCleanup` hook not running
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
