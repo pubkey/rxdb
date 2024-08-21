@@ -172,7 +172,7 @@ describeParallel('plugin.test.js', () => {
             _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('postCleanup', async () => {
-            let runs: any[] = [];
+            const runs: any[] = [];
             const hook = (input: any) => {
                 runs.push(input);
             };
