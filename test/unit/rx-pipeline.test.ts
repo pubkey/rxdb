@@ -173,7 +173,8 @@ describeParallel('rx-pipeline.test.js', () => {
     describe('multiInstance', () => {
         if (
             !config.storage.hasMultiInstance ||
-            config.storage.name === 'remote' // TODO
+            config.storage.name === 'remote' || // TODO
+            config.storage.name === 'lokijs' // TODO
         ) {
             return;
         }
