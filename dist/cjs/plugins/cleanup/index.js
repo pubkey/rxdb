@@ -7,6 +7,7 @@ var _exportNames = {
   RxDBCleanupPlugin: true
 };
 exports.RxDBCleanupPlugin = void 0;
+var _hooks = require("../../hooks.js");
 var _cleanupHelper = require("./cleanup-helper.js");
 var _cleanupState = require("./cleanup-state.js");
 var _cleanup = require("./cleanup.js");
@@ -37,6 +38,10 @@ var RxDBCleanupPlugin = exports.RxDBCleanupPlugin = {
         while (!isDone && !this.destroyed) {
           isDone = await this.storageInstance.cleanup(minimumDeletedTime);
         }
+        await (0, _hooks.runAsyncPluginHooks)('postCleanup', {
+          collectionName: this.name,
+          databaseName: this.database.name
+        });
       };
     }
   },

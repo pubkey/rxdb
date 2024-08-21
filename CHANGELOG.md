@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX `postCleanup` hook not running
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.31.2 (21 August 2024)
+
+- FIX `postCleanup` hook not running
 
 ### 15.31.1 (19 August 2024)
 
