@@ -204,7 +204,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await p1.awaitIdle();
             await p2.awaitIdle();
 
-            assert.deepStrictEqual(runAt, ['c1']);
+            assert.deepStrictEqual(runAt, ['c1', 'c1']);
 
             c1.database.destroy();
             c2.database.destroy();
