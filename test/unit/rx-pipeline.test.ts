@@ -205,7 +205,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await p2.awaitIdle();
 
             assert.ok(runAt.length > 0);
-            runAt.forEach(i => assert.strictEqual(i, 'c1'))
+            runAt.forEach(i => assert.strictEqual(i, 'c1'));
 
             c1.database.destroy();
             c2.database.destroy();
