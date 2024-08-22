@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "15.31.2",
+  "version": "15.31.3",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -450,7 +450,7 @@
     "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.25.0",
+    "@babel/runtime": "7.25.4",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.17",
     "@types/express": "4.17.21",
@@ -495,14 +495,14 @@
     "@babel/plugin-transform-member-expression-literals": "7.24.7",
     "@babel/plugin-transform-modules-commonjs": "7.24.8",
     "@babel/plugin-transform-property-literals": "7.24.7",
-    "@babel/plugin-transform-runtime": "7.24.7",
+    "@babel/plugin-transform-runtime": "7.25.4",
     "@babel/plugin-transform-spread": "7.24.7",
     "@babel/plugin-transform-template-literals": "7.24.7",
     "@babel/plugin-transform-typescript": "7.25.2",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.25.3",
+    "@babel/preset-env": "7.25.4",
     "@babel/preset-typescript": "7.24.7",
-    "@babel/types": "7.25.2",
+    "@babel/types": "7.25.4",
     "@faker-js/faker": "8.4.1",
     "@rollup/plugin-commonjs": "26.0.1",
     "@rollup/plugin-node-resolve": "15.2.3",
