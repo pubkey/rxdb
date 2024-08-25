@@ -167,7 +167,7 @@ export const ERROR_MESSAGES = {
     RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
     RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
     RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
-    RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html?console=webrtc ',
+    RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html?console=webrtc',
     RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
     RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
     RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
