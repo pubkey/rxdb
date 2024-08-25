@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX `RangeError: Invalid count value` error in the OPFS and filesystem storage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
