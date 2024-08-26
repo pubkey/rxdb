@@ -11,9 +11,9 @@ The index can then be queried efficiently with complex fulltext search operation
 
 
 
-## Benefits
+## Benefits of using a local fulltext search
 
-1. Efficient Search Capabilities
+1. Efficient Search and Indexing
 
 The plugin utilizes the [FlexSearch library](https://github.com/nextapps-de/flexsearch), known for its speed and memory efficiency. This ensures that search operations are performed quickly, even with large datasets. The search engine can handle multi-field queries, partial matching, and complex search operations, providing users with highly relevant results.
 
@@ -38,7 +38,7 @@ Since the plugin is built on top of FlexSearch, which is highly optimized for bo
 As RxDB is designed with [offline-first applications](./offline-first.md) in mind, the fulltext search plugin supports this paradigm by ensuring that all search operations can be performed offline. This is crucial for applications that need to function in environments with intermittent or no internet connectivity, offering users a consistent and reliable search experience with zero latency.
 
 :::warning beta
-The pipeline plugin is in **beta** mode and the API might be changed without a major RxDB release.
+The flexsearch plugin is in **beta** mode and the API might be changed without a major RxDB release.
 :::
 
 ## Using the RxDB Fulltext Search
