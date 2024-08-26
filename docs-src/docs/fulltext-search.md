@@ -60,7 +60,7 @@ import { addFulltextSearch } from 'rxdb-premium/plugins/flexsearch';
 const flexSearch = await addFulltextSearch({
     // unique identifier. Used to store metadata and continue indexing on restarts/reloads.
     identifier: 'my-search',
-    // The source collection on whoose documents the search is based on
+    // The source collection on whose documents the search is based on
     collection: myRxCollection,
     /**
      * Transforms the document data to a given searchable string.
@@ -94,11 +94,11 @@ Step 3: Run a search operation:
 
 
 ```ts
-// find all documents whoose searchstring contains "foobar"
+// find all documents whose searchstring contains "foobar"
 const foundDocuments = await flexSearch.find('foobar');
 
 /**
- * You can also use serach options as second parameter
+ * You can also use search options as second parameter
  * @link https://github.com/nextapps-de/flexsearch#search-options
  */
 const foundDocuments = await flexSearch.find('foobar', { limit: 10 });
