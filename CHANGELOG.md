@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Fulltext Search Plugin](https://rxdb.info/fulltext-search.html)
-- FIX `RangeError: Invalid count value` error in the OPFS and filesystem storage on cleanups.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.32.0 (26 August 2024)
+
+- ADD [Fulltext Search Plugin](https://rxdb.info/fulltext-search.html)
+- FIX `RangeError: Invalid count value` error in the OPFS and filesystem storage on cleanups.
 
 ### 15.31.4 (22 August 2024)
 
