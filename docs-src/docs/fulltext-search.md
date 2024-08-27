@@ -25,13 +25,14 @@ With the plugin, all search operations are performed on the local data stored wi
 
 The plugin integrates seamlessly with RxDB's reactive nature. Every time a document is written to an [RxCollection](./rx-collection.md), an indexer updates the fulltext search index in real-time. This ensures that search results are always up-to-date, reflecting the most current state of the data without requiring manual reindexing.
 
-4. Complex Query Support
+4. Persistent indexing
+
+The fulltext search index is efficiently persisted within the [RxCollection](./rx-collection.md), ensuring that the index remains intact across app restarts. When documents are added or updated in the collection, the index is incrementally updated in real-time, meaning only the changes are processed rather than reindexing the entire dataset. This incremental approach not only optimizes performance but also ensures that subsequent app launches are quick, as there's no need to reindex all the data from scratch, making the search feature both reliable and fast from the moment the app starts. When using an [encrypted storage](./encryption.md) the index itself and incremental updates to it are stored fully encrypted and are only decrypted in-memory.
+
+5. Complex Query Support
 
 The FlexSearch-based plugin allows for [sophisticated search queries](https://github.com/nextapps-de/flexsearch?tab=readme-ov-file#index.search), including multi-term and contextual searches. Users can perform complex searches that go beyond simple keyword matching, enabling more advanced use cases like searching for documents with specific phrases, relevance-based sorting, or even phonetic matching.
 
-5. Scalability
-
-Since the plugin is built on top of FlexSearch, which is highly optimized for both performance and memory usage, it scales well with large datasets. This makes it suitable for applications with extensive local data needs, where traditional search methods might struggle with performance bottlenecks.
 
 6. Offline-First Support and Privacy
 
