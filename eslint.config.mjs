@@ -7,6 +7,7 @@ import _import from 'eslint-plugin-import';
 import jsdoc from 'eslint-plugin-jsdoc';
 import globals from 'globals';
 import path from 'node:path';
+import stylistic from '@stylistic/eslint-plugin';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,13 +46,16 @@ export default [
             'docs-src/static/files/logo/js.build.js',
             'docs-src/_book/',
             'docs-src/build/',
-            'docs-src/docusaurus-lunr-search-main'
+            'docs-src/docusaurus-lunr-search-main',
+            'config/.mocharc.cjs',
+            'config/karma.webpack.conf.cjs'
         ]
     },
     ...compat.extends('eslint:recommended', 'plugin:@typescript-eslint/eslint-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:@typescript-eslint/recommended-requiring-type-checking'),
     {
         plugins: {
             import: fixupPluginRules(_import),
+            '@stylistic': stylistic,
             jsdoc,
             '@typescript-eslint': typescriptEslint
         },
@@ -69,6 +73,23 @@ export default [
             }
         },
         rules: {
+            '@stylistic/quotes': ['error', 'single'],
+            '@stylistic/semi': ['error', 'always'],
+            '@stylistic/type-annotation-spacing': 'error',
+            '@stylistic/indent': 'off',
+            '@stylistic/member-delimiter-style': [
+               'error',
+               {
+                   multiline: {
+                       delimiter: 'semi',
+                       requireLast: true,
+                   },
+                   singleline: {
+                       delimiter: 'semi',
+                       requireLast: true,
+                   },
+               },
+            ],
             '@typescript-eslint/no-redundant-type-constituents': 'off',
             '@typescript-eslint/consistent-type-definitions': 'off',
             '@typescript-eslint/dot-notation': 'off',
@@ -78,20 +99,6 @@ export default [
                     accessibility: 'explicit'
                 }
             ],
-            '@typescript-eslint/indent': 'off',
-            //'@typescript-eslint/member-delimiter-style': [
-            //    'error',
-            //    {
-            //        multiline: {
-            //            delimiter: 'semi',
-            //            requireLast: true,
-            //        },
-            //        singleline: {
-            //            delimiter: 'semi',
-            //            requireLast: true,
-            //        },
-            //    },
-            //],
             '@typescript-eslint/member-ordering': 'off',
             '@typescript-eslint/no-empty-function': 'off',
             '@typescript-eslint/no-misused-new': 'error',
@@ -105,10 +112,6 @@ export default [
             '@typescript-eslint/no-unused-expressions': 'error',
             '@typescript-eslint/prefer-function-type': 'error',
             '@typescript-eslint/no-empty-object-type': 'off',
-            // TODO: look into this
-            //'@typescript-eslint/quotes': ['error', 'single'],
-            //'@typescript-eslint/semi': ['error', 'always'],
-            //'@typescript-eslint/type-annotation-spacing': 'error',
             '@typescript-eslint/unified-signatures': 'error',
             'brace-style': ['error', '1tbs'],
             'constructor-super': 'error',
@@ -470,10 +473,17 @@ export default [
     {
         files: ['**/*.json'],
         rules: {
-            '@typescript-eslint/quotes': 'off',
-            semi: 'off',
+            '@stylistic/quotes': ['error', 'double'],
+            '@stylistic/semi': 'off',
             'no-unused-expressions': 'off',
+            semi: 'off',
             '@typescript-eslint/no-unused-expressions': 'off'
+        }
+    },
+    {
+        files: ['**/*.mjs'],
+        rules: {
+            '@typescript-eslint/no-require-imports': 'off'
         }
     },
     {

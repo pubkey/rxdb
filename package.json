@@ -418,10 +418,10 @@
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run transpile && rm -f isolate-* && cross-env DEFAULT_STORAGE=memory NODE_PROF=true mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.mjs",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
-    "lint": "eslint '**/*.ts' '**/*.js' --cache ",
-    "lint:fix": "eslint '**/*.ts' '**/*.js' --fix",
-    "lint:debug:files": "DEBUG=eslint:cli-engine eslint '**/*.ts' '**/*.js' '**/*.json'",
-    "lint:debug:time": "TIMING=1 eslint '**/*.ts' '**/*.js' '**/*.json'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:debug:files": "DEBUG=eslint:cli-engine eslint .",
+    "lint:debug:time": "TIMING=1 eslint .",
     "check-types": "tsc",
     "transpile": "npm run build:version && node scripts/transpile.mjs && cp ./scripts/module_package.json test_tmp/package.json",
     "build:version": "node ./scripts/update-version-variable.mjs",
@@ -443,7 +443,9 @@
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
     "cloud-signaling-server": "node ./scripts/start-cloud-signaling-server.mjs --max-old-space-size=2048"
   },
-  "pre-commit": ["lint"],
+  "pre-commit": [
+    "lint"
+  ],
   "peerDependencies": {
     "rxjs": "^7.8.0"
   },
@@ -507,6 +509,7 @@
     "@faker-js/faker": "8.4.1",
     "@rollup/plugin-commonjs": "26.0.1",
     "@rollup/plugin-node-resolve": "15.2.3",
+    "@stylistic/eslint-plugin": "2.6.4",
     "@types/assert": "1.5.10",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.17",

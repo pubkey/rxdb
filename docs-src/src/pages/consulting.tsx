@@ -115,6 +115,7 @@ export default function Consulting() {
 }
 
 // blocks
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function NavBarBlock({ onOpenDialog }) {
     const items = [
         {
