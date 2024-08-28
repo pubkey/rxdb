@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 
 /**
  * this file is similar to the one of core-js
@@ -21,7 +21,7 @@ function is(it) {
 }
 
 function log(it) {
-    // eslint-disable-next-line no-console,no-control-regex
+    // eslint-disable-next-line no-control-regex
     console.log(COLOR ? it : it.replace(/\u001B\[\d+m/g, ''));
 }
 
