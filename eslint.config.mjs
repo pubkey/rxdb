@@ -28,6 +28,7 @@ export default [
             '**/dist/',
             '**/package.json',
             '**/plugins/',
+            '.transpile_state.json',
             'examples/angular',
             'examples/electron',
             'examples/electron-remote',
