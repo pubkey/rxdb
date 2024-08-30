@@ -100,6 +100,7 @@ const sidebars = {
     'crdt',
     'population',
     'orm',
+    'fulltext-search',
     'query-optimizer',
     'logger',
     'plugins',

@@ -331,6 +331,11 @@ export default function Premium() {
                                                             </a>
                                                         </li>
                                                         <li>
+                                                            <a href="/fulltext-search.html" target="_blank">
+                                                                Fulltext Search
+                                                            </a>
+                                                        </li>
+                                                        <li>
                                                             <a href="/reactivity.html" target="_blank">
                                                                 Reactivity Vue
                                                             </a>
@@ -846,6 +851,16 @@ export default function Premium() {
                                             <h4>RxServer Koa Adapter</h4>
                                             <p>
                                                 An adapter to use the RxServer with Koa instead of express. Used to have better performance when serving requests.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                                <a href="/fulltext-search.html" target="_blank">
+                                    <div className="premium-block hover-shadow-middle bg-gradient-right-top">
+                                        <div className="premium-block-inner">
+                                            <h4>FlexSearch</h4>
+                                            <p>
+                                                A plugin to efficiently run local fulltext search indexing and queries.
                                             </p>
                                         </div>
                                     </div>
