@@ -173,3 +173,9 @@ export function uniqueArray(arrArg: string[]): string[] {
     });
 }
 
+
+export function sortByObjectNumberProperty<T>(property: keyof T) {
+    return (a: T, b: T) => {
+        return (b as any)[property] - (a as any)[property];
+    }
+}
