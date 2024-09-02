@@ -8,15 +8,28 @@
 
 ## What is a vector database?
 
-A vector database is a specialized type of database designed to store, retrieve, and manage data represented as vectors, so called "embeddings".
+A vector database is a specialized type of database designed to store, retrieve, and manage data represented as vectors, so called "embeddings". An embedding is the output of a given machine learning model like 
 
-> A vector (embedding) is an array of numbers like `[0.56, 0.12, -0.34, 0.78, -0.90]`.
+> A vector (=embedding) is an array of numbers like `[0.56, 0.12, -0.34, 0.78, -0.90]`.
 
-While you could ask a normal database about "which email is older then date X". You can ask a vector database way more vague stuff like "which emails are similar to this one".
+While you could ask a normal database about "which email is older then date X". You can ask a vector database way more vague stuff like `Which emails are about databases?` or `Which emails are polite?`.
 
-Also a vector database cannot only index text content. With the right model, an embedding can be created from anything else like videos, images or audio.
+Also a vector database cannot only index **text** content. With the right model, an embedding can be created from anything else like **videos**, **images** or **audio**.
 
-Notice that vector embeddings from different models are not compatible with each other. When you change your model, you have to recreate all embeddings for your data.
+:::note
+Notice that vector embeddings from different machine learning models or versions are not compatible with each other. When you change your model, you have to recreate all embeddings for your data.
+:::
+
+A vector database allows for new use cases that cannot be accomblished with a normal database:
+- Search (where results are ranked by relevance to a query string)
+- Clustering (where text strings are grouped by similarity)
+- Recommendations (where items with related text strings are recommended)
+- Anomaly detection (where outliers with little relatedness are identified)
+- Diversity measurement (where similarity distributions are analyzed)
+- Classification (where text strings are classified by their most similar label)
+
+In this tutorial we will create a vector database that is intendet to be used as a **recommendation engine**. For other use cases you have to modify the setup. This is the reason why RxDB does not have a fixed vector-database plugin but instead only provides utility functions to set up your own vector search.
+
 
 ## Benefits of local-first compared to a server vector database
 
@@ -28,7 +41,9 @@ Notice that vector embeddings from different models are not compatible with each
 
 ## Transform NoSQL documents into embeddings inside of the browser
 
-With [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) you can run machine learning models on the Web or on any JavaScript apps.
+Because we want to build a local-first application that does not send potential sensitive data to any server or API, we have to calculate the embeddings locally, on the users device.
+
+With [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) you can run machine learning models on the Web or on any JavaScript apps. Lets implement a `getEmbeddingFromText()` function that transforms a given text into an embedding:
 
 ```js
 import { pipeline } from "@xenova/transformers";
@@ -42,7 +57,6 @@ async function getEmbeddingFromText(text) {
   return Array.from(output.data);
 }
 ```
-
 
 ## Storing the Embeddings in RxDB
 
@@ -105,7 +119,7 @@ Several methods exist to compare the difference of two given vectors (embeddings
 - cosine similarity
 - jaccard similarity
 
-RxDB exports all of these functions so you can conveniently use them. In the following of this tutorial we use the euclidean distance everywhere. In your app, you have to try out which algorithm works best which mostly depends on your data's vector distribution and query type.
+RxDB exports all of these functions as utilities so you can conveniently use them. In the following of this tutorial we use the **euclidean distance** everywhere. In your app, you have to try out which algorithm works best which mostly depends on your data's vector distribution and query type.
 
 ```ts
 import { euclideanDistance } from 'rxdb/plugins/vector';
@@ -141,9 +155,9 @@ Notice that depending on your vector comparison function, have to sort smallest 
 - Locality Sensitive Hashing
 - Hierarchical Navigable Small Worlds (HNSW)
 - hierarchical small world
-- Distance to samples
+- Distance to samples: While testing different indexing strategies, [I](https://github.com/pubkey) found out that using the distance to a sample set of items is a good way to index embeddings. You pick like 5 random items of your data and get the embedding for them out of the model. For each embedding stored in the vector database, we calculate the distance to our sample embeddings and store that `number` value as an index. This seems to work good because similar things have similar distances to other things. For example the words "shoe" and "socks" have a similar distance to "boat" and therefore should have roughtly the same index value.
 
-A problem when doing local first stuff always is the **performance**. In browser JavaScript you do not have that many options to store data and mostly you would rely on **IndexedDB**. You have to know that there are things to do with Indexeddb that are fast, [and things that are slow](../slow-indexeddb.md). Doing many serial `get by id` calls is slow. Doing a bulk `get by index range` is fast. To leverage that, you should use an index that stores the embeddings in a sortable way like `Locality Sensitive Hashing` or `Distance to samples`. In the following we will always use `Distance to samples` because it seems to have the best default behavior for our dataset.
+A problem when doing local first stuff always is the **performance**. In browser JavaScript you do not have that many options to store data and mostly you would rely on **IndexedDB**. You have to know that there are things to do with Indexeddb that are fast, [and things that are slow](../slow-indexeddb.md). Doing many serial `get by id` calls is slow. Doing a bulk `get by index range` is fast. To leverage that, you should use an index that stores the embeddings in a sortable way like `Locality Sensitive Hashing` or `Distance to samples`. In the following we will always use `Distance to samples` because for [me](https://github.com/pubkey) it seems to have the best default behavior for our dataset.
 
 ### Storing indexed embeddings in RxDB
 
@@ -194,7 +208,7 @@ const pipeline = await mySourceCollection.addPipeline({
             const embedding = await getEmbedding(doc.text);
             const docData = { id: doc.primary, embedding };
             // calculate the distance to all samples and store them in the index fields
-            const indexValues = new Array(5).fill(0).map((_, idx) => {
+            new Array(5).fill(0).map((_, idx) => {
                 docData['idx' + idx] = euclideanDistance(mySampleVectors[idx], embedding);
             });
             await vectorCollection.upsert(docData);
@@ -205,11 +219,29 @@ const pipeline = await mySourceCollection.addPipeline({
 
 ## Performance benchmarks
 
+On server side databases, there are many ways to improve performance by scaling up the hardware or just using more servers. Local-First apps have the big problem that the hardware is set by the user and you cannot even predict how fast that is. Some users might have **high-end gaming PCs** while others have **outdated smartphones in power saving mode**. So whenever you build a local first app that processes more then a few documents, performance is the key indicator and should tested upfront.
+
 ## Improving the performance with different RxDB Plugins
 
 - IndexedDB RxStorage
+- OPFS RxStorage
 - Sharding
 - WebWorker/SharedWorker
+
+
+## Other potential performance optimizations
+
+There are multiple other techniques to improve the performance of your local vector database:
+
+- Shorten embeddings: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. Thats it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you loose precission in your search results. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
+
+- Use faster models: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**.
+
+- Narrow down the search space: By utilizing other "normal" filter operators to your query, you can narrow down the search space and optimize performance. For example in an email search you could additionally use a operator that limits the results to all emails that are not older then one year.
+
+- Dimensionality Reduction with an [autoencoder](https://www.youtube.com/watch?v=D16rii8Azuw): An autoencoder encodes vector data with minimal loss which can improve the performance by having to store and compare less numbers in an embedding.
+
+## Scalability of the local vector database
 
 ## Migrating Data on Model/Index Changes
 
@@ -232,11 +264,12 @@ myDatabase.addCollections({
   messages: {
     schema: messageSchemaV1,
     migrationStrategies: {
-      1: function(oldDoc){
-        const embedding = await getEmbedding(doc.text);
-        const newIndexes = 
-        oldDoc.time = new Date(oldDoc.time).getTime(); // string to unix
-        return oldDoc;
+      1: function(docData){
+        const embedding = await getEmbedding(docData.text);
+        new Array(5).fill(0).map((_, idx) => {
+            docData['idx' + idx] = euclideanDistance(mySampleVectors[idx], embedding);
+        });
+        return docData;
       },
     }
   }
@@ -247,10 +280,11 @@ myDatabase.addCollections({
 
 
 
-## The possible impact of local-first vector databases
+## The possible impact of local-first vector databases in the future
 
-- WebGPU is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser will be way faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`
-
+- WebGPU is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM.
+- Cross-Modal AI Models: While progress is being made, AI models that can understand and integrate multiple modalities are still in development. For example you could query for an **image** together with a **text** prompt to get a more detailed output.
+- Multi-Step queries: In this article we only talked about having a single query as input and an ordered list of outputs. But there is big potential in chaining models or queries together where you take the results of one query and input them into a different model with different embeddings or outputs.
 
 
 ## Follow Up
@@ -258,3 +292,11 @@ myDatabase.addCollections({
 - Shared/Like my [announcement tweet]() # TODO
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
+
+
+## Sources
+
+Here are good sources I have found to this topic while researching.
+
+- [Hierarchical Navigable Small Worlds Explained (youtube video)](https://www.youtube.com/watch?v=77QH0Y2PYKg)
+- [Vector database indexing methods (youtube video)](https://www.youtube.com/watch?v=035I2WKj5F0)
