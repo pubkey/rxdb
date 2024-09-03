@@ -1,4 +1,10 @@
-# Building a Local-First Vector Database with RxDB and transformers.js
+---
+title: JavaSCript Vector Database
+slug: javascript-vector-database.html
+---
+
+
+# Local-First Vector Database with RxDB and transformers.js
 
 
 - Local First is the new trend for web and mobile apps
@@ -35,9 +41,9 @@ In this tutorial we will create a vector database that is intendet to be used as
 
 - Zero network latency
 - Works offline
-- Full privacy. Fully works without sending userdata to a server.
-- Easy to set up. No API keys or anything required, it just works.
-
+- Full privacy. Fully works without data leaving the users device.
+- Easy to set up. No backend servers required, it just works.
+- Zero Cost. You do not have to pay for any LLM API
 
 ## Transform NoSQL documents into embeddings inside of the browser
 
@@ -99,7 +105,7 @@ const pipeline = await mySourceCollection.addPipeline({
     destination: vectorCollection,
     handler: async (docs) => {
         await Promise.all(docs.map(async(doc) => {
-            const embedding = await getEmbedding(doc.text);
+            const embedding = await getVectorFromText(doc.text);
             await vectorCollection.upsert({
                 id: doc.primary,
                 embedding
@@ -192,9 +198,21 @@ const schema = {
     },
     "required": [
         "id",
-        "embedding"
+        "embedding",
+        "idx0",
+        "idx1",
+        "idx2",
+        "idx3",
+        "idx4"
+    ],
+    "indexes": [
+        "idx0",
+        "idx1",
+        "idx2",
+        "idx3",
+        "idx4"
     ]
-  }
+}
 ```
 
 To store the index values, we have to adapter the handler of our [RxPipeline](../rx-pipeline.md):
@@ -235,11 +253,16 @@ There are multiple other techniques to improve the performance of your local vec
 
 - Shorten embeddings: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. Thats it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you loose precission in your search results. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
 
-- Use faster models: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**.
+- Use faster models: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**. The model `Xenova/all-MiniLM-L6-v2` which is used in this tutorial is about [1 year old](https://huggingface.co/Xenova/all-MiniLM-L6-v2/tree/main). There exist better, more modern models to use. Huggingface makes these convenient to use. You only have to switch out the model name with any other model from [that site](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js).
+
+> TODO: compare performance of different models from huggingface
+
+- Run the model in WASM in parallel to process multiple embeddings at once. Maybe with a WebWorker.
 
 - Narrow down the search space: By utilizing other "normal" filter operators to your query, you can narrow down the search space and optimize performance. For example in an email search you could additionally use a operator that limits the results to all emails that are not older then one year.
 
 - Dimensionality Reduction with an [autoencoder](https://www.youtube.com/watch?v=D16rii8Azuw): An autoencoder encodes vector data with minimal loss which can improve the performance by having to store and compare less numbers in an embedding.
+
 
 ## Scalability of the local vector database
 
@@ -253,19 +276,18 @@ When the app is reloaded and the updated source code is started, RxDB detects ch
 const schemaV1 = {
     "version": 1, // <- increase schema version by 1
     "primaryKey": "id",
-    "type": "object",
     "properties": {
         /* ... */
     },
     /* ... */
 };
 
-myDatabase.addCollections({
-  messages: {
-    schema: messageSchemaV1,
+await myDatabase.addCollections({
+  vectors: {
+    schema: schemaV1,
     migrationStrategies: {
       1: function(docData){
-        const embedding = await getEmbedding(docData.text);
+        const embedding = await getEmbedding(docData.body);
         new Array(5).fill(0).map((_, idx) => {
             docData['idx' + idx] = euclideanDistance(mySampleVectors[idx], embedding);
         });
