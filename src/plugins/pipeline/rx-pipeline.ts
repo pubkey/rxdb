@@ -193,7 +193,7 @@ export class RxPipeline<RxDocType> {
             const writeResult = await insternalStore.bulkWrite([{
                 previous: checkpointDoc,
                 document: newDoc,
-            }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+            }], 'rx-pipeline');
             if (writeResult.error.length > 0) {
                 throw writeResult.error;
             }
@@ -245,7 +245,7 @@ export async function setCheckpointDoc<RxDocType>(
     const writeResult = await insternalStore.bulkWrite([{
         previous,
         document: newDoc,
-    }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+    }], 'rx-pipeline');
     if (writeResult.error.length > 0) {
         throw writeResult.error;
     }
