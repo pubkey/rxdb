@@ -219,7 +219,7 @@ To store the index values, we have to adapter the handler of our [RxPipeline](..
 
 ```ts
 import { euclideanDistance } from 'rxdb/plugins/vector';
-const mySampleVectors: number[][] = [/* the vectors of our sample set*/];
+const sampleVectors: number[][] = [/* the vectors of our sample set*/];
 const pipeline = await mySourceCollection.addPipeline({
     handler: async (docs) => {
         await Promise.all(docs.map(async(doc) => {
@@ -227,7 +227,8 @@ const pipeline = await mySourceCollection.addPipeline({
             const docData = { id: doc.primary, embedding };
             // calculate the distance to all samples and store them in the index fields
             new Array(5).fill(0).map((_, idx) => {
-                docData['idx' + idx] = euclideanDistance(mySampleVectors[idx], embedding);
+                const indexValue = euclideanDistance(sampleVectors[idx], embedding) + '';
+                docData['idx' + idx] = indexValue.slice(0, 10);
             });
             await vectorCollection.upsert(docData);
         }));

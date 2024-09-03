@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX RxPipeline tries to store metadata that does not match the json schema.
+- ADD utilities function for vector search.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
