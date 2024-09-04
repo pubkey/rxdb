@@ -515,7 +515,7 @@
     "@types/cors": "2.8.17",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.7",
-    "@types/node": "20.16.3",
+    "@types/node": "20.16.4",
     "@types/request": "2.48.12",
     "@types/request-promise-native": "1.0.21",
     "@types/source-map-support": "0.5.10",
@@ -591,9 +591,10 @@
     "webpack": "5.94.0",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "5.0.4"
+    "webpack-dev-server": "5.1.0"
   },
   "overrides": {
     "eslint": "9.9.1"
+    "webpack-dev-server": "5.1.0"
   }
 }
