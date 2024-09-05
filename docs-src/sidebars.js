@@ -141,6 +141,7 @@ const sidebars = {
         'why-nosql',
         'react-native-database',
         'alternatives',
+        'articles/javascript-vector-database',
         'articles/angular-database',
         'articles/browser-database',
         'articles/browser-storage',
