@@ -105,7 +105,7 @@ In this tutorial we will create a vector database that is intendet to be used as
 
 ## Transform NoSQL documents into embeddings inside of the browser
 
-For the first step to build a local-first vector database we need to compute embeddings directly on the user's device. This is where [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) comes in, allowing us to run machine learning models in the browser or within JavaScript applications. Below is an implementation of a `getEmbeddingFromText()` function, which takes a piece of text and transforms it into an embedding using the `Xenova/all-MiniLM-L6-v2` model:
+For the first step to build a local-first vector database we need to compute embeddings directly on the user's device. This is where [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) comes in, allowing us to run machine learning models in the browser or within JavaScript applications. Below is an implementation of a `getEmbeddingFromText()` function, which takes a piece of text and transforms it into an embedding using the [Xenova/all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) model:
 
 <!--
 Because we want to build a local-first application that does not send potential sensitive data to any server or API, we have to calculate the embeddings locally, on the users device.
@@ -161,9 +161,9 @@ const schema = {
 }
 ```
 
-When storing documents in the database, we need to ensure that the embeddings are generated and stored automatically. This requires a handler that runs during every document write, calling the machine learning model to generate the embeddings and storing them in a separate vector collection.
+When storing documents in the database, we need to ensure that the embeddings for these documents are generated and stored automatically. This requires a handler that runs during every document write, calling the machine learning model to generate the embeddings and storing them in a separate vector collection.
 
-Since our app runs in a browser, it's essential to avoid duplicate work when multiple browser tabs are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it’s closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes documents and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in the vector collection.
+Since our app runs in a browser, it's essential to avoid duplicate work when multiple browser tabs are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it’s closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes documents and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in a separate vector collection.
 
 ```ts
 const pipeline = await mySourceCollection.addPipeline({
@@ -182,25 +182,70 @@ const pipeline = await mySourceCollection.addPipeline({
 });
 ```
 
-However, processing data locally presents performance challenges. Running the handler with a batch size of 10 takes around **2-4 seconds per batch**, meaning processing 10k documents would take up to an hour. To improve performance, we can do parallel processing using [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). This allows us to utilize the full hardware capacity of the client’s machine. By setting the batch size to match the number of logical processors available (using the [navigator.hardwareConcurrency](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency) API) and running one worker per processor, we can reduce the processing time for 10k embeddings to **about 5 minutes** on my developer laptop with 32 CPU cores.
+However, processing data locally presents performance challenges. Running the handler with a batch size of 10 takes around **2-4 seconds per batch**, meaning processing 10k documents would take up to an hour. To improve performance, we can do parallel processing using [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers):
+
+The worker listens for messages and performance the embedding generation on each request. It then sends the result embedding back to the main thread.
+
+```ts
+// worker.js
+import { getVectorFromText } from './vector.js';
+onmessage = async (e) => {
+    const embedding = await getVectorFromText(e.data.text);
+    postMessage({
+        id: e.data.id,
+        embedding
+    });
+};
+```
+
+On the main thread we create one worker per core and send the tasks to the worker instead of processing them on the main thread.
 
 ```ts
 // create one WebWorker per core
 const workers = new Array(navigator.hardwareConcurrency)
     .fill(0)
-    .map(async () => new Worker(new URL("worker.js", import.meta.url)));
+    .map(() => new Worker(new URL("worker.js", import.meta.url)));
 ```
 
 ```ts
+let lastWorkerId = 0;
+let lastId = 0;
+export async function getVectorFromTextWithWorker(text: string): Promise<number[]> {
+    let worker = workers[lastWorkerId++];
+    if(!worker) {
+        lastWorkerId = 0;
+        worker = workers[lastWorkerId++];
+    }
+    const id = (lastId++) + '';
+    return new Promise<number[]>(res => {
+        const listener = (ev: any) => {
+            if (ev.data.id === id) {
+                res(ev.data.embedding);
+                worker.removeEventListener('message', listener);
+            }
+        };
+        worker.addEventListener('message', listener);
+        worker.postMessage({
+            id,
+            text
+        });
+    });
+}
+
 const pipeline = await mySourceCollection.addPipeline({
     identifier: 'my-embeddings-pipeline',
     destination: vectorCollection,
     batchSize: navigator.hardwareConcurrency, // one per CPU core
     handler: async (docs) => {
-            // use a different worker for each single embedding
+        await Promise.all(docs.map(async (doc, i) => {
+            const embedding = await getVectorFromTextWithWorker(doc.body);
+            /* ... */
+        });
     }
 });
 ```
+
+This setup allows us to utilize the full hardware capacity of the client’s machine. By setting the batch size to match the number of logical processors available (using the [navigator.hardwareConcurrency](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency) API) and running one worker per processor, we can reduce the processing time for 10k embeddings to **about 5 minutes** on my developer laptop with 32 CPU cores.
 
 <!-- 
 
@@ -448,11 +493,11 @@ const pipeline = await mySourceCollection.addPipeline({
 
 ## Searching the Vector database with utilization of the indexes
 
-Now that we have stored our embeddings in an indexed format, we can use different methods to query more efficiently compared to a full table scan. There are many methods on how to use the indexes, let me show you two of them:
+Once our embeddings are stored in an indexed format, we can perform searches much more efficiently than through a full table scan. While this indexing method boosts performance, it comes with a tradeoff: a slight loss in precision, meaning that the result set may not always be the optimal one. However, this is generally acceptable for **similarity search** use cases.
 
+There are multiple ways to leverage indexes for faster queries. Here are two effective methods:
 
-
-1. Query for Index-Ranges in both directions:
+1. **Query for Index Similarity in Both Directions**: For each index vector, calculate the distance to the search embedding and fetch all relevant embeddings in both directions (sorted before and after) from that value.
 
 ```ts
 async function vectorSearchLimit(searchEmbedding: number[]) {
@@ -492,7 +537,7 @@ async function vectorSearchLimit(searchEmbedding: number[]) {
             doc
         };
     });
-    const sorted = docsWithDistance.sort(sortByObjectNumberProperty('distance'));
+    const sorted = docsWithDistance.sort(sortByObjectNumberProperty('distance')).reverse();
     return {
         result: sorted.slice(0, 10),
         docReads
@@ -500,23 +545,89 @@ async function vectorSearchLimit(searchEmbedding: number[]) {
 }
 ```
 
+2. **Query for an Index Range with a Defined Distance**: Set an `indexDistance` and retrieve all embeddings within a specified range from the index vector to the search embedding.
 
+```ts
+async function vectorSearchRange(searchEmbedding: number[]) {
+    await pipeline.awaitIdle();
+    const indexDistance = 0.003;
+    const candidates = new Set<RxDocument>();
+    let docReads = 0;
+    await Promise.all(
+        new Array(5).fill(0).map(async (_, i) => {
+            const distanceToIndex = euclideanDistance(sampleVectors[i], searchEmbedding);
+            const range = distanceToIndex * indexDistance;
+            const docs = await vectorCollection.find({
+                selector: {
+                    ['idx' + i]: {
+                        $gt: indexNrToString(distanceToIndex - range),
+                        $lt: indexNrToString(distanceToIndex + range)
+                    }
+                },
+                sort: [{ ['idx' + i]: 'asc' }],
+            }).exec();
+            docs.map(d => candidates.add(d));
+            docReads = docReads + docs.length;
+        })
+    );
 
+    const docsWithDistance = Array.from(candidates).map(doc => {
+        const distance = euclideanDistance((doc as any).embedding, searchEmbedding);
+        return {
+            distance,
+            doc
+        };
+    });
+    const sorted = docsWithDistance.sort(sortByObjectNumberProperty('distance')).reverse();
+    return {
+        result: sorted.slice(0, 10),
+        docReads
+    };
+};
+```
 
+Both methods allow you to limit the number of embeddings fetched from storage while still ensuring a reasonably precise search result. However, they differ in how many embeddings are read and how precise the results are, with trade-offs between performance and accuracy. The first method has a known embedding read amount of `docsPerIndexSide` time the amount of indexes. The second method reads out an unknown amount of embeddings, depending on the sparsity of the dataset and the value of `indexDistance`.
 
 ## Performance benchmarks
 
-On server side databases, there are many ways to improve performance by scaling up the hardware or just using more servers. Local-First apps have the big problem that the hardware is set by the user and you cannot even predict how fast that is. Some users might have **high-end gaming PCs** while others have **outdated smartphones in power saving mode**. So whenever you build a local first app that processes more then a few documents, performance is the key indicator and should tested upfront.
+In server-side databases, performance can be improved by scaling hardware or adding more servers. However, local-first apps face the unique challenge that the hardware is determined by the end user, making performance unpredictable. Some users may have **high-end gaming PCs**, while others might be using **outdated smartphones in power-saving mode**. Therefore, when building a local-first app that processes more than a few documents, performance becomes a critical factor and should be thoroughly tested upfront.
 
-## Improving the performance with different RxDB Plugins
+Let’s run performance benchmarks on my **high-end gaming PC** to give you a sense of how long different operations take and what's achievable.
 
-- IndexedDB RxStorage
-- OPFS RxStorage
-- Sharding
-- WebWorker/SharedWorker
+Embedding generation on different models:
+
+### Performance of the Query Methods
+
+| Query Method     | Time in milliseconds | Docs read from storage |
+| ---------------- | -------------------- | ---------------------- |
+| Full Scan        | 765                  | 10000                  |
+| Index Similarity | 1647                 | 934                    |
+| Index Range      | 88                   | 2187                   |
 
 
-## Other potential performance optimizations
+As shown, the **index similarity** query method takes significantly longer compared to others. This is due to the need for descending sort orders in some queries `sort: [{ ['idx' + i]: 'desc' }]`. While RxDB supports descending sorts, performance suffers because IndexedDB does not efficiently handle [reverse indexed bulk operations](https://github.com/w3c/IndexedDB/issues/130). As a result, the **index range method** performs much better for this use case.
+
+
+
+### Performance of the Models
+
+Let’s also look at the time taken to calculate a single embedding across various models from the [huggingface transformers list](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js):
+
+| Model Name                                   | Time per Embedding in (ms) | Vector Size | Model Size (MB) |
+| -------------------------------------------- | -------------------------- | ----------- | --------------- |
+| Xenova/all-MiniLM-L6-v2                      | 173                        | 384         | 23              |
+| Supabase/gte-small                           | 341                        | 384         | 34.1            |
+| mixedbread-ai/mxbai-embed-large-v1           | 3359                       | 1024        | 337             |
+| jinaai/jina-embeddings-v2-base-zh            | 1437                       | 768         | 162             |
+| Xenova/paraphrase-multilingual-mpnet-base-v2 | 1000                       | 768         | 279             |
+| jinaai/jina-embeddings-v2-base-code          | 1769                       | 768         | 162             |
+| Xenova/multilingual-e5-large                 | 4215                       | 1024        | 562             |
+| WhereIsAI/UAE-Large-V1                       | 3499                       | 1024        | 337             |
+| jinaai/jina-embeddings-v2-base-de            | 1291                       | 768         | 162             |
+
+From these benchmarks, it’s evident that models with larger vector outputs take longer to process. Additionally, the model size significantly affects performance, with larger models requiring more time to compute embeddings. This trade-off between model complexity and performance must be considered when choosing the right model for your use case.
+
+## Potential Performance Optimizations
 
 There are multiple other techniques to improve the performance of your local vector database:
 
@@ -529,12 +640,11 @@ There are multiple other techniques to improve the performance of your local vec
 
 - Use faster models: There are many ways to improve performance of machine learning models. If your embedding calculation is too slow, try other models. **Smaller** mostly means **faster**. The model `Xenova/all-MiniLM-L6-v2` which is used in this tutorial is about [1 year old](https://huggingface.co/Xenova/all-MiniLM-L6-v2/tree/main). There exist better, more modern models to use. Huggingface makes these convenient to use. You only have to switch out the model name with any other model from [that site](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js).
 
-> TODO: compare performance of different models from huggingface
-
 - Narrow down the search space: By utilizing other "normal" filter operators to your query, you can narrow down the search space and optimize performance. For example in an email search you could additionally use a operator that limits the results to all emails that are not older then one year.
 
 - Dimensionality Reduction with an [autoencoder](https://www.youtube.com/watch?v=D16rii8Azuw): An autoencoder encodes vector data with minimal loss which can improve the performance by having to store and compare less numbers in an embedding.
 
+- Use different RxDB Plugins: RxDB has different storages and plugins that can improve the performance like the [IndexedDB RxStorage](../rx-storage-indexeddb.md), the [OPFS RxStorage](../rx-storage-opfs.md), the [sharding](../rx-storage-sharding.md) plugin and the [Worker](../rx-storage-worker.md) and [SharedWorker](../rx-storage-shared-worker.md) storages.
 
 ## Scalability of the local vector database
 
@@ -570,11 +680,7 @@ await myDatabase.addCollections({
 });
 ```
 
-
-
-
-
-## The possible improvements to local-first vector databases in the future
+## Possible Future Improvements to Local-First Vector Databases
 
 - WebGPU is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM.
 - Cross-Modal AI Models: While progress is being made, AI models that can understand and integrate multiple modalities are still in development. For example you could query for an **image** together with a **text** prompt to get a more detailed output.
