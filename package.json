@@ -503,7 +503,7 @@
     "@babel/preset-env": "7.25.4",
     "@babel/preset-typescript": "7.24.7",
     "@babel/types": "7.25.6",
-    "@faker-js/faker": "8.4.1",
+    "@faker-js/faker": "9.0.0",
     "@rollup/plugin-commonjs": "26.0.1",
     "@rollup/plugin-node-resolve": "15.2.3",
     "@types/assert": "1.5.10",
