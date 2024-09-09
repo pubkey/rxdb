@@ -1,20 +1,12 @@
 ---
 title: JavaScript Vector Database
 slug: javascript-vector-database.html
-
 ---
 
 
 # Local-First Vector Database with RxDB and transformers.js
 
-**Vector databases** have unlocked new possibilities for storing and querying data, especially in tasks requiring **semantic search** and similarity-based queries. However, most vector databases are designed for server-side use, typically running in large cloud clusters. This setup introduces limitations like network latency, dependency on internet connectivity, and potential privacy issues.
-
-The [Local-First](../offline-first.md) trend is revolutionizing how modern web and mobile apps handle data. By processing and storing data directly on users' devices, apps can operate faster, work offline, and provide better privacy controls.
-
-In this article, we will combine two key technologies to create a **local-first vector database**:
-
-- [RxDB](https://rxdb.info/): A NoSQL, local-first database with a flexible storage layer that can run on any JavaScript runtime, including browsers and mobile environments.
-- [transformers.js](https://github.com/xenova/transformers.js): A powerful framework that allows machine learning models to run directly within JavaScript using WebAssembly or WebGPU.
+The [local-first](../offline-first.md) trend is comming up. A paradigma where you store and query data locally on the users device to ensure functionality even without internet connection. This comes with several advantages like better performance and scalability. To build local-first apps, people tend to use local-first database solutions like [RxDB](https://rxdb.info/) which are optimized for this purpose.
 
 <center>
     <a href="https://rxdb.info/">
@@ -22,9 +14,17 @@ In this article, we will combine two key technologies to create a **local-first 
     </a>
 </center>
 
-This combination enables us to build a vector database that runs in the browser, stores data in **IndexedDB**, and uses **WebAssembly** to run machine learning models—all without relying on a backend server.
+Often when building local-first apps, a common problem arises: traditional databases can only search using **concrete values** like `strings`, `numbers`, or `regular expressions`. However, there are cases where you need to find data based on its **"meaning"** rather than exact matches, such as when searching through locally stored emails for a specific topic. You could do this with the help of `RegExp` operations but to get really good results, you need a better suited tool.
 
-The key advantages of using a local first vector database are:
+**Vector databases** have unlocked these new possibilities for storing and querying data, especially in tasks requiring **semantic search** and **similarity-based** queries. With the help of a **machine learning model**, data is transformed into a vector representation that can be stored, queried and compared in a database.
+
+However, most vector databases are designed for server-side use, typically running in large cloud clusters, not to run on a users device. To fix that, in this article, we will combine two key technologies to create a [local-first](../offline-first.md) vector database running in the **browser** with **Javascript**. It stores data in **IndexedDB**, and uses a machine learning model with **WebAssembly** locally, without the need for external servers:
+
+- [transformers.js](https://github.com/xenova/transformers.js) is a powerful framework that allows machine learning models to run directly within JavaScript using WebAssembly or WebGPU.
+
+- [RxDB](https://rxdb.info/) is a NoSQL, local-first database with a flexible storage layer that can run on any JavaScript runtime, including browsers and mobile environments. (You are reading this article on the RxDB docs).
+
+Our local vector database offers several key benefits:
 
 - **Zero network latency**: Data is processed locally on the user’s device, ensuring near-instant responses.
 - **Offline functionality**: Data can be queried even without an internet connection.
@@ -32,37 +32,10 @@ The key advantages of using a local first vector database are:
 - **Simple setup**: No backend servers are required, making deployment straightforward.
 - **Cost savings**: By running everything locally, you avoid fees for API access or cloud services for large language models.
 
-By the end of this article, you'll have a working **vector database running in the browser**, storing data in IndexedDB, and leveraging machine learning models locally, without the need for external servers
-
-
-
-
-
-
-
-
-<!--
-
-Vector databases create new possiblities in how to store and query data. But most vector database are made for server side use to run in big cloud clusters.
-
-Local-First is the new trend for web and mobile apps where data is stored and processed locally at the users device.
-
-RxDB is a NoSQL local-first database with a flexible storage layer that can run on any javascript runtime.
-transformers.js is a framework to run models inside of javascript with WebAssembly or WebGPU.
-
-In this article we combine these technologies to create a local first vector database that runs in a browser and stores data on IndexedDB and runs our ML model in WebAssembly.
-
-- Zero network latency because data is processed at the users device.
-- Works offline, data can be searched when there is not internet.
-- Privacy. Sensitive data can be processed locally without data leaving the users device.
-- Easy to set up. No backend servers required, it just works.
-- Zero Cost. When running a local-first vector database, you do not have to pay for any LLM API
--->
 
 :::note
 In this article only the important source code parts are shown. You can find the full implementation at the [github repository](https://github.com/pubkey/javascript-vector-database).
 :::
-
 
 ## What is a Vector Database?
 
@@ -72,7 +45,7 @@ A vector database is a specialized database optimized for storing and querying d
 
 For example, instead of asking "Which document has the word 'database'?", you can query "Which documents discuss similar topics to this one?" The vector database compares embeddings and returns results based on how similar the vectors are to each other.
 
-Vector databases handle multiple types of data beyond **text**, including **images**, **videos**, and **audio** files, all transformed into embeddings for efficient querying.
+Vector databases handle multiple types of data beyond **text**, including **images**, **videos**, and **audio** files, all transformed into embeddings for efficient querying. Mostly you would not train a model by yourself and instead use one of the public available [transformer models](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js).
 
 Vector databases are highly effective in various types of applications:
 
@@ -82,11 +55,15 @@ Vector databases are highly effective in various types of applications:
 - **Anomaly Detection**: Identifies outliers that differ from the norm.
 - **Classification**: Assigns categories to data based on its vector’s nearest neighbors.
 
-In this tutorial, we will build a vector database designed as a **recommendation engine** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why RxDB doesn’t provide a dedicated vector-database plugin, but rather offers utility functions to help you build your own vector search system.
+In this tutorial, we will build a vector database designed as a **Similarity Search** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why [RxDB](https://rxdb.info/) doesn’t provide a dedicated vector-database plugin, but rather offers utility functions to help you build your own vector search system.
+
+<center>
+        <img src="../files/icons/transformers.js.svg" alt="transformers.js" width="40" />
+</center>
 
 ## Generating Embeddings Locally in a Browser
 
-For the first step to build a local-first vector database we need to compute embeddings directly on the user's device. This is where [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) comes in, allowing us to run machine learning models in the browser or within JavaScript applications. Below is an implementation of a `getEmbeddingFromText()` function, which takes a piece of text and transforms it into an embedding using the [Xenova/all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) model:
+For the first step to build a local-first vector database we need to compute embeddings directly on the user's device. This is where [transformers.js](https://github.com/xenova/transformers.js) from [huggingface](https://huggingface.co/docs/transformers.js/index) comes in, allowing us to run machine learning models in the browser with **WebAssembly**. Below is an implementation of a `getEmbeddingFromText()` function, which takes a piece of text and transforms it into an embedding using the [Xenova/all-MiniLM-L6-v2](https://huggingface.co/Xenova/all-MiniLM-L6-v2) model:
 
 ```js
 import { pipeline } from "@xenova/transformers";
@@ -110,38 +87,92 @@ Vector embeddings from different machine learning models or versions are not com
 
 ## Storing the Embeddings in RxDB
 
+To store the embeddings, first we have to create our [RxDB Database](../rx-database.md) with the [Dexie.js storage](../rx-storage-dexie.md) that stores data in **IndexedDB**.
+
+```ts
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+
+const db = await createRxDatabase({
+    name: 'mydatabase',
+    storage: getRxStorageDexie()
+});
+```
+
+Then we add a `items` collection that stores our documents with the `text` field that stores the content.
+
+```ts
+await db.addCollections({
+  items: {
+    schema: {
+        version: 0,
+        primaryKey: 'id',
+        type: 'object',
+        properties: {
+            id: {
+                type: 'string',
+                maxLength: 20
+            },
+            text: {
+                type: 'string'
+            }
+        },
+        required: ['id', 'text']
+    }
+  }
+});
+const itemsCollection = db.items;
+```
+
+In our [example repo](https://github.com/pubkey/javascript-vector-database), we use the [Wiki Embeddings](https://huggingface.co/datasets/Supabase/wikipedia-en-embeddings) dataset from supabase which was transformed and used to fill up the `items` collection with test data.
+
+```ts
+import { WIKI_DATA } from './data.js';
+const imported = await itemsCollection.count().exec();
+if (imported !== WIKI_DATA.length) {
+    const response = await fetch('./files/items.json');
+    const items = await response.json();
+    const insertResult = await itemsCollection.bulkInsert(
+        items
+    );
+}
+```
+
+Also we need a `vector` collection that stores our embeddings.
 RxDB, as a NoSQL database, allows for the storage of flexible data structures, such as embeddings, within documents. To achieve this, we need to define a [schema](../rx-schema.md) that specifies how the embeddings will be stored alongside each document. The schema includes fields for an `id` and the `embedding` array itself.
 
 ```ts
-const schema = {
-    "version": 0,
-    "primaryKey": "id",
-    "type": "object",
-    "properties": {
-        "id": {
-            "type": "string",
-            "maxLength": 100
-        },
-        "embedding": {
-            "type": "array",
-            "items": {
-                "type": "number"
+await db.addCollections({
+  vector: {
+    schema: {
+        version: 0,
+        primaryKey: 'id',
+        type: 'object',
+        properties: {
+            id: {
+                type: 'string',
+                maxLength: 20
+            },
+            embedding: {
+                type: 'array',
+                items: {
+                    type: 'string'
+                }
             }
-        }
-    },
-    "required": [
-        "id",
-        "embedding"
-    ]
-}
+        },
+        required: ['id', 'embedding']
+    }
+  }
+});
+const vectorCollection = db.vector;
 ```
 
 When storing documents in the database, we need to ensure that the embeddings for these documents are generated and stored automatically. This requires a handler that runs during every document write, calling the machine learning model to generate the embeddings and storing them in a separate vector collection.
 
-Since our app runs in a browser, it's essential to avoid duplicate work when multiple browser tabs are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it’s closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes documents and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in a separate vector collection.
+Since our app runs in a browser, it's essential to avoid duplicate work when **multiple browser tabs** are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it’s closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes items and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in a separate vector collection.
 
 ```ts
-const pipeline = await mySourceCollection.addPipeline({
+const pipeline = await itemsCollection.addPipeline({
     identifier: 'my-embeddings-pipeline',
     destination: vectorCollection,
     batchSize: 10,
@@ -157,7 +188,7 @@ const pipeline = await mySourceCollection.addPipeline({
 });
 ```
 
-However, processing data locally presents performance challenges. Running the handler with a batch size of 10 takes around **2-4 seconds per batch**, meaning processing 10k documents would take up to an hour. To improve performance, we can do parallel processing using [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). A worker runs on a different JavaScript process and we can start and run many of them in parallel.
+However, processing data locally presents performance challenges. Running the handler with a batch size of 10 takes around **2-4 seconds per batch**, meaning processing 10k documents would take up to an hour. To improve performance, we can do parallel processing using [WebWorkers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). A WebWorker runs on a different JavaScript process and we can start and run many of them in parallel.
 
 Our worker listens for messages and performance the embedding generation on each request. It then sends the result embedding back to the main thread.
 
@@ -207,7 +238,7 @@ export async function getVectorFromTextWithWorker(text: string): Promise<number[
     });
 }
 
-const pipeline = await mySourceCollection.addPipeline({
+const pipeline = await itemsCollection.addPipeline({
     identifier: 'my-embeddings-pipeline',
     destination: vectorCollection,
     batchSize: navigator.hardwareConcurrency, // one per CPU core
@@ -238,35 +269,46 @@ With this we can sort multiple embeddings by how good they match our search quer
 
 ## Searching the Vector database with a full table scan
 
-To find out if our embeddings have been stored correctly and that our vector comparison works as should, let's run a basic query to ensure everything functions as expected. In this query, we aim to find documents similar to a specific one from our dataset. The process involves fetching all documents, calculating the distance between their embeddings and the query vector, and then sorting them based on their similarity.
+To find out if our embeddings have been stored correctly and that our vector comparison works as should, let's run a basic query to ensure everything functions as expected. In this query, we aim to find documents similar to a given user input text. The process involves calculating the embedding from the input text, fetching all documents, calculating the distance between their embeddings and the query embedding, and then sorting them based on their similarity.
 
 ```ts
 import { euclideanDistance } from 'rxdb/plugins/vector';
 import { sortByObjectNumberProperty } from 'rxdb/plugins/core';
 
-// use a sample vector from your dataset as query
-const sampleDoc = await vectorCollection.findOne().exec();
-const queryVector = sampleDoc.embedding;
+const userInput = 'new york people';
+const queryVector = await getEmbeddingFromText(userInput);
 const candidates = await vectorCollection.find().exec();
-const withDistance = candidates.map(doc => ({ doc, distance: euclideanDistance(queryVector, doc.embedding) }))
+const withDistance = candidates.map(doc => ({ 
+    doc,
+    distance: euclideanDistance(queryVector, doc.embedding)
+}));
 const queryResult = withDistance.sort(sortByObjectNumberProperty('distance')).reverse();
 console.dir(queryResult);
 ```
 
 :::note
-It’s important to note that for **distance**-based comparisons, sorting should be in ascending order (smallest first), while for **similarity**-based algorithms, the sorting should be in descending order (largest first).
+For **distance**-based comparisons, sorting should be in ascending order (smallest first), while for **similarity**-based algorithms, the sorting should be in descending order (largest first).
 :::
 
+If we inspect the results, we can see that the documents returned are ordered by relevance, with the most similar document at the top:
 
-If we inspect the results, we can see that the documents returned are ordered by relevance, with the most similar document at the top. If our querying is correct, the first entry in the sorted list should have a Euclidean distance of `zero` from the search vector because it will find our `sampleDoc` itself which has the exact equal vector. 
+<center>
+        <img src="../files/vector-database-result.png" alt="Vector Database Result" />
+</center>
 
-However, this method presents a significant challenge: it does not scale well. As the number of stored documents increases, the time taken to fetch and compare embeddings grows proportionally. For example, retrieving embeddings from a dataset of 10k documents takes around **700 milliseconds**. If we scale up to 100k documents, this delay would rise to approximately **7 seconds**, making the search process inefficient for larger datasets.
+:::note
+This demo page can be [run online here](https://pubkey.github.io/javascript-vector-database/).
+:::
+
+However our full-scan method presents a significant challenge: it does not scale well. As the number of stored documents increases, the time taken to fetch and compare embeddings grows proportionally. For example, retrieving embeddings from our [test dataset](https://huggingface.co/datasets/Supabase/wikipedia-en-embeddings) of 10k documents takes around **700 milliseconds**. If we scale up to 100k documents, this delay would rise to approximately **7 seconds**, making the search process inefficient for larger datasets.
 
 ## Indexing the Embeddings for Better Performance
 
-To address the scalability issue, we need to store embeddings in a way that allows us to avoid fetching all of them from storage during a query. In traditional databases, you can sort documents by an index field, allowing efficient queries that retrieve only the necessary documents. An index organizes data in a structured, sortable manner, much **like a phone book**. However, with vector embeddings we are not dealing with simple, single values. Instead, we have large **lists of numbers**, which makes indexing more complex because we have more then one dimension. Various methods exist for indexing these vectors to improve query efficiency and performance:
+To address the scalability issue, we need to store embeddings in a way that allows us to avoid fetching all of them from storage during a query. In traditional databases, you can sort documents by an **index field**, allowing efficient queries that retrieve only the necessary documents. An index organizes data in a structured, sortable manner, much **like a phone book**. However, with vector embeddings we are not dealing with simple, single values. Instead, we have large **lists of numbers**, which makes indexing more complex because we have more then one dimension.
 
-### Possible Indexing Methods
+### Vector Indexing Methods
+
+Various methods exist for indexing these vectors to improve query efficiency and performance:
 
 - [Locality Sensitive Hashing (LSH)](https://www.youtube.com/watch?v=Arni-zkqMBA): LSH hashes data so that similar items are likely to fall into the same bucket, optimizing approximate nearest neighbor searches in high-dimensional spaces by reducing the number of comparisons.
 - [Hierarchical Small World](https://www.youtube.com/watch?v=77QH0Y2PYKg): HSW is a graph structure designed for efficient navigation, allowing quick jumps across the graph while maintaining short paths between nodes, forming the basis for HNSW's optimization.
@@ -327,12 +369,12 @@ const schema = {
 }
 ```
 
-To populate these index fields, we modify the [RxPipeline](../rx-pipeline.md) handler accding to the **Distance to samples** method. We calculate the distance between the document's embedding and our set of `5` index vectors. The calculated distances are converted to `string` and stored in the appropriate index fields:
+To populate these index fields, we modify the [RxPipeline](../rx-pipeline.md) handler accordingly to the **Distance to samples** method. We calculate the distance between the document's embedding and our set of `5` index vectors. The calculated distances are converted to `string` and stored in the appropriate index fields:
 
 ```ts
 import { euclideanDistance } from 'rxdb/plugins/vector';
 const sampleVectors: number[][] = [/* the index vectors */];
-const pipeline = await mySourceCollection.addPipeline({
+const pipeline = await itemsCollection.addPipeline({
     handler: async (docs) => {
         await Promise.all(docs.map(async(doc) => {
             const embedding = await getEmbedding(doc.text);
@@ -449,9 +491,10 @@ And that's it for the implemenation. We now have a local first vector database t
 
 ## Performance benchmarks
 
+In server-side databases, performance can be improved by scaling hardware or adding more servers. However, [local-first](../offline-first.md) apps face the unique challenge that the hardware is determined by the end user, making performance unpredictable. Some users may have **high-end gaming PCs**, while others might be using **outdated smartphones in power-saving mode**. Therefore, when building a local-first app that processes more than a few documents, performance becomes a critical factor and should be thoroughly tested upfront.
+
 Let’s run performance benchmarks on my **high-end gaming PC** to give you a sense of how long different operations take and what's achievable.
 
-In server-side databases, performance can be improved by scaling hardware or adding more servers. However, [local-first](../offline-first.md) apps face the unique challenge that the hardware is determined by the end user, making performance unpredictable. Some users may have **high-end gaming PCs**, while others might be using **outdated smartphones in power-saving mode**. Therefore, when building a local-first app that processes more than a few documents, performance becomes a critical factor and should be thoroughly tested upfront.
 
 ### Performance of the Query Methods
 
@@ -462,11 +505,11 @@ In server-side databases, performance can be improved by scaling hardware or add
 | Index Range      | 88                   | 2187                   |
 
 
-As shown, the **index similarity** query method takes significantly longer compared to others. This is due to the need for descending sort orders in some queries `sort: [{ ['idx' + i]: 'desc' }]`. While RxDB supports descending sorts, performance suffers because IndexedDB does not efficiently handle [reverse indexed bulk operations](https://github.com/w3c/IndexedDB/issues/130). As a result, the **index range method** performs much better for this use case and should be used instead. With its query time of only `88` milliseconds it is fast enough for all use cases and likely such fast that you do not even need to show a loading spinner. Also it is likely faster compared to fetching the query result from a server-side vector database.
+As shown, the **index similarity** query method takes significantly longer compared to others. This is due to the need for descending sort orders in some queries `sort: [{ ['idx' + i]: 'desc' }]`. While RxDB supports descending sorts, performance suffers because IndexedDB does not efficiently handle [reverse indexed bulk operations](https://github.com/w3c/IndexedDB/issues/130). As a result, the **index range method** performs much better for this use case and should be used instead. With its query time of only `88` milliseconds it is fast enough for all most things and likely such fast that you do not even need to show a loading spinner. Also it is faster compared to fetching the query result from a server-side vector database over the internet.
 
 ### Performance of the Models
 
-Let’s also look at the time taken to calculate a single embedding across various models from the [huggingface transformers list](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js):
+Let's also look at the time taken to calculate a single embedding across various models from the [huggingface transformers list](https://huggingface.co/models?pipeline_tag=feature-extraction&library=transformers.js):
 
 | Model Name                                   | Time per Embedding in (ms) | Vector Size | Model Size (MB) |
 | -------------------------------------------- | -------------------------- | ----------- | --------------- |
@@ -500,6 +543,13 @@ There are multiple other techniques to improve the performance of your local vec
 - **Dimensionality Reduction** with an [autoencoder](https://www.youtube.com/watch?v=D16rii8Azuw): An autoencoder encodes vector data with minimal loss which can improve the performance by having to store and compare less numbers in an embedding.
 
 - **Different RxDB Plugins**: RxDB has different storages and plugins that can improve the performance like the [IndexedDB RxStorage](../rx-storage-indexeddb.md), the [OPFS RxStorage](../rx-storage-opfs.md), the [sharding](../rx-storage-sharding.md) plugin and the [Worker](../rx-storage-worker.md) and [SharedWorker](../rx-storage-shared-worker.md) storages.
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
+    </a>
+</center>
+
 
 ## Migrating Data on Model/Index Changes
 
@@ -541,7 +591,7 @@ await myDatabase.addCollections({
 
 For now our vector database works and we are good to go. However there are some things to consider for the future:
 
-- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM.
+- **WebGPU** is [not fully supported](https://caniuse.com/webgpu) yet. When this changes, creating embeddings in the browser have the potential to become faster. You can check if your current chrome supports WebGPU by opening `chrome://gpu/`. Notice that WebGPU has been reported to sometimes be [even slower](https://github.com/xenova/transformers.js/issues/894#issuecomment-2323897485) compared to WASM but likely it will be faster in the long term.
 - **Cross-Modal AI Models**: While progress is being made, AI models that can understand and integrate multiple modalities are still in development. For example you could query for an **image** together with a **text** prompt to get a more detailed output.
 - **Multi-Step queries**: In this article we only talked about having a single query as input and an ordered list of outputs. But there is big potential in chaining models or queries together where you take the results of one query and input them into a different model with different embeddings or outputs.
 
@@ -551,10 +601,3 @@ For now our vector database works and we are good to go. However there are some 
 - Read the source code that belongs to this article [at github](https://github.com/pubkey/javascript-vector-database)
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
-
-## Other Resources
-
-Here are good sources I have found to this topic while researching.
-
-- [Hierarchical Navigable Small Worlds Explained (youtube video)](https://www.youtube.com/watch?v=77QH0Y2PYKg)
-- [Vector database indexing methods (youtube video)](https://www.youtube.com/watch?v=035I2WKj5F0)
