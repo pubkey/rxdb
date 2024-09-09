@@ -6,7 +6,7 @@ slug: javascript-vector-database.html
 
 # Local-First Vector Database with RxDB and transformers.js
 
-The [local-first](../offline-first.md) trend is comming up. A paradigma where you store and query data locally on the users device to ensure functionality even without internet connection. This comes with several advantages like better performance and scalability. To build local-first apps, people tend to use local-first database solutions like [RxDB](https://rxdb.info/) which are optimized for this purpose.
+The [local-first](../offline-first.md) trend is coming up. A paradigma where you store and query data locally on the users device to ensure functionality even without internet connection. This comes with several advantages like better performance and scalability. To build local-first apps, people tend to use local-first database solutions like [RxDB](https://rxdb.info/) which are optimized for this purpose.
 
 <center>
     <a href="https://rxdb.info/">
@@ -313,7 +313,7 @@ Various methods exist for indexing these vectors to improve query efficiency and
 - [Locality Sensitive Hashing (LSH)](https://www.youtube.com/watch?v=Arni-zkqMBA): LSH hashes data so that similar items are likely to fall into the same bucket, optimizing approximate nearest neighbor searches in high-dimensional spaces by reducing the number of comparisons.
 - [Hierarchical Small World](https://www.youtube.com/watch?v=77QH0Y2PYKg): HSW is a graph structure designed for efficient navigation, allowing quick jumps across the graph while maintaining short paths between nodes, forming the basis for HNSW's optimization.
 - [Hierarchical Navigable Small Worlds (HNSW)](https://www.youtube.com/watch?v=77QH0Y2PYKg): HNSW builds a hierarchical graph for fast approximate nearest neighbor search. It uses multiple layers where higher layers represent fewer, more connected nodes, improving search efficiency in large datasets​.
-- **Distance to samples**: While testing different indexing strategies, [I](https://github.com/pubkey) found out that using the distance to a sample set of items is a good way to index embeddings. You pick like 5 random items of your data and get the embeddings for them out of the model. These are your 5 index vectors. For each embedding stored in the vector database, we calculate the distance to our 5 index vectors and store that `number` as an index value. This seems to work good because similar things have similar distances to other things. For example the words "shoe" and "socks" have a similar distance to "boat" and therefore should have roughtly the same index value.
+- **Distance to samples**: While testing different indexing strategies, [I](https://github.com/pubkey) found out that using the distance to a sample set of items is a good way to index embeddings. You pick like 5 random items of your data and get the embeddings for them out of the model. These are your 5 index vectors. For each embedding stored in the vector database, we calculate the distance to our 5 index vectors and store that `number` as an index value. This seems to work good because similar things have similar distances to other things. For example the words "shoe" and "socks" have a similar distance to "boat" and therefore should have roughly the same index value.
 
 When building **local-first** applications, performance is often a challenge, especially in JavaScript. With **IndexedDB**, certain operations, like many sequential `get by id` calls, [are slow](../slow-indexeddb.md), while bulk operations, such as `get by index range`, are fast. Therefore, it's essential to use an indexing method that allows embeddings to be stored in a sortable way, like **Locality Sensitive Hashing** or **Distance to Samples**. In this article, we'll use **Distance to Samples**, because for [me](https://github.com/pubkey) it provides the best default behavior for the sample dataset.
 
@@ -487,7 +487,7 @@ async function vectorSearchIndexRange(searchEmbedding: number[]) {
 
 Both methods allow you to limit the number of embeddings fetched from storage while still ensuring a reasonably precise search result. However, they differ in how many embeddings are read and how precise the results are, with trade-offs between performance and accuracy. The first method has a known embedding read amount of `docsPerIndexSide * 2 * [amount of indexes]`. The second method reads out an unknown amount of embeddings, depending on the sparsity of the dataset and the value of `indexDistance`.
 
-And that's it for the implemenation. We now have a local first vector database that is able to store and query vector data.
+And that's it for the implementation. We now have a local first vector database that is able to store and query vector data.
 
 ## Performance benchmarks
 
@@ -529,7 +529,7 @@ From these benchmarks, it’s evident that models with larger vector outputs **t
 
 There are multiple other techniques to improve the performance of your local vector database:
 
-- **Shorten embeddings**: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. Thats it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you loose precission in your search results. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
+- **Shorten embeddings**: The storing and retrieval of embeddings can be improved by "shortening" the embedding. To do that, you just strip away numbers from your vector. For example `[0.56, 0.12, -0.34, 0.78, -0.90]` becomes `[0.56, 0.12]`. That's it, you now have a smaller embedding that is faster to read out of the storage and calculating distances is faster because it has to process less numbers. The downside is that you loose precision in your search results. Sometimes shortening the embeddings makes more sense as a pre-query step where you first compare the shortened vectors and later fetch the "real" vectors for the 10 most matching documents to improve their sort order.
 
 - **Optimize the variables in our Setup**: In this examples we picked our variables in a non-optimal way. You can get huge performance improvements by setting different values:
     - We picked 5 indexes for the embeddings. Using less indexes improves your query performance with the cost of less good results.
