@@ -15,6 +15,7 @@ exports.maxOfNumbers = maxOfNumbers;
 exports.randomOfArray = randomOfArray;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
+exports.sortByObjectNumberProperty = sortByObjectNumberProperty;
 exports.sumNumberArray = sumNumberArray;
 exports.toArray = toArray;
 exports.uniqueArray = uniqueArray;
@@ -169,5 +170,10 @@ function uniqueArray(arrArg) {
   return arrArg.filter(function (elem, pos, arr) {
     return arr.indexOf(elem) === pos;
   });
+}
+function sortByObjectNumberProperty(property) {
+  return (a, b) => {
+    return b[property] - a[property];
+  };
 }
 //# sourceMappingURL=utils-array.js.map

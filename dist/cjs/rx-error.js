@@ -75,7 +75,7 @@ var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
       return false;
     }
   }]);
-}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
+}(/*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
 var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
   // always true, use this to detect if its an rxdb-error
 
@@ -106,7 +106,7 @@ var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
       return true;
     }
   }]);
-}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
+}(/*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
 function getErrorUrl(code) {
   return 'https://rxdb.info/errors.html?console=errors#' + code;
 }

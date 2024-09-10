@@ -62,7 +62,7 @@ export var RxError = /*#__PURE__*/function (_Error) {
       return false;
     }
   }]);
-}( /*#__PURE__*/_wrapNativeSuper(Error));
+}(/*#__PURE__*/_wrapNativeSuper(Error));
 export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   // always true, use this to detect if its an rxdb-error
 
@@ -93,7 +93,7 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
       return true;
     }
   }]);
-}( /*#__PURE__*/_wrapNativeSuper(TypeError));
+}(/*#__PURE__*/_wrapNativeSuper(TypeError));
 export function getErrorUrl(code) {
   return 'https://rxdb.info/errors.html?console=errors#' + code;
 }

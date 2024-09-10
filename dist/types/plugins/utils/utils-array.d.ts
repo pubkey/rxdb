@@ -49,3 +49,4 @@ export declare function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void
  * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
  */
 export declare function uniqueArray(arrArg: string[]): string[];
+export declare function sortByObjectNumberProperty<T>(property: keyof T): (a: T, b: T) => number;
