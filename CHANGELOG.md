@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD tutorial for a [local-first Vector Database](https://rxdb.info/articles/javascript-vector-database.html)
 - FIX RxPipeline tries to store metadata that does not match the json schema.
 - ADD utilities function for vector search.
 <!-- ADD new changes here! -->
