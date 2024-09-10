@@ -9,6 +9,12 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.33.0 (10 September 2024)
+
+- ADD tutorial for a [local-first Vector Database](https://rxdb.info/articles/javascript-vector-database.html)
+- FIX RxPipeline tries to store metadata that does not match the json schema.
+- ADD utilities function for vector search.
+
 ### 15.32.0 (26 August 2024)
 
 - ADD [Fulltext Search Plugin](https://rxdb.info/fulltext-search.html)

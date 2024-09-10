@@ -19,6 +19,11 @@ Set the default to 14 and also remove all occurences of `jsonPositionSize`.
 In the migration-storage plugin we run a catch on `oldStorageInstance.cleanup(0)` to fix v14->v15 migration.
 We should remove that catch in the next major release.
 
+
+## Change the `RX_PIPELINE_CHECKPOINT_CONTEXT` to `rx-pipeline-checkpoint` in the rx-pipeline.ts file
+
+This was not possible before because it requires adding the new value to the schema enum.
+
 ---------------------------------
 # Maybe later (not sure if should be done)
 

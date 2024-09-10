@@ -4,7 +4,10 @@ import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
 import { mapDocumentsDataToCacheDocs } from "../../doc-cache.js";
 import { getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
 import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from "./flagged-functions.js";
-export var RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
+export var RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
+// TODO change the context in the next major version.
+// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
+
 export var RxPipeline = /*#__PURE__*/function () {
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = PROMISE_RESOLVE_VOID;
@@ -129,7 +132,7 @@ export var RxPipeline = /*#__PURE__*/function () {
       var writeResult = await insternalStore.bulkWrite([{
         previous: checkpointDoc,
         document: newDoc
-      }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+      }], 'rx-pipeline');
       if (writeResult.error.length > 0) {
         throw writeResult.error;
       }
@@ -166,7 +169,7 @@ export async function setCheckpointDoc(pipeline, newCheckpoint, previous) {
   var writeResult = await insternalStore.bulkWrite([{
     previous,
     document: newDoc
-  }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+  }], 'rx-pipeline');
   if (writeResult.error.length > 0) {
     throw writeResult.error;
   }
