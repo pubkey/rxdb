@@ -8,12 +8,14 @@ import {
     randomCouchString
 } from '../../plugins/core/index.mjs';
 import {
-    HumanWithTimestampDocumentType
+    HumanWithTimestampDocumentType,
+    getConfig
 } from '../../plugins/test-utils/index.mjs';
 import {
     schemaObjects,
     humansCollection
 } from '../../plugins/test-utils/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { RxDBPipelinePlugin } from '../../plugins/pipeline/index.mjs';
 addRxPlugin(RxDBPipelinePlugin);
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
@@ -48,6 +50,35 @@ describeParallel('rx-pipeline.test.js', () => {
         it('write some document depending on another', async () => {
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
+            await c1.addPipeline({
+                destination: c2,
+                handler: async (docs) => {
+                    for (const doc of docs) {
+                        await c2.insert(schemaObjects.humanData(doc.passportId));
+                    }
+                },
+                identifier: randomCouchString(10)
+            });
+
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            /**
+             * Here we run the query on the destination directly after
+             * a write to the source. The pipeline should automatically halt
+             * the reads to the destination until the pipeline is idle.
+             */
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc2.passportId, 'foobar');
+
+            await c1.database.destroy();
+            await c2.database.destroy();
+        });
+        it('write some document depending on another with schema validator', async () => {
+            const storage = wrappedValidateAjvStorage({
+                storage: getConfig().storage.getStorage()
+            });
+            const c1 = await humansCollection.create(0, undefined, undefined, undefined, storage);
+            const c2 = await humansCollection.create(0, undefined, undefined, undefined, storage);
             await c1.addPipeline({
                 destination: c2,
                 handler: async (docs) => {

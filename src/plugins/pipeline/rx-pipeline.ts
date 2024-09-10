@@ -32,8 +32,10 @@ import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
 import { getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
 import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
-export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 
+export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
+// TODO change the context in the next major version.
+// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 
 export class RxPipeline<RxDocType> {
     processQueue = PROMISE_RESOLVE_VOID;
@@ -191,7 +193,7 @@ export class RxPipeline<RxDocType> {
             const writeResult = await insternalStore.bulkWrite([{
                 previous: checkpointDoc,
                 document: newDoc,
-            }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+            }], 'rx-pipeline');
             if (writeResult.error.length > 0) {
                 throw writeResult.error;
             }
@@ -243,7 +245,7 @@ export async function setCheckpointDoc<RxDocType>(
     const writeResult = await insternalStore.bulkWrite([{
         previous,
         document: newDoc,
-    }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+    }], 'rx-pipeline');
     if (writeResult.error.length > 0) {
         throw writeResult.error;
     }
