@@ -6,25 +6,28 @@ slug: javascript-vector-database.html
 
 # Local-First Vector Database with RxDB and transformers.js
 
-The [local-first](../offline-first.md) trend is coming up. A paradigma where you store and query data locally on the users device to ensure functionality even without internet connection. This comes with several advantages like better performance and scalability. To build local-first apps, people tend to use local-first database solutions like [RxDB](https://rxdb.info/) which are optimized for this purpose.
+The [local-first](../offline-first.md) revolution is here, changing the way we build apps! Imagine a world where your app's data lives right on the user's device, always available, even when there's no internet. That's the magic of local-first apps. Not only do they bring faster performance and limitless scalability, but they also empower users to work offline without missing a beat. And leading the charge in this space are local database solutions, like [RxDB](https://rxdb.info/).
 
-<!-- <center>
+<center>
     <a href="https://rxdb.info/">
         <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
     </a>
-</center> -->
+</center>
 
-Often when building local-first apps, a common problem arises: traditional databases can only search using **concrete values** like `strings`, `numbers`, or `regular expressions`. However, there are cases where you need to find data based on its **"meaning"** rather than exact matches, such as when searching through locally stored emails for a specific topic. You could do this with the help of `RegExp` operations but to get really good results, you need a better suited tool.
+But here's where things get even more exciting: when building local-first apps, traditional databases often fall short. They’re great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
 
-**Vector databases** have unlocked these new possibilities for storing and querying data, especially in tasks requiring **semantic search** and **similarity-based** queries. With the help of a **machine learning model**, data is transformed into a vector representation that can be stored, queried and compared in a database.
 
-However, most vector databases are designed for server-side use, typically running in large cloud clusters, not to run on a users device. To fix that, in this article, we will combine two key technologies to create a [local-first](../offline-first.md) vector database running in the **browser** with **Javascript**. It stores data in **IndexedDB**, and uses a machine learning model with **WebAssembly** locally, without the need for external servers:
+
+
+Enter **vector databases**, the game-changers for searching data by meaning! They have unlocked these new possibilities for storing and querying data, especially in tasks requiring **semantic search** and **similarity-based** queries. With the help of a **machine learning model**, data is transformed into a vector representation that can be stored, queried and compared in a database.
+
+But unfortunately, most vector databases are designed for server-side use, typically running in large cloud clusters, not to run on a users device. To fix that, in this article, we will combine **RxDB** and **transformers.js** to create a local vector database running in the **browser** with **JavaScript**. It stores data in **IndexedDB**, and uses a machine learning model with **WebAssembly** locally, without the need for external servers.
 
 - [transformers.js](https://github.com/xenova/transformers.js) is a powerful framework that allows machine learning models to run directly within JavaScript using WebAssembly or WebGPU.
 
 - [RxDB](https://rxdb.info/) is a NoSQL, local-first database with a flexible storage layer that can run on any JavaScript runtime, including browsers and mobile environments. (You are reading this article on the RxDB docs).
 
-Our local vector database offers several key benefits:
+A local vector database offers several key benefits:
 
 - **Zero network latency**: Data is processed locally on the user’s device, ensuring near-instant responses.
 - **Offline functionality**: Data can be queried even without an internet connection.
