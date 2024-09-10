@@ -150,4 +150,9 @@ export function uniqueArray(arrArg) {
     return arr.indexOf(elem) === pos;
   });
 }
+export function sortByObjectNumberProperty(property) {
+  return (a, b) => {
+    return b[property] - a[property];
+  };
+}
 //# sourceMappingURL=utils-array.js.map

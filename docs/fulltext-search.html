@@ -14,9 +14,9 @@
 
 
 <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c" data-cbid="c429ebbd-6e92-4150-b700-ca186e06bc7c" data-blockingmode="auto" async></script>
-<script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.3f34da98.css">
-<script src="/assets/js/runtime~main.65922cac.js" defer="defer"></script>
-<script src="/assets/js/main.f2230721.js" defer="defer"></script>
+<script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.864f2a8c.css">
+<script src="/assets/js/runtime~main.c9af9f72.js" defer="defer"></script>
+<script src="/assets/js/main.270f8dca.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -38,13 +38,13 @@ The index can then be queried efficiently with complex fulltext search operation
 </ol>
 <p>The plugin integrates seamlessly with RxDB&#x27;s reactive nature. Every time a document is written to an <a href="/rx-collection.html">RxCollection</a>, an indexer updates the fulltext search index in real-time. This ensures that search results are always up-to-date, reflecting the most current state of the data without requiring manual reindexing.</p>
 <ol start="4">
+<li>Persistent indexing</li>
+</ol>
+<p>The fulltext search index is efficiently persisted within the <a href="/rx-collection.html">RxCollection</a>, ensuring that the index remains intact across app restarts. When documents are added or updated in the collection, the index is incrementally updated in real-time, meaning only the changes are processed rather than reindexing the entire dataset. This incremental approach not only optimizes performance but also ensures that subsequent app launches are quick, as there&#x27;s no need to reindex all the data from scratch, making the search feature both reliable and fast from the moment the app starts. When using an <a href="/encryption.html">encrypted storage</a> the index itself and incremental updates to it are stored fully encrypted and are only decrypted in-memory.</p>
+<ol start="5">
 <li>Complex Query Support</li>
 </ol>
 <p>The FlexSearch-based plugin allows for <a href="https://github.com/nextapps-de/flexsearch?tab=readme-ov-file#index.search" target="_blank" rel="noopener noreferrer">sophisticated search queries</a>, including multi-term and contextual searches. Users can perform complex searches that go beyond simple keyword matching, enabling more advanced use cases like searching for documents with specific phrases, relevance-based sorting, or even phonetic matching.</p>
-<ol start="5">
-<li>Scalability</li>
-</ol>
-<p>Since the plugin is built on top of FlexSearch, which is highly optimized for both performance and memory usage, it scales well with large datasets. This makes it suitable for applications with extensive local data needs, where traditional search methods might struggle with performance bottlenecks.</p>
 <ol start="6">
 <li>Offline-First Support and Privacy</li>
 </ol>

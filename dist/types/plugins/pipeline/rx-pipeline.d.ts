@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import type { InternalStoreDocType, RxCollection, RxDocumentData } from '../../types';
 import type { CheckpointDocData, RxPipelineHandler, RxPipelineOptions } from './types';
-export declare const RX_PIPELINE_CHECKPOINT_CONTEXT = "rx-pipeline-checkpoint";
+export declare const RX_PIPELINE_CHECKPOINT_CONTEXT = "OTHER";
 export declare class RxPipeline<RxDocType> {
     readonly identifier: string;
     readonly source: RxCollection<RxDocType>;

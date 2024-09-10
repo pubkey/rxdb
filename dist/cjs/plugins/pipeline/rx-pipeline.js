@@ -13,7 +13,9 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _docCache = require("../../doc-cache.js");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
 var _flaggedFunctions = require("./flagged-functions.js");
-var RX_PIPELINE_CHECKPOINT_CONTEXT = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
+var RX_PIPELINE_CHECKPOINT_CONTEXT = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
+// TODO change the context in the next major version.
+// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = _index.PROMISE_RESOLVE_VOID;
@@ -138,7 +140,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       var writeResult = await insternalStore.bulkWrite([{
         previous: checkpointDoc,
         document: newDoc
-      }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+      }], 'rx-pipeline');
       if (writeResult.error.length > 0) {
         throw writeResult.error;
       }
@@ -175,7 +177,7 @@ async function setCheckpointDoc(pipeline, newCheckpoint, previous) {
   var writeResult = await insternalStore.bulkWrite([{
     previous,
     document: newDoc
-  }], RX_PIPELINE_CHECKPOINT_CONTEXT);
+  }], 'rx-pipeline');
   if (writeResult.error.length > 0) {
     throw writeResult.error;
   }
