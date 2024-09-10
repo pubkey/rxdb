@@ -593,7 +593,7 @@ For now our vector database works and we are good to go. However there are some 
 - **Multi-Step queries**: In this article we only talked about having a single query as input and an ordered list of outputs. But there is big potential in chaining models or queries together where you take the results of one query and input them into a different model with different embeddings or outputs.
 
 ## Follow Up
-<!-- - Check out the [hackernews discussion of this article]() # TODO -->
+- Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=41498896)
 - Shared/Like my [announcement tweet](https://x.com/rxdbjs/status/1833429569434427494)
 - Read the source code that belongs to this article [at github](https://github.com/pubkey/javascript-vector-database)
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
