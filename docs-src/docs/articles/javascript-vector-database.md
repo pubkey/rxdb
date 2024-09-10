@@ -8,11 +8,11 @@ slug: javascript-vector-database.html
 
 The [local-first](../offline-first.md) trend is coming up. A paradigma where you store and query data locally on the users device to ensure functionality even without internet connection. This comes with several advantages like better performance and scalability. To build local-first apps, people tend to use local-first database solutions like [RxDB](https://rxdb.info/) which are optimized for this purpose.
 
-<center>
+<!-- <center>
     <a href="https://rxdb.info/">
         <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
     </a>
-</center>
+</center> -->
 
 Often when building local-first apps, a common problem arises: traditional databases can only search using **concrete values** like `strings`, `numbers`, or `regular expressions`. However, there are cases where you need to find data based on its **"meaning"** rather than exact matches, such as when searching through locally stored emails for a specific topic. You could do this with the help of `RegExp` operations but to get really good results, you need a better suited tool.
 
@@ -127,15 +127,12 @@ const itemsCollection = db.items;
 In our [example repo](https://github.com/pubkey/javascript-vector-database), we use the [Wiki Embeddings](https://huggingface.co/datasets/Supabase/wikipedia-en-embeddings) dataset from supabase which was transformed and used to fill up the `items` collection with test data.
 
 ```ts
-import { WIKI_DATA } from './data.js';
 const imported = await itemsCollection.count().exec();
-if (imported !== WIKI_DATA.length) {
-    const response = await fetch('./files/items.json');
-    const items = await response.json();
-    const insertResult = await itemsCollection.bulkInsert(
-        items
-    );
-}
+const response = await fetch('./files/items.json');
+const items = await response.json();
+const insertResult = await itemsCollection.bulkInsert(
+    items
+);
 ```
 
 Also we need a `vector` collection that stores our embeddings.
