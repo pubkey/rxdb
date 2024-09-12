@@ -541,7 +541,7 @@
     "eslint-plugin-import": "2.30.0",
     "eslint-plugin-jsdoc": "50.2.2",
     "exists-file": "3.0.2",
-    "express": "4.20.0",
+    "express": "4.21.0",
     "express-graphql": "0.12.0",
     "fake-indexeddb": "6.0.0",
     "firebase-tools": "13.16.0",
