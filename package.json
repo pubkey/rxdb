@@ -600,7 +600,7 @@
     "webpack-dev-server": "5.1.0"
   },
   "overrides": {
-    "eslint": "9.9.1"
+    "eslint": "9.9.1",
     "webpack-dev-server": "5.1.0"
   }
 }
