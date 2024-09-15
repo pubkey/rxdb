@@ -1,6 +1,6 @@
 /// <reference path="../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../node_modules/@types/assert/index.d.ts" />
-/* eslint-disable no-unused-vars */
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * this checks if typings work as expected

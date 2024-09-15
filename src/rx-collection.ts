@@ -1112,7 +1112,7 @@ export function createRxCollection(
              */
             .catch(err => {
                 return storageInstance.close()
-                    .then(() => Promise.reject(err));
+                    .then(() => Promise.reject(err as Error));
             });
     });
 }
