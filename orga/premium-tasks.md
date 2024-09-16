@@ -17,4 +17,4 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 - Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage https://github.com/pubkey/rxdb/pull/5429https://github.com/pubkey/rxdb/pull/5429
 - Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version. https://github.com/pubkey/rxdb/pull/5469
 - UPDATE node.js in the `.nvmrc` file to version 22 and fix all CI issues that come with that. [#6231](https://github.com/pubkey/rxdb/pull/6231)
-- Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115)
+- Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115) solved at [#6353](https://github.com/pubkey/rxdb/pull/6353)
