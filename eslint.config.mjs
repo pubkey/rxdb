@@ -46,6 +46,7 @@ export default [
             '**/docs',
             'docs-src/static/files/logo/js.build.js',
             'docs-src/_book/',
+            'docs-src/.docusaurus/',
             'docs-src/build/',
             'docs-src/docusaurus-lunr-search-main',
             'config/.mocharc.cjs',
