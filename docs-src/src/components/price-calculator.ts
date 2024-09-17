@@ -80,7 +80,7 @@ export function calculatePrice(input: PriceCalculationInput) {
     if (input.companySize > 1) {
         let companySizeIncrease = 1 + ((Math.pow((input.companySize * 1) - 1, 0.45) / 100) * 4.5);
 
-        const companySizeIncreaseMax = 6;
+        const companySizeIncreaseMax = 2;
         if (companySizeIncrease > companySizeIncreaseMax) {
             companySizeIncrease = companySizeIncreaseMax;
         }
