@@ -75,6 +75,7 @@ async function run() {
     const server = createServer(serverOptions);
 
     console.log('# Start wss server');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const signalingServer = await startSignalingServerSimplePeer({
         server
     });

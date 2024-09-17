@@ -8,7 +8,7 @@ Because the handler is used in so many places it becomes confusing to write a pr
 Also having a handler that requires user interaction is only possible by hackingly using the context param.
 By splitting the functionalities it will become easier to learn where the handlers are used and how to define them properly.
 
-## OPFS storage has defualt jsonPositionSize=8 but should be 14
+## OPFS storage has default jsonPositionSize=8 but should be 14
 
 Set the default to 14 and also remove all occurences of `jsonPositionSize`.
 
@@ -23,6 +23,15 @@ We should remove that catch in the next major release.
 ## Change the `RX_PIPELINE_CHECKPOINT_CONTEXT` to `rx-pipeline-checkpoint` in the rx-pipeline.ts file
 
 This was not possible before because it requires adding the new value to the schema enum.
+
+## Ensure schema validator is used in devmode
+
+Many reported issues come from people storing data that is not valid to their schema.
+To fix this, in dev-mode we should ensure that at least one schema validator is used.
+
+## ignoreduplicate must never be allowed in non-devmode
+
+`ignoreduplicate` is only usefull for tests and should never be used in production. Throw an error if it is set to `true` in non-dev-mode.
 
 ---------------------------------
 # Maybe later (not sure if should be done)

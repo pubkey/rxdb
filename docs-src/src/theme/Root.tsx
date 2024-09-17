@@ -136,6 +136,7 @@ async function triggerClickEventWhenFromCode() {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function addCommunityChatButton() {
     const chatButtonId = 'fixed-chat-button';
     const elementExists = document.getElementById(chatButtonId);

@@ -426,6 +426,7 @@ describeParallel('key-compression.test.js', () => {
                     }
                 }
             } as const;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schemaTyped = toTypedRxJsonSchema(mySchema);
             type TestDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 

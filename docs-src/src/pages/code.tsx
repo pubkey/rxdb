@@ -7,7 +7,11 @@ export default function Home() {
     const { siteConfig } = useDocusaurusContext();
 
     const isBrowser = useIsBrowser();
-    useEffect(() => { if (isBrowser) { window.trigger('goto_code', 0.40); } });
+    useEffect(() => {
+ if (isBrowser) {
+ window.trigger('goto_code', 0.40);
+}
+});
 
 
     return (
