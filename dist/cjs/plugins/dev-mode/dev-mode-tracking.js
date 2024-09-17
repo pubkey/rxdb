@@ -27,7 +27,14 @@ async function addDevModeTrackingIframe(db) {
   }
   iframeShown = true;
   var iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
+  /**
+   * Do not use display:none
+   * @link https://medium.com/@zachcaceres/dont-use-display-none-to-hide-iframes-in-safari-b51715eb22c4
+   */
+  iframe.style.visibility = 'hidden';
+  iframe.width = '1px';
+  iframe.height = '1px';
+  iframe.style.opacity = '0.1';
   iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + _index.RXDB_VERSION;
   document.body.appendChild(iframe);
 }
