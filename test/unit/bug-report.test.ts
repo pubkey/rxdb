@@ -9,19 +9,15 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+import { isNode } from '../../plugins/test-utils/index.mjs';
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
-
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
@@ -33,10 +29,6 @@ describe('bug-report.test.js', () => {
             // return;
         }
 
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
         // create a schema
         const mySchema = {
             version: 0,
@@ -45,20 +37,23 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
-                firstName: {
-                    type: 'string'
+                createdAt: {
+                    type: 'object',
+                    properties: {
+                        seconds: {
+                            type: 'number',
+                        },
+                        nanoSeconds: {
+                            type: 'number',
+                        },
+                    },
                 },
-                lastName: {
-                    type: 'string'
+                createdAtSeconds: {
+                    type: 'number',
                 },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
+            },
         };
 
         /**
@@ -76,66 +71,69 @@ describe('bug-report.test.js', () => {
              */
             storage: config.storage.getStorage(),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // insert a document
         await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            passportId: 'some-id',
+            createdAt: {
+                seconds: 123,
+                nanoSeconds: 456,
+            },
+            createdAtSeconds: 123,
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        const doc = await collections.mycollection.findOne('some-id').exec();
+        const pojo = doc.toJSON();
+
+        const accessFieldRepeatedly = (getField: () => number) => {
+            const start = performance.now();
+            for (let i = 0; i < 1000_000; i++) {
+                if (getField() === 0) {
+                    console.log('no-op');
+                }
             }
-        });
+            const end = performance.now();
+            return end - start;
+        };
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        console.log('\nAccessing top level field');
+        console.log('---------------------------------');
+        const topLevelFieldTime = accessFieldRepeatedly(
+            () => doc.createdAtSeconds
+        );
+        const pojoTopLevelFieldTime = accessFieldRepeatedly(
+            () => pojo.createdAtSeconds
+        );
+        console.log(`    RxDocument: ${topLevelFieldTime.toFixed(2)}ms`);
+        console.log(`Regular object: ${pojoTopLevelFieldTime.toFixed(2)}ms`);
+
+        console.log('\nAccessing nested field');
+        console.log('---------------------------------');
+        const nestedFieldTime = accessFieldRepeatedly(
+            () => doc.createdAt.seconds
+        );
+        const pojoNestedFieldTime = accessFieldRepeatedly(
+            () => pojo.createdAt.seconds
+        );
+        console.log(`    RxDocument: ${nestedFieldTime.toFixed(2)}ms`);
+        console.log(`Regular object: ${pojoNestedFieldTime.toFixed(2)}ms`);
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.ok(nestedFieldTime < 2 * topLevelFieldTime);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });

@@ -344,6 +344,7 @@
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
+    "test:bugreport": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit/bug-report.test.js",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
     "test:fast": "npm run test:fast:memory && npm run test:fast:lokijs && npm run test:fast:dexie",
     "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
