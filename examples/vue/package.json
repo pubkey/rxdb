@@ -23,7 +23,7 @@
     "register-service-worker": "1.7.2",
     "rxjs": "7.8.1",
     "vue": "3.5.7",
-    "vue-router": "4.4.4"
+    "vue-router": "4.4.5"
   },
   "devDependencies": {
     "@types/node": "20.16.5",
