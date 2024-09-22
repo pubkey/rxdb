@@ -511,7 +511,7 @@
     "@babel/types": "7.25.6",
     "@eslint/compat": "1.1.1",
     "@eslint/eslintrc": "3.1.0",
-    "@eslint/js": "9.9.1",
+    "@eslint/js": "9.11.0",
     "@faker-js/faker": "9.0.1",
     "@rollup/plugin-commonjs": "26.0.1",
     "@rollup/plugin-node-resolve": "15.2.3",
@@ -541,7 +541,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "9.9.1",
+    "eslint": "9.11.0",
     "eslint-plugin-import": "2.30.0",
     "eslint-plugin-jsdoc": "50.2.4",
     "exists-file": "3.0.2",
@@ -600,7 +600,7 @@
     "webpack-dev-server": "5.1.0"
   },
   "overrides": {
-    "eslint": "9.9.1",
+    "eslint": "9.11.0",
     "webpack-dev-server": "5.1.0"
   }
 }
