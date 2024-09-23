@@ -50,6 +50,7 @@ Then you can start the replication by calling `replicateFirestore()` on your [Rx
 ```ts
 const replicationState = replicateFirestore(
     {
+        replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
         collection: myRxCollection,
         firestore: {
             projectId,
