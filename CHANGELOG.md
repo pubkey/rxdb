@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX firestore replication of multiple document with the same serverTimestamp [#6436](https://github.com/pubkey/rxdb/pull/6436)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
