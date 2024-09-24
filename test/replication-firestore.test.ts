@@ -420,5 +420,40 @@ describe('replication-firestore.test.ts', function () {
 
             collection.database.destroy();
         });
+        it('replicates all docs with identical serverTimestamp from the server', async () => {
+            const firestoreState = getFirestoreState();
+            const collection = await humansCollection.create(0);
+
+            const now = new Date();
+            const h1 = {
+                ...makeFirestoreHumanDocument(
+                    schemaObjects.humanData('replicated-1', 35, 'replicated')
+                ),
+                serverTimestamp: now,
+            };
+            const h2 = {
+                ...makeFirestoreHumanDocument(
+                    schemaObjects.humanData('replicated-2', 27, 'replicated')
+                ),
+                serverTimestamp: now,
+            };
+
+            await setDoc(DocRef(firestoreState.collection, 'replicated-1'), h1);
+            await setDoc(DocRef(firestoreState.collection, 'replicated-2'), h2);
+
+            await syncOnce(collection, firestoreState, {
+                pull: {
+                    batchSize: 1,
+                },
+                push: {},
+            });
+
+            const allLocalDocs = await collection.find().exec();
+
+            assert.strictEqual(allLocalDocs.length, 2);
+
+            collection.database.destroy();
+        });
+
     });
 });
