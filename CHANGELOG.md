@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- IMPROVE performance of nested property access [#6406](https://github.com/pubkey/rxdb/pull/6406)
 - FIX firestore replication of multiple document with the same serverTimestamp [#6436](https://github.com/pubkey/rxdb/pull/6436)
 <!-- ADD new changes here! -->
 
