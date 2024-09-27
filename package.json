@@ -512,7 +512,7 @@
     "@eslint/compat": "1.1.1",
     "@eslint/eslintrc": "3.1.0",
     "@eslint/js": "9.11.1",
-    "@faker-js/faker": "9.0.2",
+    "@faker-js/faker": "9.0.3",
     "@rollup/plugin-commonjs": "26.0.3",
     "@rollup/plugin-node-resolve": "15.2.4",
     "@stylistic/eslint-plugin": "2.8.0",
