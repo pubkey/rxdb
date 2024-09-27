@@ -216,52 +216,7 @@ export const basePrototype = {
      * run some tests before changing anything.
      */
     get(this: RxDocument, objPath: string): any | null {
-        return getFromMapOrCreate(
-            this._propertyCache,
-            objPath,
-            () => {
-                const valueObj = getProperty(this._data, objPath);
-
-                // direct return if array or non-object
-                if (
-                    typeof valueObj !== 'object' ||
-                    valueObj === null ||
-                    Array.isArray(valueObj)
-                ) {
-                    return overwritable.deepFreezeWhenDevMode(valueObj);
-                }
-                const _this = this;
-                const proxy = new Proxy(
-                    /**
-                     * In dev-mode, the _data is deep-frozen
-                     * so we have to flat clone here so that
-                     * the proxy can work.
-                     */
-                    flatClone(valueObj),
-                    {
-                        get(target, property: any) {
-                            if (typeof property !== 'string') {
-                                return target[property];
-                            }
-                            const lastChar = property.charAt(property.length - 1);
-                            if (property.endsWith('$$')) {
-                                const key = property.slice(0, -2);
-                                return _this.get$$(trimDots(objPath + '.' + key));
-                            } else if (lastChar === '$') {
-                                const key = property.slice(0, -1);
-                                return _this.get$(trimDots(objPath + '.' + key));
-                            } else if (lastChar === '_') {
-                                const key = property.slice(0, -1);
-                                return _this.populate(trimDots(objPath + '.' + key));
-                            } else {
-                                return _this.get(trimDots(objPath + '.' + property));
-                            }
-                        }
-                    });
-                return proxy;
-            }
-        );
-
+        return getDocumentProperty(this, objPath);
     },
 
     toJSON(this: RxDocument, withMetaFields = false) {
@@ -519,3 +474,77 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     return collection._runHooks('pre', 'save', newData, oldData);
 }
 
+
+
+
+function getDocumentProperty(doc: RxDocument, objPath: string): any | null {
+    return getFromMapOrCreate(
+        doc._propertyCache,
+        objPath,
+        () => {
+            const valueObj = getProperty(doc._data, objPath);
+
+            // direct return if array or non-object
+            if (
+                typeof valueObj !== 'object' ||
+                valueObj === null ||
+                Array.isArray(valueObj)
+            ) {
+                return overwritable.deepFreezeWhenDevMode(valueObj);
+            }
+            const proxy = new Proxy(
+                /**
+                 * In dev-mode, the _data is deep-frozen
+                 * so we have to flat clone here so that
+                 * the proxy can work.
+                 */
+                flatClone(valueObj),
+                {
+                    /**
+                     * @performance is really important here
+                     * because people access nested properties very often
+                     * and might not be aware that this is internally using a Proxy
+                     */
+                    get(target, property: any) {
+                        if (typeof property !== 'string') {
+                            return target[property];
+                        }
+
+
+                        const lastChar = property.charAt(property.length - 1);
+                        if (lastChar === '$') {
+                            if (property.endsWith('$$')) {
+                                const key = property.slice(0, -2);
+                                return doc.get$$(trimDots(objPath + '.' + key));
+                            } else {
+                                const key = property.slice(0, -1);
+                                return doc.get$(trimDots(objPath + '.' + key));
+                            }
+                        } else if (lastChar === '_') {
+                            const key = property.slice(0, -1);
+                            return doc.populate(trimDots(objPath + '.' + key));
+                        } else {
+
+                            /**
+                             * Performance shortcut
+                             * In most cases access to nested properties
+                             * will only access simple values which can be directly returned
+                             * without creating a new Proxy or utilizing the cache.
+                             */
+                            const plainValue = target[property];
+                            if (
+                                typeof plainValue === 'number' ||
+                                typeof plainValue === 'string' ||
+                                typeof plainValue === 'boolean'
+                            ) {
+                                return plainValue;
+                            }
+
+                            return getDocumentProperty(doc, trimDots(objPath + '.' + property));
+                        }
+                    }
+                });
+            return proxy;
+        }
+    );
+};
