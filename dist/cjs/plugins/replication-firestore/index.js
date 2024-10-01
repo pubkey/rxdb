@@ -91,7 +91,7 @@ function replicateFirestore(options) {
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = (0, _firestoreHelper.isoStringToServerTimestamp)(lastPulledCheckpoint.serverTimestamp);
           newerQuery = (0, _firestore.query)(pullQuery, (0, _firestore.where)(serverTimestampField, '>', lastServerTimestamp), (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
-          sameTimeQuery = (0, _firestore.query)(pullQuery, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)(primaryPath, '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)(primaryPath, 'asc'), (0, _firestore.limit)(batchSize));
+          sameTimeQuery = (0, _firestore.query)(pullQuery, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)((0, _firestore.documentId)(), '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)((0, _firestore.documentId)(), 'asc'), (0, _firestore.limit)(batchSize));
         } else {
           newerQuery = (0, _firestore.query)(pullQuery, (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
         }

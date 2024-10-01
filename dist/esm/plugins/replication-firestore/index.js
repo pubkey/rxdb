@@ -58,7 +58,7 @@ export function replicateFirestore(options) {
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = isoStringToServerTimestamp(lastPulledCheckpoint.serverTimestamp);
           newerQuery = query(pullQuery, where(serverTimestampField, '>', lastServerTimestamp), orderBy(serverTimestampField, 'asc'), limit(batchSize));
-          sameTimeQuery = query(pullQuery, where(serverTimestampField, '==', lastServerTimestamp), where(primaryPath, '>', lastPulledCheckpoint.id), orderBy(primaryPath, 'asc'), limit(batchSize));
+          sameTimeQuery = query(pullQuery, where(serverTimestampField, '==', lastServerTimestamp), where(documentId(), '>', lastPulledCheckpoint.id), orderBy(documentId(), 'asc'), limit(batchSize));
         } else {
           newerQuery = query(pullQuery, orderBy(serverTimestampField, 'asc'), limit(batchSize));
         }

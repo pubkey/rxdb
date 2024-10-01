@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX OPFS Storage based RxDatabase cannot be created inside of worker [via discord](https://discord.com/channels/969553741705539624/1290258375359336549)
-- IMPROVE performance of nested property access [#6406](https://github.com/pubkey/rxdb/pull/6406)
-- FIX firestore replication of multiple document with the same serverTimestamp [#6436](https://github.com/pubkey/rxdb/pull/6436)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.34.0 (1 October 2024)
+
+- FIX OPFS Storage based RxDatabase cannot be created inside of worker [via discord](https://discord.com/channels/969553741705539624/1290258375359336549)
+- IMPROVE performance of nested property access [#6406](https://github.com/pubkey/rxdb/pull/6406)
+- FIX firestore replication of multiple document with the same serverTimestamp [#6436](https://github.com/pubkey/rxdb/pull/6436)
 
 ### 15.33.0 (10 September 2024)
 
