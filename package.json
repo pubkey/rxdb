@@ -543,7 +543,7 @@
     "disc": "1.3.3",
     "eslint": "9.11.1",
     "eslint-plugin-import": "2.30.0",
-    "eslint-plugin-jsdoc": "50.2.4",
+    "eslint-plugin-jsdoc": "50.3.1",
     "exists-file": "3.0.2",
     "express": "4.21.0",
     "express-graphql": "0.12.0",
