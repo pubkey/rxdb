@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD proper error message if people miss out the `usesRxDatabaseInWorker` settings in OPFS.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

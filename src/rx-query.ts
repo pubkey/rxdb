@@ -199,6 +199,12 @@ export class RxQueryBase<
      * @param newResultData json-docs that were received from the storage
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
+        if (typeof newResultData === 'undefined') {
+            throw newRxError('QU18', {
+                database: this.collection.database.name,
+                collection: this.collection.name
+            });
+        }
         if (typeof newResultData === 'number') {
             this._result = new RxQuerySingleResult<RxDocType>(
                 this as any,

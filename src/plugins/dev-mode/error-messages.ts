@@ -47,6 +47,7 @@ export const ERROR_MESSAGES = {
     QU16: '$regex queries must be defined by a string, not an RegExp instance. ' +
         'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
     QU17: 'Chained queries cannot be used on findByIds() RxQuery instances',
+    QU18: 'Malformated query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
 
     // mquery.js
     MQ1: 'path must be a string or object',
