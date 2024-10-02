@@ -158,7 +158,7 @@ const storage = getRxStorageOPFS({
 });
 ```
 
-If you forget to set this and still create and use a [RxDatabase](./rx-database.md) inside of the worker, you will get the error messages `Cannot read properties of undefined (reading 'indexableStringLength')` or `Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')`.
+If you forget to set this and still create and use a [RxDatabase](./rx-database.md) inside of the worker, you might get the error message` or `Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')`.
 
 
 ## Setting `jsonPositionSize` to increase the maximum database size.
