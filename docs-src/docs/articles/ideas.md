@@ -5,3 +5,8 @@
 - Finding the optimal way to shorten vector embeddings
 - Performance and quality of vector comparison functions (euclideanDistance etc)
 - performance and quality of vector indexing methods
+
+
+## Seo keywords:
+
+- "local database"
