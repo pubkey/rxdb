@@ -89,7 +89,12 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
             var writeRow = useWrites[index];
             var value = (0, _index.getProperty)(newState, writeRow.path);
             var newValue = writeRow.modifier(value);
-            (0, _index.setProperty)(newState, writeRow.path, newValue);
+            /**
+             * Here we have to clone the value because
+             * some storages like the memory storage
+             * make input data deep-frozen in dev-mode.
+             */
+            (0, _index.setProperty)(newState, writeRow.path, (0, _index.clone)(newValue));
             ops.push({
               k: writeRow.path,
               /**
@@ -123,10 +128,17 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     return this._writeQueue;
   };
   _proto.get = function get(path) {
+    var ret;
     if (!path) {
-      return _overwritable.overwritable.deepFreezeWhenDevMode(this._state);
+      ret = this._state;
+    } else {
+      ret = (0, _index.getProperty)(this._state, path);
     }
-    return _overwritable.overwritable.deepFreezeWhenDevMode((0, _index.getProperty)(this._state, path));
+    if (_overwritable.overwritable.isDevMode()) {
+      ret = (0, _index.clone)(ret);
+      ret = _overwritable.overwritable.deepFreezeWhenDevMode(ret);
+    }
+    return ret;
   };
   _proto.get$ = function get$(path) {
     return this.$.pipe((0, _rxjs.map)(() => this.get(path)), (0, _rxjs.startWith)(this.get(path)), (0, _rxjs.distinctUntilChanged)(_index.deepEqual), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));

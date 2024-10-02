@@ -63,6 +63,12 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from the storage
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    if (typeof newResultData === 'undefined') {
+      throw newRxError('QU18', {
+        database: this.collection.database.name,
+        collection: this.collection.name
+      });
+    }
     if (typeof newResultData === 'number') {
       this._result = new RxQuerySingleResult(this, [], newResultData);
       return;

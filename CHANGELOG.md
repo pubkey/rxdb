@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD proper error message if people miss out the `usesRxDatabaseInWorker` settings in OPFS.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.34.1 (2 October 2024)
+
+- ADD proper error message if people miss out the `usesRxDatabaseInWorker` settings in OPFS.
 
 ### 15.34.0 (1 October 2024)
 
