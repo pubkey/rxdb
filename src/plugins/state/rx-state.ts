@@ -140,7 +140,13 @@ export class RxStateBase<T, Reactivity = unknown> {
                         const writeRow = useWrites[index];
                         const value = getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
-                        setProperty(newState, writeRow.path, newValue);
+                        /**
+                         * Here we have to clone the value because
+                         * some storages like the memory storage
+                         * make input data deep-frozen in dev-mode.
+                         */
+                        const deepClonedValue = clone(newValue);
+                        setProperty(newState, writeRow.path, deepClonedValue);
                         ops.push({
                             k: writeRow.path,
                             /**
@@ -148,7 +154,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                              * some storages like the memory storage
                              * make input data deep-frozen in dev-mode.
                              */
-                            v: clone(newValue)
+                            v: deepClonedValue
                         });
                     }
                     await this.collection.insert({
