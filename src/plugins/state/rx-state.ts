@@ -145,8 +145,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                          * some storages like the memory storage
                          * make input data deep-frozen in dev-mode.
                          */
-                        const deepClonedValue = clone(newValue);
-                        setProperty(newState, writeRow.path, deepClonedValue);
+                        setProperty(newState, writeRow.path, clone(newValue));
                         ops.push({
                             k: writeRow.path,
                             /**
@@ -154,7 +153,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                              * some storages like the memory storage
                              * make input data deep-frozen in dev-mode.
                              */
-                            v: deepClonedValue
+                            v: clone(newValue)
                         });
                     }
                     await this.collection.insert({
@@ -181,12 +180,19 @@ export class RxStateBase<T, Reactivity = unknown> {
     }
 
     get(path?: Paths<T>) {
+        let ret;
         if (!path) {
-            return overwritable.deepFreezeWhenDevMode(this._state);
+            ret = this._state;
+        } else {
+            ret = getProperty(this._state, path);
         }
-        return overwritable.deepFreezeWhenDevMode(
-            getProperty(this._state, path)
-        );
+
+        if (overwritable.isDevMode()) {
+            ret = clone(ret);
+            ret = overwritable.deepFreezeWhenDevMode(ret);
+        }
+
+        return ret;
     }
     get$(path?: Paths<T>): Observable<any> {
         return this.$.pipe(
