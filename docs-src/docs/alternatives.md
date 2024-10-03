@@ -218,11 +218,30 @@ The Apollo GraphQL platform is made to transfer data between a server to UI appl
 
 While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully usable when the user is offline.
 
-
 ### Replicache 
 
 Replicache is a client-side sync framework for building realtime, collaborative, local-first web apps. It claims to work with most backend stacks. In contrast to other local first tools, replicache does not work like a local database. Instead it runs on so called `mutators` that unify behavior on the client and server side. So instead of implementing and calling REST routes on both sides of your stack, you will implement mutators that define a specific delta behavior based on the input data. To observe data in replicache, there are `subscriptions` that notify your frontend application about changes to the state.
-Replicache can be used in most frontend technologies like browsers, react/remix, vercle and react native. While replicache can be installed and used from npm, the replicache source code is not open source and the replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding.
+Replicache can be used in most frontend technologies like browsers, react/remix, vercle and react native. While replicache can be installed and used from npm, the replicache source code is not open source and the replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding.  (2024: Replicache will be free and the authors are working on a new Zerosync product.)
+
+### InstantDB
+
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless optimistic updates and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB’s. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.  The InstantDB backend is written in Clojure.
+
+### ElectricSQL
+
+ElectricSQL provides robust real-time synchronization by syncing subsets of Postgres data into local apps using SQLite, offering strong offline support similar to RxDB. However, it is tightly coupled with Postgres, which limits flexibility compared to RxDB’s multiple storage backends. ElectricSQL’s conflict resolution via CRDTs is predefined and less customizable than RxDB’s approach, making RxDB more versatile for distributed, multi-client applications that require sophisticated conflict management.  The ElectricSQL backend is written in Elixir.
+
+### SignalDB
+
+SignalDB provides simple synchronization between client and server with some offline capabilities, but it lacks the extensive offline-first design and conflict resolution found in RxDB. While SignalDB is suitable for smaller applications needing basic real-time sync, it doesn’t offer the same level of multi-client replication or flexibility with storage backends that RxDB provides. RxDB’s CRDT-based conflict handling is a significant advantage for applications with complex sync requirements. SignalDB recommends pairing it with RxDB for a powerful solution.
+
+### PowerSync
+
+PowerSync offers strong offline support and conflict-free replication, similar to RxDB, but it operates with a server-side architecture that allows for centralized control of business logic and conflict resolution. While PowerSync is well-suited for collaborative applications, RxDB’s decentralized, peer-to-peer replication model provides more flexibility in distributed systems. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database.  PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+
+### SQLSync
+
+SQLSync focuses on syncing SQLite between client and server, and requires changes to be written as a mutations in Rust.  It's not widely deployed or production ready.
 
 # Read further
 
