@@ -270,6 +270,34 @@ addRxPlugin(RxDBJsonDumpPlugin);
 
                 state.collection.database.remove();
             });
+             /**
+             * @link https://github.com/pubkey/rxdb/issues/6459
+             */
+            it('RxState.property$ should be stable for initial synchronous get and subsequent subscription', async () => {
+                const databaseName = randomCouchString(10);
+                const state = await getState(databaseName);
+                await state.set('a', () => [{ foo: 'bar' }]);
+
+                let initialState;
+                state.a$.subscribe({
+                    next: (value) => {
+                        initialState = value;
+                    },
+                }).unsubscribe();
+
+                const emitted: any[] = [];
+                state.a$.subscribe({
+                    next: (value) => {
+                        emitted.push(value);
+                    },
+                });
+
+                assert.strictEqual(emitted.length, 1);
+                assert.deepStrictEqual(initialState, emitted[0]);
+                assert.strictEqual(initialState, emitted[0]);
+
+                state.collection.database.destroy();
+            });
         });
         describe('.get$$()', () => {
             it('should get the correct object', async () => {
