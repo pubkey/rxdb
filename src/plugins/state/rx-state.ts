@@ -26,10 +26,12 @@ import {
     appendToArray,
     clone,
     randomCouchString,
-    deepEqual
+    deepEqual,
+    getFromMapOrCreate
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
+    isValidWeakMapKey,
     nextRxStateId
 } from './helpers.ts';
 import {
@@ -43,6 +45,8 @@ import { runPluginHooks } from '../../hooks.ts';
 
 let debugId = 0;
 
+
+const deepFrozenCache = new WeakMap<any, any>();
 
 /**
  * RxDB internally used properties are
@@ -187,9 +191,21 @@ export class RxStateBase<T, Reactivity = unknown> {
             ret = getProperty(this._state, path);
         }
 
-        if (overwritable.isDevMode()) {
-            ret = clone(ret);
-            ret = overwritable.deepFreezeWhenDevMode(ret);
+        /**
+         * In dev-mode we have to clone the value before deep-freezing
+         * it to not have an immutable subobject in the state value.
+         * But calling .get() with the same path multiple times,
+         * should return exactly the same object instance
+         * so it does not cause re-renders on react.
+         * So in dev-mode we have to 
+         */
+        if (overwritable.isDevMode() && isValidWeakMapKey(ret)) {
+            const frozen = getFromMapOrCreate(
+                deepFrozenCache,
+                ret,
+                () => overwritable.deepFreezeWhenDevMode(clone(ret))
+            );
+            return frozen;
         }
 
         return ret;

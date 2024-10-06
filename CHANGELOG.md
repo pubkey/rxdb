@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX RxState.property$ should emit stable reference [#6462](https://github.com/pubkey/rxdb/pull/6462)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
