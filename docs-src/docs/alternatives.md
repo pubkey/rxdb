@@ -10,13 +10,6 @@ description: Explore real-time, offline-first JS alternatives to RxDB. Compare F
 To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you are reading this inside of the RxDB documentation, so everything is **opinionated**.
 If you disagree with anything or think that something is missing, make a pull request to this file on the RxDB github repository.
 
-
-### What to compare with
-
-[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[local first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
-
-
-
 :::note
 RxDB has these main benefits:
 
@@ -42,6 +35,7 @@ RxDB has these main benefits:
 
 ## Alternatives to RxDB
 
+[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[local first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
 Here are the alternatives to RxDB:
 
 ### Firebase
