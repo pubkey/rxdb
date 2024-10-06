@@ -8,14 +8,30 @@ description: Explore real-time, offline-first JS alternatives to RxDB. Compare F
 # Alternatives for realtime offline-first JavaScript applications
 
 To give you an augmented view over the topic of client side JavaScript databases, this page contains all known alternatives to **RxDB**. Remember that you are reading this inside of the RxDB documentation, so everything is **opinionated**.
-If you disagree with anything or think that something is missing, make a pull request to this file.
+If you disagree with anything or think that something is missing, make a pull request to this file on the RxDB github repository.
 
 
 ### What to compare with
 
 [RxDB](https://rxdb.info) is an **observable**, **replicating**, **[local first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
 
-This list should be seen as an **entrypoint** for your personal evaluation of which tool could work for your project.
+
+
+:::note
+RxDB has these main benefits:
+
+- RxDB is a battle proven tool [widely used](/#reviews) by companies in real projects in production.
+- RXDB is not VC funded and therefore does not require you to use a specific cloud service to rip you off. RxDB can be used with your [own backend](./replication-http.md) or no backend at all.
+- RxDB has a working business model of selling [premium plugins](/premium) which ensures that RxDB will be maintained and improved continuously while many alternatives are dead already or seem to die soon.
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
+    </a>
+</center>
+
+:::
+
 
 --------------------------------------------------------------------------------
 
@@ -24,7 +40,9 @@ This list should be seen as an **entrypoint** for your personal evaluation of wh
   THEY WOULD HAVE TO BE UPDATED EVERY FEW MONTHS AND I DO NOT WANT TO MAINTAIN THEM.
 -->
 
+## Alternatives to RxDB
 
+Here are the alternatives to RxDB:
 
 ### Firebase
 
@@ -225,21 +243,20 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless optimistic updates and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB’s — the offline data is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless optimistic updates and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the offline data is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
 
 ### ElectricSQL
 
-2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes") of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir.  The write path is not yet implemented, neither is client-side reactivity.  The ElectricSQL backend is written in Elixir.
+2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes") of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
 
 ### SignalDB
 
-SignalDB provides a reactive, in-memory local-lirst JavaScript database with real-time sync, bit it doesn’t offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
+SignalDB provides a reactive, in-memory local-lirst JavaScript database with real-time sync, bit it doesn't offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
 
 ### PowerSync
 
-PowerSync is a flexible "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoratitive server, vs RxDB that also supports P2P.  Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+PowerSync is a flexible "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoratitive server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends.  Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 # Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
-- https://jaredforsyth.com/tags/local-first/
