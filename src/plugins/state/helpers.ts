@@ -1,3 +1,5 @@
+import { overwritable } from '../../overwritable.ts';
+import { newRxError } from '../../rx-error.ts';
 import type { DeepReadonly, RxJsonSchema } from '../../types';
 import type { RxStateDocument } from './types';
 
@@ -65,4 +67,22 @@ export function nextRxStateId(lastId?: string): string {
     const next = parsed + 1;
     const nextString = next.toString();
     return nextString.padStart(RX_STATE_ID_LENGTH, '0');
+}
+
+
+
+/**
+ * Only non-primitives can be used as a key in WeakMap
+ */
+export function isValidWeakMapKey(key: any) {
+    // This method is slow and must only be used in dev-mode!
+    if (!overwritable.isDevMode()) {
+        throw newRxError('SNH');
+    }
+    try {
+        new WeakMap().set(key, {});
+        return true;
+    } catch (err) {
+        return false;
+    }
 }
