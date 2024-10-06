@@ -14,7 +14,7 @@ If you disagree with anything or think that something is missing, make a pull re
 RxDB has these main benefits:
 
 - RxDB is a battle proven tool [widely used](/#reviews) by companies in real projects in production.
-- RXDB is not VC funded and therefore does not require you to use a specific cloud service to rip you off. RxDB can be used with your [own backend](./replication-http.md) or no backend at all.
+- RxDB is not VC funded and therefore does not require you to use a specific cloud service to rip you off. RxDB can be used with your [own backend](./replication-http.md) or no backend at all.
 - RxDB has a working business model of selling [premium plugins](/premium) which ensures that RxDB will be maintained and improved continuously while many alternatives are dead already or seem to die soon.
 
 <center>
