@@ -19,7 +19,7 @@ jobs:
   # This workflow contains a single job called "build"
   build-all:
     # The type of runner that the job will run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # @link https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
     permissions:

@@ -22,7 +22,7 @@ concurrency:
 # because github will start them likely earlier
 jobs:
   core:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
       - run: npm run test:node:memory
 
   storage-dexie:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -137,7 +137,7 @@ jobs:
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -182,7 +182,7 @@ jobs:
       - run: npm run test:performance:lokijs:node
 
   storage-memory:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -232,7 +232,7 @@ jobs:
           npm run test
 
   storage-remote:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -267,7 +267,7 @@ jobs:
           run: npm run test:browser:remote
 
   storage-foundationdb:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -314,7 +314,7 @@ jobs:
       - run: npm run test:performance:foundationdb
 
   storage-mongodb:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -351,7 +351,7 @@ jobs:
       - run: npm run test:performance:mongodb
 
   example-angular:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -406,7 +406,7 @@ jobs:
         run: npm run build:capacitor
 
   test-builds:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -445,7 +445,7 @@ jobs:
           npm run docs:build
 
   test-code-style:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -511,7 +511,7 @@ jobs:
 
 
   example-electron:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -540,7 +540,7 @@ jobs:
           run: npm run test
 
   example-react:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -569,7 +569,7 @@ jobs:
           run: npm run test:build
 
   example-react-native-expo:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -595,7 +595,7 @@ jobs:
           yarn test:bundle
 
   example-supabase:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -652,7 +652,7 @@ jobs:
       #     run: npm run test:dexie
 
   example-vue:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -682,7 +682,7 @@ jobs:
           run: npm run test
 
   example-svelte:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -711,7 +711,7 @@ jobs:
           run: npm run test
 
   vite-vanilla-ts:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -739,7 +739,7 @@ jobs:
           run: npm run test
 
   example-graphql:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -823,7 +823,7 @@ jobs:
   #           flutter test integration_test/basics_test.dart -d linux
 
   test-tutorials:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -842,7 +842,7 @@ jobs:
           npm test
 
   test-others:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
