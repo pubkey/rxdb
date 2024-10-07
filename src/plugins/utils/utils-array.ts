@@ -142,12 +142,25 @@ export function maxOfNumbers(arr: number[]): number {
  * Mostly used as faster alternative to Array.concat()
  * because .concat() is so slow.
  * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
+ * 
+ * TODO it turns out that in mid 2024 v8 has optimized Array.concat()
+ * so it might be faster to just use concat() again:
+ * @link https://jsperf.app/qiqawa/10
  */
 export function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void {
-    const amount = add.length;
-    for (let i = 0; i < amount; ++i) {
-        const element = add[i];
-        ar.push(element);
+    /**
+     * Pre-increasing the array size has turned out
+     * to be way faster when big arrays must be handled.
+     * @link https://dev.to/uilicious/javascript-array-push-is-945x-faster-than-array-concat-1oki
+     */
+    const addSize = add.length;
+    if (addSize === 0) {
+        return;
+    }
+    const baseSize = ar.length;
+    ar.length = baseSize + add.length;
+    for (let i = 0; i < addSize; ++i) {
+        ar[baseSize + i] = add[i];
     }
 }
 
@@ -160,3 +173,9 @@ export function uniqueArray(arrArg: string[]): string[] {
     });
 }
 
+
+export function sortByObjectNumberProperty<T>(property: keyof T) {
+    return (a: T, b: T) => {
+        return (b as any)[property] - (a as any)[property];
+    }
+}

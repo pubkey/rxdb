@@ -213,15 +213,9 @@ export function wrapRxStorageInstance<RxDocType>(
 
             const writeResult = await instance.bulkWrite(useRows, context);
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: [],
                 error: []
             };
             const promises: Promise<any>[] = [];
-            writeResult.success.forEach(v => {
-                promises.push(
-                    fromStorage(v).then(v2 => ret.success.push(v2))
-                );
-            });
             writeResult.error.forEach(error => {
                 promises.push(
                     errorFromStorage(error).then(err => ret.error.push(err))

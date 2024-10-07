@@ -39,7 +39,8 @@ import {
     RxStorageInstance,
     prepareQuery,
     getChangedDocumentsSince,
-    stripMetaDataFromDocument
+    stripMetaDataFromDocument,
+    getWrittenDocumentsFromBulkWriteResponse
 } from '../../plugins/core/index.mjs';
 import {
     getCompressionStateByRxJsonSchema
@@ -63,7 +64,8 @@ import {
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4,
-    HumanDocumentType
+    HumanDocumentType,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
@@ -286,17 +288,23 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     _rev: EXAMPLE_REVISION_1,
                     _attachments: {}
                 };
+                const writeRows = [{
+                    document: clone(docData)
+                }];
                 const writeResponse = await storageInstance.bulkWrite(
-                    [{
-                        document: clone(docData)
-                    }],
+                    writeRows,
                     testContext
                 );
 
                 assert.deepStrictEqual(writeResponse.error, []);
-                const first = writeResponse.success[0];
+                const success = getWrittenDocumentsFromBulkWriteResponse(
+                    'key',
+                    writeRows,
+                    writeResponse
+                );
+                const first = success[0];
                 assert.deepStrictEqual(stripMetaDataFromDocument(docData), stripMetaDataFromDocument(first));
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -334,7 +342,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
 
-                assert.deepStrictEqual(writeResponse.success, []);
                 const first = writeResponse.error[0];
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
@@ -360,7 +367,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 assert.ok(first.writeRow);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('when inserting the same document at the same time, the first call must succeed while the second has a conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -405,10 +412,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
 
                 assert.deepStrictEqual(first.error, []);
-                assert.strictEqual(first.success[0].value, 'first');
                 assert.strictEqual(second.error[0].status, 409);
+                assert.strictEqual(second.error[0].writeRow.document.value, 'second');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should not find the deleted document when findDocumentsById(false)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -439,17 +446,16 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(insertResponse.error, []);
-                const first = insertResponse.success[0];
 
 
                 // make an update
-                const updateData = flatCloneDocWithMeta(first);
+                const updateData = flatCloneDocWithMeta(insertData);
                 updateData.value = 'barfoo2';
                 updateData._rev = EXAMPLE_REVISION_2;
                 updateData._meta.lwt = now();
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: first,
+                        previous: insertData,
                         document: updateData
                     }],
                     testContext
@@ -457,13 +463,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.deepStrictEqual(updateResponse.error, []);
 
                 // make the delete
-                const deleteData = flatCloneDocWithMeta(updateResponse.success[0]);
+                const deleteData = flatCloneDocWithMeta(updateData);
                 deleteData.value = 'barfoo_deleted';
                 deleteData._deleted = true;
                 deleteData._meta.lwt = now();
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: updateResponse.success[0],
+                        previous: updateData,
                         document: deleteData
                     }],
                     testContext
@@ -473,7 +479,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const foundDoc = await storageInstance.findDocumentsById(['foobar'], false);
                 assert.deepStrictEqual(foundDoc, []);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should NOT be able to overwrite a deleted the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -487,57 +493,56 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 });
 
                 const docId = 'undeleteMe';
+                const doc1 = {
+                    key: docId,
+                    value: 'barfoo1',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
                 const insertResponse = await storageInstance.bulkWrite(
                     [{
-                        document: {
-                            key: docId,
-                            value: 'barfoo1',
-                            _deleted: false,
-                            _attachments: {},
-                            _rev: EXAMPLE_REVISION_1,
-                            _meta: {
-                                lwt: now()
-                            }
-                        }
+                        document: doc1
                     }],
                     testContext
                 );
 
                 assert.deepStrictEqual(insertResponse.error, []);
-                let previous = insertResponse.success[0];
 
+                const doc2 = Object.assign({}, doc1, {
+                    value: 'barfoo2',
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: previous,
-                        document: Object.assign({}, previous, {
-                            value: 'barfoo2',
-                            _rev: EXAMPLE_REVISION_2,
-                            _meta: {
-                                lwt: now()
-                            }
-                        })
+                        previous: doc1,
+                        document: doc2
                     }],
                     testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, []);
-                previous = updateResponse.success[0];
 
-
+                const doc3 = Object.assign({}, doc2, {
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_3,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: previous,
-                        document: Object.assign({}, previous, {
-                            _deleted: true,
-                            _rev: EXAMPLE_REVISION_3,
-                            _meta: {
-                                lwt: now()
-                            }
-                        })
+                        previous: doc2,
+                        document: doc3
                     }],
                     testContext
                 );
                 assert.deepStrictEqual(deleteResponse.error, []);
-                previous = deleteResponse.success[0];
 
                 /**
                  * Doing an un-delete without sending the previous state,
@@ -548,7 +553,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                  */
                 const undeleteConflictResponse = await storageInstance.bulkWrite(
                     [{
-                        document: Object.assign({}, previous, {
+                        document: Object.assign({}, doc3, {
                             _deleted: false,
                             value: 'aaa',
                             _rev: EXAMPLE_REVISION_4,
@@ -559,7 +564,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(undeleteConflictResponse.success, []);
+                assert.ok(undeleteConflictResponse.error[0]);
 
                 /**
                  * Doing the un-delete with sending the previous,
@@ -567,8 +572,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                  */
                 const undeleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous,
-                        document: Object.assign({}, previous, {
+                        previous: doc3,
+                        document: Object.assign({}, doc3, {
                             _deleted: false,
                             value: 'aaa',
                             _rev: EXAMPLE_REVISION_4,
@@ -579,14 +584,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }],
                     testContext
                 );
-                const third = undeleteResponse.success[0];
-                assert.strictEqual(third.value, 'aaa');
+                assert.deepStrictEqual(undeleteResponse.error, []);
 
                 const foundDoc = await storageInstance.findDocumentsById([docId], false);
                 assert.ok(foundDoc[0]);
                 assert.deepStrictEqual(foundDoc[0].value, 'aaa');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Updating a deleted document can happen
@@ -607,7 +611,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const docId = 'foobar';
 
                 // insert
-                const docData: RxDocumentData<TestDocType> = {
+                const docData1: RxDocumentData<TestDocType> = {
                     key: docId,
                     value: 'barfoo1',
                     _deleted: false,
@@ -618,36 +622,34 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 };
                 const insertResponse = await storageInstance.bulkWrite([{
-                    document: docData
+                    document: docData1
                 }], testContext);
                 assert.deepStrictEqual(insertResponse.error, []);
-                let previous = insertResponse.success[0];
 
                 // delete
+                const docData2 = Object.assign({}, docData1, {
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: { lwt: now() }
+                });
                 const deleteResponse = await storageInstance.bulkWrite([{
-                    previous,
-                    document: Object.assign({}, docData, {
-                        _deleted: true,
-                        _rev: EXAMPLE_REVISION_2,
-                        _meta: { lwt: now() }
-                    })
+                    previous: docData1,
+                    document: docData2
                 }], testContext);
                 assert.deepStrictEqual(deleteResponse.error, []);
-                previous = deleteResponse.success[0];
 
                 // modify deleted
+                const docData3 = Object.assign({}, docData2, {
+                    value: 'barfoo2',
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_3,
+                    _meta: { lwt: now() }
+                });
                 const modifyResponse = await storageInstance.bulkWrite([{
-                    previous,
-                    document: Object.assign({}, docData, {
-                        value: 'barfoo2',
-                        _deleted: true,
-                        _rev: EXAMPLE_REVISION_3,
-                        _meta: { lwt: now() }
-                    })
+                    previous: docData2,
+                    document: docData3
                 }], testContext);
                 assert.deepStrictEqual(modifyResponse.error, []);
-                previous = modifyResponse.success[0];
-                assert.strictEqual(previous.value, 'barfoo2');
 
                 // check modified
                 const docs = await storageInstance.findDocumentsById([docId], true);
@@ -655,7 +657,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(doc);
                 assert.strictEqual(doc.value, 'barfoo2');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to unset a property', async () => {
                 const schema = getTestDataSchema();
@@ -681,37 +683,37 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         lwt: now()
                     }
                 };
-                const writeResponse = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         document: insertData
                     }],
                     testContext
                 );
-                const insertResponse = writeResponse.success[0];
                 const insertDataAfterWrite: RxDocumentData<OptionalValueTestDoc> = Object.assign(
                     {},
-                    insertResponse,
+                    insertData,
                     {
-                        _rev: insertResponse._rev
+                        _rev: insertData._rev
                     }
                 );
 
-                const updateResponse = await storageInstance.bulkWrite(
+                const updateDoc = {
+                    key: docId,
+                    _attachments: {},
+                    _deleted: false,
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                await storageInstance.bulkWrite(
                     [{
                         previous: insertDataAfterWrite,
-                        document: {
-                            key: docId,
-                            _attachments: {},
-                            _deleted: false,
-                            _rev: EXAMPLE_REVISION_2,
-                            _meta: {
-                                lwt: now()
-                            }
-                        }
+                        document: updateDoc
                     }],
                     testContext
                 );
-                const updateResponseDoc = updateResponse.success[0];
+                const updateResponseDoc = updateDoc;
                 delete (updateResponseDoc as any)._deleted;
                 delete (updateResponseDoc as any)._rev;
                 delete (updateResponseDoc as any)._meta;
@@ -724,7 +726,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to store a complex document with key compression', async () => {
                 const databaseName = randomCouchString(12);
@@ -768,7 +770,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     stripMetaDataFromDocument(compressedDocData as any)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to do a write where only _meta fields are changed', async () => {
                 const databaseInstanceToken = randomCouchString(10);
@@ -803,7 +805,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(res1.error, []);
-                docData = res1.success[0];
+                docData = clone(docData);
 
                 // change once
                 let newDocData: RxDocumentData<TestDocType> = flatCloneDocWithMeta(docData);
@@ -819,7 +821,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(res2.error, []);
-                docData = res2.success[0];
+                docData = clone(newDocData);
 
                 // change again
                 newDocData = flatCloneDocWithMeta(docData);
@@ -843,7 +845,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const viaStorageDoc = ensureNotFalsy(viaStorage[0]);
                 assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to create another instance after a write', async () => {
                 const databaseName = randomCouchString(12);
@@ -928,13 +930,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.deepStrictEqual(insertResponse.error, []);
 
                 // update
-                const updated = flatCloneDocWithMeta(insertResponse.success[0]);
+                const updated = clone(docData);
                 updated.value = 'barfoo2';
                 updated._meta.lwt = now();
                 updated._rev = EXAMPLE_REVISION_4;
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: insertResponse.success[0],
+                        previous: clone(docData),
                         document: updated
                     }],
                     testContext
@@ -994,7 +996,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             // Some storages had problems storing non-utf-8 chars like "é"
             it('write and read with umlauts', async () => {
-
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1054,6 +1055,73 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
                 assert.ok(getDocFromDb2[0]);
 
+                storageInstance.close();
+            });
+            it('the plain storage should throw when overwriting a deleted doc with an insert without passing the previous', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                // insert
+                const docData: RxDocumentData<TestDocType> = {
+                    key: 'foobar',
+                    value: 'value',
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {}
+                };
+                const insertResponse = await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(insertResponse.error, []);
+
+                // delete
+                const deletedDoc = Object.assign({}, clone(docData), {
+                    _rev: EXAMPLE_REVISION_2,
+                    _deleted: true,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                const deleteResponse = await storageInstance.bulkWrite(
+                    [{
+                        previous: docData,
+                        document: deletedDoc
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(deleteResponse.error, []);
+
+                // insert deleted
+                const insert2Doc = Object.assign({}, clone(docData), {
+                    _rev: EXAMPLE_REVISION_1,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                const insert2WriteRows = [{
+                    document: insert2Doc
+                }];
+                const insert2Response = await storageInstance.bulkWrite(
+                    insert2WriteRows,
+                    testContext
+                );
+                const error = insert2Response.error[0];
+                assert.ok(error);
+                assert.strictEqual(error.status, 409);
                 storageInstance.close();
             });
         });
@@ -1151,7 +1219,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     [doc1, doc2].sort(comparator)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should still sort in correct order when docs do not match the selector', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1200,7 +1268,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.strictEqual(result, -1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should work with a more complex query', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1257,7 +1325,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.strictEqual(result, -1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.getQueryMatcher()', () => {
@@ -1300,7 +1368,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(queryMatcher(doc1), false);
                 assert.strictEqual(queryMatcher(doc2), true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
@@ -1333,7 +1401,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     true
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should match the nested document', () => {
                 const schema = getNestedDocSchema();
@@ -1454,7 +1522,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(first);
                 assert.strictEqual(first.value, 'barfoo');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should sort in the correct order', async () => {
                 const storageInstance = await config.storage
@@ -1498,7 +1566,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(allDocs.documents[1].value, 'b');
                 assert.strictEqual(allDocs.documents[2].value, 'a');
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Notice that the RxStorage itself runs whatever query you give it,
@@ -1528,7 +1596,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 };
 
-                const insertResult = await storageInstance.bulkWrite(
+                await storageInstance.bulkWrite(
                     [{
                         document: writeData
                     }],
@@ -1545,7 +1613,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 });
                 await storageInstance.bulkWrite(
                     [{
-                        previous: insertResult.success[0],
+                        previous: writeData,
                         document: writeData2
                     }],
                     testContext
@@ -1564,7 +1632,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(first);
                 assert.strictEqual(first.value, 'barfoo');
 
-                storageInstance.close();
+                storageInstance.remove();
 
             });
             /**
@@ -1647,14 +1715,20 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                             lwt: now()
                         }
                     }));
+
+                const writeRows = docData.map(d => ({ document: d }));
                 const writeResponse: RxStorageBulkWriteResponse<RandomDoc> = await storageInstance.bulkWrite(
-                    docData.map(d => ({ document: d })),
+                    writeRows,
                     testContext
                 );
                 if (Object.keys(writeResponse.error).length > 0) {
                     throw new Error('could not save');
                 }
-                const docs = Object.values(writeResponse.success);
+                const docs = getWrittenDocumentsFromBulkWriteResponse(
+                    'id',
+                    writeRows,
+                    writeResponse
+                );
 
                 async function testQuery(query: FilledMangoQuery<RandomDoc>): Promise<void> {
                     const preparedQuery = prepareQuery(
@@ -1769,7 +1843,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const results = await storageInstance.query(preparedQuery);
                 assert.strictEqual(results.documents.length, 1);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * This failed on some storages when there are more
@@ -1854,15 +1928,14 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 await ensureCountIs(1);
 
                 const writeData = getWriteData();
-                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await storageInstance.bulkWrite([{ document: writeData }], testContext);
                 await ensureCountIs(2);
 
 
                 // DELETE
-                const previous = insertResult.success[0];
                 await storageInstance.bulkWrite(
                     [{
-                        previous,
+                        previous: writeData,
                         document: Object.assign({}, writeData, {
                             _rev: EXAMPLE_REVISION_2,
                             _deleted: true,
@@ -1877,7 +1950,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 // must still be 2 because the storage itself also counts deleted docs
                 await ensureCountIs(2);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('.findDocumentsById()', () => {
@@ -1916,7 +1989,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     stripMetaDataFromDocument(docData)
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should find deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1929,26 +2002,26 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const insertResult = await storageInstance.bulkWrite(
+                const doc1 = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                await storageInstance.bulkWrite(
                     [{
-                        document: {
-                            key: 'foobar',
-                            value: 'barfoo',
-                            _deleted: false,
-                            _attachments: {},
-                            _rev: EXAMPLE_REVISION_1,
-                            _meta: {
-                                lwt: now()
-                            }
-                        }
+                        document: doc1
                     }],
                     testContext
                 );
-                const previous = insertResult.success[0];
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous,
+                        previous: doc1,
                         document: {
                             key: 'foobar',
                             value: 'barfoo2',
@@ -1970,7 +2043,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
                 assert.strictEqual(foundDeleted._deleted, true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('if withDeleted=true then even the non-deleted document must be found', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -1983,36 +2056,43 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const insertResult = await storageInstance.bulkWrite(
-                    [
-                        {
-                            document: {
-                                key: 'del',
-                                value: 'barfoo',
-                                _deleted: false,
-                                _attachments: {},
-                                _rev: EXAMPLE_REVISION_1,
-                                _meta: {
-                                    lwt: now()
-                                }
-                            }
-                        },
-                        {
-                            document: {
-                                key: 'non-del',
-                                value: 'barfoo',
-                                _deleted: false,
-                                _attachments: {},
-                                _rev: EXAMPLE_REVISION_1,
-                                _meta: {
-                                    lwt: now()
-                                }
+                const writeRows = [
+                    {
+                        document: {
+                            key: 'del',
+                            value: 'barfoo',
+                            _deleted: false,
+                            _attachments: {},
+                            _rev: EXAMPLE_REVISION_1,
+                            _meta: {
+                                lwt: now()
                             }
                         }
-                    ],
+                    },
+                    {
+                        document: {
+                            key: 'non-del',
+                            value: 'barfoo',
+                            _deleted: false,
+                            _attachments: {},
+                            _rev: EXAMPLE_REVISION_1,
+                            _meta: {
+                                lwt: now()
+                            }
+                        }
+                    }
+                ];
+                const insertResult = await storageInstance.bulkWrite(
+                    writeRows,
                     testContext
                 );
-                const previous = insertResult.success.find(d => d.key === 'del');
+                const success = getWrittenDocumentsFromBulkWriteResponse(
+                    'key',
+                    writeRows,
+                    insertResult
+                );
+
+                const previous = success.find(d => d.key === 'del');
                 const deleteWriteResult = await storageInstance.bulkWrite(
                     [{
                         previous,
@@ -2041,7 +2121,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     2
                 );
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             /**
              * Some storage implementations ran into some limits
@@ -2050,7 +2130,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * has to workaround any problems with that.
              */
             it('should be able to insert and fetch many documents', async () => {
-                if (config.storage.name === 'denokv') {
+                if (isDeno) {
                     // TODO
                     return;
                 }
@@ -2105,17 +2185,18 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(docsEmpty.length, 0);
 
                 // insert one
-                const insertResult = await storageInstance.bulkWrite([
+                const doc1 = {
+                    key: 'foobar',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+                await storageInstance.bulkWrite([
                     {
-                        document: {
-                            key: 'foobar',
-                            _deleted: false,
-                            _attachments: {},
-                            _rev: EXAMPLE_REVISION_1,
-                            _meta: {
-                                lwt: now()
-                            }
-                        }
+                        document: doc1
                     }
                 ], testContext);
                 const docsAfterInsert = await getChanges();
@@ -2138,7 +2219,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 // delete one
                 await storageInstance.bulkWrite([
                     {
-                        previous: insertResult.success[0],
+                        previous: doc1,
                         document: {
                             key: 'foobar',
                             _deleted: true,
@@ -2162,7 +2243,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(resTotal.documents[0].key, 'foobar');
                 assert.strictEqual(resTotal.documents[0]._deleted, true);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should return the correct amount of documents', async () => {
                 const databaseInstanceToken = randomCouchString(10);
@@ -2177,9 +2258,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 });
 
                 let previous: any;
+                const foo1 = getWriteData({ key: 'foobar', value: '0' });
                 const insertResult = await storageInstance.bulkWrite([
                     {
-                        document: getWriteData({ key: 'foobar', value: '0' })
+                        document: foo1
                     },
                     // also add another random document
                     {
@@ -2187,7 +2269,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 ], testContext);
                 assert.deepStrictEqual(insertResult.error, []);
-                previous = insertResult.success.find(d => d.key === 'foobar');
+                previous = foo1;
 
                 // update the document many times
                 let t = 0;
@@ -2205,7 +2287,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         }
                     ], testContext);
                     assert.deepStrictEqual(updateResult.error, []);
-                    previous = updateResult.success[0];
+                    previous = newDocInner;
                 }
 
                 // should return both documents when called without checkpoint
@@ -2442,24 +2524,25 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 };
 
                 // insert
-                const firstWriteResult = await storageInstance.bulkWrite([{
+                await storageInstance.bulkWrite([{
                     previous,
                     document: writeData
                 }], testContext);
-                previous = firstWriteResult.success[0];
+                previous = writeData;
 
                 // update
                 const originalBeforeUpdate = clone(writeData);
-                const updateResult = await storageInstance.bulkWrite([{
+                const doc2 = Object.assign({}, writeData, {
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                await storageInstance.bulkWrite([{
                     previous,
-                    document: Object.assign({}, writeData, {
-                        _rev: EXAMPLE_REVISION_2,
-                        _meta: {
-                            lwt: now()
-                        }
-                    })
+                    document: doc2
                 }], testContext);
-                previous = updateResult.success[0];
+                previous = doc2;
 
                 // should not mutate the input or add additional properties to output
                 originalBeforeUpdate._rev = (previous as any)._rev;
@@ -2539,13 +2622,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const secondWriteResult = await storageInstance.bulkWrite([{
                     document: writeData
                 }], testContext);
-                assert.deepStrictEqual(secondWriteResult.success, []);
+                assert.ok(secondWriteResult.error[0]);
 
                 assert.strictEqual(emitted.length, 1);
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
         });
         describe('attachments', () => {
@@ -2722,7 +2805,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.strictEqual(firstChange.key, 'foobar');
 
                 sub.unsubscribe();
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('should be able to add multiple attachments, one each write', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2808,7 +2891,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 }
 
                 assert.strictEqual(Object.keys(previous._attachments).length, 2);
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('_deleted documents must loose all attachments', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -2845,13 +2928,20 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         }
                     }
                 };
-                const writeResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                const writeRows = [{ document: writeData }];
+                const writeResult = await storageInstance.bulkWrite(writeRows, testContext);
+                const success = getWrittenDocumentsFromBulkWriteResponse(
+                    'key',
+                    writeRows,
+                    writeResult
+                );
                 await storageInstance.getAttachmentData(
-                    'foobar', 'foo',
-                    writeResult.success[0]._attachments.foo.digest
+                    'foobar',
+                    'foo',
+                    success[0]._attachments.foo.digest
                 );
 
-                const deleteData = clone(writeResult.success[0]);
+                const deleteData = clone(success[0]);
                 deleteData._meta.lwt = now();
                 deleteData._deleted = true;
                 deleteData._attachments = {};
@@ -2859,7 +2949,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous: await stripAttachmentsDataFromDocument(writeResult.success[0]),
+                        previous: await stripAttachmentsDataFromDocument(success[0]),
                         document: deleteData
                     }],
                     testContext
@@ -2869,14 +2959,14 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 try {
                     await storageInstance.getAttachmentData(
                         'foobar', 'foo',
-                        writeResult.success[0]._attachments.foo.digest
+                        success[0]._attachments.foo.digest
                     );
                 } catch (err) {
                     hasThrown = true;
                 }
                 assert.ok(hasThrown);
 
-                storageInstance.close();
+                storageInstance.remove();
             });
             it('must be able to load multiple attachments data in parallel', async () => {
                 const collectionsAmount = 3;
@@ -2941,13 +3031,19 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                                             };
                                         })
                                 );
-                                const result = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                const writeRows = [{ document: writeData }];
+                                const result = await storageInstance.bulkWrite(writeRows, testContext);
                                 const loadAr = getFromMapOrCreate(
                                     loadMe,
                                     storageInstance,
                                     () => []
                                 );
-                                const doc = ensureNotFalsy(result.success.find(d => d.key === docId + ''));
+                                const success = getWrittenDocumentsFromBulkWriteResponse(
+                                    'key',
+                                    writeRows,
+                                    result
+                                );
+                                const doc = ensureNotFalsy(success.find(d => d.key === docId + ''));
                                 Object.entries(doc._attachments).forEach(([attachmentId, val]) => {
                                     loadAr.push({
                                         attachmentId,
@@ -3010,19 +3106,20 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 /**
                  * Insert
                  */
-                const insertResult = await storageInstance.bulkWrite([{
-                    document: {
-                        key: id,
-                        value: 'barfoo',
-                        _attachments: {},
-                        _rev: EXAMPLE_REVISION_1,
-                        _meta: {
-                            lwt: now()
-                        },
-                        _deleted: false
-                    }
+                const doc1 = {
+                    key: id,
+                    value: 'barfoo',
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _deleted: false
+                };
+                await storageInstance.bulkWrite([{
+                    document: doc1
                 }], testContext);
-                const previous = insertResult.success[0];
+                const previous = doc1;
 
                 /**
                  * Delete
@@ -3040,7 +3137,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         _attachments: {}
                     }
                 }], testContext);
-                assert.ok(deleteResult.success[0]);
+                assert.deepStrictEqual(deleteResult.error, []);
 
                 /**
                  * Running .cleanup() with a height minimumDeletedTime
@@ -3095,19 +3192,20 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 /**
                  * Insert
                  */
-                const insertResult = await storageInstance.bulkWrite([{
-                    document: {
-                        key: id,
-                        value: 'barfoo',
-                        _attachments: {},
-                        _rev: EXAMPLE_REVISION_1,
-                        _meta: {
-                            lwt: now()
-                        },
-                        _deleted: false
-                    }
+                const doc1 = {
+                    key: id,
+                    value: 'barfoo',
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _deleted: false
+                };
+                await storageInstance.bulkWrite([{
+                    document: doc1
                 }], testContext);
-                const previous = insertResult.success[0];
+                const previous = doc1;
 
                 /**
                  * Delete
@@ -3125,14 +3223,14 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         _attachments: {}
                     }
                 }], testContext);
-                assert.ok(deleteResult.success[0]);
+                assert.deepStrictEqual(deleteResult.error, []);
 
                 done = false;
                 while (!done) {
                     done = await storageInstance.cleanup(0);
                 }
 
-                await storageInstance.close();
+                await storageInstance.remove();
             });
         });
         describe('.close()', () => {
@@ -3204,7 +3302,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
                 assert.strictEqual(Object.keys(docs).length, 0);
 
-                storageInstance2.close();
+                storageInstance2.remove();
             });
             it('should throw on call to .remove() after .close()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
@@ -3422,7 +3520,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             // the query should still resolve.
             await queryResultPromise;
 
-            await instances.b.close();
+            await instances.b.remove();
         });
         it('should not mix up documents stored with different schema versions', async () => {
             const databaseName = randomCouchString(10);
@@ -3645,8 +3743,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             assert.strictEqual(docsOne.documents.length, 1);
             assert.strictEqual(docsOne.documents[0].value, 'one');
 
-            storageInstanceZero.close();
-            storageInstanceOne.close();
+            storageInstanceZero.remove();
+            storageInstanceOne.remove();
         });
     });
 });

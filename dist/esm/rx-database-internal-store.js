@@ -1,6 +1,6 @@
 import { isBulkWriteConflictError, newRxError } from "./rx-error.js";
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from "./rx-schema-helper.js";
-import { getSingleDocument, writeSingle } from "./rx-storage-helper.js";
+import { getSingleDocument, getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "./rx-storage-helper.js";
 import { clone, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from "./plugins/utils/index.js";
 import { prepareQuery } from "./rx-query.js";
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
@@ -123,11 +123,12 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
     _rev: getDefaultRevision(),
     _attachments: {}
   };
-  var writeResult = await rxDatabase.internalStore.bulkWrite([{
+  var writeRows = [{
     document: docData
-  }], 'internal-add-storage-token');
-  if (writeResult.success[0]) {
-    return writeResult.success[0];
+  }];
+  var writeResult = await rxDatabase.internalStore.bulkWrite(writeRows, 'internal-add-storage-token');
+  if (!writeResult.error[0]) {
+    return getWrittenDocumentsFromBulkWriteResponse('id', writeRows, writeResult)[0];
   }
 
   /**

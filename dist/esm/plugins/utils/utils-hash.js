@@ -28,4 +28,13 @@ export var canUseCryptoSubtle = typeof crypto !== 'undefined' && typeof crypto.s
  */
 
 export var defaultHashSha256 = canUseCryptoSubtle ? nativeSha256 : jsSha256;
+export function hashStringToNumber(str) {
+  var nr = 0;
+  var len = str.length;
+  for (var i = 0; i < len; i++) {
+    nr = nr + str.charCodeAt(i);
+    nr |= 0; // Convert to 32bit integer, improves performance
+  }
+  return nr;
+}
 //# sourceMappingURL=utils-hash.js.map

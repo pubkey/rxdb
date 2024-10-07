@@ -7,6 +7,7 @@ import type { KeyFunctionMap, RxCollection, RxDatabase, RxQuery, RxDocument, RxD
 import { RxSchema } from './rx-schema.ts';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
+import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
 type HookWhenType = typeof HOOKS_WHEN[number];
 declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
@@ -34,6 +35,11 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
     incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType>;
+    /**
+     * Before reads, all these methods are awaited. Used to "block" reads
+     * depending on other processes, like when the RxPipeline is running.
+     */
+    readonly awaitBeforeReads: Set<() => MaybePromise<any>>;
     constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: MigrationStrategies, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
@@ -59,9 +65,10 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
-     */
+    */
     onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
+    onRemove: (() => MaybePromise<any>)[];
     prepare(): Promise<void>;
     /**
      * Manually call the cleanup function of the storage.
@@ -115,6 +122,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void>;
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods>;
+    addPipeline(_options: RxPipelineOptions<RxDocumentType>): Promise<RxPipeline<RxDocumentType>>;
     /**
      * HOOKS
      */

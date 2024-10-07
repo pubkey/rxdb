@@ -93,7 +93,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -148,7 +147,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 // INSERTS
                 categorized.bulkInsertDocs.forEach(writeRow => {
                     const docId: string = writeRow.document[this.primaryPath] as any;
-                    ret.success.push(writeRow.document);
 
                     // insert document data
                     tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
@@ -175,11 +173,22 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             tx = tx.set([this.keySpace, indexMeta.indexId, newIndexString], docId);
                         }
                     });
-                    ret.success.push(writeRow.document as any);
                 });
 
-                const txResult = await tx.commit();
-                if (txResult.ok) {
+                let txResult;
+                try {
+                    txResult = await tx.commit();
+                } catch (err: any) {
+                    if (
+                        err.message.includes('Error code 5:') ||
+                        err.message.includes('Error code 517:')
+                    ) {
+                        // retry
+                    } else {
+                        throw err;
+                    }
+                }
+                if (txResult && txResult.ok) {
                     appendToArray(ret.error, categorized.errors);
                     if (categorized.eventBulk.events.length > 0) {
                         const lastState = ensureNotFalsy(categorized.newestRow).document;

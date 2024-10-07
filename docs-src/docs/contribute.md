@@ -18,11 +18,7 @@ Before you can start developing, do the following:
 1. Make sure you have installed nodejs with the version stated in the [.nvmrc](https://github.com/pubkey/rxdb/blob/master/.nvmrc)
 2. Clone the repository `git clone https://github.com/pubkey/rxdb.git`
 3. Install the dependencies `cd rxdb && npm install`
-4. Make sure that the tests work for you `npm run test`
-
-## Flow
-
-While developing you should run `npm run dev` and leave it open in the console. This will run the unit-tests on every file-change. If you have a slow device, you can also manually run `npm run test:node` every time you want to check if the tests work.
+4. Make sure that the tests work for you. At first, try it out with `npm run test:node:memory` which tests the memory storage in node. In the [package.json](https://github.com/pubkey/rxdb/blob/master/package.json) you can find more scripts to run the tests with different storages.
 
 ## Adding tests
 
@@ -42,6 +38,11 @@ If you make a pull-request, ensure the following:
 
 If you need help with your contribution, ask at [discord](https://rxdb.info/chat).
 
+## No-Go
+
+When reporting a bug, you need to make a PR with a test case that runs in the CI and reproduces your problem.
+Sending a link with a repo does not help the maintainer because installing random peoples projects is time consuming and dangerous.
+Also the maintainer will never go on a bug hunt based on your plain description. Either you report the bug with a test case, or the maintainer will likely not help you. 
 
 # Docs
 

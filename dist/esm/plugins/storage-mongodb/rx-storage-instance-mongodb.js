@@ -1,3 +1,4 @@
+import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 import { BehaviorSubject, Subject, filter, firstValueFrom } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { ensureNotFalsy, getFromMapOrThrow, isMaybeReadonlyArray, now, PROMISE_RESOLVE_VOID, requestIdlePromise } from "../../plugins/utils/index.js";
@@ -110,7 +111,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
       }
       var primaryPath = this.primaryPath;
       var ret = {
-        success: [],
         error: []
       };
       var docIds = documentWrites.map(d => d.document[primaryPath]);
@@ -163,7 +163,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
           if (event) {
             eventBulk.events.push(event);
           }
-          ret.success.push(writeRow.document);
         }
       })),
       /**
@@ -194,7 +193,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
         } else {
           var event = getFromMapOrThrow(changeByDocId, docId);
           eventBulk.events.push(event);
-          ret.success.push(writeRow.document);
         }
       }))]);
       if (categorized.eventBulk.events.length > 0) {

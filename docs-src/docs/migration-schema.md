@@ -18,8 +18,8 @@ To enable the data migration, you have to add the `migration-schema` plugin.
 
 ```ts
 import { addRxPlugin } from 'rxdb';
-import { RxDBMigrationPlugin } from 'rxdb/plugins/migration-schema';
-addRxPlugin(RxDBMigrationPlugin);
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
+addRxPlugin(RxDBMigrationSchemaPlugin);
 ```
 
 

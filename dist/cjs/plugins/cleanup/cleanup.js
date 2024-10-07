@@ -10,6 +10,7 @@ exports.startCleanupForRxCollection = startCleanupForRxCollection;
 var _index = require("../../plugins/utils/index.js");
 var _index2 = require("../replication/index.js");
 var _cleanupHelper = require("./cleanup-helper.js");
+var _hooks = require("../../hooks.js");
 /**
  * Even on multiple databases,
  * the calls to RxStorage().cleanup()
@@ -82,6 +83,10 @@ async function cleanupRxCollection(rxCollection, cleanupPolicy) {
     });
     isDone = await RXSTORAGE_CLEANUP_QUEUE;
   }
+  await (0, _hooks.runAsyncPluginHooks)('postCleanup', {
+    collectionName: rxCollection.name,
+    databaseName: rxDatabase.name
+  });
 }
 
 /**

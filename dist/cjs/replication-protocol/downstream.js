@@ -62,7 +62,9 @@ async function startReplicationDownstream(state) {
         }
         useTasks.push(innerTaskWithTime.task);
       }
-      if (useTasks.length === 0) return;
+      if (useTasks.length === 0) {
+        return;
+      }
       if (useTasks[0] === 'RESYNC') {
         return downstreamResyncOnce();
       } else {
@@ -199,7 +201,8 @@ async function startReplicationDownstream(state) {
              * that first must be send to the master in the upstream.
              * All conflicts are resolved by the upstream.
              */
-            return _index.PROMISE_RESOLVE_VOID;
+            // return PROMISE_RESOLVE_VOID;
+            await state.streamQueue.up;
           }
           var isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ? false : await state.input.conflictHandler({
             realMasterState: assumedMaster.docData,
@@ -281,7 +284,8 @@ async function startReplicationDownstream(state) {
       }).then(async () => {
         if (writeRowsToFork.length > 0) {
           return state.input.forkInstance.bulkWrite(writeRowsToFork, await state.downstreamBulkWriteFlag).then(forkWriteResult => {
-            forkWriteResult.success.forEach(doc => {
+            var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(state.primaryPath, writeRowsToFork, forkWriteResult);
+            success.forEach(doc => {
               var docId = doc[primaryPath];
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);

@@ -1,6 +1,5 @@
 import {
     BehaviorSubject,
-    firstValueFrom,
     Observable,
     merge
 } from 'rxjs';
@@ -48,7 +47,12 @@ import type {
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
-import { getQueryMatcher, normalizeMangoQuery, runQueryUpdateFunction } from './rx-query-helper.ts';
+import {
+    getQueryMatcher,
+    normalizeMangoQuery,
+    runQueryUpdateFunction
+
+} from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 import { getQueryPlan } from './query-planner.ts';
 
@@ -106,9 +110,8 @@ export class RxQueryBase<
             mangoQuery
         );
     }
-    get $(): BehaviorSubject<RxQueryResult> {
+    get $(): Observable<RxQueryResult> {
         if (!this._$) {
-
             const results$ = this.collection.$.pipe(
                 /**
                  * Performance shortcut.
@@ -140,19 +143,7 @@ export class RxQueryBase<
                  * depending on query type
                  */
                 map((result) => {
-                    const useResult = ensureNotFalsy(result);
-                    if (this.op === 'count') {
-                        return useResult.count;
-                    } else if (this.op === 'findOne') {
-                        // findOne()-queries emit RxDocument or null
-                        return useResult.documents.length === 0 ? null : useResult.documents[0];
-                    } else if (this.op === 'findByIds') {
-                        return useResult.docsMap;
-                    } else {
-                        // find()-queries emit RxDocument[]
-                        // Flat copy the array so it won't matter if the user modifies it.
-                        return useResult.documents.slice(0);
-                    }
+                    return ensureNotFalsy(result).getValue();
                 })
             );
 
@@ -176,7 +167,7 @@ export class RxQueryBase<
             this.$,
             undefined,
             this.collection.database
-        );
+        ) as any;
     }
 
     // stores the changeEvent-number of the last handled change-event
@@ -184,6 +175,7 @@ export class RxQueryBase<
 
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
+    // TODO do we still need these properties?
     public _lastExecStart: number = 0;
     public _lastExecEnd: number = 0;
 
@@ -207,9 +199,15 @@ export class RxQueryBase<
      * @param newResultData json-docs that were received from the storage
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
+        if (typeof newResultData === 'undefined') {
+            throw newRxError('QU18', {
+                database: this.collection.database.name,
+                collection: this.collection.name
+            });
+        }
         if (typeof newResultData === 'number') {
             this._result = new RxQuerySingleResult<RxDocType>(
-                this.collection,
+                this as any,
                 [],
                 newResultData
             );
@@ -219,7 +217,7 @@ export class RxQueryBase<
         }
 
         const newQueryResult = new RxQuerySingleResult<RxDocType>(
-            this.collection,
+            this as any,
             newResultData,
             newResultData.length
         );
@@ -290,7 +288,7 @@ export class RxQueryBase<
      */
     public exec(throwIfMissing: true): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     public exec(): Promise<RxQueryResult>;
-    public exec(throwIfMissing?: boolean): Promise<any> {
+    public async exec(throwIfMissing?: boolean): Promise<any> {
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
                 collection: this.collection.name,
@@ -299,25 +297,14 @@ export class RxQueryBase<
             });
         }
 
-
         /**
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of the RxStorage,
          * will be thrown at this execution context and not in the background.
          */
-        return _ensureEqual(this as any)
-            .then(() => firstValueFrom(this.$))
-            .then(result => {
-                if (!result && throwIfMissing) {
-                    throw newRxError('QU10', {
-                        collection: this.collection.name,
-                        query: this.mangoQuery,
-                        op: this.op
-                    });
-                } else {
-                    return result;
-                }
-            });
+        await _ensureEqual(this as any);
+        const useResult = ensureNotFalsy(this._result);
+        return useResult.getValue(throwIfMissing);
     }
 
 
@@ -480,6 +467,7 @@ export class RxQueryBase<
     }
 }
 
+
 export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {
         selector: {}
@@ -523,7 +511,7 @@ export function createRxQuery<RxDocType>(
  * @return false if not which means it should re-execute
  */
 function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
-    const currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+    const currentLatestEventNumber = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
     if (rxQuery._latestChangeEvent >= currentLatestEventNumber) {
         return true;
     } else {
@@ -537,13 +525,17 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
  */
-function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+    if (rxQuery.collection.awaitBeforeReads.size > 0) {
+        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+    }
+
     // Optimisation shortcut
     if (
         rxQuery.collection.database.destroyed ||
         _isResultsInSync(rxQuery)
     ) {
-        return PROMISE_RESOLVE_FALSE;
+        return false;
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
@@ -586,7 +578,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
-            rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
+            rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
 
             const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
@@ -639,7 +631,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                  * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
                  * has been run, not the one from before.
                  */
-                rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
+                rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.getCounter();
 
                 // A count query needs a different has-changed check.
                 if (typeof newResultData === 'number') {

@@ -1,5 +1,6 @@
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect } from 'react';
+import { getDatabase } from '../components/database';
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
@@ -8,8 +9,11 @@ export default function Root({ children }) {
         if (!isBrowser) {
             return;
         }
-        addCommunityChatButton();
+
+        // addCommunityChatButton();
+
         addCallToActionButton();
+        triggerClickEventWhenFromCode();
 
     });
     return <>{children}</>;
@@ -18,12 +22,8 @@ export default function Root({ children }) {
 
 function addCallToActionButton() {
 
-    // do not show on landingpage
-    if (
-        location.pathname === '/' ||
-        location.pathname === '/premium' ||
-        location.pathname === '/consulting'
-    ) {
+    // do only show on docs-pages, not on landingpages like premium or consulting page.
+    if (!location.pathname.includes('.html')) {
         return;
     }
 
@@ -57,7 +57,13 @@ function addCallToActionButton() {
             keyword: '@newsletter',
             url: 'https://rxdb.info/newsletter',
             icon: '📰'
-        }
+        },
+        // {
+        //     text: 'Take Part in the',
+        //     keyword: 'User Survey 2024',
+        //     url: 'https://rxdb.info/survey',
+        //     icon: '📝'
+        // }
     ];
     function insertAfter(referenceNode, newNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -106,6 +112,31 @@ function addCallToActionButton() {
     setCallToActionOnce();
 }
 
+/**
+ * There are some logs that RxDB prints out to the console of the developers.
+ * These logs can contain links with the query param ?console=foobar
+ * which allows us to detect that a user has really installed and started RxDB.
+ */
+async function triggerClickEventWhenFromCode() {
+    const TRIGGER_CONSOLE_EVENT_ID = 'console-log-click';
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('console')) {
+        return;
+    }
+    const database = await getDatabase();
+    const flagDoc = await database.getLocal(TRIGGER_CONSOLE_EVENT_ID);
+    if (flagDoc) {
+        console.log('# already tracked ' + TRIGGER_CONSOLE_EVENT_ID);
+    } else {
+        window.trigger(
+            TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'),
+            10
+        );
+        await database.upsertLocal(TRIGGER_CONSOLE_EVENT_ID, {});
+    }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function addCommunityChatButton() {
     const chatButtonId = 'fixed-chat-button';
     const elementExists = document.getElementById(chatButtonId);

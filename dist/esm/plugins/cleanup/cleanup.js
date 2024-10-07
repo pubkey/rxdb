@@ -1,6 +1,7 @@
 import { PROMISE_RESOLVE_TRUE } from "../../plugins/utils/index.js";
 import { REPLICATION_STATE_BY_COLLECTION } from "../replication/index.js";
 import { DEFAULT_CLEANUP_POLICY } from "./cleanup-helper.js";
+import { runAsyncPluginHooks } from "../../hooks.js";
 
 /**
  * Even on multiple databases,
@@ -74,6 +75,10 @@ export async function cleanupRxCollection(rxCollection, cleanupPolicy) {
     });
     isDone = await RXSTORAGE_CLEANUP_QUEUE;
   }
+  await runAsyncPluginHooks('postCleanup', {
+    collectionName: rxCollection.name,
+    databaseName: rxDatabase.name
+  });
 }
 
 /**

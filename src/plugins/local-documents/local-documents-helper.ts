@@ -1,4 +1,4 @@
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { DocumentCache } from '../../doc-cache.ts';
 import { IncrementalWriteQueue } from '../../incremental-write.ts';
 import { newRxError } from '../../rx-error.ts';
@@ -41,10 +41,29 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             storageInstance,
             RX_LOCAL_DOCUMENT_SCHEMA
         );
+
         const docCache = new DocumentCache<RxLocalDocumentData, {}>(
             'id',
-            parent.$.pipe(
-                filter(cE => (cE as RxChangeEvent<any>).isLocal)
+            database.eventBulks$.pipe(
+                filter(changeEventBulk => {
+                    let ret = false;
+                    if (
+                        // parent is database
+                        (
+                            collectionName === '' &&
+                            !changeEventBulk.collectionName
+                        ) ||
+                        // parent is collection
+                        (
+                            collectionName !== '' &&
+                            changeEventBulk.collectionName === collectionName
+                        )
+                    ) {
+                        ret = true;
+                    }
+                    return ret && changeEventBulk.events[0].isLocal;
+                }),
+                map(b => b.events)
             ),
             docData => createRxLocalDocument(docData, parent) as any
         );

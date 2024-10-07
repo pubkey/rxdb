@@ -13,6 +13,8 @@ var _index = require("../utils/index.js");
 var _helpers = require("./helpers.js");
 var _rxError = require("../../rx-error.js");
 var _hooks = require("../../hooks.js");
+var debugId = 0;
+
 /**
  * RxDB internally used properties are
  * prefixed with lodash _ to make them less
@@ -20,7 +22,10 @@ var _hooks = require("../../hooks.js");
  * from the user.
  */
 var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
+  // used for debugging
+
   function RxStateBase(prefix, collection) {
+    this._id = debugId++;
     this._state = {};
     this._nonPersisted = [];
     this._writeQueue = _index.PROMISE_RESOLVE_VOID;
@@ -37,11 +42,11 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     });
     // make it "hot" for better write performance
     this._lastIdQuery.$.subscribe();
-    this.$ = (0, _rxjs.zip)([this._ownEmits$, this.collection.$.pipe((0, _rxjs.tap)(event => {
+    this.$ = (0, _rxjs.merge)(this._ownEmits$, this.collection.$.pipe((0, _rxjs.tap)(event => {
       if (this._initDone && event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
         mergeOperationsIntoState(this._state, event.documentData.ops);
       }
-    }))]).pipe((0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS), (0, _rxjs.map)(() => this._state));
+    }))).pipe((0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS), (0, _rxjs.map)(() => this._state));
     // directly subscribe because of the tap() side effect
     this.$.subscribe();
   }
@@ -84,7 +89,12 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
             var writeRow = useWrites[index];
             var value = (0, _index.getProperty)(newState, writeRow.path);
             var newValue = writeRow.modifier(value);
-            (0, _index.setProperty)(newState, writeRow.path, newValue);
+            /**
+             * Here we have to clone the value because
+             * some storages like the memory storage
+             * make input data deep-frozen in dev-mode.
+             */
+            (0, _index.setProperty)(newState, writeRow.path, (0, _index.clone)(newValue));
             ops.push({
               k: writeRow.path,
               /**
@@ -118,10 +128,17 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     return this._writeQueue;
   };
   _proto.get = function get(path) {
+    var ret;
     if (!path) {
-      return _overwritable.overwritable.deepFreezeWhenDevMode(this._state);
+      ret = this._state;
+    } else {
+      ret = (0, _index.getProperty)(this._state, path);
     }
-    return _overwritable.overwritable.deepFreezeWhenDevMode((0, _index.getProperty)(this._state, path));
+    if (_overwritable.overwritable.isDevMode()) {
+      ret = (0, _index.clone)(ret);
+      ret = _overwritable.overwritable.deepFreezeWhenDevMode(ret);
+    }
+    return ret;
   };
   _proto.get$ = function get$(path) {
     return this.$.pipe((0, _rxjs.map)(() => this.get(path)), (0, _rxjs.startWith)(this.get(path)), (0, _rxjs.distinctUntilChanged)(_index.deepEqual), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));

@@ -29,3 +29,15 @@ export const RXJS_SHARE_REPLAY_DEFAULTS = {
     bufferSize: 1,
     refCount: true
 };
+
+
+
+/**
+ * Dynamically add a name to a function
+ * so that it can later be found in the stack.
+ * @link https://stackoverflow.com/a/41854075/3443137
+ */
+export function nameFunction<T>(name: string, body: T): T {
+    // @ts-ignore
+    return { [name](...args) { return body.apply(this, args) } }[name];
+}

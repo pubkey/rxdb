@@ -13,6 +13,7 @@ exports.getChangedDocumentsSince = getChangedDocumentsSince;
 exports.getChangedDocumentsSinceQuery = getChangedDocumentsSinceQuery;
 exports.getSingleDocument = getSingleDocument;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
+exports.getWrittenDocumentsFromBulkWriteResponse = getWrittenDocumentsFromBulkWriteResponse;
 exports.hasEncryption = hasEncryption;
 exports.observeSingle = observeSingle;
 exports.randomDelayStorage = randomDelayStorage;
@@ -24,7 +25,7 @@ exports.writeSingle = writeSingle;
 var _overwritable = require("./overwritable.js");
 var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
-var _index = require("./plugins/utils/index.js");
+var _index3 = require("./plugins/utils/index.js");
 var _rxjs = require("rxjs");
 var _rxQuery = require("./rx-query.js");
 var _rxQueryHelper = require("./rx-query-helper.js");
@@ -55,7 +56,9 @@ async function writeSingle(instance, writeRow, context) {
     var error = writeResult.error[0];
     throw error;
   } else {
-    var ret = writeResult.success[0];
+    var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
+    var success = getWrittenDocumentsFromBulkWriteResponse(primaryPath, [writeRow], writeResult);
+    var ret = success[0];
     return ret;
   }
 }
@@ -66,7 +69,7 @@ async function writeSingle(instance, writeRow, context) {
  */
 function observeSingle(storageInstance, documentId) {
   var firstFindPromise = getSingleDocument(storageInstance, documentId);
-  var ret = storageInstance.changeStream().pipe((0, _rxjs.map)(evBulk => evBulk.events.find(ev => ev.documentId === documentId)), (0, _rxjs.filter)(ev => !!ev), (0, _rxjs.map)(ev => Promise.resolve((0, _index.ensureNotFalsy)(ev).documentData)), (0, _rxjs.startWith)(firstFindPromise), (0, _rxjs.switchMap)(v => v), (0, _rxjs.filter)(v => !!v));
+  var ret = storageInstance.changeStream().pipe((0, _rxjs.map)(evBulk => evBulk.events.find(ev => ev.documentId === documentId)), (0, _rxjs.filter)(ev => !!ev), (0, _rxjs.map)(ev => Promise.resolve((0, _index3.ensureNotFalsy)(ev).documentData)), (0, _rxjs.startWith)(firstFindPromise), (0, _rxjs.switchMap)(v => v), (0, _rxjs.filter)(v => !!v));
   return ret;
 }
 
@@ -131,13 +134,13 @@ onInsert, onUpdate) {
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = [];
-  var eventBulkId = (0, _index.randomCouchString)(10);
+  var eventBulkId = (0, _index3.randomCouchString)(10);
   var eventBulk = {
     id: eventBulkId,
     events: [],
     checkpoint: null,
     context,
-    startTime: (0, _index.now)(),
+    startTime: (0, _index3.now)(),
     endTime: 0
   };
   var eventBulkEvents = eventBulk.events;
@@ -248,7 +251,7 @@ onInsert, onUpdate) {
               attachmentsRemove.push({
                 documentId: docId,
                 attachmentId,
-                digest: (0, _index.ensureNotFalsy)(previous)._attachments[attachmentId].digest
+                digest: (0, _index3.ensureNotFalsy)(previous)._attachments[attachmentId].digest
               });
             });
           }
@@ -326,7 +329,7 @@ onInsert, onUpdate) {
         previousEventDocumentData = previous;
       } else if (documentDeleted) {
         operation = 'DELETE';
-        eventDocumentData = (0, _index.ensureNotFalsy)(document);
+        eventDocumentData = (0, _index3.ensureNotFalsy)(document);
         previousEventDocumentData = previous;
       } else {
         throw (0, _rxError.newRxError)('SNH', {
@@ -387,7 +390,7 @@ function stripAttachmentsDataFromDocument(doc) {
   if (!doc._attachments || Object.keys(doc._attachments).length === 0) {
     return doc;
   }
-  var useDoc = (0, _index.flatClone)(doc);
+  var useDoc = (0, _index3.flatClone)(doc);
   useDoc._attachments = {};
   Object.entries(doc._attachments).forEach(([attachmentId, attachmentData]) => {
     useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
@@ -403,9 +406,11 @@ function stripAttachmentsDataFromDocument(doc) {
  */
 function flatCloneDocWithMeta(doc) {
   return Object.assign({}, doc, {
-    _meta: (0, _index.flatClone)(doc._meta)
+    _meta: (0, _index3.flatClone)(doc._meta)
   });
 }
+var BULK_WRITE_SUCCESS_MAP = new WeakMap();
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -419,6 +424,7 @@ function getWrappedStorageInstance(database, storageInstance,
  */
 rxJsonSchema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
   var ret = {
     originalStorageInstance: storageInstance,
     schema: storageInstance.schema,
@@ -434,7 +440,7 @@ rxJsonSchema) {
        * This improves performance because calling Date.now() inside of the now() function
        * is too costly.
        */
-      var time = (0, _index.now)();
+      var time = (0, _index3.now)();
       for (var index = 0; index < rows.length; index++) {
         var writeRow = rows[index];
         var document = flatCloneDocWithMeta(writeRow.document);
@@ -446,7 +452,7 @@ rxJsonSchema) {
          * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
          */
         var previous = writeRow.previous;
-        document._rev = (0, _index.createRevision)(databaseToken, previous);
+        document._rev = (0, _index3.createRevision)(databaseToken, previous);
         toStorageWriteRows[index] = {
           document,
           previous
@@ -466,13 +472,21 @@ rxJsonSchema) {
        * @link https://github.com/pubkey/rxdb/pull/3839
        */.then(writeResult => {
         var useWriteResult = {
-          error: [],
-          success: writeResult.success.slice(0)
+          error: []
         };
+
+        /**
+         * TODO do we really have to build up the successArray
+         * here directly? Maybe we only need it when it is really accessed.
+         */
+        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, writeResult);
+        BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
         var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
-          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _index.ensureNotFalsy)(error.documentInDb)._deleted) {
+          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _index3.ensureNotFalsy)(error.documentInDb)._deleted) {
             return true;
           }
+
+          // add the "normal" errors to the parent error array.
           useWriteResult.error.push(error);
           return false;
         });
@@ -481,17 +495,18 @@ rxJsonSchema) {
             return {
               previous: error.documentInDb,
               document: Object.assign({}, error.writeRow.document, {
-                _rev: (0, _index.createRevision)(database.token, error.documentInDb)
+                _rev: (0, _index3.createRevision)(database.token, error.documentInDb)
               })
             };
           });
           return database.lockedRun(() => storageInstance.bulkWrite(reInserts, context)).then(subResult => {
-            (0, _index.appendToArray)(useWriteResult.error, subResult.error);
-            (0, _index.appendToArray)(useWriteResult.success, subResult.success);
+            (0, _index3.appendToArray)(useWriteResult.error, subResult.error);
+            var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
+            (0, _index3.appendToArray)(successArray, subSuccess);
             return useWriteResult;
           });
         }
-        return writeResult;
+        return useWriteResult;
       });
     },
     query(preparedQuery) {
@@ -507,7 +522,7 @@ rxJsonSchema) {
       return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId, digest));
     },
     getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
-      return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _index.ensureNotFalsy)(limit), checkpoint));
+      return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _index3.ensureNotFalsy)(limit), checkpoint));
     },
     cleanup(minDeletedTime) {
       return database.lockedRun(() => storageInstance.cleanup(minDeletedTime));
@@ -531,11 +546,11 @@ rxJsonSchema) {
         return storageInstance.resolveConflictResultionTask(taskSolution);
       }
       var doc = Object.assign({}, taskSolution.output.documentData, {
-        _meta: (0, _index.getDefaultRxDocumentMeta)(),
-        _rev: (0, _index.getDefaultRevision)(),
+        _meta: (0, _index3.getDefaultRxDocumentMeta)(),
+        _rev: (0, _index3.getDefaultRevision)(),
         _attachments: {}
       });
-      var documentData = (0, _index.flatClone)(doc);
+      var documentData = (0, _index3.flatClone)(doc);
       delete documentData._meta;
       delete documentData._rev;
       delete documentData._attachments;
@@ -589,7 +604,7 @@ function hasEncryption(jsonSchema) {
 }
 function getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
-  var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
+  var sinceLwt = checkpoint ? checkpoint.lwt : _index3.RX_META_LWT_MINIMUM;
   var sinceId = checkpoint ? checkpoint.id : '';
   return (0, _rxQueryHelper.normalizeMangoQuery)(storageInstance.schema, {
     selector: {
@@ -635,7 +650,7 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
   var query = (0, _rxQuery.prepareQuery)(storageInstance.schema, getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint));
   var result = await storageInstance.query(query);
   var documents = result.documents;
-  var lastDoc = (0, _index.lastOfArray)(documents);
+  var lastDoc = (0, _index3.lastOfArray)(documents);
   return {
     documents: documents,
     checkpoint: lastDoc ? {
@@ -647,65 +662,95 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
     }
   };
 }
+function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response) {
+  var fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
+  if (fromMap) {
+    return fromMap;
+  }
+  var ret = [];
+  if (response.error.length > 0) {
+    var errorIds = new Set();
+    for (var index = 0; index < response.error.length; index++) {
+      var error = response.error[index];
+      errorIds.add(error.documentId);
+    }
+    for (var _index = 0; _index < writeRows.length; _index++) {
+      var doc = writeRows[_index].document;
+      if (!errorIds.has(doc[primaryPath])) {
+        ret.push(stripAttachmentsDataFromDocument(doc));
+      }
+    }
+  } else {
+    // pre-set array size for better performance
+    ret.length = writeRows.length - response.error.length;
+    for (var _index2 = 0; _index2 < writeRows.length; _index2++) {
+      var _doc = writeRows[_index2].document;
+      ret[_index2] = stripAttachmentsDataFromDocument(_doc);
+    }
+  }
+  return ret;
+}
 
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.
  */
 function randomDelayStorage(input) {
+  /**
+   * Ensure writes to a delay storage
+   * are still correctly run in order.
+   */
+  var randomDelayStorageWriteQueue = _index3.PROMISE_RESOLVE_TRUE;
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
-    rxdbVersion: _index.RXDB_VERSION,
+    rxdbVersion: _index3.RXDB_VERSION,
     async createStorageInstance(params) {
-      await (0, _index.promiseWait)(input.delayTimeBefore());
+      await (0, _index3.promiseWait)(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);
-      await (0, _index.promiseWait)(input.delayTimeAfter());
-
-      // write still must be processed in order
-      var writeQueue = _index.PROMISE_RESOLVE_TRUE;
+      await (0, _index3.promiseWait)(input.delayTimeAfter());
       return {
         databaseName: storageInstance.databaseName,
         internals: storageInstance.internals,
         options: storageInstance.options,
         schema: storageInstance.schema,
         collectionName: storageInstance.collectionName,
-        async bulkWrite(a, b) {
-          writeQueue = writeQueue.then(async () => {
-            await (0, _index.promiseWait)(input.delayTimeBefore());
+        bulkWrite(a, b) {
+          randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
+            await (0, _index3.promiseWait)(input.delayTimeBefore());
             var response = await storageInstance.bulkWrite(a, b);
-            await (0, _index.promiseWait)(input.delayTimeAfter());
+            await (0, _index3.promiseWait)(input.delayTimeAfter());
             return response;
           });
-          var ret = await writeQueue;
+          var ret = randomDelayStorageWriteQueue;
           return ret;
         },
         async findDocumentsById(a, b) {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.findDocumentsById(a, b);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         async query(a) {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.query(a);
           return ret;
         },
         async count(a) {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.count(a);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         async getAttachmentData(a, b, c) {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.getAttachmentData(a, b, c);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : async (a, b) => {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
-          var ret = await (0, _index.ensureNotFalsy)(storageInstance.getChangedDocumentsSince)(a, b);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
+          var ret = await (0, _index3.ensureNotFalsy)(storageInstance.getChangedDocumentsSince)(a, b);
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         changeStream() {
@@ -718,21 +763,21 @@ function randomDelayStorage(input) {
           return storageInstance.resolveConflictResultionTask(a);
         },
         async cleanup(a) {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.cleanup(a);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         async close() {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.close();
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         async remove() {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
+          await (0, _index3.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.remove();
-          await (0, _index.promiseWait)(input.delayTimeAfter());
+          await (0, _index3.promiseWait)(input.delayTimeAfter());
           return ret;
         }
       };

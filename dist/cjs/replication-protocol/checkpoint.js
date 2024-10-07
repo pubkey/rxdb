@@ -73,13 +73,14 @@ async function setCheckpoint(state, direction, checkpoint) {
         if (state.events.canceled.getValue()) {
           return;
         }
-        var result = await state.input.metaInstance.bulkWrite([{
+        var writeRows = [{
           previous: previousCheckpointDoc,
           document: newDoc
-        }], 'replication-set-checkpoint');
-        var sucessDoc = result.success[0];
-        if (sucessDoc) {
-          state.lastCheckpointDoc[direction] = sucessDoc;
+        }];
+        var result = await state.input.metaInstance.bulkWrite(writeRows, 'replication-set-checkpoint');
+        var successDoc = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(state.primaryPath, writeRows, result)[0];
+        if (successDoc) {
+          state.lastCheckpointDoc[direction] = successDoc;
           return;
         } else {
           var error = result.error[0];

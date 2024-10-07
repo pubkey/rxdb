@@ -9,7 +9,6 @@ exports.mapDocumentsDataToCacheDocs = mapDocumentsDataToCacheDocs;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _index2 = require("./plugins/utils/index.js");
 var _overwritable = require("./overwritable.js");
-var _rxChangeEvent = require("./rx-change-event.js");
 /**
  * Because we have to create many cache items,
  * we use an array instead of an object with properties
@@ -31,6 +30,11 @@ var _rxChangeEvent = require("./rx-change-event.js");
  */
 var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
   /**
+   * Process stuff lazy to not block the CPU
+   * on critical paths.
+   */
+
+  /**
    * Some JavaScript runtimes like QuickJS,
    * so not have a FinalizationRegistry or WeakRef.
    * Therefore we need a workaround which might waste a lot of memory,
@@ -43,6 +47,7 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
    */
   documentCreator) {
     this.cacheItemByDocId = new Map();
+    this.tasks = new Set();
     this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(docMeta => {
       var docId = docMeta.docId;
       var cacheItem = this.cacheItemByDocId.get(docId);
@@ -60,14 +65,36 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
-    changes$.subscribe(changeEvent => {
-      var docId = changeEvent.documentId;
-      var cacheItem = this.cacheItemByDocId.get(docId);
-      if (cacheItem) {
-        var documentData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-        cacheItem[1] = documentData;
+    changes$.subscribe(events => {
+      this.tasks.add(() => {
+        var cacheItemByDocId = this.cacheItemByDocId;
+        for (var index = 0; index < events.length; index++) {
+          var event = events[index];
+          var cacheItem = cacheItemByDocId.get(event.documentId);
+          if (cacheItem) {
+            var documentData = event.documentData;
+            if (!documentData) {
+              documentData = event.previousDocumentData;
+            }
+            cacheItem[1] = documentData;
+          }
+        }
+      });
+      if (this.tasks.size <= 1) {
+        (0, _index2.requestIdlePromiseNoQueue)().then(() => {
+          this.processTasks();
+        });
       }
     });
+  }
+  var _proto = DocumentCache.prototype;
+  _proto.processTasks = function processTasks() {
+    if (this.tasks.size === 0) {
+      return;
+    }
+    var tasks = Array.from(this.tasks);
+    tasks.forEach(task => task());
+    this.tasks.clear();
   }
 
   /**
@@ -76,16 +103,17 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
    * @overwrites itself with the actual function
    * because this is @performance relevant.
    * It is called on each document row for each write and read.
-   */
-  var _proto = DocumentCache.prototype;
+   */;
   /**
    * Throws if not exists
    */
   _proto.getLatestDocumentData = function getLatestDocumentData(docId) {
+    this.processTasks();
     var cacheItem = (0, _index2.getFromMapOrThrow)(this.cacheItemByDocId, docId);
     return cacheItem[1];
   };
   _proto.getLatestDocumentDataIfExists = function getLatestDocumentDataIfExists(docId) {
+    this.processTasks();
     var cacheItem = this.cacheItemByDocId.get(docId);
     if (cacheItem) {
       return cacheItem[1];
@@ -152,7 +180,7 @@ function getCachedRxDocumentMonad(docCache) {
        * really bad performance. So we add the cached documents
        * lazily.
        */
-      (0, _index2.requestIdlePromiseNoQueue)().then(() => {
+      docCache.tasks.add(() => {
         for (var _index = 0; _index < registryTasks.length; _index++) {
           var doc = registryTasks[_index];
           registry.register(doc, {
@@ -161,6 +189,11 @@ function getCachedRxDocumentMonad(docCache) {
           });
         }
       });
+      if (docCache.tasks.size <= 1) {
+        (0, _index2.requestIdlePromiseNoQueue)().then(() => {
+          docCache.processTasks();
+        });
+      }
     }
     return ret;
   };

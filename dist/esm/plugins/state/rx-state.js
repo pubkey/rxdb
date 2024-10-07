@@ -1,10 +1,11 @@
-import { Subject, distinctUntilChanged, map, shareReplay, startWith, tap, zip } from 'rxjs';
+import { Subject, distinctUntilChanged, map, merge, shareReplay, startWith, tap } from 'rxjs';
 import { overwritable } from "../../overwritable.js";
 import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
 import { RXJS_SHARE_REPLAY_DEFAULTS, getProperty, setProperty, PROMISE_RESOLVE_VOID, appendToArray, clone, randomCouchString, deepEqual } from "../utils/index.js";
 import { RX_STATE_COLLECTION_SCHEMA, nextRxStateId } from "./helpers.js";
 import { newRxError } from "../../rx-error.js";
 import { runPluginHooks } from "../../hooks.js";
+var debugId = 0;
 
 /**
  * RxDB internally used properties are
@@ -13,7 +14,10 @@ import { runPluginHooks } from "../../hooks.js";
  * from the user.
  */
 export var RxStateBase = /*#__PURE__*/function () {
+  // used for debugging
+
   function RxStateBase(prefix, collection) {
+    this._id = debugId++;
     this._state = {};
     this._nonPersisted = [];
     this._writeQueue = PROMISE_RESOLVE_VOID;
@@ -30,11 +34,11 @@ export var RxStateBase = /*#__PURE__*/function () {
     });
     // make it "hot" for better write performance
     this._lastIdQuery.$.subscribe();
-    this.$ = zip([this._ownEmits$, this.collection.$.pipe(tap(event => {
+    this.$ = merge(this._ownEmits$, this.collection.$.pipe(tap(event => {
       if (this._initDone && event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
         mergeOperationsIntoState(this._state, event.documentData.ops);
       }
-    }))]).pipe(shareReplay(RXJS_SHARE_REPLAY_DEFAULTS), map(() => this._state));
+    }))).pipe(shareReplay(RXJS_SHARE_REPLAY_DEFAULTS), map(() => this._state));
     // directly subscribe because of the tap() side effect
     this.$.subscribe();
   }
@@ -77,7 +81,12 @@ export var RxStateBase = /*#__PURE__*/function () {
             var writeRow = useWrites[index];
             var value = getProperty(newState, writeRow.path);
             var newValue = writeRow.modifier(value);
-            setProperty(newState, writeRow.path, newValue);
+            /**
+             * Here we have to clone the value because
+             * some storages like the memory storage
+             * make input data deep-frozen in dev-mode.
+             */
+            setProperty(newState, writeRow.path, clone(newValue));
             ops.push({
               k: writeRow.path,
               /**
@@ -111,10 +120,17 @@ export var RxStateBase = /*#__PURE__*/function () {
     return this._writeQueue;
   };
   _proto.get = function get(path) {
+    var ret;
     if (!path) {
-      return overwritable.deepFreezeWhenDevMode(this._state);
+      ret = this._state;
+    } else {
+      ret = getProperty(this._state, path);
     }
-    return overwritable.deepFreezeWhenDevMode(getProperty(this._state, path));
+    if (overwritable.isDevMode()) {
+      ret = clone(ret);
+      ret = overwritable.deepFreezeWhenDevMode(ret);
+    }
+    return ret;
   };
   _proto.get$ = function get$(path) {
     return this.$.pipe(map(() => this.get(path)), startWith(this.get(path)), distinctUntilChanged(deepEqual), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));

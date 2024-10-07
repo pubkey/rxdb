@@ -6,6 +6,8 @@ import {
 import type { RxPlugin, RxQuery } from '../../types/index.d.ts';
 import { createRxQuery } from '../../rx-query.ts';
 import { clone } from '../../plugins/utils/index.ts';
+import { overwritable } from '../../overwritable.ts';
+import { newRxError } from '../../rx-error.ts';
 
 // if the query-builder plugin is used, we have to save its last path
 const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
@@ -37,6 +39,12 @@ export function applyBuildingStep(
     functionName: string
 ): void {
     proto[functionName] = function (this: RxQuery, value: any) {
+        if (overwritable.isDevMode() && this.op === 'findByIds') {
+            throw newRxError('QU17', {
+                collection: this.collection.name,
+                query: this.mangoQuery
+            });
+        }
         return runBuildingStep(this, functionName, value);
     };
 }

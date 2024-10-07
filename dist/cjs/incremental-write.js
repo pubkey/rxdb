@@ -8,6 +8,7 @@ exports.findNewestOfDocumentStates = findNewestOfDocumentStates;
 exports.modifierFromPublicToInternal = modifierFromPublicToInternal;
 var _rxError = require("./rx-error.js");
 var _index = require("./plugins/utils/index.js");
+var _rxStorageHelper = require("./rx-storage-helper.js");
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -91,12 +92,11 @@ var IncrementalWriteQueue = exports.IncrementalWriteQueue = /*#__PURE__*/functio
       });
     }));
     var writeResult = writeRows.length > 0 ? await this.storageInstance.bulkWrite(writeRows, 'incremental-write') : {
-      error: [],
-      success: []
+      error: []
     };
 
     // process success
-    await Promise.all(writeResult.success.map(result => {
+    await Promise.all((0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.primaryPath, writeRows, writeResult).map(result => {
       var docId = result[this.primaryPath];
       this.postWrite(result);
       var items = (0, _index.getFromMapOrThrow)(itemsById, docId);

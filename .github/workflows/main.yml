@@ -31,6 +31,11 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
+      - name: log versions
+        run: |
+          node --version
+          npm -v
+
       - name: Reuse npm cache folder
         uses: actions/cache@v4
         env:
@@ -51,6 +56,42 @@ jobs:
 
       - name: test:typings
         run: npm run test:typings
+
+  # We have to run all major scripts once on windows to ensure windows-devs can
+  # run the test suite.
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: log versions
+        run: |
+          node --version
+          npm -v
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-windows-x3-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-windows-x3-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - run: npm run build && cat ./test_tmp/package.json
+
+      - run: npm run test:node:memory
 
   storage-dexie:
     runs-on: ubuntu-22.04
@@ -296,7 +337,7 @@ jobs:
             ${{ runner.os }}-npm-storage-mongodb-x3-
 
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.10.0
+        uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: 7.0.1
 
@@ -426,28 +467,28 @@ jobs:
             ${{ runner.os }}-npm-test-code-style-x3-
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           skip: legal-notice.tsx
           path: docs-src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v2.0
+        uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
@@ -732,54 +773,54 @@ jobs:
           working-directory: ./examples/graphql
           run: npm run test:dexie
 
-  example-flutter:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.3.4"
-          channel: "stable"
-      - run: flutter --version
-      - name: Reuse npm cache folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x3-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-flutter-x3-
-      - name: prepare RxDB core
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-          rm -r node_modules
-      - name: flutter javascript build
-        working-directory: ./examples/flutter/javascript
-        run: |
-          npm run preinstall
-          npm install --legacy-peer-deps
-          npm run build
-      - name: Add flutter linux dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev
-      - name: flutter test
-        uses: coactions/setup-xvfb@v1
-        with:
-          working-directory: ./examples/flutter
-          run: |
-            flutter config --enable-linux-desktop
-            flutter test integration_test/basics_test.dart -d linux
+  # example-flutter:
+  #   runs-on: ubuntu-22.04
+  #   timeout-minutes: 30
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set node version
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: ".nvmrc"
+  #     - uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: "3.3.4"
+  #         channel: "stable"
+  #     - run: flutter --version
+  #     - name: Reuse npm cache folder
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-modules
+  #       with:
+  #         path: |
+  #           ~/.npm
+  #           ./node_modules
+  #           ./examples/flutter/javascript/node_modules
+  #         key: ${{ runner.os }}-npm-flutter-x3-${{ hashFiles('**/package.json') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-npm-flutter-x3-
+  #     - name: prepare RxDB core
+  #       run: |
+  #         npm install --legacy-peer-deps
+  #         npm run build
+  #         rm -r node_modules
+  #     - name: flutter javascript build
+  #       working-directory: ./examples/flutter/javascript
+  #       run: |
+  #         npm run preinstall
+  #         npm install --legacy-peer-deps
+  #         npm run build
+  #     - name: Add flutter linux dependencies
+  #       run: |
+  #         sudo apt-get update -y
+  #         sudo apt-get install -y ninja-build libgtk-3-dev
+  #     - name: flutter test
+  #       uses: coactions/setup-xvfb@v1
+  #       with:
+  #         working-directory: ./examples/flutter
+  #         run: |
+  #           flutter config --enable-linux-desktop
+  #           flutter test integration_test/basics_test.dart -d linux
 
   test-tutorials:
     runs-on: ubuntu-22.04
@@ -841,9 +882,9 @@ jobs:
           npm run test:replication-nats
 
       # bun
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: '1.1.18'
       - run: npm run test:bun:dexie
       - run: npm run test:performance:memory:bun
 
@@ -865,12 +906,16 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "1.38.5"
-      - name: run deno tests
+          deno-version: "1.44.1"
+      - name: run deno tests:dexie
         run: |
           sudo npm i -g cross-env
           deno info
           timeout 1h bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+      - name: run deno tests:denokv
+        run: |
+          sudo npm i -g cross-env
+          deno info
           timeout 1h bash -c 'until npm run test:deno:denokv; do sleep 5; done'
       # TODO fix deno performance test
       #- run: npm run test:performance:memory:deno

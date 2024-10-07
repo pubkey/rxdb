@@ -144,6 +144,10 @@ export interface RxPlugin {
         }>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
+        postCleanup?: RxPluginHooks<{
+            databaseName: string;
+            collectionName: string;
+        }>;
         preReplicationMasterWrite?: RxPluginHooks<{
             rows: RxReplicationWriteToMasterRow<any>[];
             collection: RxCollection;

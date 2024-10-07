@@ -14,14 +14,14 @@
     "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages"
   },
   "devDependencies": {
-    "async-test-util": "2.4.0",
-    "concurrently": "8.2.2",
+    "async-test-util": "2.5.0",
+    "concurrently": "9.0.1",
     "copyfiles": "2.4.1",
-    "testcafe": "3.6.0",
-    "typescript": "5.4.5",
-    "vite": "5.2.11",
-    "vite-plugin-top-level-await": "1.4.1"
+    "testcafe": "3.6.2",
+    "typescript": "5.6.2",
+    "vite": "5.4.8"
   },
+  "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1"

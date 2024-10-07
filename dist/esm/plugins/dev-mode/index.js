@@ -7,6 +7,7 @@ import { checkMangoQuery, checkQuery } from "./check-query.js";
 import { newRxError } from "../../rx-error.js";
 import { deepFreeze } from "../../plugins/utils/index.js";
 import { checkWriteRows, ensurePrimaryKeyValid } from "./check-document.js";
+import { addDevModeTrackingIframe } from "./dev-mode-tracking.js";
 export * from "./check-schema.js";
 export * from "./unallowed-properties.js";
 export * from "./check-query.js";
@@ -39,7 +40,7 @@ export var RxDBDevModePlugin = {
   rxdb: true,
   init: () => {
     if (showDevModeWarning) {
-      console.warn(['-------------- RxDB dev-mode warning -------------------------------', 'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html ', 'This is great in development mode, because it will run many checks to ensure', 'that you use RxDB correct. If you see this in production mode,', 'you did something wrong because the dev-mode plugin will decrease the performance.', '', '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins', 'to get access to faster storages and more professional features: https://rxdb.info/premium', '', 'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
+      console.warn(['-------------- RxDB dev-mode warning -------------------------------', 'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html?console=dev-mode ', 'This is great in development mode, because it will run many checks to ensure', 'that you use RxDB correct. If you see this in production mode,', 'you did something wrong because the dev-mode plugin will decrease the performance.', '', '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins', 'to get access to faster storages and more professional features: https://rxdb.info/premium?console=dev-mode ', '', 'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
       // '',
       // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
       '---------------------------------------------------------------------'].join('\n'));
@@ -65,6 +66,11 @@ export var RxDBDevModePlugin = {
     preCreateRxDatabase: {
       after: function (args) {
         ensureDatabaseNameIsValid(args);
+      }
+    },
+    createRxDatabase: {
+      after: async function (args) {
+        addDevModeTrackingIframe(args.database);
       }
     },
     preCreateRxCollection: {

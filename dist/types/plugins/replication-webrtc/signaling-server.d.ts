@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import type { WebSocket, ServerOptions } from 'ws';
 export declare const PEER_ID_LENGTH = 12;
 export type ServerPeer = {

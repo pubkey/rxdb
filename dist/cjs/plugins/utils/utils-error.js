@@ -26,7 +26,9 @@ function errorToPlainJson(err) {
     message: err.message,
     rxdb: err.rxdb,
     parameters: err.parameters,
+    extensions: err.extensions,
     code: err.code,
+    url: err.url,
     /**
      * stack must be last to make it easier to read the json in a console.
      * Also we ensure that each linebreak is spaced so that the chrome devtools

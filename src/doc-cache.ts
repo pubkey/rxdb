@@ -12,7 +12,6 @@ import {
 import {
     overwritable
 } from './overwritable.ts';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { Observable } from 'rxjs';
 
 /**
@@ -24,7 +23,7 @@ import { Observable } from 'rxjs';
 declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
-     * based on their revision height.
+     * based on their revision height (rev height = array index).
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
      */
@@ -66,7 +65,13 @@ declare type FinalizationRegistryValue = {
  * @link https://caniuse.com/?search=weakref
  */
 export class DocumentCache<RxDocType, OrmMethods> {
-    public cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
+    public readonly cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
+
+    /**
+     * Process stuff lazy to not block the CPU
+     * on critical paths.
+     */
+    public readonly tasks = new Set<Function>();
 
     /**
      * Some JavaScript runtimes like QuickJS,
@@ -93,20 +98,42 @@ export class DocumentCache<RxDocType, OrmMethods> {
 
     constructor(
         public readonly primaryPath: string,
-        public readonly changes$: Observable<RxChangeEvent<RxDocType>>,
+        public readonly changes$: Observable<RxChangeEvent<RxDocType>[]>,
         /**
          * A method that can create a RxDocument by the given document data.
          */
         public documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>
     ) {
-        changes$.subscribe(changeEvent => {
-            const docId = changeEvent.documentId;
-            const cacheItem = this.cacheItemByDocId.get(docId);
-            if (cacheItem) {
-                const documentData = getDocumentDataOfRxChangeEvent(changeEvent);
-                cacheItem[1] = documentData;
+        changes$.subscribe(events => {
+            this.tasks.add(() => {
+                const cacheItemByDocId = this.cacheItemByDocId;
+                for (let index = 0; index < events.length; index++) {
+                    const event = events[index];
+                    const cacheItem = cacheItemByDocId.get(event.documentId);
+                    if (cacheItem) {
+                        let documentData = event.documentData;
+                        if (!documentData) {
+                            documentData = event.previousDocumentData as any;
+                        }
+                        cacheItem[1] = documentData;
+                    }
+                }
+            });
+            if (this.tasks.size <= 1) {
+                requestIdlePromiseNoQueue().then(() => {
+                    this.processTasks();
+                });
             }
         });
+    }
+
+    public processTasks() {
+        if (this.tasks.size === 0) {
+            return;
+        }
+        const tasks = Array.from(this.tasks);
+        tasks.forEach(task => task());
+        this.tasks.clear();
     }
 
     /**
@@ -138,11 +165,13 @@ export class DocumentCache<RxDocType, OrmMethods> {
      * Throws if not exists
      */
     public getLatestDocumentData(docId: string): RxDocumentData<RxDocType> {
+        this.processTasks();
         const cacheItem = getFromMapOrThrow(this.cacheItemByDocId, docId);
         return cacheItem[1];
     }
 
     public getLatestDocumentDataIfExists(docId: string): RxDocumentData<RxDocType> | undefined {
+        this.processTasks();
         const cacheItem = this.cacheItemByDocId.get(docId);
         if (cacheItem) {
             return cacheItem[1];
@@ -203,7 +232,7 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
              * really bad performance. So we add the cached documents
              * lazily.
              */
-            requestIdlePromiseNoQueue().then(() => {
+            docCache.tasks.add(() => {
                 for (let index = 0; index < registryTasks.length; index++) {
                     const doc = registryTasks[index];
                     registry.register(doc, {
@@ -212,6 +241,11 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                     });
                 }
             });
+            if (docCache.tasks.size <= 1) {
+                requestIdlePromiseNoQueue().then(() => {
+                    docCache.processTasks();
+                });
+            }
         }
         return ret;
     };

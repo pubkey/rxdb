@@ -138,8 +138,8 @@ export function replicateFirestore<RxDocType>(
                     );
                     sameTimeQuery = query(pullQuery,
                         where(serverTimestampField, '==', lastServerTimestamp),
-                        where(primaryPath, '>', lastPulledCheckpoint.id),
-                        orderBy(primaryPath, 'asc'),
+                        where(documentId(), '>', lastPulledCheckpoint.id),
+                        orderBy(documentId(), 'asc'),
                         limit(batchSize)
                     );
                 } else {

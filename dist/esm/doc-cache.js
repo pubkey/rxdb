@@ -1,7 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { getFromMapOrThrow, getHeightOfRevision, overwriteGetterForCaching, requestIdlePromiseNoQueue } from "./plugins/utils/index.js";
 import { overwritable } from "./overwritable.js";
-import { getDocumentDataOfRxChangeEvent } from "./rx-change-event.js";
 
 /**
  * Because we have to create many cache items,
@@ -26,6 +25,11 @@ import { getDocumentDataOfRxChangeEvent } from "./rx-change-event.js";
  */
 export var DocumentCache = /*#__PURE__*/function () {
   /**
+   * Process stuff lazy to not block the CPU
+   * on critical paths.
+   */
+
+  /**
    * Some JavaScript runtimes like QuickJS,
    * so not have a FinalizationRegistry or WeakRef.
    * Therefore we need a workaround which might waste a lot of memory,
@@ -38,6 +42,7 @@ export var DocumentCache = /*#__PURE__*/function () {
    */
   documentCreator) {
     this.cacheItemByDocId = new Map();
+    this.tasks = new Set();
     this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(docMeta => {
       var docId = docMeta.docId;
       var cacheItem = this.cacheItemByDocId.get(docId);
@@ -55,14 +60,36 @@ export var DocumentCache = /*#__PURE__*/function () {
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
-    changes$.subscribe(changeEvent => {
-      var docId = changeEvent.documentId;
-      var cacheItem = this.cacheItemByDocId.get(docId);
-      if (cacheItem) {
-        var documentData = getDocumentDataOfRxChangeEvent(changeEvent);
-        cacheItem[1] = documentData;
+    changes$.subscribe(events => {
+      this.tasks.add(() => {
+        var cacheItemByDocId = this.cacheItemByDocId;
+        for (var index = 0; index < events.length; index++) {
+          var event = events[index];
+          var cacheItem = cacheItemByDocId.get(event.documentId);
+          if (cacheItem) {
+            var documentData = event.documentData;
+            if (!documentData) {
+              documentData = event.previousDocumentData;
+            }
+            cacheItem[1] = documentData;
+          }
+        }
+      });
+      if (this.tasks.size <= 1) {
+        requestIdlePromiseNoQueue().then(() => {
+          this.processTasks();
+        });
       }
     });
+  }
+  var _proto = DocumentCache.prototype;
+  _proto.processTasks = function processTasks() {
+    if (this.tasks.size === 0) {
+      return;
+    }
+    var tasks = Array.from(this.tasks);
+    tasks.forEach(task => task());
+    this.tasks.clear();
   }
 
   /**
@@ -71,16 +98,17 @@ export var DocumentCache = /*#__PURE__*/function () {
    * @overwrites itself with the actual function
    * because this is @performance relevant.
    * It is called on each document row for each write and read.
-   */
-  var _proto = DocumentCache.prototype;
+   */;
   /**
    * Throws if not exists
    */
   _proto.getLatestDocumentData = function getLatestDocumentData(docId) {
+    this.processTasks();
     var cacheItem = getFromMapOrThrow(this.cacheItemByDocId, docId);
     return cacheItem[1];
   };
   _proto.getLatestDocumentDataIfExists = function getLatestDocumentDataIfExists(docId) {
+    this.processTasks();
     var cacheItem = this.cacheItemByDocId.get(docId);
     if (cacheItem) {
       return cacheItem[1];
@@ -148,7 +176,7 @@ function getCachedRxDocumentMonad(docCache) {
        * really bad performance. So we add the cached documents
        * lazily.
        */
-      requestIdlePromiseNoQueue().then(() => {
+      docCache.tasks.add(() => {
         for (var _index = 0; _index < registryTasks.length; _index++) {
           var doc = registryTasks[_index];
           registry.register(doc, {
@@ -157,6 +185,11 @@ function getCachedRxDocumentMonad(docCache) {
           });
         }
       });
+      if (docCache.tasks.size <= 1) {
+        requestIdlePromiseNoQueue().then(() => {
+          docCache.processTasks();
+        });
+      }
     }
     return ret;
   };

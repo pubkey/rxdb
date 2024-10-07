@@ -19,6 +19,7 @@ import {
     prepareQuery,
     toTypedRxJsonSchema,
     ExtractDocumentTypeFromTypedRxJsonSchema,
+    MangoQuery,
 } from '../../plugins/core/index.mjs';
 import {
     wrappedKeyCompressionStorage
@@ -425,6 +426,7 @@ describeParallel('key-compression.test.js', () => {
                     }
                 }
             } as const;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schemaTyped = toTypedRxJsonSchema(mySchema);
             type TestDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
@@ -473,6 +475,85 @@ describeParallel('key-compression.test.js', () => {
             const tags = myDocument.toJSON().tags;
             assert.deepEqual(tags, expectedTags);
 
+            db.destroy();
+        });
+        it('#6267 boolean indexes broken with key-compression', async () => {
+            const schema = {
+                version: 0,
+                keyCompression: true,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    firstName: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    lastName: {
+                        type: 'string',
+                        maxLength: 128,
+                    },
+                    adult: {
+                        type: 'boolean'
+                    }
+                },
+                required: ['passportId', 'adult'],
+                indexes: [
+                    'firstName',
+                    'lastName',
+                    'adult',
+                    ['firstName', 'lastName', 'adult']
+                ]
+            } as const satisfies RxJsonSchema<any>;
+
+            const name = randomCouchString(10);
+            const storage = wrappedKeyCompressionStorage({ storage: config.storage.getStorage() });
+
+            const db = await createRxDatabase({
+                name,
+                storage
+            });
+            const collections = await db.addCollections({
+                ['test-collection']: {
+                    schema
+                }
+            });
+
+            // insert a document
+            await collections['test-collection'].bulkUpsert([
+                {
+                    passportId: '1',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    adult: true
+                },
+                {
+                    passportId: '2',
+                    firstName: 'Andrew',
+                    lastName: 'Wright',
+                    adult: true
+                },
+                {
+                    passportId: '3',
+                    firstName: 'Tommy',
+                    lastName: 'Little',
+                    adult: false
+                }
+            ]);
+
+            const queryObject: MangoQuery = {
+                selector: {
+                    adult: true
+                },
+                index: ['adult']
+            };
+            const query = collections['test-collection'].find(queryObject);
+            const result = await query.exec();
+
+            assert.deepStrictEqual(result.map(d => d.passportId), ['1', '2']);
             db.destroy();
         });
     });

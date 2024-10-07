@@ -3,10 +3,6 @@
  * @link https://www.w3schools.com/howto/howto_css_browser_window.asp
  */
 export function BrowserWindow(props) {
-
-    console.log('----');
-    console.dir(props);
-
     const opacity = props.opacity ? props.opacity : 1;
 
     const styles = {
@@ -65,6 +61,12 @@ export function BrowserWindow(props) {
             'padding': '10px',
             'backgroundColor': 'var(--bg-color)',
             'minWidth': 335
+        },
+        input: {
+            backgroundColor: 'white',
+            borderRadius: 4,
+            borderWidth: 1,
+            paddingTop: 3
         }
     } as any;
 
@@ -76,7 +78,7 @@ export function BrowserWindow(props) {
                 <span style={{ ...styles.dot, ...{ background: '#5AC05A' } }} ></span>
             </div>
             <div style={{ ...styles.column, ...styles.middle }}>
-                <input type="text" value="" disabled />
+                <input type="text" value="" disabled style={styles.input} />
             </div>
             <div style={{ ...styles.column, ...styles.right }}>
                 <div style={{ float: 'right' }}>
@@ -91,5 +93,5 @@ export function BrowserWindow(props) {
         <div style={styles.content}>
             {props.children}
         </div>
-    </div >;
+    </div>;
 }

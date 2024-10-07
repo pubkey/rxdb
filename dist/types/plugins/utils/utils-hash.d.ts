@@ -16,3 +16,4 @@ export declare const canUseCryptoSubtle: boolean;
  * requires a BREAKING change!
  */
 export declare const defaultHashSha256: HashFunction;
+export declare function hashStringToNumber(str: string): number;

@@ -12,8 +12,8 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     readonly live?: boolean | undefined;
     retryTime?: number | undefined;
     autoStart?: boolean | undefined;
-    readonly customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined;
-    constructor(url: GraphQLServerUrl, clientState: RxGraphQLReplicationClientState, replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined);
+    readonly customFetch?: WindowOrWorkerGlobalScope["fetch"] | undefined;
+    constructor(url: GraphQLServerUrl, clientState: RxGraphQLReplicationClientState, replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, customFetch?: WindowOrWorkerGlobalScope["fetch"] | undefined);
     setHeaders(headers: ById<string>): void;
     setCredentials(credentials: RequestCredentials | undefined): void;
     graphQLRequest(queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;

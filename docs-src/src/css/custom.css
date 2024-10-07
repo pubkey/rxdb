@@ -59,17 +59,14 @@ html[data-theme="dark"] {
 /**
  * Default font size was to big, decrease it here
  */
-.markdown > h1 {
+.markdown>h1 {
     font-size: 2.1rem;
 }
 
-.markdown > h2 {
+.markdown>h2 {
     font-size: 1.75rem;
 }
 
-.markdown > p {
-    font-size: 1rem;
-}
 
 .footer {
     background-color: var(--ifm-navbar-background-color);
@@ -218,6 +215,7 @@ h1 .underline {
 }
 
 @media (max-width: 500px) {
+
     /**
      * Underline gets broken on mobile,
      * so better disable it.
@@ -341,9 +339,10 @@ body {
 
 .navbar {
     z-index: 10;
-    background-color: var(--bg-color);
+    background-color: var(--bg-color-dark);
     height: 60px;
     box-shadow: none;
+    border-bottom: solid 1.43px var(--bg-color);
 }
 
 .navbar a {
@@ -402,7 +401,7 @@ body {
     width: 96%;
     padding-left: 2%;
     padding-right: 2%;
-    max-width: 1248px;
+    max-width: 1348px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -706,10 +705,77 @@ body {
         margin-top: 38px;
     }
 
-    .block.first .inner {
-        flex-direction: column-reverse;
+    .block.first.hero .inner {
+        flex-direction: column;
     }
 }
+
+
+
+
+
+
+.block.first.hero .content {
+    margin-top: 90px;
+}
+
+
+.block.first.hero h1 {
+    color: #fff;
+    font-size: 4.5em;
+    font-weight: 400;
+    letter-spacing: -1px;
+    line-height: 140%;
+    text-align: left;
+}
+
+
+.block.first.hero .text {
+    color: #8e8e8e;
+    font-size: 1.25em;
+    font-weight: 400;
+    line-height: 150%;
+    margin-bottom: 0;
+    text-align: left;
+    white-space: pre-line;
+    width: 80%;
+}
+
+.block.first.hero .review-small {
+    height: 60px;
+    width: 60px;
+    margin-left: 30px;
+}
+
+.block.first.hero .buy-premium-hero {
+    display: inline-block;
+    margin-top: 7px;
+    margin-left: 20px;
+}
+
+@media (max-width: 900px) {
+    .block.first.hero .text {
+        width: 100%;
+    }
+
+    .block.first.hero .content {
+        margin-top: 0px;
+    }
+}
+
+@media (max-width: 500px) {
+    .block.first.hero h1 {
+        font-size: 3em;
+    }
+}
+
+
+
+
+
+
+
+
 
 .block.second .inner {
     margin-top: 70px;
@@ -767,10 +833,25 @@ body {
     margin-left: 10%;
 }
 
+.block.replication .replicate-firestore {
+    position: absolute;
+    margin-top: -47.5px;
+    margin-left: 2%;
+    top: 51%;
+}
+
+.block.replication .replicate-supabase {
+    position: absolute;
+    margin-top: -47.5px;
+    margin-left: 81%;
+    top: 51%;
+}
+
+
 @media (max-width: 500px) {
     .block.replication .replicate-graphql {
         margin-left: 0%;
-    }
+    }    
 }
 
 .block.replication .replicate-couchdb {
@@ -817,6 +898,10 @@ body {
 
 .block.replication img.protocol {
     width: 80px;
+}
+
+.block.replication .neumorphism-circle-s img.protocol {
+    width: 40px;
 }
 
 .block.offline-first {
@@ -993,6 +1078,11 @@ body {
 .block.sixth .buy-options {
     width: 100%;
 
+    /**
+     * @link https://stackoverflow.com/a/50917807
+     */
+    align-items: center;
+
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     column-gap: 10px;
@@ -1007,7 +1097,6 @@ body {
 
 .block.sixth .buy-option-inner {
     box-sizing: content-box;
-    min-height: 565px;
     background-color: var(--bg-color);
     padding: 10px;
     border-radius: 4px;
@@ -1051,6 +1140,7 @@ body {
 
 .block.sixth .buy-option-features p {
     font-size: 1em;
+    text-align: justify;
 }
 
 .block.sixth .buy-option-action {
@@ -1188,7 +1278,7 @@ body {
 }
 
 .hover-shadow-top:hover {
-    box-shadow: 2px 2px 10px var(--color-top), -2px -1px 10px var(--color-top);
+    box-shadow: 2px 2px 6px var(--color-top), -2px -1px 10px var(--color-top);
 }
 
 .hover-shadow-middle:hover {
@@ -1202,48 +1292,38 @@ body {
 }
 
 .bg-gradient-right-bottom {
-    background: linear-gradient(
-        to right bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-bottom {
-    background: linear-gradient(
-        to left bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-right-top {
-    background: linear-gradient(
-        to right top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-top {
-    background: linear-gradient(
-        to left top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-top {
-    background: linear-gradient(
-        to top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .star-at-github {
@@ -1396,6 +1476,7 @@ body {
     font-weight: bold;
     margin-top: 3px;
     line-height: normal;
+    font-variant-numeric: tabular-nums;
 }
 
 .trophy .arrow-up {
@@ -1706,7 +1787,7 @@ a:hover {
     border-radius: 6px;
     padding: 3px;
     width: 80%;
-    margin-top: 50px;
+    margin-top: 20px;
     border-style: solid;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.3);
@@ -1852,6 +1933,7 @@ a:hover {
     border-color: red;
 }
 
+
 #price-calculator-result {
     font-size: 120%;
 }
@@ -1890,9 +1972,13 @@ a:hover {
     border-bottom: double 3px;
 }
 
-#price-calculator-result .proceed-hint {
+#price-calculator-block .button {
     width: 100%;
-    text-align: right;
+    text-align: center;
+    box-sizing: border-box;
+    margin: 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 #price-calculator-result a {
@@ -1971,8 +2057,7 @@ footer a:visited {
     color: white;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 .redirectBox .ul-container {
     text-align: center;
@@ -1987,8 +2072,7 @@ footer a:visited {
     margin: 10px 0;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 /*
  * Call to action button
@@ -1999,6 +2083,13 @@ footer a:visited {
     flex: 1;
     min-width: 0;
     overflow: hidden;
+
+    /**
+     * We need the padding here
+     * to have enough space for the mouseover shadow.
+     */
+    padding-left: 9px;
+    padding-right: 9px;
 }
 
 .call-to-action a {
@@ -2009,9 +2100,10 @@ footer a:visited {
     text-align: center;
     padding-left: 11px;
     padding-right: 11px;
-    line-height: 37px;
     border-radius: 7px;
-    height: 36px;
+    font-size: 90%;
+    height: 32px;
+    line-height: 32px;
     vertical-align: middle;
 }
 
@@ -2462,8 +2554,7 @@ footer a:visited {
     gap: 8px;
     align-items: center;
     text-wrap: nowrap;
-    transition: color var(--ifm-transition-fast)
-        var(--ifm-transition-timing-default);
+    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
     display: flex;
     font-size: 1.14em;
     line-height: 150%;
@@ -2507,6 +2598,7 @@ footer a:visited {
     flex-direction: row;
     gap: 40px;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav {
     min-width: 371px;
     height: auto;
@@ -2514,22 +2606,27 @@ footer a:visited {
     justify-content: space-between;
     flex-grow: 1;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-list {
     flex-direction: column;
     justify-content: space-between;
     overflow: scroll;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-list::-webkit-scrollbar {
     display: none;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav::before,
 .consulting-page .block.benefits .ant-tabs-ink-bar {
     display: none;
 }
+
 .consulting-page .block.benefits .ant-tabs-tab-active {
     margin: 0;
     border-left: 2px solid #e6008d;
 }
+
 .consulting-page .block.benefits .ant-tabs-tab-active .ant-tabs-tab-btn {
     color: white !important;
 }
@@ -2542,6 +2639,7 @@ footer a:visited {
     line-height: 140%;
     padding: 24px 32px;
 }
+
 .consulting-page .block.benefits .ant-tabs-nav-operations {
     display: none;
 }
@@ -2595,11 +2693,13 @@ footer a:visited {
     line-height: 150%;
     margin: 0;
 }
+
 .consulting-page .benefit-tabs-content {
     display: flex;
     flex-direction: row;
     gap: 40px;
 }
+
 .consulting-page .benefit-tabs {
     min-width: 371px;
     height: auto;
@@ -2885,6 +2985,7 @@ footer a:visited {
     gap: 16px;
     background-color: transparent;
 }
+
 .block.faq .ant-collapse-header {
     font-size: 1.15em;
     font-weight: 600;
@@ -2895,6 +2996,7 @@ footer a:visited {
     padding: 0;
     gap: 16px;
 }
+
 .block.faq .ant-collapse-item {
     border: none;
     border-radius: 24px;
@@ -3112,6 +3214,7 @@ footer a:visited {
 }
 
 @media (max-width: 1360px) {
+
     /** packages **/
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 48.5%;
@@ -3119,6 +3222,7 @@ footer a:visited {
 }
 
 @media (max-width: 1280px) {
+
     /** hero **/
     .consulting-page .block.first .inner {
         margin-top: 38px;
@@ -3168,6 +3272,7 @@ footer a:visited {
 }
 
 @media (max-width: 1200px) {
+
     /** packages **/
     .consulting-page .block.packages .flex-row {
         gap: 20px;
@@ -3309,7 +3414,9 @@ footer a:visited {
         width: -webkit-fill-available;
         width: stretch;
     }
-    .consulting-page .benefit-tabs-content, .consulting-page .block.benefits .ant-tabs {
+
+    .consulting-page .benefit-tabs-content,
+    .consulting-page .block.benefits .ant-tabs {
         display: flex;
         flex-direction: column;
         gap: 40px;
@@ -3317,18 +3424,23 @@ footer a:visited {
         width: -webkit-fill-available;
         width: stretch;
     }
+
     .consulting-page .block.benefits .ant-tabs-nav-list {
         flex-direction: row;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab-active {
         margin: 0;
         border-left: unset;
         border-bottom: 2px solid #e6008d;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         padding: 12px 24px;
     }
-    .consulting-page .benefit-tabs, .consulting-page .block.benefits .ant-tabs-nav {
+
+    .consulting-page .benefit-tabs,
+    .consulting-page .block.benefits .ant-tabs-nav {
         min-width: unset;
     }
 
@@ -3517,12 +3629,15 @@ footer a:visited {
     .consulting-page .block.benefits {
         padding-bottom: 48px;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         padding: 16px 0px;
     }
+
     .consulting-page .block.benefits .ant-tabs-nav-list {
         gap: 16px;
     }
+
     .consulting-page .block.benefits .ant-tabs-tab {
         font-size: 20px;
     }
@@ -3754,3 +3869,22 @@ footer a:visited {
         top: 0px;
     }
 }
+
+
+.tag-cloud {
+    text-align: center;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.tag-cloud a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 400px) {
+    .tag-cloud-tag {
+        margin: 0 10px;
+    }
+}
+
+

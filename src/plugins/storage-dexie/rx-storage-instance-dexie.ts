@@ -4,12 +4,10 @@ import {
 } from 'rxjs';
 import {
     now,
-    PROMISE_RESOLVE_VOID,
-    RX_META_LWT_MINIMUM,
-    sortDocumentsByLastWriteTime,
-    lastOfArray,
     ensureNotFalsy,
-    randomCouchString
+    defaultHashSha256,
+    RXDB_UTILS_GLOBAL,
+    PREMIUM_FLAG_HASH
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -37,7 +35,6 @@ import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
     attachmentObjectId,
     closeDexieDb,
-    fromDexieToStorage,
     fromStorageToDexie,
     getDexieDbWithTables,
     getDocsInDb,
@@ -50,7 +47,9 @@ import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance
 import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
-export const DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
+
+let shownNonPremiumLog = false;
+
 
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -83,6 +82,31 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         ensureNotClosed(this);
 
 
+        if (
+            !shownNonPremiumLog &&
+            (
+                !RXDB_UTILS_GLOBAL.premium ||
+                typeof RXDB_UTILS_GLOBAL.premium !== 'string' ||
+                (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) !== PREMIUM_FLAG_HASH)
+            )
+        ) {
+            console.warn(
+                [
+                    '-------------- RxDB Open Core RxStorage -------------------------------',
+                    'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html?console=dexie ',
+                    'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.',
+                    'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.',
+                    ' https://rxdb.info/premium?console=dexie ',
+                    'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.',
+                    '---------------------------------------------------------------------'
+                ].join('\n')
+            );
+            shownNonPremiumLog = true;
+        } else {
+            shownNonPremiumLog = true;
+        }
+
+
         /**
          * Check some assumptions to ensure RxDB
          * does not call the storage with an invalid write.
@@ -98,25 +122,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             ) {
                 throw newRxError('SNH', { args: { row } });
             }
-
-            // ensure prev-data is set
-            if (this.devMode) {
-                if (
-                    row.previous &&
-                    (
-                        !row.previous._meta[DEXIE_TEST_META_FIELD] ||
-                        row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev
-                    )
-                ) {
-                    console.dir(row);
-                    throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
-                }
-            }
         });
 
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -129,7 +138,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         if (this.devMode) {
             documentWrites = documentWrites.map(row => {
                 const doc = flatCloneDocWithMeta(row.document);
-                doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
                 return {
                     previous: row.previous,
                     document: doc
@@ -170,14 +178,13 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                  */
                 let bulkPutDocs: any[] = [];
                 categorized.bulkInsertDocs.forEach(row => {
-                    ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 categorized.bulkUpdateDocs.forEach(row => {
-                    ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));
+
                 if (bulkPutDocs.length > 0) {
                     await state.dexieTable.bulkPut(bulkPutDocs);
                 }

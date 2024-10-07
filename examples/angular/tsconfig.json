@@ -18,7 +18,7 @@
       "node_modules/@types"
     ],
     "lib": [
-      "es2018",
+      "es2020",
       "dom",
       "ES2021.WeakRef"
     ]

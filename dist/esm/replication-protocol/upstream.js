@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { getChangedDocumentsSince, stackCheckpoints } from "../rx-storage-helper.js";
+import { getChangedDocumentsSince, getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from "../rx-storage-helper.js";
 import { appendToArray, batchArray, clone, ensureNotFalsy, getHeightOfRevision, PROMISE_RESOLVE_FALSE } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { resolveConflictError } from "./conflicts.js";
@@ -298,7 +298,8 @@ export async function startReplicationUpstream(state) {
            * that will then resolved the conflict again.
            */
           var useMetaWrites = [];
-          forkWriteResult.success.forEach(docData => {
+          var success = getWrittenDocumentsFromBulkWriteResponse(state.primaryPath, conflictWriteFork, forkWriteResult);
+          success.forEach(docData => {
             var docId = docData[state.primaryPath];
             useMetaWrites.push(conflictWriteMeta[docId]);
           });

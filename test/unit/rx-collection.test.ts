@@ -1120,6 +1120,54 @@ describe('rx-collection.test.ts', () => {
 
                     db2.destroy();
                 });
+                it('#5721 should remove the RxCollection instance across tabs and emit the .$removed event', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
+
+                    const dbName = randomCouchString();
+
+                    async function createDb() {
+                        const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
+                            name: dbName,
+                            storage: config.storage.getStorage(),
+                            ignoreDuplicate: true
+                        });
+                        await db.addCollections({
+                            humans: { schema: schemas.human }
+                        });
+                        await db.collections.humans.insert(schemaObjects.humanData());
+                        return db;
+                    }
+
+                    const db1 = await createDb();
+                    const db2 = await createDb();
+                    const col1 = db1.humans;
+                    const col2 = db2.humans;
+
+                    // remember the emitted events
+                    let emitted1 = false;
+                    let emitted2 = false;
+                    col1.onRemove.push(() => emitted1 = true);
+                    col2.onRemove.push(() => emitted2 = true);
+
+                    // remove collection2
+                    await col2.remove();
+
+                    await waitUntil(() => emitted1);
+                    await waitUntil(() => emitted2);
+
+                    // calling operations on other collection should also fail
+                    await assertThrows(
+                        () => col1.insert(schemaObjects.humanData()),
+                        'RxError',
+                        'COL21'
+                    );
+
+                    assert.deepStrictEqual(emitted1, emitted2);
+                    db1.destroy();
+                    db2.destroy();
+                });
             });
             describeParallel('.bulkRemove()', () => {
                 describe('positive', () => {
@@ -1451,6 +1499,33 @@ describe('rx-collection.test.ts', () => {
                 allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
+                c.database.destroy();
+            });
+            /**
+             * @link https://discord.com/channels/@me/1249794180826271857/1263119230929211504
+             */
+            it('issue: insert and update+insert breaks', async () => {
+                const c = await humansCollection.create(0);
+
+                // insert
+                await c.bulkUpsert([schemaObjects.humanData('a')]);
+                let allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 1);
+
+                // update+insert
+                const writeData = [
+                    {
+                        ...allDocs[0].toMutableJSON(),
+                        age: 100
+                    },
+                    schemaObjects.humanData('b')
+                ];
+                const result = await c.bulkUpsert(writeData);
+                assert.deepStrictEqual(result.error, []);
+                allDocs = await c.find().exec();
+                assert.strictEqual(allDocs.length, 2);
+                assert.strictEqual(allDocs[0].age, 100);
+
                 c.database.destroy();
             });
         });
@@ -1969,6 +2044,29 @@ describe('rx-collection.test.ts', () => {
 
                 const res = await c.findByIds(ids).exec();
                 assert.strictEqual(res.size, 5);
+                c.database.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/issues/6148
+             */
+            it('#6148 using chained queries on a find-by-id-query should throw a proper error message', async () => {
+                const c = await humansCollection.create();
+                const query = c.findByIds([
+                    'foo',
+                    'bar'
+                ]);
+
+                await assertThrows(
+                    () => query.where('foo'),
+                    'RxError',
+                    'QU17'
+                );
+                await assertThrows(
+                    () => query.gt(5),
+                    'RxError',
+                    'QU17'
+                );
+
                 c.database.destroy();
             });
         });

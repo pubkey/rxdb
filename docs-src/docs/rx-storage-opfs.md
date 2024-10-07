@@ -158,6 +158,9 @@ const storage = getRxStorageOPFS({
 });
 ```
 
+If you forget to set this and still create and use a [RxDatabase](./rx-database.md) inside of the worker, you might get the error message` or `Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')`.
+
+
 ## Setting `jsonPositionSize` to increase the maximum database size.
 
 By default the `jsonPositionSize` value is set to `8` which allows the database to get up to 100 megabytes in size (per collection).

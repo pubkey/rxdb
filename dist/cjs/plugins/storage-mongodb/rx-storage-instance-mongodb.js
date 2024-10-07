@@ -1,10 +1,12 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageInstanceMongoDB = void 0;
 exports.createMongoDBStorageInstance = createMongoDBStorageInstance;
+var _readOnlyError2 = _interopRequireDefault(require("@babel/runtime/helpers/readOnlyError"));
 var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var _index = require("../../plugins/utils/index.js");
@@ -117,7 +119,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       }
       var primaryPath = this.primaryPath;
       var ret = {
-        success: [],
         error: []
       };
       var docIds = documentWrites.map(d => d.document[primaryPath]);
@@ -170,7 +171,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           if (event) {
             eventBulk.events.push(event);
           }
-          ret.success.push(writeRow.document);
         }
       })),
       /**
@@ -201,7 +201,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
         } else {
           var event = (0, _index.getFromMapOrThrow)(changeByDocId, docId);
           eventBulk.events.push(event);
-          ret.success.push(writeRow.document);
         }
       }))]);
       if (categorized.eventBulk.events.length > 0) {

@@ -121,16 +121,17 @@ var RxLocalDocumentPrototype = {
     var state = await (0, _localDocumentsHelper.getLocalDocStateByParent)(this.parent);
     var oldData = this._data;
     newData.id = this.id;
-    return state.storageInstance.bulkWrite([{
+    var writeRows = [{
       previous: oldData,
       document: newData
-    }], 'local-document-save-data').then(res => {
-      var docResult = res.success[0];
-      if (!docResult) {
+    }];
+    return state.storageInstance.bulkWrite(writeRows, 'local-document-save-data').then(res => {
+      if (res.error[0]) {
         throw res.error[0];
       }
+      var success = (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, res)[0];
       newData = (0, _index.flatClone)(newData);
-      newData._rev = docResult._rev;
+      newData._rev = success._rev;
     });
   },
   async remove() {

@@ -1,5 +1,6 @@
+import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 import { Subject } from 'rxjs';
-import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, hasDeepProperty } from "../utils/index.js";
+import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, hasDeepProperty, RXDB_UTILS_GLOBAL, defaultHashSha256, PREMIUM_FLAG_HASH } from "../utils/index.js";
 import { newRxError } from "../../rx-error.js";
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS, transformRegexToRegExp } from "./lokijs-helper.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -7,6 +8,7 @@ import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from "../../rx-storage-multiinstance.js";
 import { getQueryMatcher } from "../../rx-query-helper.js";
 var instanceId = now();
+var shownNonPremiumLog = false;
 export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     this.changes$ = new Subject();
@@ -54,6 +56,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   }
   var _proto = RxStorageInstanceLoki.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
+    if (!shownNonPremiumLog && (!RXDB_UTILS_GLOBAL.premium || typeof RXDB_UTILS_GLOBAL.premium !== 'string' || (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) !== PREMIUM_FLAG_HASH)) {
+      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free LokiJS based RxStorage implementation from RxDB https://rxdb.info/rx-storage-lokijs.html?console=loki ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium?console=loki ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
+      shownNonPremiumLog = true;
+    } else {
+      shownNonPremiumLog = true;
+    }
     if (documentWrites.length === 0) {
       throw newRxError('P2', {
         args: {
@@ -66,7 +74,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
       return requestRemoteInstance(this, 'bulkWrite', [documentWrites]);
     }
     var ret = {
-      success: [],
       error: []
     };
     var docsInDb = new Map();
@@ -83,7 +90,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     ret.error = categorized.errors;
     categorized.bulkInsertDocs.forEach(writeRow => {
       localState.collection.insert(flatClone(writeRow.document));
-      ret.success.push(writeRow.document);
     });
     categorized.bulkUpdateDocs.forEach(writeRow => {
       var docId = writeRow.document[this.primaryPath];
@@ -92,7 +98,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         $loki: documentInDbWithLokiKey.$loki
       });
       localState.collection.update(writeDoc);
-      ret.success.push(writeRow.document);
     });
     localState.databaseState.saveQueue.addWrite();
     if (categorized.eventBulk.events.length > 0) {

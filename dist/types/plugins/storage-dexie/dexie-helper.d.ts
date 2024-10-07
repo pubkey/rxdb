@@ -19,7 +19,7 @@ export declare function dexieReplaceIfStartsWithPipeRevert(str: string): string;
  * So we have to replace true/false with '1'/'0'
  * @param d
  */
-export declare function fromStorageToDexie<RxDocType>(booleanIndexes: string[], d: RxDocumentData<RxDocType>): any;
+export declare function fromStorageToDexie<RxDocType>(booleanIndexes: string[], inputDoc: RxDocumentData<RxDocType>): any;
 export declare function fromDexieToStorage<RxDocType>(booleanIndexes: string[], d: any): RxDocumentData<RxDocType>;
 /**
  * @recursive

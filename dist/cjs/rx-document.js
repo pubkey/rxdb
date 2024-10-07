@@ -151,42 +151,7 @@ var basePrototype = exports.basePrototype = {
    * run some tests before changing anything.
    */
   get(objPath) {
-    return (0, _index.getFromMapOrCreate)(this._propertyCache, objPath, () => {
-      var valueObj = (0, _index.getProperty)(this._data, objPath);
-
-      // direct return if array or non-object
-      if (typeof valueObj !== 'object' || valueObj === null || Array.isArray(valueObj)) {
-        return _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
-      }
-      var _this = this;
-      var proxy = new Proxy(
-      /**
-       * In dev-mode, the _data is deep-frozen
-       * so we have to flat clone here so that
-       * the proxy can work.
-       */
-      (0, _index.flatClone)(valueObj), {
-        get(target, property) {
-          if (typeof property !== 'string') {
-            return target[property];
-          }
-          var lastChar = property.charAt(property.length - 1);
-          if (property.endsWith('$$')) {
-            var key = property.slice(0, -2);
-            return _this.get$$((0, _index.trimDots)(objPath + '.' + key));
-          } else if (lastChar === '$') {
-            var _key = property.slice(0, -1);
-            return _this.get$((0, _index.trimDots)(objPath + '.' + _key));
-          } else if (lastChar === '_') {
-            var _key2 = property.slice(0, -1);
-            return _this.populate((0, _index.trimDots)(objPath + '.' + _key2));
-          } else {
-            return _this.get((0, _index.trimDots)(objPath + '.' + property));
-          }
-        }
-      });
-      return proxy;
-    });
+    return getDocumentProperty(this, objPath);
   },
   toJSON(withMetaFields = false) {
     if (!withMetaFields) {
@@ -279,14 +244,15 @@ var basePrototype = exports.basePrototype = {
       });
     }
     await beforeDocumentUpdateWrite(this.collection, newData, oldData);
-    var writeResult = await this.collection.storageInstance.bulkWrite([{
+    var writeRows = [{
       previous: oldData,
       document: newData
-    }], 'rx-document-save-data');
+    }];
+    var writeResult = await this.collection.storageInstance.bulkWrite(writeRows, 'rx-document-save-data');
     var isError = writeResult.error[0];
     (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, newData, isError);
     await this.collection._runHooks('post', 'save', newData, this);
-    return this.collection._docCache.getCachedRxDocument(writeResult.success[0]);
+    return this.collection._docCache.getCachedRxDocument((0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, writeResult)[0]);
   },
   /**
    * Remove the document.
@@ -305,13 +271,14 @@ var basePrototype = exports.basePrototype = {
     var removedDocData;
     return collection._runHooks('pre', 'remove', deletedData, this).then(async () => {
       deletedData._deleted = true;
-      var writeResult = await collection.storageInstance.bulkWrite([{
+      var writeRows = [{
         previous: this._data,
         document: deletedData
-      }], 'rx-document-remove');
+      }];
+      var writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
       var isError = writeResult.error[0];
       (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, this.primary, deletedData, isError);
-      return writeResult.success[0];
+      return (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, writeResult)[0];
     }).then(removed => {
       removedDocData = removed;
       return this.collection._runHooks('post', 'remove', deletedData, this);
@@ -373,4 +340,59 @@ function beforeDocumentUpdateWrite(collection, newData, oldData) {
   }
   return collection._runHooks('pre', 'save', newData, oldData);
 }
+function getDocumentProperty(doc, objPath) {
+  return (0, _index.getFromMapOrCreate)(doc._propertyCache, objPath, () => {
+    var valueObj = (0, _index.getProperty)(doc._data, objPath);
+
+    // direct return if array or non-object
+    if (typeof valueObj !== 'object' || valueObj === null || Array.isArray(valueObj)) {
+      return _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
+    }
+    var proxy = new Proxy(
+    /**
+     * In dev-mode, the _data is deep-frozen
+     * so we have to flat clone here so that
+     * the proxy can work.
+     */
+    (0, _index.flatClone)(valueObj), {
+      /**
+       * @performance is really important here
+       * because people access nested properties very often
+       * and might not be aware that this is internally using a Proxy
+       */
+      get(target, property) {
+        if (typeof property !== 'string') {
+          return target[property];
+        }
+        var lastChar = property.charAt(property.length - 1);
+        if (lastChar === '$') {
+          if (property.endsWith('$$')) {
+            var key = property.slice(0, -2);
+            return doc.get$$((0, _index.trimDots)(objPath + '.' + key));
+          } else {
+            var _key = property.slice(0, -1);
+            return doc.get$((0, _index.trimDots)(objPath + '.' + _key));
+          }
+        } else if (lastChar === '_') {
+          var _key2 = property.slice(0, -1);
+          return doc.populate((0, _index.trimDots)(objPath + '.' + _key2));
+        } else {
+          /**
+           * Performance shortcut
+           * In most cases access to nested properties
+           * will only access simple values which can be directly returned
+           * without creating a new Proxy or utilizing the cache.
+           */
+          var plainValue = target[property];
+          if (typeof plainValue === 'number' || typeof plainValue === 'string' || typeof plainValue === 'boolean') {
+            return plainValue;
+          }
+          return getDocumentProperty(doc, (0, _index.trimDots)(objPath + '.' + property));
+        }
+      }
+    });
+    return proxy;
+  });
+}
+;
 //# sourceMappingURL=rx-document.js.map

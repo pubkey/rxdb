@@ -26,6 +26,8 @@ export declare const ERROR_MESSAGES: {
     QU14: string;
     QU15: string;
     QU16: string;
+    QU17: string;
+    QU18: string;
     MQ1: string;
     MQ2: string;
     MQ3: string;
@@ -64,6 +66,7 @@ export declare const ERROR_MESSAGES: {
     COL17: string;
     COL18: string;
     COL20: string;
+    COL21: string;
     CONFLICT: string;
     DOC1: string;
     DOC2: string;

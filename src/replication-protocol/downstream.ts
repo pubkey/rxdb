@@ -4,7 +4,7 @@ import {
     mergeMap
 } from 'rxjs';
 import { newRxError } from '../rx-error.ts';
-import { stackCheckpoints } from '../rx-storage-helper.ts';
+import { getWrittenDocumentsFromBulkWriteResponse, stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxStorageInstanceReplicationState,
     BulkWriteRow,
@@ -112,8 +112,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
                     useTasks.push(innerTaskWithTime.task);
                 }
-
-                if (useTasks.length === 0) return;
+                if (useTasks.length === 0) {
+                    return;
+                }
 
                 if (useTasks[0] === 'RESYNC') {
                     return downstreamResyncOnce();
@@ -320,7 +321,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * that first must be send to the master in the upstream.
                              * All conflicts are resolved by the upstream.
                              */
-                            return PROMISE_RESOLVE_VOID;
+                            // return PROMISE_RESOLVE_VOID;
+                            await state.streamQueue.up;
                         }
 
                         let isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ?
@@ -329,7 +331,6 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-
                         if (
                             !isAssumedMasterEqualToForkState &&
                             (
@@ -462,7 +463,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         writeRowsToFork,
                         await state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
-                        forkWriteResult.success.forEach(doc => {
+                        const success = getWrittenDocumentsFromBulkWriteResponse(
+                            state.primaryPath,
+                            writeRowsToFork,
+                            forkWriteResult
+                        );
+                        success.forEach(doc => {
                             const docId = (doc as any)[primaryPath];
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);

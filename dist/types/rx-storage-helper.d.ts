@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys, RxStorage, FilledMangoQuery } from './types/index.d.ts';
+import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys, RxStorage, FilledMangoQuery, RxStorageBulkWriteResponse } from './types/index.d.ts';
 import { Observable } from 'rxjs';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
@@ -96,6 +96,7 @@ export declare function getChangedDocumentsSince<RxDocType, CheckpointType>(stor
      */
     checkpoint: CheckpointType;
 }>;
+export declare function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(primaryPath: string, writeRows: BulkWriteRow<RxDocType>[], response: RxStorageBulkWriteResponse<RxDocType>): RxDocumentData<RxDocType>[];
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.

@@ -2,18 +2,15 @@ import {
     Observable,
     Subject,
     distinctUntilChanged,
-    filter,
     map,
     merge,
     shareReplay,
     startWith,
-    tap,
-    zip
+    tap
 } from 'rxjs';
 import { overwritable } from '../../overwritable.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import type {
-    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -29,10 +26,12 @@ import {
     appendToArray,
     clone,
     randomCouchString,
-    deepEqual
+    deepEqual,
+    getFromMapOrCreate
 } from '../utils/index.ts';
 import {
     RX_STATE_COLLECTION_SCHEMA,
+    isValidWeakMapKey,
     nextRxStateId
 } from './helpers.ts';
 import {
@@ -44,6 +43,11 @@ import { newRxError } from '../../rx-error.ts';
 import { runPluginHooks } from '../../hooks.ts';
 
 
+let debugId = 0;
+
+
+const deepFrozenCache = new WeakMap<any, any>();
+
 /**
  * RxDB internally used properties are
  * prefixed with lodash _ to make them less
@@ -51,6 +55,8 @@ import { runPluginHooks } from '../../hooks.ts';
  * from the user.
  */
 export class RxStateBase<T, Reactivity = unknown> {
+    // used for debugging
+    public _id: number = debugId++;
     public _state: T | any = {};
     public $: Observable<T>;
     public _lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;
@@ -76,7 +82,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         // make it "hot" for better write performance
         this._lastIdQuery.$.subscribe();
 
-        this.$ = zip([
+        this.$ = merge(
             this._ownEmits$,
             this.collection.$.pipe(
                 tap(event => {
@@ -89,7 +95,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                     }
                 })
             )
-        ]).pipe(
+        ).pipe(
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
             map(() => this._state)
         );
@@ -138,7 +144,12 @@ export class RxStateBase<T, Reactivity = unknown> {
                         const writeRow = useWrites[index];
                         const value = getProperty(newState, writeRow.path);
                         const newValue = writeRow.modifier(value);
-                        setProperty(newState, writeRow.path, newValue);
+                        /**
+                         * Here we have to clone the value because
+                         * some storages like the memory storage
+                         * make input data deep-frozen in dev-mode.
+                         */
+                        setProperty(newState, writeRow.path, clone(newValue));
                         ops.push({
                             k: writeRow.path,
                             /**
@@ -173,12 +184,31 @@ export class RxStateBase<T, Reactivity = unknown> {
     }
 
     get(path?: Paths<T>) {
+        let ret;
         if (!path) {
-            return overwritable.deepFreezeWhenDevMode(this._state);
+            ret = this._state;
+        } else {
+            ret = getProperty(this._state, path);
         }
-        return overwritable.deepFreezeWhenDevMode(
-            getProperty(this._state, path)
-        );
+
+        /**
+         * In dev-mode we have to clone the value before deep-freezing
+         * it to not have an immutable subobject in the state value.
+         * But calling .get() with the same path multiple times,
+         * should return exactly the same object instance
+         * so it does not cause re-renders on react.
+         * So in dev-mode we have to 
+         */
+        if (overwritable.isDevMode() && isValidWeakMapKey(ret)) {
+            const frozen = getFromMapOrCreate(
+                deepFrozenCache,
+                ret,
+                () => overwritable.deepFreezeWhenDevMode(clone(ret))
+            );
+            return frozen;
+        }
+
+        return ret;
     }
     get$(path?: Paths<T>): Observable<any> {
         return this.$.pipe(
@@ -195,7 +225,7 @@ export class RxStateBase<T, Reactivity = unknown> {
             obs,
             this.get(path),
             this.collection.database
-        );
+        ) as any;
     }
 
     /**

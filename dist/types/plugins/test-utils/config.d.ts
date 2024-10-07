@@ -1,4 +1,3 @@
-/// <reference types="mocha" />
 import type { RxStorage, RxTestStorage } from '../../types';
 export type TestConfig = {
     storage: RxTestStorage;

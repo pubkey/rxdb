@@ -41,8 +41,9 @@ export function attachmentMapKey(documentId: string, attachmentId: string): stri
     return documentId + '||' + attachmentId;
 }
 
+
 function sortByIndexStringComparator<RxDocType>(a: DocWithIndexString<RxDocType>, b: DocWithIndexString<RxDocType>) {
-    if (a.indexString < b.indexString) {
+    if (a[0] < b[0]) {
         return -1;
     } else {
         return 1;
@@ -58,10 +59,9 @@ export function putWriteRowToState<RxDocType>(
     docId: string,
     state: MemoryStorageInternals<RxDocType>,
     stateByIndex: MemoryStorageInternalsByIndex<RxDocType>[],
-    row: BulkWriteRow<RxDocType>,
+    document: RxDocumentData<RxDocType>,
     docInState?: RxDocumentData<RxDocType>
 ) {
-    const document = row.document;
     state.documents.set(docId, document as any);
     for (let i = 0; i < stateByIndex.length; ++i) {
         const byIndex = stateByIndex[i];
@@ -70,11 +70,11 @@ export function putWriteRowToState<RxDocType>(
         const newIndexString = getIndexableString(document as any);
         const insertPosition = pushAtSortPosition(
             docsWithIndex,
-            {
-                id: docId,
-                doc: document,
-                indexString: newIndexString
-            },
+            [
+                newIndexString,
+                document,
+                docId,
+            ],
             sortByIndexStringComparator,
             0
         );
@@ -90,16 +90,16 @@ export function putWriteRowToState<RxDocType>(
                  * If index was not changed -> The old doc must be before or after the new one.
                  */
                 const prev = docsWithIndex[insertPosition - 1];
-                if (prev && prev.id === docId) {
+                if (prev && prev[2] === docId) {
                     docsWithIndex.splice(insertPosition - 1, 1);
                 } else {
                     const next = docsWithIndex[insertPosition + 1];
-                    if (next.id === docId) {
+                    if (next[2] === docId) {
                         docsWithIndex.splice(insertPosition + 1, 1);
                     } else {
                         throw newRxError('SNH', {
+                            document,
                             args: {
-                                row,
                                 byIndex
                             }
                         });
@@ -111,9 +111,9 @@ export function putWriteRowToState<RxDocType>(
                  */
                 const indexBefore = boundEQ(
                     docsWithIndex,
-                    {
-                        indexString: previousIndexString
-                    } as any,
+                    [
+                        previousIndexString
+                    ] as any,
                     compareDocsWithIndex
                 );
                 docsWithIndex.splice(indexBefore, 1);
@@ -138,9 +138,9 @@ export function removeDocFromState<RxDocType>(
 
         const positionInIndex = boundEQ(
             docsWithIndex,
-            {
+            [
                 indexString
-            } as any,
+            ] as any,
             compareDocsWithIndex
         );
         docsWithIndex.splice(positionInIndex, 1);
@@ -152,8 +152,8 @@ export function compareDocsWithIndex<RxDocType>(
     a: DocWithIndexString<RxDocType>,
     b: DocWithIndexString<RxDocType>
 ): 1 | 0 | -1 {
-    const indexStringA = a.indexString;
-    const indexStringB = b.indexString;
+    const indexStringA = a[0];
+    const indexStringB = b[0];
     if (indexStringA < indexStringB) {
         return -1;
     } else if (indexStringA === indexStringB) {

@@ -1,5 +1,6 @@
 import { isBulkWriteConflictError, rxStorageWriteErrorToRxError } from "./rx-error.js";
 import { clone, ensureNotFalsy, getFromMapOrCreate, getFromMapOrThrow, getHeightOfRevision, stripMetaDataFromDocument } from "./plugins/utils/index.js";
+import { getWrittenDocumentsFromBulkWriteResponse } from "./rx-storage-helper.js";
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -83,12 +84,11 @@ export var IncrementalWriteQueue = /*#__PURE__*/function () {
       });
     }));
     var writeResult = writeRows.length > 0 ? await this.storageInstance.bulkWrite(writeRows, 'incremental-write') : {
-      error: [],
-      success: []
+      error: []
     };
 
     // process success
-    await Promise.all(writeResult.success.map(result => {
+    await Promise.all(getWrittenDocumentsFromBulkWriteResponse(this.primaryPath, writeRows, writeResult).map(result => {
       var docId = result[this.primaryPath];
       this.postWrite(result);
       var items = getFromMapOrThrow(itemsById, docId);

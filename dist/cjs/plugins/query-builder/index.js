@@ -25,6 +25,8 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
 });
 var _rxQuery = require("../../rx-query.js");
 var _index = require("../../plugins/utils/index.js");
+var _overwritable = require("../../overwritable.js");
+var _rxError = require("../../rx-error.js");
 // if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 function runBuildingStep(rxQuery, functionName, value) {
@@ -39,6 +41,12 @@ function runBuildingStep(rxQuery, functionName, value) {
 }
 function applyBuildingStep(proto, functionName) {
   proto[functionName] = function (value) {
+    if (_overwritable.overwritable.isDevMode() && this.op === 'findByIds') {
+      throw (0, _rxError.newRxError)('QU17', {
+        collection: this.collection.name,
+        query: this.mangoQuery
+      });
+    }
     return runBuildingStep(this, functionName, value);
   };
 }

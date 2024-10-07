@@ -54,8 +54,14 @@ const config: Config = {
     },
     {
       src: '/js/analytics.js',
+      type: 'text/javascript',
       async: true,
     },
+    {
+      src: 'https://leadbooster-chat.pipedrive.com/assets/loader.js',
+      type: 'text/javascript',
+      async: true
+    }
     // {
     //   src: 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0',
     //   async: true,

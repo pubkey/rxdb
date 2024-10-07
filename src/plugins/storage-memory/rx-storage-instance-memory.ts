@@ -35,7 +35,6 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    promiseWait,
     randomCouchString,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
@@ -122,27 +121,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             context
         );
         const error = categorized.errors;
-        let success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
         /**
          * @performance
          * We have to return a Promise but we do not want to wait
          * one tick, so we directly create the promise
          * which makes it likely to be already resolved later.
          */
-        const awaitMe = Promise.resolve({ success, error });
-
-        const bulkInsertDocs = categorized.bulkInsertDocs;
-        for (let i = 0; i < bulkInsertDocs.length; ++i) {
-            const writeRow = bulkInsertDocs[i];
-            const doc = writeRow.document;
-            success[i] = doc;
-        }
-        const bulkUpdateDocs = categorized.bulkUpdateDocs;
-        for (let i = 0; i < bulkUpdateDocs.length; ++i) {
-            const writeRow = bulkUpdateDocs[i];
-            const doc = writeRow.document;
-            success.push(doc);
-        }
+        const awaitMe = Promise.resolve({ error });
 
         this.categorizedByWriteInput.set(documentWrites, categorized);
         this.internals.ensurePersistenceTask = categorized;
@@ -205,7 +190,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 docId as any,
                 internals,
                 stateByIndex,
-                writeRow,
+                doc,
                 undefined
             );
         }
@@ -219,7 +204,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 docId as any,
                 internals,
                 stateByIndex,
-                writeRow,
+                doc,
                 documentsById.get(docId as any)
             );
         }
@@ -331,17 +316,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
+            [
+                lowerBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
         const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
             docsWithIndex,
-            {
-                indexString: upperBoundString
-            } as any,
+            [
+                upperBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
@@ -355,7 +340,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             ) {
                 break;
             }
-            const currentDoc = currentRow.doc;
+            const currentDoc = currentRow[1];
 
             if (!queryMatcher || queryMatcher(currentDoc)) {
                 rows.push(currentDoc);
@@ -412,23 +397,23 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let indexOfLower = boundGT(
             docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
+            [
+                lowerBoundString
+            ] as any,
             compareDocsWithIndex
         );
 
         let done = false;
         while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
-            if (!currentDoc || currentDoc.doc._meta.lwt > maxDeletionTime) {
+            if (!currentDoc || currentDoc[1]._meta.lwt > maxDeletionTime) {
                 done = true;
             } else {
                 removeDocFromState(
                     this.primaryPath as any,
                     this.schema,
                     this.internals,
-                    currentDoc.doc
+                    currentDoc[1]
                 );
                 indexOfLower++;
             }

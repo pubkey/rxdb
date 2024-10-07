@@ -11,7 +11,7 @@ import {
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/storage-lokijs';
-const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
 
 import {
     getRxStorageMemory
@@ -53,7 +53,7 @@ import {
     heroSchema,
     graphQLGenerationInput,
     JWT_BEARER_TOKEN
-} from '../shared';
+} from '../shared.js';
 
 const insertButton = document.querySelector('#insert-button');
 const heroesList = document.querySelector('#heroes-list');

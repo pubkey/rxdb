@@ -1,5 +1,5 @@
 ---
-title: Plugins
+title: Creating Plugins
 slug: plugins.html
 ---
 

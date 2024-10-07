@@ -38,8 +38,6 @@ export function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastCh
  * @overwrites RxDatabase().leaderElector for caching
  */
 export function getForDatabase(this: RxDatabase): LeaderElector {
-
-
     const broadcastChannel = getBroadcastChannelReference(
         this.storage.name,
         this.token,

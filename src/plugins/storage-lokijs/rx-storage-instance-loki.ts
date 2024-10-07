@@ -8,7 +8,10 @@ import {
     ensureNotFalsy,
     isMaybeReadonlyArray,
     getFromMapOrThrow,
-    hasDeepProperty
+    hasDeepProperty,
+    RXDB_UTILS_GLOBAL,
+    defaultHashSha256,
+    PREMIUM_FLAG_HASH
 } from '../utils/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import type {
@@ -20,7 +23,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageQueryResult,
     RxJsonSchema,
-    MangoQuery,
     LokiStorageInternals,
     RxStorageInstanceCreationParams,
     LokiDatabaseSettings,
@@ -58,6 +60,7 @@ import {
 import { getQueryMatcher } from '../../rx-query-helper.ts';
 
 let instanceId = now();
+let shownNonPremiumLog = false;
 
 export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -124,6 +127,32 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+
+
+        if (
+            !shownNonPremiumLog &&
+            (
+                !RXDB_UTILS_GLOBAL.premium ||
+                typeof RXDB_UTILS_GLOBAL.premium !== 'string' ||
+                (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) !== PREMIUM_FLAG_HASH)
+            )
+        ) {
+            console.warn(
+                [
+                    '-------------- RxDB Open Core RxStorage -------------------------------',
+                    'You are using the free LokiJS based RxStorage implementation from RxDB https://rxdb.info/rx-storage-lokijs.html?console=loki ',
+                    'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.',
+                    'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.',
+                    ' https://rxdb.info/premium?console=loki ',
+                    'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.',
+                    '---------------------------------------------------------------------'
+                ].join('\n')
+            );
+            shownNonPremiumLog = true;
+        } else {
+            shownNonPremiumLog = true;
+        }
+
         if (documentWrites.length === 0) {
             throw newRxError('P2', {
                 args: {
@@ -137,7 +166,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
             error: []
         };
 
@@ -166,7 +194,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         categorized.bulkInsertDocs.forEach(writeRow => {
             localState.collection.insert(flatClone(writeRow.document));
-            ret.success.push(writeRow.document);
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -179,7 +206,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             );
             localState.collection.update(writeDoc);
-            ret.success.push(writeRow.document);
         });
         localState.databaseState.saveQueue.addWrite();
 

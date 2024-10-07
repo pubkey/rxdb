@@ -5,7 +5,7 @@ import AsyncTestUtil from 'async-test-util';
 import GraphQLClient from 'graphql-client';
 import {
     GRAPHQL_PORT
-} from '../shared';
+} from '../shared.js';
 
 const storage = process.env.STORAGE;
 if (!storage) {

@@ -28,7 +28,8 @@ import type {
     RxStorageWriteErrorAttachment,
     RxStorage,
     RxStorageDefaultCheckpoint,
-    FilledMangoQuery
+    FilledMangoQuery,
+    RxStorageBulkWriteResponse
 } from './types/index.d.ts';
 import {
     PROMISE_RESOLVE_TRUE,
@@ -83,7 +84,9 @@ export async function writeSingle<RxDocType>(
         const error = writeResult.error[0];
         throw error;
     } else {
-        const ret = writeResult.success[0];
+        const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
+        const success = getWrittenDocumentsFromBulkWriteResponse(primaryPath, [writeRow], writeResult);
+        const ret = success[0];
         return ret;
     }
 }
@@ -523,6 +526,9 @@ export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreation
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
 
+
+const BULK_WRITE_SUCCESS_MAP = new WeakMap<RxStorageBulkWriteResponse<any>, RxDocumentData<any>>();
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -544,6 +550,8 @@ export function getWrappedStorageInstance<
     rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
+
+    const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
 
     const ret: WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
         originalStorageInstance: storageInstance,
@@ -606,9 +614,20 @@ export function getWrappedStorageInstance<
                  */
                 .then(writeResult => {
                     const useWriteResult: typeof writeResult = {
-                        error: [],
-                        success: writeResult.success.slice(0)
+                        error: []
                     };
+
+                    /**
+                     * TODO do we really have to build up the successArray
+                     * here directly? Maybe we only need it when it is really accessed.
+                     */
+                    const successArray = getWrittenDocumentsFromBulkWriteResponse(
+                        primaryPath,
+                        toStorageWriteRows,
+                        writeResult
+                    );
+                    BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
+
                     const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
                         ? []
                         : writeResult.error
@@ -621,6 +640,8 @@ export function getWrappedStorageInstance<
                                 ) {
                                     return true;
                                 }
+
+                                // add the "normal" errors to the parent error array.
                                 useWriteResult.error.push(error);
                                 return false;
                             }) as any;
@@ -649,11 +670,18 @@ export function getWrappedStorageInstance<
                             )
                         ).then(subResult => {
                             appendToArray(useWriteResult.error, subResult.error);
-                            appendToArray(useWriteResult.success, subResult.success);
+
+                            const subSuccess = getWrittenDocumentsFromBulkWriteResponse(
+                                primaryPath,
+                                reInserts,
+                                subResult
+                            );
+                            appendToArray(successArray, subSuccess);
+
                             return useWriteResult;
                         });
                     }
-                    return writeResult;
+                    return useWriteResult;
                 });
         },
         query(preparedQuery) {
@@ -866,6 +894,43 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 }
 
 
+export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
+    primaryPath: string,
+    writeRows: BulkWriteRow<RxDocType>[],
+    response: RxStorageBulkWriteResponse<RxDocType>
+): RxDocumentData<RxDocType>[] {
+    const fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
+    if (fromMap) {
+        return fromMap;
+    }
+
+    const ret: RxDocumentData<RxDocType>[] = [];
+    if (response.error.length > 0) {
+        const errorIds = new Set();
+        for (let index = 0; index < response.error.length; index++) {
+            const error = response.error[index];
+            errorIds.add(error.documentId);
+        }
+
+        for (let index = 0; index < writeRows.length; index++) {
+            const doc = writeRows[index].document;
+            if (!errorIds.has((doc as any)[primaryPath])) {
+                ret.push(stripAttachmentsDataFromDocument(doc));
+            }
+        }
+    } else {
+        // pre-set array size for better performance
+        ret.length = writeRows.length - response.error.length;
+        for (let index = 0; index < writeRows.length; index++) {
+            const doc = writeRows[index].document;
+            ret[index] = stripAttachmentsDataFromDocument(doc);
+        }
+    }
+
+    return ret;
+}
+
+
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.
@@ -877,6 +942,11 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
         delayTimeAfter: () => number;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
+    /**
+     * Ensure writes to a delay storage
+     * are still correctly run in order.
+     */
+    let randomDelayStorageWriteQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
 
     const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
         name: 'random-delay-' + input.storage.name,
@@ -886,23 +956,20 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
             const storageInstance = await input.storage.createStorageInstance(params);
             await promiseWait(input.delayTimeAfter());
 
-            // write still must be processed in order
-            let writeQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
-
             return {
                 databaseName: storageInstance.databaseName,
                 internals: storageInstance.internals,
                 options: storageInstance.options,
                 schema: storageInstance.schema,
                 collectionName: storageInstance.collectionName,
-                async bulkWrite(a, b) {
-                    writeQueue = writeQueue.then(async () => {
+                bulkWrite(a, b) {
+                    randomDelayStorageWriteQueue = randomDelayStorageWriteQueue.then(async () => {
                         await promiseWait(input.delayTimeBefore());
                         const response = await storageInstance.bulkWrite(a, b);
                         await promiseWait(input.delayTimeAfter());
                         return response;
                     });
-                    const ret = await writeQueue;
+                    const ret = randomDelayStorageWriteQueue;
                     return ret;
                 },
                 async findDocumentsById(a, b) {

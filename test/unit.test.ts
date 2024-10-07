@@ -28,8 +28,6 @@ import './unit/rx-storage-lokijs.test.ts';
 import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-remote.test.ts';
 
-
-
 import './unit/instance-of-check.test.ts';
 import './unit/rx-schema.test.ts';
 import './unit/bug-report.test.ts';
@@ -54,6 +52,7 @@ import './unit/reactive-collection.test.ts';
 import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
+import './unit/rx-pipeline.test.ts';
 import './unit/orm.test.ts';
 import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';

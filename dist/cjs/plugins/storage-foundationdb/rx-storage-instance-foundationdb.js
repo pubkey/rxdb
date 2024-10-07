@@ -37,7 +37,6 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     var dbs = await this.internals.dbsPromise;
     var ret = {
-      success: [],
       error: []
     };
 
@@ -68,7 +67,6 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
         // INSERTS
         categorized.bulkInsertDocs.forEach(writeRow => {
           var docId = writeRow.document[this.primaryPath];
-          ret.success.push(writeRow.document);
 
           // insert document data
           mainTx.set(docId, writeRow.document);
@@ -97,7 +95,6 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
               indexTx.set(newIndexString, docId);
             }
           });
-          ret.success.push(writeRow.document);
         });
 
         // attachments

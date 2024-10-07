@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { now, ensureNotFalsy } from "../utils/index.js";
+import { now, ensureNotFalsy, defaultHashSha256, RXDB_UTILS_GLOBAL, PREMIUM_FLAG_HASH } from "../utils/index.js";
 import { attachmentObjectId, closeDexieDb, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
 import { dexieCount, dexieQuery } from "./dexie-query.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -7,7 +7,7 @@ import { categorizeBulkWriteRows, flatCloneDocWithMeta } from "../../rx-storage-
 import { addRxStorageMultiInstanceSupport } from "../../rx-storage-multiinstance.js";
 import { newRxError } from "../../rx-error.js";
 var instanceId = now();
-export var DEXIE_TEST_META_FIELD = 'dexieTestMetaField';
+var shownNonPremiumLog = false;
 export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings, devMode) {
     this.changes$ = new Subject();
@@ -25,6 +25,12 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceDexie.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     ensureNotClosed(this);
+    if (!shownNonPremiumLog && (!RXDB_UTILS_GLOBAL.premium || typeof RXDB_UTILS_GLOBAL.premium !== 'string' || (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) !== PREMIUM_FLAG_HASH)) {
+      console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html?console=dexie ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium?console=dexie ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
+      shownNonPremiumLog = true;
+    } else {
+      shownNonPremiumLog = true;
+    }
 
     /**
      * Check some assumptions to ensure RxDB
@@ -39,18 +45,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
           }
         });
       }
-
-      // ensure prev-data is set
-      if (this.devMode) {
-        if (row.previous && (!row.previous._meta[DEXIE_TEST_META_FIELD] || row.previous._meta[DEXIE_TEST_META_FIELD] !== row.previous._rev)) {
-          console.dir(row);
-          throw new Error('missing or wrong _meta.' + DEXIE_TEST_META_FIELD);
-        }
-      }
     });
     var state = await this.internals;
     var ret = {
-      success: [],
       error: []
     };
 
@@ -63,7 +60,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     if (this.devMode) {
       documentWrites = documentWrites.map(row => {
         var doc = flatCloneDocWithMeta(row.document);
-        doc._meta[DEXIE_TEST_META_FIELD] = doc._rev;
         return {
           previous: row.previous,
           document: doc
@@ -91,11 +87,9 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
        */
       var bulkPutDocs = [];
       categorized.bulkInsertDocs.forEach(row => {
-        ret.success.push(row.document);
         bulkPutDocs.push(row.document);
       });
       categorized.bulkUpdateDocs.forEach(row => {
-        ret.success.push(row.document);
         bulkPutDocs.push(row.document);
       });
       bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));

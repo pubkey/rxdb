@@ -64,7 +64,6 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
     var kv = await this.kvPromise;
     var primaryPath = this.primaryPath;
     var ret = {
-      success: [],
       error: []
     };
     var batches = (0, _utilsArray.batchArray)(documentWrites, (0, _utilsOther.ensureNotFalsy)(this.settings.batchSize));
@@ -107,7 +106,6 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
         // INSERTS
         categorized.bulkInsertDocs.forEach(writeRow => {
           var docId = writeRow.document[_this.primaryPath];
-          ret.success.push(writeRow.document);
 
           // insert document data
           tx = tx.set([_this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
@@ -134,10 +132,18 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
               tx = tx.set([_this.keySpace, indexMeta.indexId, newIndexString], docId);
             }
           });
-          ret.success.push(writeRow.document);
         });
-        var txResult = await tx.commit();
-        if (txResult.ok) {
+        var txResult;
+        try {
+          txResult = await tx.commit();
+        } catch (err) {
+          if (err.message.includes('Error code 5:') || err.message.includes('Error code 517:')) {
+            // retry
+          } else {
+            throw err;
+          }
+        }
+        if (txResult && txResult.ok) {
           (0, _utilsArray.appendToArray)(ret.error, categorized.errors);
           if (categorized.eventBulk.events.length > 0) {
             var lastState = (0, _utilsOther.ensureNotFalsy)(categorized.newestRow).document;

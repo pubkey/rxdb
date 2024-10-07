@@ -2,6 +2,7 @@ import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
 import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
+import { runAsyncPluginHooks } from '../../hooks.ts';
 
 /**
  * Even on multiple databases,
@@ -93,6 +94,10 @@ export async function cleanupRxCollection(
             });
         isDone = await RXSTORAGE_CLEANUP_QUEUE;
     }
+    await runAsyncPluginHooks('postCleanup', {
+        collectionName: rxCollection.name,
+        databaseName: rxDatabase.name
+    });
 }
 
 /**

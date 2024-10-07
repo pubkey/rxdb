@@ -4,7 +4,7 @@ import { overwritable } from "../../overwritable.js";
 import { getDocumentDataOfRxChangeEvent } from "../../rx-change-event.js";
 import { basePrototype, createRxDocumentConstructor } from "../../rx-document.js";
 import { newRxError, newRxTypeError } from "../../rx-error.js";
-import { writeSingle } from "../../rx-storage-helper.js";
+import { getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "../../rx-storage-helper.js";
 import { flatClone, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from "./local-documents-helper.js";
 import { isRxDatabase } from "../../rx-database.js";
@@ -113,16 +113,17 @@ var RxLocalDocumentPrototype = {
     var state = await getLocalDocStateByParent(this.parent);
     var oldData = this._data;
     newData.id = this.id;
-    return state.storageInstance.bulkWrite([{
+    var writeRows = [{
       previous: oldData,
       document: newData
-    }], 'local-document-save-data').then(res => {
-      var docResult = res.success[0];
-      if (!docResult) {
+    }];
+    return state.storageInstance.bulkWrite(writeRows, 'local-document-save-data').then(res => {
+      if (res.error[0]) {
         throw res.error[0];
       }
+      var success = getWrittenDocumentsFromBulkWriteResponse(this.collection.schema.primaryPath, writeRows, res)[0];
       newData = flatClone(newData);
-      newData._rev = docResult._rev;
+      newData._rev = success._rev;
     });
   },
   async remove() {

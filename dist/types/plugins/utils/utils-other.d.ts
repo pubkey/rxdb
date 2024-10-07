@@ -11,3 +11,9 @@ export declare const RXJS_SHARE_REPLAY_DEFAULTS: {
     bufferSize: number;
     refCount: boolean;
 };
+/**
+ * Dynamically add a name to a function
+ * so that it can later be found in the stack.
+ * @link https://stackoverflow.com/a/41854075/3443137
+ */
+export declare function nameFunction<T>(name: string, body: T): T;

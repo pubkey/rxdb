@@ -12,7 +12,7 @@ export declare const basePrototype: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
-    readonly deleted$$: any;
+    readonly deleted$$: unknown;
     readonly deleted: boolean | undefined;
     getLatest(this: RxDocument): RxDocument;
     /**
@@ -24,7 +24,7 @@ export declare const basePrototype: {
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any>;
-    get$$(this: RxDocument, path: string): any;
+    get$$(this: RxDocument, path: string): unknown;
     /**
      * populate the given path
      */
@@ -69,7 +69,7 @@ export declare const basePrototype: {
      * @param function that takes the document-data and returns a new data-object
      */
     incrementalModify(this: RxDocument, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
+    patch<RxDocType>(this: RxDocument<RxDocType>, patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, {}, unknown>>;
     /**
      * patches the given properties
      */
@@ -78,7 +78,7 @@ export declare const basePrototype: {
      * saves the new document-data
      * and handles the events
      */
-    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
+    _saveData<RxDocType>(this: RxDocument<RxDocType>, newData: RxDocumentWriteData<RxDocType>, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType>>;
     /**
      * Remove the document.
      * Notice that there is no hard delete,
@@ -100,7 +100,7 @@ export declare function createRxDocumentConstructor(proto?: {
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
-    readonly deleted$$: any;
+    readonly deleted$$: unknown;
     readonly deleted: boolean | undefined;
     getLatest(this: RxDocument): RxDocument;
     /**
@@ -112,7 +112,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any>;
-    get$$(this: RxDocument, path: string): any;
+    get$$(this: RxDocument, path: string): unknown;
     /**
      * populate the given path
      */
@@ -122,7 +122,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * @hotPath Performance here is really important,
      * run some tests before changing anything.
      */
-    get(this: RxDocument, objPath: string): any;
+    get(this: RxDocument, objPath: string): any | null;
     toJSON(this: RxDocument, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
         _deleted: boolean;
         _attachments: {
@@ -151,13 +151,13 @@ export declare function createRxDocumentConstructor(proto?: {
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
-    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<RxDocument>;
+    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string): Promise<RxDocument>;
     /**
      * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    incrementalModify(this: RxDocument, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<RxDocument>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
+    incrementalModify(this: RxDocument, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
+    patch<RxDocType>(this: RxDocument<RxDocType>, patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, {}, unknown>>;
     /**
      * patches the given properties
      */
@@ -166,7 +166,7 @@ export declare function createRxDocumentConstructor(proto?: {
      * saves the new document-data
      * and handles the events
      */
-    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
+    _saveData<RxDocType>(this: RxDocument<RxDocType>, newData: RxDocumentWriteData<RxDocType>, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType>>;
     /**
      * Remove the document.
      * Notice that there is no hard delete,
@@ -189,7 +189,7 @@ export declare function createRxDocumentConstructor(proto?: {
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: any;
-        readonly deleted$$: any;
+        readonly deleted$$: unknown;
         readonly deleted: boolean | undefined;
         getLatest(this: RxDocument): RxDocument;
         /**
@@ -201,7 +201,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * returns observable of the value of the given path
          */
         get$(this: RxDocument, path: string): Observable<any>;
-        get$$(this: RxDocument, path: string): any;
+        get$$(this: RxDocument, path: string): unknown;
         /**
          * populate the given path
          */
@@ -211,7 +211,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * @hotPath Performance here is really important,
          * run some tests before changing anything.
          */
-        get(this: RxDocument, objPath: string): any;
+        get(this: RxDocument, objPath: string): any | null;
         toJSON(this: RxDocument, withMetaFields?: boolean): import("./types/util").DeepReadonlyObject<{
             _deleted: boolean;
             _attachments: {
@@ -240,13 +240,13 @@ export declare function createRxDocumentConstructor(proto?: {
         getAttachment(): never;
         allAttachments(): never;
         readonly allAttachments$: void;
-        modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<RxDocument>;
+        modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string): Promise<RxDocument>;
         /**
          * runs an incremental update over the document
          * @param function that takes the document-data and returns a new data-object
          */
-        incrementalModify(this: RxDocument, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<RxDocument>;
-        patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}, unknown>>;
+        incrementalModify(this: RxDocument, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
+        patch<RxDocType>(this: RxDocument<RxDocType>, patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, {}, unknown>>;
         /**
          * patches the given properties
          */
@@ -255,7 +255,7 @@ export declare function createRxDocumentConstructor(proto?: {
          * saves the new document-data
          * and handles the events
          */
-        _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
+        _saveData<RxDocType>(this: RxDocument<RxDocType>, newData: RxDocumentWriteData<RxDocType>, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType>>;
         /**
          * Remove the document.
          * Notice that there is no hard delete,

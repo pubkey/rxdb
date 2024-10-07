@@ -39,6 +39,8 @@ export var ERROR_MESSAGES = {
   QU14: 'Running a count() query in slow mode is now allowed. Either run a count() query with a selector that fully matches an index ' + 'or set allowSlowCount=true when calling the createRxDatabase',
   QU15: 'For count queries it is not allowed to use skip or limit',
   QU16: '$regex queries must be defined by a string, not an RegExp instance. ' + 'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
+  QU17: 'Chained queries cannot be used on findByIds() RxQuery instances',
+  QU18: 'Malformated query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
   // mquery.js
   MQ1: 'path must be a string or object',
   MQ2: 'Invalid argument',
@@ -54,7 +56,7 @@ export var ERROR_MESSAGES = {
   DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase[collectionName] to get it',
   DB4: 'RxDatabase.addCollections(): schema is missing',
   DB5: 'RxDatabase.addCollections(): collection-name not allowed',
-  DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html#cant-change-the-schema',
+  DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html?console=qa#cant-change-the-schema ',
   // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' + 'This often happens in react projects with hot reload that reloads the code without reloading the process.',
   // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
@@ -84,6 +86,7 @@ export var ERROR_MESSAGES = {
   COL18: 'collection-method not allowed because fieldname is in the schema',
   // removed in 14.0.0, use CONFLICT instead - COL19: 'Document update conflict. When changing a document you must work on the previous revision',
   COL20: 'Storage write error',
+  COL21: 'The RxCollection is destroyed or removed already, either from this JavaScript realm or from another, like a browser tab',
   CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
@@ -115,7 +118,7 @@ export var ERROR_MESSAGES = {
   DM2: 'migration of document failed final document does not match final schema',
   DM3: 'migration already running',
   DM4: 'Migration errored',
-  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See https://rxdb.info/migration-storage.html',
+  DM5: 'Cannot open database state with newer RxDB version. You have to migrate your database state first. See https://rxdb.info/migration-storage.html?console=storage ',
   // plugins/attachments.js
   AT1: 'to use attachments, please define this in your schema',
   // plugins/encryption-crypto-js.js
@@ -145,7 +148,7 @@ export var ERROR_MESSAGES = {
   RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
   RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
   RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
-  RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html',
+  RC7: 'SimplePeer requires to have process.nextTick() polyfilled, see https://rxdb.info/replication-webrtc.html?console=webrtc ',
   RC_PULL: 'RxReplication pull handler threw an error - see .errors for more details',
   RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
   RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',

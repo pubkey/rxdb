@@ -2,12 +2,125 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX RxState.property$ should emit stable reference [#6462](https://github.com/pubkey/rxdb/pull/6462)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.34.1 (2 October 2024)
+
+- ADD proper error message if people miss out the `usesRxDatabaseInWorker` settings in OPFS.
+
+### 15.34.0 (1 October 2024)
+
+- FIX OPFS Storage based RxDatabase cannot be created inside of worker [via discord](https://discord.com/channels/969553741705539624/1290258375359336549)
+- IMPROVE performance of nested property access [#6406](https://github.com/pubkey/rxdb/pull/6406)
+- FIX firestore replication of multiple document with the same serverTimestamp [#6436](https://github.com/pubkey/rxdb/pull/6436)
+
+### 15.33.0 (10 September 2024)
+
+- ADD tutorial for a [local-first Vector Database](https://rxdb.info/articles/javascript-vector-database.html)
+- FIX RxPipeline tries to store metadata that does not match the json schema.
+- ADD utilities function for vector search.
+
+### 15.32.0 (26 August 2024)
+
+- ADD [Fulltext Search Plugin](https://rxdb.info/fulltext-search.html)
+- FIX `RangeError: Invalid count value` error in the OPFS and filesystem storage on cleanups.
+
+### 15.31.4 (22 August 2024)
+
+### 15.31.3 (21 August 2024)
+
+### 15.31.2 (21 August 2024)
+
+- FIX `postCleanup` hook not running
+
+### 15.31.1 (19 August 2024)
+
+- ADD `postCleanup` hook.
+
+### 15.31.0 (14 August 2024)
+
+- ADD [RxPipeline Plugin](https://rxdb.info/rx-pipeline.html).
+- FIX (denoKV RxStorage) retry writes when db is locked.
+
+### 15.30.2 (5 August 2024)
+
+- FIX `node:sqlite` couldn't be found in react native [#6291](https://github.com/pubkey/rxdb/issues/6291)
+
+### 15.30.1 (3 August 2024)
+
+- FIX `node:sqlite` couldn't be found in react native [#6291](https://github.com/pubkey/rxdb/issues/6291)
+
+### 15.30.0 (2 August 2024)
+
+- FIX quotes problem on windows with the scripts of the `package.json`
+- CHANGE `getSQLiteBasicsNodeNative()` requires the constructor as param
+- FIX key-compression broken with boolean indexes on dexie [#6267](https://github.com/pubkey/rxdb/pull/6267)
+- FIX type of `RxQuery.$` must be `Observable` [#6285](https://github.com/pubkey/rxdb/issues/6285)
+
+### 15.29.0 (29 July 2024)
+
+- ADD support for the `node:sqlite` module to the SQLite RxStorage
+- FIX several problem with the memory-mapped RxStorage in ReactNative
+
+### 15.28.1 (19 July 2024)
+
+- ADD storage bucket support to the [IndexedDB RxStorage](https://rxdb.info/rx-storage-indexeddb.html).
+- FIX error when calling bulkUpsert() with multiple docs where one fails and one suceeds.
+
+### 15.28.0 (9 July 2024)
+
+- CHANGE RxStorage interface: For better performance on remote storages, `RxStorageInstance.bulkWrite()` must only return errors, not the written documents data.
+
+### 15.27.0 (7 July 2024)
+
+- FIX Wrong Reactivity generics passed by RxCollection extending RxCollectionBase [#6188](https://github.com/pubkey/rxdb/issues/6188)
+- IMPROVE performance of ChangeEventBuffer by processing events in bulks.
+- IMPROVE performance of DocCache by processing events in bulks.
+- IMPROVE performance of ChangeEventBuffer and DocCache by lazily processing tasks.
+
+### 15.26.0 (3 July 2024)
+
+- IMPROVE performance of `.appendToArray()`
+- IMPROVE performance of writes to the memory RxStorage
+- ADD iframe tracking to dev-mode plugin.
+
+### 15.25.0 (28 June 2024)
+
+- FIX RxState sometimes does writes to the storage that do not match the schema.
+- FIX Query Builder does not work on queries created by `.findByIds()` [#6148](https://github.com/pubkey/rxdb/issues/6148)
+- FIX (IndexedDB RxStorage) When used with Sharding and Workers, it sometimes errors on the first query after db creation.
+
+### 15.24.0 (9 June 2024)
+
+- Opened the [RxDB User Survey 2024](https://rxdb.info/survey)
+- FIX rx-state multi instance observable broken [#6084](https://github.com/pubkey/rxdb/pull/6084)
+
+### 15.23.0 (29 May 2024)
+
+- FIX type resolving in webpack [#6051](https://github.com/pubkey/rxdb/pull/6051)
+
+### 15.22.0 (23 May 2024)
+
+- Add missing extensions error field to errorToPlainJson [#6029](https://github.com/pubkey/rxdb/pull/6029)
+- ADD dedicated [errors page](https://rxdb.info/errors.html)
+- FIX randomly failing replication test
+- ADD non-premium console.log on the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html#disabling-the-non-premium-console-log)
+
+### 15.21.3 (20 May 2024)
+
+- ADD publish the npm package with the [provenance statements](https://docs.npmjs.com/generating-provenance-statements)
+
+### 15.21.0 (18 May 2024)
+
+- FIX `collection.remove()` must end up with the correct RxCollection state across tabs. [5721](https://github.com/pubkey/rxdb/issues/5721)
+- ADD `RxCollection.onRemove` hooks to detect the removing of a RxCollection across tabs.
+- IMPROVE performance of insert to [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html)
+- ADD non-premium console.log on the [Dexie.js RxStorage](https://rxdb.info/rx-storage-dexie.html#disabling-the-non-premium-console-log)
 
 ### 15.20.0 (12 May 2024)
 

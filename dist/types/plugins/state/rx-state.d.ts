@@ -10,6 +10,7 @@ import { RxStateDocument, RxStateOperation, RxStateModifier } from './types.ts';
 export declare class RxStateBase<T, Reactivity = unknown> {
     readonly prefix: string;
     readonly collection: RxCollection<RxStateDocument>;
+    _id: number;
     _state: T | any;
     $: Observable<T>;
     _lastIdQuery: RxQuery<RxStateDocument, RxDocument<RxStateDocument, {}> | null>;

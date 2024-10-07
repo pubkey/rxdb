@@ -1,6 +1,7 @@
 import type {
     HashFunction,
     InternalStoreDocType,
+    RxCollection,
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
@@ -24,6 +25,8 @@ import { runAsyncPluginHooks } from './hooks.ts';
 import { getAllCollectionDocuments } from './rx-database-internal-store.ts';
 import { flatCloneDocWithMeta } from './rx-storage-helper.ts';
 import { overwritable } from './overwritable.ts';
+import type { RxCollectionBase } from './rx-collection.ts';
+import { newRxError } from './rx-error.ts';
 
 /**
  * fills in the default data.
@@ -35,11 +38,13 @@ export function fillObjectDataBeforeInsert<RxDocType>(
 ): RxDocumentData<RxDocType> {
     data = flatClone(data);
     data = fillObjectWithDefaults(schema, data);
-    data = fillPrimaryKey(
-        schema.primaryPath,
-        schema.jsonSchema,
-        data
-    );
+    if (typeof schema.jsonSchema.primaryKey !== 'string') {
+        data = fillPrimaryKey(
+            schema.primaryPath,
+            schema.jsonSchema,
+            data
+        );
+    }
     data._meta = getDefaultRxDocumentMeta();
     if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
         data._deleted = false;
@@ -164,6 +169,21 @@ export async function removeCollectionStorages(
         await databaseInternalStorage.bulkWrite(
             writeRows,
             'rx-database-remove-collection-all'
+        );
+    }
+}
+
+
+export function ensureRxCollectionIsNotDestroyed(
+    collection: RxCollection | RxCollectionBase<any, any, any, any, any>
+) {
+    if (collection.destroyed) {
+        throw newRxError(
+            'COL21',
+            {
+                collection: collection.name,
+                version: collection.schema.version
+            }
         );
     }
 }

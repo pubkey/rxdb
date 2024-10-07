@@ -3,21 +3,35 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-## OPFS storage has defualt jsonPositionSize=8 but should be 14
+## Split conflict handler into "isEqual" and "mergeConflict" functions
+Because the handler is used in so many places it becomes confusing to write a proper conflict handler.
+Also having a handler that requires user interaction is only possible by hackingly using the context param.
+By splitting the functionalities it will become easier to learn where the handlers are used and how to define them properly.
+
+## OPFS storage has default jsonPositionSize=8 but should be 14
 
 Set the default to 14 and also remove all occurences of `jsonPositionSize`.
 
 ## Ideas from https://github.com/pubkey/rxdb/issues/4994
 
-
-## Skip responding full document data on bulkWrites (only in all happy case)
-
-RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remote storage and webworker storage where we do not want to JSON-stringify and parse all data again.
-
 ## migration-storage plugin: Remove catch from cleanup
 
 In the migration-storage plugin we run a catch on `oldStorageInstance.cleanup(0)` to fix v14->v15 migration.
 We should remove that catch in the next major release.
+
+
+## Change the `RX_PIPELINE_CHECKPOINT_CONTEXT` to `rx-pipeline-checkpoint` in the rx-pipeline.ts file
+
+This was not possible before because it requires adding the new value to the schema enum.
+
+## Ensure schema validator is used in devmode
+
+Many reported issues come from people storing data that is not valid to their schema.
+To fix this, in dev-mode we should ensure that at least one schema validator is used.
+
+## ignoreduplicate must never be allowed in non-devmode
+
+`ignoreduplicate` is only usefull for tests and should never be used in production. Throw an error if it is set to `true` in non-dev-mode.
 
 ---------------------------------
 # Maybe later (not sure if should be done)
