@@ -1,6 +1,7 @@
 ---
 title: JavaScript Vector Database
 slug: javascript-vector-database.html
+description: Build a local-first vector database with JavaScript using RxDB & transformers.js. Run semantic searches directly in the browser with offline support and zero network latency.
 ---
 
 
