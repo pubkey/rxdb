@@ -1,51 +1,102 @@
+---
+title: Localstorage vs. IndexedDB vs. Cookies vs. OPFS vs. Wasm-SQLite
+slug: localstorage-indexeddb-cookies-opfs-sqlite-wasm.html
+---
+
+<!-- 
+
+GOALS:
+
+- Compare latency of single bit writes
+- Compare latency of bulk writes
+- Compare the latency of single item reads
+- Compare the latency of bulk reads
+- Compare storage size limit
+- Compare feature table
+  - Indexing
+  - Cross-tab events
+  - Browser Support
+  - 
+- Give a conclusion on what to use which
+- Tell about how RxDB storages might improve stuff
+
+-->
+
 # Localstorage vs. IndexedDB vs. Cookies vs. OPFS vs. Wasm-SQLite
 
+So you build that web application and you want to **store data inside of your users browser**. Maybe you just need to store some small flags or you even need a fully fledged database to store massive amounts of data for your [local first app](../offline-first.md).
 
-Welcome to 2024, a time when building powerful, responsive web applications has never been more exciting. As developers, we constantly seek ways to make our apps faster and more efficient, and one crucial aspect of this is data storage. To ensure our apps not only perform well but also work seamlessly [offline](../offline-first.md), we aim to store data on the client device, minimizing the need to interact with backend servers.
-
-However, a common belief persists:
-
-> Browser are slow and weren't designed to run extensive database operations.
-
-Is this really the case? Over recent years, JavaScript has evolved significantly. New storage APIs like the Origin Private File System (OPFS) and new features like the BroadcastChannel have pushed the boundaries of what JavaScript can achieve in terms of performance.
+In the beginnings of the Web, we only had cookies to store some small key value assignements. But over the years JavaScript has evolved significantly and better storage APIs have been added to the browsers which pave the way for bigger and more complex data operations. Namely we have [Localstorage](./localstorage.md), WebSQL, IndexedDB, and the Origin Private File System API [(OPFS)](../rx-storage-opfs.md).
 
 
-In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like Cookies, LocalStorage and IndexedDB, and newer solutions such as OPFS and Wasm-SQLite. Through performance tests we aim to uncover how fast we can write and read **a huge amount of data** in a web application with the various methods. And because you are reading this in the [RxDB](/) docs, we will utilize multiple RxDB plugins that contain innovative concepts to reach the performance limits of a browser in terms of database operations.
+In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like **Cookies**, **LocalStorage** and **IndexedDB**, and newer solutions such as **OPFS** and **SQLite via WebAssembly**. Through performance tests we aim to uncover how fast we can write and read data in a web application with the various methods.
+
+
+:::note
+You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that has different storage adapters which can utilize the different storage APIs.
+Over the last 8 years I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) to reach the limits of browser database operation speed.
 
 <center>
     <a href="https://rxdb.info/">
         <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
     </a>
 </center>
+:::
 
-## What is Localstorage
 
-LocalStorage provides a simple API to store key-value pairs in a web browser. It's suitable for storing small amounts of data that need to persist across sessions but is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage) and the inability to store complex data types beyond strings.
+## The available storage APIs in a modern browser
 
-## What are Cookies
+Over the years, the type of web applications we build has changed significantly. In the early years of the web we served static html files. Then we served dynamically rendered html and later we build single page applications that run most logic on the client. And for the comming years you might want to build so called [local first apps](../offline-first.md) that handle big and complex data operations solely on the client and even work when offline which gives you the opportunity to build zero-latency user interactions.
 
-Cookies store small pieces of data that are sent with every HTTP request. They are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html).
+For these increments of use cases, the browser vendors kept in pace providing more and better APIs. Let me give you a brief explanation of them:
 
-This limitations means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium.
+### What are Cookies
 
-## What is IndexedDB
+Cookies were first introduced by [netscape in 1994](https://www.baekdal.com/thoughts/the-original-cookie-specification-from-1997-was-gdpr-compliant/).
+Cookies store small pieces of key-value data. Cookies are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html).
+
+This size limitation means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium or the asynchronous [CookieStore API](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API).
+
+
+### What is Localstorage
+
+The [LocalStorage API](./localstorage.md) was first proposed as part of the [WebStorage specification in 2009](https://www.w3.org/TR/2009/WD-webstorage-20090423/#the-localstorage-attribute).
+LocalStorage provides a simple API to store key-value pairs inside of a web browser. It has the methods `setItem`, `getItem`, `removeItem` and `clear` which is all you need from a key-value store. Localstorage is only suitable for storing small amounts of data that need to persist across sessions and it is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage). Storing complex data is only possible by transforming it into a string for example with `JSON.stringify()`.
+The API is not asynchronous which means if fully blocks your JavaScript process while doing stuff. Therefore running heavy operations on it might block your UI from rendering.
+
+> There is also the SesssionStorage API. The key difference is that localStorage data persists indefinitely until explicitly cleared, while sessionStorage data is cleared when the browser tab or window is closed
+
+
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+### What is IndexedDB
 
 IndexedDB is a low-level API for storing large amounts of structured (JSON) data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries. The performance of basic IndexedDB operations can be problematic but there exist [several hacks](../slow-indexeddb.md) to improve writes and query speed.
 
 
-## What is OPFS
+### What is OPFS
 The [Origin Private File System](../rx-storage-opfs.md) (OPFS) is a relatively new API that allows web applications to store large files directly in the browser. It is designed for data-intensive applications that want to write and read binary data.
 OPFS can be used in two modes: Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) or in a WebWorker with the faster, aynchronous access.
 Because only binary data can be processed, OPFS is made to be as a base filesystem for database libraries. You will unlikely directly want to use the OPFS in your applications code.
 
 
-## What is WASM-SQLite
+### What is WASM-SQLite
 
 SQLite is a small, fast, self-contained SQL database written in the C programming language.
 Because browsers cannot run an applications C code directly, [WebAssembly](https://webassembly.org/) (WASM) is used to compile the SQLite C code into WASM byte code. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
 The compiled byte code has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load.
 
 WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
+
+
+### What is WebSQL
+
+
 
 
 ## Test Setup
