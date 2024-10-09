@@ -64,39 +64,47 @@ The [LocalStorage API](./localstorage.md) was first proposed as part of the [Web
 LocalStorage provides a simple API to store key-value pairs inside of a web browser. It has the methods `setItem`, `getItem`, `removeItem` and `clear` which is all you need from a key-value store. Localstorage is only suitable for storing small amounts of data that need to persist across sessions and it is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage). Storing complex data is only possible by transforming it into a string for example with `JSON.stringify()`.
 The API is not asynchronous which means if fully blocks your JavaScript process while doing stuff. Therefore running heavy operations on it might block your UI from rendering.
 
-> There is also the SesssionStorage API. The key difference is that localStorage data persists indefinitely until explicitly cleared, while sessionStorage data is cleared when the browser tab or window is closed
+> There is also the **SessionStorage** API. The key difference is that localStorage data persists indefinitely until explicitly cleared, while sessionStorage data is cleared when the browser tab or window is closed.
 
-
-
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------------------------------------------------------------------------------
 
 ### What is IndexedDB
 
-IndexedDB is a low-level API for storing large amounts of structured (JSON) data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries. The performance of basic IndexedDB operations can be problematic but there exist [several hacks](../slow-indexeddb.md) to improve writes and query speed.
+IndexedDB was first introduced as "Indexed Database API" [in 2015](https://www.w3.org/TR/IndexedDB/#sotd).
+
+IndexedDB is a low-level API for storing large amounts of structured JSON data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries then a fully fledged database.
+
+In 2018, IndexedDB version 2.0 [was introduced](https://hacks.mozilla.org/2016/10/whats-new-in-indexeddb-2-0/). This added some major improvements. Most noticeable the `getAll()` method which improves performance dramatically when fetching bulks of JSON documents. 
+
+IndexedDB [version 3.0](https://w3c.github.io/IndexedDB/) is in the workings which contains many improvements. Most important the addition of `Promise` based calls that makes modern JS features like `async/await` more useful.
 
 
 ### What is OPFS
-The [Origin Private File System](../rx-storage-opfs.md) (OPFS) is a relatively new API that allows web applications to store large files directly in the browser. It is designed for data-intensive applications that want to write and read binary data.
-OPFS can be used in two modes: Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) or in a WebWorker with the faster, aynchronous access.
-Because only binary data can be processed, OPFS is made to be as a base filesystem for database libraries. You will unlikely directly want to use the OPFS in your applications code.
+
+The [Origin Private File System](../rx-storage-opfs.md) (OPFS) is a [relatively new](https://caniuse.com/mdn-api_filesystemfilehandle_createsyncaccesshandle) API that allows web applications to store large files directly in the browser. It is designed for data-intensive applications that want to write and read **binary data** in a simulated file system.
+
+OPFS can be used in two modes:
+- Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) 
+- Or in a WebWorker with the faster, aynchronous access with the `createSyncAccessHandle()` method.
+
+Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently.
+
+### What is WASM SQLite
+
+[WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
+Wasm was added to major browsers over the course of 2017 wich opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+
+Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
+
+The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
 
 
-### What is WASM-SQLite
-
-SQLite is a small, fast, self-contained SQL database written in the C programming language.
-Because browsers cannot run an applications C code directly, [WebAssembly](https://webassembly.org/) (WASM) is used to compile the SQLite C code into WASM byte code. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
-The compiled byte code has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load.
-
-WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 
 
 ### What is WebSQL
-
-
 
 
 ## Test Setup
