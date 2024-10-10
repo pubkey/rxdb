@@ -34,7 +34,7 @@ In this article, we will dive into the various technologies available for storin
 
 :::note
 You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that has different storage adapters which can utilize the different storage APIs.
-Over the last 8 years I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) to reach the limits of browser database operation speed.
+**Since 2017** I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) to reach the limits of browser database operation speed.
 
 <center>
     <a href="https://rxdb.info/">
@@ -86,7 +86,7 @@ OPFS can be used in two modes:
 - Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) 
 - Or in a WebWorker with the faster, aynchronous access with the `createSyncAccessHandle()` method.
 
-Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently.
+Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently. I have build a [OPFS based storage](../rx-storage-opfs.md) for RxDB with proper indexing and querying and it took me several months.
 
 ### What is WASM SQLite
 
@@ -95,8 +95,88 @@ Wasm was added to major browsers over the course of 2017 wich opened a wide rang
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
-The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. For reads the same goes the other way round.
+The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. This is done with so called [VFS adapters](https://www.sqlite.org/vfs.html) that handle data access from SQLite to anything else.
 
+### What was WebSQL
+
+WebSQL **has been** a web API [introduced in 2009](https://www.w3.org/TR/webdatabase/) that allowed browsers to use SQL databases for client-side storage, based on SQLite. The idea was to give developers a way to store and query data using SQL on the client side, similar to server-side databases.
+WebSQL has been **removed from browsers** in the current years for multiple good reasons:
+
+- WebSQL was not standardized and having an API based on a single specific implementation in form of the SQLite source code is hard to ever make it to a standard.
+- WebSQL required browsers to use a [specific version](https://developer.chrome.com/blog/deprecating-web-sql#reasons_for_deprecating_web_sql) of SQLite (version 3.6.19) which means whenever there would be any update or bugfix to SQLite, it would not be possible to add that to WebSQL without possible breaking the web.
+- Major browsers like firefox never supported WebSQL.
+
+Therefore in the following we will **just ignore WebSQL** even if it would be possible to run tests on in by setting specific browser flags or using old versions of chromium.
+
+-------------
+
+## Feature Comparison
+
+Now that you know the basic concepts of the APIs, lets compare some specific features that have shown to be important for people using RxDB and browser based storages in general.
+
+### Storing complex JSON documents
+
+When you store data in a web application, most often you want to store complex JSON documents and not only "normal" values like the `integers` and `strings` you store in a server side database.
+
+- Only IndexedDB works with JSON objects natively.
+- With SQLite WASM you can [store JSON](https://www.sqlite.org/json1.html) in a `text` column since version 3.38.0 (2022-02-22) and even run deep queries on it and use single attributes as indexes.
+
+Every of the other APIs can only store strings or binary data. Of course you can transform any JSON object to a string with `JSON.stringify()` but not having the JSON support in the API can make things complex when running queries and running `JSON.stringify()` many times can cause performance problems.
+
+### Multi-Tab Support
+
+A big difference when building a Web App compared to [Electron](../electron-database.md) or [React-Native](../react-native-database.md), is that the user will open and close the app in **multiple browser tabs at the same time**. Therefore you have not only one JavaScript process running, but many of them can exist and might have to share state changes between each other to not show **outdated data** to the user.
+
+> If your users' muscle memory puts the left hand on the **F5** key while using your website, you did something wrong!
+
+Not all storage APIs support a way to automatically share write events between tabs. 
+
+Only localstorage has a way to automatically share write events between tabs by the API itself with the [storage-event](./localstorage.md#localstorage-vs-indexeddb) which can be used to observe changes.
+
+```js
+// localStorage can observe changes with the storage event.
+// This feature is missing in IndexedDB and others
+addEventListener("storage", (event) => {});
+```
+
+There was the [experimental IndexedDB observers API](https://stackoverflow.com/a/33270440) for chrome, but the proposal repository has been archived.
+
+To workaround this problem, there are two solutions: 
+- The first option is to use the [BroadcastChannel API](https://github.com/pubkey/broadcast-channel) which can send messages across browser tabs. So whenever you do a write to the storage, you also send a notification to other tabs to inform them about these changes. This is the most common workaround which is also used by RxDB. Notice that there is also the [WebLocks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API) which can be used to have mutexes accross browser tabs. 
+- The other solution is to use the [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) and do all writes inside of the worker. All browser tabs can then subscribe to messages from that **single** SharedWorker and know about changes.
+
+### Indexing Support
+
+The big difference between a database and storing data in a plain file, is that a database is writing data in a format that allows running operations over indexes to facilitate fast performant queries. From our list of technologies only **IndexedDB** and **WASM SQLite** support for indexing out of the box. In theory you can build indexes on top of any storage like localstorage or OPFS but you likely should not want to do that by yourself.
+
+In IndexedDB for example, we can fetch a bulk of documents by a given index range:
+
+```ts
+// find all producs with a price between 10 and 50
+const keyRange = IDBKeyRange.bound(10, 50);
+const transaction = db.transaction('products', 'readonly');
+const objectStore = transaction.objectStore('products');
+const index = objectStore.index('priceIndex');
+const request = index.getAll(keyRange);
+const result = await new Promise((res, rej) => {
+  request.onsuccess = (event) => res(event.target.result);
+  request.onerror = (event) => rej(event);
+});
+```
+
+Notice that IndexedDB has the limitation of [not having indexes on boolean values](https://github.com/w3c/IndexedDB/issues/76). You can only index strings and numbers. To workaround that you have to transform boolean to numbers and backwards when storing the data.
+
+
+### WebWorker Support
+
+When running heavy data operations, you might want to move the processing away from the JavaScript main thread. This ensures that our app keeps being responsive and fast while the processing can run in parallel in the background. In a browser you can either use the [WebWorker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API), [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) or the [ServiceWorker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) API to do that. In RxDB you can use the [WebWorker](../rx-storage-worker.md) or [SharedWorker](../rx-storage-shared-worker.md) plugins to move your storage inside of a worker.
+
+The most common API for that use case is spawning a **WebWorker** and doing most work on that second JavaScript process. The worker is spawned from a seperate JavaScript file (or base64 string) and communicates with the main thread by sending data with `postMessage()`.
+
+Unfortunately **Localstorage** and **Cookies** [cannot be used in WebWorker or SharedWorker](https://stackoverflow.com/questions/6179159/accessing-localstorage-from-a-webworker) because of the design and security constraints. WebWorkers run in a separate global context from the main browser thread and therefore cannot do stuff that might impact the main thread. They have no direct access to certain web APIs, like the DOM, localStorage, or cookies.
+
+Everything else can be used from inside a WebWorker.
+The fast version of OPFS with the `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations), and **not on the main thread**. This is because all the operations of the returned `AccessHandle` are **not async** and therefore block the JavaScript process, so you do want to do that on the main thread and block everything.
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
@@ -104,7 +184,24 @@ The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.
 -----------------------------------------------------------------------------
 
 
-### What is WebSQL
+
+
+
+
+
+
+## Performance comparison
+
+Lets do some performance comparisons. Notice that we only run simple tests and for your specific use case in your application the results might differ. Also we only compare performance in google chrome (version 128.0.6613.137). Firefox and Safari have similar **but not equal** performance patterns. You can run the test by yourself on your own machine from this [github repository](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm).
+
+### Latency of small writes
+
+### Latency of small reads
+
+### Big Bulk Writes
+
+### Big Bulk Reads
+
 
 
 ## Test Setup
@@ -124,50 +221,6 @@ Depending on your use case, it might be relevant that many small operations run 
 ### Initial page load
 How fast does the first query load when there are many documents
 stored already.
-
-
-
-## Feature comparison
-
-### Multitab support
-
-A big difference when building a Web App compared to Electron or React-Native, is that the user will open and close the app in multiple browser tabs at the same time. Therefore you have not only one JavaScript process running, but many of them can exist and might have to share state changes between each other to not show outdated data to the user.
-
-Not all storage APIs support a way to automatically share write events between tabs. Only localstorage has the  [storage-event](./localstorage.md#localstorage-vs-indexeddb) which can be used to observe changes.
-
-```js
-// localStorage can observe changes with the storage event.
-// This feature is missing in IndexedDB and others
-addEventListener("storage", (event) => {});
-```
-
-To workaround this problem, there are two solutions: 
-The first option is to use the [BroadcastChannel API](https://github.com/pubkey/broadcast-channel) which can send messages across browser tabs. So whenever you do a write to the storage, you also send a notification to other tabs to inform them about these changes.
-
-The other solution is to use the [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) and do all writes inside of the worker. All browser tabs can then subscribe to messages from that SharedWorker and know about changes.
-
-### Indexing
-
-The big difference between a database and storing data in a plain file, is that a database is writing data in a format that allows running operations over indexes to facilitate fast queries.
-
-#### iterable indexes
-- IndexedDB does not support boolean indexes
-
-#### secondary indexes
-- Only IndexedDB and SQLite WASM has secondary indexes
-
-
-### Storing complex JSON documents
-
-- IndexedDB can store JSON natively
-- SQLite can [store JSON](https://www.sqlite.org/json1.html) from version 3.38.0 (2022-02-22).
-
-### Worker Support
-
-- Localstorage and Cookies [cannot be used in WebWorker or SharedWorker](https://stackoverflow.com/questions/6179159/accessing-localstorage-from-a-webworker).
-
-- OPFS with the fast `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations).
-  2
 
 
 
