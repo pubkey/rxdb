@@ -44,7 +44,7 @@ You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that h
 :::
 
 
-## The available storage APIs in a modern browser
+## The available Storage APIs in a modern Browser
 
 Over the years, the type of web applications we build has changed significantly. In the early years of the web we served static html files. Then we served dynamically rendered html and later we build single page applications that run most logic on the client. And for the comming years you might want to build so called [local first apps](../offline-first.md) that handle big and complex data operations solely on the client and even work when offline which gives you the opportunity to build zero-latency user interactions.
 
@@ -114,7 +114,7 @@ Therefore in the following we will **just ignore WebSQL** even if it would be po
 
 Now that you know the basic concepts of the APIs, lets compare some specific features that have shown to be important for people using RxDB and browser based storages in general.
 
-### Storing complex JSON documents
+### Storing complex JSON Documents
 
 When you store data in a web application, most often you want to store complex JSON documents and not only "normal" values like the `integers` and `strings` you store in a server side database.
 
@@ -178,30 +178,109 @@ Unfortunately **Localstorage** and **Cookies** [cannot be used in WebWorker or S
 Everything else can be used from inside a WebWorker.
 The fast version of OPFS with the `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations), and **not on the main thread**. This is because all the operations of the returned `AccessHandle` are **not async** and therefore block the JavaScript process, so you do want to do that on the main thread and block everything.
 
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------------------------------------------------------------------------------
+## Performance Comparison
+
+Lets do some performance comparisons. Notice that we only run simple tests and for your specific use case in your application the results might differ. Also we only compare performance in google chrome (version 128.0.6613.137). Firefox and Safari have similar **but not equal** performance patterns. You can run the test by yourself on your own machine from this [github repository](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm). Notice that for all tests we throttle the network to behave like the average german internet speed. (download: 135,900 kbit/s, upload: 28,400 kbit/s, latency: 125ms). Also all tests store an "average" JSON object that might be required to be stringified depending on the storage.
+
+### Initialization Time
+
+Before you can store any data, many APIs require a setup process like creating databases, spawing WebAssembly processes or downloading additional stuff. To ensure your app starts fast, the initialization time is important.
+
+LocalStorage and Cookies do not have any setup process and can be directly used. IndexedDB requires to open a database and a store inside of it. WASM SQLite needs to download a WASM file and process it. OPFS needs to download and start a worker file.
+
+Here are the time measurements from how long it takes until the first bit of data can be stored:
+
+| Technology              | Time in Milliseconds |
+| ----------------------- | -------------------- |
+| IndexedDB               | 46                   |
+| OPFS Main Thread        | 23                   |
+| OPFS WebWorker          | 26.8                 |
+| WASM SQLite (memory)    | 504                  |
+| WASM SQLite (IndexedDB) | 535                  |
+
+Here we can notice a few things:
+
+- Opening a new IndexedDB database with a single store takes suprisingly long
+- The latency overhead of sending data from the main thread to a WebWorker OPFS is about 4 milliseconds. Here we only send minimal data to init the OPFS file handler. It will be interesting if that latency increases when more data is processed.
+- Downloading and parsing WASM SQLite and creating a single table takes about half a second. Using also the IndexedDB VFS to store data persistently adds additional 31 milliseconds. Reloading the page with enabled caching and already prepared tables is a bit faster with 420 milliseconds (memory).
 
 
+### Latency of small Writes
+
+Next lets test the latency of small writes. This is important when you do many small data changes that happen independent from each other. Like when you stream data from a websocket or persist pseudo randomly happening events like mouse movements.
+
+| Technology              | Time in Milliseconds |
+| ----------------------- | -------------------- |
+| Cookies                 | 0.058                |
+| Localstorage            | 0.017                |
+| IndexedDB               | 0.17                 |
+| OPFS Main Thread        | 1.46                 |
+| OPFS WebWorker          | 1.54                 |
+| WASM SQLite (memory)    | 0.17                 |
+| WASM SQLite (IndexedDB) | 3.17                 |
 
 
+Here we can notice a few things:
+
+- Localstorage has the lowest write latency with only 0.017 milliseconds per write.
+- IndexedDB writes are about 10 times slower compared to LocalStorage.
+- Sending the data to the WASM SQLite process and letting it persist via IndexedDB is slow with over 3 milliseconds per write.
+
+The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first ist a bit slower which comes from the overhead of serializing and deserialing the data on both sides.
+If we would not create on OPFS file per document but instead append everything to a single file, the performance pattern changes significantly. Then the faster file handle from the `createSyncAccessHandle()` only takes about 1 millisecond per write. But this would require to somehow remember at which position the each document is stored. Therefore in our tests we will continue using one file per document.
+
+### Latency of small Reads
+
+Now that we have stored some documents, lets measure how long it takes to read single documents by their `id`.
 
 
+| Technology              | Time in Milliseconds |
+| ----------------------- | -------------------- |
+| Cookies                 | 0.132                |
+| Localstorage            | 0.0052               |
+| IndexedDB               | 0.1                  |
+| OPFS Main Thread        | 1.28                 |
+| OPFS WebWorker          | 1.41                 |
+| WASM SQLite (memory)    | 0.45                 |
+| WASM SQLite (IndexedDB) | 2.93                 |
 
 
-## Performance comparison
+Here we can notice a few things:
 
-Lets do some performance comparisons. Notice that we only run simple tests and for your specific use case in your application the results might differ. Also we only compare performance in google chrome (version 128.0.6613.137). Firefox and Safari have similar **but not equal** performance patterns. You can run the test by yourself on your own machine from this [github repository](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm).
-
-### Latency of small writes
-
-### Latency of small reads
+- Localstorage reads are **really really fast** with only 0.0052 milliseconds per read.
+- The other technologies perform reads in a similar speed to their write latency.
 
 ### Big Bulk Writes
 
+As next step, lets do some big bulk operations with 200 documents at once.
+
+| Technology              | Time in Milliseconds |
+| ----------------------- | -------------------- |
+| Cookies                 | 20.6                 |
+| Localstorage            | 5.79                 |
+| IndexedDB               | 13.41                |
+| OPFS Main Thread        | 280                  |
+| OPFS WebWorker          | 104                  |
+| WASM SQLite (memory)    | 19.1                 |
+| WASM SQLite (IndexedDB) | 37.12                |
+
+
+Here we can notice a few things:
+
+
+- Sending the data to a WebWorker and running it via the faster OPFS API is about twice as fast.
+- WASM SQLite performs better on bulk operations compared to its single write latency. This is because sending the data to WASM and backwards is faster if it is done all at once instead of once per document.
+
+
 ### Big Bulk Reads
 
+
+- Parsing the cookies string is slow because there is no way to get a single cookie value in JavaScript. On each read the whole string must be parsed and checked. There might be faster methods to do this on bulk operations.
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 
 
 ## Test Setup
@@ -221,9 +300,6 @@ Depending on your use case, it might be relevant that many small operations run 
 ### Initial page load
 How fast does the first query load when there are many documents
 stored already.
-
-
-
 
 ## Lets reach the limits of client side storage performance with RxDB
 - indexeddb optimizations
@@ -245,9 +321,6 @@ Web Storage API
 Cross tab support
 Observability
 
-
-
-
 ## Read further
 
 TODO fix links
@@ -257,10 +330,6 @@ TODO fix links
 
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
-
-
-
-
 
 ## TODOs
 
