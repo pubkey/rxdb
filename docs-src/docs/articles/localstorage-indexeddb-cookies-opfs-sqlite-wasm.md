@@ -252,7 +252,7 @@ Here we can notice a few things:
 - IndexedDB writes are about 10 times slower compared to localStorage.
 - Sending the data to the WASM SQLite process and letting it persist via IndexedDB is slow with over 3 milliseconds per write.
 
-The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first is a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
+The OPFS operations take about 1.5 milliseconds to write the JSON data into one document per file. We can see the sending the data to a webworker first is a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
 If we would not create on OPFS file per document but instead append everything to a single file, the performance pattern changes significantly. Then the faster file handle from the `createSyncAccessHandle()` only takes about 1 millisecond per write. But this would require to somehow remember at which position the each document is stored. Therefore in our tests we will continue using one file per document.
 
 ### Latency of small Reads
