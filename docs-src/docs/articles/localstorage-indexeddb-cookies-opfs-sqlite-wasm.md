@@ -357,7 +357,7 @@ You are reading this in 2024, but the web does not stand still. There is a good 
 
 <!-- TODO fix links -->
 <!-- - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993) -->
-<!-- - Shared/Like my [announcement tweet](https://twitter.com/rxdbjs/status/1769507055298064818) -->
+- Share my [announcement tweet](https://x.com/rxdbjs/status/1846145062847062391) -->
 - Reproduce the benchmarks at the [github repo](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm)
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md)
 - Check out the [RxDB github repo](https://github.com/pubkey/rxdb) and leave a star ⭐
