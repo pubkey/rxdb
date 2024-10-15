@@ -153,6 +153,7 @@ const sidebars = {
         'articles/ionic-database',
         'articles/json-database',
         'articles/websockets-sse-polling-webrtc-webtransport',
+        'articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm',
         'articles/localstorage',
         'articles/mobile-database',
         'articles/progressive-web-app-database',

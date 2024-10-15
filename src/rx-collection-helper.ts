@@ -95,7 +95,6 @@ export async function removeCollectionStorages(
     );
     const relevantCollectionMetaDocs = allCollectionMetaDocs
         .filter(metaDoc => metaDoc.data.name === collectionName);
-
     let removeStorages: {
         collectionName: string;
         schema: RxJsonSchema<any>;
