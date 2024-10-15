@@ -1,3 +1,5 @@
+import { overwritable } from "../../overwritable.js";
+import { newRxError } from "../../rx-error.js";
 export var RX_STATE_SCHEMA_TITLE = 'RxStateCollection';
 export var RX_STATE_ID_LENGTH = 14;
 export var RX_STATE_COLLECTION_SCHEMA = {
@@ -53,5 +55,21 @@ export function nextRxStateId(lastId) {
   var next = parsed + 1;
   var nextString = next.toString();
   return nextString.padStart(RX_STATE_ID_LENGTH, '0');
+}
+
+/**
+ * Only non-primitives can be used as a key in WeakMap
+ */
+export function isValidWeakMapKey(key) {
+  // This method is slow and must only be used in dev-mode!
+  if (!overwritable.isDevMode()) {
+    throw newRxError('SNH');
+  }
+  try {
+    new WeakMap().set(key, {});
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
 //# sourceMappingURL=helpers.js.map

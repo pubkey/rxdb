@@ -4,7 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RX_STATE_SCHEMA_TITLE = exports.RX_STATE_ID_LENGTH = exports.RX_STATE_COLLECTION_SCHEMA = void 0;
+exports.isValidWeakMapKey = isValidWeakMapKey;
 exports.nextRxStateId = nextRxStateId;
+var _overwritable = require("../../overwritable.js");
+var _rxError = require("../../rx-error.js");
 var RX_STATE_SCHEMA_TITLE = exports.RX_STATE_SCHEMA_TITLE = 'RxStateCollection';
 var RX_STATE_ID_LENGTH = exports.RX_STATE_ID_LENGTH = 14;
 var RX_STATE_COLLECTION_SCHEMA = exports.RX_STATE_COLLECTION_SCHEMA = {
@@ -60,5 +63,21 @@ function nextRxStateId(lastId) {
   var next = parsed + 1;
   var nextString = next.toString();
   return nextString.padStart(RX_STATE_ID_LENGTH, '0');
+}
+
+/**
+ * Only non-primitives can be used as a key in WeakMap
+ */
+function isValidWeakMapKey(key) {
+  // This method is slow and must only be used in dev-mode!
+  if (!_overwritable.overwritable.isDevMode()) {
+    throw (0, _rxError.newRxError)('SNH');
+  }
+  try {
+    new WeakMap().set(key, {});
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
 //# sourceMappingURL=helpers.js.map

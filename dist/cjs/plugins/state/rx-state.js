@@ -14,6 +14,7 @@ var _helpers = require("./helpers.js");
 var _rxError = require("../../rx-error.js");
 var _hooks = require("../../hooks.js");
 var debugId = 0;
+var deepFrozenCache = new WeakMap();
 
 /**
  * RxDB internally used properties are
@@ -134,9 +135,18 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     } else {
       ret = (0, _index.getProperty)(this._state, path);
     }
-    if (_overwritable.overwritable.isDevMode()) {
-      ret = (0, _index.clone)(ret);
-      ret = _overwritable.overwritable.deepFreezeWhenDevMode(ret);
+
+    /**
+     * In dev-mode we have to clone the value before deep-freezing
+     * it to not have an immutable subobject in the state value.
+     * But calling .get() with the same path multiple times,
+     * should return exactly the same object instance
+     * so it does not cause re-renders on react.
+     * So in dev-mode we have to 
+     */
+    if (_overwritable.overwritable.isDevMode() && (0, _helpers.isValidWeakMapKey)(ret)) {
+      var frozen = (0, _index.getFromMapOrCreate)(deepFrozenCache, ret, () => _overwritable.overwritable.deepFreezeWhenDevMode((0, _index.clone)(ret)));
+      return frozen;
     }
     return ret;
   };

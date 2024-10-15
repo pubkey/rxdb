@@ -1,11 +1,12 @@
 import { Subject, distinctUntilChanged, map, merge, shareReplay, startWith, tap } from 'rxjs';
 import { overwritable } from "../../overwritable.js";
 import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
-import { RXJS_SHARE_REPLAY_DEFAULTS, getProperty, setProperty, PROMISE_RESOLVE_VOID, appendToArray, clone, randomCouchString, deepEqual } from "../utils/index.js";
-import { RX_STATE_COLLECTION_SCHEMA, nextRxStateId } from "./helpers.js";
+import { RXJS_SHARE_REPLAY_DEFAULTS, getProperty, setProperty, PROMISE_RESOLVE_VOID, appendToArray, clone, randomCouchString, deepEqual, getFromMapOrCreate } from "../utils/index.js";
+import { RX_STATE_COLLECTION_SCHEMA, isValidWeakMapKey, nextRxStateId } from "./helpers.js";
 import { newRxError } from "../../rx-error.js";
 import { runPluginHooks } from "../../hooks.js";
 var debugId = 0;
+var deepFrozenCache = new WeakMap();
 
 /**
  * RxDB internally used properties are
@@ -126,9 +127,18 @@ export var RxStateBase = /*#__PURE__*/function () {
     } else {
       ret = getProperty(this._state, path);
     }
-    if (overwritable.isDevMode()) {
-      ret = clone(ret);
-      ret = overwritable.deepFreezeWhenDevMode(ret);
+
+    /**
+     * In dev-mode we have to clone the value before deep-freezing
+     * it to not have an immutable subobject in the state value.
+     * But calling .get() with the same path multiple times,
+     * should return exactly the same object instance
+     * so it does not cause re-renders on react.
+     * So in dev-mode we have to 
+     */
+    if (overwritable.isDevMode() && isValidWeakMapKey(ret)) {
+      var frozen = getFromMapOrCreate(deepFrozenCache, ret, () => overwritable.deepFreezeWhenDevMode(clone(ret)));
+      return frozen;
     }
     return ret;
   };
