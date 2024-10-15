@@ -69,7 +69,7 @@ The API is not asynchronous which means if fully blocks your JavaScript process 
 
 IndexedDB was first introduced as "Indexed Database API" [in 2015](https://www.w3.org/TR/IndexedDB/#sotd).
 
-IndexedDB is a low-level API for storing large amounts of structured JSON data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries then a fully fledged database.
+[IndexedDB](../rx-storage-indexeddb.md) is a low-level API for storing large amounts of structured JSON data. While the API is a bit hard to use, IndexedDB can utilize indexes and asynchronous operations. It lacks support for complex queries and only allows to iterate over the indexes which makes it more like a base layer for other libraries then a fully fledged database.
 
 In 2018, IndexedDB version 2.0 [was introduced](https://hacks.mozilla.org/2016/10/whats-new-in-indexeddb-2-0/). This added some major improvements. Most noticeable the `getAll()` method which improves performance dramatically when fetching bulks of JSON documents. 
 
@@ -82,7 +82,7 @@ The [Origin Private File System](../rx-storage-opfs.md) (OPFS) is a [relatively 
 
 OPFS can be used in two modes:
 - Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) 
-- Or in a WebWorker with the faster, aynchronous access with the `createSyncAccessHandle()` method.
+- Or in a WebWorker with the faster, asynchronous access with the `createSyncAccessHandle()` method.
 
 Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently. I have build a [OPFS based storage](../rx-storage-opfs.md) for RxDB with proper indexing and querying and it took me several months.
 
@@ -146,7 +146,7 @@ addEventListener("storage", (event) => {});
 There was the [experimental IndexedDB observers API](https://stackoverflow.com/a/33270440) for chrome, but the proposal repository has been archived.
 
 To workaround this problem, there are two solutions: 
-- The first option is to use the [BroadcastChannel API](https://github.com/pubkey/broadcast-channel) which can send messages across browser tabs. So whenever you do a write to the storage, you also send a notification to other tabs to inform them about these changes. This is the most common workaround which is also used by RxDB. Notice that there is also the [WebLocks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API) which can be used to have mutexes accross browser tabs. 
+- The first option is to use the [BroadcastChannel API](https://github.com/pubkey/broadcast-channel) which can send messages across browser tabs. So whenever you do a write to the storage, you also send a notification to other tabs to inform them about these changes. This is the most common workaround which is also used by RxDB. Notice that there is also the [WebLocks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API) which can be used to have mutexes across browser tabs. 
 - The other solution is to use the [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) and do all writes inside of the worker. All browser tabs can then subscribe to messages from that **single** SharedWorker and know about changes.
 
 ### Indexing Support
@@ -175,7 +175,7 @@ Notice that IndexedDB has the limitation of [not having indexes on boolean value
 
 When running heavy data operations, you might want to move the processing away from the JavaScript main thread. This ensures that our app keeps being responsive and fast while the processing can run in parallel in the background. In a browser you can either use the [WebWorker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API), [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) or the [ServiceWorker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) API to do that. In RxDB you can use the [WebWorker](../rx-storage-worker.md) or [SharedWorker](../rx-storage-shared-worker.md) plugins to move your storage inside of a worker.
 
-The most common API for that use case is spawning a **WebWorker** and doing most work on that second JavaScript process. The worker is spawned from a seperate JavaScript file (or base64 string) and communicates with the main thread by sending data with `postMessage()`.
+The most common API for that use case is spawning a **WebWorker** and doing most work on that second JavaScript process. The worker is spawned from a separate JavaScript file (or base64 string) and communicates with the main thread by sending data with `postMessage()`.
 
 Unfortunately **LocalStorage** and **Cookies** [cannot be used in WebWorker or SharedWorker](https://stackoverflow.com/questions/6179159/accessing-localstorage-from-a-webworker) because of the design and security constraints. WebWorkers run in a separate global context from the main browser thread and therefore cannot do stuff that might impact the main thread. They have no direct access to certain web APIs, like the DOM, localStorage, or cookies.
 
@@ -252,7 +252,7 @@ Here we can notice a few things:
 - IndexedDB writes are about 10 times slower compared to localStorage.
 - Sending the data to the WASM SQLite process and letting it persist via IndexedDB is slow with over 3 milliseconds per write.
 
-The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first ist a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
+The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first is a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
 If we would not create on OPFS file per document but instead append everything to a single file, the performance pattern changes significantly. Then the faster file handle from the `createSyncAccessHandle()` only takes about 1 millisecond per write. But this would require to somehow remember at which position the each document is stored. Therefore in our tests we will continue using one file per document.
 
 ### Latency of small Reads
@@ -323,7 +323,7 @@ Here we can notice a few things:
   - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
-- SQLite WASM can be fast but the you have to initally download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
+- SQLite WASM can be fast but the you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
 
 
 -------------
