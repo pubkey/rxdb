@@ -2,12 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX RxState.property$ should emit stable reference [#6462](https://github.com/pubkey/rxdb/pull/6462)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.35.0 (15 October 2024)
+
+- 🆕📢 New Article: [LocalStorage vs. IndexedDB vs. Cookies vs. OPFS vs. WASM-SQLite](https://rxdb.info/articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm.html)
+- FIX RxState.property$ should emit stable reference [#6462](https://github.com/pubkey/rxdb/pull/6462)
 
 ### 15.34.1 (2 October 2024)
 
