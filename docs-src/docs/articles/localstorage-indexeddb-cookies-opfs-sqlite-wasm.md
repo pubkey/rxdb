@@ -24,17 +24,17 @@ GOALS:
 
 # Localstorage vs. IndexedDB vs. Cookies vs. OPFS vs. WASM-SQLite
 
-So you build that web application and you want to **store data inside of your users browser**. Maybe you just need to store some small flags or you even need a fully fledged database to store massive amounts of data for your [local first app](../offline-first.md).
+So you build that web application and you want to **store data inside of your users browser**. Maybe you just need to store some small flags or you even need a fully fledged database.
 
-In the beginnings of the Web, we only had cookies to store some small key value assignements. But over the years JavaScript has evolved significantly and better storage APIs have been added to the browsers which pave the way for bigger and more complex data operations. Namely we have [Localstorage](./localstorage.md), WebSQL, IndexedDB, and the Origin Private File System API [(OPFS)](../rx-storage-opfs.md).
+The types of web applications we build has changed significantly. In the early years of the web we served static html files. Then we served dynamically rendered html and later we build **single page applications** that run most logic on the client. And for the coming years you might want to build so called [local first apps](../offline-first.md) that handle big and complex data operations solely on the client and even work when offline, which gives you the opportunity to build **zero-latency** user interactions.
 
+In the beginnings of the Web, we only had **cookies** to store some small key value assignements. But JavaScript and browsers have evolved significantly and better storage APIs have been added which pave the way for bigger and more complex data operations.
 
-In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like **Cookies**, **LocalStorage** and **IndexedDB**, and newer solutions such as **OPFS** and **SQLite via WebAssembly**. Through performance tests we aim to uncover how fast we can write and read data in a web application with the various methods.
-
+In this article, we will dive into the various technologies available for storing and querying data in a browser. We'll explore traditional methods like **Cookies**, **localStorage**, **WebSQL**, **IndexedDB** and newer solutions such as **OPFS** and **SQLite via WebAssembly**. We compare the features and limitations and through performance tests we aim to uncover how fast we can write and read data in a web application with the various methods.
 
 :::note
 You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that has different storage adapters which can utilize the different storage APIs.
-**Since 2017** I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) to reach the limits of browser database operation speed.
+**Since 2017** I spend most of my time working with these APIs, doing performance tests and building [hacks](../slow-indexeddb.md) and plugins to reach the limits of browser database operation speed.
 
 <center>
     <a href="https://rxdb.info/">
@@ -46,21 +46,18 @@ You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that h
 
 ## The available Storage APIs in a modern Browser
 
-Over the years, the type of web applications we build has changed significantly. In the early years of the web we served static html files. Then we served dynamically rendered html and later we build single page applications that run most logic on the client. And for the comming years you might want to build so called [local first apps](../offline-first.md) that handle big and complex data operations solely on the client and even work when offline which gives you the opportunity to build zero-latency user interactions.
-
-For these increments of use cases, the browser vendors kept in pace providing more and better APIs. Let me give you a brief explanation of them:
+First lets have a brief overview of the different APIs, their intentional use case and history:
 
 ### What are Cookies
 
 Cookies were first introduced by [netscape in 1994](https://www.baekdal.com/thoughts/the-original-cookie-specification-from-1997-was-gdpr-compliant/).
-Cookies store small pieces of key-value data. Cookies are mainly used for session management, personalization, and tracking, but are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html).
+Cookies store small pieces of key-value data. Cookies are mainly used for session management, personalization, and tracking. Cookies can have several security settings like a time-to-live or the `domain` attribute to share the cookies between several subdomains.
 
-This size limitation means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium or the asynchronous [CookieStore API](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API).
-
+Cookies values are not only stored at the client but also send with **every http request** to the server. This means we cannot store much data in a cookie but it is still interesting how good cookie access performance compared to the other methods. Especially because cookies are such an important base feature of the web, many performance optimizations have been done and even these days there is still progress being made like the [Shared Memory Versioning](https://blog.chromium.org/2024/06/introducing-shared-memory-versioning-to.html) by chromium or the asynchronous [CookieStore API](https://developer.mozilla.org/en-US/docs/Web/API/Cookie_Store_API).
 
 ### What is Localstorage
 
-The [LocalStorage API](./localstorage.md) was first proposed as part of the [WebStorage specification in 2009](https://www.w3.org/TR/2009/WD-webstorage-20090423/#the-localstorage-attribute).
+The [localStorage API](./localstorage.md) was first proposed as part of the [WebStorage specification in 2009](https://www.w3.org/TR/2009/WD-webstorage-20090423/#the-localstorage-attribute).
 LocalStorage provides a simple API to store key-value pairs inside of a web browser. It has the methods `setItem`, `getItem`, `removeItem` and `clear` which is all you need from a key-value store. Localstorage is only suitable for storing small amounts of data that need to persist across sessions and it is [limited by a 5MB storage cap](./localstorage.md#understanding-the-limitations-of-local-storage). Storing complex data is only possible by transforming it into a string for example with `JSON.stringify()`.
 The API is not asynchronous which means if fully blocks your JavaScript process while doing stuff. Therefore running heavy operations on it might block your UI from rendering.
 
@@ -100,7 +97,7 @@ Wasm was added to major browsers over the course of 2017 wich opened a wide rang
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
-The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. This is done with so called [VFS adapters](https://www.sqlite.org/vfs.html) that handle data access from SQLite to anything else.
+The compiled byte code of SQLite has a size of [about 938.9 kB](https://sqlite.org/download.html) which must be downloaded and parsed by the users on the first page load. WASM cannot directly access any persistend storage API in the browser. Instead it requires data to flow from WASM to the main-thread and then can be put into one of the browser APIs. This is done with so called [VFS (virtual file system) adapters](https://www.sqlite.org/vfs.html) that handle data access from SQLite to anything else.
 
 ### What was WebSQL
 
@@ -112,6 +109,7 @@ WebSQL has been **removed from browsers** in the current years for multiple good
 - Major browsers like firefox never supported WebSQL.
 
 Therefore in the following we will **just ignore WebSQL** even if it would be possible to run tests on in by setting specific browser flags or using old versions of chromium.
+
 
 -------------
 
@@ -183,6 +181,26 @@ Unfortunately **Localstorage** and **Cookies** [cannot be used in WebWorker or S
 Everything else can be used from inside a WebWorker.
 The fast version of OPFS with the `createSyncAccessHandle` method can **only** [be used in a WebWorker](../rx-storage-opfs.md#opfs-limitations), and **not on the main thread**. This is because all the operations of the returned `AccessHandle` are **not async** and therefore block the JavaScript process, so you do want to do that on the main thread and block everything.
 
+-------------
+
+
+## Storage Size Limits
+
+
+
+- **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your websserver will not accept too long headers and reject the reuqests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
+
+- **LocalStorage** has a storage size limitation that varies depending on the browser, but generally ranges from 4 MB to 10 MB per origin. You can test your localStorage size limit [here](https://arty.name/localstorage.html).
+  - Chrome/Chromium/Edge: 5 MB per domain
+  - Firefox: 10 MB per domain
+  - Safari: 4-5 MB per domain (varies slightly between versions)
+
+- **IndexedDB** does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disk space on the user's device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling `await navigator.storage.estimate()`. Typically you can store gigabytes of data which can be tried out [here](https://demo.agektmr.com/storage/).
+
+- **OPFS** has the same storage size limitation as IndexedDB. Its limit depends on the available disc space. This can also be tested [here](https://demo.agektmr.com/storage/).
+
+-------------
+
 ## Performance Comparison
 
 Lets do some performance comparisons. Notice that we only run simple tests and for your specific use case in your application the results might differ. Also we only compare performance in google chrome (version 128.0.6613.137). Firefox and Safari have similar **but not equal** performance patterns. You can run the test by yourself on your own machine from this [github repository](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm). Notice that for all tests we throttle the network to behave like the average german internet speed. (download: 135,900 kbit/s, upload: 28,400 kbit/s, latency: 125ms). Also all tests store an "average" JSON object that might be required to be stringified depending on the storage. We also only test the performance of storing documents by id because some of the technologies (cookies, OPFS and localstorage) do not support indexed range operations so it makes no sense to compare the performance of these.
@@ -191,7 +209,7 @@ Lets do some performance comparisons. Notice that we only run simple tests and f
 
 Before you can store any data, many APIs require a setup process like creating databases, spawing WebAssembly processes or downloading additional stuff. To ensure your app starts fast, the initialization time is important.
 
-LocalStorage and Cookies do not have any setup process and can be directly used. IndexedDB requires to open a database and a store inside of it. WASM SQLite needs to download a WASM file and process it. OPFS needs to download and start a worker file and initialize the virtual file system directory.
+The APIs of localStorage and Cookies do not have any setup process and can be directly used. IndexedDB requires to open a database and a store inside of it. WASM SQLite needs to download a WASM file and process it. OPFS needs to download and start a worker file and initialize the virtual file system directory.
 
 Here are the time measurements from how long it takes until the first bit of data can be stored:
 
@@ -205,7 +223,7 @@ Here are the time measurements from how long it takes until the first bit of dat
 
 Here we can notice a few things:
 
-- Opening a new IndexedDB database with a single store takes suprisingly long
+- Opening a new IndexedDB database with a single store takes surprisingly long
 - The latency overhead of sending data from the main thread to a WebWorker OPFS is about 4 milliseconds. Here we only send minimal data to init the OPFS file handler. It will be interesting if that latency increases when more data is processed.
 - Downloading and parsing WASM SQLite and creating a single table takes about half a second. Using also the IndexedDB VFS to store data persistently adds additional 31 milliseconds. Reloading the page with enabled caching and already prepared tables is a bit faster with 420 milliseconds (memory).
 
@@ -228,10 +246,10 @@ Next lets test the latency of small writes. This is important when you do many s
 Here we can notice a few things:
 
 - Localstorage has the lowest write latency with only 0.017 milliseconds per write.
-- IndexedDB writes are about 10 times slower compared to LocalStorage.
+- IndexedDB writes are about 10 times slower compared to localStorage.
 - Sending the data to the WASM SQLite process and letting it persist via IndexedDB is slow with over 3 milliseconds per write.
 
-The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first ist a bit slower which comes from the overhead of serializing and deserialing the data on both sides.
+The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first ist a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
 If we would not create on OPFS file per document but instead append everything to a single file, the performance pattern changes significantly. Then the faster file handle from the `createSyncAccessHandle()` only takes about 1 millisecond per write. But this would require to somehow remember at which position the each document is stored. Therefore in our tests we will continue using one file per document.
 
 ### Latency of small Reads
@@ -293,17 +311,19 @@ Now lets read 100 documents in a bulk request.
 Here we can notice a few things:
 
 - Reading many files in the OPFS webworker is about **twice as fast** compared to the slower main thread mode.
-- WASM SQLite is suprisingly fast. Further inspection has shown that the WASM SQLite process keeps the documents in memory cached which improves the latency when we do reads directly after writes on the same data. When the browser tab is reloaded between the writes and the reads, finding the 100 documents takes about **35 milliseconds** instead.
+- WASM SQLite is surprisingly fast. Further inspection has shown that the WASM SQLite process keeps the documents in memory cached which improves the latency when we do reads directly after writes on the same data. When the browser tab is reloaded between the writes and the reads, finding the 100 documents takes about **35 milliseconds** instead.
 
 
 ## Performance Conclusions
 
 - LocalStorage is really fast but remember that is has some downsides:
-  - Blocks the main JavaScript process and therefore should not be used for big bulk operations.
-  - Only Key-Value assignements are possible, you cannot use it efficiently when you need to do index based range queries on your data.
+  - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
+  - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
 - SQLite WASM can be fast but the you have to initally download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
 
+
+-------------
 
 ## Possible Improvements
 
@@ -326,13 +346,13 @@ Here you can see the [performance comparison](../rx-storage-performance.md) of v
 
 You are reading this in 2024, but the web does not stand still. There is a good chance that browser get enhanced to allow faster and better data operations.
 
-- Currently there is no way to directly access a persistend storage from inside a WebAssembly process. If this changes in the future, running SQLite (or a similar database) in a browser might be the best option.
+- Currently there is no way to directly access a persistent storage from inside a WebAssembly process. If this changes in the future, running SQLite (or a similar database) in a browser might be the best option.
 - Sending data between the main thread and a WebWorker is slow but might be improved in the future. There is a [good article](https://surma.dev/things/is-postmessage-slow/) about why `postMessage()` is slow.
 - IndexedDB lately [got support](https://developer.chrome.com/blog/maximum-idb-performance-with-storage-buckets) for storage buckets (chrome only) which might improve performance.
 
 ## Follow Up
 
-TODO fix links
+<!-- TODO fix links -->
 <!-- - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993) -->
 <!-- - Shared/Like my [announcement tweet](https://twitter.com/rxdbjs/status/1769507055298064818) -->
 - Reproduce the benchmarks at the [github repo](https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm)
