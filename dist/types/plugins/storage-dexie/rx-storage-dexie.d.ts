@@ -4,7 +4,7 @@ import { RxStorageInstanceDexie } from './rx-storage-instance-dexie.ts';
 export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     settings: DexieSettings;
     name: string;
-    readonly rxdbVersion = "15.36.0";
+    readonly rxdbVersion = "15.36.1";
     constructor(settings: DexieSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>): Promise<RxStorageInstanceDexie<RxDocType>>;
 }

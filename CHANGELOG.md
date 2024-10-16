@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD SQLite RxStorage support for Expo SDK 51 with the async API `getSQLiteBasicsExpoSQLiteAsync()`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.36.1 (16 October 2024)
+
+- ADD SQLite RxStorage support for Expo SDK 51 with the async API `getSQLiteBasicsExpoSQLiteAsync()`
 
 ### 15.36.0 (16 October 2024)
 
