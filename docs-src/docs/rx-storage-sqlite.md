@@ -142,7 +142,51 @@ const storage = getRxStorageSQLite({
 });
 ```
 
+## Usage with **Expo SQLite**
 
+Notice that [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) if you use Expo SDK version 50 or older. Please update to Version 50 or newer to use it.
+
+In the latest expo SDK version, use the `getSQLiteBasicsExpoSQLiteAsync()` method:
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsExpoSQLiteAsync
+} from 'rxdb-premium/plugins/storage-sqlite';
+import * as SQLite from 'expo-sqlite';
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    multiInstance: false,
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsExpoSQLiteAsync(SQLite.openDatabaseAsync)
+    })
+});
+```
+
+In older Expo SDK versions, you might have to use the non-async API:
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsExpoSQLite
+} from 'rxdb-premium/plugins/storage-sqlite';
+import { openDatabase } from 'expo-sqlite';
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    multiInstance: false,
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsExpoSQLite(openDatabase)
+    })
+});
+```
 
 ## Usage with **SQLite Capacitor**
 
@@ -193,28 +237,6 @@ const myRxDatabase = await createRxDatabase({
          * sqlite operations.
          */
         sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
-    })
-});
-```
-
-## Usage with **Expo SQLite**
-
-Notice that [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) if you use Expo SDK version 50 or older. Please update to Version 50 or newer to use it.
-
-```ts
-import {
-    createRxDatabase
-} from 'rxdb';
-import {
-    getRxStorageSQLite,
-    getSQLiteBasicsExpoSQLite
-} from 'rxdb-premium/plugins/storage-sqlite';
-import { openDatabase } from 'expo-sqlite';
-
-const myRxDatabase = await createRxDatabase({
-    name: 'exampledb',
-    storage: getRxStorageSQLite({
-        sqliteBasics: getSQLiteBasicsExpoSQLite(openDatabase)
     })
 });
 ```
