@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD option to define the RxDB Premium token in an `.env` file
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.36.0 (16 October 2024)
+
+- ADD option to define the RxDB Premium token in an `.env` file
 
 ### 15.35.0 (15 October 2024)
 

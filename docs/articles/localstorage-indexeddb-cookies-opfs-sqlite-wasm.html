@@ -16,8 +16,8 @@
 <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c" data-cbid="c429ebbd-6e92-4150-b700-ca186e06bc7c" data-blockingmode="auto" async></script>
 <script src="/js/analytics.js" async></script>
 <script src="https://leadbooster-chat.pipedrive.com/assets/loader.js" async></script><link rel="stylesheet" href="/assets/css/styles.864f2a8c.css">
-<script src="/assets/js/runtime~main.0cf30876.js" defer="defer"></script>
-<script src="/assets/js/main.fd9c1e07.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.56c73259.js" defer="defer"></script>
+<script src="/assets/js/main.8f92ff68.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -150,7 +150,7 @@ The fast version of OPFS with the <code>createSyncAccessHandle</code> method can
 <li>IndexedDB writes are about 10 times slower compared to localStorage.</li>
 <li>Sending the data to the WASM SQLite process and letting it persist via IndexedDB is slow with over 3 milliseconds per write.</li>
 </ul>
-<p>The OPFS operations take about 1.5 seconds to write the JSON data into one document per file. We can see the sending the data to a webworker first is a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
+<p>The OPFS operations take about 1.5 milliseconds to write the JSON data into one document per file. We can see the sending the data to a webworker first is a bit slower which comes from the overhead of serializing and deserializing the data on both sides.
 If we would not create on OPFS file per document but instead append everything to a single file, the performance pattern changes significantly. Then the faster file handle from the <code>createSyncAccessHandle()</code> only takes about 1 millisecond per write. But this would require to somehow remember at which position the each document is stored. Therefore in our tests we will continue using one file per document.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="latency-of-small-reads">Latency of small Reads<a href="#latency-of-small-reads" class="hash-link" aria-label="Direct link to Latency of small Reads" title="Direct link to Latency of small Reads">​</a></h3>
 <p>Now that we have stored some documents, lets measure how long it takes to read single documents by their <code>id</code>.</p>
@@ -209,7 +209,6 @@ If we would not create on OPFS file per document but instead append everything t
 </ul>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="follow-up">Follow Up<a href="#follow-up" class="hash-link" aria-label="Direct link to Follow Up" title="Direct link to Follow Up">​</a></h2>
 <ul>
-<li>Check out the <a href="https://news.ycombinator.com/item?id=41847420" target="_blank" rel="noopener noreferrer">hackernews discussion of this article</a></li>
 <li>Share my <a href="https://x.com/rxdbjs/status/1846145062847062391" target="_blank" rel="noopener noreferrer">announcement tweet</a> --&gt;</li>
 <li>Reproduce the benchmarks at the <a href="https://github.com/pubkey/localstorage-indexeddb-cookies-opfs-sqlite-wasm" target="_blank" rel="noopener noreferrer">github repo</a></li>
 <li>Learn how to use RxDB with the <a href="/quickstart.html">RxDB Quickstart</a></li>
