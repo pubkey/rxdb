@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD option to define the RxDB Premium token in an `.env` file
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
