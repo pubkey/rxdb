@@ -69,6 +69,12 @@ export type SyncOptionsWebRTC<RxDocType, PeerType> = Omit<
      */
     topic: string;
     connectionHandlerCreator: WebRTCConnectionHandlerCreator<PeerType>;
+
+    /**
+     * The size of each chunk to be sent.
+     */
+    chunkSize?: number;
+    
     /**
      * Run on new peers so that bad peers can be blocked.
      * If returns true, the peer is valid and it will replicate.

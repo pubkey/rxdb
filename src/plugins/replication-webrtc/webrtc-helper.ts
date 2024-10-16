@@ -8,7 +8,7 @@ import type {
 } from './webrtc-types.ts';
 import { filter, firstValueFrom, map } from 'rxjs';
 
-
+export const DEFAULT_CHUNK_SIZE = 64 * 1024; // 64KB chunks
 
 /**
  * To deterministically define which peer is master and
