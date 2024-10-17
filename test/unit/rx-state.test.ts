@@ -488,6 +488,31 @@ addRxPlugin(RxDBJsonDumpPlugin);
             });
         });
         describe('issues', () => {
+            it('createRxState with cleaned up operations', async () => {
+                const databaseName = randomCouchString(10);
+                const prefix = randomCouchString(10);
+
+                const state = await getState(databaseName, prefix);
+                await state.collection.storageInstance.bulkWrite(
+                    [{
+                        document: {
+                            /**
+                             * this is the operation inserted by _cleanup, see:
+                             * // @see src/plugins/state/rx-state.ts#L255
+                             */
+                            ops: [{ k: '', v: { foo: 'bar' }}]
+                        },
+                    }],
+                    'rxdb-state-test'
+                );
+
+                assert.strictEqual(state.get(), {
+                    foo: 'bar'
+                });
+                // this assertion fails, the actual state returned is:
+                // { '': { foo: 'bar' } }
+            });
+
             /**
              * @link https://github.com/pubkey/rxdb/issues/6459
              */
