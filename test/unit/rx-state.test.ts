@@ -488,6 +488,22 @@ addRxPlugin(RxDBJsonDumpPlugin);
             });
         });
         describe('issues', () => {
+            it('invalid state after cleanup', async () => {
+                const databaseName = randomCouchString(10);
+                const state = await getState(databaseName);
+
+                await state.set('foo', () => 'bar1');
+                await state.set('foo', () => 'bar2');
+                await state.set('foo', () => 'bar3');
+                await state.set('foo', () => 'bar4');
+                await state.set('foo', () => 'bar5');
+                await state.set('foo', () => 'bar6');
+
+                await state._cleanup();
+
+                assert.strictEqual(state.get(), { foo: 'bar6' });
+            });
+
             /**
              * @link https://github.com/pubkey/rxdb/issues/6459
              */
