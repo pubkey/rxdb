@@ -488,29 +488,20 @@ addRxPlugin(RxDBJsonDumpPlugin);
             });
         });
         describe('issues', () => {
-            it('createRxState with cleaned up operations', async () => {
+            it('invalid state after cleanup', async () => {
                 const databaseName = randomCouchString(10);
-                const prefix = randomCouchString(10);
+                const state = await getState(databaseName);
 
-                const state = await getState(databaseName, prefix);
-                await state.collection.storageInstance.bulkWrite(
-                    [{
-                        document: {
-                            /**
-                             * this is the operation inserted by _cleanup, see:
-                             * // @see src/plugins/state/rx-state.ts#L255
-                             */
-                            ops: [{ k: '', v: { foo: 'bar' }}]
-                        },
-                    }],
-                    'rxdb-state-test'
-                );
+                await state.set('foo', () => 'bar1');
+                await state.set('foo', () => 'bar2');
+                await state.set('foo', () => 'bar3');
+                await state.set('foo', () => 'bar4');
+                await state.set('foo', () => 'bar5');
+                await state.set('foo', () => 'bar6');
 
-                assert.strictEqual(state.get(), {
-                    foo: 'bar'
-                });
-                // this assertion fails, the actual state returned is:
-                // { '': { foo: 'bar' } }
+                await state._cleanup();
+
+                assert.strictEqual(state.get(), { foo: 'bar6' });
             });
 
             /**
