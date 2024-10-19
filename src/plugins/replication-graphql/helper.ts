@@ -1,5 +1,5 @@
 import type { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types/index.d.ts';
-import { ensureNotFalsy } from '../../plugins/utils/index.ts';
+import { ensureNotFalsy, getProperty } from '../../plugins/utils/index.ts';
 
 export const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 
@@ -40,4 +40,13 @@ export function graphQLRequest(
         .then((body) => {
             return body;
         });
+}
+
+export function getDataFromResult(
+    result: { data: object },
+    userDefinedDataPath: string | string[] | undefined
+): any {
+    const dataPath = userDefinedDataPath || ['data', Object.keys(result.data)[0]];
+    const data: any = getProperty(result, dataPath);
+    return data;
 }
