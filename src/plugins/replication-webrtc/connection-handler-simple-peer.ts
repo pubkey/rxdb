@@ -30,6 +30,8 @@ const Peer = _Peer as Peer
 import type { RxError, RxTypeError } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
 
+import { DEFAULT_CHUNK_SIZE } from './webrtc-helper';
+
 export type SimplePeer = SimplePeerInstance & {
     // add id to make debugging easier
     id: string;
@@ -126,6 +128,8 @@ export function getConnectionHandlerSimplePeer({
 
     const creator: WebRTCConnectionHandlerCreator<SimplePeer> = async (options: SyncOptionsWebRTC<any, SimplePeer>) => {
 
+        const chunkSize = options.chunkSize ? options.chunkSize : DEFAULT_CHUNK_SIZE;
+
         const connect$ = new Subject<SimplePeer>();
         const disconnect$ = new Subject<SimplePeer>();
         const message$ = new Subject<PeerWithMessage<SimplePeer>>();
@@ -204,14 +208,77 @@ export function getConnectionHandlerSimplePeer({
                                     });
                                 });
 
-                                newSimplePeer.on('data', (messageOrResponse: any) => {
+                                newSimplePeer.on('data', async (messageOrResponse: any) => {
                                     messageOrResponse = JSON.parse(messageOrResponse.toString());
-                                    if (messageOrResponse.result) {
+
+                                    if (messageOrResponse.type === 'data-request') {
+                                        const dataId = messageOrResponse.dataId; // Unique identifier for the data
+                                        const data = messageOrResponse.data; // The data to be sent
+
+
+                                        const dataString = JSON.stringify(data);
+                                        const totalBytes = dataString.length;
+
+                                        let offset = 0;
+                                        while (offset < totalBytes) {
+                                            const chunk = dataString.substring(offset, offset + chunkSize);
+                                            newSimplePeer.send(JSON.stringify({
+                                                type: 'data-chunk',
+                                                dataId: dataId,
+                                                chunk: chunk,
+                                                offset: offset,
+                                                totalBytes: totalBytes
+                                            }));
+                                            offset += chunkSize;
+                                            await promiseWait(0) // yield to avoid blocking the event loop
+                                        }
+
+                                        newSimplePeer.send(JSON.stringify({
+                                            type: 'data-end',
+                                            dataId: dataId
+                                        }));
+
+                                    } else if (messageOrResponse.type === 'data-chunk') {
+
+                                        const dataId = messageOrResponse.dataId;
+                                        let messageChunks = reassembledMessages.get(dataId);
+                                        if (!messageChunks) {
+                                            messageChunks = { chunks: [], receivedBytes: 0, totalBytes: messageOrResponse.totalBytes };
+                                            reassembledMessages.set(dataId, messageChunks);
+                                        }
+                                        messageChunks.chunks[messageOrResponse.offset / chunkSize] = messageOrResponse.chunk;
+                                        messageChunks.receivedBytes += messageOrResponse.chunk.length;
+
+                                    } else if (messageOrResponse.type === 'data-end') {
+
+                                        const dataId = messageOrResponse.dataId;
+                                        const messageChunks = reassembledMessages.get(dataId);
+
+                                        if (messageChunks) {
+                                            const combinedMessageString = messageChunks.chunks.join('');
+                                            const reconstructedMessage = JSON.parse(combinedMessageString); // Reconstruct the data
+                                            if (reconstructedMessage.result) {
+                                                response$.next({
+                                                    peer: newSimplePeer,
+                                                    response: reconstructedMessage
+                                                });
+                                            } else {
+                                                message$.next({
+                                                    peer: newSimplePeer,
+                                                    message: reconstructedMessage
+                                                });
+                                            }
+
+                                            reassembledMessages.delete(dataId)
+                                        }
+                                    } else if (messageOrResponse.result) { 
+                                        //Handle messages that weren't chunked
                                         response$.next({
                                             peer: newSimplePeer,
                                             response: messageOrResponse
                                         });
-                                    } else {
+                                    } else { 
+                                        //Handle messages that weren't chunked
                                         message$.next({
                                             peer: newSimplePeer,
                                             message: messageOrResponse
@@ -270,7 +337,33 @@ export function getConnectionHandlerSimplePeer({
             message$,
             response$,
             async send(peer: SimplePeer, message: WebRTCMessage) {
-                await peer.send(JSON.stringify(message));
+                const dataId = randomCouchString(10);
+
+                if (JSON.stringify(message).length > chunkSize) {
+                    const messageString = JSON.stringify(message);
+                    const totalBytes = messageString.length;
+                    let offset = 0;
+
+                    while (offset < totalBytes) {
+                        const chunk = messageString.substring(offset, offset + chunkSize);
+                        await peer.send(JSON.stringify({
+                            type: 'data-chunk',
+                            dataId: dataId,
+                            chunk: chunk,
+                            offset: offset,
+                            totalBytes: totalBytes
+                        } as any)); // Cast as any to bypass type checking
+                        offset += chunkSize;
+                        await promiseWait(0); // Yield to avoid blocking
+                    }
+
+                    await peer.send(JSON.stringify({
+                        type: 'data-end',
+                        dataId: dataId
+                    } as any));
+                } else {
+                    await peer.send(JSON.stringify(message));
+                }
             },
             destroy() {
                 closed = true;
@@ -283,6 +376,10 @@ export function getConnectionHandlerSimplePeer({
                 return PROMISE_RESOLVE_VOID;
             }
         };
+
+        const reassembledMessages = new Map<string, { chunks: string[]; receivedBytes: number; totalBytes: number }>();
+
+
         return handler;
     };
     return creator;
