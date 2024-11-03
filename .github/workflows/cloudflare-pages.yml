@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-to-cloudflare-pages:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy
+      - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
