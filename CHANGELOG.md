@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX position of dev-mode iframe [#6516](https://github.com/pubkey/rxdb/pull/6516)
 
 <!-- ADD new changes here! -->
 
