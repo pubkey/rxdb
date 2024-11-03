@@ -735,6 +735,73 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+    testCorrectQueries<HumanDocumentType>({
+        testTitle: '$nin',
+        data: [
+            schemaObjects.humanData('aa', 10, 'alice'),
+            schemaObjects.humanData('bb', 20, 'bob'),
+            schemaObjects.humanData('cc', 30, 'carol')
+        ],
+        schema: schemas.human,
+        queries: [
+            {
+                info: 'get all but first',
+                query: {
+                    selector: {
+                        firstName: {
+                            $nin: ['alice']
+                        },
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'bb',
+                    'cc'
+                ]
+            },
+            {
+                info: 'get all but multiple',
+                query: {
+                    selector: {
+                        firstName: {
+                            $nin: ['alice', 'bob']
+                        },
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'cc'
+                ]
+            },
+            {
+                info: 'get all matching',
+                query: {
+                    selector: {
+                        firstName: {
+                            $nin: ['foobar', 'barfoo']
+                        },
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'cc'
+                ]
+            },
+            {
+                info: 'get by primary key',
+                query: {
+                    selector: {
+                        passportId: {
+                            $nin: ['aa', 'cc']
+                        }
+                    }
+                },
+                expectedResultDocIds: ['bb']
+            }
+        ]
+    });
     testCorrectQueries<HeroArrayDocumentType>({
         testTitle: '$elemMatch/$size',
         data: [
