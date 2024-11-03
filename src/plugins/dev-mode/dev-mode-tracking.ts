@@ -47,6 +47,9 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
     iframe.style.visibility = 'hidden';
     iframe.width = '1px';
     iframe.height = '1px';
+    iframe.style.position = 'absolute';
+    iframe.style.top = '0';
+    iframe.style.left = '0';
     iframe.style.opacity = '0.1';
     iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + RXDB_VERSION;
     document.body.appendChild(iframe);
