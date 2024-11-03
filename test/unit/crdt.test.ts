@@ -20,7 +20,8 @@ import {
     RxConflictHandlerOutput,
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
-    defaultConflictHandler
+    defaultConflictHandler,
+    RxConflictHandler
 } from '../../plugins/core/index.mjs';
 
 
@@ -315,7 +316,7 @@ describeParallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        let conflictHandler: any;
+        let conflictHandler: RxConflictHandler<any>;
         describe('init', () => {
             it('init', () => {
                 conflictHandler = getCRDTConflictHandler<WithCRDTs<HumanDocumentType>>(
@@ -335,19 +336,18 @@ describeParallel('crdt.test.js', () => {
                 const doc1 = await getDoc();
                 const doc2 = await getDoc();
 
+                const mustBeEqual = await conflictHandler.isEqual(
+                    doc1.toMutableJSON(true),
+                    doc1.toMutableJSON(true)
+                    , 'text-crdt'
+                );
+                assert.strictEqual(mustBeEqual, true);
 
-                const mustBeEqual = await conflictHandler({
-                    newDocumentState: doc1.toMutableJSON(true),
-                    realMasterState: doc1.toMutableJSON(true)
-                }, 'text-crdt');
-                assert.strictEqual(mustBeEqual.isEqual, true);
-
-                const resolved: RxConflictHandlerOutput<any> = await conflictHandler({
+                const resolved: RxConflictHandlerOutput<any> = await conflictHandler.resolve({
                     newDocumentState: doc1.toMutableJSON(true),
                     realMasterState: doc2.toMutableJSON(true)
                 }, 'text-crdt');
-                assert.strictEqual(resolved.isEqual, false);
-                const crdtData: CRDTDocumentField<any> = (resolved as any).documentData.crdts;
+                const crdtData: CRDTDocumentField<any> = (resolved as any).crdts;
                 assert.strictEqual(crdtData.operations[0].length, 2);
 
                 doc1.collection.database.destroy();

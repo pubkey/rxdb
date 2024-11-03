@@ -10,8 +10,6 @@ import type {
     BulkWriteRow,
     EventBulk,
     PreparedQuery,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -445,11 +443,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         })();
         return this.closed;
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject();
-    }
-    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
 }
 
 export function createMongoDBStorageInstance<RxDocType>(

@@ -732,37 +732,6 @@ export function getWrappedStorageInstance<
         },
         changeStream() {
             return storageInstance.changeStream();
-        },
-        conflictResultionTasks() {
-            return storageInstance.conflictResultionTasks();
-        },
-        resolveConflictResultionTask(taskSolution) {
-            if (taskSolution.output.isEqual) {
-                return storageInstance.resolveConflictResultionTask(taskSolution);
-            }
-
-            const doc = Object.assign(
-                {},
-                taskSolution.output.documentData,
-                {
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _attachments: {}
-                }
-            );
-
-            const documentData = flatClone(doc);
-            delete (documentData as any)._meta;
-            delete (documentData as any)._rev;
-            delete (documentData as any)._attachments;
-
-            return storageInstance.resolveConflictResultionTask({
-                id: taskSolution.id,
-                output: {
-                    isEqual: false,
-                    documentData
-                }
-            });
         }
     };
 
@@ -1006,12 +975,6 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 },
                 changeStream() {
                     return storageInstance.changeStream();
-                },
-                conflictResultionTasks() {
-                    return storageInstance.conflictResultionTasks();
-                },
-                resolveConflictResultionTask(a) {
-                    return storageInstance.resolveConflictResultionTask(a);
                 },
                 async cleanup(a) {
                     await promiseWait(input.delayTimeBefore());

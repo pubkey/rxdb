@@ -297,25 +297,6 @@ export class RxCollectionBase<
         });
         this._subs.push(subDocs);
 
-        /**
-         * Resolve the conflict tasks
-         * of the RxStorageInstance
-         */
-        this._subs.push(
-            this.storageInstance
-                .conflictResultionTasks()
-                .subscribe(task => {
-                    this
-                        .conflictHandler(task.input, task.context)
-                        .then(output => {
-                            this.storageInstance.resolveConflictResultionTask({
-                                id: task.id,
-                                output
-                            });
-                        });
-                })
-        );
-
         return PROMISE_RESOLVE_VOID;
     }
 

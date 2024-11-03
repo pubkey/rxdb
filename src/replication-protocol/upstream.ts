@@ -294,10 +294,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                             // if the isResolvedConflict is correct, we do not have to compare the documents.
                             assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev
                             &&
-                            (await state.input.conflictHandler({
-                                realMasterState: assumedMasterDoc.docData,
-                                newDocumentState: docData
-                            }, 'upstream-check-if-equal')).isEqual
+                            (
+                                state.input.conflictHandler.isEqual(
+                                    assumedMasterDoc.docData,
+                                    docData,
+                                    'upstream-check-if-equal'
+                                )
+                            )
                         )
                         ||
                         /**
@@ -419,18 +422,18 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 if (resolved) {
                                     state.events.resolvedConflicts.next({
                                         input,
-                                        output: resolved.output
+                                        output: resolved
                                     });
                                     conflictWriteFork.push({
                                         previous: forkStateById[docId],
-                                        document: resolved.resolvedDoc
+                                        document: resolved
                                     });
                                     const assumedMasterDoc = assumedMasterState[docId];
                                     conflictWriteMeta[docId] = await getMetaWriteRow(
                                         state,
                                         ensureNotFalsy(realMasterState),
                                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
-                                        resolved.resolvedDoc._rev
+                                        resolved._rev
                                     );
                                 }
                             });

@@ -14,10 +14,8 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     StringKeys,
-    RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
-    RxConflictResultionTask,
     PreparedQuery
 } from '../../types/index.d.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
@@ -345,12 +343,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
         await Promise.all(promises);
         return this.close();
-    }
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject<any>().asObservable();
-    }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
     }
 }
 

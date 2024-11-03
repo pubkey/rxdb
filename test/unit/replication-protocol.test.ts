@@ -80,75 +80,55 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         return;
     }
 
-    const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
-
-
-        function withoutMeta(d: any) {
-            d = flatClone(d);
-            delete d._meta;
-            delete d._rev;
-            return d;
+    function withoutMeta(d: any) {
+        d = flatClone(d);
+        delete d._meta;
+        delete d._rev;
+        return d;
+    }
+    const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = {
+        isEqual(a, b) {
+            return deepEqual(withoutMeta(a), withoutMeta(b));
+        },
+        async resolve(i) {
+            throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
         }
+    }
 
-        if (deepEqual(withoutMeta(input.newDocumentState), withoutMeta(input.realMasterState))) {
-            return Promise.resolve({
-                isEqual: true
-            });
+    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = {
+        isEqual(a, b) {
+            return deepEqual(a, b);
+        },
+        async resolve(input) {
+            const docA = input.newDocumentState;
+            const docB = input.realMasterState;
+
+            if ((docA as any)._deleted !== (docB as any)._deleted) {
+                return input.newDocumentState;
+            }
+
+            const ageA = docA.age ? docA.age : 0;
+            const ageB = docB.age ? docB.age : 0;
+            if (ageA > ageB) {
+
+                // flag the conflict solution  document state the for easier debugging
+                const documentData = clone(docA);
+                documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
+                return documentData;
+            } else if (ageB > ageA) {
+                const documentData: typeof docB = clone(docB);
+                // flag the conflict solution  document state the for easier debugging
+                documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
+                return documentData;
+            } else {
+                console.error('EQUAL AGE (' + ageA + ') ' + context);
+                console.log(JSON.stringify(input, null, 4));
+                throw new Error('equal age ' + ageA + ' ctxt: ' + context);
+            }
         }
+    }
 
-        throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
-    };
-    const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
-        input: RxConflictHandlerInput<HumanDocumentType>,
-        context: string
-    ) => {
-        if (deepEqual(input.newDocumentState, input.realMasterState)) {
-            return Promise.resolve({
-                isEqual: true
-            });
-        }
 
-        const docA = input.newDocumentState;
-        const docB = input.realMasterState;
-
-        // if (!i.assumedMasterDocumentState) {
-        //     return Promise.resolve({
-        //         resolvedDocumentState: i.newDocumentState
-        //     });
-        // }
-
-        if ((docA as any)._deleted !== (docB as any)._deleted) {
-            return Promise.resolve({
-                isEqual: false,
-                documentData: input.newDocumentState
-            });
-        }
-
-        const ageA = docA.age ? docA.age : 0;
-        const ageB = docB.age ? docB.age : 0;
-        if (ageA > ageB) {
-
-            // flag the conflict solution  document state the for easier debugging
-            const documentData = clone(docA);
-            documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
-            return Promise.resolve({
-                isEqual: false,
-                documentData
-            });
-        } else if (ageB > ageA) {
-            const documentData: typeof docB = clone(docB);
-            // flag the conflict solution  document state the for easier debugging
-            documentData.lastName = 'resolved-conflict-' + randomCouchString(5);
-            return Promise.resolve({
-                isEqual: false,
-                documentData
-            });
-        } else {
-            console.error('EQUAL AGE (' + ageA + ') ' + context);
-            console.log(JSON.stringify(input, null, 4));
-            throw new Error('equal age ' + ageA + ' ctxt: ' + context);
-        }
-    };
     function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
             schemaObjects.humanData(),

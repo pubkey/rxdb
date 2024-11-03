@@ -273,10 +273,11 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         ) {
                             conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
                         } else if (
-                            (await conflictHandler({
-                                realMasterState: writeDocToDocState(masterState, hasAttachments, keepMeta),
-                                newDocumentState: ensureNotFalsy(row.assumedMasterState)
-                            }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true
+                            conflictHandler.isEqual(
+                                writeDocToDocState(masterState, hasAttachments, keepMeta),
+                                ensureNotFalsy(row.assumedMasterState),
+                                'rxStorageInstanceToReplicationHandler-masterWrite'
+                            ) === true
                         ) {
                             writeRows.push({
                                 previous: masterState,

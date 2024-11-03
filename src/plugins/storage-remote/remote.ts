@@ -158,18 +158,6 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 settings.send(message);
             })
         );
-        subs.push(
-            storageInstance.conflictResultionTasks().subscribe(conflicts => {
-                const message: MessageFromRemote = {
-                    connectionId,
-                    answerTo: 'conflictResultionTasks',
-                    method: 'conflictResultionTasks',
-                    return: conflicts
-                };
-                settings.send(message);
-            })
-        );
-
 
         let connectionClosed = false;
         function closeThisConnection() {
