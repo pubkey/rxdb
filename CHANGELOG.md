@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX position of dev-mode iframe [#6516](https://github.com/pubkey/rxdb/pull/6516)
+- FIX `$nin` queries not working correctly with the SQLite RxStorage
 
 <!-- ADD new changes here! -->
 
