@@ -85,14 +85,6 @@ jobs:
           (cd docs-src && npm install)
           npm run docs:build
 
-      - name: Deploy to Cloudflare Pages
-        if: steps.vars.outputs.prerelease == 'false'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs --project-name=rxdb
-
       - name: add git tag
         run: |
           git add .
