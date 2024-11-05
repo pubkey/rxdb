@@ -515,7 +515,7 @@
     "@faker-js/faker": "9.2.0",
     "@rollup/plugin-commonjs": "28.0.1",
     "@rollup/plugin-node-resolve": "15.3.0",
-    "@stylistic/eslint-plugin": "2.9.0",
+    "@stylistic/eslint-plugin": "2.10.1",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.17",
