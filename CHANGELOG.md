@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - FIX position of dev-mode iframe [#6516](https://github.com/pubkey/rxdb/pull/6516)
 - FIX `$nin` queries not working correctly with the SQLite RxStorage
+- FIX (worker storage) when creating the same database in the worker and on the main thread, the main thread never resolves. [via discord](https://discord.com/channels/969553741705539624/1296068420311187518)
 
 <!-- ADD new changes here! -->
 
