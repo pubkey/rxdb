@@ -2,15 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX position of dev-mode iframe [#6516](https://github.com/pubkey/rxdb/pull/6516)
-- FIX `$nin` queries not working correctly with the SQLite RxStorage
-- FIX (worker storage) when creating the same database in the worker and on the main thread, the main thread never resolves. [via discord](https://discord.com/channels/969553741705539624/1296068420311187518)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.37.0 (5 November 2024)
+
+- FIX position of dev-mode iframe [#6516](https://github.com/pubkey/rxdb/pull/6516)
+- FIX `$nin` queries not working correctly with the SQLite RxStorage
+- FIX (worker storage) when creating the same database in the worker and on the main thread, the main thread never resolves. [via discord](https://discord.com/channels/969553741705539624/1296068420311187518)
 
 ### 15.36.1 (16 October 2024)
 
