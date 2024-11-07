@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX bad RxState after cleanup [#6503](https://github.com/pubkey/rxdb/pull/6503)
 
 <!-- ADD new changes here! -->
 

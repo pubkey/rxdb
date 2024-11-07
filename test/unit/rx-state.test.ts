@@ -139,6 +139,14 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state.set('nes.ted', () => 'foo2');
                 state.collection.database.remove();
             });
+            it('update complete state at once', async () => {
+                const state = await getState();
+                await state.set('foo', () => 'bar');
+                await state.set('', () => ({ foo: 'bar2' }));
+                const value = state.get();
+                assert.deepStrictEqual(value, { foo: 'bar2' });
+                state.collection.database.remove();
+            });
             it('doing many writes should end up in a single persistence write to the storage', async () => {
                 const state = await getState();
                 await state.set('a', () => 0);
@@ -517,6 +525,24 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.ok(initialState === emitted[0]);
 
                 state.collection.database.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/6503
+             */
+            it('bad rx-state after cleanup', async () => {
+                const databaseName = randomCouchString(10);
+                const state = await getState(databaseName);
+
+                await state.set('foo', () => 'bar1');
+                await state.set('foo', () => 'bar2');
+                await state.set('foo', () => 'bar3');
+                await state.set('foo', () => 'bar4');
+                await state.set('foo', () => 'bar5');
+                await state.set('foo', () => 'bar6');
+
+                await state._cleanup();
+                assert.deepStrictEqual(state.get(), { foo: 'bar6' });
+                state.collection.database.remove();
             });
         });
     });
