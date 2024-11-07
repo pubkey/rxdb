@@ -138,7 +138,7 @@ export class RxStateBase<T, Reactivity = unknown> {
                      * only clone the parts where we know that they
                      * will be changed. This would improve performance.
                      */
-                    const newState = clone(this._state);
+                    let newState = clone(this._state);
                     const ops: RxStateOperation[] = [];
                     for (let index = 0; index < useWrites.length; index++) {
                         const writeRow = useWrites[index];
@@ -149,7 +149,11 @@ export class RxStateBase<T, Reactivity = unknown> {
                          * some storages like the memory storage
                          * make input data deep-frozen in dev-mode.
                          */
-                        setProperty(newState, writeRow.path, clone(newValue));
+                        if (writeRow.path === '') {
+                            newState = clone(newValue);
+                        } else {
+                            setProperty(newState, writeRow.path, clone(newValue));
+                        }
                         ops.push({
                             k: writeRow.path,
                             /**
