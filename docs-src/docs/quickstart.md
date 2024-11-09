@@ -190,7 +190,7 @@ myDocument.done$.subscribe(isDone => {
 ### Replication
 
 RxDB has multiple [replication plugins](./replication.md) to replicated database state with a server.
-The easiest way to replicate data between your clients devices it the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything.
+The easiest way to replicate data between your clients devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything.
 
 ```ts
 import {
