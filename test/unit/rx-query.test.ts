@@ -17,10 +17,16 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-    deepFreeze
+    deepFreeze,
+    addRxPlugin
 } from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
 
 describe('rx-query.test.ts', () => {
     describeParallel('.constructor', () => {
@@ -1551,6 +1557,39 @@ describe('rx-query.test.ts', () => {
             assert.ok(!byId.has('constructor'));
 
             db.destroy();
+        });
+        it('$in and $nin queries are slow when running on huge collections', async () => {
+            const c = await humansCollection.create(10000);
+
+
+            console.log('-----------------------------------------');
+            console.log('-----------------------------------------');
+            console.log('-----------------------------------------');
+
+            const query = c.find({
+                selector: {
+                    firstName: {
+                        $eq: 'foobar',
+                        // $in: new Array(1000).fill(0).map(() => randomCouchString(5))
+                        // $in: new Array(1).fill(0).map(() => randomCouchString(5))
+                    }
+                }
+            });
+
+            const startTime = performance.now();
+            const result = await query.exec();
+            const endTime = performance.now();
+
+            console.dir({
+                startTime,
+                endTime,
+                total: endTime - startTime
+            });
+
+            process.exit();
+
+
+            c.database.remove();
         });
     });
 });
