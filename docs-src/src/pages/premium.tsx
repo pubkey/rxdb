@@ -3,15 +3,13 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
-import { ensureNotFalsy, lastOfArray } from '../../../';
+import { ensureNotFalsy, lastOfArray, promiseWait } from '../../../';
 import { Modal } from 'antd';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
 import {
-    LicensePeriod,
     PACKAGE_PRICE,
     PackageName,
     PriceCalculationInput,
-    ProjectAmount,
     calculatePrice
 } from '../components/price-calculator';
 import { trigger } from '../components/trigger-event';
@@ -20,17 +18,27 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import {
     Select
 } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 
 export type FormValueDocData = {
+    developers?: number;
     homeCountry?: string;
     companySize?: number;
-    projectAmount?: ProjectAmount;
-    licensePeriod?: LicensePeriod;
     packages?: PackageName[];
     price?: number;
     formSubmitted: boolean;
 };
 export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
+
+
+export const TEAM_SIZES = [
+    1,
+    3,
+    6,
+    10,
+    15,
+    20
+];
 
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
@@ -38,7 +46,19 @@ export default function Premium() {
     const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
     const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
 
+    const [developers, setDevelopers] = React.useState<number | null>(null);
+
     const [initDone, setInitDone] = React.useState<boolean>(false);
+
+    async function submitCalculator() {
+        await promiseWait(0);
+        const priceCalculateForm = document.getElementById('price-calculator-submit');
+        if (priceCalculateForm) {
+            priceCalculateForm.click();
+        }
+
+    }
+
     useEffect(() => {
         if (!isBrowser || !hasIndexedDB()) {
             return;
@@ -63,8 +83,12 @@ export default function Premium() {
                 setHomeCountryInitial(formValueDoc._data.data.homeCountry);
                 setHomeCountry(formValueDoc._data.data.homeCountry);
                 setToInput('company-size', formValueDoc._data.data.companySize);
-                setToInput('project-amount', formValueDoc._data.data.projectAmount);
-                setToInput('license-period', formValueDoc._data.data.licensePeriod);
+                // setToInput('project-amount', formValueDoc._data.data.projectAmount);
+                // setToInput('license-period', formValueDoc._data.data.licensePeriod);
+
+                setDevelopers(formValueDoc._data.data.developers);
+                setToInput('developer-count', formValueDoc._data.data.developers);
+
 
                 Object.keys(PACKAGE_PRICE).forEach(packageName => {
                     setToInput('package-' + packageName, false);
@@ -74,10 +98,7 @@ export default function Premium() {
                 });
 
                 // auto-submit form
-                const priceCalculateForm = document.getElementById('price-calculator-submit');
-                if (priceCalculateForm) {
-                    priceCalculateForm.click();
-                }
+                submitCalculator();
             }
             setInitDone(true);
         })();
@@ -106,20 +127,35 @@ export default function Premium() {
                 description="RxDB plugins for professionals. FAQ, pricing and license"
             >
                 <main>
-                    <div className="block first" id="price-calculator-block">
+                    <div className="block first">
                         <div className="content centered">
+
                             <h2>
-                                RxDB Premium <b className="underline">Price Calculator</b>
+                                RxDB <b className="underline">Premium</b>
                             </h2>
                             <p style={{ width: '80%' }}>
-                                RxDB's Premium plugins offer advanced features and optimizations that enhance application <b>performance</b>{' '}
-                                and are backed by dedicated support and regular updates. Using the premium plugins is recommended for users
-                                that use RxDB in a professional context. If you use RxDB in your side project,
-                                you likely want to stay on the Open Core.
+                                RxDB's Premium plugins bring powerful, advanced features and optimizations tailored to meet the needs of <b>businesses and professionals</b>.
+                                Designed for users deploying RxDB in commercial or mission-critical environments,
+                                these plugins offer significant performance enhancements and include dedicated support and regular updates.
                             </p>
+                            <p style={{ width: '80%' }}>
+                                By purchasing the premium plugins, businesses not only benefit from superior functionality and support
+                                but also contribute to RxDB's sustainability, helping us ensure long-term stability,
+                                timely bug fixes, and feature updates for everyone. If you're working on a side project or personal application,
+                                you may find that the robust Open Core version of RxDB suits your needs perfectly.
+                                For <b>professional applications</b>, however, RxDB Premium delivers unmatched value to keep your projects running smoothly and efficiently.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="block" id="price-calculator-block">
+                        <div className="content centered">
+                            <h2>
+                                Price Calculator
+                            </h2>
                             <div className="price-calculator">
                                 <div className="price-calculator-inner">
                                     <form id="price-calculator-form">
+                                        {/*
                                         <div className="field">
                                             <label htmlFor="home-country">Company Home Country:</label>
                                             <div className="input">
@@ -167,6 +203,7 @@ export default function Premium() {
                                                 <div className="suffix">employee(s)</div>
                                             </div>
                                         </div>
+                                        */}
                                         {/* <div className="field">
                                             <label htmlFor="project-amount">Project Amount:</label>
                                             <div className="input">
@@ -182,6 +219,36 @@ export default function Premium() {
                                                 <div className="suffix">project(s)</div>
                                             </div>
                                         </div> */}
+                                        <div className="field">
+                                            <label
+                                                htmlFor="developer-count"
+                                            >Team Size:</label>
+                                            <div className="input">
+                                                <Select
+                                                    id="developer-count"
+                                                    style={{ width: '100%' }}
+                                                    popupMatchSelectWidth
+                                                    optionFilterProp="value"
+                                                    value={developers ? developers : 1}
+                                                    onChange={(value) => {
+                                                        if (value !== developers) {
+                                                            setDevelopers(value);
+                                                            submitCalculator();
+                                                        }
+                                                    }}
+                                                >
+                                                    {
+                                                        TEAM_SIZES
+                                                            .map((nr, idx) => {
+                                                                return <Select.Option key={idx} value={nr}>up to {nr} developer{nr === 1 ? '' : 's'}</Select.Option>;
+                                                            })
+                                                    }
+                                                </Select>
+                                                <div className="clear"></div>
+                                                <br />
+                                                <span>&#9432; As a developer, we count everyone who stores the <b>rxdb-premium</b> package on their device, not only the ones who directly develop with RxDB.</span>
+                                            </div>
+                                        </div>
                                         <div className="packages">
                                             <h3>Packages:</h3>
                                             <div className="package bg-gradient-left-top">
@@ -191,6 +258,7 @@ export default function Premium() {
                                                         type="checkbox"
                                                         className="package-checkbox"
                                                         defaultChecked={true}
+                                                        onChange={() => submitCalculator()}
                                                     />
                                                     <h4>Browser Package</h4>
                                                     <ul>
@@ -223,7 +291,8 @@ export default function Premium() {
                                                         name="package-native"
                                                         type="checkbox"
                                                         className="package-checkbox"
-                                                        defaultChecked={true}
+                                                        defaultChecked={false}
+                                                        onChange={() => submitCalculator()}
                                                     />
                                                     <h4>Native Package</h4>
                                                     <ul>
@@ -249,7 +318,8 @@ export default function Premium() {
                                                         name="package-performance"
                                                         type="checkbox"
                                                         className="package-checkbox"
-                                                        defaultChecked={true}
+                                                        defaultChecked={false}
+                                                        onChange={() => submitCalculator()}
                                                     />
                                                     <h4>Performance Package</h4>
                                                     <ul>
@@ -295,7 +365,8 @@ export default function Premium() {
                                                         name="package-server"
                                                         type="checkbox"
                                                         className="package-checkbox"
-                                                        defaultChecked={true}
+                                                        defaultChecked={false}
+                                                        onChange={() => submitCalculator()}
                                                     />
                                                     <h4>Server Package</h4>
                                                     <ul>
@@ -320,9 +391,10 @@ export default function Premium() {
                                                         className="package-checkbox"
                                                         defaultChecked={true}
                                                         disabled={true}
+                                                        onChange={() => submitCalculator()}
                                                     />
                                                     <h4>
-                                                        Utilities Package <b>always included</b>
+                                                        Utilities Package <b>(always included)</b>
                                                     </h4>
                                                     <ul>
                                                         <li>
@@ -422,6 +494,8 @@ export default function Premium() {
                                         <div
                                             className="button"
                                             id="price-calculator-submit"
+                                            style={{
+                                            }}
                                             onClick={async () => {
                                                 trigger('calculate_premium_price', 3);
                                                 const $priceCalculatorForm: HTMLFormElement = ensureNotFalsy(document.getElementById('price-calculator-form')) as any;
@@ -435,23 +509,16 @@ export default function Premium() {
                                                 const formData = Object.fromEntries((formDataPlain as any).entries());
 
                                                 console.log('formData:');
+                                                console.dir(formDataPlain);
                                                 console.dir(formData);
                                                 console.dir(homeCountry);
+                                                const developersValue = developers ? developers : 1;
 
-
-                                                if (!homeCountry && initDone && isBrowser) {
-                                                    alert('Please fill out the Home Country Field');
-                                                    return;
-                                                }
-                                                if (!homeCountry) {
-                                                    return;
-                                                }
-
-                                                const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-                                                    .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
-                                                if (!homeCountryObject) {
-                                                    return;
-                                                }
+                                                // const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+                                                //     .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
+                                                // if (!homeCountryObject) {
+                                                //     return;
+                                                // }
 
                                                 const packageFields = Object.entries(formData)
                                                     .filter(([k, _v]) => k.startsWith('package-'));
@@ -459,11 +526,10 @@ export default function Premium() {
                                                     .map(([k]) => lastOfArray(k.split('-')) as any);
 
                                                 const priceCalculationInput: PriceCalculationInput = {
-                                                    companySize: parseInt(formData['company-size'] as any, 10),
-                                                    teamSize: formData['developer-count'] as any,
-                                                    projectAmount: '1', // formData['project-amount'] as any,
-                                                    licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
-                                                    homeCountryCode: homeCountryObject.code,
+                                                    teamSize: developersValue,
+                                                    // projectAmount: '1', // formData['project-amount'] as any,
+                                                    // licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
+                                                    // homeCountryCode: homeCountryObject.code,
                                                     packages
                                                 };
 
@@ -482,12 +548,13 @@ export default function Premium() {
                                                     element.innerHTML = Math.ceil(price).toString();
                                                     // (element as any).href = getConverterUrl(Math.ceil(price));
                                                 };
-                                                const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
-                                                if (priceCalculationInput.projectAmount !== 'infinity') {
-                                                    setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
-                                                } else {
-                                                    setPrice($priceCalculatorResultPerMonth, 0);
-                                                }
+                                                // const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
+                                                setPrice($priceCalculatorResultPerMonth, priceResult.totalPrice / 12);
+                                                // if (priceCalculationInput.projectAmount !== 'infinity') {
+                                                //     setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
+                                                // } else {
+                                                //     setPrice($priceCalculatorResultPerMonth, 0);
+                                                // }
                                                 // setPrice($priceCalculatorResultPerYear, pricePerYear);
                                                 // setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
 
@@ -497,10 +564,11 @@ export default function Premium() {
                                                  */
                                                 const database = await getDatabase();
                                                 await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+                                                    developers: developers,
                                                     companySize: formData['company-size'] as any,
-                                                    projectAmount: formData['project-amount'] as any,
-                                                    licensePeriod: formData['license-period'] as any,
-                                                    homeCountry: homeCountryObject.name,
+                                                    // projectAmount: formData['project-amount'] as any,
+                                                    // licensePeriod: formData['license-period'] as any,
+                                                    // homeCountry: homeCountryObject.name,
                                                     packages,
                                                     price: priceResult.totalPrice,
                                                     formSubmitted: false
@@ -510,14 +578,14 @@ export default function Premium() {
                                                 $priceCalculatorResult.style.display = 'block';
                                             }}
                                         >
-                                            Estimate Price
+                                            Calculate Price
                                         </div>
                                     </form>
                                 </div>
                             </div>
                             <div className="price-calculator" id="price-calculator-result" style={{ marginBottom: 90, display: 'none' }}>
                                 <div className="price-calculator-inner">
-                                    <h4>Estimated Price:</h4>
+                                    <h4>Calculated Price:</h4>
 
                                     <br />
                                     <div className="inner">
