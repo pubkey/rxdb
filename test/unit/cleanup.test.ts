@@ -211,7 +211,7 @@ describeParallel('cleanup.test.js', () => {
             const resultAfterCleanup3 = await collection.find({ selector: { name: { $ne: 'query3' } } }).exec();
             assert.strictEqual(resultAfterCleanup3.length, 1);
 
-            await db.remove();
+            await db.destroy();
         });
     });
 });
