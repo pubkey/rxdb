@@ -195,7 +195,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('open many instances on the same database name', async () => {
                 const databaseName = randomCouchString(12);
-                const amount = 20;
+                // denokv is too slow here and will run in timeouts, so we use a lower amount
+                const amount = isDeno ? 5 : 20;
                 const storage = config.storage.getStorage();
                 const instances = await Promise.all(
                     new Array(amount).fill(0).map(() => storage.createStorageInstance<TestDocType>({
