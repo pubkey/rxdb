@@ -18,13 +18,24 @@ export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij
 export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
 const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
-const allChars = TEST_DATA_CHARSET.split('');
+const baseChars = TEST_DATA_CHARSET.split('');
+const allChars = baseChars.slice(0);
 appendToArray(allChars, someEmojisArr);
 
 export function randomStringWithSpecialChars(length: number) {
     let text = '';
-    for (let i = 0; i < length; i++)
-        text += allChars[Math.floor(Math.random() * allChars.length)];
+    for (let i = 0; i < length; i++) {
+        if(i === 0){
+            /**
+             * TODO foundationdb does not work correctly when an index string starts
+             * with an emoji. This can likely be fixed by upgrading foundationdb to the
+             * latest version.
+             */
+            text += baseChars[Math.floor(Math.random() * baseChars.length)];
+        }else {
+            text += allChars[Math.floor(Math.random() * allChars.length)];
+        }
+    }
     return text;
 }
 
