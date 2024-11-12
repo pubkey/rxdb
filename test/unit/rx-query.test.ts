@@ -17,8 +17,11 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-    deepFreeze
+    deepFreeze,
+    addRxPlugin
 } from '../../plugins/core/index.mjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
 
 import { firstValueFrom } from 'rxjs';
 
@@ -379,30 +382,43 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
         it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
-            const col = await humansCollection.create(2);
+            const col = await humansCollection.create(0);
 
-            // it is assumed that this query can never handled by event-reduce
-            const query = col.find().sort('-passportId').limit(1);
+            await col.bulkInsert([
+                schemaObjects.humanData('aaa'),
+                schemaObjects.humanData('bbb')
+            ]);
+
+
+            /**
+             * This query can never handled by event-reduce
+             * because we later insert a new document at the bottom
+             */
+            const query = col.find({
+                selector: {},
+                sort: [{ passportId: 'desc' }],
+                limit: 1
+            });
 
             const fired: any[] = [];
             const sub1 = query.$.subscribe(res => {
                 fired.push(res);
             });
-
             await AsyncTestUtil.waitUntil(() => fired.length === 1, 1000);
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
-            const addObj = schemaObjects.humanData();
-            addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
+            const addObj = schemaObjects.humanData('zzz');
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.getCounter(), 3);
 
             await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3, 1000);
             assert.strictEqual(query._latestChangeEvent, 3);
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 2, 1000);
+            await AsyncTestUtil.waitUntil(() => {
+                return fired.length === 2;
+            }, 1000);
             assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
             col.database.destroy();
