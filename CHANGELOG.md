@@ -4,7 +4,9 @@
 <!-- CHANGELOG NEWEST -->
 - FIX bad RxState after cleanup [#6503](https://github.com/pubkey/rxdb/pull/6503)
 - FIX RxServer cors settings only applies to OPTIONS when using ExpressAdapter [#6523](https://github.com/pubkey/rxdb/issues/6523)
-
+- FIX [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) not working anymore after a cleanup has run on documents with umlauts.
+- ADD random emojis and umlauts to all random strings in the tests to ensure this works correctly.
+- REMOVE faker dependency for tests and instead use random strings with emojis and umlauts.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

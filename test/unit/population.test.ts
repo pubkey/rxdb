@@ -1,6 +1,5 @@
 import assert from 'assert';
 import config, { describeParallel } from './config.ts';
-import { faker } from '@faker-js/faker';
 
 import {
     createRxDatabase,
@@ -11,7 +10,8 @@ import {
     defaultHashSha256,
 } from '../../plugins/core/index.mjs';
 import {
-    humansCollection
+    humansCollection,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
 
@@ -211,7 +211,7 @@ describeParallel('population.test.js', () => {
                     .fill(0)
                     .map(() => {
                         return {
-                            name: faker.person.firstName() + randomCouchString(5),
+                            name: randomStringWithSpecialChars(12),
                             friends: []
                         };
                     });

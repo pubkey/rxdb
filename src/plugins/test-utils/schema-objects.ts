@@ -2,28 +2,42 @@
  * this file contains objects which match the schemas in schemas.js
  */
 
-import { faker } from '@faker-js/faker';
-
 import {
-    randomNumber,
-    randomString
+    randomNumber
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
 import * as schemas from './schemas.ts';
-import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import { appendToArray, ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+
 
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
- * TODO add emojis
  */
 export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
 export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
-// const someEmojis = '😊💩👵🍌';
-export function randomStringWithSpecialChars(length: number) {
-    return randomString(length, TEST_DATA_CHARSET);
-}
+const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
+const baseChars = TEST_DATA_CHARSET.split('');
+const allChars = baseChars.slice(0);
+appendToArray(allChars, someEmojisArr);
+
+export function randomStringWithSpecialChars(length: number) {
+    let text = '';
+    for (let i = 0; i < length; i++) {
+        if(i === 0){
+            /**
+             * TODO foundationdb does not work correctly when an index string starts
+             * with an emoji. This can likely be fixed by upgrading foundationdb to the
+             * latest version.
+             */
+            text += baseChars[Math.floor(Math.random() * baseChars.length)];
+        }else {
+            text += allChars[Math.floor(Math.random() * allChars.length)];
+        }
+    }
+    return text;
+}
 
 export interface SimpleHumanDocumentType {
     passportId: string;
@@ -34,12 +48,12 @@ export interface SimpleHumanDocumentType {
 export function humanData(
     passportId: string = randomStringWithSpecialChars(12),
     age: number = randomNumber(10, 50),
-    firstName: string = faker.person.firstName()
+    firstName: string = randomStringWithSpecialChars(12)
 ): HumanDocumentType {
     return {
         passportId: passportId,
         firstName,
-        lastName: faker.person.lastName(),
+        lastName: randomStringWithSpecialChars(12),
         age
     };
 }
@@ -47,8 +61,8 @@ export function humanData(
 export function simpleHumanData(): SimpleHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName()
+        firstName: randomStringWithSpecialChars(12),
+        lastName: randomStringWithSpecialChars(12)
     };
 }
 
@@ -104,8 +118,8 @@ export interface NoIndexHumanDocumentType {
 }
 export function NoIndexHuman(): NoIndexHumanDocumentType {
     return {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName()
+        firstName: randomStringWithSpecialChars(12),
+        lastName: randomStringWithSpecialChars(12)
     };
 }
 
@@ -120,7 +134,7 @@ export interface NestedHumanDocumentType {
 export function nestedHumanData(partial: Partial<NestedHumanDocumentType> = {}): NestedHumanDocumentType {
     const defaultObj = {
         passportId: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
+        firstName: randomStringWithSpecialChars(12),
         mainSkill: {
             name: randomStringWithSpecialChars(6),
             level: 5
@@ -166,8 +180,8 @@ export function bigHumanDocumentType(): BigHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
         dnaHash: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
+        firstName: randomStringWithSpecialChars(12),
+        lastName: randomStringWithSpecialChars(12),
         age: randomNumber(10, 50)
     };
 }
@@ -214,7 +228,7 @@ export interface EncryptedHumanDocumentType {
 export function encryptedHumanData(secret = randomStringWithSpecialChars(12)): EncryptedHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
+        firstName: randomStringWithSpecialChars(12),
         secret
     };
 }
@@ -230,7 +244,7 @@ export interface EncryptedObjectHumanDocumentType {
 export function encryptedObjectHumanData(): EncryptedObjectHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
+        firstName: randomStringWithSpecialChars(12),
         secret: {
             name: randomStringWithSpecialChars(12),
             subname: randomStringWithSpecialChars(12)
@@ -259,7 +273,7 @@ export interface EncryptedDeepHumanDocumentType {
 export function encryptedDeepHumanDocumentType(): EncryptedDeepHumanDocumentType {
     return {
         passportId: randomStringWithSpecialChars(12),
-        firstName: faker.person.firstName(),
+        firstName: randomStringWithSpecialChars(12),
         firstLevelPassword: randomStringWithSpecialChars(12),
         secretData: {
             pw: randomStringWithSpecialChars(12)
@@ -310,7 +324,7 @@ export interface NostringIndexDocumentType {
 export function nostringIndex(): NostringIndexDocumentType {
     return {
         passportId: {},
-        firstName: faker.person.firstName()
+        firstName: randomStringWithSpecialChars(12)
     };
 }
 
@@ -362,7 +376,7 @@ export interface HumanWithTimestampDocumentType {
 export function humanWithTimestampData(givenData: Partial<HumanWithTimestampDocumentType> = {}): HumanWithTimestampDocumentType {
     let ret = {
         id: randomStringWithSpecialChars(12),
-        name: faker.person.firstName(),
+        name: randomStringWithSpecialChars(12),
         age: randomNumber(1, 100),
         // use some time in the past week
         updatedAt: Date.now()
@@ -423,8 +437,8 @@ export interface PointDocumentType {
 export function pointData(): PointDocumentType {
     return {
         id: randomStringWithSpecialChars(12),
-        x: faker.number.int(),
-        y: faker.number.int()
+        x: randomNumber(1, 100),
+        y: randomNumber(1, 100)
     };
 }
 
@@ -438,7 +452,7 @@ export function humanWithIdAndAgeIndexDocumentType(
 ): HumanWithIdAndAgeIndexDocumentType {
     return {
         id: randomStringWithSpecialChars(12),
-        name: faker.person.firstName(),
+        name: randomStringWithSpecialChars(12),
         age
     };
 }
@@ -454,8 +468,8 @@ export type HumanWithCompositePrimary = {
 };
 export function humanWithCompositePrimary(partial: Partial<HumanWithCompositePrimary> = {}): HumanWithCompositePrimary {
     const defaultObj = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
+        firstName: randomStringWithSpecialChars(12),
+        lastName: randomStringWithSpecialChars(12),
         info: {
             age: randomNumber(10, 50)
         }
