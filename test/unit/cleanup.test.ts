@@ -148,7 +148,7 @@ describeParallel('cleanup.test.js', () => {
             type DocType = {
                 id: string;
                 name: string;
-            }
+            };
             const db = await createRxDatabase<{ projects: RxCollection<DocType>; }>({
                 name: randomCouchString(10),
                 storage: wrappedValidateAjvStorage({

@@ -5,12 +5,20 @@
 import { faker } from '@faker-js/faker';
 
 import {
-    randomNumber,
-    randomString
+    randomNumber
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
 import * as schemas from './schemas.ts';
-import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import { appendToArray, ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+
+
+function randomStringByCharset(length = 8, charset: string[]) {
+    let text = '';
+    for (let i = 0; i < length; i++)
+        text += charset[Math.floor(Math.random() * charset.length)];
+    return text;
+}
+
 
 /**
  * Some storages had problems with umlauts and other special chars.
@@ -19,9 +27,15 @@ import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
  */
 export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
 export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
-// const someEmojis = '😊💩👵🍌';
+const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
+
+const allChars = TEST_DATA_CHARSET.split('');
+appendToArray(allChars, someEmojisArr);
 export function randomStringWithSpecialChars(length: number) {
-    return randomString(length, TEST_DATA_CHARSET);
+    let text = '';
+    for (let i = 0; i < length; i++)
+        text += allChars[Math.floor(Math.random() * allChars.length)];
+    return text;
 }
 
 
