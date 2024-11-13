@@ -95,7 +95,11 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
              * some storages like the memory storage
              * make input data deep-frozen in dev-mode.
              */
-            (0, _index.setProperty)(newState, writeRow.path, (0, _index.clone)(newValue));
+            if (writeRow.path === '') {
+              newState = (0, _index.clone)(newValue);
+            } else {
+              (0, _index.setProperty)(newState, writeRow.path, (0, _index.clone)(newValue));
+            }
             ops.push({
               k: writeRow.path,
               /**

@@ -2,35 +2,49 @@
  * this file contains objects which match the schemas in schemas.js
  */
 
-import { faker } from '@faker-js/faker';
-import { randomNumber, randomString } from 'async-test-util';
+import { randomNumber } from 'async-test-util';
 import * as schemas from "./schemas.js";
-import { ensureNotFalsy, lastOfArray } from "../utils/index.js";
+import { appendToArray, ensureNotFalsy, lastOfArray } from "../utils/index.js";
 
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
- * TODO add emojis
  */
 export var TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
 export var TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
-// const someEmojis = '😊💩👵🍌';
+var someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
+var baseChars = TEST_DATA_CHARSET.split('');
+var allChars = baseChars.slice(0);
+appendToArray(allChars, someEmojisArr);
 export function randomStringWithSpecialChars(length) {
-  return randomString(length, TEST_DATA_CHARSET);
+  var text = '';
+  for (var i = 0; i < length; i++) {
+    if (i === 0) {
+      /**
+       * TODO foundationdb does not work correctly when an index string starts
+       * with an emoji. This can likely be fixed by upgrading foundationdb to the
+       * latest version.
+       */
+      text += baseChars[Math.floor(Math.random() * baseChars.length)];
+    } else {
+      text += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+  }
+  return text;
 }
-export function humanData(passportId = randomStringWithSpecialChars(12), age = randomNumber(10, 50), firstName = faker.person.firstName()) {
+export function humanData(passportId = randomStringWithSpecialChars(12), age = randomNumber(10, 50), firstName = randomStringWithSpecialChars(12)) {
   return {
     passportId: passportId,
     firstName,
-    lastName: faker.person.lastName(),
+    lastName: randomStringWithSpecialChars(12),
     age
   };
 }
 export function simpleHumanData() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName()
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12)
   };
 }
 export function simpleHumanV3Data(partial = {}) {
@@ -57,14 +71,14 @@ export function humanWithSubOther() {
 }
 export function NoIndexHuman() {
   return {
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName()
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12)
   };
 }
 export function nestedHumanData(partial = {}) {
   var defaultObj = {
     passportId: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     mainSkill: {
       name: randomStringWithSpecialChars(6),
       level: 5
@@ -88,8 +102,8 @@ export function bigHumanDocumentType() {
   return {
     passportId: randomStringWithSpecialChars(12),
     dnaHash: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12),
     age: randomNumber(10, 50)
   };
 }
@@ -114,14 +128,14 @@ export function simpleHeroArray(partial = {}) {
 export function encryptedHumanData(secret = randomStringWithSpecialChars(12)) {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     secret
   };
 }
 export function encryptedObjectHumanData() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     secret: {
       name: randomStringWithSpecialChars(12),
       subname: randomStringWithSpecialChars(12)
@@ -131,7 +145,7 @@ export function encryptedObjectHumanData() {
 export function encryptedDeepHumanDocumentType() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     firstLevelPassword: randomStringWithSpecialChars(12),
     secretData: {
       pw: randomStringWithSpecialChars(12)
@@ -167,7 +181,7 @@ export function compoundIndexNoStringData() {
 export function nostringIndex() {
   return {
     passportId: {},
-    firstName: faker.person.firstName()
+    firstName: randomStringWithSpecialChars(12)
   };
 }
 export function refHumanData(bestFriend) {
@@ -187,7 +201,7 @@ export function refHumanNestedData(bestFriend) {
 export function humanWithTimestampData(givenData = {}) {
   var ret = {
     id: randomStringWithSpecialChars(12),
-    name: faker.person.firstName(),
+    name: randomStringWithSpecialChars(12),
     age: randomNumber(1, 100),
     // use some time in the past week
     updatedAt: Date.now()
@@ -217,21 +231,21 @@ export function averageSchemaData(partial = {}) {
 export function pointData() {
   return {
     id: randomStringWithSpecialChars(12),
-    x: faker.number.int(),
-    y: faker.number.int()
+    x: randomNumber(1, 100),
+    y: randomNumber(1, 100)
   };
 }
 export function humanWithIdAndAgeIndexDocumentType(age = randomNumber(1, 100)) {
   return {
     id: randomStringWithSpecialChars(12),
-    name: faker.person.firstName(),
+    name: randomStringWithSpecialChars(12),
     age
   };
 }
 export function humanWithCompositePrimary(partial = {}) {
   var defaultObj = {
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12),
     info: {
       age: randomNumber(10, 50)
     }

@@ -68,22 +68,10 @@ export function isFolderPath(name) {
  * @link https://stackoverflow.com/a/76240378/3443137
  */
 export function arrayBufferToString(arrayBuffer) {
-  var chunkSize = 8192;
-  var str = '';
-  var len = arrayBuffer.byteLength;
-  for (var i = 0; i < len; i += chunkSize) {
-    var chunk = new Uint8Array(arrayBuffer, i, Math.min(chunkSize, len - i));
-    str += String.fromCharCode.apply(null, chunk);
-  }
-  return str;
+  return new TextDecoder().decode(arrayBuffer);
 }
 export function stringToArrayBuffer(str) {
-  var buf = new ArrayBuffer(str.length);
-  var bufView = new Uint8Array(buf);
-  for (var i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
+  return new TextEncoder().encode(str);
 }
 export function normalizeString(str) {
   return str.trim().replace(/[\n\s]+/g, '');

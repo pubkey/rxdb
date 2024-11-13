@@ -29,7 +29,6 @@ exports.simpleHeroArray = simpleHeroArray;
 exports.simpleHumanAge = simpleHumanAge;
 exports.simpleHumanData = simpleHumanData;
 exports.simpleHumanV3Data = simpleHumanV3Data;
-var _faker = require("@faker-js/faker");
 var _asyncTestUtil = require("async-test-util");
 var schemas = _interopRequireWildcard(require("./schemas.js"));
 var _index = require("../utils/index.js");
@@ -42,27 +41,42 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
- * TODO add emojis
  */
 var TEST_DATA_CHARSET = exports.TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
 var TEST_DATA_CHARSET_LAST_SORTED = exports.TEST_DATA_CHARSET_LAST_SORTED = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(TEST_DATA_CHARSET.split('').sort()));
-// const someEmojis = '😊💩👵🍌';
+var someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
+var baseChars = TEST_DATA_CHARSET.split('');
+var allChars = baseChars.slice(0);
+(0, _index.appendToArray)(allChars, someEmojisArr);
 function randomStringWithSpecialChars(length) {
-  return (0, _asyncTestUtil.randomString)(length, TEST_DATA_CHARSET);
+  var text = '';
+  for (var i = 0; i < length; i++) {
+    if (i === 0) {
+      /**
+       * TODO foundationdb does not work correctly when an index string starts
+       * with an emoji. This can likely be fixed by upgrading foundationdb to the
+       * latest version.
+       */
+      text += baseChars[Math.floor(Math.random() * baseChars.length)];
+    } else {
+      text += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+  }
+  return text;
 }
-function humanData(passportId = randomStringWithSpecialChars(12), age = (0, _asyncTestUtil.randomNumber)(10, 50), firstName = _faker.faker.person.firstName()) {
+function humanData(passportId = randomStringWithSpecialChars(12), age = (0, _asyncTestUtil.randomNumber)(10, 50), firstName = randomStringWithSpecialChars(12)) {
   return {
     passportId: passportId,
     firstName,
-    lastName: _faker.faker.person.lastName(),
+    lastName: randomStringWithSpecialChars(12),
     age
   };
 }
 function simpleHumanData() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
-    lastName: _faker.faker.person.lastName()
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12)
   };
 }
 function simpleHumanV3Data(partial = {}) {
@@ -89,14 +103,14 @@ function humanWithSubOther() {
 }
 function NoIndexHuman() {
   return {
-    firstName: _faker.faker.person.firstName(),
-    lastName: _faker.faker.person.lastName()
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12)
   };
 }
 function nestedHumanData(partial = {}) {
   var defaultObj = {
     passportId: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     mainSkill: {
       name: randomStringWithSpecialChars(6),
       level: 5
@@ -120,8 +134,8 @@ function bigHumanDocumentType() {
   return {
     passportId: randomStringWithSpecialChars(12),
     dnaHash: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
-    lastName: _faker.faker.person.lastName(),
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12),
     age: (0, _asyncTestUtil.randomNumber)(10, 50)
   };
 }
@@ -146,14 +160,14 @@ function simpleHeroArray(partial = {}) {
 function encryptedHumanData(secret = randomStringWithSpecialChars(12)) {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     secret
   };
 }
 function encryptedObjectHumanData() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     secret: {
       name: randomStringWithSpecialChars(12),
       subname: randomStringWithSpecialChars(12)
@@ -163,7 +177,7 @@ function encryptedObjectHumanData() {
 function encryptedDeepHumanDocumentType() {
   return {
     passportId: randomStringWithSpecialChars(12),
-    firstName: _faker.faker.person.firstName(),
+    firstName: randomStringWithSpecialChars(12),
     firstLevelPassword: randomStringWithSpecialChars(12),
     secretData: {
       pw: randomStringWithSpecialChars(12)
@@ -199,7 +213,7 @@ function compoundIndexNoStringData() {
 function nostringIndex() {
   return {
     passportId: {},
-    firstName: _faker.faker.person.firstName()
+    firstName: randomStringWithSpecialChars(12)
   };
 }
 function refHumanData(bestFriend) {
@@ -219,7 +233,7 @@ function refHumanNestedData(bestFriend) {
 function humanWithTimestampData(givenData = {}) {
   var ret = {
     id: randomStringWithSpecialChars(12),
-    name: _faker.faker.person.firstName(),
+    name: randomStringWithSpecialChars(12),
     age: (0, _asyncTestUtil.randomNumber)(1, 100),
     // use some time in the past week
     updatedAt: Date.now()
@@ -249,21 +263,21 @@ function averageSchemaData(partial = {}) {
 function pointData() {
   return {
     id: randomStringWithSpecialChars(12),
-    x: _faker.faker.number.int(),
-    y: _faker.faker.number.int()
+    x: (0, _asyncTestUtil.randomNumber)(1, 100),
+    y: (0, _asyncTestUtil.randomNumber)(1, 100)
   };
 }
 function humanWithIdAndAgeIndexDocumentType(age = (0, _asyncTestUtil.randomNumber)(1, 100)) {
   return {
     id: randomStringWithSpecialChars(12),
-    name: _faker.faker.person.firstName(),
+    name: randomStringWithSpecialChars(12),
     age
   };
 }
 function humanWithCompositePrimary(partial = {}) {
   var defaultObj = {
-    firstName: _faker.faker.person.firstName(),
-    lastName: _faker.faker.person.lastName(),
+    firstName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(12),
     info: {
       age: (0, _asyncTestUtil.randomNumber)(10, 50)
     }
