@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX random string creation in tests could end up with strings longer than the provided `length`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

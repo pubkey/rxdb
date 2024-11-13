@@ -543,5 +543,33 @@ describe('util.test.js', () => {
             assert.strictEqual(result.stack, 'CustomError: This is a custom error \n  at someFile.js');
         });
     });
+    describe('.randomStringWithSpecialChars()', () => {
+        it('should return a string with an emoji at some point', () => {
+            let t = 0;
+            while (t < 1000) {
+                t++;
+                const str = randomStringWithSpecialChars(10);
+                if (str.includes('👵')) {
+                    return;
+                }
+            }
+            throw new Error('no emoji string created');
+        });
+        /**
+         * This test is important because emojis have 2 chars in javascript.
+         * For example '🍌'.length is 2
+         */
+        it('should never create a string the exceeds the length', () => {
+            let t = 0;
+            const length = 10;
+            while (t < 100) {
+                t++;
+                const str = randomStringWithSpecialChars(length);
+                if (str.length !== length) {
+                    throw new Error('string has wrong length(is: ' + str.length + ', should:' + length + '): "' + str + '"');
+                }
+            }
+        });
+    });
 });
 
