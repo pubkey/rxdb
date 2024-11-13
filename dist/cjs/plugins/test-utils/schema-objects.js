@@ -50,8 +50,8 @@ var allChars = baseChars.slice(0);
 (0, _index.appendToArray)(allChars, someEmojisArr);
 function randomStringWithSpecialChars(length) {
   var text = '';
-  for (var i = 0; i < length; i++) {
-    if (i === 0) {
+  while (text.length < length) {
+    if (text.length === 0) {
       /**
        * TODO foundationdb does not work correctly when an index string starts
        * with an emoji. This can likely be fixed by upgrading foundationdb to the
@@ -61,6 +61,15 @@ function randomStringWithSpecialChars(length) {
     } else {
       text += allChars[Math.floor(Math.random() * allChars.length)];
     }
+  }
+
+  /**
+   * Because emojis can have a string.length of 2,
+   * we can sometimes end up with strings that are longer
+   * than the provided length. In that cases we have to rerun.
+   */
+  if (text.length > length) {
+    return randomStringWithSpecialChars(length);
   }
   return text;
 }
