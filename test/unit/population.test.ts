@@ -211,7 +211,7 @@ describeParallel('population.test.js', () => {
                     .fill(0)
                     .map(() => {
                         return {
-                            name: randomStringWithSpecialChars(12),
+                            name: randomStringWithSpecialChars(3, 12),
                             friends: []
                         };
                     });

@@ -267,7 +267,7 @@ describeParallel('encryption.test.ts', () => {
                     schema: schemas.encryptedHuman
                 }
             });
-            const secret = randomStringWithSpecialChars(1000 * 250);
+            const secret = randomStringWithSpecialChars(1000 * 220, 1000 * 250);
             const agent = schemaObjects.encryptedHumanData();
             agent.secret = secret;
             await c.enchuman.insert(agent);

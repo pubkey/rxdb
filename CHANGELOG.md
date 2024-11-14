@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX random string creation in tests could end up with strings longer than the provided `length`
+- CHANGE use variable random string lengths in the tests to ensure this works.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

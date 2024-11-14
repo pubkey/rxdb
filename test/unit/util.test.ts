@@ -505,7 +505,7 @@ describe('util.test.js', () => {
     });
     describe('.arrayBufferToString() / .stringToArrayBuffer()', () => {
         it('should return the correct result', () => {
-            const str = randomStringWithSpecialChars(1000);
+            const str = randomStringWithSpecialChars(900, 1000);
             const buffer = stringToArrayBuffer(str);
             const back = arrayBufferToString(buffer);
             assert.strictEqual(str, back);
@@ -514,7 +514,7 @@ describe('util.test.js', () => {
          * @link https://github.com/pubkey/rxdb/issues/5624
          */
         it('#5624 should work with really big strings', () => {
-            const str = randomStringWithSpecialChars(1000 * 250);
+            const str = randomStringWithSpecialChars(1000 * 220, 1000 * 250);
             const buffer = stringToArrayBuffer(str);
             const back = arrayBufferToString(buffer);
             assert.strictEqual(str, back);
@@ -548,7 +548,7 @@ describe('util.test.js', () => {
             let t = 0;
             while (t < 1000) {
                 t++;
-                const str = randomStringWithSpecialChars(10);
+                const str = randomStringWithSpecialChars(3, 10);
                 if (str.includes('👵')) {
                     return;
                 }
@@ -564,7 +564,7 @@ describe('util.test.js', () => {
             const length = 10;
             while (t < 100) {
                 t++;
-                const str = randomStringWithSpecialChars(length);
+                const str = randomStringWithSpecialChars(length, length);
                 if (str.length !== length) {
                     throw new Error('string has wrong length(is: ' + str.length + ', should:' + length + '): "' + str + '"');
                 }
