@@ -16,8 +16,18 @@ var someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 var baseChars = TEST_DATA_CHARSET.split('');
 var allChars = baseChars.slice(0);
 appendToArray(allChars, someEmojisArr);
-export function randomStringWithSpecialChars(length) {
+export function randomStringWithSpecialChars(minLength,
+/**
+ * It has shown that alternating string lengths
+ * can reproduce various problems. So by having variable
+ * lengths we ensure that this fully works.
+ */
+maxLength) {
   var text = '';
+  if (!minLength || !maxLength || minLength > maxLength) {
+    throw new Error('invalid length given ' + minLength + ' ' + maxLength);
+  }
+  var length = randomNumber(minLength, maxLength);
   while (text.length < length) {
     if (text.length === 0) {
       /**
@@ -37,42 +47,42 @@ export function randomStringWithSpecialChars(length) {
    * than the provided length. In that cases we have to rerun.
    */
   if (text.length > length) {
-    return randomStringWithSpecialChars(length);
+    return randomStringWithSpecialChars(minLength, maxLength);
   }
   return text;
 }
-export function humanData(passportId = randomStringWithSpecialChars(12), age = randomNumber(10, 50), firstName = randomStringWithSpecialChars(12)) {
+export function humanData(passportId = randomStringWithSpecialChars(8, 12), age = randomNumber(10, 50), firstName = randomStringWithSpecialChars(8, 12)) {
   return {
     passportId: passportId,
     firstName,
-    lastName: randomStringWithSpecialChars(12),
+    lastName: randomStringWithSpecialChars(8, 12),
     age
   };
 }
 export function simpleHumanData() {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
-    lastName: randomStringWithSpecialChars(12)
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12)
   };
 }
 export function simpleHumanV3Data(partial = {}) {
   var defaultObj = {
-    passportId: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
     age: randomNumber(10, 50)
   };
   return Object.assign(defaultObj, partial);
 }
 export function simpleHumanAge(partial = {}) {
   var defaultObj = {
-    passportId: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
     age: randomNumber(10, 50) + ''
   };
   return Object.assign(defaultObj, partial);
 }
 export function humanWithSubOther() {
   return {
-    passportId: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
     other: {
       age: randomNumber(10, 50)
     }
@@ -80,16 +90,16 @@ export function humanWithSubOther() {
 }
 export function NoIndexHuman() {
   return {
-    firstName: randomStringWithSpecialChars(12),
-    lastName: randomStringWithSpecialChars(12)
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12)
   };
 }
 export function nestedHumanData(partial = {}) {
   var defaultObj = {
-    passportId: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
     mainSkill: {
-      name: randomStringWithSpecialChars(6),
+      name: randomStringWithSpecialChars(4, 6),
       level: 5
     }
   };
@@ -97,9 +107,9 @@ export function nestedHumanData(partial = {}) {
 }
 export function deepNestedHumanData() {
   return {
-    passportId: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
     mainSkill: {
-      name: randomStringWithSpecialChars(6),
+      name: randomStringWithSpecialChars(4, 6),
       attack: {
         good: false,
         count: 5
@@ -109,19 +119,19 @@ export function deepNestedHumanData() {
 }
 export function bigHumanDocumentType() {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    dnaHash: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
-    lastName: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    dnaHash: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12),
     age: randomNumber(10, 50)
   };
 }
 export function heroArrayData() {
   return {
-    name: randomStringWithSpecialChars(6),
+    name: randomStringWithSpecialChars(4, 6),
     skills: new Array(3).fill(0).map(() => {
       return {
-        name: randomStringWithSpecialChars(6),
+        name: randomStringWithSpecialChars(4, 6),
         damage: randomNumber(10, 50)
       };
     })
@@ -129,60 +139,60 @@ export function heroArrayData() {
 }
 export function simpleHeroArray(partial = {}) {
   var defaultObj = {
-    name: randomStringWithSpecialChars(6),
-    skills: new Array(3).fill(0).map(() => randomStringWithSpecialChars(6))
+    name: randomStringWithSpecialChars(3, 6),
+    skills: new Array(3).fill(0).map(() => randomStringWithSpecialChars(3, 6))
   };
   return Object.assign(defaultObj, partial);
 }
-export function encryptedHumanData(secret = randomStringWithSpecialChars(12)) {
+export function encryptedHumanData(secret = randomStringWithSpecialChars(8, 12)) {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
     secret
   };
 }
 export function encryptedObjectHumanData() {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
     secret: {
-      name: randomStringWithSpecialChars(12),
-      subname: randomStringWithSpecialChars(12)
+      name: randomStringWithSpecialChars(8, 12),
+      subname: randomStringWithSpecialChars(8, 12)
     }
   };
 }
 export function encryptedDeepHumanDocumentType() {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    firstName: randomStringWithSpecialChars(12),
-    firstLevelPassword: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    firstLevelPassword: randomStringWithSpecialChars(8, 12),
     secretData: {
-      pw: randomStringWithSpecialChars(12)
+      pw: randomStringWithSpecialChars(8, 12)
     },
     deepSecret: {
       darkhole: {
-        pw: randomStringWithSpecialChars(12)
+        pw: randomStringWithSpecialChars(8, 12)
       }
     },
     nestedSecret: {
       darkhole: {
-        pw: randomStringWithSpecialChars(12)
+        pw: randomStringWithSpecialChars(8, 12)
       }
     }
   };
 }
 export function compoundIndexData() {
   return {
-    passportId: randomStringWithSpecialChars(12),
-    passportCountry: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
+    passportCountry: randomStringWithSpecialChars(8, 12),
     age: randomNumber(10, 50)
   };
 }
 export function compoundIndexNoStringData() {
   return {
-    passportId: randomStringWithSpecialChars(12),
+    passportId: randomStringWithSpecialChars(8, 12),
     passportCountry: {
-      [randomStringWithSpecialChars(12)]: randomStringWithSpecialChars(12)
+      [randomStringWithSpecialChars(8, 12)]: randomStringWithSpecialChars(8, 12)
     },
     age: randomNumber(10, 50)
   };
@@ -190,18 +200,18 @@ export function compoundIndexNoStringData() {
 export function nostringIndex() {
   return {
     passportId: {},
-    firstName: randomStringWithSpecialChars(12)
+    firstName: randomStringWithSpecialChars(8, 12)
   };
 }
 export function refHumanData(bestFriend) {
   return {
-    name: randomStringWithSpecialChars(12),
+    name: randomStringWithSpecialChars(8, 12),
     bestFriend
   };
 }
 export function refHumanNestedData(bestFriend) {
   return {
-    name: randomStringWithSpecialChars(12),
+    name: randomStringWithSpecialChars(8, 12),
     foo: {
       bestFriend
     }
@@ -209,8 +219,8 @@ export function refHumanNestedData(bestFriend) {
 }
 export function humanWithTimestampData(givenData = {}) {
   var ret = {
-    id: randomStringWithSpecialChars(12),
-    name: randomStringWithSpecialChars(12),
+    id: randomStringWithSpecialChars(8, 12),
+    name: randomStringWithSpecialChars(8, 12),
     age: randomNumber(1, 100),
     // use some time in the past week
     updatedAt: Date.now()
@@ -221,40 +231,40 @@ export function humanWithTimestampData(givenData = {}) {
 var averageSchemaForFieldLength = schemas.averageSchema();
 export function averageSchemaData(partial = {}) {
   return Object.assign({}, {
-    id: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength)),
-    var1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength)),
+    id: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength - 3), ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength)),
+    var1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength) - 3, ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength)),
     var2: randomNumber(100, ensureNotFalsy(averageSchemaForFieldLength.properties.var2.maximum)),
     deep: {
-      deep1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength)),
-      deep2: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength)),
+      deep1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength) - 3, ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength)),
+      deep2: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength) - 3, ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength)),
       deeper: {
         deepNr: randomNumber(0, 10)
       }
     },
     list: new Array(5).fill(0).map(() => ({
-      deep1: randomStringWithSpecialChars(5),
-      deep2: randomStringWithSpecialChars(8)
+      deep1: randomStringWithSpecialChars(2, 5),
+      deep2: randomStringWithSpecialChars(5, 8)
     }))
   }, partial);
 }
 export function pointData() {
   return {
-    id: randomStringWithSpecialChars(12),
+    id: randomStringWithSpecialChars(8, 12),
     x: randomNumber(1, 100),
     y: randomNumber(1, 100)
   };
 }
 export function humanWithIdAndAgeIndexDocumentType(age = randomNumber(1, 100)) {
   return {
-    id: randomStringWithSpecialChars(12),
-    name: randomStringWithSpecialChars(12),
+    id: randomStringWithSpecialChars(8, 12),
+    name: randomStringWithSpecialChars(8, 12),
     age
   };
 }
 export function humanWithCompositePrimary(partial = {}) {
   var defaultObj = {
-    firstName: randomStringWithSpecialChars(12),
-    lastName: randomStringWithSpecialChars(12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12),
     info: {
       age: randomNumber(10, 50)
     }

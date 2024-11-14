@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- CHANGE use variable random string lengths in the tests to ensure this works.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.38.2 (14 November 2024)
+
+- CHANGE use variable random string lengths in the tests to ensure this works.
 
 ### 15.38.1 (13 November 2024)
 
