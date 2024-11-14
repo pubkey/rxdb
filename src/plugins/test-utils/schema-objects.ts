@@ -33,8 +33,8 @@ export function randomStringWithSpecialChars(
 ) {
     let text = '';
 
-    if (!minLength || !maxLength) {
-        throw new Error('invalid length given');
+    if (!minLength || !maxLength || minLength > maxLength) {
+        throw new Error('invalid length given ' + minLength + ' ' + maxLength);
     }
 
     const length = randomNumber(minLength, maxLength);
