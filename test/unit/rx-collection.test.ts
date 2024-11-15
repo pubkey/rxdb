@@ -252,6 +252,30 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
+                it('example unhandled promise rejection', async () => {
+                    process.on('unhandledRejection', (reason, p) => {
+                        console.error('Unhandled Rejection at:', p, 'reason:', reason);
+                        process.exit(1);
+                    });
+
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    });
+                    const doc = schemaObjects.humanData();
+                    /**
+                     * we don't catch the promise or wrap in a try-catch,
+                     * so this will result in an unhandled promise rejection
+                     */
+                    collections.human.insert(doc);
+                    collections.human.insert(doc);
+                    db.destroy();
+                });
                 it('should throw a conflict-error', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
