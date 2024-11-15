@@ -252,6 +252,27 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
+                it('ensures uniqueness of primary-key', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: { schema: schemas.primaryHuman }
+                    });
+
+                    const human1 = schemaObjects.humanData('same-id');
+                    const human2 = schemaObjects.humanData('same-id');
+
+                    await collections.human.insert(human1);
+
+                    await assertThrows(
+                        () => collections.human.insert(human2),
+                        'RxError'
+                    );
+
+                    db.destroy();
+                });
                 it('should throw a conflict-error', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -367,6 +388,29 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
+                it('ensures uniqueness of primary-key', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: { schema: schemas.primaryHuman }
+                    });
+
+                    const human1 = schemaObjects.humanData('same-id');
+                    const human2 = schemaObjects.humanData('same-id');
+
+                    /**
+                     * this does not throw, 2 documents are
+                     * inserted with the same primary-key.
+                     */
+                    await assertThrows(
+                        () => collections.human.bulkInsert([human1, human2]),
+                        'RxError'
+                    );
+
+                    db.destroy();
+                });
                 it('should throw if one already exists', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
