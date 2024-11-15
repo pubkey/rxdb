@@ -2046,6 +2046,35 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(res.size, 5);
                 c.database.destroy();
             });
+            it('we should be able to modify the documents', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                await c.findByIds(ids).modify((doc) => {
+                    doc.firstName = 'abcdefghi';
+                    return doc;
+                });
+
+                const res = await c
+                    .count({ selector: { firstName: 'abcdefghi' } })
+                    .exec();
+                assert.strictEqual(res, 5);
+                c.database.destroy();
+            });
+            it('we should be able to patch the documents', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map((d) => d.primary);
+
+                await c.findByIds(ids).patch({ firstName: 'abcdefghi' });
+
+                const res = await c
+                    .count({ selector: { firstName: 'abcdefghi' } })
+                    .exec();
+                assert.strictEqual(res, 5);
+                c.database.destroy();
+            });
             /**
              * @link https://github.com/pubkey/rxdb/issues/6148
              */
