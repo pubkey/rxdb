@@ -33,6 +33,10 @@ To fix this, in dev-mode we should ensure that at least one schema validator is 
 
 `ignoreduplicate` is only usefull for tests and should never be used in production. Throw an error if it is set to `true` in non-dev-mode.
 
+## rename `.destroy()` to `.close()`
+
+Destroy was adapted from PouchDB, but people often think this deletes the written data. Close is better.
+
 ---------------------------------
 # Maybe later (not sure if should be done)
 
