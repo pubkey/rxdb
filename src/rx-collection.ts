@@ -409,8 +409,8 @@ export class RxCollectionBase<
 
         if (ids.size !== docsData.length) {
             throw newRxError('COL22', {
+                collection: this.name,
                 args: {
-                    collection: this.name,
                     documents: docsData
                 }
             });
