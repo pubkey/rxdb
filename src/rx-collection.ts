@@ -376,6 +376,7 @@ export class RxCollectionBase<
 
         const primaryPath = this.schema.primaryPath;
 
+        const ids = new Set<string>();
 
         /**
          * This code is a bit redundant for better performance.
@@ -386,6 +387,7 @@ export class RxCollectionBase<
         if (this.hasHooks('pre', 'insert')) {
             insertRows = await Promise.all(
                 docsData.map(docData => {
+                    ids.add((docData as any)[primaryPath]);
                     const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
                     return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
@@ -398,9 +400,20 @@ export class RxCollectionBase<
             const schema = this.schema;
             for (let index = 0; index < docsData.length; index++) {
                 const docData = docsData[index];
+                ids.add((docData as any)[primaryPath]);
                 const useDocData = fillObjectDataBeforeInsert(schema, docData);
                 insertRows[index] = { document: useDocData };
             }
+        }
+
+
+        if (ids.size !== docsData.length) {
+            throw newRxError('COL22', {
+                args: {
+                    collection: this.name,
+                    documents: docsData
+                }
+            });
         }
 
         const results = await this.storageInstance.bulkWrite(
