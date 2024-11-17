@@ -389,6 +389,29 @@ describe('rx-collection.test.ts', () => {
                     assert.strictEqual(ret.error.length, 1);
                     db.destroy();
                 });
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/6589
+                 */
+                it('should throw on duplicate ids', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: { schema: schemas.primaryHuman }
+                    });
+
+                    const human1 = schemaObjects.humanData('same-id');
+                    const human2 = schemaObjects.humanData('same-id');
+
+                    await assertThrows(
+                        () => collections.human.bulkInsert([human1, human2]),
+                        'RxError',
+                        'COL22'
+                    );
+
+                    db.destroy();
+                });
             });
         });
         describe('.find()', () => {
@@ -1527,6 +1550,39 @@ describe('rx-collection.test.ts', () => {
                 assert.strictEqual(allDocs[0].age, 100);
 
                 c.database.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/6589
+             */
+            it('should throw on duplicate ids', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                });
+                const collections = await db.addCollections({
+                    human: { schema: schemas.primaryHuman }
+                });
+
+                const human1 = schemaObjects.humanData('same-id');
+                const human2 = schemaObjects.humanData('same-id');
+
+                await assertThrows(
+                    () => collections.human.bulkUpsert([human1, human2]),
+                    'RxError',
+                    'COL22'
+                );
+
+                // should be the same behavior even if the document already exists
+                await collections.human.insert(human1);
+                await assertThrows(
+                    () => collections.human.bulkUpsert([human1, human2]),
+                    'RxError',
+                    'COL22'
+                );
+
+
+
+                db.destroy();
             });
         });
         describeParallel('.upsert()', () => {

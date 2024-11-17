@@ -100,6 +100,7 @@ export const ERROR_MESSAGES = {
     COL20: 'Storage write error',
     COL21: 'The RxCollection is destroyed or removed already, either from this JavaScript realm or from another, like a browser tab',
     CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
+    COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',

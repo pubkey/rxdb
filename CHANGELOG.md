@@ -4,7 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - FIX findByIds not working with modify and patch [#6592](https://github.com/pubkey/rxdb/pull/6592)
-
+- FIX bulk inserting 2 docs with same primary key should throw [#6589](https://github.com/pubkey/rxdb/pull/6589)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
