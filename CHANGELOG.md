@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX findByIds not working with modify and patch [#6592](https://github.com/pubkey/rxdb/pull/6592)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
