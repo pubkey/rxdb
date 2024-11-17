@@ -928,6 +928,10 @@ export class RxCollectionBase<
     async remove(): Promise<any> {
         await this.destroy();
         await Promise.all(this.onRemove.map(fn => fn()));
+        /**
+         * TODO here we should pass the already existing
+         * storage instances instead of creating new ones.
+         */
         await removeCollectionStorages(
             this.database.storage,
             this.database.internalStore,
