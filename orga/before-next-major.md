@@ -12,8 +12,6 @@ By splitting the functionalities it will become easier to learn where the handle
 
 Set the default to 14 and also remove all occurences of `jsonPositionSize`.
 
-## Ideas from https://github.com/pubkey/rxdb/issues/4994
-
 ## migration-storage plugin: Remove catch from cleanup
 
 In the migration-storage plugin we run a catch on `oldStorageInstance.cleanup(0)` to fix v14->v15 migration.
