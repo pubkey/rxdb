@@ -5,7 +5,11 @@ import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
 import { HeroSchema, MyDatabaseCollections } from './schema';
 
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+
+
 addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBDevModePlugin);
 
 const _create = async () => {
   const database = await createRxDatabase<MyDatabaseCollections>({
@@ -15,6 +19,7 @@ const _create = async () => {
         storage: getRxStorageDexie(),
       }),
     }),
+    ignoreDuplicate: true
     password: 'foooooobaaaaar',
     multiInstance: true
   });
