@@ -27,7 +27,7 @@ export const defaultConflictHandler: RxConflictHandler<any> = {
             stripAttachmentsDataFromDocument(b)
         );
     },
-    async resolve(i) {
+    resolve(i) {
         /**
          * The default conflict handler will always
          * drop the fork state and use the master state instead.
