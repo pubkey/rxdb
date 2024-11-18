@@ -98,7 +98,7 @@ const DB_PREFIX = 'test-db-';
 
 
 /**
- * In RxDB v15, this was called .destroy() instead of .closee()
+ * In RxDB v15, this was called .destroy() instead of .close()
  */
 function destroyOrClose(db: RxDatabase | any) {
     if (typeof db.destroy === 'function') {
