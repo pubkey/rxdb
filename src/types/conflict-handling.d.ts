@@ -44,5 +44,5 @@ export type RxConflictHandler<RxDocType> = {
     resolve: (
         i: RxConflictHandlerInput<RxDocType>,
         context: string
-    ) => Promise<WithDeleted<RxDocType>>
+    ) => Promise<WithDeleted<RxDocType>>;
 };

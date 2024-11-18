@@ -1,7 +1,6 @@
 import type {
     RxConflictHandler,
     RxConflictHandlerInput,
-    RxConflictHandlerOutput,
     RxDocumentData,
     RxStorageInstanceReplicationState
 } from '../types/index.d.ts';

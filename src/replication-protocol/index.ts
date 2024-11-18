@@ -261,7 +261,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             const writeRows: BulkWriteRow<RxDocType>[] = [];
             await Promise.all(
                 Object.entries(rowById)
-                    .map(async ([id, row]) => {
+                    .map(([id, row]) => {
                         const masterState = masterDocsState.get(id);
                         if (!masterState) {
                             writeRows.push({

@@ -1,8 +1,7 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import type {
     RxConflictHandler,
-    RxConflictHandlerInput,
-    RxConflictHandlerOutput
+    RxConflictHandlerInput
 } from './conflict-handling.d.ts';
 import type { RxError, RxTypeError } from './rx-error.d.ts';
 import type {
