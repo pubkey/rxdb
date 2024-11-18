@@ -102,10 +102,10 @@ export function addRxPlugin(plugin: RxPlugin) {
             .entries(plugin.hooks)
             .forEach(([name, hooksObj]) => {
                 if (hooksObj.after) {
-                    HOOKS[name].push(hooksObj.after);
+                    (HOOKS as any)[name].push(hooksObj.after);
                 }
                 if (hooksObj.before) {
-                    HOOKS[name].unshift(hooksObj.before);
+                    (HOOKS as any)[name].unshift(hooksObj.before);
                 }
             });
     }

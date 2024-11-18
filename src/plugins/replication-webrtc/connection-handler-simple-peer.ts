@@ -272,7 +272,7 @@ export function getConnectionHandlerSimplePeer({
             async send(peer: SimplePeer, message: WebRTCMessage) {
                 await peer.send(JSON.stringify(message));
             },
-            destroy() {
+            close() {
                 closed = true;
                 ensureNotFalsy(socket).close();
                 error$.complete();

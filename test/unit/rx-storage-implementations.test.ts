@@ -3237,7 +3237,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.close()', () => {
             /**
              * There are cases where closing happens multiple times,
-             * like when we call collection.destroy() and replicationState.cancel()
+             * like when we call collection.close() and replicationState.cancel()
              * at the same time.
              * By making it possible to call close() multiple times,
              * many randomly failing tests are fixed.

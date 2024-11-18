@@ -167,11 +167,12 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 
 ```
 
-### destroy()
-Destroys the databases object-instance. This is to free up memory and stop all observers and replications.
-Returns a `Promise` that resolves when the database is destroyed.
+### close()
+Closes the databases object-instance. This is to free up memory and stop all observers and replications.
+Returns a `Promise` that resolves when the database is closed.
+Closing a database will not remove the databases data. When you create the database again with `createRxDatabase()`, all data will still be there.
 ```javascript
-await myDatabase.destroy();
+await myDatabase.close();
 ```
 
 ### remove()

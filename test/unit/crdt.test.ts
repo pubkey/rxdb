@@ -92,12 +92,12 @@ describeParallel('crdt.test.js', () => {
                 'RxError',
                 'CRDT3'
             );
-            db.destroy();
+            db.close();
         });
         it('should automatically set the CRDT conflict handler', async () => {
             const collection = await getCRDTCollection();
             assert.ok(collection.conflictHandler !== defaultConflictHandler);
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -114,7 +114,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(firstOp);
             assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should insert document via bulkInsert', async () => {
             const collection = await getCRDTCollection();
@@ -128,7 +128,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(firstOp);
             assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('.insertCRDT()', () => {
@@ -149,7 +149,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(doc1 !== doc2);
             assert.strictEqual(doc2.getLatest().firstName, 'foobar');
 
-            collection.database.destroy();
+            collection.database.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/pull/5423
@@ -184,7 +184,7 @@ describeParallel('crdt.test.js', () => {
             const doc1 = await collection.insert(writeData);
             assert.strictEqual(doc1.getLatest().optional_value, undefined);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should respect the if-else logic', async () => {
             const collection = await getCRDTCollection();
@@ -209,7 +209,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(doc1 !== doc2);
             assert.strictEqual(doc2.getLatest().age, 2);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('.remove()', () => {
@@ -225,7 +225,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -245,7 +245,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?.age, 10);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -265,7 +265,7 @@ describeParallel('crdt.test.js', () => {
                 'CRDT2'
             );
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -290,7 +290,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$inc?.age, 1);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should delete the document via CRDT', async () => {
             const collection = await getCRDTCollection();
@@ -310,7 +310,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -350,8 +350,8 @@ describeParallel('crdt.test.js', () => {
                 const crdtData: CRDTDocumentField<any> = (resolved as any).crdts;
                 assert.strictEqual(crdtData.operations[0].length, 2);
 
-                doc1.collection.database.destroy();
-                doc2.collection.database.destroy();
+                doc1.collection.database.close();
+                doc2.collection.database.close();
             });
         });
         describe('conflicts during replication', () => {
@@ -473,9 +473,9 @@ describeParallel('crdt.test.js', () => {
                 assert.strictEqual(docA.getLatest().toJSON().crdts?.operations[1].length, 2);
                 assert.strictEqual(docB.getLatest().toJSON().crdts?.operations[1].length, 2);
 
-                clientACollection.database.destroy();
-                clientBCollection.database.destroy();
-                serverCollection.database.destroy();
+                clientACollection.database.close();
+                clientBCollection.database.close();
+                serverCollection.database.close();
             });
         });
     });

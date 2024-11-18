@@ -1,4 +1,4 @@
-import type { RxCleanupPolicy, RxCollection, RxState } from '../../types/index.d.ts';
+import type { RxCleanupPolicy, RxState } from '../../types/index.d.ts';
 import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
@@ -16,7 +16,7 @@ export async function startCleanupForRxState(state: RxState<unknown, unknown>) {
     );
 
     await initialCleanupWait(rxCollection, cleanupPolicy);
-    if (rxCollection.destroyed) {
+    if (rxCollection.closed) {
         return;
     }
 
@@ -42,7 +42,7 @@ export async function cleanupRxState(
 
     // run cleanup() until it returns true
     let isDone = false;
-    while (!isDone && !rxCollection.destroyed) {
+    while (!isDone && !rxCollection.closed) {
         if (cleanupPolicy.awaitReplicationsInSync) {
             const replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
             if (replicationStates) {
@@ -55,12 +55,12 @@ export async function cleanupRxState(
                 );
             }
         }
-        if (rxCollection.destroyed) {
+        if (rxCollection.closed) {
             return;
         }
         RXSTATE_CLEANUP_QUEUE = RXSTATE_CLEANUP_QUEUE
             .then(async () => {
-                if (rxCollection.destroyed) {
+                if (rxCollection.closed) {
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
@@ -79,9 +79,9 @@ export async function runCleanupAfterWrite(
     cleanupPolicy: RxCleanupPolicy
 ) {
     const rxCollection = state.collection;
-    while (!rxCollection.destroyed) {
+    while (!rxCollection.closed) {
         await rxCollection.promiseWait(cleanupPolicy.runEach);
-        if (rxCollection.destroyed) {
+        if (rxCollection.closed) {
             return;
         }
         await cleanupRxState(state, cleanupPolicy);

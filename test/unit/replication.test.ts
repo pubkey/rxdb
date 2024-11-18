@@ -218,8 +218,8 @@ describe('replication.test.ts', () => {
                 docsPerSide * 2
             );
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should allow asynchronous push and pull modifiers', async () => {
             const docsPerSide = 5;
@@ -267,8 +267,8 @@ describe('replication.test.ts', () => {
              */
             assert.ok(pullModifiedLocal.length >= docsPerSide);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should skip the document when the push-modifier returns null', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({
@@ -307,8 +307,8 @@ describe('replication.test.ts', () => {
             const docsRemote = await remoteCollection.find().exec();
             assert.strictEqual(docsRemote.length, 5);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should not save pulled documents that do not match the schema', async () => {
             const amount = 5;
@@ -352,9 +352,9 @@ describe('replication.test.ts', () => {
             assert.ok(JSON.stringify(errors[0].parameters).includes('maximum'));
 
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-            otherSchemaCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
+            otherSchemaCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on erroring replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
@@ -385,8 +385,8 @@ describe('replication.test.ts', () => {
             await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on canceled replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
@@ -419,8 +419,8 @@ describe('replication.test.ts', () => {
             await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
     });
     describeParallel('live replication', () => {
@@ -471,8 +471,8 @@ describe('replication.test.ts', () => {
                 return !remoteDoc;
             });
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/issues/3994
@@ -516,8 +516,8 @@ describe('replication.test.ts', () => {
                 10
             );
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should emit active$ when a replication cycle is running', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -553,8 +553,8 @@ describe('replication.test.ts', () => {
                 false
             );
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
     });
     describeParallel('other', () => {
@@ -576,8 +576,8 @@ describe('replication.test.ts', () => {
                     ensureNotFalsy(replicationState.internalReplicationState).stats.down.downstreamResyncOnce > 0
                 );
 
-                localCollection.database.destroy();
-                remoteCollection.database.destroy();
+                localCollection.database.close();
+                remoteCollection.database.close();
             });
             it('should not run first replication when autoStart is set to false', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -598,8 +598,8 @@ describe('replication.test.ts', () => {
                 // not replicated
                 assert.ok(!replicationState.internalReplicationState);
 
-                localCollection.database.destroy();
-                remoteCollection.database.destroy();
+                localCollection.database.close();
+                remoteCollection.database.close();
             });
         });
         describe('.awaitInSync()', () => {
@@ -619,8 +619,8 @@ describe('replication.test.ts', () => {
                 });
                 await replicationState.awaitInSync();
 
-                localCollection.database.destroy();
-                remoteCollection.database.destroy();
+                localCollection.database.close();
+                remoteCollection.database.close();
             });
             it('should never resolve when offline', async () => {
                 const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
@@ -646,8 +646,8 @@ describe('replication.test.ts', () => {
                 await wait(isFastMode() ? 100 : 400);
                 assert.strictEqual(resolved, false);
 
-                localCollection.database.destroy();
-                remoteCollection.database.destroy();
+                localCollection.database.close();
+                remoteCollection.database.close();
             });
         });
         it('should clean up the replication meta storage when the get collection gets removed', async () => {
@@ -682,7 +682,7 @@ describe('replication.test.ts', () => {
             }
 
             await localCollection.remove();
-            await localCollection.database.destroy();
+            await localCollection.database.close();
 
             const localCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
 
@@ -735,8 +735,8 @@ describe('replication.test.ts', () => {
                 remoteDocs.map(d => d.toJSON())
             );
 
-            localCollection2.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection2.database.close();
+            remoteCollection.database.close();
         });
         it('should respect the initial push checkpoint', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -763,8 +763,8 @@ describe('replication.test.ts', () => {
             const remoteDocs = await remoteCollection.find().exec();
             assert.deepEqual(remoteDocs.length, 0);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should respect the initial pull checkpoint', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
@@ -791,8 +791,8 @@ describe('replication.test.ts', () => {
             const localDocs = await localCollection.find().exec();
             assert.deepEqual(localDocs.length, 0);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
     });
     describeParallel('RxReplicationState.remove()', () => {
@@ -824,8 +824,8 @@ describe('replication.test.ts', () => {
 
             assert.deepStrictEqual(calledCheckpoints, [undefined, undefined]);
 
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
     });
     describeParallel('attachment replication', () => {
@@ -930,8 +930,8 @@ describe('replication.test.ts', () => {
                 }
             });
 
-            await localCollection.database.destroy();
-            await remoteCollection.database.destroy();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
         });
     });
     describeParallel('issues', () => {
@@ -981,7 +981,7 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInitialReplication();
 
             // clean up afterwards
-            db.destroy();
+            db.close();
         });
         it('#4315 Id length limit reached with composite key', async () => {
             const primaryKeyLength = 500;
@@ -1048,8 +1048,8 @@ describe('replication.test.ts', () => {
             assert.strictEqual(docsRemote.length, 2);
 
 
-            remoteCollection.database.destroy();
-            localCollection.database.destroy();
+            remoteCollection.database.close();
+            localCollection.database.close();
         });
         it('#5571 Replication observation mode ignored when push handler is waiting for response from backend', async () => {
             const serverCollection = await humansCollection.create(0);
@@ -1088,8 +1088,8 @@ describe('replication.test.ts', () => {
             const docOnClient = await clientCollection.findOne().exec(true);
             assert.strictEqual(docOnClient.lastName, 'server-modified');
 
-            serverCollection.database.destroy();
-            clientCollection.database.destroy();
+            serverCollection.database.close();
+            clientCollection.database.close();
         });
     });
 });

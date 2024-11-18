@@ -33,7 +33,7 @@ describeParallel('import-export.test.js', () => {
                 assert.strictEqual(typeof json.schemaHash, 'string');
                 assert.strictEqual(json.docs.length, 5);
                 json.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
-                col.database.destroy();
+                col.database.close();
             });
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({

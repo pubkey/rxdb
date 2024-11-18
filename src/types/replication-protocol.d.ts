@@ -161,7 +161,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * renders.
      *
      * But: The longer you wait here, the higher is the risk of losing fork
-     * writes when the replication is destroyed unexpected.
+     * writes when the replication is closed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
 

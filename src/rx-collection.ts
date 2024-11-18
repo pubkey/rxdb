@@ -18,7 +18,7 @@ import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
     removeCollectionStorages,
-    ensureRxCollectionIsNotDestroyed
+    ensureRxCollectionIsNotClosed
 } from './rx-collection-helper.ts';
 import {
     createRxQuery,
@@ -190,13 +190,13 @@ export class RxCollectionBase<
 
 
     /**
-     * When the collection is destroyed,
+     * When the collection is closed,
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
     */
-    public onDestroy: (() => MaybePromise<any>)[] = [];
-    public destroyed = false;
+    public onClose: (() => MaybePromise<any>)[] = [];
+    public closed = false;
 
     public onRemove: (() => MaybePromise<any>)[] = [];
 
@@ -253,7 +253,7 @@ export class RxCollectionBase<
                 return !!found;
             })
         ).subscribe(async () => {
-            await this.destroy();
+            await this.close();
             await Promise.all(this.onRemove.map(fn => fn()));
         });
         this._subs.push(listenToRemoveSub);
@@ -306,7 +306,7 @@ export class RxCollectionBase<
      * @link https://rxdb.info/cleanup.html
      */
     cleanup(_minimumDeletedTime?: number): Promise<boolean> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         throw pluginMissing('cleanup');
     }
 
@@ -318,7 +318,7 @@ export class RxCollectionBase<
         throw pluginMissing('migration-schema');
     }
     startMigration(batchSize: number = 10): Promise<void> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {
@@ -328,7 +328,7 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
@@ -343,7 +343,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -451,7 +451,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
@@ -527,7 +527,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
@@ -573,7 +573,7 @@ export class RxCollectionBase<
      * same as insert but overwrites existing document with same primary
      */
     async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const bulkResult = await this.bulkUpsert([json]);
         throwIfIsStorageWriteError<RxDocumentType>(
             this.asRxCollection,
@@ -588,7 +588,7 @@ export class RxCollectionBase<
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
     incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
@@ -621,7 +621,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
@@ -644,7 +644,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
 
         // TODO move this check to dev-mode plugin
         if (
@@ -691,7 +691,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         if (!queryObj) {
             queryObj = _getDefaultQuery();
         }
@@ -711,7 +711,7 @@ export class RxCollectionBase<
         OrmMethods,
         Reactivity
     > {
-        ensureRxCollectionIsNotDestroyed(this);
+        ensureRxCollectionIsNotClosed(this);
         const mangoQuery: MangoQuery<RxDocumentType> = {
             selector: {
                 [this.schema.primaryPath]: {
@@ -857,7 +857,7 @@ export class RxCollectionBase<
 
     /**
      * Returns a promise that resolves after the given time.
-     * Ensures that is properly cleans up when the collection is destroyed
+     * Ensures that is properly cleans up when the collection is closed
      * so that no running timeouts prevent the exit of the JavaScript process.
      */
     promiseWait(time: number): Promise<void> {
@@ -871,26 +871,26 @@ export class RxCollectionBase<
         return ret;
     }
 
-    async destroy(): Promise<boolean> {
-        if (this.destroyed) {
+    async close(): Promise<boolean> {
+        if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }
 
 
-        await Promise.all(this.onDestroy.map(fn => fn()));
+        await Promise.all(this.onClose.map(fn => fn()));
 
         /**
-         * Settings destroyed = true
+         * Settings closed = true
          * must be the first thing to do,
          * so for example the replication can directly stop
          * instead of sending requests to a closed storage.
          */
-        this.destroyed = true;
+        this.closed = true;
 
 
         Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
         if (this._changeEventBuffer) {
-            this._changeEventBuffer.destroy();
+            this._changeEventBuffer.close();
         }
         /**
          * First wait until the whole database is idle.
@@ -912,7 +912,7 @@ export class RxCollectionBase<
                 this._subs.forEach(sub => sub.unsubscribe());
 
                 delete this.database.collections[this.name];
-                return runAsyncPluginHooks('postDestroyRxCollection', this).then(() => true);
+                return runAsyncPluginHooks('postCloseRxCollection', this).then(() => true);
             });
     }
 
@@ -920,7 +920,7 @@ export class RxCollectionBase<
      * remove all data of the collection
      */
     async remove(): Promise<any> {
-        await this.destroy();
+        await this.close();
         await Promise.all(this.onRemove.map(fn => fn()));
         /**
          * TODO here we should pass the already existing

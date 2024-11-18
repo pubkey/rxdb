@@ -39,7 +39,7 @@ describeParallel('internal-indexes.test.js', () => {
             const collection = await createCollectionWithInternalIndexes([myIdx]);
             const foundOnStorage = collection.internalStorageInstance.schema.indexes?.find(idx => deepEqual(idx, myIdx));
             assert.ok(foundOnStorage);
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should use the internalIndex in the query planner', async () => {
             const myIdx = ['firstName', 'lastName'];

@@ -101,7 +101,7 @@ myDatabase.addCollections({
 
 ## autoMigrate
 
-By default, the migration automatically happens when the collection is created. Calling `RxDatabase.addRxCollections()` returns only when the migration has finished.
+By default, the migration automatically happens when the collection is created. Calling `RxDatabase.addCollections()` returns only when the migration has finished.
 If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
 
 ```javascript

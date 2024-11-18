@@ -56,7 +56,7 @@ describe('rx-storage-lokijs.test.js', () => {
             const storageInstance: RxStorageInstanceLoki<HumanDocumentType> = collection.storageInstance as any;
             assert.ok(storageInstance.internals.leaderElector);
 
-            await collection.database.destroy();
+            await collection.database.close();
         });
         it('should work with 2 instances', async () => {
             const databaseName = randomCouchString(12);
@@ -104,8 +104,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 return res.length === 3;
             });
 
-            col1.database.destroy();
-            col2.database.destroy();
+            col1.database.close();
+            col2.database.close();
         });
         it('should not have localState if not leader', async () => {
             const databaseName = randomCouchString(12);
@@ -182,7 +182,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 assert.strictEqual(mustHaveLocal, !!col.storageInstance.internals.localState);
             });
 
-            cols.forEach(col => col.database.destroy());
+            cols.forEach(col => col.database.close());
         });
         it('listening to queries must work', async () => {
             const databaseName = randomCouchString(12);
@@ -212,8 +212,8 @@ describe('rx-storage-lokijs.test.js', () => {
 
             sub1.unsubscribe();
             sub2.unsubscribe();
-            col1.database.destroy();
-            col2.database.destroy();
+            col1.database.close();
+            col2.database.close();
         });
         it('should use the given adapter', async () => {
             if (!isNode) {

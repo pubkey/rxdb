@@ -115,8 +115,8 @@
 //             async send(peer: P2PPeer, message: P2PMessage) {
 //                 await peer.send(JSON.stringify(message));
 //             },
-//             destroy() {
-//                 client.destroy();
+//             close() {
+//                 client.close();
 //                 connect$.complete();
 //                 disconnect$.complete();
 //                 message$.complete();

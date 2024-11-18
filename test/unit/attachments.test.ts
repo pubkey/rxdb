@@ -138,7 +138,7 @@ describeParallel('attachments.test.ts', () => {
             assert.ok(attachment);
             assert.strictEqual(attachment.id, 'cat.txt');
             assert.strictEqual(attachment.type, 'text/plain');
-            c.database.destroy();
+            c.database.close();
         });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -163,7 +163,7 @@ describeParallel('attachments.test.ts', () => {
             const stringCat2 = await ensureNotFalsy(cat2Attachment).getStringData();
             assert.strictEqual(stringCat2, 'meowmeow');
 
-            c.database.destroy();
+            c.database.close();
         });
         it('should insert 4 attachments in parallel', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -179,7 +179,7 @@ describeParallel('attachments.test.ts', () => {
             );
             assert.strictEqual(attachments.length, 4);
             assert.ok(attachments[1].id);
-            c.database.destroy();
+            c.database.close();
         });
         it('should insert an attachment with a big content', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -193,7 +193,7 @@ describeParallel('attachments.test.ts', () => {
                 ].join(' '), 'text/plain'), // use space here
                 type: 'text/plain'
             });
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.getAttachment()', () => {
@@ -208,7 +208,7 @@ describeParallel('attachments.test.ts', () => {
             doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
-            c.database.destroy();
+            c.database.close();
         });
         it('should find the attachment after another doc-update', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -226,7 +226,7 @@ describeParallel('attachments.test.ts', () => {
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             assert.strictEqual(attachment.type, 'text/plain');
-            c.database.destroy();
+            c.database.close();
         });
         it('should find the attachment after database is re-created', async () => {
             if (!config.storage.hasPersistence) {
@@ -254,7 +254,7 @@ describeParallel('attachments.test.ts', () => {
                 data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
-            await db.destroy();
+            await db.close();
             const db2 = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -372,7 +372,7 @@ describeParallel('attachments.test.ts', () => {
             doc = await c.findOne().exec(true);
             const attachments = doc.allAttachments();
             assert.strictEqual(attachments.length, 10);
-            c.database.destroy();
+            c.database.close();
         });
         it('should lazy-load the data for the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
@@ -388,7 +388,7 @@ describeParallel('attachments.test.ts', () => {
             const data = await attachment.getData();
             const dataString = await blobToString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('schema', () => {
@@ -404,7 +404,7 @@ describeParallel('attachments.test.ts', () => {
                 'RxError',
                 'schema'
             );
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('encryption', () => {
@@ -429,7 +429,7 @@ describeParallel('attachments.test.ts', () => {
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
             assert.strictEqual(data, insertData);
-            c.database.destroy();
+            c.database.close();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
             if (isNode || isDeno) {
@@ -454,7 +454,7 @@ describeParallel('attachments.test.ts', () => {
 
             await renderImageBlob(refetchedBlob as Blob);
 
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.allAttachments$', () => {
@@ -476,7 +476,7 @@ describeParallel('attachments.test.ts', () => {
             assert.ok(emitted[0][0].doc);
 
             sub.unsubscribe();
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('multiInstance', () => {
@@ -548,8 +548,8 @@ describeParallel('attachments.test.ts', () => {
 
             assert.strictEqual(doc2Streamed[2].length, 0);
             sub.unsubscribe();
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
     });
     describe('migration', () => {
@@ -597,7 +597,7 @@ describeParallel('attachments.test.ts', () => {
                 data: createBlob('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -626,7 +626,7 @@ describeParallel('attachments.test.ts', () => {
             const data = await firstAttachment.getStringData();
             assert.strictEqual(data, 'barfoo');
 
-            db2.destroy();
+            db2.close();
         });
         it('should delete the attachment during migration', async () => {
             const dbName = randomCouchString(10);
@@ -666,7 +666,7 @@ describeParallel('attachments.test.ts', () => {
                 data: createBlob('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -687,7 +687,7 @@ describeParallel('attachments.test.ts', () => {
             const doc2: RxDocument<DocData> = await col2.heroes.findOne().exec();
             assert.strictEqual(doc2.allAttachments().length, 0);
 
-            db2.destroy();
+            db2.close();
         });
         it('should be able to change the attachment data during migration', async () => {
             const dbName = randomCouchString(10);
@@ -727,7 +727,7 @@ describeParallel('attachments.test.ts', () => {
                 data: createBlob('barfoo1', 'text/plain'),
                 type: 'text/plain'
             });
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -765,7 +765,7 @@ describeParallel('attachments.test.ts', () => {
             assert.strictEqual(data, 'barfoo2');
 
 
-            db2.destroy();
+            db2.close();
         });
     });
     describe('orm', () => {
@@ -797,7 +797,7 @@ describeParallel('attachments.test.ts', () => {
             });
 
             assert.strictEqual(attachment.foobar(), 'foobar text/plain');
-            db.destroy();
+            db.close();
         });
     });
     describe('issues', () => {
@@ -841,7 +841,7 @@ describeParallel('attachments.test.ts', () => {
             const attachment2 = doc2.getAttachment('sampledata');
             const data = await attachment2.getStringData();
             assert.strictEqual(data, 'foo bar');
-            await myDB.destroy();
+            await myDB.close();
         });
         it('calling allAttachments() fails when document has none', async () => {
             const name = randomCouchString(10);
@@ -864,7 +864,7 @@ describeParallel('attachments.test.ts', () => {
             const attachments = await doc.allAttachments();
             assert.strictEqual(attachments.length, 0);
 
-            db.destroy();
+            db.close();
         });
         it('#4107 reproduce 412 error', async () => {
             const attName = 'red_dot_1px_image';
@@ -968,7 +968,7 @@ describeParallel('attachments.test.ts', () => {
 
             assert.strictEqual(myDocument.age, 60);
 
-            db.destroy();
+            db.close();
         });
     });
 });

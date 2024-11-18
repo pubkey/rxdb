@@ -206,7 +206,7 @@ describe('replication-webrtc.test.ts', function () {
             // should automatically reconnect when peer connection breaks
             const peerStates = firstReplicationStates[0].peerStates$.getValue();
             const onePeer = Array.from(peerStates.values())[0].peer;
-            await onePeer.destroy(); // disconnect peer
+            await onePeer.close(); // disconnect peer
             console.log('--------- 5.1');
             await wait(100);
             console.log('--------- 5.2');
@@ -230,10 +230,10 @@ describe('replication-webrtc.test.ts', function () {
             await wait(200);
 
             // remove one peer
-            await c2.database.destroy();
+            await c2.database.close();
 
-            c1.database.destroy();
-            c3.database.destroy();
+            c1.database.close();
+            c3.database.close();
         });
     });
     describe('ISSUES', () => { });

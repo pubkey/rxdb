@@ -32,7 +32,7 @@ describeParallel('rx-database.test.ts', () => {
                     storage: config.storage.getStorage()
                 });
                 assert.ok(isRxDatabase(db));
-                db.destroy();
+                db.close();
             });
             it('with password', async () => {
                 const db = await createRxDatabase({
@@ -41,7 +41,7 @@ describeParallel('rx-database.test.ts', () => {
                     password: await getPassword()
                 });
                 assert.ok(isRxDatabase(db));
-                db.destroy();
+                db.close();
             });
             it('2 instances on same storage (if ignoreDuplicate is true)', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -77,21 +77,21 @@ describeParallel('rx-database.test.ts', () => {
                     'isRxDatabaseFirstTimeInstantiated must be false'
                 );
 
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
-            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets destroyed', async () => {
+            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets closed', async () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
                 });
-                await db.destroy();
+                await db.close();
                 const db2 = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
                 });
-                db2.destroy();
+                db2.close();
             });
             it('do allow 2 databases with same name but different storage', async () => {
                 if (config.storage.name.includes('memory')) {
@@ -106,8 +106,8 @@ describeParallel('rx-database.test.ts', () => {
                     name,
                     storage: config.storage.getStorage()
                 });
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
             it('2 password-instances on same adapter', async () => {
                 if (
@@ -134,8 +134,8 @@ describeParallel('rx-database.test.ts', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
             it('should not forget the options', async () => {
                 const name = randomCouchString(10);
@@ -150,7 +150,7 @@ describeParallel('rx-database.test.ts', () => {
                     }
                 });
                 assert.strictEqual(db.options.foo, 'bar');
-                db.destroy();
+                db.close();
             });
             it('should not forget the instanceCreationOptions', async () => {
                 const name = randomCouchString(10);
@@ -165,7 +165,7 @@ describeParallel('rx-database.test.ts', () => {
                     ignoreDuplicate: true
                 });
                 assert.strictEqual(db.internalStore.options.ajax, 'bar');
-                db.destroy();
+                db.close();
             });
             it('should respect the given hashFunction', async () => {
                 const db = await createRxDatabase({
@@ -178,7 +178,7 @@ describeParallel('rx-database.test.ts', () => {
                 });
                 const hasHash = await db.hashFunction('foobar');
                 assert.ok(hasHash.endsWith('xxx'));
-                db.destroy();
+                db.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/4614
@@ -189,7 +189,7 @@ describeParallel('rx-database.test.ts', () => {
                     storage: config.storage.getStorage()
                 });
                 assert.strictEqual(db.eventReduce, true);
-                db.destroy();
+                db.close();
 
             });
         });
@@ -228,7 +228,7 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'ignoreDuplicate'
                 );
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -250,7 +250,7 @@ describeParallel('rx-database.test.ts', () => {
                 // make sure defineGetter works
                 assert.strictEqual(db.human0, collection);
 
-                db.destroy();
+                db.close();
             });
             it('create 2 times on same adapter', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -278,8 +278,8 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -315,7 +315,7 @@ describeParallel('rx-database.test.ts', () => {
                 }
 
                 const storeDocsBefore = await getStoreDocs(db1);
-                await db1.destroy();
+                await db1.close();
 
                 const db2 = await createRxDatabase({
                     name,
@@ -340,7 +340,7 @@ describeParallel('rx-database.test.ts', () => {
                     storeDocsAfter[0]._rev
                 );
 
-                await db2.destroy();
+                await db2.close();
             });
         });
         describe('negative', () => {
@@ -357,7 +357,7 @@ describeParallel('rx-database.test.ts', () => {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('call 2 times on same name', async () => {
                 const db = await createRxDatabase({
@@ -377,7 +377,7 @@ describeParallel('rx-database.test.ts', () => {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('crypt-schema without db-password', async () => {
                 const db = await createRxDatabase({
@@ -395,7 +395,7 @@ describeParallel('rx-database.test.ts', () => {
                     hasThrown = true;
                 }
                 assert.ok(hasThrown);
-                db.destroy();
+                db.close();
             });
             it('2 different schemas on same collection', async () => {
                 const db = await createRxDatabase({
@@ -417,7 +417,7 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'already exists'
                 );
-                db.destroy();
+                db.close();
             });
             it('not allow collectionNames starting with lodash', async () => {
                 const db = await createRxDatabase({
@@ -433,7 +433,7 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'UT2'
                 );
-                db.destroy();
+                db.close();
             });
             it('not allow collectionNames which are properties of RxDatabase', async () => {
                 const db = await createRxDatabase({
@@ -445,7 +445,7 @@ describeParallel('rx-database.test.ts', () => {
                     'token',
                     'isLeader',
                     '$emit',
-                    'destroy'
+                    'close'
                 ];
                 let t = 0;
                 while (t < forbidden.length) {
@@ -461,7 +461,7 @@ describeParallel('rx-database.test.ts', () => {
                     );
                     t++;
                 }
-                db.destroy();
+                db.close();
             });
             it('create 2 times on same adapter with different schema', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -498,14 +498,14 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'different'
                 );
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
         });
     });
-    describe('.destroy()', () => {
+    describe('.close()', () => {
         describe('positive', () => {
-            it('should not crash on destroy', async () => {
+            it('should not crash on close', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage()
@@ -515,11 +515,11 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await db.destroy();
-                assert.strictEqual(db.destroyed, true);
-                await db.destroy();
+                await db.close();
+                assert.strictEqual(db.closed, true);
+                await db.close();
             });
-            it('should not crash if destroy is called twice', async () => {
+            it('should not crash if close is called twice', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage()
@@ -529,9 +529,9 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await db.destroy();
-                await db.destroy();
-                assert.strictEqual(db.destroyed, true);
+                await db.close();
+                await db.close();
+                assert.strictEqual(db.closed, true);
             });
         });
     });

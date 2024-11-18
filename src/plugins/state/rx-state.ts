@@ -73,7 +73,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         public readonly prefix: string,
         public readonly collection: RxCollection<RxStateDocument>
     ) {
-        this.collection.onDestroy.push(() => this._writeQueue);
+        this.collection.onClose.push(() => this._writeQueue);
         this._lastIdQuery = this.collection.findOne({
             sort: [
                 { id: 'desc' }

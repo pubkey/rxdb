@@ -272,19 +272,19 @@ await myCollection.remove();
 // collection is now removed and can be re-created
 ```
 
-### destroy()
-Destroys the collection's object instance. This is to free up memory and stop all observers and replications.
+### close()
+Removes the collection's object instance from the [RxDatabase](./rx-database.md). This is to free up memory and stop all observers and replications. It will not delete the collections data. When you create the collection again with `database.addCollections()`, the newly added collection will still have all data.
 ```js
-await myCollection.destroy();
+await myCollection.close();
 ```
 
-### onDestroy / onRemove()
-With these you can add a function that is run when the collection was destroyed or removed.
+### onClose / onRemove()
+With these you can add a function that is run when the collection was closed or removed.
 This works even across multiple browser tabs so you can detect when another tab removes the collection
 and you application can behave accordingly.
 
 ```js
-await myCollection.onDestroy(() => console.log('I am destroyed'));
+await myCollection.onClose(() => console.log('I am closed'));
 await myCollection.onRemove(() => console.log('I am removed'));
 ```
 

@@ -33,7 +33,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             await col.insert(schemaObjects.humanData());
             const res = await uncachedQuery.exec();
             assert.strictEqual(res.length, 1);
-            col.database.destroy();
+            col.database.close();
         });
         it('should still emit on new results', async () => {
             const col = await humansCollection.create(0);
@@ -48,7 +48,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             await col.insert(schemaObjects.humanData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             sub.unsubscribe();
-            col.database.destroy();
+            col.database.close();
         });
     });
     describe('.countRxQuerySubscribers()', () => {
@@ -100,7 +100,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             assert.strictEqual(countRxQuerySubscribers(noMoreSub), 0);
 
             subs.forEach(sub => sub.unsubscribe());
-            col.database.destroy();
+            col.database.close();
         });
         it('BUG wrong count when used with switch map', async () => {
             const col = await humansCollection.create(0);
@@ -137,7 +137,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             sub.unsubscribe();
             assert.strictEqual(countRxQuerySubscribers(query), 0);
 
-            col.database.destroy();
+            col.database.close();
         });
     });
     describe('.defaultCacheReplacementPolicyMonad()', () => {
@@ -161,7 +161,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
             defaultCacheReplacementPolicyMonad(0, 0)(col, col._queryCache);
 
             sub.unsubscribe();
-            col.database.destroy();
+            col.database.close();
         });
         it('should not remove queries that have subscribers', async () => {
             const amount = 4;

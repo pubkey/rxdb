@@ -124,7 +124,7 @@ export async function createNoCompression(
     });
     const schemaJSON = clone(schemas.human);
     schemaJSON.keyCompression = false;
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         [name]: {
             schema: schemaJSON
@@ -151,7 +151,7 @@ export async function createAgeIndex(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         humana: {
             schema: schemas.humanAgeIndex
@@ -188,7 +188,7 @@ export async function multipleOnSameDB(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         human: {
             schema: schemas.human
@@ -227,7 +227,7 @@ export async function createNested(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         nestedhuman: {
             schema: schemas.nestedHuman
@@ -253,7 +253,7 @@ export async function createDeepNested(
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         nestedhuman: {
             schema: schemas.deepNestedHuman
@@ -290,7 +290,7 @@ export async function createMultiInstance(
         ignoreDuplicate: true,
         localDocuments: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         human: {
             schema: schemas.human,
@@ -320,7 +320,7 @@ export async function createPrimary(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         human: {
             schema: schemas.primaryHuman
@@ -352,7 +352,7 @@ export async function createHumanWithTimestamp(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         humans: {
             schema: schemas.humanWithTimestamp
@@ -411,7 +411,7 @@ export async function createMigrationCollection(
                 }
             }))
     );
-    await db.destroy();
+    await db.close();
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType>; }>({
         name,
@@ -440,7 +440,7 @@ export async function createRelated(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         human: {
             schema: schemas.refHuman
@@ -468,7 +468,7 @@ export async function createRelatedNested(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         human: {
             schema: schemas.refHumanNested
@@ -494,7 +494,7 @@ export async function createIdAndAgeIndex(
         eventReduce: true,
         ignoreDuplicate: true
     });
-    // setTimeout(() => db.destroy(), dbLifetime);
+    // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         humana: {
             schema: schemas.humanIdAndAgeIndex

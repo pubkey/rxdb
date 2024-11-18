@@ -446,7 +446,7 @@ validationImplementations.forEach(
                         'RxError',
                         'not match schema'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('should get no event on non-success-insert', async () => {
                     const db = await createRxDatabase({
@@ -473,7 +473,7 @@ validationImplementations.forEach(
                     );
                     assert.strictEqual(calls, 0);
                     sub.unsubscribe();
-                    db.destroy();
+                    db.close();
                 });
                 it('should not insert human with additional prop', async () => {
                     const db = await createRxDatabase({
@@ -492,7 +492,7 @@ validationImplementations.forEach(
                         'RxError',
                         'not match schema'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('should not insert when primary is missing', async () => {
                     const db = await createRxDatabase({
@@ -513,7 +513,7 @@ validationImplementations.forEach(
                         'RxError',
                         'required'
                     );
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('RxCollection().upsert()', () => {
@@ -536,7 +536,7 @@ validationImplementations.forEach(
                         'RxError',
                         'dditional properti'
                     );
-                    await db.destroy();
+                    await db.close();
                 });
             });
             describe('RxDocument.incrementalModify()', () => {
@@ -565,7 +565,7 @@ validationImplementations.forEach(
                         'RxError',
                         'schema'
                     );
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('RxCollection().incrementalUpsert()', () => {
@@ -594,7 +594,7 @@ validationImplementations.forEach(
                             'RxError',
                             'schema'
                         );
-                        db.destroy();
+                        db.close();
                     });
                 });
             });
@@ -617,7 +617,7 @@ validationImplementations.forEach(
                         } as any),
                         'RxError'
                     );
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('RxCollection() hooks', () => {
@@ -643,7 +643,7 @@ validationImplementations.forEach(
                         'RxError',
                         'not match'
                     );
-                    db.destroy();
+                    db.close();
                 });
             });
         });
@@ -733,7 +733,7 @@ validationImplementations.forEach(
 
 
                 // clean up afterwards
-                db.destroy();
+                db.close();
             });
             it('#5197 can\'t get data for object field defined with additionalProperties', async () => {
                 const mySchema: RxJsonSchema<any> = {
@@ -815,7 +815,7 @@ validationImplementations.forEach(
                 assert.ok(deepEqual(myDocument.get('tags'), tags));
                 assert.deepStrictEqual(myDocument.tags, tags);
 
-                db.destroy();
+                db.close();
             });
         });
     })

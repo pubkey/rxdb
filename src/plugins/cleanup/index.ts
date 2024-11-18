@@ -25,7 +25,7 @@ export const RxDBCleanupPlugin: RxPlugin = {
 
                 // run cleanup() until it returns true
                 let isDone = false;
-                while (!isDone && !this.destroyed) {
+                while (!isDone && !this.closed) {
                     isDone = await this.storageInstance.cleanup(minimumDeletedTime);
                 }
 

@@ -35,8 +35,8 @@ describe('leader-election.test.js', () => {
             const c2 = await humansCollection.createMultiInstance(name);
             await c2.database.waitForLeadership();
 
-            c.database.destroy();
-            c2.database.destroy();
+            c.database.close();
+            c2.database.close();
         });
     });
 
@@ -45,7 +45,7 @@ describe('leader-election.test.js', () => {
             const c1 = await humansCollection.createMultiInstance(randomCouchString(10));
             const db1 = c1.database;
             await db1.waitForLeadership();
-            c1.database.destroy();
+            c1.database.close();
         });
         it('should not elect as leader if other instance is leader', async () => {
             const name = randomCouchString(10);
@@ -58,8 +58,8 @@ describe('leader-election.test.js', () => {
             await AsyncTestUtil.wait(150);
             assert.strictEqual(db2.isLeader(), false);
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
         it('when 2 instances apply at the same time, one should win', async () => {
             if (!isNode) return;
@@ -88,8 +88,8 @@ describe('leader-election.test.js', () => {
 
                 assert.notStrictEqual(le1.isLeader, le2.isLeader);
 
-                await c1.database.destroy();
-                await c2.database.destroy();
+                await c1.database.close();
+                await c2.database.close();
             }
         });
         it('when many instances apply, one should win', async () => {
@@ -115,7 +115,7 @@ describe('leader-election.test.js', () => {
                 .filter(is => is === true)
                 .length;
             assert.strictEqual(leaderCount, 1);
-            await Promise.all(dbs.map(db => db.destroy()));
+            await Promise.all(dbs.map(db => db.close()));
         });
         it('when the leader dies, a new one should be elected', async function () {
             this.timeout(5 * 1000);
@@ -143,7 +143,7 @@ describe('leader-election.test.js', () => {
             const leader = dbs
                 .filter(db => db.leaderElector().isLeader === true)[0];
             const leaderToken = leader.token;
-            await leader.destroy();
+            await leader.close();
             const nonDeadDbs = dbs.filter(db => db !== leader);
 
             await AsyncTestUtil.waitUntil(() => {
@@ -163,7 +163,7 @@ describe('leader-election.test.js', () => {
             const leaderToken2 = leader2.token;
 
             assert.notStrictEqual(leaderToken, leaderToken2);
-            await Promise.all(nonDeadDbs.map(db => db.destroy()));
+            await Promise.all(nonDeadDbs.map(db => db.close()));
         });
     });
     describeParallel('integration', () => {
@@ -173,20 +173,20 @@ describe('leader-election.test.js', () => {
                 storage: config.storage.getStorage(),
                 multiInstance: false
             });
-            // setTimeout(() => db.destroy(), dbLifetime);
+            // setTimeout(() => db.close(), dbLifetime);
             await db.addCollections({
                 human: {
                     schema: schemas.human
                 }
             });
             assert.strictEqual(db.isLeader(), true);
-            await db.destroy();
+            await db.close();
         });
         it('non-multiInstance: waitForLeadership should instant', async () => {
             const c = await humansCollection.create(0);
             const db = c.database;
             await db.waitForLeadership();
-            await db.destroy();
+            await db.close();
         });
 
         it('waitForLeadership: run once when instance becomes leader', async () => {
@@ -208,7 +208,7 @@ describe('leader-election.test.js', () => {
                 .leaderElector().die();
 
             await AsyncTestUtil.waitUntil(() => count === 2);
-            await Promise.all(dbs.map(db => db.destroy()));
+            await Promise.all(dbs.map(db => db.close()));
         });
     });
 });

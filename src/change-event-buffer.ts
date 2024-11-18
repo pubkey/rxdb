@@ -166,7 +166,7 @@ export class ChangeEventBuffer<RxDocType> {
         return Object.values(docEventMap);
     }
 
-    destroy() {
+    close() {
         this.tasks.clear();
         this.subs.forEach(sub => sub.unsubscribe());
     }

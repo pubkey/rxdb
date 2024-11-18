@@ -72,7 +72,7 @@ describeParallel('migration-schema.test.ts', function () {
                         }
                     }
                 });
-                db.destroy();
+                db.close();
             });
             it('create same collection with different schema-versions', async () => {
                 const colName = 'human';
@@ -105,8 +105,8 @@ describeParallel('migration-schema.test.ts', function () {
                         }
                     }
                 });
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
         });
         describe('negative', () => {
@@ -125,7 +125,7 @@ describeParallel('migration-schema.test.ts', function () {
                     }),
                     'RxTypeError'
                 );
-                db.destroy();
+                db.close();
             });
             it('should throw when property no number', async () => {
                 const db = await createRxDatabase({
@@ -144,7 +144,7 @@ describeParallel('migration-schema.test.ts', function () {
                     } as any),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('should throw when property no non-float-number', async () => {
                 const db = await createRxDatabase({
@@ -163,7 +163,7 @@ describeParallel('migration-schema.test.ts', function () {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('should throw when property-value no function', async () => {
                 const db = await createRxDatabase({
@@ -182,7 +182,7 @@ describeParallel('migration-schema.test.ts', function () {
                     } as any),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('throw when strategy missing', async () => {
                 const db = await createRxDatabase({
@@ -202,7 +202,7 @@ describeParallel('migration-schema.test.ts', function () {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -227,7 +227,7 @@ describeParallel('migration-schema.test.ts', function () {
             const col = cols[colName];
             const old = await getOldCollectionMeta(col.getMigrationState());
             assert.deepStrictEqual(old, undefined);
-            db.destroy();
+            db.close();
         });
         it('should get an older version', async () => {
             const name = randomCouchString(10);
@@ -267,8 +267,8 @@ describeParallel('migration-schema.test.ts', function () {
             // ensure it is an OldCollection
             assert.ok(oldCollectionMeta.data.schema);
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
     });
     describe('migration basics', () => {
@@ -279,7 +279,7 @@ describeParallel('migration-schema.test.ts', function () {
                 }
                 const dbName = randomCouchString(10);
                 const col = await humansCollection.createMigrationCollection(10, {}, dbName, true);
-                await col.database.destroy();
+                await col.database.close();
 
 
                 const db = await createRxDatabase<{ human: RxCollection<SimpleHumanAgeDocumentType>; }>({
@@ -295,14 +295,14 @@ describeParallel('migration-schema.test.ts', function () {
                 const newCollection = cols.human;
                 const docsAfter = await newCollection.find().exec();
                 assert.strictEqual(docsAfter.length, 0);
-                await db.destroy();
+                await db.close();
             });
         });
         describe('.migrate()', () => {
             it('should resolve finished when no docs', async () => {
                 const col = await humansCollection.createMigrationCollection(0);
                 await col.migratePromise();
-                await col.database.destroy();
+                await col.database.close();
             });
             it('should resolve finished when some docs are in the collection', async () => {
                 const col = await humansCollection.createMigrationCollection(10, {
@@ -316,7 +316,7 @@ describeParallel('migration-schema.test.ts', function () {
                 // check if in new collection
                 const docs = await col.find().exec();
                 assert.strictEqual(docs.length, 10);
-                await col.database.destroy();
+                await col.database.close();
             });
             it('should emit status updates', async () => {
                 const docsAmount = 10;
@@ -358,7 +358,7 @@ describeParallel('migration-schema.test.ts', function () {
                 const docs = await col.find().exec();
                 assert.strictEqual(docs.length, 0);
 
-                col.database.destroy();
+                col.database.close();
             });
             it('should throw when document cannot be migrated', async () => {
                 const col = await humansCollection.createMigrationCollection(10, {
@@ -372,7 +372,7 @@ describeParallel('migration-schema.test.ts', function () {
                     'RxError',
                     'DM4'
                 );
-                await col.database.destroy();
+                await col.database.close();
             });
         });
         describe('.migratePromise()', () => {
@@ -380,7 +380,7 @@ describeParallel('migration-schema.test.ts', function () {
                 it('should resolve when nothing to migrate', async () => {
                     const col = await humansCollection.createMigrationCollection(0, {});
                     await col.migratePromise();
-                    await col.database.destroy();
+                    await col.database.close();
                 });
 
                 it('should resolve when migrating data', async () => {
@@ -406,7 +406,7 @@ describeParallel('migration-schema.test.ts', function () {
                     let failed = false;
                     await col.migratePromise().catch(() => failed = true);
                     assert.ok(failed);
-                    await col.database.destroy();
+                    await col.database.close();
                 });
             });
         });
@@ -428,7 +428,7 @@ describeParallel('migration-schema.test.ts', function () {
                 const docs = await col.find().exec();
                 assert.strictEqual(docs.length, 10);
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
-                await col.database.destroy();
+                await col.database.close();
             });
             it('should be able to change the primary key during migration', async () => {
                 const dbName = randomCouchString(10);
@@ -472,7 +472,7 @@ describeParallel('migration-schema.test.ts', function () {
                 await col.insert({
                     id: 'niven'
                 });
-                await db.destroy();
+                await db.close();
 
                 const db2 = await createRxDatabase({
                     name: dbName,
@@ -496,7 +496,7 @@ describeParallel('migration-schema.test.ts', function () {
                 assert.ok(doc);
                 assert.strictEqual(doc.id, 'niven');
                 assert.strictEqual(doc.name, 'NIVEN');
-                db2.destroy();
+                db2.close();
             });
 
             it('should auto-run on creation (async)', async () => {
@@ -515,7 +515,7 @@ describeParallel('migration-schema.test.ts', function () {
                 const docs = await col.find().exec();
                 assert.strictEqual(docs.length, 10);
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
-                col.database.destroy();
+                col.database.close();
             });
             /**
              * We need this to ensure old push-checkpoints are still valid
@@ -535,7 +535,7 @@ describeParallel('migration-schema.test.ts', function () {
                 });
                 const doc = await db.human.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' }));
                 const lwtBefore = doc.toJSON(true)._meta.lwt;
-                await db.destroy();
+                await db.close();
 
                 const db2 = await createRxDatabase({
                     name,
@@ -561,7 +561,7 @@ describeParallel('migration-schema.test.ts', function () {
 
                 assert.strictEqual(lwtBefore, lwtAfter);
 
-                db2.destroy();
+                db2.close();
             });
             it('should increase revision height when the strategy changed the documents data', async () => {
                 return; // TODO do we need this?
@@ -611,7 +611,7 @@ describeParallel('migration-schema.test.ts', function () {
                     }
                 }], 'test-data-migration');
 
-                await db.destroy();
+                await db.close();
 
                 const db2 = await createRxDatabase({
                     name: dbName,
@@ -648,7 +648,7 @@ describeParallel('migration-schema.test.ts', function () {
                 const revChangedAfterMigration = (await col2.findOne(changedKey).exec(true)).toJSON(true)._rev;
                 assert.strictEqual(getHeightOfRevision(revChangedAfterMigration), 2);
 
-                db2.destroy();
+                db2.close();
             });
         });
         describe('.migrationNeeded()', () => {
@@ -656,7 +656,7 @@ describeParallel('migration-schema.test.ts', function () {
                 const col = await humansCollection.create();
                 const needed = await col.migrationNeeded();
                 assert.strictEqual(needed, false);
-                col.database.destroy();
+                col.database.close();
             });
             it('return false if nothing to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
@@ -668,7 +668,7 @@ describeParallel('migration-schema.test.ts', function () {
                 await col.migratePromise();
                 const needed = await col.migrationNeeded();
                 assert.strictEqual(needed, false);
-                col.database.destroy();
+                col.database.close();
             });
             it('return true if something to migrate', async () => {
                 const col = await humansCollection.createMigrationCollection(5, {
@@ -679,7 +679,7 @@ describeParallel('migration-schema.test.ts', function () {
                 });
                 const needed = await col.migrationNeeded();
                 assert.strictEqual(needed, true);
-                col.database.destroy();
+                col.database.close();
             });
         });
     });
@@ -729,7 +729,7 @@ describeParallel('migration-schema.test.ts', function () {
                 assert.strictEqual(s.status, 'DONE');
             });
 
-            db.destroy();
+            db.close();
         });
     });
     describe('migration and replication', () => {
@@ -788,7 +788,7 @@ describeParallel('migration-schema.test.ts', function () {
 
             await replicationState.awaitInitialReplication();
             await replicationState.cancel();
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name,
@@ -851,8 +851,8 @@ describeParallel('migration-schema.test.ts', function () {
                 throw new Error('should not have transferred data: ' + hasTransferred);
             }
 
-            await db2.destroy();
-            await remoteDb.destroy();
+            await db2.close();
+            await remoteDb.close();
         });
     });
     describe('issues', () => {
@@ -909,7 +909,7 @@ describeParallel('migration-schema.test.ts', function () {
                 name: 'Niven',
                 color: 'black'
             });
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -933,7 +933,7 @@ describeParallel('migration-schema.test.ts', function () {
             assert.strictEqual(docs[0].level, 'ss');
             assert.strictEqual(docs[0].name, 'Niven');
             assert.strictEqual(docs[0].color, 'black');
-            db2.destroy();
+            db2.close();
         });
         it('#3460 migrate attachments', async () => {
             if (!config.storage.hasAttachments) {
@@ -971,7 +971,7 @@ describeParallel('migration-schema.test.ts', function () {
             assert.strictEqual(attachment.type, 'text/plain');
             assert.strictEqual(attachment.length, attachmentData.length);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('opening an older RxDB database state with a new major version should throw an error', async () => {
             const dbName = randomCouchString(10);
@@ -991,7 +991,7 @@ describeParallel('migration-schema.test.ts', function () {
                 document: newTokenDoc
             }], 'fake-old-version');
             assert.deepStrictEqual(writeResponse.error, []);
-            await db.destroy();
+            await db.close();
 
 
             const newDb = await createRxDatabase({
@@ -1018,7 +1018,7 @@ describeParallel('migration-schema.test.ts', function () {
                 'RxError',
                 'DM5'
             );
-            await newDb.destroy();
+            await newDb.close();
         });
     });
 });

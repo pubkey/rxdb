@@ -532,7 +532,7 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
 
     // Optimisation shortcut
     if (
-        rxQuery.collection.database.destroyed ||
+        rxQuery.collection.database.closed ||
         _isResultsInSync(rxQuery)
     ) {
         return false;
@@ -555,7 +555,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
      */
     if (
         // db is closed
-        rxQuery.collection.database.destroyed ||
+        rxQuery.collection.database.closed ||
         // nothing happened since last run
         _isResultsInSync(rxQuery)
     ) {

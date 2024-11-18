@@ -93,7 +93,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual(col.database.foo, 'bar_createRxDatabase');
-            col.database.destroy();
+            col.database.close();
 
             _clearHook('createRxDatabase', createRxDatabase);
         });
@@ -113,7 +113,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual((col as any).foo, 'bar_createRxCollection');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
@@ -132,7 +132,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col: any = await humansCollection.create();
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxSchema', createRxSchema);
         });
         it('createRxDocument', async () => {
@@ -152,7 +152,7 @@ describeParallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.foo, 'bar_createRxDocument');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxDocument', createRxDocument);
         });
         it('postCreateRxDocument', async () => {
@@ -172,7 +172,7 @@ describeParallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
-            await col.database.destroy();
+            await col.database.close();
             _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('postCleanup', async () => {
@@ -194,7 +194,7 @@ describeParallel('plugin.test.js', () => {
             await col.cleanup();
             assert.strictEqual(runs.length, 1);
 
-            await col.database.destroy();
+            await col.database.close();
             _clearHook('postCleanup', hook);
         });
     });

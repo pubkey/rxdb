@@ -173,10 +173,10 @@ export async function removeCollectionStorages(
 }
 
 
-export function ensureRxCollectionIsNotDestroyed(
+export function ensureRxCollectionIsNotClosed(
     collection: RxCollection | RxCollectionBase<any, any, any, any, any>
 ) {
-    if (collection.destroyed) {
+    if (collection.closed) {
         throw newRxError(
             'COL21',
             {

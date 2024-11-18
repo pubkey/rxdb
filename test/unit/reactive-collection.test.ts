@@ -43,7 +43,7 @@ describeParallel('reactive-collection.test.js', () => {
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -77,7 +77,7 @@ describeParallel('reactive-collection.test.js', () => {
                 assert.ok(changeEvent.documentData);
 
                 colSub.unsubscribe();
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -102,7 +102,7 @@ describeParallel('reactive-collection.test.js', () => {
                 assert.ok(changeEvent.previousDocumentData);
 
                 colSub.unsubscribe();
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -133,7 +133,7 @@ describeParallel('reactive-collection.test.js', () => {
                 await AsyncTestUtil.waitUntil(() => ar.length === 3);
                 sub.unsubscribe();
 
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -155,7 +155,7 @@ describeParallel('reactive-collection.test.js', () => {
                 return emitted.length === 4;
             });
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'INSERT'));
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.update$', () => {
@@ -176,7 +176,7 @@ describeParallel('reactive-collection.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'UPDATE'));
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.remove$', () => {
@@ -195,7 +195,7 @@ describeParallel('reactive-collection.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'DELETE'));
-            c.database.destroy();
+            c.database.close();
         });
     });
 });

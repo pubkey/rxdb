@@ -140,7 +140,7 @@ describe('replication-nats.test.js', () => {
                     replicationState.awaitInitialReplication().then(() => true),
                     wait(1000).then(() => false)
                 ]);
-                await collection.database.destroy();
+                await collection.database.close();
 
                 console.log('ret: ' + ret);
                 return ret;
@@ -187,7 +187,7 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(docsOnServer.length, 3);
             assert.ok(docsOnServer.find(d => (d as any)._deleted));
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('two collections', async () => {
             const collectionA = await humansCollection.createHumanWithTimestamp(1, undefined, false);
@@ -243,8 +243,8 @@ describe('replication-nats.test.js', () => {
             await replicationStateB.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            collectionA.database.destroy();
-            collectionB.database.destroy();
+            collectionA.database.close();
+            collectionB.database.close();
         });
     });
     describe('conflict handling', () => {
@@ -273,8 +273,8 @@ describe('replication-nats.test.js', () => {
              */
             assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
     });
 });

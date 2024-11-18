@@ -35,7 +35,7 @@ describeParallel('orm.test.js', () => {
                             }
                         }
                     });
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('negative', () => {
@@ -58,7 +58,7 @@ describeParallel('orm.test.js', () => {
                         'RxTypeError',
                         'cannot start'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
@@ -87,7 +87,7 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
             });
         });
@@ -111,7 +111,7 @@ describeParallel('orm.test.js', () => {
                 });
                 const res = (collections.humans as any).foobar();
                 assert.strictEqual(res, 'test');
-                db.destroy();
+                db.close();
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
@@ -131,7 +131,7 @@ describeParallel('orm.test.js', () => {
                 const collection = collections.humans;
                 const res = (collection as any).foobar();
                 assert.strictEqual(res, 'humans');
-                db.destroy();
+                db.close();
             });
             it('should be able to use this.insert()', async () => {
                 const db = await createRxDatabase({
@@ -152,7 +152,7 @@ describeParallel('orm.test.js', () => {
                 const res = (collection as any).foobar(schemaObjects.humanData());
                 assert.strictEqual(res.constructor.name, 'Promise');
                 await res;
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -174,7 +174,7 @@ describeParallel('orm.test.js', () => {
                             }
                         }
                     });
-                    db.destroy();
+                    db.close();
                 });
                 it('this-scope should be bound to document', async () => {
                     const db = await createRxDatabase({
@@ -206,7 +206,7 @@ describeParallel('orm.test.js', () => {
                     const val = doc.myMethod();
                     assert.strictEqual(val, 'test:foobar');
 
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('negative', () => {
@@ -228,7 +228,7 @@ describeParallel('orm.test.js', () => {
                         }),
                         'RxTypeError'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
@@ -256,7 +256,7 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name is top-level field in schema)', async () => {
                     const db = await createRxDatabase({
@@ -285,7 +285,7 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
             });
         });
@@ -311,7 +311,7 @@ describeParallel('orm.test.js', () => {
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.strictEqual(res, 'test');
-                db.destroy();
+                db.close();
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
@@ -334,7 +334,7 @@ describeParallel('orm.test.js', () => {
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.strictEqual(res, obj.passportId);
-                db.destroy();
+                db.close();
             });
             it('should not be confused with many collections', async () => {
                 const db = await createRxDatabase({
@@ -365,7 +365,7 @@ describeParallel('orm.test.js', () => {
                 assert.strictEqual('1', doc1.foobar());
                 assert.strictEqual('2', doc2.foobar());
 
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -435,7 +435,7 @@ describeParallel('orm.test.js', () => {
             assert.strictEqual(emitted[0], 'bar');
             sub.unsubscribe();
 
-            db.destroy();
+            db.close();
         });
     });
 });
