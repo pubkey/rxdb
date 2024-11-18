@@ -35,6 +35,8 @@ To fix this, in dev-mode we should ensure that at least one schema validator is 
 
 Destroy was adapted from PouchDB, but people often think this deletes the written data. Close is better.
 
+## Move RxServer (and others) out of beta mode
+
 ---------------------------------
 # Maybe later (not sure if should be done)
 
