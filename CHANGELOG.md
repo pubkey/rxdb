@@ -3,6 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- CHANGE Split conflict handler functionality into `isEqual()` and `resolve()`.
+- CHANGE (internal) remove `conflictResultionTasks()` and `resolveConflictResultionTask()` from the RxStorage interface.
+- FIX (GraphQL replication) datapath must be equivalent for pull and push [#6019](https://github.com/pubkey/rxdb/pull/6019)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
