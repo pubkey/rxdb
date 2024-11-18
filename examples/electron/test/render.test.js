@@ -76,7 +76,7 @@ module.exports = (function () {
             const readData = await attachment.getStringData();
             assert.strictEqual(readData, dataString);
 
-            await db.destroy();
+            await db.close();
         }());
     };
     return runTests;
