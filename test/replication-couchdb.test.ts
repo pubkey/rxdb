@@ -9,6 +9,9 @@ import {
     isNode
 } from '../plugins/test-utils/index.mjs';
 
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
+addRxPlugin(RxDBDevModePlugin);
+
 import {
     addRxPlugin,
     randomCouchString,

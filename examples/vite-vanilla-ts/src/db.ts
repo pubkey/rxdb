@@ -16,8 +16,7 @@ const _create = async () => {
       }),
     }),
     password: 'foooooobaaaaar',
-    multiInstance: true,
-    ignoreDuplicate: true,
+    multiInstance: true
   });
   await database.addCollections({ heroes: { schema: HeroSchema } });
   return database;
