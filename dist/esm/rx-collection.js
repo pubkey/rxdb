@@ -183,6 +183,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       };
     }
     var primaryPath = this.schema.primaryPath;
+    var ids = new Set();
 
     /**
      * This code is a bit redundant for better performance.
@@ -192,6 +193,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var insertRows;
     if (this.hasHooks('pre', 'insert')) {
       insertRows = await Promise.all(docsData.map(docData => {
+        ids.add(docData[primaryPath]);
         var useDocData = fillObjectDataBeforeInsert(this.schema, docData);
         return this._runHooks('pre', 'insert', useDocData).then(() => {
           return {
@@ -204,11 +206,20 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       var _schema = this.schema;
       for (var index = 0; index < docsData.length; index++) {
         var docData = docsData[index];
+        ids.add(docData[primaryPath]);
         var useDocData = fillObjectDataBeforeInsert(_schema, docData);
         insertRows[index] = {
           document: useDocData
         };
       }
+    }
+    if (ids.size !== docsData.length) {
+      throw newRxError('COL22', {
+        collection: this.name,
+        args: {
+          documents: docsData
+        }
+      });
     }
     var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
 
@@ -607,6 +618,10 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   _proto.remove = async function remove() {
     await this.destroy();
     await Promise.all(this.onRemove.map(fn => fn()));
+    /**
+     * TODO here we should pass the already existing
+     * storage instances instead of creating new ones.
+     */
     await removeCollectionStorages(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.password, this.database.hashFunction);
   };
   return _createClass(RxCollectionBase, [{

@@ -197,6 +197,8 @@ export async function runQueryUpdateFunction(rxQuery, fn) {
   }
   if (Array.isArray(docs)) {
     return Promise.all(docs.map(doc => fn(doc)));
+  } else if (docs instanceof Map) {
+    return Promise.all([...docs.values()].map(doc => fn(doc)));
   } else {
     // via findOne()
     var result = await fn(docs);

@@ -3,13 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX findByIds not working with modify and patch [#6592](https://github.com/pubkey/rxdb/pull/6592)
-- FIX bulk inserting 2 docs with same primary key should throw [#6589](https://github.com/pubkey/rxdb/pull/6589)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.38.3 (18 November 2024)
+
+- FIX findByIds not working with modify and patch [#6592](https://github.com/pubkey/rxdb/pull/6592)
+- FIX bulk inserting 2 docs with same primary key should throw [#6589](https://github.com/pubkey/rxdb/pull/6589)
 
 ### 15.38.2 (14 November 2024)
 
@@ -27,7 +30,6 @@
 - REMOVE faker dependency for tests and instead use random strings with emojis and umlauts.
 
 - ~FIX [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) not working anymore after a cleanup has run on documents with umlauts in the primaryKey or index fields.~ ⬅️ This has been moved to RxDB v16 because it would be a breaking change.
-
 
 ### 15.37.0 (5 November 2024)
 
