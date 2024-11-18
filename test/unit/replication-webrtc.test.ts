@@ -206,7 +206,7 @@ describe('replication-webrtc.test.ts', function () {
             // should automatically reconnect when peer connection breaks
             const peerStates = firstReplicationStates[0].peerStates$.getValue();
             const onePeer = Array.from(peerStates.values())[0].peer;
-            await onePeer.close(); // disconnect peer
+            await onePeer.destroy(); // disconnect peer
             console.log('--------- 5.1');
             await wait(100);
             console.log('--------- 5.2');
