@@ -19,7 +19,7 @@ const _create = async () => {
         storage: getRxStorageDexie(),
       }),
     }),
-    ignoreDuplicate: true
+    ignoreDuplicate: true,
     password: 'foooooobaaaaar',
     multiInstance: true
   });
