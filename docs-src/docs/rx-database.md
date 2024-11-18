@@ -89,7 +89,7 @@ For better performance, you should always set `eventReduce: true`. This will als
 `(optional=false)`
 If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
 To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`.
+In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
 
 ```js
 const db1 = await createRxDatabase({

@@ -610,6 +610,12 @@ export function createRxDatabase<
     // check if combination already used
     if (!ignoreDuplicate) {
         throwIfDatabaseNameUsed(name, storage);
+    } else {
+        if (!overwritable.isDevMode()) {
+            throw newRxError('DB9', {
+                database: name
+            });
+        }
     }
     USED_DATABASE_NAMES.add(storage.name + '|' + name);
 

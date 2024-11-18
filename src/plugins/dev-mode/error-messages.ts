@@ -70,6 +70,7 @@ export const ERROR_MESSAGES = {
     DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' +
         'This often happens in react projects with hot reload that reloads the code without reloading the process.',
+    DB9: 'ignoreDuplicate is only allowed in dev-mode and must never be used in production',
     // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
     // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
     DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',

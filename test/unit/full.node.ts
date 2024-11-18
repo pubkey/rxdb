@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-
+import { assertThrows } from 'async-test-util';
 
 /**
  * exit with non-zero on unhandledRejection
@@ -63,8 +63,7 @@ const run = async function () {
     // create database
     const db = await createRxDatabase({
         name: randomCouchString(10),
-        storage: getRxStorageMemory(),
-        ignoreDuplicate: true
+        storage: getRxStorageMemory()
     });
 
     // create collection
@@ -122,6 +121,24 @@ const run = async function () {
 
     // destroy database
     await db.destroy();
+
+
+
+    /**
+     * Using ignoreduplicate in non dev-mode
+     * must not be allowed because using this flag
+     * in production can only happen accidentially and makes no sense.
+     */
+    await assertThrows(
+        () => createRxDatabase({
+            name: randomCouchString(10),
+            storage: getRxStorageMemory(),
+            ignoreDuplicate: true
+        }),
+        'RxError',
+        'DB9'
+    );
+
 };
 
 run();

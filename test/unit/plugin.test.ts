@@ -70,6 +70,10 @@ describeParallel('plugin.test.js', () => {
                     # ErrOut: ${stderr}
                     `);
             }
+
+            if (stderr.length > 0) {
+                throw new Error('got stderr: ' + stderr.join(', '));
+            }
         });
     });
     describe('hooks', () => {
