@@ -26,7 +26,7 @@
 - ADD random emojis and umlauts to all random strings in the tests to ensure this works correctly.
 - REMOVE faker dependency for tests and instead use random strings with emojis and umlauts.
 
-- ~FIX [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) not working anymore after a cleanup has run on documents with umlauts.~ ⬅️ This has been moved to RxDB v16 because it would be a breaking change.
+- ~FIX [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) not working anymore after a cleanup has run on documents with umlauts in the primaryKey or index fields.~ ⬅️ This has been moved to RxDB v16 because it would be a breaking change.
 
 
 ### 15.37.0 (5 November 2024)
