@@ -308,31 +308,22 @@ export function getCRDTConflictHandler<RxDocType>(
     const crdtField = crdtOptions.field;
     const getCRDTValue = objectPathMonad<WithDeleted<RxDocType> | RxDocType, CRDTDocumentField<RxDocType>>(crdtField);
 
-    const conflictHandler: RxConflictHandler<RxDocType> = async (
-        i: RxConflictHandlerInput<RxDocType>,
-        _context: string
-    ) => {
-        const newDocCrdt = getCRDTValue(i.newDocumentState);
-        const masterDocCrdt = getCRDTValue(i.realMasterState);
-
-        if (newDocCrdt.hash === masterDocCrdt.hash) {
-            return Promise.resolve({
-                isEqual: true
-            });
+    const conflictHandler: RxConflictHandler<RxDocType> = {
+        isEqual(a, b, ctx) {
+            return getCRDTValue(a).hash === getCRDTValue(b).hash;
+        },
+        async resolve(i) {
+            const newDocCrdt = getCRDTValue(i.newDocumentState);
+            const masterDocCrdt = getCRDTValue(i.realMasterState);
+            const mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
+            const mergedDoc = rebuildFromCRDT(
+                schema,
+                i.newDocumentState,
+                mergedCrdt
+            );
+            return mergedDoc;
         }
-
-        const mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
-        const mergedDoc = rebuildFromCRDT(
-            schema,
-            i.newDocumentState,
-            mergedCrdt
-        );
-        return Promise.resolve({
-            isEqual: false,
-            documentData: mergedDoc
-        });
-    };
-
+    }
     return conflictHandler;
 }
 

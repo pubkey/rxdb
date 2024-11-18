@@ -14,38 +14,29 @@ import {
 } from '../plugins/utils/index.ts';
 import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
-export const defaultConflictHandler: RxConflictHandler<any> = function (
-    i: RxConflictHandlerInput<any>,
-    _context: string
-): Promise<RxConflictHandlerOutput<any>> {
-    const newDocumentState = stripAttachmentsDataFromDocument(i.newDocumentState);
-    const realMasterState = stripAttachmentsDataFromDocument(i.realMasterState);
-
-    /**
-     * If the documents are deep equal,
-     * we have no conflict.
-     * On your custom conflict handler you might only
-     * check some properties, like the updatedAt time,
-     * for better performance, because deepEqual is expensive.
-     */
-    if (deepEqual(
-        newDocumentState,
-        realMasterState
-    )) {
-        return Promise.resolve({
-            isEqual: true
-        });
+export const defaultConflictHandler: RxConflictHandler<any> = {
+    isEqual(a, b) {
+        /**
+         * If the documents are deep equal,
+         * we have no conflict.
+         * On your custom conflict handler you might only
+         * check some properties, like the updatedAt time,
+         * for better performance, because deepEqual is expensive.
+         */
+        return deepEqual(
+            stripAttachmentsDataFromDocument(a),
+            stripAttachmentsDataFromDocument(b)
+        );
+    },
+    async resolve(i) {
+        /**
+         * The default conflict handler will always
+         * drop the fork state and use the master state instead.
+         */
+        return i.realMasterState;
     }
-
-    /**
-     * The default conflict handler will always
-     * drop the fork state and use the master state instead.
-     */
-    return Promise.resolve({
-        isEqual: false,
-        documentData: i.realMasterState
-    });
 };
+
 
 
 /**
@@ -60,27 +51,26 @@ export async function resolveConflictError<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     input: RxConflictHandlerInput<RxDocType>,
     forkState: RxDocumentData<RxDocType>
-): Promise<{
-    resolvedDoc: RxDocumentData<RxDocType>;
-    output: RxConflictHandlerOutput<RxDocType>;
-} | undefined> {
+): Promise<RxDocumentData<RxDocType> | undefined> {
     const conflictHandler: RxConflictHandler<RxDocType> = state.input.conflictHandler;
-    const conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
 
-    if (conflictHandlerOutput.isEqual) {
+    const isEqual = conflictHandler.isEqual(input.realMasterState, input.newDocumentState, 'replication-resolve-conflict');
+
+    if (isEqual) {
         /**
          * Documents are equal,
          * so this is not a conflict -> do nothing.
          */
         return undefined;
     } else {
+        const resolved = await conflictHandler.resolve(input, 'replication-resolve-conflict');
         /**
          * We have a resolved conflict,
          * use the resolved document data.
          */
         const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
             {},
-            conflictHandlerOutput.documentData,
+            resolved,
             {
                 /**
                  * Because the resolved conflict is written to the fork,
@@ -96,9 +86,6 @@ export async function resolveConflictError<RxDocType>(
             await state.checkpointKey,
             forkState
         );
-        return {
-            resolvedDoc,
-            output: conflictHandlerOutput
-        };
+        return resolvedDoc;
     }
 }

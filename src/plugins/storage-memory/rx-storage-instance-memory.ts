@@ -16,8 +16,6 @@ import type {
     EventBulk,
     PreparedQuery,
     QueryMatcher,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -476,13 +474,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         this.internals.refCount = this.internals.refCount - 1;
         return PROMISE_RESOLVE_VOID;
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.internals.conflictResultionTasks$.asObservable();
-    }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
-    }
 }
 
 export function createMemoryStorageInstance<RxDocType>(
@@ -506,7 +497,6 @@ export function createMemoryStorageInstance<RxDocType>(
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {},
-            conflictResultionTasks$: new Subject(),
             changes$: new Subject()
         };
         addIndexesToInternalsState(internals, params.schema);

@@ -8,8 +8,6 @@ import {
 import type {
     BulkWriteRow,
     EventBulk,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorage,
@@ -167,7 +165,6 @@ function getMessageReturn(
 
 export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
-    private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
 
     private closed?: Promise<void>;
@@ -188,9 +185,6 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
             this.messages$.subscribe(msg => {
                 if (msg.method === 'changeStream') {
                     this.changes$.next(getMessageReturn(msg));
-                }
-                if (msg.method === 'conflictResultionTasks') {
-                    this.conflicts$.next(msg.return);
                 }
             })
         );
@@ -279,12 +273,6 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
             await closeMessageChannel(this.internals.messageChannel);
         })();
         return this.closed;
-    }
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.conflicts$;
-    }
-    async resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        await this.requestRemote('resolveConflictResultionTask', [taskSolution]);
     }
 }
 

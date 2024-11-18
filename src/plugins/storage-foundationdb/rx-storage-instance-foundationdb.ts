@@ -6,8 +6,6 @@ import type {
     EventBulk,
     PreparedQuery,
     RxAttachmentWriteData,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -321,14 +319,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
         return noMoreUndeleted;
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject<any>().asObservable();
-    }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
-    }
-
     async close() {
         if (this.closed) {
             return this.closed;

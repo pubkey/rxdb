@@ -190,7 +190,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
         };
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;
-            output: RxConflictHandlerOutput<RxDocType>;
+            output: WithDeleted<RxDocType>;
         }>;
         /**
          * Contains the cancel state.

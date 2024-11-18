@@ -30,8 +30,6 @@ import type {
     EventBulk,
     StringKeys,
     DeepReadonly,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
     PreparedQuery
@@ -106,12 +104,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
-                conflictResultionTasks: this.conflictResultionTasks.bind(this),
                 getAttachmentData: this.getAttachmentData.bind(this),
                 internals: this.internals,
                 options: this.options,
                 remove: this.remove.bind(this),
-                resolveConflictResultionTask: this.resolveConflictResultionTask.bind(this),
                 schema: this.schema
             };
 
@@ -375,12 +371,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         await localState.databaseState.saveQueue.run();
         return this.close();
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject();
-    }
-    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
-
 }
 
 export async function createLokiLocalState<RxDocType>(
