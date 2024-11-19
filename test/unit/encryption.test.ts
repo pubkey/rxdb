@@ -53,7 +53,7 @@ describeParallel('encryption.test.ts', () => {
             eventReduce: true,
             password: await getPassword()
         });
-        // setTimeout(() => db.destroy(), dbLifetime);
+        // setTimeout(() => db.close(), dbLifetime);
         const collections = await db.addCollections({
             encryptedhuman: {
                 schema: schemas.encryptedHuman
@@ -159,8 +159,8 @@ describeParallel('encryption.test.ts', () => {
             assert.ok(doc2);
             assert.strictEqual(typeof doc2.data.passwordHash, 'string');
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
             if (!config.storage.hasPersistence) {
@@ -196,8 +196,8 @@ describeParallel('encryption.test.ts', () => {
                 'RxError',
                 'DB1'
             );
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
     });
     describe('RxCollection creation', () => {
@@ -370,7 +370,7 @@ describeParallel('encryption.test.ts', () => {
 
             /**
              * Removing encrypted databases was broken,
-             * so remove instead of destroy here.
+             * so remove instead of close here.
              */
             await clientCollection.database.remove();
             await remoteCollection.database.remove();
@@ -385,14 +385,14 @@ describeParallel('encryption.test.ts', () => {
             const name = randomCouchString(10) + '837';
             const password = await getPassword();
 
-            // 1. create and destroy encrypted db
+            // 1. create and close encrypted db
             const db1 = await createRxDatabase({
                 name,
                 storage,
                 password
             });
             await db1.storageToken;
-            await db1.destroy();
+            await db1.close();
 
             // 2. reopen with wrong password
 
@@ -408,7 +408,7 @@ describeParallel('encryption.test.ts', () => {
                 'RxError',
                 'different password'
             );
-            await db2.destroy();
+            await db2.close();
 
             // 3. reopen with correct password
             const db3 = await createRxDatabase({

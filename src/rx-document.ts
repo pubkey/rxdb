@@ -408,7 +408,7 @@ export const basePrototype = {
             return newDoc;
         });
     },
-    destroy() {
+    close() {
         throw newRxError('DOC14');
     }
 };

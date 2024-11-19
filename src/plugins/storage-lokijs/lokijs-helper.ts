@@ -147,7 +147,7 @@ export function getLokiDatabase(
                         try {
                             database.loadDatabase({
                                 recursiveWait: false
-                            }, (err) => {
+                            }, (err: any) => {
                                 if (useSettings.autoloadCallback) {
                                     useSettings.autoloadCallback(err);
                                 }

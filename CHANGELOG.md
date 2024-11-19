@@ -7,6 +7,12 @@
 - CHANGE (internal) remove `conflictResultionTasks()` and `resolveConflictResultionTask()` from the RxStorage interface.
 - FIX (GraphQL replication) datapath must be equivalent for pull and push [#6019](https://github.com/pubkey/rxdb/pull/6019)
 - CHANGE `ignoreDuplicate: true` on `createRxDatabase()` must only be allowed in dev-mode.
+- RENAME 
+  - `.destroy()` to `.close()`
+  - `.onDestroy()` to `.onClose()`
+  - `postDestroyRxCollection` to `postCloseRxCollection`
+  - `preDestroyRxDatabase` to `preCloseRxDatabase`
+  - 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

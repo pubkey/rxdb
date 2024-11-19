@@ -99,7 +99,7 @@ export const ERROR_MESSAGES = {
     COL18: 'collection-method not allowed because fieldname is in the schema',
     // removed in 14.0.0, use CONFLICT instead - COL19: 'Document update conflict. When changing a document you must work on the previous revision',
     COL20: 'Storage write error',
-    COL21: 'The RxCollection is destroyed or removed already, either from this JavaScript realm or from another, like a browser tab',
+    COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
     CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
     COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
 
@@ -117,7 +117,7 @@ export const ERROR_MESSAGES = {
     DOC11: 'RxDocument.save(): can\'t save deleted document',
     // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
     DOC13: 'RxDocument.remove(): Document is already deleted',
-    DOC14: 'RxDocument.destroy() does not exist',
+    DOC14: 'RxDocument.close() does not exist',
     DOC15: 'query cannot be an array',
     DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
     DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',

@@ -51,6 +51,7 @@ export * from './upstream.ts';
 export * from './meta-instance.ts';
 export * from './conflicts.ts';
 export * from './helper.ts';
+export * from './default-conflict-handler.ts';
 
 
 export function replicateRxStorageInstance<RxDocType>(
@@ -261,7 +262,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             const writeRows: BulkWriteRow<RxDocType>[] = [];
             await Promise.all(
                 Object.entries(rowById)
-                    .map(async ([id, row]) => {
+                    .map(([id, row]) => {
                         const masterState = masterDocsState.get(id);
                         if (!masterState) {
                             writeRows.push({

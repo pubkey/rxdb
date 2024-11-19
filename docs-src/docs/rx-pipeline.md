@@ -167,9 +167,9 @@ const pipeline = await emailCollection.addPipeline({
 
 You can await the idleness of a pipeline with `await myRxPipeline.awaitIdle()`. This will await a promise that resolved when the pipeline has processed all documents and is not running anymore.
 
-### destroy()
+### close()
 
-`await myRxPipeline.destroy()` stops the pipeline so that is no longer doing stuff. This is automatically called when the RxCollection or RxDatabase of the pipeline is destroyed.
+`await myRxPipeline.close()` stops the pipeline so that is no longer doing stuff. This is automatically called when the RxCollection or RxDatabase of the pipeline is closed.
 
 ### remove()
 

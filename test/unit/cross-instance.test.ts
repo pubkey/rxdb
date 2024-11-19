@@ -40,7 +40,7 @@ describeParallel('cross-instance.test.js', () => {
                 multiInstance: true
             });
             assert.ok(isRxDatabase(db));
-            db.destroy();
+            db.close();
         });
         it('create a 2 multiInstance databases', async () => {
             const name = randomCouchString(10);
@@ -58,8 +58,8 @@ describeParallel('cross-instance.test.js', () => {
             });
             assert.ok(isRxDatabase(db));
             assert.ok(isRxDatabase(db2));
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
     });
     describe('RxDatabase.$', () => {
@@ -81,8 +81,8 @@ describeParallel('cross-instance.test.js', () => {
                     return received > 0;
                 });
 
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
         });
         describe('negative', () => {
@@ -109,8 +109,8 @@ describeParallel('cross-instance.test.js', () => {
                     return emitted.length === 1;
                 });
 
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
         });
     });
@@ -130,8 +130,8 @@ describeParallel('cross-instance.test.js', () => {
                 return received > 0;
             });
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
     });
 
@@ -166,8 +166,8 @@ describeParallel('cross-instance.test.js', () => {
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
 
             assert.strictEqual(firstNameAfter, 'foobar');
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
         it('should work with encrypted fields', async () => {
             const name = randomCouchString(10);
@@ -226,8 +226,8 @@ describeParallel('cross-instance.test.js', () => {
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.strictEqual(secretAfter, 'foobar');
 
-            db1.destroy();
-            db2.destroy();
+            db1.close();
+            db2.close();
         });
         it('should work with nested encrypted fields', async () => {
             const name = randomCouchString(10);
@@ -294,8 +294,8 @@ describeParallel('cross-instance.test.js', () => {
                 subname: 'bar'
             }));
 
-            db1.destroy();
-            db2.destroy();
+            db1.close();
+            db2.close();
         });
     });
     describe('AutoPull', () => {
@@ -312,8 +312,8 @@ describeParallel('cross-instance.test.js', () => {
 
                 await waitUntil(() => emitted.length >= 1);
 
-                c1.database.destroy();
-                c2.database.destroy();
+                c1.database.close();
+                c2.database.close();
             });
             it('should receive 2 events', async () => {
                 const name = randomCouchString(10);
@@ -331,8 +331,8 @@ describeParallel('cross-instance.test.js', () => {
 
                 await AsyncTestUtil.waitUntil(() => received === 2);
                 assert.strictEqual(received, 2);
-                c1.database.destroy();
-                c2.database.destroy();
+                c1.database.close();
+                c2.database.close();
             });
         });
     });

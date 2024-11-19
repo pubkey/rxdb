@@ -63,54 +63,39 @@ When a document is send to the backend and the backend detected a conflict (by c
 
 ## Custom conflict handler
 
-A conflict handler is a JavaScript function that has two tasks:
-- Detect if a conflict exists
-- Solve existing conflicts 
+A conflict handler is an object with two JavaScript functions:
+- Detect if two document states are equal
+- Solve existing conflicts
 
 Because the conflict handler also is used for conflict detection, it will run many times on pull-, push- and write operations of RxDB. Most of the time it will detect that there is no conflict and then return.
 
-Lets have a look at the default conflict handler of RxDB to learn how to create a custom one:
+Lets have a look at the [default conflict handler](https://github.com/pubkey/rxdb/blob/master/src/replication-protocol/default-conflict-handler.ts) of RxDB to learn how to create a custom one:
 
 ```ts
-export const defaultConflictHandler: RxConflictHandler<any> = function (
-    /**
-     * The conflict handler gets 3 input properties:
-     * - assumedMasterState: The state of the document that is assumed to be on the master branch
-     * - newDocumentState: The new document state of the fork branch (=client) that RxDB want to write to the master
-     * - realMasterState: The real master state of the document
-     */
-    i: RxConflictHandlerInput<any>
-): Promise<RxConflictHandlerOutput<any>> {
-    /**
-     * Here we detect if a conflict exists in the first place.
-     * If there is no conflict, we return isEqual=true.
-     * If there is a conflict, return isEqual=false.
-     * In the default handler we do a deepEqual check,
-     * but in your custom conflict handler you probably want
-     * to compare specific properties of the document, like the updatedAt time,
-     * for better performance because deepEqual() is expensive.
-     */
-    if (deepEqual(
-        i.newDocumentState,
-        i.realMasterState
-    )) {
-        return Promise.resolve({
-            isEqual: true
-        });
+import { deepEqual } from 'rxdb/plugins/utils';
+export const defaultConflictHandler: RxConflictHandler<any> = {
+    isEqual(a, b) {
+        /**
+         * isEqual() is used to detect conflicts or to detect if a
+         * document has to be pushed to the remote.
+         * If the documents are deep equal,
+         * we have no conflict.
+         * Because deepEqual is CPU expensive, on your custom conflict handler you might only
+         * check some properties, like the updatedAt time or revisions
+         * for better performance.
+         */
+        return deepEqual(a, b);
+    },
+    resolve(i) {
+        /**
+         * The default conflict handler will always
+         * drop the fork state and use the master state instead.
+         * 
+         * In your custom conflict handler you likely want to merge properties
+         * of the realMasterState and the newDocumentState instead.
+         */
+        return i.realMasterState;
     }
-
-    /**
-     * If a conflict exists, we have to resolve it.
-     * The default conflict handler will always
-     * drop the fork state and use the master state instead.
-     * 
-     * In your custom conflict handler you likely want to merge properties
-     * of the realMasterState and the newDocumentState instead.
-     */
-    return Promise.resolve({
-        isEqual: false,
-        documentData: i.realMasterState
-    });
 };
 ```
 

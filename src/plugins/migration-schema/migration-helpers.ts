@@ -138,10 +138,10 @@ export function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubje
 }
 
 /**
- * Complete on database destroy
+ * Complete on database close
  * so people do not have to unsubscribe
  */
-export function onDatabaseDestroy(database: RxDatabase) {
+export function onDatabaseClose(database: RxDatabase) {
     const subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
     if (subject) {
         subject.complete();

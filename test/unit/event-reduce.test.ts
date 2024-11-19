@@ -142,8 +142,8 @@ describe('event-reduce.test.js', () => {
             queries
         );
 
-        colNoEventReduce.database.destroy();
-        colWithEventReduce.database.destroy();
+        colNoEventReduce.database.close();
+        colWithEventReduce.database.close();
     });
 
     it('should work with the key-compression plugin', async () => {
@@ -214,8 +214,8 @@ describe('event-reduce.test.js', () => {
             queries
         );
 
-        colNoEventReduce.database.destroy();
-        colWithEventReduce.database.destroy();
+        colNoEventReduce.database.close();
+        colWithEventReduce.database.close();
     });
 
     /**
@@ -335,8 +335,8 @@ describe('event-reduce.test.js', () => {
             );
 
             // clean up
-            colNoEventReduce.database.destroy();
-            colWithEventReduce.database.destroy();
+            colNoEventReduce.database.close();
+            colWithEventReduce.database.close();
         });
     });
 });

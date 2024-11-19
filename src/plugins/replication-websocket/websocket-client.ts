@@ -199,6 +199,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         }
     });
 
-    options.collection.onDestroy.push(() => websocketClient.socket.close());
+    options.collection.onClose.push(() => websocketClient.socket.close());
     return replicationState;
 }

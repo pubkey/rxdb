@@ -60,7 +60,7 @@ describeParallel('reactive-document.test.js', () => {
                 assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
                 assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
                 colSub.unsubscribe();
-                c.database.destroy();
+                c.database.close();
             });
             it('should observe a single field', async () => {
                 const c = await humansCollection.create();
@@ -75,7 +75,7 @@ describeParallel('reactive-document.test.js', () => {
                 await doc.incrementalPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
-                c.database.destroy();
+                c.database.close();
             });
             it('should observe a nested field', async () => {
                 const c = await humansCollection.createNested();
@@ -95,7 +95,7 @@ describeParallel('reactive-document.test.js', () => {
                 });
                 promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
-                c.database.destroy();
+                c.database.close();
             });
             it('get equal values when subscribing again later', async () => {
                 const c = await humansCollection.create(1);
@@ -112,7 +112,7 @@ describeParallel('reactive-document.test.js', () => {
                 assert.strictEqual(v1, v2);
                 assert.strictEqual(v1, 'foobar');
                 sub.unsubscribe();
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('negative', () => {
@@ -124,7 +124,7 @@ describeParallel('reactive-document.test.js', () => {
                     'RxError',
                     'observe'
                 );
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -140,7 +140,7 @@ describeParallel('reactive-document.test.js', () => {
                 await doc.remove();
                 promiseWait(5);
                 assert.deepStrictEqual(deleted, true);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('negative', () => { });
@@ -155,7 +155,7 @@ describeParallel('reactive-document.test.js', () => {
 
             const emitted = await firstEmitPromise;
             assert.ok(emitted.$);
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.get$()', () => {
@@ -171,7 +171,7 @@ describeParallel('reactive-document.test.js', () => {
                     'RxError',
                     'primary path'
                 );
-                c.database.destroy();
+                c.database.close();
             });
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
@@ -192,7 +192,7 @@ describeParallel('reactive-document.test.js', () => {
                     'RxError',
                     'final fields'
                 );
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -219,7 +219,7 @@ describeParallel('reactive-document.test.js', () => {
                 assert.equal(Object.is(firstValueObject, obj), true);
             });
 
-            c.database.destroy();
+            c.database.close();
         });
     });
 });

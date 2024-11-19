@@ -333,8 +333,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 ]);
                 await waitUntil(() => state1.a === 2);
                 await waitUntil(() => state2.a === 2);
-                state1.collection.database.destroy();
-                state2.collection.database.destroy();
+                state1.collection.database.close();
+                state2.collection.database.close();
             });
             it('write with two states to nested at once', async () => {
                 const databaseName = randomCouchString(10);
@@ -351,8 +351,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await waitUntil(() => state1.nes?.ted === 'foo2');
                 await waitUntil(() => state2.nes?.ted === 'foo2');
 
-                state1.collection.database.destroy();
-                state2.collection.database.destroy();
+                state1.collection.database.close();
+                state2.collection.database.close();
             });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
@@ -392,8 +392,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     }, undefined, 50);
                     await waitUntil(() => state1.a === amount * 2, undefined, 50);
 
-                    state1.collection.database.destroy();
-                    state2.collection.database.destroy();
+                    state1.collection.database.close();
+                    state2.collection.database.close();
                 });
             });
             it('should have a deterministic output when 2 instances write to different fields', async () => {
@@ -430,8 +430,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state1.get('b'), amount);
                 assert.strictEqual(state2.get('b'), amount);
 
-                state1.collection.database.destroy();
-                state2.collection.database.destroy();
+                state1.collection.database.close();
+                state2.collection.database.close();
             });
             it('should recover the same state from disc on the other side', async () => {
                 const databaseName = randomCouchString(10);
@@ -439,17 +439,17 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 await state.set('a', () => 0);
                 await state.set('a', () => 1);
                 await state.set('a', () => 2);
-                await state.collection.database.destroy();
+                await state.collection.database.close();
 
                 state = await getState(databaseName);
                 assert.strictEqual(state.a, 2);
                 await state.set('a', () => 3);
                 await state._cleanup();
-                await state.collection.database.destroy();
+                await state.collection.database.close();
 
                 state = await getState(databaseName);
                 assert.strictEqual(state.a, 3);
-                await state.collection.database.destroy();
+                await state.collection.database.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/6084
@@ -491,8 +491,8 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state1.get('a'), 2);
                 assert.strictEqual(state2.get('a'), 2);
 
-                state1.collection.database.destroy();
-                state2.collection.database.destroy();
+                state1.collection.database.close();
+                state2.collection.database.close();
             });
         });
         describe('issues', () => {
@@ -524,7 +524,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 // must be exactly the same reference
                 assert.ok(initialState === emitted[0]);
 
-                state.collection.database.destroy();
+                state.collection.database.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/6503

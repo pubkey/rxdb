@@ -135,7 +135,7 @@ describe('bug-report.test.js', () => {
 
         // clean up afterwards
         sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        db.close();
+        dbInOtherTab.close();
     });
 });

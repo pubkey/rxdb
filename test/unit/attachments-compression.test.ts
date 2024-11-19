@@ -114,7 +114,7 @@ modes.forEach(mode => {
                 doc = await c.findOne().exec(true);
                 const attachment: any = doc.getAttachment('cat.txt');
                 assert.ok(attachment);
-                c.database.destroy();
+                c.database.close();
             });
             it('should get the data', async () => {
                 const c = await createCompressedAttachmentsCollection();
@@ -130,7 +130,7 @@ modes.forEach(mode => {
                 const data = await attachment.getData();
                 const dataString = await blobToString(data);
                 assert.strictEqual(dataString, dat);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('compare size', () => {
@@ -156,8 +156,8 @@ modes.forEach(mode => {
                 assert.ok(
                     (attachmentCompressed.length * 1.5) < attachmentB.length
                 );
-                c.database.destroy();
-                c2.database.destroy();
+                c.database.close();
+                c2.database.close();
             });
         });
 

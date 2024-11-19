@@ -55,7 +55,7 @@ describe('typings.test.ts', function () {
                     ignoreDuplicate: false
                 };
                 const myDb: RxDatabase = await createRxDatabase(databaseCreator);
-                await myDb.destroy();
+                await myDb.close();
             });
             it('allow to type-define the collections', () => {
                 const db: RxDatabase<{
@@ -84,7 +84,7 @@ describe('typings.test.ts', function () {
                     storage: getRxStorageMemory()
                 });
                 const col: RxCollection = db.hero;
-                await db.destroy();
+                await db.close();
             });
         });
         describe('negative', () => {
@@ -132,7 +132,7 @@ describe('typings.test.ts', function () {
                         schema: minimalHuman,
                     }
                 });
-                await myDb.destroy();
+                await myDb.close();
             });
             it('should allow \'as const\' composite primary schemas to work', () => {
                 const humanCompositePrimaryTyped: RxJsonSchema<HumanCompositePrimaryDocType> = schemas.humanCompositePrimarySchemaLiteral;
@@ -150,7 +150,7 @@ describe('typings.test.ts', function () {
 
                 // @ts-expect-error broken schema
                 const minimalHuman: RxJsonSchema<DefaultDocType> = schemas.humanMinimalBroken;
-                await myDb.destroy();
+                await myDb.close();
             });
 
         });
@@ -219,7 +219,7 @@ describe('typings.test.ts', function () {
                 });
                 const x: string = myDb.options.foo1;
                 const y: string = myCollections.humans.options.foo2;
-                myDb.destroy();
+                myDb.close();
             });
         });
         describe('negative', () => {
@@ -237,7 +237,7 @@ describe('typings.test.ts', function () {
                         autoMigrate: false,
                     }
                 });
-                await myDb.destroy();
+                await myDb.close();
             });
         });
     });

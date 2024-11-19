@@ -14,7 +14,6 @@ import {
     RxDocumentData,
     RxStorageInstance,
     RxStorageInstanceReplicationState,
-    RxConflictHandlerInput,
     awaitRxStorageReplicationIdle,
     promiseWait,
     getRxReplicationMetaInstanceSchema,
@@ -90,16 +89,16 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         isEqual(a, b) {
             return deepEqual(withoutMeta(a), withoutMeta(b));
         },
-        async resolve(i) {
+        resolve() {
             throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
         }
-    }
+    };
 
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = {
         isEqual(a, b) {
             return deepEqual(a, b);
         },
-        async resolve(input) {
+        resolve(input) {
             const docA = input.newDocumentState;
             const docB = input.realMasterState;
 
@@ -126,7 +125,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 throw new Error('equal age ' + ageA + ' ctxt: ' + context);
             }
         }
-    }
+    };
 
 
     function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {

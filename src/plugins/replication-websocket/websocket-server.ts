@@ -89,8 +89,8 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
     const { database, ...wsOptions } = options;
     const serverState = startSocketServer(wsOptions);
 
-    // auto close when the database gets destroyed
-    database.onDestroy.push(() => serverState.close());
+    // auto close when the database gets closed
+    database.onClose.push(() => serverState.close());
 
     serverState.onConnection$.subscribe(ws => {
         const onCloseHandlers: Function[] = [];

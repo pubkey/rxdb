@@ -78,7 +78,7 @@ describe('backup.test.ts', () => {
                 )
             );
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('RxDatabase.backup() live=false', () => {
@@ -114,7 +114,7 @@ describe('backup.test.ts', () => {
             const meta: BackupMetaFileContent = await getMeta(options);
             assert.ok(meta.collectionStates.human.checkpoint);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should emit write events', async () => {
             if (!config.storage.hasAttachments) {
@@ -135,7 +135,7 @@ describe('backup.test.ts', () => {
             await waitUntil(() => emitted.length > 0);
             assert.strictEqual(emitted[0].deleted, false);
 
-            collection.database.destroy();
+            collection.database.close();
             sub.unsubscribe();
         });
     });
@@ -170,7 +170,7 @@ describe('backup.test.ts', () => {
                 );
             });
 
-            await collection.database.destroy();
+            await collection.database.close();
             // backupState should be stopped
             assert.strictEqual(backupState.isStopped, true);
         });

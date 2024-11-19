@@ -169,7 +169,7 @@ describeParallel('population.test.js', () => {
                 const friend = await doc.populate('bestFriend');
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.bestFriend);
-                col.database.destroy();
+                col.database.close();
             });
             it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
@@ -177,7 +177,7 @@ describeParallel('population.test.js', () => {
                 const friend = await doc.populate('foo.bestFriend');
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.foo.bestFriend);
-                col.database.destroy();
+                col.database.close();
             });
             it('populate string-array', async () => {
                 const db = await createRxDatabase({
@@ -226,7 +226,7 @@ describeParallel('population.test.js', () => {
                 friendDocs.forEach((friend: any) => {
                     assert.ok(isRxDocument(friend));
                 });
-                db.destroy();
+                db.close();
             });
             it('populate with primary as ref', async () => {
                 const db = await createRxDatabase({
@@ -265,7 +265,7 @@ describeParallel('population.test.js', () => {
                 const doc2 = await doc.populate(doc.primaryPath);
                 assert.ok(doc2.collection === col2);
 
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -277,7 +277,7 @@ describeParallel('population.test.js', () => {
                 const friend = await (doc as any).bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.bestFriend);
-                col.database.destroy();
+                col.database.close();
             });
             it('populate nested field', async () => {
                 const col = await humansCollection.createRelatedNested();
@@ -285,7 +285,7 @@ describeParallel('population.test.js', () => {
                 const friend = await (doc as any).foo.bestFriend_;
                 assert.ok(isRxDocument(friend));
                 assert.strictEqual(friend.name, doc.foo.bestFriend);
-                col.database.destroy();
+                col.database.close();
             });
         });
     });
@@ -349,7 +349,7 @@ describeParallel('population.test.js', () => {
             assert.ok(isRxDocument(docB));
             assert.strictEqual(docB.somevalue, 'foobar');
 
-            db.destroy();
+            db.close();
         });
     });
 });

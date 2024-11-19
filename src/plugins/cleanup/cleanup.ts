@@ -25,7 +25,7 @@ export async function startCleanupForRxCollection(
 
 
     await initialCleanupWait(rxCollection, cleanupPolicy);
-    if (rxCollection.destroyed) {
+    if (rxCollection.closed) {
         return;
     }
 
@@ -44,10 +44,10 @@ export async function startCleanupForRxCollection(
 export async function initialCleanupWait(collection: RxCollection, cleanupPolicy: RxCleanupPolicy) {
     /**
      * Wait until minimumDatabaseInstanceAge is reached
-     * or collection is destroyed.
+     * or collection is closed.
      */
     await collection.promiseWait(cleanupPolicy.minimumCollectionAge);
-    if (collection.destroyed) {
+    if (collection.closed) {
         return;
     }
 
@@ -68,7 +68,7 @@ export async function cleanupRxCollection(
 
     // run cleanup() until it returns true
     let isDone = false;
-    while (!isDone && !rxCollection.destroyed) {
+    while (!isDone && !rxCollection.closed) {
         if (cleanupPolicy.awaitReplicationsInSync) {
             const replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
             if (replicationStates) {
@@ -81,12 +81,12 @@ export async function cleanupRxCollection(
                 );
             }
         }
-        if (rxCollection.destroyed) {
+        if (rxCollection.closed) {
             return;
         }
         RXSTORAGE_CLEANUP_QUEUE = RXSTORAGE_CLEANUP_QUEUE
             .then(async () => {
-                if (rxCollection.destroyed) {
+                if (rxCollection.closed) {
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
@@ -108,9 +108,9 @@ export async function runCleanupAfterDelete(
     rxCollection: RxCollection,
     cleanupPolicy: RxCleanupPolicy
 ) {
-    while (!rxCollection.destroyed) {
+    while (!rxCollection.closed) {
         await rxCollection.promiseWait(cleanupPolicy.runEach);
-        if (rxCollection.destroyed) {
+        if (rxCollection.closed) {
             return;
         }
         await cleanupRxCollection(rxCollection, cleanupPolicy);

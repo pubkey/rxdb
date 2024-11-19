@@ -230,10 +230,10 @@ describe('replication-webrtc.test.ts', function () {
             await wait(200);
 
             // remove one peer
-            await c2.database.destroy();
+            await c2.database.close();
 
-            c1.database.destroy();
-            c3.database.destroy();
+            c1.database.close();
+            c3.database.close();
         });
     });
     describe('ISSUES', () => { });

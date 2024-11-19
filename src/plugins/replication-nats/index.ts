@@ -66,7 +66,7 @@ export function replicateNats<RxDocType>(
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
 
-    const collection = options.collection;
+    const collection: RxCollection<RxDocType> = options.collection;
     const primaryPath = collection.schema.primaryPath;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -166,10 +166,7 @@ export function replicateNats<RxDocType>(
                             remoteDocState &&
                             (
                                 !writeRow.assumedMasterState ||
-                                (await collection.conflictHandler({
-                                    newDocumentState: remoteDocState.json(),
-                                    realMasterState: writeRow.assumedMasterState
-                                }, 'replication-firestore-push')).isEqual === false
+                                collection.conflictHandler.isEqual(remoteDocState.json(), writeRow.assumedMasterState, 'replication-nats-push') === false
                             )
                         ) {
                             // conflict

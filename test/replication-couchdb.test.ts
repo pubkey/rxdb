@@ -9,6 +9,9 @@ import {
     isNode
 } from '../plugins/test-utils/index.mjs';
 
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
+addRxPlugin(RxDBDevModePlugin);
+
 import {
     addRxPlugin,
     randomCouchString,
@@ -118,7 +121,7 @@ describe('replication-couchdb.test.ts', () => {
             const server = await SpawnServer.spawn();
             const c = await humansCollection.create(0);
             await syncOnce(c, server);
-            c.database.destroy();
+            c.database.close();
             server.close();
         });
         it('push one insert to server', async () => {
@@ -131,7 +134,7 @@ describe('replication-couchdb.test.ts', () => {
             assert.strictEqual(serverDocs.length, 1);
             assert.strictEqual(serverDocs[0]._id, 'foobar');
 
-            c.database.destroy();
+            c.database.close();
             server.close();
         });
         it('push and pull inserted document', async () => {
@@ -157,8 +160,8 @@ describe('replication-couchdb.test.ts', () => {
             await syncOnce(c2, server);
             await ensureCollectionsHaveEqualState(c, c2);
 
-            c.database.destroy();
-            c2.database.destroy();
+            c.database.close();
+            c2.database.close();
             server.close();
         });
         it('update existing document', async () => {
@@ -185,8 +188,8 @@ describe('replication-couchdb.test.ts', () => {
             await syncOnce(c2, server);
             await ensureCollectionsHaveEqualState(c, c2);
 
-            c.database.destroy();
-            c2.database.destroy();
+            c.database.close();
+            c2.database.close();
             server.close();
         });
         it('delete documents', async () => {
@@ -215,8 +218,8 @@ describe('replication-couchdb.test.ts', () => {
             assert.strictEqual(serverDocs.length, 0);
             await ensureCollectionsHaveEqualState(c, c2);
 
-            c.database.destroy();
-            c2.database.destroy();
+            c.database.close();
+            c2.database.close();
             server.close();
         });
         describe('conflict handling', () => {
@@ -246,8 +249,8 @@ describe('replication-couchdb.test.ts', () => {
                  */
                 assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
-                c1.database.destroy();
-                c2.database.destroy();
+                c1.database.close();
+                c2.database.close();
                 server.close();
             });
             it('should correctly handle a conflict where the same doc is inserted on two sides', async () => {
@@ -284,8 +287,8 @@ describe('replication-couchdb.test.ts', () => {
                 const doc1 = await c1.findOne().exec(true);
                 assert.strictEqual(doc1.getLatest().firstName, 'c1');
 
-                c1.database.destroy();
-                c2.database.destroy();
+                c1.database.close();
+                c2.database.close();
                 server.close();
             });
         });
@@ -363,8 +366,8 @@ describe('replication-couchdb.test.ts', () => {
             await awaitInSync();
             await waitUntil(() => doc1.getLatest().age === 22);
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
             server.close();
         });
     });
@@ -424,7 +427,7 @@ describe('replication-couchdb.test.ts', () => {
             assert.ok(doc);
 
             await replicationState.awaitInSync();
-            await collection.database.destroy();
+            await collection.database.close();
         });
         it('#4319 CouchDB Replication fails on deleted documents', async () => {
             const server = await SpawnServer.spawn();
@@ -459,7 +462,7 @@ describe('replication-couchdb.test.ts', () => {
             assert.strictEqual(serverDocs.length, 1);
             assert.strictEqual(serverDocs[0]._id, '3');
 
-            await collection.database.destroy();
+            await collection.database.close();
         });
     });
 });

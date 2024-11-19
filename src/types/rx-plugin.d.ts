@@ -104,7 +104,7 @@ export interface RxPlugin {
             database: RxDatabase;
             creator: RxDatabaseCreator;
         }>;
-        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>;
+        preCloseRxDatabase?: RxPluginHooks<RxDatabase>;
         postRemoveRxDatabase?: RxPluginHooks<{
             databaseName: string;
             storage: RxStorage<any, any>;
@@ -121,7 +121,7 @@ export interface RxPlugin {
             name: string;
             database: RxDatabase;
         }>;
-        postDestroyRxCollection?: RxPluginHooks<RxCollection>;
+        postCloseRxCollection?: RxPluginHooks<RxCollection>;
         postRemoveRxCollection?: RxPluginHooks<{
             storage: RxStorage<any, any>;
             databaseName: string;

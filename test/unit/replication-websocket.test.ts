@@ -87,8 +87,8 @@ describeParallel('replication-websocket.test.ts', () => {
         const clientDocs = await localCollection.find().exec();
         assert.strictEqual(clientDocs.length, 2);
 
-        localCollection.database.destroy();
-        remoteCollection.database.destroy();
+        localCollection.database.close();
+        remoteCollection.database.close();
     });
     it('should replicate ongoing writes', async () => {
         const { localCollection, remoteCollection } = await getTestCollections({
@@ -146,8 +146,8 @@ describeParallel('replication-websocket.test.ts', () => {
         assert.ok(!deletedServer);
         assert.ok(!deletedClient);
 
-        localCollection.database.destroy();
-        remoteCollection.database.destroy();
+        localCollection.database.close();
+        remoteCollection.database.close();
     });
     it('should continue the replication when the connection is broken and established again', async () => {
         if (isFastMode()) {
@@ -217,8 +217,8 @@ describeParallel('replication-websocket.test.ts', () => {
             return !!doc;
         });
 
-        await localCollection.database.destroy();
-        await remoteCollection.database.destroy();
+        await localCollection.database.close();
+        await remoteCollection.database.close();
     });
     it('should be able to replicate multiple collections at once', async () => {
         const { localCollection, remoteCollection } = await getTestCollections({
@@ -352,8 +352,8 @@ describeParallel('replication-websocket.test.ts', () => {
         await ensureUpdated(remoteCollection);
         await ensureUpdated(remoteDatabase.humans2);
 
-        localDatabase.destroy();
-        remoteDatabase.destroy();
+        localDatabase.close();
+        remoteDatabase.close();
     });
 
     it('should be able to replicate multiple clients at once', async () => {
@@ -402,9 +402,9 @@ describeParallel('replication-websocket.test.ts', () => {
         await clientTwoCollection.findOne('server-doc').exec(true);
 
         await Promise.all([
-            serverCollection.database.destroy(),
-            clientOneCollection.database.destroy(),
-            clientTwoCollection.database.destroy()
+            serverCollection.database.close(),
+            clientOneCollection.database.close(),
+            clientTwoCollection.database.close()
         ]);
     });
 });

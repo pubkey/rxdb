@@ -65,8 +65,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 })
             );
 
-            await colClient.database.destroy();
-            await colServer.database.destroy();
+            await colClient.database.close();
+            await colServer.database.close();
         });
         /**
          * Often it makes sense to have the same database twice.
@@ -95,9 +95,9 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 storage: getRxStorageMemory()
             });
 
-            await dbRemote.destroy();
-            await dbLocal.destroy();
-            await colServer.database.destroy();
+            await dbRemote.close();
+            await dbLocal.close();
+            await colServer.database.close();
         });
     });
     describe('mode setting with RemoteMessageChannel reuse', () => {
@@ -158,7 +158,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             );
 
             await storageInstanceC.close();
-            await colServer.database.destroy();
+            await colServer.database.close();
         });
         it('mode: storage', async () => {
             const port = await nextPort();
@@ -213,7 +213,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             await storageInstanceA.close();
             await storageInstanceB.close();
             await storageInstanceOther.close();
-            await colServer.database.destroy();
+            await colServer.database.close();
         });
         it('mode: database', async () => {
             const port = await nextPort();
@@ -269,7 +269,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             await storageInstanceA.close();
             await storageInstanceB.close();
             await storageInstanceOther.close();
-            await colServer.database.destroy();
+            await colServer.database.close();
         });
         it('mode: collection', async () => {
             const port = await nextPort();
@@ -337,7 +337,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             await storageInstanceA.close();
             await storageInstanceB.close();
             await storageInstanceOther.close();
-            await database.destroy();
+            await database.close();
         });
     });
     describe('custom requests', () => {

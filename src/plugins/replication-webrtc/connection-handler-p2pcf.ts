@@ -61,8 +61,8 @@
 //                     response
 //                 } as any;
 //             },
-//             destroy() {
-//                 p2p2.destroy();
+//             close() {
+//                 p2p2.close();
 //                 connect$.complete();
 //                 disconnect$.complete();
 //                 message$.complete();

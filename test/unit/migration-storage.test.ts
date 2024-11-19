@@ -5,7 +5,8 @@ import {
     RxCollection,
     addRxPlugin,
     ensureNotFalsy,
-    createBlob
+    createBlob,
+    RxDatabase
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -95,6 +96,18 @@ const testStorages = [
 
 const DB_PREFIX = 'test-db-';
 
+
+/**
+ * In RxDB v15, this was called .destroy() instead of .close()
+ */
+function destroyOrClose(db: RxDatabase | any) {
+    if (typeof db.destroy === 'function') {
+        return db.destroy();
+    } else {
+        return db.close();
+    }
+}
+
 testStorages.forEach(storages => {
     describe('migration-storage.test.ts (' + storages.name + ')', () => {
         describe('basic migrations', () => {
@@ -109,7 +122,7 @@ testStorages.forEach(storages => {
                         schema: human as any
                     }
                 });
-                await oldDb.destroy();
+                await destroyOrClose(oldDb);
 
                 const db = await storages.createRxDatabaseNew({
                     name: DB_PREFIX + randomCouchString(12),
@@ -123,7 +136,7 @@ testStorages.forEach(storages => {
                         schema: human
                     }
                 });
-                await db.destroy();
+                await db.close();
             });
             it('should migrate all documents', async () => {
                 const name = DB_PREFIX + randomCouchString(12);
@@ -168,7 +181,7 @@ testStorages.forEach(storages => {
                     );
                 }
 
-                await oldDb.destroy();
+                await destroyOrClose(oldDb);
 
                 // create new database
                 const db = await storages.createRxDatabaseNew({
@@ -265,7 +278,7 @@ testStorages.forEach(storages => {
                     );
                 }
 
-                await oldDb.destroy();
+                await destroyOrClose(oldDb);
 
                 // create new database
                 const db = await storages.createRxDatabaseNew({
@@ -360,7 +373,7 @@ testStorages.forEach(storages => {
                     );
                 }
 
-                await oldDb.destroy();
+                await destroyOrClose(oldDb);
 
                 // create new database
                 const db = await storages.createRxDatabaseNew({
@@ -412,7 +425,7 @@ testStorages.forEach(storages => {
                 const firstEmit = handlerEmitted[0];
                 assert.deepStrictEqual(firstEmit.writeToNewResult.error, []);
 
-                await db.destroy();
+                await db.close();
             });
         });
         describe('issues', () => {
@@ -437,7 +450,7 @@ testStorages.forEach(storages => {
                 await oldDb.col1.insert(schemaObjects.humanData());
                 await oldDb.col2.insert(schemaObjects.humanData());
                 await oldDb.col3.insert(schemaObjects.humanData());
-                await oldDb.destroy();
+                await destroyOrClose(oldDb);
 
                 const db = await storages.createRxDatabaseNew({
                     name: DB_PREFIX + randomCouchString(12),

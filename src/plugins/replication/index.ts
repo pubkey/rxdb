@@ -127,8 +127,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         );
         replicationStates.push(this);
 
-        // stop the replication when the collection gets destroyed
-        this.collection.onDestroy.push(() => this.cancel());
+        // stop the replication when the collection gets closed
+        this.collection.onClose.push(() => this.cancel());
 
         // create getters for the observables
         Object.keys(this.subjects).forEach(key => {

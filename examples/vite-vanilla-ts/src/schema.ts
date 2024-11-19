@@ -1,13 +1,13 @@
 import {
-    toTypedRxJsonSchema,
-    type ExtractDocumentTypeFromTypedRxJsonSchema,
-    type RxCollection,
-    type RxDatabase,
-    type RxJsonSchema
+  toTypedRxJsonSchema,
+  type ExtractDocumentTypeFromTypedRxJsonSchema,
+  type RxCollection,
+  type RxDatabase,
+  type RxJsonSchema
 } from 'rxdb';
 
 export const HeroSchemaLiteral = {
-   title: 'hero',
+  title: 'hero',
   description: 'an individual hero',
   version: 0,
   type: 'object',
@@ -19,18 +19,25 @@ export const HeroSchemaLiteral = {
   properties: {
     name: {
       type: 'string',
+      maxLength: 100
     },
     color: {
       type: 'string'
     },
     createdAt: {
       type: 'number',
+      minimum: 0,
+      maximum: 9731970828058,
+      multipleOf: 1
     },
     updatedAt: {
       type: 'number',
+      minimum: 0,
+      maximum: 9731970828058,
+      multipleOf: 1
     },
   },
-  required: ['name', 'color','createdAt','updatedAt'],
+  required: ['name', 'color', 'createdAt', 'updatedAt'],
 } as const;
 
 export const SchemaTyped = toTypedRxJsonSchema(HeroSchemaLiteral);
@@ -44,7 +51,7 @@ export const HeroSchema: RxJsonSchema<HeroDocType> = SchemaTyped;
 type HeroesCollection = RxCollection<HeroDocType>;
 
 export type MyDatabaseCollections = {
-heroes: HeroesCollection;
+  heroes: HeroesCollection;
 };
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections>;

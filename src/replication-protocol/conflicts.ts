@@ -1,7 +1,6 @@
 import type {
     RxConflictHandler,
     RxConflictHandlerInput,
-    RxConflictHandlerOutput,
     RxDocumentData,
     RxStorageInstanceReplicationState
 } from '../types/index.d.ts';
@@ -9,35 +8,8 @@ import {
     getDefaultRevision,
     createRevision,
     now,
-    flatClone,
-    deepEqual
+    flatClone
 } from '../plugins/utils/index.ts';
-import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
-
-export const defaultConflictHandler: RxConflictHandler<any> = {
-    isEqual(a, b) {
-        /**
-         * If the documents are deep equal,
-         * we have no conflict.
-         * On your custom conflict handler you might only
-         * check some properties, like the updatedAt time,
-         * for better performance, because deepEqual is expensive.
-         */
-        return deepEqual(
-            stripAttachmentsDataFromDocument(a),
-            stripAttachmentsDataFromDocument(b)
-        );
-    },
-    async resolve(i) {
-        /**
-         * The default conflict handler will always
-         * drop the fork state and use the master state instead.
-         */
-        return i.realMasterState;
-    }
-};
-
-
 
 /**
  * Resolves a conflict error or determines that the given document states are equal.

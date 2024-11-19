@@ -70,7 +70,7 @@ export class RxPipeline<RxDocType> {
         public readonly batchSize = 100
     ) {
         this.checkpointId = 'rx-pipeline-' + identifier;
-        this.source.onDestroy.push(() => this.destroy());
+        this.source.onClose.push(() => this.close());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
             this.source.database.eventBulks$.pipe(
@@ -117,8 +117,8 @@ export class RxPipeline<RxDocType> {
             while (
                 !done &&
                 !this.stopped &&
-                !this.destination.destroyed &&
-                !this.source.destroyed
+                !this.destination.closed &&
+                !this.source.closed
             ) {
                 const checkpointDoc = await getCheckpointDoc(this);
                 const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
@@ -152,7 +152,7 @@ export class RxPipeline<RxDocType> {
 
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
                 }
-                if (!this.destination.destroyed) {
+                if (!this.destination.closed) {
                     await setCheckpointDoc(this, { checkpoint: docsSinceResult.checkpoint, lastDocTime: lastTime }, checkpointDoc);
                 }
                 if (docsSinceResult.documents.length < this.batchSize) {
@@ -174,7 +174,7 @@ export class RxPipeline<RxDocType> {
         }
     }
 
-    async destroy() {
+    async close() {
         this.stopped = true;
         this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
         this.subs.forEach(s => s.unsubscribe());
@@ -198,7 +198,7 @@ export class RxPipeline<RxDocType> {
                 throw writeResult.error;
             }
         }
-        return this.destroy();
+        return this.close();
     }
 }
 

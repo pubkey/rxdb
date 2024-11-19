@@ -39,8 +39,6 @@ import {
     createRevision,
     ensureNotFalsy,
     flatClone,
-    getDefaultRevision,
-    getDefaultRxDocumentMeta,
     lastOfArray,
     now,
     promiseWait,

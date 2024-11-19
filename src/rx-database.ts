@@ -192,13 +192,13 @@ export class RxDatabaseBase<
     public startupErrors: (RxError | RxTypeError)[] = [];
 
     /**
-     * When the database is destroyed,
+     * When the database is closed,
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
      */
-    public onDestroy: (() => MaybePromise<any>)[] = [];
-    public destroyed: boolean = false;
+    public onClose: (() => MaybePromise<any>)[] = [];
+    public closed: boolean = false;
     public collections: Collections = {} as any;
     public states: { [name: string]: RxState<any, Reactivity>; } = {};
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
@@ -457,17 +457,17 @@ export class RxDatabaseBase<
     }
 
     /**
-     * destroys the database-instance and all collections
+     * closes the database-instance and all collections
      */
-    public async destroy(): Promise<boolean> {
-        if (this.destroyed) {
+    public async close(): Promise<boolean> {
+        if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }
 
-        // settings destroyed = true must be the first thing to do.
-        this.destroyed = true;
+        // settings closed = true must be the first thing to do.
+        this.closed = true;
 
-        await runAsyncPluginHooks('preDestroyRxDatabase', this);
+        await runAsyncPluginHooks('preCloseRxDatabase', this);
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
@@ -478,7 +478,7 @@ export class RxDatabaseBase<
         this._subs.map(sub => sub.unsubscribe());
 
         /**
-         * Destroying the pseudo instance will throw
+         * closing the pseudo instance will throw
          * because stuff is missing
          * TODO we should not need the pseudo instance on runtime.
          * we should generate the property list on build time.
@@ -491,14 +491,14 @@ export class RxDatabaseBase<
          * First wait until the database is idle
          */
         return this.requestIdlePromise()
-            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
-            // destroy all collections
+            .then(() => Promise.all(this.onClose.map(fn => fn())))
+            // close all collections
             .then(() => Promise.all(
                 Object.keys(this.collections as any)
                     .map(key => (this.collections as any)[key])
-                    .map(col => col.destroy())
+                    .map(col => col.close())
             ))
-            // destroy internal storage instances
+            // close internal storage instances
             .then(() => this.internalStore.close())
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name))
@@ -511,7 +511,7 @@ export class RxDatabaseBase<
      */
     remove(): Promise<string[]> {
         return this
-            .destroy()
+            .close()
             .then(() => removeRxDatabase(this.name, this.storage, this.password));
     }
 
