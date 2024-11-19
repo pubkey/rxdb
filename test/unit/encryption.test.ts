@@ -35,6 +35,7 @@ import {
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
 describeParallel('encryption.test.ts', () => {
@@ -331,8 +332,8 @@ describeParallel('encryption.test.ts', () => {
             if (config.storage.hasEncryption) {
                 return;
             }
-            const clientCollection = await createEncryptedCollection(0, getRxStorageMemory());
-            const remoteCollection = await createEncryptedCollection(0, getRxStorageMemory());
+            const clientCollection = await createEncryptedCollection(0, wrappedValidateAjvStorage({ storage: getRxStorageMemory() }));
+            const remoteCollection = await createEncryptedCollection(0, wrappedValidateAjvStorage({ storage: getRxStorageMemory() }));
             const secret = 'secret-' + randomCouchString(10);
             const human = schemaObjects.encryptedHumanData(secret);
             await remoteCollection.insert(human);

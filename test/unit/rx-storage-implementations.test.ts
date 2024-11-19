@@ -737,14 +737,15 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     databaseInstanceToken: randomCouchString(10),
                     databaseName,
                     collectionName: randomCouchString(12),
-                    schema: compressionState.schema,
+                    schema: compressionState.compressedSchema,
                     options: {},
                     multiInstance: false,
                     devMode: true
                 });
 
+                const plainData = schemaObjects.averageSchemaData();
                 const docData = Object.assign(
-                    schemaObjects.averageSchemaData(),
+                    plainData,
                     {
                         _attachments: {},
                         _deleted: false,

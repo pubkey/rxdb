@@ -83,6 +83,7 @@ export function wrappedValidateStorageFactory(
             {},
             args.storage,
             {
+                name: 'validate-' + validatorKey + '-' + args.storage.name,
                 async createStorageInstance<RxDocType>(
                     params: RxStorageInstanceCreationParams<RxDocType, any>
                 ) {

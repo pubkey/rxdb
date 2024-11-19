@@ -38,6 +38,9 @@ export function getPseudoSchemaForVersion<T = any>(
             [primaryKey]: {
                 type: 'string',
                 maxLength: 100
+            },
+            value: {
+                type: 'string'
             }
         } as any,
         indexes: [

@@ -14,6 +14,7 @@
   - `preDestroyRxDatabase` to `preCloseRxDatabase`
 - CHANGE (internal) migration-storage plugin: Remove catch from cleanup
 - CHANGE (internal) rename RX_PIPELINE_CHECKPOINT_CONTEXT to `rx-pipeline-checkpoint`
+- CHANGE when dev-mode is enabled, a schema validator must be used.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

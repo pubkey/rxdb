@@ -62,35 +62,11 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'memory':
             return {
                 name: storageKey,
-                getStorage: () => getRxStorageMemory(),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
                 getPerformanceStorage() {
                     return {
                         description: 'memory',
                         storage: getRxStorageMemory()
-                    };
-                },
-                hasPersistence: true,
-                hasMultiInstance: false,
-                hasAttachments: true,
-                hasReplication: true
-            };
-            break;
-        /**
-         * We run the tests once together
-         * with a validation plugin
-         * to ensure we do not accidentally use non-valid data
-         * in the tests.
-         */
-        case 'memory-validation':
-            return {
-                name: storageKey,
-                getStorage: () => getRxStorageMemory(),
-                getPerformanceStorage() {
-                    return {
-                        description: 'memory',
-                        storage: wrappedValidateAjvStorage({
-                            storage: getRxStorageMemory()
-                        })
                     };
                 },
                 hasPersistence: true,
@@ -110,11 +86,13 @@ export function getStorage(storageKey: string): RxTestStorage {
 
             return {
                 name: storageKey,
-                getStorage: () => randomDelayStorage({
-                    storage: getRxStorageMemory({
-                    }),
-                    delayTimeBefore: delayFn,
-                    delayTimeAfter: delayFn
+                getStorage: () => wrappedValidateAjvStorage({
+                    storage: randomDelayStorage({
+                        storage: getRxStorageMemory({
+                        }),
+                        delayTimeBefore: delayFn,
+                        delayTimeAfter: delayFn
+                    })
                 }),
                 getPerformanceStorage() {
                     return {
@@ -136,7 +114,7 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'lokijs':
             return {
                 name: storageKey,
-                getStorage: () => getRxStorageLoki(),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageLoki() }),
                 getPerformanceStorage() {
                     if (isNode) {
                         // Node.js
@@ -171,12 +149,14 @@ export function getStorage(storageKey: string): RxTestStorage {
                         isDeno ||
                         isFastMode()
                     ) {
-                        return getRxStorageDexie({
-                            indexedDB: fakeIndexedDB,
-                            IDBKeyRange: fakeIDBKeyRange
+                        return wrappedValidateAjvStorage({
+                            storage: getRxStorageDexie({
+                                indexedDB: fakeIndexedDB,
+                                IDBKeyRange: fakeIDBKeyRange
+                            })
                         });
                     } else {
-                        return getRxStorageDexie({});
+                        return wrappedValidateAjvStorage({ storage: getRxStorageDexie({}) });
                     }
                 },
                 getPerformanceStorage() {
@@ -214,8 +194,10 @@ export function getStorage(storageKey: string): RxTestStorage {
                 },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFnFoundation({
-                        apiVersion: foundationDBAPIVersion
+                    return wrappedValidateAjvStorage({
+                        storage: getStorageFnFoundation({
+                            apiVersion: foundationDBAPIVersion
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -245,8 +227,10 @@ export function getStorage(storageKey: string): RxTestStorage {
                 },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFnMongo({
-                        connection: mongoConnectionString
+                    return wrappedValidateAjvStorage({
+                        storage: getStorageFnMongo({
+                            connection: mongoConnectionString
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -267,9 +251,11 @@ export function getStorage(storageKey: string): RxTestStorage {
             return {
                 name: storageKey,
                 getStorage: () => {
-                    return getRxStorageRemoteWebsocket({
-                        url: 'ws://localhost:18007',
-                        mode: 'storage'
+                    return wrappedValidateAjvStorage({
+                        storage: getRxStorageRemoteWebsocket({
+                            url: 'ws://localhost:18007',
+                            mode: 'storage'
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -290,7 +276,7 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'denokv':
             return {
                 name: storageKey,
-                getStorage: () => getRxStorageDenoKV(),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageDenoKV() }),
                 getPerformanceStorage() {
                     return {
                         description: 'denokv',
