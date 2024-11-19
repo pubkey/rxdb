@@ -1679,7 +1679,9 @@ describe('replication-graphql.test.ts', () => {
 
                 await replicationState.awaitInitialReplication();
 
-                await wait(300);
+                await waitUntil(() => {
+                    return capturedWSStates.length === 2;
+                });
 
                 assert.equal(capturedWSStates.includes('connected'), true);
                 assert.equal(capturedWSStates.includes('connecting'), true);
@@ -1688,7 +1690,9 @@ describe('replication-graphql.test.ts', () => {
 
                 replicationState.cancel();
 
-                await wait(300);
+                await waitUntil(() => {
+                    return capturedWSStates.length === 3;
+                });
 
                 assert.equal(capturedWSStates.includes('closed'), true);
                 assert.equal(capturedWSStates.includes('error'), false);
