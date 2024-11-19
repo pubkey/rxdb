@@ -1636,7 +1636,7 @@ describe('replication-graphql.test.ts', () => {
                 await c.database.destroy();
             });
             it('should respect pull.wsOptions', async () => {
-                const capturedWSStates = [];
+                const capturedWSStates: string[] = [];
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn()
