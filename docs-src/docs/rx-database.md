@@ -38,7 +38,7 @@ Depending on the storage or adapter this can also be used to define the filesyst
 RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
 There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the LokiJS storage with the filesystem adapter in Node.js.
+For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the [MongoDB RxStorage](./rx-storage-mongodb.md) in Node.js.
 
 - [List of RxStorage implementations](./rx-storage.md)
 
@@ -53,14 +53,13 @@ const dbDexie = await createRxDatabase({
 });
 
 
-// ...or use the LokiJS RxStorage with the indexeddb adapter.
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
-const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+// ...or use the MongoDB RxStorage in Node.js.
+import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';
 
-const dbLoki = await createRxDatabase({
+const dbMongo = await createRxDatabase({
   name: 'mydatabase',
-  storage: getRxStorageLoki({
-    adapter: new LokiIncrementalIndexedDBAdapter()
+  storage: getRxStorageMongoDB({
+    connection: 'mongodb://localhost:27017,localhost:27018,localhost:27019'
   })
 });
 ```

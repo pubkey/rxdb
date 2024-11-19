@@ -1,6 +1,5 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
 import {
     getRxStorageDexie
 } from '../../plugins/storage-dexie/index.mjs';
@@ -21,8 +20,6 @@ import {
     indexedDB as fakeIndexedDB,
     IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
-import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
-import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
 import parallel from 'mocha.parallel';
 
 import { createRequire } from 'node:module';
@@ -104,35 +101,6 @@ export function getStorage(storageKey: string): RxTestStorage {
                             delayTimeAfter: delayFn
                         })
                     };
-                },
-                hasPersistence: true,
-                hasMultiInstance: true,
-                hasAttachments: false,
-                hasReplication: true
-            };
-            break;
-        case 'lokijs':
-            return {
-                name: storageKey,
-                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageLoki() }),
-                getPerformanceStorage() {
-                    if (isNode) {
-                        // Node.js
-                        return {
-                            storage: getRxStorageLoki({
-                                adapter: new LokiFsStructuredAdapter()
-                            }),
-                            description: 'loki+fs-structured-adapter'
-                        };
-                    } else {
-                        // browser
-                        return {
-                            storage: getRxStorageLoki({
-                                adapter: new LokiIncrementalIndexedDBAdapter()
-                            }),
-                            description: 'loki+incremental-indexeddb'
-                        };
-                    }
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,

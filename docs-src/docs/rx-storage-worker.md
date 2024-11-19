@@ -17,15 +17,15 @@ This plugin is part of [RxDB Premium 👑](/premium). It is not part of the defa
 // worker.ts
 
 import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 exposeWorkerRxStorage({
     /**
      * You can wrap any implementation of the RxStorage interface
      * into a worker.
-     * Here we use the LokiJS RxStorage.
+     * Here we use the IndexedDB RxStorage.
      */
-    storage: getRxStorageLoki()
+    storage: getRxStorageIndexedDB()
 });
 ```
 
@@ -85,7 +85,7 @@ const database = await createRxDatabase({
              * Path to where the copied file from node_modules/rxdb/dist/workers
              * is reachable from the webserver.
              */
-            workerInput: '/lokijs-incremental-indexeddb.worker.js'
+            workerInput: '/indexeddb.worker.js'
         }
     )
 });
@@ -195,9 +195,9 @@ const storage = getRxStorageWorker({
 ```ts
 //> my-custom.worker.ts
 import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 exposeWorkerRxStorage({
-    storage: getRxStorageLoki()
+    storage: getRxStorageIndexedDB()
 });
 ```

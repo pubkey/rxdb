@@ -72,7 +72,7 @@ describe('performance.test.ts', () => {
                 name: 'test-db-performance-' + randomCouchString(10),
                 eventReduce: true,
                 /**
-                 * A RxStorage implementation (like LokiJS)
+                 * A RxStorage implementation
                  * might need a full leader election cycle to be usable.
                  * So we disable multiInstance here because it would make no sense
                  * to measure the leader election time instead of the database

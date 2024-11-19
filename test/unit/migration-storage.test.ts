@@ -35,9 +35,6 @@ import {
 
 
 import {
-    getRxStorageLoki as getRxStorageLokiOld
-} from 'rxdb-old/plugins/storage-lokijs';
-import {
     getRxStorageDexie as getRxStorageDexieOld
 } from 'rxdb-old/plugins/storage-dexie';
 
@@ -55,15 +52,6 @@ import config from './config.ts';
 
 
 const testStorages = [
-    {
-        name: 'prev-major to newest (loki)',
-        hasAttachments: false,
-        hasReplication: true,
-        createRxDatabaseOld,
-        createRxDatabaseNew: createRxDatabase,
-        old: () => getRxStorageLokiOld(),
-        new: () => config.storage.getStorage()
-    },
     {
         name: 'prev-major to newest (dexie)',
         hasAttachments: false,

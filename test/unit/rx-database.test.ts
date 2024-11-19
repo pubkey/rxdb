@@ -113,14 +113,7 @@ describeParallel('rx-database.test.ts', () => {
                 db2.close();
             });
             it('2 password-instances on same adapter', async () => {
-                if (
-                    config.storage.name === 'lokijs' ||
-                    !config.storage.hasMultiInstance
-                ) {
-                    /**
-                     * TODO on lokijs this test somehow fails
-                     * to properly clean up the open broadcast channels.
-                     */
+                if (!config.storage.hasMultiInstance) {
                     return;
                 }
                 const name = randomCouchString(10);
@@ -468,10 +461,6 @@ describeParallel('rx-database.test.ts', () => {
             });
             it('create 2 times on same adapter with different schema', async () => {
                 if (!config.storage.hasMultiInstance) {
-                    return;
-                }
-                if (config.storage.name === 'lokijs') {
-                    // TODO
                     return;
                 }
                 const name = randomCouchString(10);
