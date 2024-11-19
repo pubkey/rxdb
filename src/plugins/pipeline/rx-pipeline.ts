@@ -30,12 +30,8 @@ import {
 } from '../utils/index.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
-import { getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
+import { INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store.ts';
 import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from './flagged-functions.ts';
-
-export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
-// TODO change the context in the next major version.
-// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 
 export class RxPipeline<RxDocType> {
     processQueue = PROMISE_RESOLVE_VOID;
@@ -88,7 +84,7 @@ export class RxPipeline<RxDocType> {
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
                         if (
-                            event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT &&
+                            event.documentData.context === INTERNAL_CONTEXT_PIPELINE_CHECKPOINT &&
                             event.documentData.key === this.checkpointId
                         ) {
                             this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
@@ -209,7 +205,7 @@ export async function getCheckpointDoc<RxDocType>(
     const insternalStore = pipeline.destination.database.internalStore;
     const checkpointId = getPrimaryKeyOfInternalDocument(
         pipeline.checkpointId,
-        RX_PIPELINE_CHECKPOINT_CONTEXT
+        INTERNAL_CONTEXT_PIPELINE_CHECKPOINT
     );
     const results = await insternalStore.findDocumentsById([checkpointId], false);
     const result: RxDocumentData<InternalStoreDocType> = results[0];
@@ -233,11 +229,11 @@ export async function setCheckpointDoc<RxDocType>(
             lwt: now()
         },
         _rev: createRevision(pipeline.destination.database.token, previous),
-        context: RX_PIPELINE_CHECKPOINT_CONTEXT,
+        context: INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
         data: newCheckpoint,
         id: getPrimaryKeyOfInternalDocument(
             pipeline.checkpointId,
-            RX_PIPELINE_CHECKPOINT_CONTEXT
+            INTERNAL_CONTEXT_PIPELINE_CHECKPOINT
         ),
         key: pipeline.checkpointId
     };

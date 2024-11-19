@@ -31,6 +31,7 @@ import { prepareQuery } from './rx-query.ts';
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
+export const INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = 'rx-pipeline-checkpoint';
 
 /**
  * Do not change the title,
@@ -68,6 +69,7 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
                 INTERNAL_CONTEXT_MIGRATION_STATUS,
+                INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
                 'OTHER'
             ]
         },
