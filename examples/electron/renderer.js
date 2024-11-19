@@ -19,14 +19,14 @@ async function run() {
 
 
     const storage = getRxStorageIpcRenderer({
-        key: 'main-storage',
+        key: 'main-storage',        
         ipcRenderer: electron.ipcRenderer
     });
 
     console.log('GET DATABASE');
     const db = await getDatabase(
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
+        wrappedValidateAjvStorage({ storage: storage })
     );
     console.log('GET DATABASE DONE');
 
