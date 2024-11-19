@@ -715,11 +715,6 @@ jobs:
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
-      - name: test test:lokijs
-        uses: coactions/setup-xvfb@v1
-        with:
-          working-directory: ./examples/graphql
-          run: npm run test:lokijs
       - name: test test:dexie
         uses: coactions/setup-xvfb@v1
         with:
