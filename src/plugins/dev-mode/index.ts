@@ -106,6 +106,14 @@ export const RxDBDevModePlugin: RxPlugin = {
             after: checkSchema
         },
         preCreateRxDatabase: {
+            before: function (args: RxDatabaseCreator<any, any>) {
+                if (!args.storage.name.startsWith('validate-')) {
+                    throw newRxError('DVM1', {
+                        database: args.name,
+                        storage: args.storage.name
+                    });
+                }
+            },
             after: function (args: RxDatabaseCreator<any, any>) {
                 ensureDatabaseNameIsValid(args);
             }

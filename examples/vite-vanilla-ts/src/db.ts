@@ -6,7 +6,7 @@ import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-cry
 import { HeroSchema, MyDatabaseCollections } from './schema';
 
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBDevModePlugin);
@@ -14,10 +14,12 @@ addRxPlugin(RxDBDevModePlugin);
 const _create = async () => {
   const database = await createRxDatabase<MyDatabaseCollections>({
     name: 'rxdbdemo',
-    storage: wrappedKeyEncryptionCryptoJsStorage({
-      storage: wrappedKeyCompressionStorage({
-        storage: getRxStorageDexie(),
-      }),
+    storage: wrappedValidateAjvStorage({
+      storage: wrappedKeyEncryptionCryptoJsStorage({
+        storage: wrappedKeyCompressionStorage({
+          storage: getRxStorageDexie(),
+        }),
+      })
     }),
     ignoreDuplicate: true,
     password: 'foooooobaaaaar',

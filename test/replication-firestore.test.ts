@@ -330,7 +330,7 @@ describe('replication-firestore.test.ts', function () {
                 pull: {},
                 push: {
                     filter(human: WithDeleted<HumanDocumentType>) {
-                        return human.age > 30;
+                        return (human as any).age > 30;
                     },
                 },
             });

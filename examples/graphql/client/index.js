@@ -9,11 +9,6 @@ import {
 } from 'rxdb/plugins/storage-dexie';
 
 import {
-    getRxStorageLoki
-} from 'rxdb/plugins/storage-lokijs';
-import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
-
-import {
     getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
 
@@ -131,19 +126,7 @@ function getStorageKey() {
  */
 function getStorage() {
     const storageKey = getStorageKey();
-    if (storageKey === 'lokijs') {
-        return getRxStorageLoki({
-            adapter: new LokiIncrementalIndexedDBAdapter(),
-            autosaveInterval: 999999999,
-            autoload: false,
-            autocallback() {
-                console.log('autoload done');
-            },
-            autosaveCallback() {
-                console.log('Autosave done!');
-            }
-        });
-    } else if (storageKey === 'dexie') {
+    if (storageKey === 'dexie') {
         return getRxStorageDexie();
     } else if (storageKey === 'memory') {
         return getRxStorageMemory();

@@ -1,4 +1,4 @@
-import path from'path';
+import path from 'path';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import webpack from 'webpack';
@@ -71,15 +71,5 @@ export default {
         compress: true,
         port: 8888
     },
-    mode: 'development',
-    /**
-     * We need this because lokijs requires the fs node module
-     * which is not there in the browser.
-     * @link https://stackoverflow.com/a/64428818/3443137
-     */
-    resolve: {
-        fallback: {
-            fs: false
-        }
-    }
+    mode: 'development'
 };

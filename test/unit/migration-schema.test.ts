@@ -550,7 +550,10 @@ describeParallel('migration-schema.test.ts', function () {
                         migrationStrategies: {
                             1: d => d,
                             2: d => d,
-                            3: d => d
+                            3: d => {
+                                d.age = parseInt(d.age, 10);
+                                return d;
+                            }
                         }
                     }
                 });
@@ -803,6 +806,7 @@ describeParallel('migration-schema.test.ts', function () {
                 if (d.lwt) {
                     throw new Error('Must not get checkpoint doc');
                 }
+                d.age = parseInt(d.age, 10);
                 return d;
             };
             const migrationStrategies: MigrationStrategies = {

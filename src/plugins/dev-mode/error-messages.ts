@@ -225,6 +225,7 @@ export const ERROR_MESSAGES = {
 
     // plugins/dev-mode
     // removed in 13.9.0, use PL3 instead - DEV1: 'dev-mode added multiple times',
+    DVM1: 'When dev-mode is enabled, your storage must use one of the schema validators at the top level. This is because most problems people have with RxDB is because they store data that is not valid to the schema which causes strange bugs and problems.',
 
     // plugins/validate.js
     VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',

@@ -1427,10 +1427,6 @@ describe('replication-graphql.test.ts', () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                if (isFastMode()) {
-                    // TODO this test randomly fails in fast mode with lokijs storage.
-                    return;
-                }
                 const name = randomCouchString(10);
                 const server = await SpawnServer.spawn();
 

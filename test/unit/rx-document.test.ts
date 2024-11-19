@@ -331,7 +331,7 @@ describe('rx-document.test.js', () => {
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
                 let doc = await c.findOne().exec(true);
-                const agePrev = doc.age;
+                const agePrev = doc.age as any;
                 doc = await doc.update({
                     $inc: {
                         age: 1

@@ -23,8 +23,6 @@ import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
 
-
-import './unit/rx-storage-lokijs.test.ts';
 import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-remote.test.ts';
 

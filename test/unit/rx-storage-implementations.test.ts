@@ -737,14 +737,15 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     databaseInstanceToken: randomCouchString(10),
                     databaseName,
                     collectionName: randomCouchString(12),
-                    schema: compressionState.schema,
+                    schema: compressionState.compressedSchema,
                     options: {},
                     multiInstance: false,
                     devMode: true
                 });
 
+                const plainData = schemaObjects.averageSchemaData();
                 const docData = Object.assign(
-                    schemaObjects.averageSchemaData(),
+                    plainData,
                     {
                         _attachments: {},
                         _deleted: false,
@@ -3492,10 +3493,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
          * This case must be properly handled by having or timeout or detecting that the current leader died etc.
          */
         it('should be able to finish a query even when the leading instance gets closed', async () => {
-            if (config.storage.name === 'lokijs') {
-                // TODO fix this with the lokijs storage
-                return;
-            }
             const instances = await getMultiInstanceRxStorageInstance();
 
             // insert a document on A
