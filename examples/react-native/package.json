@@ -17,7 +17,7 @@
     "expo-cli": "6.3.10",
     "jest": "29.7.0",
     "jest-expo": "49.0.0",
-    "react-native-gesture-handler": "2.21.1",
+    "react-native-gesture-handler": "2.21.2",
     "react-test-renderer": "18.3.1",
     "rimraf": "5.0.10",
     "schedule": "0.5.0"
