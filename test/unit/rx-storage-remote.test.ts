@@ -19,6 +19,7 @@ import {
     startRxStorageRemoteWebsocketServer
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 describeParallel('rx-storage-remote.test.ts', () => {
     /**
@@ -36,10 +37,11 @@ describeParallel('rx-storage-remote.test.ts', () => {
     ) {
         return;
     }
+    const memoryStorageWithValidation = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
     describe('remote RxDatabase', () => {
         it('should have the same data on both sides', async () => {
             const port = await nextPort();
-            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, memoryStorageWithValidation);
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -48,9 +50,11 @@ describeParallel('rx-storage-remote.test.ts', () => {
 
             const colClient = await humansCollection.create(
                 0, undefined, false, false,
-                getRxStorageRemoteWebsocket({
-                    url: 'ws://localhost:' + port,
-                    mode: 'storage'
+                wrappedValidateAjvStorage({
+                    storage: getRxStorageRemoteWebsocket({
+                        url: 'ws://localhost:' + port,
+                        mode: 'storage'
+                    })
                 })
             );
             const cols = [colServer, colClient];
@@ -75,7 +79,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
          */
         it('should not throw when the same database is created on remote and local', async () => {
             const port = await nextPort();
-            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, memoryStorageWithValidation);
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -85,14 +89,16 @@ describeParallel('rx-storage-remote.test.ts', () => {
 
             const dbRemote = await createRxDatabase({
                 name,
-                storage: getRxStorageRemoteWebsocket({
-                    url: 'ws://localhost:' + port,
-                    mode: 'storage'
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageRemoteWebsocket({
+                        url: 'ws://localhost:' + port,
+                        mode: 'storage'
+                    })
                 })
             });
             const dbLocal = await createRxDatabase({
                 name,
-                storage: getRxStorageMemory()
+                storage: memoryStorageWithValidation
             });
 
             await dbRemote.close();
@@ -101,13 +107,15 @@ describeParallel('rx-storage-remote.test.ts', () => {
         });
     });
     describe('mode setting with RemoteMessageChannel reuse', () => {
-        const getStorage = (port: number) => getRxStorageRemoteWebsocket({
-            url: 'ws://localhost:' + port,
-            mode: 'one'
+        const getStorage = (port: number) => wrappedValidateAjvStorage({
+            storage: getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port,
+                mode: 'one'
+            })
         });
         it('mode: one', async () => {
             const port = await nextPort();
-            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, memoryStorageWithValidation);
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -162,16 +170,18 @@ describeParallel('rx-storage-remote.test.ts', () => {
         });
         it('mode: storage', async () => {
             const port = await nextPort();
-            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, memoryStorageWithValidation);
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
             });
             assert.ok(server);
 
-            const storage = getRxStorageRemoteWebsocket({
-                url: 'ws://localhost:' + port,
-                mode: 'storage'
+            const storage = wrappedValidateAjvStorage({
+                storage: getRxStorageRemoteWebsocket({
+                    url: 'ws://localhost:' + port,
+                    mode: 'storage'
+                })
             });
             const storageInstanceA = await storage.createStorageInstance({
                 databaseInstanceToken: randomCouchString(10),
@@ -217,7 +227,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
         });
         it('mode: database', async () => {
             const port = await nextPort();
-            const colServer = await humansCollection.create(0, undefined, false, false, getRxStorageMemory());
+            const colServer = await humansCollection.create(0, undefined, false, false, memoryStorageWithValidation);
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
                 database: colServer.database
@@ -276,7 +286,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
 
             const database = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStorageMemory(),
+                storage: memoryStorageWithValidation
             });
             await database.addCollections({
                 one: {
@@ -345,7 +355,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             const port = await nextPort();
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
-                storage: getRxStorageMemory(),
+                storage: memoryStorageWithValidation,
                 customRequestHandler: (input: any) => {
                     if (input === 'foobar') {
                         return 'barfoo';
@@ -374,7 +384,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             };
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
-                storage: getRxStorageMemory(),
+                storage: memoryStorageWithValidation,
                 customRequestHandler(input: Message) {
                     return {
                         response: true,
