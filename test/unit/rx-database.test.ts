@@ -22,6 +22,9 @@ import {
 import {
     getRxStorageMemory
 } from '../../plugins/storage-memory/index.mjs';
+import {
+    wrappedValidateAjvStorage
+} from '../../plugins/validate-ajv/index.mjs';
 
 describeParallel('rx-database.test.ts', () => {
     describe('createRxDatabase()', () => {
@@ -100,7 +103,7 @@ describeParallel('rx-database.test.ts', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStorageMemory()
+                    storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
                 });
                 const db2 = await createRxDatabase({
                     name,

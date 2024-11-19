@@ -382,7 +382,10 @@ export async function createMigrationCollection(
         {
             1: (doc: any) => doc,
             2: (doc: any) => doc,
-            3: (doc: any) => doc
+            3: (doc: any) => {
+                doc.age = parseInt(doc.age, 10);
+                return doc;
+            }
         },
         addMigrationStrategies
     );
