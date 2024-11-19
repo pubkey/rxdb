@@ -9,7 +9,8 @@ import {
     RxCollection,
     ensureNotFalsy,
     WithDeleted,
-    createRxDatabase
+    createRxDatabase,
+    addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
@@ -23,6 +24,8 @@ import {
     HumanWithTimestampDocumentType,
     humanSchemaLiteral
 } from '../plugins/test-utils/index.mjs';
+
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 
 import {
@@ -56,6 +59,8 @@ import { wrappedValidateZSchemaStorage } from '../plugins/validate-z-schema/inde
  * because it is too slow to setup the firestore backend emulators.
  */
 describe('replication-firestore.test.ts', function () {
+    addRxPlugin(RxDBDevModePlugin);
+
     this.timeout(1000 * 20);
     /**
      * Use a low batchSize in all tests
