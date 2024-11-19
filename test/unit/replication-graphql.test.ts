@@ -1635,6 +1635,67 @@ describe('replication-graphql.test.ts', () => {
                 await server.close();
                 await c.database.destroy();
             });
+            it('should respect pull.wsOptions', async () => {
+                const capturedWSStates = [];
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        includeWsHeaders: true,
+                        wsOptions: {
+                            on: {
+                                'connected': () => {
+                                    capturedWSStates.push('connected');
+                                },
+                                'connecting': () => {
+                                    capturedWSStates.push('connecting');
+                                },
+                                'closed': () => {
+                                    capturedWSStates.push('closed');
+                                },
+                                'error': () => {
+                                    capturedWSStates.push('error');
+                                }
+                            }
+                        },
+                    },
+                    headers: {
+                        token: 'Bearer token'
+                    },
+                    live: true,
+                    deletedField: 'deleted',
+                });
+
+                ensureReplicationHasNoErrors(replicationState);
+
+                await replicationState.awaitInitialReplication();
+
+                await wait(300);
+
+                assert.equal(capturedWSStates.includes('connected'), true);
+                assert.equal(capturedWSStates.includes('connecting'), true);
+                assert.equal(capturedWSStates.includes('closed'), false);
+                assert.equal(capturedWSStates.includes('error'), false);
+
+                replicationState.cancel();
+
+                await wait(300);
+
+                assert.equal(capturedWSStates.includes('closed'), true);
+                assert.equal(capturedWSStates.includes('error'), false);
+
+                server.close();
+                c.database.destroy();
+            });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
                 const eventObservationModeAmount = 3;
