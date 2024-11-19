@@ -40,11 +40,16 @@ export function firestoreRowToDocData<RxDocType>(
     primaryPath: string,
     row: QueryDocumentSnapshot<RxDocType>
 ): WithDeleted<RxDocType> {
+    console.log('firestoreRowToDocData()');
     const docData = stripServerTimestampField(
         serverTimestampField,
         row.data()
     );
     (docData as any)[primaryPath] = row.id;
+    console.dir({
+        rowdata: row.data(),
+        docData
+    });
     return docData;
 }
 
