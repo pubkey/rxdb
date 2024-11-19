@@ -470,7 +470,6 @@
     "ohash": "1.1.4",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
-    "unload": "2.4.1",
     "util": "0.12.5",
     "ws": "8.16.0",
     "z-schema": "6.0.2"
