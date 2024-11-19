@@ -276,7 +276,7 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'denokv':
             return {
                 name: storageKey,
-                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageDenoKV() }),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageDenoKV() as any }),
                 getPerformanceStorage() {
                     return {
                         description: 'denokv',
