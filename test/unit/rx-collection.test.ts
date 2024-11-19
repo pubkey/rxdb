@@ -16,7 +16,8 @@ import {
     humansCollection,
     isFastMode,
     HumanDocumentType,
-    isNode
+    isNode,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -359,6 +360,34 @@ describe('rx-collection.test.ts', () => {
 
                     assert.strictEqual(ret.success.length, 10);
                     db.close();
+                });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/6599
+                 */
+                it('should not throw when ids are set in pre-insert hook', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    });
+                    collections.human.preInsert((doc) => {
+                        doc.passportId = randomStringWithSpecialChars(8, 12);
+                    }, false);
+                    const docs = new Array(10).fill(0).map((): Partial<HumanDocumentType> => (({
+                        passportId: _passportId,
+                        ...humanDataWithoutPassportId
+                    }) => humanDataWithoutPassportId)(schemaObjects.humanData()));
+
+                    assert.ok(docs.every(doc => !doc.passportId));
+
+                    const ret = await collections.human.bulkInsert(docs);
+
+                    assert.strictEqual(ret.success.length, 10);
+                    db.destroy();
                 });
                 it('should not throw when called with an empty array', async () => {
                     const col = await humansCollection.create(0);

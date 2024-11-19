@@ -368,10 +368,10 @@ export class RxCollectionBase<
         if (this.hasHooks('pre', 'insert')) {
             insertRows = await Promise.all(
                 docsData.map(docData => {
-                    ids.add((docData as any)[primaryPath]);
                     const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
                     return this._runHooks('pre', 'insert', useDocData)
                         .then(() => {
+                            ids.add((useDocData as any)[primaryPath]);
                             return { document: useDocData };
                         });
                 })
@@ -381,8 +381,8 @@ export class RxCollectionBase<
             const schema = this.schema;
             for (let index = 0; index < docsData.length; index++) {
                 const docData = docsData[index];
-                ids.add((docData as any)[primaryPath]);
                 const useDocData = fillObjectDataBeforeInsert(schema, docData);
+                ids.add((useDocData as any)[primaryPath]);
                 insertRows[index] = { document: useDocData };
             }
         }
