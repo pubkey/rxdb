@@ -387,7 +387,7 @@ describe('rx-collection.test.ts', () => {
                     const ret = await collections.human.bulkInsert(docs);
 
                     assert.strictEqual(ret.success.length, 10);
-                    db.destroy();
+                    db.close();
                 });
                 it('should not throw when called with an empty array', async () => {
                     const col = await humansCollection.create(0);
