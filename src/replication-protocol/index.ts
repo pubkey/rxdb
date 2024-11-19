@@ -51,6 +51,7 @@ export * from './upstream.ts';
 export * from './meta-instance.ts';
 export * from './conflicts.ts';
 export * from './helper.ts';
+export * from './default-conflict-handler.ts';
 
 
 export function replicateRxStorageInstance<RxDocType>(

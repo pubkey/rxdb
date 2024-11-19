@@ -4,7 +4,8 @@ import {
     randomCouchString,
     RxCollection,
     ensureNotFalsy,
-    WithDeleted
+    WithDeleted,
+    addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import {
@@ -26,7 +27,7 @@ import {
     connect
 } from 'nats';
 import { wait, waitUntil } from 'async-test-util';
-
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 const connectionSettings = { servers: 'localhost:4222' };
 const connectionStatePromise = (async () => {
@@ -48,6 +49,7 @@ const connectionStatePromise = (async () => {
  * because it is too slow to setup the NATS backend.
  */
 describe('replication-nats.test.js', () => {
+    addRxPlugin(RxDBDevModePlugin);
     assert.ok(config);
     /**
      * Use a low batchSize in all tests

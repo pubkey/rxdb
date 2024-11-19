@@ -99,11 +99,11 @@ import {
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
-import { defaultConflictHandler } from './replication-protocol/index.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
+import { defaultConflictHandler } from './replication-protocol/default-conflict-handler.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
