@@ -38,7 +38,7 @@ export const canUseCryptoSubtle = typeof crypto !== 'undefined' &&
  * requires a BREAKING change!
  */
 
-export const defaultHashSha256: HashFunction = canUseCryptoSubtle ? nativeSha256 : jsSha256;
+export const defaultHashSha256: HashFunction = nativeSha256;
 
 
 export function hashStringToNumber(str: string): number {

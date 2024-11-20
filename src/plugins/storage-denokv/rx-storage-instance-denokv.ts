@@ -108,8 +108,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
 
                 /**
-                 * TODO the max amount for .getMany() is 10 which is defined by deno itself.
-                 * How can this be increased?
+                 * The max amount for .getMany() is 10 which is defined by deno itself:
+                 * @link https://docs.deno.com/deploy/kv/manual/transactions/
+                 * @link https://github.com/denoland/deno/issues/19284
                  */
                 const readManyBatches = batchArray(writeBatch, 10);
                 await Promise.all(
