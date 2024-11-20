@@ -6,7 +6,7 @@
 import assert from 'assert';
 import {
     addRxPlugin,
-    randomCouchString,
+    randomToken,
     _clearHook,
     RxPlugin
 } from '../../plugins/core/index.mjs';
@@ -29,7 +29,7 @@ describeParallel('plugin.test.js', () => {
         it('should not crash when a new plugin is added', () => {
             addRxPlugin({
                 rxdb: true,
-                name: randomCouchString(12)
+                name: randomToken(12)
             });
         });
         it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
@@ -83,7 +83,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxDatabase: {
                         after: createRxDatabase
@@ -103,7 +103,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxCollection: {
                         after: createRxCollection
@@ -122,7 +122,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxSchema: {
                         after: createRxSchema
@@ -141,7 +141,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxDocument: {
                         after: createRxDocument
@@ -161,7 +161,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     postCreateRxDocument: {
                         after: postCreateRxDocument
@@ -182,7 +182,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     postCleanup: {
                         after: hook

@@ -1,7 +1,7 @@
 import {
     getFromMapOrCreate,
     promiseWait,
-    randomCouchString
+    randomToken
 } from '../utils/index.ts';
 import {
     SIMPLE_PEER_PING_INTERVAL,
@@ -79,7 +79,7 @@ export async function startSignalingServerSimplePeer(
          * PeerID is created by the server to prevent malicious
          * actors from falsy claiming other peoples ids.
          */
-        const peerId = randomCouchString(PEER_ID_LENGTH);
+        const peerId = randomToken(PEER_ID_LENGTH);
         const peer: ServerPeer = {
             id: peerId,
             socket: ws,

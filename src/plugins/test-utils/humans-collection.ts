@@ -9,7 +9,7 @@ import {
     RxJsonSchema,
     RxCollection,
     RxDatabase,
-    randomCouchString,
+    randomToken,
     MigrationStrategies,
     RxAttachmentCreator,
     RxStorage
@@ -26,7 +26,7 @@ export async function create(
 
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage,
         multiInstance,
         eventReduce,
@@ -59,7 +59,7 @@ export async function createBySchema<RxDocumentType = {}>(
     migrationStrategies?: MigrationStrategies
 ): Promise<RxCollection<RxDocumentType, {}, {}>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<RxDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage,
         multiInstance: true,
         eventReduce: true,
@@ -85,7 +85,7 @@ export async function createAttachments(
         name = 'human';
     }
     const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         multiInstance,
         eventReduce: true,
@@ -117,7 +117,7 @@ export async function createNoCompression(
     name = 'human'
 ): Promise<RxCollection<HumanDocumentType>> {
     const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
@@ -146,7 +146,7 @@ export async function createAgeIndex(
     amount = 20
 ): Promise<RxCollection<HumanDocumentType>> {
     const db = await createRxDatabase<{ humana: RxCollection<HumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
@@ -183,7 +183,7 @@ export async function multipleOnSameDB(
         human: RxCollection<HumanDocumentType>;
         human2: RxCollection<HumanDocumentType>;
     }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
@@ -222,7 +222,7 @@ export async function createNested(
     amount = 5
 ): Promise<RxCollection<schemaObjects.NestedHumanDocumentType>> {
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.NestedHumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true
@@ -249,7 +249,7 @@ export async function createDeepNested(
     amount = 5
 ): Promise<RxCollection<schemaObjects.DeepNestedHumanDocumentType>> {
     const db = await createRxDatabase<{ nestedhuman: RxCollection<schemaObjects.DeepNestedHumanDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
     });
@@ -310,7 +310,7 @@ export async function createMultiInstance(
 
 export async function createPrimary(
     amount = 10,
-    name = randomCouchString(10)
+    name = randomToken(10)
 ): Promise<RxCollection<schemaObjects.SimpleHumanDocumentType>> {
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanDocumentType>; }>({
@@ -340,7 +340,7 @@ export async function createPrimary(
 
 export async function createHumanWithTimestamp(
     amount = 0,
-    databaseName = randomCouchString(10),
+    databaseName = randomToken(10),
     multiInstance = true,
     storage = getConfig().storage.getStorage()
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
@@ -373,7 +373,7 @@ export async function createHumanWithTimestamp(
 export async function createMigrationCollection(
     amount = 0,
     addMigrationStrategies: MigrationStrategies = {},
-    name = randomCouchString(10),
+    name = randomToken(10),
     autoMigrate = false,
     attachment?: RxAttachmentCreator
 ): Promise<RxCollection<schemaObjects.SimpleHumanV3DocumentType>> {
@@ -434,7 +434,7 @@ export async function createMigrationCollection(
 }
 
 export async function createRelated(
-    name = randomCouchString(10)
+    name = randomToken(10)
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType>; }>({
         name,
@@ -461,7 +461,7 @@ export async function createRelated(
 }
 
 export async function createRelatedNested(
-    name = randomCouchString(10)
+    name = randomToken(10)
 ): Promise<RxCollection<schemaObjects.RefHumanNestedDocumentType>> {
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanNestedDocumentType>; }>({
@@ -492,7 +492,7 @@ export async function createIdAndAgeIndex(
     amount = 20
 ): Promise<RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>> {
     const db = await createRxDatabase<{ humana: RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>; }>({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getConfig().storage.getStorage(),
         eventReduce: true,
         ignoreDuplicate: true

@@ -8,7 +8,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxCollection,
     RxDocument,
     MangoQuery
@@ -27,7 +27,7 @@ describe('event-reduce.test.js', () => {
         keyCompression = false
     ): Promise<RxCollection> {
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage,
             eventReduce
         });

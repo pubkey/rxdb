@@ -5,7 +5,7 @@ import {
     RxDocument,
     addRxPlugin,
     promiseWait,
-    randomCouchString
+    randomToken
 } from '../../plugins/core/index.mjs';
 import {
     HumanWithTimestampDocumentType,
@@ -40,7 +40,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
             await c1.insert(schemaObjects.humanData('foobar'));
             await pipeline.close();
@@ -57,7 +57,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
 
             await c1.insert(schemaObjects.humanData('foobar'));
@@ -86,7 +86,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
 
             await c1.insert(schemaObjects.humanData('foobar'));
@@ -115,7 +115,7 @@ describeParallel('rx-pipeline.test.js', () => {
         //                 await c2.insert(insertData);
         //             }
         //         },
-        //         identifier: randomCouchString(10)
+        //         identifier: randomToken(10)
         //     });
         //     await c1.insert(schemaObjects.humanData('foobar'));
 
@@ -141,7 +141,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
             await c1.insert(schemaObjects.humanData('foobar'));
             await pipeline.close();
@@ -161,7 +161,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
             await c1.insert(schemaObjects.humanData('foobar'));
             const doc2 = await c2.findOne().exec(true);
@@ -177,8 +177,8 @@ describeParallel('rx-pipeline.test.js', () => {
     });
     describe('checkpoints', () => {
         it('should continue from the correct checkpoint', async () => {
-            const dbName = randomCouchString(10);
-            const identifier = randomCouchString(10);
+            const dbName = randomToken(10);
+            const identifier = randomToken(10);
             const cDestination = await humansCollection.create(0);
             const c1 = await humansCollection.createHumanWithTimestamp(1, dbName);
             const ids: string[] = [];
@@ -209,8 +209,8 @@ describeParallel('rx-pipeline.test.js', () => {
             return;
         }
         it('should only run the pipeline at the leader', async () => {
-            const identifier = randomCouchString(10);
-            const name = randomCouchString(10);
+            const identifier = randomToken(10);
+            const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.createMultiInstance(name);
@@ -242,8 +242,8 @@ describeParallel('rx-pipeline.test.js', () => {
             c2.database.close();
         });
         it('should halt reads on other tab while pipeline is running', async () => {
-            const identifier = randomCouchString(10);
-            const name = randomCouchString(10);
+            const identifier = randomToken(10);
+            const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             await c1.database.waitForLeadership();
             const c2 = await humansCollection.createMultiInstance(name);
@@ -290,7 +290,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.insert(schemaObjects.humanData(doc.passportId));
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
 
             await c1.insert(schemaObjects.humanData('foobar'));
@@ -312,7 +312,7 @@ describeParallel('rx-pipeline.test.js', () => {
                 handler: async function myHandler2() {
                     await cachedQuery.exec();
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
             await c1.insert(schemaObjects.humanData('foobar'));
             await pipeline.awaitIdle();
@@ -335,7 +335,7 @@ describeParallel('rx-pipeline.test.js', () => {
                         await c2.upsert(useData);
                     }
                 },
-                identifier: randomCouchString(10)
+                identifier: randomToken(10)
             });
             await c1.insert(schemaObjects.humanData('foobar'));
 

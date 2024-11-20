@@ -13,7 +13,7 @@ import { waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxCollection,
     RxReactivityFactory,
@@ -50,7 +50,7 @@ describeParallel('reactivity.test.js', () => {
     };
     async function getReactivityCollection(): Promise<RxCollection<SimpleHumanAgeDocumentType, {}, {}, {}, ReactivityType>> {
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: getConfig().storage.getStorage(),
             localDocuments: true,
             reactivity

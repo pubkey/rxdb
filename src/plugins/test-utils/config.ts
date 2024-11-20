@@ -2,7 +2,7 @@
 import {
     ensureNotFalsy,
     isPromise,
-    randomCouchString
+    randomToken
 } from '../utils/index.ts';
 import {
     enforceOptions as broadcastChannelEnforceOptions
@@ -135,6 +135,6 @@ export function getPassword(): Promise<string> {
     if (getConfig().storage.hasEncryption) {
         return ensureNotFalsy(getConfig().storage.hasEncryption)();
     } else {
-        return Promise.resolve('test-password-' + randomCouchString(10));
+        return Promise.resolve('test-password-' + randomToken(10));
     }
 }

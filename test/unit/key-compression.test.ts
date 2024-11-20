@@ -7,7 +7,7 @@ import config, { describeParallel } from './config.ts';
 
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     isRxDocument,
     RxJsonSchema,
     RxCollection,
@@ -39,7 +39,7 @@ import type { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schem
 describeParallel('key-compression.test.js', () => {
     async function getCollection() {
         const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: wrappedKeyCompressionStorage({
                 storage: config.storage.getStorage()
             }),
@@ -145,7 +145,7 @@ describeParallel('key-compression.test.js', () => {
 
             const replicationState = replicateRxCollection({
                 collection: col,
-                replicationIdentifier: randomCouchString(10),
+                replicationIdentifier: randomToken(10),
                 live: true,
                 pull: {
                     handler: getPullHandler(remoteCollection)
@@ -206,7 +206,7 @@ describeParallel('key-compression.test.js', () => {
             };
 
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -216,7 +216,7 @@ describeParallel('key-compression.test.js', () => {
             });
             const collection = collections.mycollection;
             const docData = {
-                id: randomCouchString(12),
+                id: randomToken(12),
                 likes: ['abc', '8']
             };
             await collection.insert(docData);
@@ -245,7 +245,7 @@ describeParallel('key-compression.test.js', () => {
             };
 
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -331,7 +331,7 @@ describeParallel('key-compression.test.js', () => {
             };
 
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedKeyCompressionStorage({
                     storage: config.storage.getStorage()
                 })
@@ -431,7 +431,7 @@ describeParallel('key-compression.test.js', () => {
             type TestDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
             const db = await createRxDatabase<{ mycollection: RxCollection<TestDocType>; }>({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 /**
                  * By calling config.storage.getStorage(),
                  * we can ensure that all variations of RxStorage are tested in the CI.
@@ -509,7 +509,7 @@ describeParallel('key-compression.test.js', () => {
                 ]
             } as const satisfies RxJsonSchema<any>;
 
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const storage = wrappedKeyCompressionStorage({ storage: config.storage.getStorage() });
 
             const db = await createRxDatabase({

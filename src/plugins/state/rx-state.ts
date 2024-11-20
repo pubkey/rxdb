@@ -25,7 +25,7 @@ import {
     PROMISE_RESOLVE_VOID,
     appendToArray,
     clone,
-    randomCouchString,
+    randomToken,
     deepEqual,
     getFromMapOrCreate
 } from '../utils/index.ts';
@@ -66,7 +66,7 @@ export class RxStateBase<T, Reactivity = unknown> {
     }[] = [];
     public _writeQueue = PROMISE_RESOLVE_VOID;
     public _initDone = false;
-    public _instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    public _instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     public _ownEmits$ = new Subject<T>();
 
     constructor(

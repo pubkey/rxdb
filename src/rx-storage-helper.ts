@@ -42,7 +42,7 @@ import {
     lastOfArray,
     now,
     promiseWait,
-    randomCouchString
+    randomToken
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 import { prepareQuery } from './rx-query.ts';
@@ -189,7 +189,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: RxStorageWriteError<RxDocType>[] = [];
-    const eventBulkId = randomCouchString(10);
+    const eventBulkId = randomToken(10);
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: eventBulkId,
         events: [],

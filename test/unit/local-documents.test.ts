@@ -9,7 +9,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxJsonSchema,
     ensureNotFalsy,
@@ -339,7 +339,7 @@ describeParallel('local-documents.test.ts', () => {
             return;
         }
         it('should stream events over multi-instance', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -370,7 +370,7 @@ describeParallel('local-documents.test.ts', () => {
             db2.close();
         });
         it('should emit deleted', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -410,7 +410,7 @@ describeParallel('local-documents.test.ts', () => {
             db2.close();
         });
         it('should emit changes (database)', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -438,7 +438,7 @@ describeParallel('local-documents.test.ts', () => {
             db2.close();
         });
         it('should emit changes (collection)', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -488,7 +488,7 @@ describeParallel('local-documents.test.ts', () => {
             db2.close();
         });
         it('BUG insertLocal not send to other instance', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -532,7 +532,7 @@ describeParallel('local-documents.test.ts', () => {
             db2.close();
         });
         it('should not conflict with non-local-doc that has same id', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -614,7 +614,7 @@ describeParallel('local-documents.test.ts', () => {
             myCollection.database.close();
         });
         it('#663 Document conflicts with LocalDocument in the same Collection', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -663,7 +663,7 @@ describeParallel('local-documents.test.ts', () => {
 
             // insert non-local
             await boundaryMgmtCol.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 boundariesGrp: [groups]
             });
 
@@ -698,7 +698,7 @@ describeParallel('local-documents.test.ts', () => {
             if (!isNode) {
                 return;
             }
-            const dbName: string = randomCouchString(10);
+            const dbName: string = randomToken(10);
 
             const localDocId = 'foobar';
             const localDocData = {
@@ -751,7 +751,7 @@ describeParallel('local-documents.test.ts', () => {
             if (!isNode) {
                 return;
             }
-            const dbName: string = randomCouchString(10);
+            const dbName: string = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),

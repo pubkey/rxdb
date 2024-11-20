@@ -18,7 +18,7 @@ process.on('unhandledRejection', function (err) {
 import {
     createRxDatabase,
     isRxDocument,
-    randomCouchString,
+    randomToken,
     addRxPlugin
 } from '../../plugins/core/index.mjs';
 import {
@@ -62,7 +62,7 @@ const run = async function () {
 
     // create database
     const db = await createRxDatabase({
-        name: randomCouchString(10),
+        name: randomToken(10),
         storage: getRxStorageMemory()
     });
 
@@ -131,7 +131,7 @@ const run = async function () {
      */
     await assertThrows(
         () => createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: getRxStorageMemory(),
             ignoreDuplicate: true
         }),

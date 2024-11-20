@@ -9,7 +9,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxJsonSchema,
     ensureNotFalsy,
@@ -55,7 +55,7 @@ describeParallel('crdt.test.js', () => {
     ): Promise<RxCollection<WithCRDTs<RxDocType>>> {
         const useSchema = enableCRDTinSchema(schema);
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             /**
              * Use the validator in tests to ensure we do not write
              * broken data.
@@ -78,7 +78,7 @@ describeParallel('crdt.test.js', () => {
         it('should throw if the wrong conflict handler is set', async () => {
             const useSchema = enableCRDTinSchema(schemas.human as any);
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: false
             });
@@ -162,7 +162,7 @@ describeParallel('crdt.test.js', () => {
             };
             useSchema = enableCRDTinSchema(useSchema);
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 /**
                  * Use the validator in tests to ensure we do not write
                  * broken data.

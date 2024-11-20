@@ -24,7 +24,7 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    randomCouchString
+    randomToken
 } from './plugins/utils/index.ts';
 import { prepareQuery } from './rx-query.ts';
 
@@ -158,7 +158,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
      * we just try to insert a new document
      * and only fetch the existing one if a conflict happened.
      */
-    const storageToken = randomCouchString(10);
+    const storageToken = randomToken(10);
 
     const passwordHash = rxDatabase.password ?
         await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :

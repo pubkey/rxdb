@@ -4,7 +4,7 @@ import AsyncTestUtil from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxCollection,
     RxJsonSchema
 } from '../../plugins/core/index.mjs';
@@ -22,7 +22,7 @@ describeParallel('orm.test.js', () => {
             describe('positive', () => {
                 it('create a collection with static-methods', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -41,7 +41,7 @@ describeParallel('orm.test.js', () => {
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -62,7 +62,7 @@ describeParallel('orm.test.js', () => {
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -96,7 +96,7 @@ describeParallel('orm.test.js', () => {
                 const db = await createRxDatabase<{
                     humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>;
                 }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -115,7 +115,7 @@ describeParallel('orm.test.js', () => {
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -135,7 +135,7 @@ describeParallel('orm.test.js', () => {
             });
             it('should be able to use this.insert()', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -161,7 +161,7 @@ describeParallel('orm.test.js', () => {
             describe('positive', () => {
                 it('create a collection with instance-methods', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -178,7 +178,7 @@ describeParallel('orm.test.js', () => {
                 });
                 it('this-scope should be bound to document', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const cols = await db.addCollections({
@@ -212,7 +212,7 @@ describeParallel('orm.test.js', () => {
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -232,7 +232,7 @@ describeParallel('orm.test.js', () => {
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -260,7 +260,7 @@ describeParallel('orm.test.js', () => {
                 });
                 it('crash when name not allowed (name is top-level field in schema)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -293,7 +293,7 @@ describeParallel('orm.test.js', () => {
         describe('run', () => {
             it('should be able to run the method', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -315,7 +315,7 @@ describeParallel('orm.test.js', () => {
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 const collections = await db.addCollections({
@@ -338,7 +338,7 @@ describeParallel('orm.test.js', () => {
             });
             it('should not be confused with many collections', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -372,7 +372,7 @@ describeParallel('orm.test.js', () => {
     describe('ISSUES', () => {
         it('#791 Document methods are not bind() to the document', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(),
+                name: randomToken(),
                 storage: config.storage.getStorage(),
                 multiInstance: false
             });

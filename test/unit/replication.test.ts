@@ -27,7 +27,7 @@ import {
 import {
     RxCollection,
     ensureNotFalsy,
-    randomCouchString,
+    randomToken,
     rxStorageInstanceToReplicationHandler,
     normalizeMangoQuery,
     RxError,
@@ -118,8 +118,8 @@ describe('replication.test.ts', () => {
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
     }> {
-        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false);
-        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false);
+        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomToken(10), false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomToken(10), false);
         return {
             localCollection,
             remoteCollection
@@ -859,10 +859,10 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInitialReplication();
 
             function getRandomAttachment(
-                id = randomCouchString(10),
+                id = randomToken(10),
                 size = 20
             ): RxAttachmentCreator {
-                const attachmentData = randomCouchString(size);
+                const attachmentData = randomToken(size);
                 const dataBlob = createBlob(attachmentData, 'text/plain');
                 return {
                     id,
@@ -937,7 +937,7 @@ describe('replication.test.ts', () => {
     describeParallel('issues', () => {
         it('#4190 Composite Primary Keys broken on replicated collections', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -952,7 +952,7 @@ describe('replication.test.ts', () => {
             const pullStream$ = new Subject<RxReplicationPullStreamItem<any, CheckpointType>>();
             let fetched = false;
             const replicationState = replicateRxCollection({
-                replicationIdentifier: 'replicate-' + randomCouchString(10),
+                replicationIdentifier: 'replicate-' + randomToken(10),
                 collection: mycollection,
                 pull: {
                     // eslint-disable-next-line require-await
@@ -987,7 +987,7 @@ describe('replication.test.ts', () => {
             const primaryKeyLength = 500;
             async function getCollection(): Promise<RxCollection<TestDocType>> {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: storageWithValidation,
                     eventReduce: true,
                     ignoreDuplicate: true
@@ -1008,11 +1008,11 @@ describe('replication.test.ts', () => {
 
 
             const docA = schemaObjects.humanWithTimestampData({
-                id: randomCouchString(primaryKeyLength)
+                id: randomToken(primaryKeyLength)
             });
             await remoteCollection.insert(docA);
             const docB = schemaObjects.humanWithTimestampData({
-                id: randomCouchString(primaryKeyLength)
+                id: randomToken(primaryKeyLength)
             });
             await localCollection.insert(docB);
 
@@ -1055,7 +1055,7 @@ describe('replication.test.ts', () => {
             const serverCollection = await humansCollection.create(0);
             const clientCollection = await humansCollection.create(0);
             const replicationState = replicateRxCollection({
-                replicationIdentifier: 'replicate-' + randomCouchString(10),
+                replicationIdentifier: 'replicate-' + randomToken(10),
                 collection: clientCollection,
                 pull: {
                     handler: (lastPulledCheckpoint: CheckpointType, pullBatchSize: number) => {

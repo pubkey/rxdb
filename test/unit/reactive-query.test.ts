@@ -17,7 +17,7 @@ import {
     RxDocument,
     isRxDocument,
     promiseWait,
-    randomCouchString,
+    randomToken,
     addRxPlugin
 } from '../../plugins/core/index.mjs';
 
@@ -252,7 +252,7 @@ describeParallel('reactive-query.test.js', () => {
             if (!config.storage.hasMultiInstance) {
                 return;
             }
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
             const doc = await c.findOne().exec(true);
@@ -348,7 +348,7 @@ describeParallel('reactive-query.test.js', () => {
                 },
                 required: ['state']
             };
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -452,7 +452,7 @@ describeParallel('reactive-query.test.js', () => {
         it(
             '#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()',
             async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),

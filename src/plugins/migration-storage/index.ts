@@ -5,7 +5,7 @@ import {
     clone,
     BulkWriteRow,
     RxStorageBulkWriteResponse,
-    randomCouchString,
+    randomToken,
     RxStorage,
     blobToBase64String,
     prepareQuery,
@@ -99,7 +99,7 @@ export async function migrateCollection<RxDocType>(
     log('start migrateCollection()');
     let schema = collection.schema.jsonSchema;
     const primaryPath = collection.schema.primaryPath;
-    const oldDatabaseInstanceToken = randomCouchString(10);
+    const oldDatabaseInstanceToken = randomToken(10);
 
 
     /**

@@ -14,7 +14,7 @@ import {
 import {
     createRxDatabase,
     RxJsonSchema,
-    randomCouchString,
+    randomToken,
     getSingleDocument,
     isRxCollection,
     RxCollection,
@@ -49,7 +49,7 @@ describeParallel('encryption.test.ts', () => {
             useStorage = storage;
         }
         const db = await createRxDatabase<{ encryptedhuman: RxCollection<EncryptedHumanDocumentType>; }>({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: useStorage,
             eventReduce: true,
             password: await getPassword()
@@ -95,7 +95,7 @@ describeParallel('encryption.test.ts', () => {
                 assert.deepStrictEqual(decrypted, value);
             });
             it('should encrypt and decrypt an extremely long string', () => {
-                const value = randomCouchString(5000);
+                const value = randomToken(5000);
                 const pwd = 'pwd';
                 const encrypted = encryptString(value, pwd);
                 const decrypted = decryptString(encrypted, pwd);
@@ -106,7 +106,7 @@ describeParallel('encryption.test.ts', () => {
             });
             it('should encrypt and decrypt an extremely long password', () => {
                 const value = 'foobar';
-                const pwd = randomCouchString(5000);
+                const pwd = randomToken(5000);
                 const encrypted = encryptString(value, pwd);
                 const decrypted = decryptString(encrypted, pwd);
                 assert.notStrictEqual(value, encrypted);
@@ -120,7 +120,7 @@ describeParallel('encryption.test.ts', () => {
         it('should crash with invalid password (empty object)', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage,
                     password: {}
                 }),
@@ -129,7 +129,7 @@ describeParallel('encryption.test.ts', () => {
             );
         });
         it('BUG: should have stored the password hash when creating the database', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const password = await getPassword();
             const db = await createRxDatabase({
                 name,
@@ -167,7 +167,7 @@ describeParallel('encryption.test.ts', () => {
             if (!config.storage.hasPersistence) {
                 return;
             }
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage,
@@ -204,7 +204,7 @@ describeParallel('encryption.test.ts', () => {
     describe('RxCollection creation', () => {
         it('create encrypted collection', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage,
                 password: await getPassword()
             });
@@ -230,7 +230,7 @@ describeParallel('encryption.test.ts', () => {
         });
         it('should insert one encrypted value (object)', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage,
                 password: await getPassword()
             });
@@ -259,7 +259,7 @@ describeParallel('encryption.test.ts', () => {
                 return;
             }
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage,
                 password: await getPassword()
             });
@@ -286,7 +286,7 @@ describeParallel('encryption.test.ts', () => {
             const doc = await c.findOne().exec(true);
             const secret = doc.get('secret');
             assert.strictEqual(agent.secret, secret);
-            const newSecret = randomCouchString(10);
+            const newSecret = randomToken(10);
 
             await doc.incrementalPatch({ secret: newSecret });
             const docNew = await c.findOne().exec(true);
@@ -295,7 +295,7 @@ describeParallel('encryption.test.ts', () => {
         });
         it('should save one encrypted value (object)', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage,
                 password: await getPassword()
             });
@@ -307,8 +307,8 @@ describeParallel('encryption.test.ts', () => {
             const agent = schemaObjects.encryptedObjectHumanData();
             await c.enchuman.insert(agent);
             const newSecret = {
-                name: randomCouchString(10),
-                subname: randomCouchString(10)
+                name: randomToken(10),
+                subname: randomToken(10)
             };
             const doc = await c.enchuman.findOne().exec(true);
             const secret = doc.get('secret');
@@ -334,13 +334,13 @@ describeParallel('encryption.test.ts', () => {
             }
             const clientCollection = await createEncryptedCollection(0, wrappedValidateAjvStorage({ storage: getRxStorageMemory() }));
             const remoteCollection = await createEncryptedCollection(0, wrappedValidateAjvStorage({ storage: getRxStorageMemory() }));
-            const secret = 'secret-' + randomCouchString(10);
+            const secret = 'secret-' + randomToken(10);
             const human = schemaObjects.encryptedHumanData(secret);
             await remoteCollection.insert(human);
 
             const replicationState = replicateRxCollection({
                 collection: clientCollection,
-                replicationIdentifier: randomCouchString(10),
+                replicationIdentifier: randomToken(10),
                 live: true,
                 pull: {
                     handler: getPullHandler<EncryptedHumanDocumentType>(remoteCollection as any)
@@ -383,7 +383,7 @@ describeParallel('encryption.test.ts', () => {
                 return;
             }
 
-            const name = randomCouchString(10) + '837';
+            const name = randomToken(10) + '837';
             const password = await getPassword();
 
             // 1. create and close encrypted db
@@ -445,7 +445,7 @@ describeParallel('encryption.test.ts', () => {
                     'happy'
                 ]
             };
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
 
             const db = await createRxDatabase({
                 name: dbName,
@@ -502,11 +502,11 @@ describeParallel('encryption.test.ts', () => {
                     ]
                 };
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage,
                     password: await getPassword()
                 });
-                const colName = randomCouchString(10);
+                const colName = randomToken(10);
                 const collections = await db.addCollections({
                     [colName]: {
                         schema
@@ -552,12 +552,12 @@ describeParallel('encryption.test.ts', () => {
                     indexes: ['value']
                 };
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage,
                     password: await getPassword()
                 });
 
-                const colName = randomCouchString(10);
+                const colName = randomToken(10);
                 const collections = await db.addCollections({
                     [colName]: {
                         schema

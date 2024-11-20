@@ -3,7 +3,7 @@ import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 import {
     RxJsonSchema,
-    randomCouchString,
+    randomToken,
     MangoQuery,
     fillWithDefaultSettings,
     normalizeMangoQuery,
@@ -70,9 +70,9 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             const schema = fillWithDefaultSettings(clone(input.schema));
             const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
             const storageInstance = await config.storage.getStorage().createStorageInstance<RxDocType>({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
-                collectionName: randomCouchString(12),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(12),
+                collectionName: randomToken(12),
                 schema,
                 options: {},
                 multiInstance: false,
@@ -101,7 +101,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             );
 
             const database = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
                 }),

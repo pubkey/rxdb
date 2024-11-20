@@ -10,7 +10,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxCollection,
     RxJsonSchema
@@ -27,7 +27,7 @@ describeParallel('cleanup.test.js', () => {
 
         it('should clean up the deleted documents', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 cleanupPolicy: {
                     awaitReplicationsInSync: false,
@@ -67,7 +67,7 @@ describeParallel('cleanup.test.js', () => {
                 return;
             }
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 cleanupPolicy: {
                     awaitReplicationsInSync: true,
@@ -116,7 +116,7 @@ describeParallel('cleanup.test.js', () => {
         });
         it('should work by manually calling RxCollection.cleanup()', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const cols = await db.addCollections({
@@ -150,7 +150,7 @@ describeParallel('cleanup.test.js', () => {
                 name: string;
             };
             const db = await createRxDatabase<{ projects: RxCollection<DocType>; }>({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
                 }),

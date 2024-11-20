@@ -25,7 +25,7 @@ import {
     isRxQuery,
     isRxDocument,
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     shuffleArray,
     RxJsonSchema,
     RxDatabase,
@@ -54,7 +54,7 @@ import { RxDocumentData } from '../../plugins/core/index.mjs';
 describe('rx-collection.test.ts', () => {
     async function getDb(): Promise<RxDatabase> {
         return await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: config.storage.getStorage()
         });
     }
@@ -79,7 +79,7 @@ describe('rx-collection.test.ts', () => {
             describe('positive', () => {
                 it('human', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -93,7 +93,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not forget the options', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -113,7 +113,7 @@ describe('rx-collection.test.ts', () => {
             describe('positive', () => {
                 it('allow not allow lodash', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -129,7 +129,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('allow numbers', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -148,7 +148,7 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('not allow starting numbers', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -163,7 +163,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('not allow uppercase-letters', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -192,7 +192,7 @@ describe('rx-collection.test.ts', () => {
             describe('positive', () => {
                 it('should insert a human', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -205,7 +205,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should insert nested human', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -218,7 +218,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should insert more than once', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -233,7 +233,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should set default values', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -255,7 +255,7 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('should throw a conflict-error', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -347,7 +347,7 @@ describe('rx-collection.test.ts', () => {
             describe('positive', () => {
                 it('should insert some humans', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -366,7 +366,7 @@ describe('rx-collection.test.ts', () => {
                  */
                 it('should not throw when ids are set in pre-insert hook', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -398,7 +398,7 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('should throw if one already exists', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -423,7 +423,7 @@ describe('rx-collection.test.ts', () => {
                  */
                 it('should throw on duplicate ids', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -487,7 +487,7 @@ describe('rx-collection.test.ts', () => {
                     });
                     it('find nothing with empty collection', async () => {
                         const db = await createRxDatabase({
-                            name: randomCouchString(10),
+                            name: randomToken(10),
                             storage: config.storage.getStorage(),
                         });
                         await db.addCollections({
@@ -503,7 +503,7 @@ describe('rx-collection.test.ts', () => {
                     runXTimes(isFastMode() ? 2 : 5, idx => {
                         it('BUG: insert and find very often (' + idx + ')', async () => {
                             const db = await createRxDatabase({
-                                name: randomCouchString(10),
+                                name: randomToken(10),
                                 storage: config.storage.getStorage(),
                             });
                             const collections = await db.addCollections({
@@ -564,7 +564,7 @@ describe('rx-collection.test.ts', () => {
                         const c = await humansCollection.create();
                         const query = c.find({
                             selector: {
-                                passportId: randomCouchString(10)
+                                passportId: randomToken(10)
                             }
                         });
                         const docs = await query.exec();
@@ -678,7 +678,7 @@ describe('rx-collection.test.ts', () => {
                     });
                     it('sort by non-top-level-key as index (with keycompression)', async () => {
                         const db = await createRxDatabase({
-                            name: randomCouchString(10),
+                            name: randomToken(10),
                             storage: config.storage.getStorage(),
                         });
                         await db.addCollections({
@@ -689,7 +689,7 @@ describe('rx-collection.test.ts', () => {
                         const collection = db.human;
                         const objects = new Array(10).fill(0).map(() => {
                             return {
-                                passportId: randomCouchString(10),
+                                passportId: randomToken(10),
                                 other: {
                                     age: randomNumber(10, 50)
                                 }
@@ -846,7 +846,7 @@ describe('rx-collection.test.ts', () => {
                     it('skip first', async () => {
                         const c = await humansCollection.create(
                             2,
-                            randomCouchString(10),
+                            randomToken(10),
                             false,
                             false
                         );
@@ -885,7 +885,7 @@ describe('rx-collection.test.ts', () => {
                         // const c = humansCollection.create(5);
 
                         const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
-                            name: randomCouchString(10),
+                            name: randomToken(10),
                             storage: config.storage.getStorage(),
                             eventReduce: true
                         });
@@ -1099,7 +1099,7 @@ describe('rx-collection.test.ts', () => {
                     ].sort();
 
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
 
@@ -1136,7 +1136,7 @@ describe('rx-collection.test.ts', () => {
                         return;
                     }
 
-                    const dbName = randomCouchString();
+                    const dbName = randomToken();
 
                     const createDb = async () => {
                         const db = await createRxDatabase({
@@ -1173,7 +1173,7 @@ describe('rx-collection.test.ts', () => {
                         return;
                     }
 
-                    const dbName = randomCouchString();
+                    const dbName = randomToken();
 
                     async function createDb() {
                         const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
@@ -1342,7 +1342,7 @@ describe('rx-collection.test.ts', () => {
                 runXTimes(isFastMode() ? 2 : 5, idx => {
                     it('BUG: insert and find very often (' + idx + ')', async function () {
                         const db = await createRxDatabase({
-                            name: randomCouchString(10),
+                            name: randomToken(10),
                             storage: config.storage.getStorage(),
                         });
                         const collections = await db.addCollections({
@@ -1481,7 +1481,7 @@ describe('rx-collection.test.ts', () => {
                     }
                 };
 
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -1581,7 +1581,7 @@ describe('rx-collection.test.ts', () => {
              */
             it('should throw on duplicate ids', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -1614,7 +1614,7 @@ describe('rx-collection.test.ts', () => {
             describe('positive', () => {
                 it('insert when not exists', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -1632,7 +1632,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('overwrite existing document', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -1651,7 +1651,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('overwrite twice', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -1705,7 +1705,7 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('throw when primary missing', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -1854,7 +1854,7 @@ describe('rx-collection.test.ts', () => {
                     if (!isNode) return;
                     // use a 'slow' adapter because memory might be to fast
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -1879,7 +1879,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should set correct default values', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
 
@@ -1911,7 +1911,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should completely remove fields that are unset', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.humanDefault);
@@ -1947,7 +1947,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should be possible to re-create the collection with different schema', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -1971,7 +1971,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not contain document when re-creating', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -2000,7 +2000,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should have deleted the local documents', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -2029,7 +2029,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should delete when older versions exist', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage()
                     });
                     const collections = await db.addCollections({
@@ -2259,7 +2259,7 @@ describe('rx-collection.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -2269,7 +2269,7 @@ describe('rx-collection.test.ts', () => {
             });
             const collection = collections.humanx;
             const doc = await collection.insert({
-                passportId: randomCouchString(10)
+                passportId: randomToken(10)
             });
             assert.strictEqual(doc.weight, 0);
             db.close();
@@ -2302,7 +2302,7 @@ describe('rx-collection.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -2345,7 +2345,7 @@ describe('rx-collection.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
 
@@ -2373,7 +2373,7 @@ describe('rx-collection.test.ts', () => {
 
             // recreating with the same params-object should work
             const db2 = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             await db2.addCollections({

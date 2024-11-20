@@ -14,7 +14,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 import {
     addRxPlugin,
-    randomCouchString,
+    randomToken,
     RxCollection
 } from './../plugins/core/index.mjs';
 
@@ -299,7 +299,7 @@ describe('replication-couchdb.test.ts', () => {
             server: any
         ): Promise<RxCouchDBReplicationState<RxDocType>> {
             const replicationState = replicateCouchDB<RxDocType>({
-                replicationIdentifier: randomCouchString(10),
+                replicationIdentifier: randomToken(10),
                 collection,
                 url: server.url,
                 fetch: fetchWithCouchDBAuth,
@@ -387,7 +387,7 @@ describe('replication-couchdb.test.ts', () => {
             });
 
             const replicationState = replicateCouchDB({
-                replicationIdentifier: randomCouchString(10),
+                replicationIdentifier: randomToken(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,
@@ -409,19 +409,19 @@ describe('replication-couchdb.test.ts', () => {
             // But in production it is pretty random, I've added 3 edits just in case
             doc = await doc.update({
                 $set: {
-                    firstName: '1' + randomCouchString(10),
+                    firstName: '1' + randomToken(10),
                 },
             });
 
             doc = await doc.update({
                 $set: {
-                    firstName: '2' + randomCouchString(10),
+                    firstName: '2' + randomToken(10),
                 },
             });
 
             doc = await doc.update({
                 $set: {
-                    firstName: '3' + randomCouchString(10),
+                    firstName: '3' + randomToken(10),
                 },
             });
             assert.ok(doc);
@@ -433,7 +433,7 @@ describe('replication-couchdb.test.ts', () => {
             const server = await SpawnServer.spawn();
             const collection = await humansCollection.create(0);
             const replicationState = replicateCouchDB({
-                replicationIdentifier: randomCouchString(10),
+                replicationIdentifier: randomToken(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,

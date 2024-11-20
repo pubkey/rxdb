@@ -14,7 +14,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     wrappedValidateStorageFactory,
     RxJsonSchema,
     fillWithDefaultSettings,
@@ -105,9 +105,9 @@ validationImplementations.forEach(
         describe('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {
                 return storage.createStorageInstance<RxDocType>({
-                    collectionName: randomCouchString(10),
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(10),
+                    collectionName: randomToken(10),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(10),
                     multiInstance: false,
                     options: {},
                     schema: fillWithDefaultSettings(schema),
@@ -303,7 +303,7 @@ validationImplementations.forEach(
                 it('additional property', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
                     const obj: any = schemaObjects.humanData();
-                    obj['token'] = randomCouchString(5);
+                    obj['token'] = randomToken(5);
                     await assertBulkWriteValidationError(
                         instance,
                         [{
@@ -373,7 +373,7 @@ validationImplementations.forEach(
                         instance,
                         [{
                             document: toRxDocumentData({
-                                id: randomCouchString(12),
+                                id: randomToken(12),
                                 childProperty: 'A' as any
                             })
                         }]
@@ -384,7 +384,7 @@ validationImplementations.forEach(
                         instance,
                         [{
                             document: toRxDocumentData({
-                                id: randomCouchString(12),
+                                id: randomToken(12),
                                 childProperty: 'Z'
                             } as any)
                         }],
@@ -431,7 +431,7 @@ validationImplementations.forEach(
             describe('RxCollection().insert()', () => {
                 it('should not insert broken human (required missing)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -450,7 +450,7 @@ validationImplementations.forEach(
                 });
                 it('should get no event on non-success-insert', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const cols = await db.addCollections({
@@ -477,7 +477,7 @@ validationImplementations.forEach(
                 });
                 it('should not insert human with additional prop', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -486,7 +486,7 @@ validationImplementations.forEach(
                         }
                     });
                     const human: any = schemaObjects.humanData();
-                    human['any'] = randomCouchString(20);
+                    human['any'] = randomToken(20);
                     await assertThrows(
                         () => collections.human.insert(human),
                         'RxError',
@@ -496,7 +496,7 @@ validationImplementations.forEach(
                 });
                 it('should not insert when primary is missing', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -519,7 +519,7 @@ validationImplementations.forEach(
             describe('RxCollection().upsert()', () => {
                 it('throw when schema not matching', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -542,7 +542,7 @@ validationImplementations.forEach(
             describe('RxDocument.incrementalModify()', () => {
                 it('should throw when not matching schema', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -572,7 +572,7 @@ validationImplementations.forEach(
                 describe('negative', () => {
                     it('should throw when not matching schema', async () => {
                         const db = await createRxDatabase({
-                            name: randomCouchString(10),
+                            name: randomToken(10),
                             storage
                         });
                         const collections = await db.addCollections({
@@ -601,7 +601,7 @@ validationImplementations.forEach(
             describe('RxDocument.incrementalPatch()', () => {
                 it('should crash on non document field', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -623,7 +623,7 @@ validationImplementations.forEach(
             describe('RxCollection() hooks', () => {
                 it('should throw if preInsert hook invalidates the schema', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage
                     });
                     const collections = await db.addCollections({
@@ -680,7 +680,7 @@ validationImplementations.forEach(
                 };
 
                 // generate a random database-name
-                const name = randomCouchString(10);
+                const name = randomToken(10);
 
                 // create a database
                 const db = await createRxDatabase({
@@ -689,7 +689,7 @@ validationImplementations.forEach(
                     ignoreDuplicate: true
                 });
                 // create a collection
-                const colName = randomCouchString(10);
+                const colName = randomToken(10);
                 const collections = await db.addCollections({
                     [colName]: {
                         schema: mySchema
@@ -707,7 +707,7 @@ validationImplementations.forEach(
                     abLetter: 'B'
                 };
                 const doc = await collection.insert({
-                    id: randomCouchString(12),
+                    id: randomToken(12),
                     children: [
                         child1,
                         child2
@@ -773,7 +773,7 @@ validationImplementations.forEach(
                     },
                 };
 
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),

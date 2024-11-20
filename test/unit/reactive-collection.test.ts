@@ -10,7 +10,7 @@ import {
 
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxChangeEvent
 } from '../../plugins/core/index.mjs';
 
@@ -26,7 +26,7 @@ describeParallel('reactive-collection.test.js', () => {
         describe('positive', () => {
             it('should get a valid event on insert', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const colName = 'foobar';
@@ -51,7 +51,7 @@ describeParallel('reactive-collection.test.js', () => {
         describe('positive', () => {
             it('should fire on bulk insert', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({

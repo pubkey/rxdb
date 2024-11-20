@@ -14,7 +14,7 @@ import {
     createRxDatabase,
     isRxDocument,
     promiseWait,
-    randomCouchString,
+    randomToken,
     RxChangeEvent
 } from '../../plugins/core/index.mjs';
 
@@ -473,7 +473,7 @@ describeParallel('hooks.test.js', () => {
         describe('positive', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     multiInstance: true
                 });
@@ -501,7 +501,7 @@ describeParallel('hooks.test.js', () => {
         describe('negative', () => {
             it('should throw when adding an async-hook', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     multiInstance: true
                 });
