@@ -580,21 +580,20 @@ jobs:
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
-          rm -r node_modules
+          rm -rf node_modules
       - name: react-native test dev
         run: |
           cd ./examples/react-native
-          yarn --update-checksums
-          npm i install
+          npm i install --legacy-peer-deps
           npm run test
 
       - name: react-native test bundle
         run: |
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
-          yarn test:bundle
+          npm run test:bundle
 
   example-supabase:
     runs-on: ubuntu-22.04
