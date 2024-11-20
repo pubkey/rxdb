@@ -1413,11 +1413,6 @@ describe('replication-graphql.test.ts', () => {
                 }));
 
                 await waitUntil(async () => {
-                    /**
-                     * we have to do replicationState.run() each time
-                     * because pouchdb takes a while until the update_seq is increased
-                     */
-                    await replicationState.reSync();
                     const docsOnServer2 = server.getDocuments();
                     const should = (amount * 2) + 2;
                     return docsOnServer2.length === should;

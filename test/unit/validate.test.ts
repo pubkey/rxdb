@@ -42,7 +42,7 @@ const validationImplementations: {
     implementation: ReturnType<typeof wrappedValidateStorageFactory>;
 }[] = [
         /*
-             * TODO is-my-json-valid is no longer supported, until this is fixed:
+             * is-my-json-valid is no longer supported, until this is fixed:
              * @link https://github.com/mafintosh/is-my-json-valid/pull/192
             {
                 key: 'is-my-json-valid',

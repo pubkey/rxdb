@@ -60,7 +60,7 @@ import {
 
 const testContext = 'replication-protocol.test.ts';
 
-const useParallel = config.storage.name === 'dexie-worker' ? describe : describeParallel;
+const useParallel = describeParallel;
 
 function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
     /**
