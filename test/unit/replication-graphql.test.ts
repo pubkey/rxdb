@@ -1669,7 +1669,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
