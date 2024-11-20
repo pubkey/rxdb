@@ -1724,7 +1724,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.equal(capturedWSStates.includes('error'), false);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
