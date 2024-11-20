@@ -20,7 +20,7 @@ import type {
 } from '../../types/index.d.ts';
 import {
     RXDB_VERSION,
-    randomCouchString
+    randomToken
 } from '../../plugins/utils/index.ts';
 import type {
     MessageFromRemote,
@@ -37,7 +37,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     public readonly name: string = 'remote';
     public readonly rxdbVersion = RXDB_VERSION;
 
-    private seed: string = randomCouchString(10);
+    private seed: string = randomToken(10);
     private lastRequestId: number = 0;
     public messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
     constructor(

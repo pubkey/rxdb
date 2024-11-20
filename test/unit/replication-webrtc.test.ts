@@ -1,7 +1,7 @@
 import assert from 'assert';
 import config from './config.ts';
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
@@ -170,7 +170,7 @@ describe('replication-webrtc.test.ts', function () {
             console.log('--------- 0');
 
             // initial sync
-            const topic = randomCouchString(10);
+            const topic = randomToken(10);
             const firstReplicationStates = await syncCollections(topic, [c1, c2]);
 
             console.log('--------- 0.5');

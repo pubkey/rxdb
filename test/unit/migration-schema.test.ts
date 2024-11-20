@@ -6,7 +6,7 @@ import { humansCollection, schemaObjects, schemas } from '../../plugins/test-uti
 
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     promiseWait,
     clone,
     getHeightOfRevision,
@@ -58,7 +58,7 @@ describeParallel('migration-schema.test.ts', function () {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await db.addCollections({
@@ -76,7 +76,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('create same collection with different schema-versions', async () => {
                 const colName = 'human';
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -112,7 +112,7 @@ describeParallel('migration-schema.test.ts', function () {
         describe('negative', () => {
             it('should throw when array', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
@@ -129,7 +129,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('should throw when property no number', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
@@ -148,7 +148,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('should throw when property no non-float-number', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
@@ -167,7 +167,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('should throw when property-value no function', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
@@ -186,7 +186,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('throw when strategy missing', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
@@ -210,7 +210,7 @@ describeParallel('migration-schema.test.ts', function () {
         it('should NOT get an older version', async () => {
             const colName = 'human';
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -230,7 +230,7 @@ describeParallel('migration-schema.test.ts', function () {
             db.close();
         });
         it('should get an older version', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const colName = 'human';
             const db = await createRxDatabase({
                 name,
@@ -277,7 +277,7 @@ describeParallel('migration-schema.test.ts', function () {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
                 const col = await humansCollection.createMigrationCollection(10, {}, dbName, true);
                 await col.database.close();
 
@@ -422,7 +422,7 @@ describeParallel('migration-schema.test.ts', function () {
                             return doc;
                         }
                     },
-                    randomCouchString(10),
+                    randomToken(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -431,7 +431,7 @@ describeParallel('migration-schema.test.ts', function () {
                 await col.database.close();
             });
             it('should be able to change the primary key during migration', async () => {
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
                 const schema0 = {
                     version: 0,
                     primaryKey: 'id',
@@ -509,7 +509,7 @@ describeParallel('migration-schema.test.ts', function () {
                             return doc;
                         }
                     },
-                    randomCouchString(10),
+                    randomToken(10),
                     true
                 );
                 const docs = await col.find().exec();
@@ -521,7 +521,7 @@ describeParallel('migration-schema.test.ts', function () {
              * We need this to ensure old push-checkpoints are still valid
              */
             it('should keep the _meta.lwt value of the documents', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -568,7 +568,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
             it('should increase revision height when the strategy changed the documents data', async () => {
                 return; // TODO do we need this?
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
 
                 const nonChangedKey = 'not-changed-data';
                 const changedKey = 'changed-data';
@@ -689,7 +689,7 @@ describeParallel('migration-schema.test.ts', function () {
     describe('RxDatabase.migrationStates()', () => {
         it('should emit the ongoing migration state', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const migrationStrategies = {
@@ -738,7 +738,7 @@ describeParallel('migration-schema.test.ts', function () {
     describe('migration and replication', () => {
         it('should have migrated the replication state', async () => {
             const remoteDb = await createRxDatabase({
-                name: 'remote' + randomCouchString(10),
+                name: 'remote' + randomToken(10),
                 storage: config.storage.getStorage(),
             });
             await remoteDb.addCollections({
@@ -746,7 +746,7 @@ describeParallel('migration-schema.test.ts', function () {
                     schema: schemas.simpleHuman
                 }
             });
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -765,8 +765,8 @@ describeParallel('migration-schema.test.ts', function () {
                 remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-3' })),
 
                 // one with full primaryKey length
-                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomCouchString(schemas.simpleHuman.properties.passportId.maxLength) })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomCouchString(schemas.simpleHuman.properties.passportId.maxLength) }))
+                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomToken(schemas.simpleHuman.properties.passportId.maxLength) })),
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomToken(schemas.simpleHuman.properties.passportId.maxLength) }))
             ]);
 
             const helper = rxStorageInstanceToReplicationHandler(
@@ -861,7 +861,7 @@ describeParallel('migration-schema.test.ts', function () {
     });
     describe('issues', () => {
         it('#212 migration runs into infinity-loop', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             const schema0 = {
                 title: 'hero schema',
                 description: 'describes a simple hero',
@@ -956,7 +956,7 @@ describeParallel('migration-schema.test.ts', function () {
                         return doc;
                     }
                 },
-                randomCouchString(10),
+                randomToken(10),
                 false,
                 {
                     id: 'foo',
@@ -978,7 +978,7 @@ describeParallel('migration-schema.test.ts', function () {
             col.database.close();
         });
         it('opening an older RxDB database state with a new major version should throw an error', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),

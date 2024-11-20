@@ -11,7 +11,7 @@ import {
 import {
     clone,
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxCollection,
     createBlob,
     blobToString,
@@ -42,7 +42,7 @@ modes.forEach(mode => {
                 name = 'human';
             }
             const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedAttachmentsCompressionStorage({
                     storage: config.storage.getStorage()
                 }),

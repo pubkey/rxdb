@@ -1,6 +1,6 @@
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     overwritable,
     requestIdlePromise
 } from '../plugins/core/index.mjs';
@@ -69,7 +69,7 @@ describe('performance.test.ts', () => {
 
             // create database
             const db = await createRxDatabase({
-                name: 'test-db-performance-' + randomCouchString(10),
+                name: 'test-db-performance-' + randomToken(10),
                 eventReduce: true,
                 /**
                  * A RxStorage implementation
@@ -88,7 +88,7 @@ describe('performance.test.ts', () => {
             new Array(collectionsAmount)
                 .fill(0)
                 .forEach((_v, idx) => {
-                    const name = randomCouchString(10) + '_' + idx;
+                    const name = randomToken(10) + '_' + idx;
                     collectionNames.push(name);
                     collectionData[name] = {
                         schema: schemas.averageSchema(),

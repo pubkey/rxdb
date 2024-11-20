@@ -15,7 +15,7 @@ import {
     createRxDatabase,
     RxJsonSchema,
     promiseWait,
-    randomCouchString,
+    randomToken,
     ensureNotFalsy,
     deepFreeze,
     addRxPlugin
@@ -463,7 +463,7 @@ describe('rx-query.test.ts', () => {
             }
             // use a 'slow' adapter because memory might be to fast
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -588,7 +588,7 @@ describe('rx-query.test.ts', () => {
             if (!config.storage.hasPersistence) {
                 return;
             }
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
                 name: dbName,
@@ -950,7 +950,7 @@ describe('rx-query.test.ts', () => {
                 indexes: ['info.title']
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -1024,13 +1024,13 @@ describe('rx-query.test.ts', () => {
             const collection = await humansCollection.createBySchema(mySchema);
 
             await collection.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 event_id: 1,
                 user_id: '6',
                 created_at: 1337
             });
             await collection.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 event_id: 2,
                 user_id: '6',
                 created_at: 1337
@@ -1138,7 +1138,7 @@ describe('rx-query.test.ts', () => {
             };
 
             // generate a random database-name
-            const name = randomCouchString(10);
+            const name = randomToken(10);
 
             // create a database
             const db = await createRxDatabase({
@@ -1197,7 +1197,7 @@ describe('rx-query.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -1302,7 +1302,7 @@ describe('rx-query.test.ts', () => {
         });
         it('should not mutate the query input', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: false
             });
@@ -1353,7 +1353,7 @@ describe('rx-query.test.ts', () => {
 
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: false
             });
@@ -1427,7 +1427,7 @@ describe('rx-query.test.ts', () => {
                 }
             } as const;
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -1540,7 +1540,7 @@ describe('rx-query.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true

@@ -17,7 +17,7 @@ import type {
     RxLocalDocumentData,
     RxStorage
 } from '../../types/index.d.ts';
-import { randomCouchString } from '../../plugins/utils/index.ts';
+import { randomToken } from '../../plugins/utils/index.ts';
 import { createRxLocalDocument } from './rx-local-document.ts';
 import { overwritable } from '../../overwritable.ts';
 
@@ -173,7 +173,7 @@ export async function removeLocalDocumentsStorageInstance(
     databaseName: string,
     collectionName: string
 ) {
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
     const storageInstance = await createLocalDocumentStorageInstance(
         databaseInstanceToken,
         storage,

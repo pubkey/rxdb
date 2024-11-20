@@ -1,6 +1,6 @@
 import assert from 'assert';
 import {
-    randomCouchString,
+    randomToken,
     createRxDatabase,
     RxCollection,
     addRxPlugin,
@@ -101,34 +101,34 @@ testStorages.forEach(storages => {
         describe('basic migrations', () => {
             it('create both databases', async () => {
                 const oldDb = await (storages.createRxDatabaseOld as any)({
-                    name: DB_PREFIX + randomCouchString(12),
+                    name: DB_PREFIX + randomToken(12),
                     storage: storages.old() as any,
                     multiInstance: false
                 });
                 await oldDb.addCollections({
-                    [randomCouchString(12)]: {
+                    [randomToken(12)]: {
                         schema: human as any
                     }
                 });
                 await destroyOrClose(oldDb);
 
                 const db = await storages.createRxDatabaseNew({
-                    name: DB_PREFIX + randomCouchString(12),
+                    name: DB_PREFIX + randomToken(12),
                     storage: wrappedValidateAjvStorage({
                         storage: storages.new()
                     }),
                     multiInstance: false
                 });
                 await db.addCollections({
-                    [randomCouchString(12)]: {
+                    [randomToken(12)]: {
                         schema: human
                     }
                 });
                 await db.close();
             });
             it('should migrate all documents', async () => {
-                const name = DB_PREFIX + randomCouchString(12);
-                const collectionName = randomCouchString(12);
+                const name = DB_PREFIX + randomToken(12);
+                const collectionName = randomToken(12);
 
                 // create old database and insert data
                 const oldDatabaseName = name + '-old';
@@ -224,8 +224,8 @@ testStorages.forEach(storages => {
                 await db.remove();
             });
             it('should migrate in parallel', async () => {
-                const name = DB_PREFIX + randomCouchString(12);
-                const collectionName = randomCouchString(12);
+                const name = DB_PREFIX + randomToken(12);
+                const collectionName = randomToken(12);
 
                 // create old database and insert data
                 const oldDatabaseName = name + '-old';
@@ -321,8 +321,8 @@ testStorages.forEach(storages => {
                 await db.remove();
             });
             it('migrate new->new should also work', async () => {
-                const name = DB_PREFIX + randomCouchString(12);
-                const collectionName = randomCouchString(12);
+                const name = DB_PREFIX + randomToken(12);
+                const collectionName = randomToken(12);
 
                 // create old database and insert data
                 const oldDatabaseName = name + '-old';
@@ -418,7 +418,7 @@ testStorages.forEach(storages => {
         });
         describe('issues', () => {
             it('migration with multiple collections', async () => {
-                const oldDatabaseName = DB_PREFIX + randomCouchString(12);
+                const oldDatabaseName = DB_PREFIX + randomToken(12);
                 const oldDb = await (storages.createRxDatabaseOld as any)({
                     name: oldDatabaseName,
                     storage: storages.old() as any,
@@ -441,7 +441,7 @@ testStorages.forEach(storages => {
                 await destroyOrClose(oldDb);
 
                 const db = await storages.createRxDatabaseNew({
-                    name: DB_PREFIX + randomCouchString(12),
+                    name: DB_PREFIX + randomToken(12),
                     storage: wrappedValidateAjvStorage({
                         storage: storages.new()
                     }),

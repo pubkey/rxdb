@@ -14,7 +14,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     promiseWait,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
@@ -35,7 +35,7 @@ describeParallel('reactive-document.test.js', () => {
                 const doc = await c.findOne().exec(true);
 
                 const oldName = doc.firstName;
-                const newName = randomCouchString(8);
+                const newName = randomToken(8);
 
                 const emittedCollection: RxChangeEvent<HumanDocumentType>[] = [];
                 const colSub = c.$.subscribe(cE => {
@@ -71,7 +71,7 @@ describeParallel('reactive-document.test.js', () => {
                 doc.get$('firstName').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
-                const setName = randomCouchString(10);
+                const setName = randomToken(10);
                 await doc.incrementalPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
@@ -86,7 +86,7 @@ describeParallel('reactive-document.test.js', () => {
                 doc.get$('mainSkill.name').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
-                const setName = randomCouchString(10);
+                const setName = randomToken(10);
                 await doc.incrementalPatch({
                     mainSkill: {
                         name: setName,
@@ -175,7 +175,7 @@ describeParallel('reactive-document.test.js', () => {
             });
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({

@@ -33,7 +33,7 @@ import {
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    randomCouchString,
+    randomToken,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
@@ -619,7 +619,7 @@ export function createRxDatabase<
     }
     USED_DATABASE_NAMES.add(storage.name + '|' + name);
 
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
 
     return createRxDatabaseStorageInstance<
         Internals,
@@ -687,7 +687,7 @@ export async function removeRxDatabase(
     storage: RxStorage<any, any>,
     password?: string
 ): Promise<string[]> {
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
     const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
         databaseInstanceToken,
         storage,

@@ -5,7 +5,7 @@ import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     fillWithDefaultSettings,
-    randomCouchString
+    randomToken
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -85,7 +85,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 database: colServer.database
             });
             assert.ok(server);
-            const name = randomCouchString(10);
+            const name = randomToken(10);
 
             const dbRemote = await createRxDatabase({
                 name,
@@ -123,8 +123,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
             assert.ok(server);
 
             const storageInstanceA = await getStorage(port).createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -132,8 +132,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceB = await getStorage(port).createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -152,8 +152,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
 
             // even after closing all and reopnening a new one, it must be the same instance.
             const storageInstanceC = await getStorage(port).createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -184,8 +184,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 })
             });
             const storageInstanceA = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -193,8 +193,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceB = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -202,8 +202,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceOther = await getStorage(port).createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -238,9 +238,9 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 url: 'ws://localhost:' + port,
                 mode: 'database'
             });
-            const databaseName = randomCouchString(10);
+            const databaseName = randomToken(10);
             const storageInstanceA = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName: 'human',
                 devMode: true,
@@ -249,7 +249,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceB = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName: 'human',
                 devMode: true,
@@ -258,8 +258,8 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceOther = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
                 collectionName: 'human',
                 devMode: true,
                 multiInstance: false,
@@ -285,7 +285,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
             const port = await nextPort();
 
             const database = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: memoryStorageWithValidation
             });
             await database.addCollections({
@@ -306,9 +306,9 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 url: 'ws://localhost:' + port,
                 mode: 'collection'
             });
-            const databaseName = randomCouchString(10);
+            const databaseName = randomToken(10);
             const storageInstanceA = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName: 'one',
                 devMode: true,
@@ -317,7 +317,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceB = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName: 'one',
                 devMode: true,
@@ -326,7 +326,7 @@ describeParallel('rx-storage-remote.test.ts', () => {
                 schema: fillWithDefaultSettings(schemas.human)
             });
             const storageInstanceOther = await storage.createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName: 'two',
                 devMode: true,

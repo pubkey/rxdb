@@ -12,7 +12,7 @@ import config, { describeParallel } from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     promiseWait,
     RxDatabase,
     RxDocument,
@@ -35,7 +35,7 @@ describeParallel('cross-instance.test.js', () => {
     describe('create database', () => {
         it('create a multiInstance database', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: true
             });
@@ -43,7 +43,7 @@ describeParallel('cross-instance.test.js', () => {
             db.close();
         });
         it('create a 2 multiInstance databases', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -65,7 +65,7 @@ describeParallel('cross-instance.test.js', () => {
     describe('RxDatabase.$', () => {
         describe('positive', () => {
             it('get event on db2 when db1 fires', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1: RxDatabase = c1.database;
@@ -88,7 +88,7 @@ describeParallel('cross-instance.test.js', () => {
         describe('negative', () => {
             it('should not get the same events twice', async () => {
 
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
                 const db1: RxDatabase = c1.database;
@@ -116,7 +116,7 @@ describeParallel('cross-instance.test.js', () => {
     });
     describe('Collection.$', () => {
         it('get event on db2 when db1 fires', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             let received = 0;
@@ -137,7 +137,7 @@ describeParallel('cross-instance.test.js', () => {
 
     describe('Document.$', () => {
         it('get event on doc2 when doc1 is changed', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const c1 = await humansCollection.createMultiInstance(name);
             const c2 = await humansCollection.createMultiInstance(name);
             await c1.insert(schemaObjects.humanData());
@@ -170,7 +170,7 @@ describeParallel('cross-instance.test.js', () => {
             c2.database.close();
         });
         it('should work with encrypted fields', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const password = await getPassword();
             const db1 = await createRxDatabase({
                 name,
@@ -230,7 +230,7 @@ describeParallel('cross-instance.test.js', () => {
             db2.close();
         });
         it('should work with nested encrypted fields', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const password = await getPassword();
             const db1 = await createRxDatabase({
                 name,
@@ -301,7 +301,7 @@ describeParallel('cross-instance.test.js', () => {
     describe('AutoPull', () => {
         describe('positive', () => {
             it('should receive events on the other side', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
 
@@ -316,7 +316,7 @@ describeParallel('cross-instance.test.js', () => {
                 c2.database.close();
             });
             it('should receive 2 events', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
                 const c2 = await humansCollection.createMultiInstance(name);
 

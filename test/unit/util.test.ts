@@ -4,7 +4,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { randomString, wait } from 'async-test-util';
 import {
-    randomCouchString,
+    randomToken,
     defaultHashSha256,
     now,
     sortDocumentsByLastWriteTime,
@@ -56,13 +56,13 @@ describe('util.test.js', () => {
             assert.ok(hash.length > 0);
         });
         it('should get the same hash twice', async () => {
-            const str = randomCouchString(10);
+            const str = randomToken(10);
             const hash = await defaultHashSha256(str);
             const hash2 = await defaultHashSha256(str);
             assert.strictEqual(hash, hash2);
         });
         it('should work with a very large string', async () => {
-            const str = randomCouchString(5000);
+            const str = randomToken(5000);
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
@@ -253,7 +253,7 @@ describe('util.test.js', () => {
         });
         it('.size() should return a deterministic value', () => {
             const amount = 30;
-            const str = randomCouchString(amount);
+            const str = randomToken(amount);
             const blob = createBlob(str, 'plain/text');
             const size = getBlobSize(blob);
             assert.strictEqual(size, amount);

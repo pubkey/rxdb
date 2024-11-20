@@ -5,7 +5,7 @@
 import assert from 'assert';
 
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     ensureNotFalsy,
     WithDeleted,
@@ -76,7 +76,7 @@ describe('replication-firestore.test.ts', function () {
             return docData;
         }) as any;
     }
-    const projectId = randomCouchString(10);
+    const projectId = randomToken(10);
     const app = firebase.initializeApp({
         projectId,
         databaseURL: 'http://localhost:8080?ns=' + projectId
@@ -85,7 +85,7 @@ describe('replication-firestore.test.ts', function () {
     connectFirestoreEmulator(database, 'localhost', 8080);
 
     function getFirestoreState(): FirestoreOptions<TestDocType> {
-        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomCouchString(10)) as any;
+        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomToken(10)) as any;
         return {
             projectId,
             collection: useCollection,
@@ -109,7 +109,7 @@ describe('replication-firestore.test.ts', function () {
         firestoreState: FirestoreOptions<RxDocType>
     ): RxFirestoreReplicationState<RxDocType> {
         const replicationState = replicateFirestore({
-            replicationIdentifier: randomCouchString(10),
+            replicationIdentifier: randomToken(10),
             collection,
             firestore: firestoreState,
             pull: {
@@ -345,7 +345,7 @@ describe('replication-firestore.test.ts', function () {
     });
     describe('issues', () => {
         it('#4698 adding items quickly does not send them to the server', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),

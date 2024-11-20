@@ -15,7 +15,7 @@ import {
 import {
     clone,
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxDocument,
     RxJsonSchema,
     MigrationStrategies,
@@ -46,7 +46,7 @@ describeParallel('attachments.test.ts', () => {
             name = 'human';
         }
         const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
-            name: randomCouchString(10),
+            name: randomToken(10),
             password: await getPassword(),
             storage: getEncryptedStorage(),
             multiInstance,
@@ -232,7 +232,7 @@ describeParallel('attachments.test.ts', () => {
             if (!config.storage.hasPersistence) {
                 return;
             }
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -484,7 +484,7 @@ describeParallel('attachments.test.ts', () => {
             return;
         }
         it('should emit on other instance', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             type Collections = { humans: RxCollection<HumanDocumentType, {}, {}>; };
             type Document = RxDocument<HumanDocumentType>;
             const db = await createRxDatabase<Collections>({
@@ -560,7 +560,7 @@ describeParallel('attachments.test.ts', () => {
             return;
         }
         it('should keep the attachments during migration', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             type DocData = {
                 id: string;
             };
@@ -629,7 +629,7 @@ describeParallel('attachments.test.ts', () => {
             db2.close();
         });
         it('should delete the attachment during migration', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             type DocData = {
                 id: string;
             };
@@ -690,7 +690,7 @@ describeParallel('attachments.test.ts', () => {
             db2.close();
         });
         it('should be able to change the attachment data during migration', async () => {
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             type DocData = {
                 id: string;
             };
@@ -771,7 +771,7 @@ describeParallel('attachments.test.ts', () => {
     describe('orm', () => {
         it('should be able to call the defined function', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
@@ -817,7 +817,7 @@ describeParallel('attachments.test.ts', () => {
                 },
             };
             const myDB = await createRxDatabase({
-                name: 'mylocaldb' + randomCouchString(10),
+                name: 'mylocaldb' + randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: true
             });
@@ -844,7 +844,7 @@ describeParallel('attachments.test.ts', () => {
             await myDB.close();
         });
         it('calling allAttachments() fails when document has none', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -908,7 +908,7 @@ describeParallel('attachments.test.ts', () => {
             };
 
             // generate a random database-name
-            const name = randomCouchString(10);
+            const name = randomToken(10);
 
             // create an encrypted storage
             const encryptedStorage = getEncryptedStorage();

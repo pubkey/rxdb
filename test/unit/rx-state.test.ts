@@ -6,7 +6,7 @@ import config, { describeParallel } from './config.ts';
 
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     lastOfArray,
     RxReactivityFactory,
@@ -56,7 +56,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 };
             }
         };
-        async function getDatabase(databaseName: string = randomCouchString(10)) {
+        async function getDatabase(databaseName: string = randomToken(10)) {
             const storage = useSchemaValidator ? wrappedValidateAjvStorage({
                 storage: config.storage.getStorage()
             }) : config.storage.getStorage();
@@ -69,7 +69,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
             return database;
         }
         async function getState(
-            databaseName: string = randomCouchString(10),
+            databaseName: string = randomToken(10),
             prefix?: string,
         ) {
             const database = await getDatabase(databaseName);
@@ -323,7 +323,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 return;
             }
             it('write with two states at once', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state1 = await getState(databaseName);
                 const state2 = await getState(databaseName);
                 await state1.set('a', () => 0);
@@ -337,7 +337,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state2.collection.database.close();
             });
             it('write with two states to nested at once', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state1 = await getState(databaseName);
                 const state2 = await getState(databaseName);
                 await state1.set('nes', () => {
@@ -365,7 +365,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                         return;
                     }
 
-                    const databaseName = randomCouchString(10);
+                    const databaseName = randomToken(10);
                     const state1 = await getState(databaseName);
                     const state2 = await getState(databaseName);
 
@@ -404,7 +404,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 ) {
                     return;
                 }
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state1 = await getState(databaseName);
                 const state2 = await getState(databaseName);
 
@@ -434,7 +434,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state2.collection.database.close();
             });
             it('should recover the same state from disc on the other side', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 let state = await getState(databaseName);
                 await state.set('a', () => 0);
                 await state.set('a', () => 1);
@@ -455,7 +455,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
              * @link https://github.com/pubkey/rxdb/pull/6084
              */
             it('should emit the correct data for all states', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state1 = await getState(databaseName);
                 const state2 = await getState(databaseName);
 
@@ -500,7 +500,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
              * @link https://github.com/pubkey/rxdb/issues/6459
              */
             it('RxState.property$ should be stable for initial synchronous get and subsequent subscription', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state = await getState(databaseName);
                 await state.set('a', () => [{ foo: 'bar' }]);
 
@@ -530,7 +530,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
              * @link https://github.com/pubkey/rxdb/pull/6503
              */
             it('bad rx-state after cleanup', async () => {
-                const databaseName = randomCouchString(10);
+                const databaseName = randomToken(10);
                 const state = await getState(databaseName);
 
                 await state.set('foo', () => 'bar1');

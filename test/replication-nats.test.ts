@@ -1,7 +1,7 @@
 import assert from 'assert';
 import config from './unit/config.ts';
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     ensureNotFalsy,
     WithDeleted,
@@ -128,7 +128,7 @@ describe('replication-nats.test.js', () => {
             await waitUntil(async () => {
                 const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
-                const natsName = randomCouchString(10);
+                const natsName = randomToken(10);
 
                 console.log('################ 0.1');
 
@@ -155,7 +155,7 @@ describe('replication-nats.test.js', () => {
         it('push replication to client-server', async () => {
             const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
 
             const replicationState = syncNats(collection, natsName);
             ensureReplicationHasNoErrors(replicationState);
@@ -195,7 +195,7 @@ describe('replication-nats.test.js', () => {
             const collectionA = await humansCollection.createHumanWithTimestamp(1, undefined, false);
             const collectionB = await humansCollection.createHumanWithTimestamp(1, undefined, false);
 
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
             const replicationStateA = syncNats(collectionA, natsName);
 
             ensureReplicationHasNoErrors(replicationStateA);
@@ -251,7 +251,7 @@ describe('replication-nats.test.js', () => {
     });
     describe('conflict handling', () => {
         it('should keep the master state as default conflict handler', async () => {
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
             const c1 = await humansCollection.create(1);
             const c2 = await humansCollection.create(0);
 

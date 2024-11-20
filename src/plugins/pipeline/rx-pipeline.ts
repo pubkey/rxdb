@@ -26,7 +26,7 @@ import {
     nameFunction,
     now,
     promiseWait,
-    randomCouchString
+    randomToken
 } from '../utils/index.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 import { mapDocumentsDataToCacheDocs } from '../../doc-cache.ts';
@@ -46,7 +46,7 @@ export class RxPipeline<RxDocType> {
     somethingChanged = new Subject();
 
 
-    secretFunctionName = 'tx_fn_' + randomCouchString(10)
+    secretFunctionName = 'tx_fn_' + randomToken(10)
 
     waitBeforeWriteFn = async () => {
         const stack = new Error().stack;

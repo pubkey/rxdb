@@ -132,7 +132,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 // ).on('change', change => {
 
 
-                //     const eventBulkId = randomCouchString(10);
+                //     const eventBulkId = randomToken(10);
                 //     const newDocData: RxDocumentData<RxDocType> = (change as any).fullDocument;
                 //     const documentId = newDocData[this.primaryPath] as any;
 

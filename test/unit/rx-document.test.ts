@@ -15,7 +15,7 @@ import {
 import {
     createRxDatabase,
     createRxSchema,
-    randomCouchString,
+    randomToken,
     promiseWait,
     getDocumentOrmPrototype,
     getDocumentPrototype,
@@ -75,7 +75,7 @@ describe('rx-document.test.js', () => {
         describe('RxCollection.getDocumentOrmPrototype()', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -103,7 +103,7 @@ describe('rx-document.test.js', () => {
         describe('RxCollection.getDocumentPrototype()', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -368,7 +368,7 @@ describe('rx-document.test.js', () => {
             });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -482,7 +482,7 @@ describe('rx-document.test.js', () => {
                     return;
                 }
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -519,7 +519,7 @@ describe('rx-document.test.js', () => {
                     return;
                 }
                 // use a 'slow' adapter because memory might be to fast
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
@@ -566,7 +566,7 @@ describe('rx-document.test.js', () => {
                 ) {
                     return;
                 }
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
@@ -628,7 +628,7 @@ describe('rx-document.test.js', () => {
             });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -776,7 +776,7 @@ describe('rx-document.test.js', () => {
                 return;
             }
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
@@ -917,7 +917,7 @@ describe('rx-document.test.js', () => {
 
                 await doc.incrementalPatch({
                     mainSkill: {
-                        name: randomCouchString(5),
+                        name: randomToken(5),
                         level: 10
                     }
                 });
@@ -951,7 +951,7 @@ describe('rx-document.test.js', () => {
             });
             it('null fields should not return a Proxy Object but null', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await await db.addCollections({
@@ -1002,7 +1002,7 @@ describe('rx-document.test.js', () => {
             });
             it('true fields should not return a Proxy Object but true', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await await db.addCollections({
@@ -1102,7 +1102,7 @@ describe('rx-document.test.js', () => {
         });
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await await db.addCollections({
@@ -1134,7 +1134,7 @@ describe('rx-document.test.js', () => {
         });
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const schema = {
@@ -1240,7 +1240,7 @@ describe('rx-document.test.js', () => {
             };
 
             // generate a random database-name
-            const name = randomCouchString(10);
+            const name = randomToken(10);
 
             // create a database
             const db = await createRxDatabase({
@@ -1319,7 +1319,7 @@ describe('rx-document.test.js', () => {
                 },
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({

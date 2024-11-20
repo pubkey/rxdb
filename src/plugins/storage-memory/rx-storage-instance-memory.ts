@@ -33,7 +33,7 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    randomCouchString,
+    randomToken,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
 import {
@@ -490,7 +490,7 @@ export function createMemoryStorageInstance<RxDocType>(
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
         internals = {
-            id: randomCouchString(5),
+            id: randomToken(5),
             schema: params.schema,
             removed: false,
             refCount: 1,

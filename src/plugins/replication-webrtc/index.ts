@@ -18,7 +18,7 @@ import type {
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
-    randomCouchString
+    randomToken
 } from '../../plugins/utils/index.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import { replicateRxCollection } from '../replication/index.ts';
@@ -61,7 +61,7 @@ export async function replicateWebRTC<RxDocType, PeerType>(
 
     // used to easier debug stuff
     let requestCounter = 0;
-    const requestFlag = randomCouchString(10);
+    const requestFlag = randomToken(10);
     function getRequestId() {
         const count = requestCounter++;
         return collection.database.token + '|' + requestFlag + '|' + count;
