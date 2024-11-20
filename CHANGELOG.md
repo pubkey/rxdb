@@ -4,19 +4,9 @@
 <!-- CHANGELOG NEWEST -->
 - FIX bulkInsert with primary keys set in preInsert hook broken in v15.38.3 [#6608](https://github.com/pubkey/rxdb/pull/6608)
 
-- CHANGE Split conflict handler functionality into `isEqual()` and `resolve()`.
-- CHANGE (internal) remove `conflictResultionTasks()` and `resolveConflictResultionTask()` from the RxStorage interface.
-- FIX (GraphQL replication) datapath must be equivalent for pull and push [#6019](https://github.com/pubkey/rxdb/pull/6019)
-- CHANGE `ignoreDuplicate: true` on `createRxDatabase()` must only be allowed in dev-mode.
-- RENAME 
-  - `.destroy()` to `.close()`
-  - `.onDestroy()` to `.onClose()`
-  - `postDestroyRxCollection` to `postCloseRxCollection`
-  - `preDestroyRxDatabase` to `preCloseRxDatabase`
-- CHANGE (internal) migration-storage plugin: Remove catch from cleanup
-- CHANGE (internal) rename RX_PIPELINE_CHECKPOINT_CONTEXT to `rx-pipeline-checkpoint`
-- CHANGE when dev-mode is enabled, a schema validator must be used.
-- REMOVED the deprecated LokiJS RxStorage.
+🚀 **RxDB v16 is released**
+
+- A list of changes for RxDB v16 can be found [here](https://rxdb.info/releases/16.0.0.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

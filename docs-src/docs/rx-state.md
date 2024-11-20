@@ -167,8 +167,3 @@ const replicationPool = await replicateWebRTC(
     }
 );
 ```
-
-
-## Limitations
-
-- RxState is in beta mode, it might get breaking changes without having a major RxDB version release.

@@ -516,7 +516,7 @@ Returns `true` if the replication is stopped. This can be if a non-live replicat
 replicationState.isStopped(); // true/false
 ```
 
-### Setting a custom initialCheckpoint (beta)
+### Setting a custom initialCheckpoint
 
 By default, the push replication will start from the beginning of time and push all documents from there to the remote.
 By setting a custom `push.initialCheckpoint`, you can tell the replication to only push writes that are newer than the given checkpoint.
