@@ -203,7 +203,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
             const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
-            const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders);
+            const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
 
             wsClient.on('connected', () => {
                 pullStream$.next('RESYNC');
