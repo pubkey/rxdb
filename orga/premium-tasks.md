@@ -7,6 +7,7 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - [#5589](https://github.com/pubkey/rxdb/issues/5589) Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
+- Update the CI and tests from Deno `1.44.1` to Deno `2.0.6` or newer.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
 ```ts
 const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
