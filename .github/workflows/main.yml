@@ -583,12 +583,15 @@ jobs:
           npm install
           npm run build
           rm -r node_modules
-      - name: react-native
+      - name: react-native test dev
         run: |
           cd ./examples/react-native
           yarn --update-checksums
-          npx yarn install
-          yarn test
+          npm i install
+          npm run test
+
+      - name: react-native test bundle
+        run: |
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
           yarn test:bundle
