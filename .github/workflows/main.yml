@@ -586,6 +586,7 @@ jobs:
       - name: react-native test dev
         run: |
           cd ./examples/react-native
+          npm run preinstall
           npm i install --legacy-peer-deps
           npm run test
 
