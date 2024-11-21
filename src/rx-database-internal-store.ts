@@ -252,13 +252,6 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(
         return false;
     }
 
-    if (
-        codeVersion.includes('beta') &&
-        codeVersion !== databaseStateVersion
-    ) {
-        return false;
-    }
-
     const stateMajor = databaseStateVersion.split('.')[0];
     const codeMajor = codeVersion.split('.')[0];
 

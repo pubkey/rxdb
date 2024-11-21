@@ -886,13 +886,54 @@ describeParallel('migration-schema.test.ts', function () {
             col.database.close();
         });
         it('opening an older RxDB database state with a new major version should throw an error', async () => {
-            if (
-                config.storage.getStorage().name.includes('opfs') ||
-                config.storage.getStorage().name.includes('filesystem')
-            ) {
-                return;
-            }
+            const dbName = randomToken(10);
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            await db.storageTokenDocument;
 
+            // fake an older database state by changing the internal version.
+            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
+            const newTokenDoc = clone(tokenDoc);
+            newTokenDoc.data.rxdbVersion = '14.x.x';
+
+            const writeResponse = await db.internalStore.bulkWrite([{
+                previous: tokenDoc,
+                document: newTokenDoc
+            }], 'fake-old-version');
+            assert.deepStrictEqual(writeResponse.error, []);
+            await db.close();
+
+
+            const newDb = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+
+
+            await AsyncTestUtil.assertThrows(
+                () => newDb.addCollections({
+                    foo: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                            }
+                        }
+                    }
+                }),
+                'RxError',
+                'DM5'
+            );
+            await newDb.close();
+        });
+        it('version 15 data should be compatible with version 16 code', async () => {
             const dbName = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
@@ -918,9 +959,6 @@ describeParallel('migration-schema.test.ts', function () {
                 storage: config.storage.getStorage(),
             });
 
-            /**
-             * Version v15 data must be upwards compatible to v16
-             */
             await newDb.addCollections({
                 foo: {
                     schema: {
@@ -935,27 +973,7 @@ describeParallel('migration-schema.test.ts', function () {
                         }
                     }
                 }
-            })
-
-            // await AsyncTestUtil.assertThrows(
-            //     () => newDb.addCollections({
-            //         foo: {
-            //             schema: {
-            //                 version: 0,
-            //                 primaryKey: 'name',
-            //                 type: 'object',
-            //                 properties: {
-            //                     name: {
-            //                         type: 'string',
-            //                         maxLength: 100
-            //                     },
-            //                 }
-            //             }
-            //         }
-            //     }),
-            //     'RxError',
-            //     'DM5'
-            // );
+            });
             await newDb.close();
         });
     });
