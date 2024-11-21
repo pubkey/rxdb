@@ -10,20 +10,23 @@ import {
 } from './Schema';
 
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
-
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 let dbPromise = null;
 
 const _create = async () => {
+    addRxPlugin(RxDBDevModePlugin);
+
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase({
         name: 'heroesreactdb',
-        storage: getRxStorageDexie()
+        storage: wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
     });
     console.log('DatabaseService: created database');
     window['db'] = db; // write to window for debugging
