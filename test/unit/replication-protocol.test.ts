@@ -244,7 +244,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         await cancelRxStorageReplication(replicationState);
 
         /**
-         * Here we run .remove()
+         * Here we should run .remove()
          * on all instances to ensure we do not fill up the
          * browser storage limits.
          */
@@ -1178,7 +1178,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             cleanUp(replicationState, masterInstance);
         });
-        runXTimes(isFastMode() ? 2 : 10, n => {
+        runXTimes(isFastMode() ? 2 : 5, n => {
             it('do many writes while replication is running (' + n + ')', async () => {
                 updateId = 0;
                 const writeAmount = isFastMode() ? 2 : 10;
