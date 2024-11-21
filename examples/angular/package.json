@@ -77,7 +77,7 @@
     "@angular/language-service": "17.3.12",
     "@capacitor/cli": "latest",
     "@types/express": "5.0.0",
-    "@types/mocha": "10.0.9",
+    "@types/mocha": "10.0.10",
     "@types/node": "22.9.1",
     "async-test-util": "2.5.0",
     "browser-sync": "^3.0.0",
