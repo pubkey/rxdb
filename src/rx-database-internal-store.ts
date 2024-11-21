@@ -261,9 +261,19 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(
 
     const stateMajor = databaseStateVersion.split('.')[0];
     const codeMajor = codeVersion.split('.')[0];
+
+    /**
+     * Version v15 data must be upwards compatible to v16
+     */
+    if (stateMajor === '15' && codeMajor === '16') {
+        return true;
+    }
+
     if (stateMajor !== codeMajor) {
         return false;
     }
+
+
     return true;
 }
 

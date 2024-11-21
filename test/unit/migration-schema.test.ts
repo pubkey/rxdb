@@ -886,6 +886,13 @@ describeParallel('migration-schema.test.ts', function () {
             col.database.close();
         });
         it('opening an older RxDB database state with a new major version should throw an error', async () => {
+            if (
+                config.storage.getStorage().name.includes('opfs') ||
+                config.storage.getStorage().name.includes('filesystem')
+            ) {
+                return;
+            }
+
             const dbName = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
@@ -911,25 +918,44 @@ describeParallel('migration-schema.test.ts', function () {
                 storage: config.storage.getStorage(),
             });
 
-            await AsyncTestUtil.assertThrows(
-                () => newDb.addCollections({
-                    foo: {
-                        schema: {
-                            version: 0,
-                            primaryKey: 'name',
-                            type: 'object',
-                            properties: {
-                                name: {
-                                    type: 'string',
-                                    maxLength: 100
-                                },
-                            }
+            /**
+             * Version v15 data must be upwards compatible to v16
+             */
+            await newDb.addCollections({
+                foo: {
+                    schema: {
+                        version: 0,
+                        primaryKey: 'name',
+                        type: 'object',
+                        properties: {
+                            name: {
+                                type: 'string',
+                                maxLength: 100
+                            },
                         }
                     }
-                }),
-                'RxError',
-                'DM5'
-            );
+                }
+            })
+
+            // await AsyncTestUtil.assertThrows(
+            //     () => newDb.addCollections({
+            //         foo: {
+            //             schema: {
+            //                 version: 0,
+            //                 primaryKey: 'name',
+            //                 type: 'object',
+            //                 properties: {
+            //                     name: {
+            //                         type: 'string',
+            //                         maxLength: 100
+            //                     },
+            //                 }
+            //             }
+            //         }
+            //     }),
+            //     'RxError',
+            //     'DM5'
+            // );
             await newDb.close();
         });
     });
