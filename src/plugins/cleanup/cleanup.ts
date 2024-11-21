@@ -3,6 +3,7 @@ import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
 import { runAsyncPluginHooks } from '../../hooks.ts';
+import { filter, firstValueFrom } from 'rxjs';
 
 /**
  * Even on multiple databases,
@@ -100,15 +101,19 @@ export async function cleanupRxCollection(
     });
 }
 
-/**
- * TODO this is not waiting for deletes!
- * it just runs on interval.
- */
 export async function runCleanupAfterDelete(
     rxCollection: RxCollection,
     cleanupPolicy: RxCleanupPolicy
 ) {
     while (!rxCollection.closed) {
+        /**
+         * In theory we should wait here until a document is deleted.
+         * But this would mean we have to search through all events ever processed.
+         * So instead we just wait for any write event and then we anyway throttle
+         * the calls with the promiseWait() below.
+         */
+        await firstValueFrom(rxCollection.$).catch(() => { });
+
         await rxCollection.promiseWait(cleanupPolicy.runEach);
         if (rxCollection.closed) {
             return;

@@ -160,7 +160,9 @@ describe('replication-webrtc.test.ts', function () {
         it('should stream changes over the replication to other collections', async function () {
 
             /**
-             * TODO this test fails randomly.
+             * This test fails randomly because WebRTC has hickups
+             * when creating the collection. These hickups likely happen depending on the
+             * network because of finding the IP candidates and stuff.
              */
             return;
 

@@ -2,7 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { randomString, wait } from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import {
     randomToken,
     defaultHashSha256,
@@ -35,11 +35,6 @@ import {
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode/index.mjs';
 import {
-    nativeSha256,
-    jsSha256,
-    canUseCryptoSubtle
-} from '../../plugins/utils/index.mjs';
-import {
     isFastMode,
     isBun,
     EXAMPLE_REVISION_1,
@@ -66,24 +61,6 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-        });
-        it('must have enabled canUseCryptoSubtle', () => {
-            assert.ok(canUseCryptoSubtle);
-        });
-        it('both versions must return the exact same value', async () => {
-            const values: string[] = [
-                'foobar',
-                randomString(100),
-                'asdf#äge#äö34g?!§"=$%'
-            ];
-
-            for (const value of values) {
-                const hashNative = await nativeSha256(value);
-                const hashJavaScript = await jsSha256(value);
-                if (hashJavaScript !== hashNative) {
-                    throw new Error('hashes not equal for value: ' + value);
-                }
-            }
         });
     });
     describe('.sortObject()', () => {
@@ -315,7 +292,11 @@ describe('util.test.js', () => {
     });
     describe('.deepFreezeWhenDevMode()', () => {
         if (isBun) {
-            // TODO for somehow bun has no strict mode here
+            /**
+             * Bun has no strict mode here.
+             * This is likely a Bun bug and might
+             * be fixed in future versions.
+             */
             return;
         }
         it('should have enabled dev-mode', () => {

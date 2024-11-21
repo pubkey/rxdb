@@ -103,6 +103,25 @@ const db2 = await createRxDatabase({
 });
 ```
 
+
+### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide an own hash function instead. A hash function gets a string as input and returns a `Promise` that resolves a string.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+function myOwnHashFunction(input: string) {
+    return Promise.resolve(sha256(input));
+}
+const db = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
+
 ## Methods
 
 ### Observe with $

@@ -14,6 +14,7 @@ import {
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
 
+
 /**
  * This buffer rembemers previous change events
  * so that queries can use them on .exec()
@@ -151,19 +152,13 @@ export class ChangeEventBuffer<RxDocType> {
     /**
      * no matter how many operations are done on one document,
      * only the last operation has to be checked to calculate the new state
-     * this function reduces the events to the last ChangeEvent of each doc
+     * this function reduces the events to the last ChangeEvent of each doc.
+     * This functionality is currently disabled. It is questionable if
+     * pre-merging the events would really be faster or actually slower.
      */
     reduceByLastOfDoc(changeEvents: RxChangeEvent<RxDocType>[]): RxChangeEvent<RxDocType>[] {
         this.processTasks();
         return changeEvents.slice(0);
-        // TODO the old implementation was wrong
-        // because it did not correctly reassigned the previousData of the changeevents
-        // this should be added to the event-reduce library and not be done in RxDB
-        const docEventMap: any = {};
-        changeEvents.forEach(changeEvent => {
-            docEventMap[changeEvent.documentId] = changeEvent;
-        });
-        return Object.values(docEventMap);
     }
 
     close() {

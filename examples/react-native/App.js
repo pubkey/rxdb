@@ -11,7 +11,7 @@ export const App = () => {
 
     useEffect(() => {
         const initDB = async () => {
-            const _db = await initializeDb();
+            const _db = await initializeDb(true);
             setDb(_db);
         };
         initDB().then();

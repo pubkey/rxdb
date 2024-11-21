@@ -31,7 +31,6 @@ import {
     RxDatabase,
     RxError,
     addRxPlugin,
-    RANDOM_STRING,
     runXTimes,
     RxCollection,
     ensureNotFalsy,
@@ -732,14 +731,6 @@ describe('rx-collection.test.ts', () => {
                         const reverseDescIds = descIds.slice(0).reverse();
 
                         assert.deepStrictEqual(ascIds, reverseDescIds);
-
-                        /**
-                         * TODO Here we have increasing age-values for the test data.
-                         * But we also should include two documents with the same age,
-                         * to ensure the sorting is deterministic. But this fails
-                         * for the pouchdb RxStorage at this point in time.
-                         */
-
                         c.database.close();
                     });
                     it('find the same twice', async () => {
@@ -852,16 +843,7 @@ describe('rx-collection.test.ts', () => {
                         );
 
                         const query: any = {
-                            selector: {
-                                passportId: {
-                                    /**
-                                     * TODO The skip-query randomly returns wrong results
-                                     * when this $ne is not set.
-                                     * We should create an issue at the pouchdb repo.
-                                     */
-                                    $ne: RANDOM_STRING
-                                }
-                            },
+                            selector: {},
                             sort: [
                                 { passportId: 'asc' }
                             ]
@@ -875,15 +857,6 @@ describe('rx-collection.test.ts', () => {
                         c.database.close();
                     });
                     it('skip first in order', async () => {
-                        /**
-                         * TODO this test fails on pouchdb when the schema contains an index.
-                         * Likely because pouchdb then skips the internal index-document, not the
-                         * human documents, which then returns wrong results.
-                         * Wait for the next pouchdb release and then try again,
-                         * or create an issue at the pouchdb repo.
-                         */
-                        // const c = humansCollection.create(5);
-
                         const db = await createRxDatabase<{ humans: RxCollection<HumanDocumentType>; }>({
                             name: randomToken(10),
                             storage: config.storage.getStorage(),
@@ -1081,15 +1054,7 @@ describe('rx-collection.test.ts', () => {
                  * @link https://github.com/pubkey/rxdb/pull/3785
                  */
                 it('#3785 should work when the collection name contains a dash or other special characters', async () => {
-                    if (
-                        !config.storage.hasPersistence ||
-                        /**
-                         * TODO this test makes no sense in dexie-worker
-                         * because there we use the in-memory persistence
-                         * which is not really persistent between different writes.
-                         */
-                        config.storage.name === 'dexie-worker'
-                    ) {
+                    if (!config.storage.hasPersistence) {
                         return;
                     }
 
