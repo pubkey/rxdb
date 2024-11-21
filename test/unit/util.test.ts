@@ -293,7 +293,11 @@ describe('util.test.js', () => {
     });
     describe('.deepFreezeWhenDevMode()', () => {
         if (isBun) {
-            // TODO for somehow bun has no strict mode here
+            /**
+             * Bun has no strict mode here.
+             * This is likely a Bun bug and might
+             * be fixed in future versions.
+             */
             return;
         }
         it('should have enabled dev-mode', () => {

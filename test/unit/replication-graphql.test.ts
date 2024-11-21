@@ -2384,11 +2384,7 @@ describe('replication-graphql.test.ts', () => {
                     collection,
                     url: server.url,
                     push: {
-                        /**
-                         * TODO for whatever reason this test
-                         * does not work with batchSize=1
-                         */
-                        batchSize: 10,
+                        batchSize: 1,
                         queryBuilder: doc => {
                             const ret = pushQueryBuilder(doc);
                             return ret;
