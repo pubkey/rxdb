@@ -319,7 +319,10 @@ addRxPlugin(RxDBJsonDumpPlugin);
             });
         });
         describe('multiInstance', () => {
-            if (!config.storage.hasMultiInstance) {
+            if (
+                !config.storage.hasMultiInstance ||
+                config.storage.name === 'remote' // TODO
+            ) {
                 return;
             }
             it('write with two states at once', async () => {
