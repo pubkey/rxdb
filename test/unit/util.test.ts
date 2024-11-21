@@ -34,10 +34,7 @@ import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode/index.mjs';
-import {
-    nativeSha256,
-    jsSha256
-} from '../../plugins/utils/index.mjs';
+import { nativeSha256 } from '../../plugins/utils/index.mjs';
 import {
     isFastMode,
     isBun,
@@ -65,21 +62,6 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-        });
-        it('both versions must return the exact same value', async () => {
-            const values: string[] = [
-                'foobar',
-                randomString(100),
-                'asdf#äge#äö34g?!§"=$%'
-            ];
-
-            for (const value of values) {
-                const hashNative = await nativeSha256(value);
-                const hashJavaScript = await jsSha256(value);
-                if (hashJavaScript !== hashNative) {
-                    throw new Error('hashes not equal for value: ' + value);
-                }
-            }
         });
     });
     describe('.sortObject()', () => {
