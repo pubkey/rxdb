@@ -2,8 +2,6 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX bulkInsert with primary keys set in preInsert hook broken in v15.38.3 [#6608](https://github.com/pubkey/rxdb/pull/6608)
-- ADD possibility to pass graphql-ws options into the replication options [#6598](https://github.com/pubkey/rxdb/pull/6598)
 
 🚀 **RxDB v16 is released**
 
@@ -13,6 +11,11 @@
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.39.0 (21 November 2024)
+
+- FIX bulkInsert with primary keys set in preInsert hook broken in v15.38.3 [#6608](https://github.com/pubkey/rxdb/pull/6608)
+- ADD possibility to pass graphql-ws options into the replication options [#6598](https://github.com/pubkey/rxdb/pull/6598)
 
 ### 15.38.3 (18 November 2024)
 

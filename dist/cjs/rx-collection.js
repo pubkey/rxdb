@@ -202,9 +202,9 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     var insertRows;
     if (this.hasHooks('pre', 'insert')) {
       insertRows = await Promise.all(docsData.map(docData => {
-        ids.add(docData[primaryPath]);
         var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, docData);
         return this._runHooks('pre', 'insert', useDocData).then(() => {
+          ids.add(useDocData[primaryPath]);
           return {
             document: useDocData
           };
@@ -215,8 +215,8 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
       var _schema = this.schema;
       for (var index = 0; index < docsData.length; index++) {
         var docData = docsData[index];
-        ids.add(docData[primaryPath]);
         var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_schema, docData);
+        ids.add(useDocData[primaryPath]);
         insertRows[index] = {
           document: useDocData
         };
