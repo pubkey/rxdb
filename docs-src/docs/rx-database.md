@@ -103,6 +103,24 @@ const db2 = await createRxDatabase({
 });
 ```
 
+
+### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide an own hash function instead. A hash function gets a string as inpput and returns a `Promise` that resolves a string.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+function myOwnHashFunction(input: string) {
+    return Promise.resolve(sha256(input));
+}
+const db = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+
 ## Methods
 
 ### Observe with $
