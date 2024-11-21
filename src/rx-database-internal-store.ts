@@ -273,7 +273,6 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(
         return false;
     }
 
-
     return true;
 }
 

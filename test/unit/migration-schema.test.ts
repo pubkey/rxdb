@@ -903,7 +903,7 @@ describeParallel('migration-schema.test.ts', function () {
             // fake an older database state by changing the internal version.
             const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
             const newTokenDoc = clone(tokenDoc);
-            newTokenDoc.data.rxdbVersion = '14.x.x';
+            newTokenDoc.data.rxdbVersion = '15.x.x';
 
             const writeResponse = await db.internalStore.bulkWrite([{
                 previous: tokenDoc,

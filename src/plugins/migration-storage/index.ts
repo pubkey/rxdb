@@ -10,10 +10,7 @@ import {
     blobToBase64String,
     prepareQuery,
     PreparedQuery,
-    FilledMangoQuery,
-    ensureNotFalsy,
-    toArray,
-    arrayFilterNotEmpty
+    FilledMangoQuery
 } from '../../index.ts';
 
 export type RxStorageOld<A, B> = RxStorage<A, B> | any;
@@ -50,7 +47,7 @@ export type MigrateStorageParams = {
  * Migrates collections of RxDB version A and puts them
  * into a RxDatabase that is created with version B.
  * This function only works from the previous major version upwards.
- * Do not use it to migrate like rxdb v9 to v14. 
+ * Do not use it to migrate like rxdb v9 to v14.
  */
 export async function migrateStorage(
     params: MigrateStorageParams
@@ -100,27 +97,6 @@ export async function migrateCollection<RxDocType>(
     let schema = collection.schema.jsonSchema;
     const primaryPath = collection.schema.primaryPath;
     const oldDatabaseInstanceToken = randomToken(10);
-
-
-    /**
-     * In RxDB v15 we changed how the indexes are created.
-     * Before (v14), the storage prepended the _deleted field
-     * to all indexes.
-     * In v15, RxDB will prepend the _deleted field BEFORE sending
-     * it to the storage. Therefore we have to strip these fields
-     * when crating v14 storage instances.
-     */
-    if (!oldStorage.rxdbVersion && schema.indexes) {
-        schema = clone(schema);
-        schema.indexes = ensureNotFalsy(schema.indexes).map(index => {
-            index = toArray(index).filter(field => field !== '_deleted');
-            if (index.includes('_meta.lwt')) {
-                return null;
-            }
-            return index;
-        }).filter(arrayFilterNotEmpty);
-
-    }
 
     const oldStorageInstance = await oldStorage.createStorageInstance({
         databaseName: oldDatabaseName,
