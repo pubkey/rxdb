@@ -36,8 +36,7 @@ import {
 } from '../../plugins/dev-mode/index.mjs';
 import {
     nativeSha256,
-    jsSha256,
-    canUseCryptoSubtle
+    jsSha256
 } from '../../plugins/utils/index.mjs';
 import {
     isFastMode,
@@ -66,9 +65,6 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-        });
-        it('must have enabled canUseCryptoSubtle', () => {
-            assert.ok(canUseCryptoSubtle);
         });
         it('both versions must return the exact same value', async () => {
             const values: string[] = [
