@@ -31,7 +31,6 @@ import {
     RxDatabase,
     RxError,
     addRxPlugin,
-    RANDOM_STRING,
     runXTimes,
     RxCollection,
     ensureNotFalsy,

@@ -9,10 +9,7 @@ import {
     randomToken,
     promiseWait,
     clone,
-    getHeightOfRevision,
     lastOfArray,
-    RxStorageInstance,
-    now,
     addRxPlugin,
     RxCollection,
     createBlob,
@@ -30,8 +27,6 @@ import {
     RxMigrationStatus,
     getOldCollectionMeta
 } from '../../plugins/migration-schema/index.mjs';
-import { HumanDocumentType } from '../../plugins/test-utils/index.mjs';
-import { EXAMPLE_REVISION_1 } from '../../plugins/test-utils/index.mjs';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';

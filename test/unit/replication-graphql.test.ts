@@ -1412,7 +1412,7 @@ describe('replication-graphql.test.ts', () => {
                     name: 'many1server'
                 }));
 
-                await waitUntil(async () => {
+                await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     const should = (amount * 2) + 2;
                     return docsOnServer2.length === should;

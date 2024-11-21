@@ -2,7 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { randomString, wait } from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import {
     randomToken,
     defaultHashSha256,
@@ -34,7 +34,6 @@ import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode/index.mjs';
-import { nativeSha256 } from '../../plugins/utils/index.mjs';
 import {
     isFastMode,
     isBun,

@@ -11,7 +11,6 @@ import type {
 } from './types/index.d.ts';
 import {
     appendToArray,
-    flatClone,
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
 
