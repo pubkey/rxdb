@@ -434,15 +434,13 @@ describeParallel('reactive-query.test.js', () => {
                 return lastEmitted.state.providers === 9;
             });
 
-            // TODO this fails for unknown reasons on slow devices
-            // await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
+            await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
 
             const last = emitted[emitted.length - 1];
             assert.strictEqual(last.state.providers, 9);
 
             // on own collection, all events should have propagated
-            // TODO this fails for unknown reason on slow device
-            // assert.strictEqual(emittedOwn.length, 10);
+            assert.strictEqual(emittedOwn.length, 10);
 
             sub.unsubscribe();
             sub2.unsubscribe();

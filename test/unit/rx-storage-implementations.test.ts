@@ -2133,7 +2133,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              */
             it('should be able to insert and fetch many documents', async () => {
                 if (isDeno) {
-                    // TODO
+                    // DenoKV is too slow and would timeout on this test
                     return;
                 }
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({

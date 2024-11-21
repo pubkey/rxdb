@@ -105,21 +105,21 @@ describeParallel('reactivity.test.js', () => {
         it('RxLocalDocument.$$', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.$$ as any; // TODO fix type
+            const signal: ReactivityType = localDoc.$$ as any;
             assert.deepStrictEqual(signal.init.data, { bar: 1 });
             collection.database.close();
         });
         it('RxLocalDocument.get$$()', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.get$$('bar') as any; // TODO fix type
+            const signal: ReactivityType = localDoc.get$$('bar') as any;
             assert.deepStrictEqual(signal.init, 1);
             collection.database.close();
         });
         it('RxLocalDocument.deleted$$', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.deleted$$ as any; // TODO fix type
+            const signal: ReactivityType = localDoc.deleted$$ as any;
             assert.deepStrictEqual(signal.init, false);
 
             let lastEmit = false;

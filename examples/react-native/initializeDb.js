@@ -22,7 +22,7 @@ export const HeroesCollectionName = 'heroes';
 
 const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG_PROD === 'true';
 
-const initialize = async () => {
+async function initialize(withReplication) {
     if (isDevelopment) {
         await addRxPlugin(RxDBDevModePlugin);
     }
@@ -55,29 +55,31 @@ const initialize = async () => {
     }
 
 
-    try {
-        console.log('Start sync...');
-        const replicationState = replicateCouchDB({
-            collection: db[HeroesCollectionName],
-            url: `${syncURL}/${HeroesCollectionName}/`,
-            fetch: fetch,
-            pull: {},
-            push: {}
-        });
+    if (withReplication) {
+        try {
+            console.log('Start sync...');
+            const replicationState = replicateCouchDB({
+                collection: db[HeroesCollectionName],
+                url: `${syncURL}/${HeroesCollectionName}/`,
+                fetch: fetch,
+                pull: {},
+                push: {}
+            });
 
-        console.dir(replicationState);
+            console.dir(replicationState);
 
-        replicationState.active$.subscribe((v) => {
-            console.log('Replication active$:', v)
-        })
-        replicationState.canceled$.subscribe((v) => {
-            console.log('Replication canceled$:', v)
-        })
-        replicationState.error$.subscribe(async error => {
-            console.error('Replication error$:',error)
-        })
-    } catch (err) {
-        console.log('Error initialize sync', err);
+            replicationState.active$.subscribe((v) => {
+                console.log('Replication active$:', v)
+            })
+            replicationState.canceled$.subscribe((v) => {
+                console.log('Replication canceled$:', v)
+            })
+            replicationState.error$.subscribe(async error => {
+                console.error('Replication error$:', error)
+            })
+        } catch (err) {
+            console.log('Error initialize sync', err);
+        }
     }
 
     return db;

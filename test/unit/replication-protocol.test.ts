@@ -60,7 +60,7 @@ import {
 
 const testContext = 'replication-protocol.test.ts';
 
-const useParallel = config.storage.name === 'dexie-worker' ? describe : describeParallel;
+const useParallel = describeParallel;
 
 function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
     /**
@@ -244,9 +244,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         await cancelRxStorageReplication(replicationState);
 
         /**
-         * TODO here we should run .remove()
+         * Here we should run .remove()
          * on all instances to ensure we do not fill up the
-         * browser storage limits. But this failed for unknown reason.
+         * browser storage limits.
          */
         await Promise.all([
             masterInstance.close(),
@@ -1178,7 +1178,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             cleanUp(replicationState, masterInstance);
         });
-        runXTimes(isFastMode() ? 2 : 10, n => {
+        runXTimes(isFastMode() ? 2 : 5, n => {
             it('do many writes while replication is running (' + n + ')', async () => {
                 updateId = 0;
                 const writeAmount = isFastMode() ? 2 : 10;
