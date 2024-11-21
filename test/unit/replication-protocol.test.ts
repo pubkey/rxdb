@@ -249,8 +249,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
          * browser storage limits.
          */
         await Promise.all([
-            masterInstance.remove(),
-            replicationState.input.forkInstance.remove(),
+            masterInstance.close(),
+            replicationState.input.forkInstance.close(),
             replicationState.input.metaInstance.remove()
         ]).catch(() => {
             /**
