@@ -84,7 +84,7 @@ export const ERROR_MESSAGES = {
     COL3: 'RxCollection.upsert() does not work without primary',
     COL4: 'RxCollection.incrementalUpsert() does not work without primary',
     COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
-    COL6: 'RxCollection.findOne() needs a queryObject or string',
+    COL6: 'RxCollection.findOne() needs a queryObject or string. Notice that in RxDB, primary keys must be strings and cannot be numbers.',
     COL7: 'hook must be a function',
     COL8: 'hooks-when not known',
     COL9: 'RxCollection.addHook() hook-name not known',

@@ -6,7 +6,9 @@ import type {
     RxJsonSchema,
     RxDocumentData,
     MangoQuerySelector,
-    PreparedQuery
+    PreparedQuery,
+    RxQueryOP,
+    RxPluginPrePrepareRxQueryArgs
 } from '../../types/index.d.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { deepEqual } from '../utils/index.ts';
@@ -190,4 +192,32 @@ export function ensureObjectDoesNotContainRegExp(selector: any) {
             ensureObjectDoesNotContainRegExp(value);
         }
     });
+}
+
+
+/**
+ * People often use queries wrong
+ * so we have some checks here.
+ * For example people use numbers as primary keys
+ * which is not allowed.
+ */
+export function isQueryAllowed(args: RxPluginPrePrepareRxQueryArgs) {
+    if (args.op === 'findOne') {
+        if (
+            typeof args.queryObj === 'number' ||
+            Array.isArray(args.queryObj)
+        ) {
+            throw newRxTypeError('COL6', {
+                collection: args.collection.name,
+                queryObj: args.queryObj
+            });
+        }
+    } else if (args.op === 'find') {
+        if (typeof args.queryObj === 'string') {
+            throw newRxError('COL5', {
+                collection: args.collection.name,
+                queryObj: args.queryObj
+            });
+        }
+    }
 }

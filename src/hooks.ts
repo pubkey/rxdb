@@ -41,6 +41,7 @@ export const HOOKS = {
      * gets RxSchema as attribute
      */
     createRxSchema: [],
+    prePrepareRxQuery: [],
     preCreateRxQuery: [],
     /**
      * Runs before a query is send to the

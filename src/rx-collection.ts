@@ -622,11 +622,12 @@ export class RxCollectionBase<
         Reactivity
     > {
         ensureRxCollectionIsNotClosed(this);
-        if (typeof queryObj === 'string') {
-            throw newRxError('COL5', {
-                queryObj
-            });
-        }
+
+        runPluginHooks('prePrepareRxQuery', {
+            op: 'find',
+            queryObj,
+            collection: this
+        });
 
         if (!queryObj) {
             queryObj = _getDefaultQuery();
@@ -646,15 +647,11 @@ export class RxCollectionBase<
     > {
         ensureRxCollectionIsNotClosed(this);
 
-        // TODO move this check to dev-mode plugin
-        if (
-            typeof queryObj === 'number' ||
-            Array.isArray(queryObj)
-        ) {
-            throw newRxTypeError('COL6', {
-                queryObj
-            });
-        }
+        runPluginHooks('prePrepareRxQuery', {
+            op: 'findOne',
+            queryObj,
+            collection: this
+        });
 
         let query;
 
@@ -669,7 +666,6 @@ export class RxCollectionBase<
             if (!queryObj) {
                 queryObj = _getDefaultQuery();
             }
-
 
             // cannot have limit on findOne queries because it will be overwritten
             if ((queryObj as MangoQuery).limit) {

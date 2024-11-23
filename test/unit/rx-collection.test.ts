@@ -527,7 +527,7 @@ describe('rx-collection.test.ts', () => {
                         await AsyncTestUtil.assertThrows(
                             () => (c as any).find('foobar').exec(),
                             'RxError',
-                            'findOne'
+                            'COL5'
                         );
                         c.database.close();
                     });
