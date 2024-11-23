@@ -1,6 +1,4 @@
 import assert from 'assert';
-import { randomBoolean, randomNumber, wait, waitUntil } from 'async-test-util';
-import { Observable } from 'rxjs';
 
 import config, { describeParallel } from './config.ts';
 
@@ -8,22 +6,15 @@ import {
     createRxDatabase,
     randomToken,
     addRxPlugin,
-    lastOfArray,
-    RxReactivityFactory,
-    RxState,
-    runXTimes,
     RxCollection,
     RxDatabase
 } from '../../plugins/core/index.mjs';
 import {
     HumanDocumentType,
-    isDeno,
-    isFastMode,
     schemaObjects,
     schemas
 } from '../../plugins/test-utils/index.mjs';
 import {
-    nextRxStateId,
     RxDBStatePlugin
 } from '../../plugins/state/index.mjs';
 addRxPlugin(RxDBStatePlugin);

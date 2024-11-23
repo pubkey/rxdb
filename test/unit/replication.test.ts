@@ -17,7 +17,8 @@ import {
     schemas,
     humansCollection,
     isFastMode,
-    ensureReplicationHasNoErrors
+    ensureReplicationHasNoErrors,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -40,7 +41,9 @@ import {
     RxAttachmentCreator,
     DeepReadonly,
     requestIdlePromise,
-    prepareQuery
+    prepareQuery,
+    addRxPlugin,
+    getLastCheckpointDoc
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -51,10 +54,12 @@ import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow,
-    RxStorage
+    RxStorage,
+    RxStorageDefaultCheckpoint
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 
 
 type CheckpointType = any;
@@ -110,6 +115,8 @@ export function getPushHandler<RxDocType>(
 
 
 describe('replication.test.ts', () => {
+    addRxPlugin(RxDBAttachmentsPlugin);
+
     if (!config.storage.hasReplication) {
         return;
     }
@@ -118,8 +125,28 @@ describe('replication.test.ts', () => {
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
     }> {
-        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomToken(10), false);
-        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomToken(10), false);
+        const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+        if (docsAmount.local > 0) {
+            await localCollection.bulkInsert(
+                new Array(docsAmount.local)
+                    .fill(0)
+                    .map(() => schemaObjects.humanWithTimestampData({
+                        id: randomStringWithSpecialChars(8, 12) + '-local'
+                    }))
+            );
+        }
+        if (docsAmount.remote > 0) {
+            await remoteCollection.bulkInsert(
+                new Array(docsAmount.remote)
+                    .fill(0)
+                    .map(() => schemaObjects.humanWithTimestampData({
+                        id: randomStringWithSpecialChars(8, 12) + '-remote'
+                    }))
+            );
+        }
+
         return {
             localCollection,
             remoteCollection
@@ -218,8 +245,8 @@ describe('replication.test.ts', () => {
                 docsPerSide * 2
             );
 
-            localCollection.database.close();
-            remoteCollection.database.close();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
         });
         it('should allow asynchronous push and pull modifiers', async () => {
             const docsPerSide = 5;
@@ -227,6 +254,7 @@ describe('replication.test.ts', () => {
                 local: docsPerSide,
                 remote: docsPerSide
             });
+
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -252,6 +280,7 @@ describe('replication.test.ts', () => {
             });
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
 
             const docsLocal = await localCollection.find().exec();
             const docsRemote = await remoteCollection.find().exec();
@@ -260,10 +289,11 @@ describe('replication.test.ts', () => {
             assert.strictEqual(pushModifiedRemote.length, docsPerSide);
 
             const pullModifiedLocal = docsLocal.filter(d => d.name === 'pull-modified');
+
             /**
              * Pushed documents will be also pull modified
              * when they are fetched from the master again.
-             * So here we just do a gte check instead of a strict equal.
+             * So here we just do a $gte check instead of a strict equal.
              */
             assert.ok(pullModifiedLocal.length >= docsPerSide);
 
@@ -935,6 +965,75 @@ describe('replication.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        it('upstreamInitialSync() running on all data instead of continuing from checkpoint', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 0,
+                remote: 30
+            });
+
+            let replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    batchSize: 10
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    batchSize: 10
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            /**
+             * After the replication is in sync,
+             * our up-checkpoint should have the last remote document
+             * as id. This ensure that restarting the replication
+             * will not lead to having all pulled documents fetched from
+             * the storage and be checked again.
+             */
+            const lastRemoteDoc = await remoteCollection.findOne({ sort: [{ id: 'desc' }] }).exec(true);
+            const checkpointAfter = await getLastCheckpointDoc<HumanWithTimestampDocumentType, RxStorageDefaultCheckpoint>(
+                ensureNotFalsy(replicationState.internalReplicationState),
+                'up'
+            );
+            assert.strictEqual(ensureNotFalsy(checkpointAfter).id, lastRemoteDoc.id);
+            await replicationState.cancel();
+
+            /**
+             * Restarting the collection should not pull or push any more documents
+             */
+            replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    async handler(a, b) {
+                        const pullResult = await getPullHandler(remoteCollection)(a, b);
+                        if (pullResult.documents.length > 0) {
+                            throw new Error('must not pull any documents');
+                        }
+                        return pullResult;
+                    },
+                    batchSize: 10
+                },
+                push: {
+                    handler() {
+                        throw new Error('must not push');
+                    },
+                    batchSize: 10
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            await localCollection.database.close();
+            await remoteCollection.database.close();
+        });
         it('#4190 Composite Primary Keys broken on replicated collections', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
