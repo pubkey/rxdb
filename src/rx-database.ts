@@ -70,7 +70,6 @@ import {
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
 import type { RxBackupState } from './plugins/backup/index.ts';
-import { ObliviousSet } from 'oblivious-set';
 import {
     ensureStorageTokenDocumentExists,
     getAllCollectionDocuments,
