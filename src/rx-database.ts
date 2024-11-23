@@ -224,16 +224,6 @@ export class RxDatabaseBase<
     public storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>> = PROMISE_RESOLVE_FALSE as any;
 
     /**
-     * Contains the ids of all event bulks that have been emitted
-     * by the database.
-     * Used to detect duplicates that come in again via BroadcastChannel
-     * or other streams.
-     * TODO instead of having this here, we should add a test to ensure each RxStorage
-     * behaves equal and does never emit duplicate eventBulks.
-     */
-    public emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
-
-    /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
      * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
@@ -241,12 +231,6 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEventBulk: RxChangeEventBulk<any>) {
-        if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
-            throw new Error('duplicate IDS !!!');
-            return;
-        }
-        this.emittedEventBulkIds.add(changeEventBulk.id);
-
         // emit into own stream
         this.eventBulks$.next(changeEventBulk);
     }
