@@ -987,8 +987,6 @@ describe('replication.test.ts', () => {
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
             await replicationState.awaitInSync();
-            await replicationState.cancel();
-
 
             /**
              * After the replication is in sync,
