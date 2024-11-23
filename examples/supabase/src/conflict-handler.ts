@@ -10,6 +10,6 @@ export const conflictHandler: RxConflictHandler<RxHeroDocumentType> = {
          * The default conflict handler will always
          * drop the fork state and use the master state instead.
          */
-        return i.realMasterState;
+        return Promise.resolve(i.realMasterState);
     }
 };
