@@ -242,6 +242,7 @@ export class RxDatabaseBase<
      */
     $emit(changeEventBulk: RxChangeEventBulk<any>) {
         if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
+            throw new Error('duplicate IDS !!!');
             return;
         }
         this.emittedEventBulkIds.add(changeEventBulk.id);
