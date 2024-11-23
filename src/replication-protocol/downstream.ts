@@ -270,7 +270,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
          * Run in the queue
          * with all open documents from nonPersistedFromMaster.
          */
-        persistenceQueue = persistenceQueue.then(() => {
+        persistenceQueue = persistenceQueue.then(async () => {
 
             const downDocsById: ById<WithDeletedAndAttachments<RxDocType>> = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
