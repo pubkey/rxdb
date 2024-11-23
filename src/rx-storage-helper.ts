@@ -857,7 +857,6 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 
 const BULK_WRITE_ROWS_BY_RESPONSE = new WeakMap<RxStorageBulkWriteResponse<any>, BulkWriteRow<any>[]>();
 const BULK_WRITE_SUCCESS_MAP = new WeakMap<RxStorageBulkWriteResponse<any>, RxDocumentData<any>[]>();
-let c = 0;
 
 /**
  * For better performance, this is done only when accessed
@@ -899,9 +898,6 @@ export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
                     ret[index] = stripAttachmentsDataFromDocument(doc);
                 }
             }
-            c = c + ret.length;
-
-            console.log('c: ' + c);
             return ret;
         }
     );
