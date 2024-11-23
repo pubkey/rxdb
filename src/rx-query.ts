@@ -55,6 +55,7 @@ import {
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 import { getQueryPlan } from './query-planner.ts';
+import { removeRxDocuments } from './rx-document.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -173,12 +174,6 @@ export class RxQueryBase<
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
 
-    // time stamps on when the last full exec over the database has run
-    // used to properly handle events that happen while the find-query is running
-    // TODO do we still need these properties?
-    public _lastExecStart: number = 0;
-    public _lastExecEnd: number = 0;
-
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -230,9 +225,6 @@ export class RxQueryBase<
      */
     async _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        this._lastExecStart = now();
-
-
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const result = await this.collection.storageInstance.count(preparedQuery);
@@ -276,7 +268,6 @@ export class RxQueryBase<
 
         const docsPromise = queryCollection<RxDocType>(this as any);
         return docsPromise.then(docs => {
-            this._lastExecEnd = now();
             return docs;
         });
     }
@@ -395,8 +386,11 @@ export class RxQueryBase<
             .exec()
             .then(docs => {
                 if (Array.isArray(docs)) {
-                    // TODO use a bulk operation instead of running .remove() on each document
-                    return Promise.all(docs.map(doc => doc.remove()));
+                    if (docs.length === 0) {
+                        return [];
+                    } else {
+                        return removeRxDocuments(docs).then(r => r.docs);
+                    }
                 } else {
                     return (docs as any).remove();
                 }
