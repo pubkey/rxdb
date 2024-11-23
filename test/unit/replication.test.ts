@@ -1001,7 +1001,7 @@ describe('replication.test.ts', () => {
                 'up'
             );
             assert.strictEqual(ensureNotFalsy(checkpointAfter).id, lastRemoteDoc.id);
-
+            await replicationState.cancel();
 
             /**
              * Restarting the collection should not pull or push any more documents
