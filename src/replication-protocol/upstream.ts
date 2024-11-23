@@ -92,7 +92,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     };
 
     const sub = state.input.forkInstance.changeStream()
-        .subscribe(async (eventBulk) => {
+        .subscribe((eventBulk) => {
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
