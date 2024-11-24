@@ -207,7 +207,7 @@ export const ERROR_MESSAGES = {
     SC24: 'SchemaCheck: required fields must be set via array. See https://spacetelescope.github.io/understanding-json-schema/reference/object.html#required',
     SC25: 'SchemaCheck: compoundIndexes needs to be specified in the indexes field',
     SC26: 'SchemaCheck: indexes needs to be specified at collection schema level',
-    SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
+    // removed in 16.0.0 - SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
     SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
     SC29: 'SchemaCheck: missing object key \'properties\'',
     SC30: 'SchemaCheck: primaryKey is required',
