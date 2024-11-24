@@ -24,8 +24,9 @@ The main reason to use this is to improve initial page load and query/write time
 - The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
 
 
-:::note Consider using the Memory-Mapped RxStorage
-While the `memory-synced` storage works, it is not the best option for most users. Instead consider using the (newer) [memory-mapped RxStorage](./rx-storage-memory-mapped.md) which has better trade-offs and is easier to configure.
+:::note The memory-synced RxStorage was removed in RxDB version 16
+
+The `memory-synced` was removed in RxDB version 16. Instead consider using the newer and better [memory-mapped RxStorage](./rx-storage-memory-mapped.md) which has better trade-offs and is easier to configure.
 :::
 
 ## Usage
