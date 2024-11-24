@@ -12,7 +12,7 @@ import type {
 } from '../../types/index.d.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { deepEqual } from '../utils/index.ts';
-import { prepareQuery } from '../../rx-query.ts';
+import { prepareQuery } from '../../rx-query-helper.ts';
 
 /**
  * accidentally passing a non-valid object into the query params

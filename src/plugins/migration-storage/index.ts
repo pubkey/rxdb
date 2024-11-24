@@ -120,24 +120,10 @@ export async function migrateCollection<RxDocType>(
         skip: 0
     };
 
-    /**
-     * In RxDB v15 we removed statics.prepareQuery()
-     * But to be downwards compatible, still use that
-     * when migrating from an old storage.
-     * TODO remove this in the next major version. v16.
-     */
-    let preparedQuery: PreparedQuery<RxDocType>;
-    if (oldStorage.statics && oldStorage.statics.prepareQuery) {
-        preparedQuery = oldStorage.statics.prepareQuery(
-            schema,
-            plainQuery
-        );
-    } else {
-        preparedQuery = prepareQuery(
-            schema,
-            plainQuery
-        );
-    }
+    const preparedQuery = prepareQuery(
+        schema,
+        plainQuery
+    );
 
     while (true) {
         log('loop once');

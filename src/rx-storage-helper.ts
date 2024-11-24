@@ -39,14 +39,14 @@ import {
     createRevision,
     ensureNotFalsy,
     flatClone,
+    getFromMapOrCreate,
     lastOfArray,
     now,
     promiseWait,
     randomToken
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
-import { prepareQuery } from './rx-query.ts';
-import { normalizeMangoQuery } from './rx-query-helper.ts';
+import { normalizeMangoQuery, prepareQuery } from './rx-query-helper.ts';
 import { runPluginHooks } from './hooks.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
@@ -524,9 +524,6 @@ export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreation
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
 
-
-const BULK_WRITE_SUCCESS_MAP = new WeakMap<RxStorageBulkWriteResponse<any>, RxDocumentData<any>>();
-
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -558,7 +555,7 @@ export function getWrappedStorageInstance<
         collectionName: storageInstance.collectionName,
         databaseName: storageInstance.databaseName,
         options: storageInstance.options,
-        bulkWrite(
+        async bulkWrite(
             rows: BulkWriteRow<RxDocType>[],
             context: string
         ) {
@@ -596,91 +593,86 @@ export function getWrappedStorageInstance<
                 rows: toStorageWriteRows
             });
 
-            return database.lockedRun(
+            const writeResult = await database.lockedRun(
                 () => storageInstance.bulkWrite(
                     toStorageWriteRows,
                     context
                 )
-            )
-                /**
-                 * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
-                 * without sending the previous document version.
-                 * But for better developer experience, RxDB does allow to re-insert deleted documents.
-                 * We do this by automatically fixing the conflict errors for that case
-                 * by running another bulkWrite() and merging the results.
-                 * @link https://github.com/pubkey/rxdb/pull/3839
-                 */
-                .then(writeResult => {
-                    const useWriteResult: typeof writeResult = {
-                        error: []
-                    };
+            );
 
-                    /**
-                     * TODO do we really have to build up the successArray
-                     * here directly? Maybe we only need it when it is really accessed.
-                     */
-                    const successArray = getWrittenDocumentsFromBulkWriteResponse(
-                        primaryPath,
-                        toStorageWriteRows,
-                        writeResult
-                    );
-                    BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
+            /**
+             * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
+             * without sending the previous document version.
+             * But for better developer experience, RxDB does allow to re-insert deleted documents.
+             * We do this by automatically fixing the conflict errors for that case
+             * by running another bulkWrite() and merging the results.
+             * @link https://github.com/pubkey/rxdb/pull/3839
+            */
+            const useWriteResult: typeof writeResult = {
+                error: []
+            };
+            BULK_WRITE_ROWS_BY_RESPONSE.set(useWriteResult, toStorageWriteRows);
 
-                    const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
-                        ? []
-                        : writeResult.error
-                            .filter((error) => {
-                                if (
-                                    error.status === 409 &&
-                                    !error.writeRow.previous &&
-                                    !error.writeRow.document._deleted &&
-                                    ensureNotFalsy(error.documentInDb)._deleted
-                                ) {
-                                    return true;
-                                }
+            const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
+                ? []
+                : writeResult.error
+                    .filter((error) => {
+                        if (
+                            error.status === 409 &&
+                            !error.writeRow.previous &&
+                            !error.writeRow.document._deleted &&
+                            ensureNotFalsy(error.documentInDb)._deleted
+                        ) {
+                            return true;
+                        }
 
-                                // add the "normal" errors to the parent error array.
-                                useWriteResult.error.push(error);
-                                return false;
-                            }) as any;
-                    if (reInsertErrors.length > 0) {
-                        const reInserts: BulkWriteRow<RxDocType>[] = reInsertErrors
-                            .map((error) => {
-                                return {
-                                    previous: error.documentInDb,
-                                    document: Object.assign(
-                                        {},
-                                        error.writeRow.document,
-                                        {
-                                            _rev: createRevision(
-                                                database.token,
-                                                error.documentInDb
-                                            )
-                                        }
+                        // add the "normal" errors to the parent error array.
+                        useWriteResult.error.push(error);
+                        return false;
+                    }) as any;
+            if (reInsertErrors.length > 0) {
+                const reInsertIds = new Set<string>();
+                const reInserts: BulkWriteRow<RxDocType>[] = reInsertErrors
+                    .map((error) => {
+                        reInsertIds.add(error.documentId);
+                        return {
+                            previous: error.documentInDb,
+                            document: Object.assign(
+                                {},
+                                error.writeRow.document,
+                                {
+                                    _rev: createRevision(
+                                        database.token,
+                                        error.documentInDb
                                     )
-                                };
-                            });
-
-                        return database.lockedRun(
-                            () => storageInstance.bulkWrite(
-                                reInserts,
-                                context
+                                }
                             )
-                        ).then(subResult => {
-                            appendToArray(useWriteResult.error, subResult.error);
+                        };
+                    });
 
-                            const subSuccess = getWrittenDocumentsFromBulkWriteResponse(
-                                primaryPath,
-                                reInserts,
-                                subResult
-                            );
-                            appendToArray(successArray, subSuccess);
+                const subResult = await database.lockedRun(
+                    () => storageInstance.bulkWrite(
+                        reInserts,
+                        context
+                    )
+                );
 
-                            return useWriteResult;
-                        });
-                    }
-                    return useWriteResult;
-                });
+                appendToArray(useWriteResult.error, subResult.error);
+                const successArray = getWrittenDocumentsFromBulkWriteResponse(
+                    primaryPath,
+                    toStorageWriteRows,
+                    useWriteResult,
+                    reInsertIds
+                );
+                const subSuccess = getWrittenDocumentsFromBulkWriteResponse(
+                    primaryPath,
+                    reInserts,
+                    subResult
+                );
+                appendToArray(successArray, subSuccess);
+                return useWriteResult;
+            }
+            return useWriteResult;
         },
         query(preparedQuery) {
             return database.lockedRun(
@@ -861,40 +853,52 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 }
 
 
+const BULK_WRITE_ROWS_BY_RESPONSE = new WeakMap<RxStorageBulkWriteResponse<any>, BulkWriteRow<any>[]>();
+const BULK_WRITE_SUCCESS_MAP = new WeakMap<RxStorageBulkWriteResponse<any>, RxDocumentData<any>[]>();
+
+/**
+ * For better performance, this is done only when accessed
+ * because most of the time we do not need the results, only the errors.
+ */
 export function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(
     primaryPath: string,
     writeRows: BulkWriteRow<RxDocType>[],
-    response: RxStorageBulkWriteResponse<RxDocType>
+    response: RxStorageBulkWriteResponse<RxDocType>,
+    reInsertIds?: Set<string>
 ): RxDocumentData<RxDocType>[] {
-    const fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
-    if (fromMap) {
-        return fromMap;
-    }
-
-    const ret: RxDocumentData<RxDocType>[] = [];
-    if (response.error.length > 0) {
-        const errorIds = new Set();
-        for (let index = 0; index < response.error.length; index++) {
-            const error = response.error[index];
-            errorIds.add(error.documentId);
-        }
-
-        for (let index = 0; index < writeRows.length; index++) {
-            const doc = writeRows[index].document;
-            if (!errorIds.has((doc as any)[primaryPath])) {
-                ret.push(stripAttachmentsDataFromDocument(doc));
+    return getFromMapOrCreate(
+        BULK_WRITE_SUCCESS_MAP,
+        response,
+        () => {
+            const ret: RxDocumentData<RxDocType>[] = [];
+            let realWriteRows = BULK_WRITE_ROWS_BY_RESPONSE.get(response);
+            if (!realWriteRows) {
+                realWriteRows = writeRows;
             }
-        }
-    } else {
-        // pre-set array size for better performance
-        ret.length = writeRows.length - response.error.length;
-        for (let index = 0; index < writeRows.length; index++) {
-            const doc = writeRows[index].document;
-            ret[index] = stripAttachmentsDataFromDocument(doc);
-        }
-    }
+            if (response.error.length > 0 || reInsertIds) {
+                const errorIds = reInsertIds ? reInsertIds : new Set<string>();
+                for (let index = 0; index < response.error.length; index++) {
+                    const error = response.error[index];
+                    errorIds.add(error.documentId);
+                }
 
-    return ret;
+                for (let index = 0; index < realWriteRows.length; index++) {
+                    const doc = realWriteRows[index].document;
+                    if (!errorIds.has((doc as any)[primaryPath])) {
+                        ret.push(stripAttachmentsDataFromDocument(doc));
+                    }
+                }
+            } else {
+                // pre-set array size for better performance
+                ret.length = writeRows.length - response.error.length;
+                for (let index = 0; index < realWriteRows.length; index++) {
+                    const doc = realWriteRows[index].document;
+                    ret[index] = stripAttachmentsDataFromDocument(doc);
+                }
+            }
+            return ret;
+        }
+    );
 }
 
 

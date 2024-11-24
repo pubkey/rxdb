@@ -26,7 +26,7 @@ import {
     getDefaultRxDocumentMeta,
     randomToken
 } from './plugins/utils/index.ts';
-import { prepareQuery } from './rx-query.ts';
+import { prepareQuery } from './rx-query-helper.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';

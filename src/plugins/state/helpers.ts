@@ -16,8 +16,6 @@ export const RX_STATE_COLLECTION_SCHEMA: DeepReadonly<RxJsonSchema<RxStateDocume
             /**
              * We store numbers in string format like '0001'
              * with a left-pad.
-             * TODO instead we should transform the number to a string
-             * with the same sort-position to improve performance.
              */
             maxLength: RX_STATE_ID_LENGTH,
             minLength: RX_STATE_ID_LENGTH,

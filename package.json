@@ -466,7 +466,6 @@
     "mingo": "6.4.15",
     "mongodb": "6.11.0",
     "nats": "2.28.2",
-    "oblivious-set": "1.4.0",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
     "util": "0.12.5",

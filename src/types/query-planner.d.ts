@@ -31,12 +31,6 @@ export type RxQueryPlan = {
      */
     selectorSatisfiedByIndex: boolean;
 
-    /**
-     * TODO add a flag that determines
-     * if we have to run the selector matching on all results
-     * or if the used index anyway matches ALL operators.
-     */
-
     startKeys: RxQueryPlanKey[];
     endKeys: RxQueryPlanKey[];
     /**
