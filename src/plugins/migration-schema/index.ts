@@ -20,7 +20,7 @@ import {
 import {
     getMigrationStateByDatabase,
     mustMigrate,
-    onDatabaseDestroy
+    onDatabaseClose
 } from './migration-helpers.ts';
 import { addRxPlugin } from '../../plugin.ts';
 import { RxDBLocalDocumentsPlugin } from '../local-documents/index.ts';
@@ -34,8 +34,8 @@ export const RxDBMigrationPlugin: RxPlugin = {
         addRxPlugin(RxDBLocalDocumentsPlugin);
     },
     hooks: {
-        preDestroyRxDatabase: {
-            after: onDatabaseDestroy
+        preCloseRxDatabase: {
+            after: onDatabaseClose
         }
     },
     prototypes: {

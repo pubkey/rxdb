@@ -1,5 +1,5 @@
 import {
-    randomCouchString,
+    randomToken,
     RxJsonSchema,
     fillWithDefaultSettings,
     now,
@@ -96,14 +96,14 @@ describe('query-correctness-fuzzing.test.ts', () => {
             };
             const schema = fillWithDefaultSettings(schemaPlain);
 
-            const collectionName = randomCouchString(10);
-            const databaseName = randomCouchString(10);
+            const collectionName = randomToken(10);
+            const databaseName = randomToken(10);
 
             const openStorageInstance = () => {
                 return config.storage.getStorage().createStorageInstance({
                     collectionName,
                     databaseName,
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     multiInstance: false,
                     devMode: false,
                     options: {},
@@ -128,7 +128,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     );
                     const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
                     const previous = docs[0];
-                    const nextRev = createRevision(randomCouchString(10), previous);
+                    const nextRev = createRevision(randomToken(10), previous);
 
                     if (changeEvent.operation === 'DELETE') {
                         const writeResult = await storageInstance.bulkWrite([{

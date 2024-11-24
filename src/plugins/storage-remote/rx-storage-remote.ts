@@ -8,8 +8,6 @@ import {
 import type {
     BulkWriteRow,
     EventBulk,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorage,
@@ -22,7 +20,7 @@ import type {
 } from '../../types/index.d.ts';
 import {
     RXDB_VERSION,
-    randomCouchString
+    randomToken
 } from '../../plugins/utils/index.ts';
 import type {
     MessageFromRemote,
@@ -39,7 +37,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     public readonly name: string = 'remote';
     public readonly rxdbVersion = RXDB_VERSION;
 
-    private seed: string = randomCouchString(10);
+    private seed: string = randomToken(10);
     private lastRequestId: number = 0;
     public messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
     constructor(
@@ -167,7 +165,6 @@ function getMessageReturn(
 
 export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
-    private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
 
     private closed?: Promise<void>;
@@ -188,9 +185,6 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
             this.messages$.subscribe(msg => {
                 if (msg.method === 'changeStream') {
                     this.changes$.next(getMessageReturn(msg));
-                }
-                if (msg.method === 'conflictResultionTasks') {
-                    this.conflicts$.next(msg.return);
                 }
             })
         );
@@ -279,12 +273,6 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
             await closeMessageChannel(this.internals.messageChannel);
         })();
         return this.closed;
-    }
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.conflicts$;
-    }
-    async resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        await this.requestRemote('resolveConflictResultionTask', [taskSolution]);
     }
 }
 

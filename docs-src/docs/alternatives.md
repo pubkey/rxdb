@@ -180,7 +180,7 @@ The last commit for hoodie was one year ago and the website (hood.ie) is offline
 LokiJS is a JavaScript embeddable, in-memory database. And because everything is handled in-memory, LokiJS has awesome performance when mutating or querying data. You can still persist to a permanent storage (IndexedDB, Filesystem etc.) with one of the provided storage adapters. The persistence happens after a timeout is reached after a write, or before the JavaScript process exits. This also means you could loose data when the JavaScript process exits ungracefully like when the power of the device is shut down or the browser crashes.
 While the project is not that active anymore, it is more *finished* than *unmaintained*.
 
-RxDB supports using [LokiJS as RxStorage](./rx-storage-lokijs.md).
+In the past, RxDB supported using [LokiJS as RxStorage](./rx-storage-lokijs.md) but because the LokiJS is not maintained anymore and had too many issues, this storage option was removed in RxDB version 16.
 
 ### Gundb
 

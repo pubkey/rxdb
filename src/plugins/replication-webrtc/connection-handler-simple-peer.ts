@@ -4,7 +4,7 @@ import {
     getFromMapOrThrow,
     PROMISE_RESOLVE_VOID,
     promiseWait,
-    randomCouchString
+    randomToken
 } from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
@@ -190,7 +190,7 @@ export function getConnectionHandlerSimplePeer({
                                     config,
                                     trickle: true
                                 }) as any;
-                                newSimplePeer.id = randomCouchString(10);
+                                newSimplePeer.id = randomToken(10);
                                 peers.set(remotePeerId, newSimplePeer);
 
 
@@ -272,7 +272,7 @@ export function getConnectionHandlerSimplePeer({
             async send(peer: SimplePeer, message: WebRTCMessage) {
                 await peer.send(JSON.stringify(message));
             },
-            destroy() {
+            close() {
                 closed = true;
                 ensureNotFalsy(socket).close();
                 error$.complete();

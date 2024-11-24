@@ -11,7 +11,7 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 ## Quick Recommendations
 
 - In the Browser: Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
-- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium), otherwise use the [LokiJS](./rx-storage-lokijs.md) storage.
+- In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium) or the [memory RxStorage](./rx-storage-memory.md) for tryouts.
 - In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
 
 
@@ -126,11 +126,6 @@ To use RxDB in Deno. The DenoKV RxStorage provides a way of having a secure, sca
 ### FoundationDB
 
 To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. [Read more](./rx-storage-foundationdb.md)
-
-### LokiJS (deprecated)
-
-The LokiJS based storage is based on the [LokiJS](https://github.com/techfort/LokiJS) database.
-It has the special behavior of loading all data into memory at app start and therefore has a good performance when running operations over a small dataset where loading all data upfront is not a problem. [Read more](./rx-storage-lokijs.md)
 
 ### 👑 Worker
 

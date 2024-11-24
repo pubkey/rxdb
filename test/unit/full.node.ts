@@ -4,7 +4,7 @@
  */
 
 import assert from 'assert';
-
+import { assertThrows } from 'async-test-util';
 
 /**
  * exit with non-zero on unhandledRejection
@@ -18,7 +18,7 @@ process.on('unhandledRejection', function (err) {
 import {
     createRxDatabase,
     isRxDocument,
-    randomCouchString,
+    randomToken,
     addRxPlugin
 } from '../../plugins/core/index.mjs';
 import {
@@ -62,9 +62,8 @@ const run = async function () {
 
     // create database
     const db = await createRxDatabase({
-        name: randomCouchString(10),
-        storage: getRxStorageMemory(),
-        ignoreDuplicate: true
+        name: randomToken(10),
+        storage: getRxStorageMemory()
     });
 
     // create collection
@@ -78,7 +77,7 @@ const run = async function () {
     /**
      * Start a replication to ensure
      * all replication timeouts are cleared up when the collection
-     * gets destroyed.
+     * gets closed.
      */
     await replicateRxCollection<any, any>({
         collection,
@@ -120,8 +119,26 @@ const run = async function () {
     }).exec();
     assert.ok(isRxDocument(doc));
 
-    // destroy database
-    await db.destroy();
+    // close database
+    await db.close();
+
+
+
+    /**
+     * Using ignoreduplicate in non dev-mode
+     * must not be allowed because using this flag
+     * in production can only happen accidentally and makes no sense.
+     */
+    await assertThrows(
+        () => createRxDatabase({
+            name: randomToken(10),
+            storage: getRxStorageMemory(),
+            ignoreDuplicate: true
+        }),
+        'RxError',
+        'DB9'
+    );
+
 };
 
 run();

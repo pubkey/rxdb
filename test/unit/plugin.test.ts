@@ -6,7 +6,7 @@
 import assert from 'assert';
 import {
     addRxPlugin,
-    randomCouchString,
+    randomToken,
     _clearHook,
     RxPlugin
 } from '../../plugins/core/index.mjs';
@@ -29,7 +29,7 @@ describeParallel('plugin.test.js', () => {
         it('should not crash when a new plugin is added', () => {
             addRxPlugin({
                 rxdb: true,
-                name: randomCouchString(12)
+                name: randomToken(12)
             });
         });
         it('should crash when a plugin with the same name added already but it is NOT the same object', async () => {
@@ -70,6 +70,10 @@ describeParallel('plugin.test.js', () => {
                     # ErrOut: ${stderr}
                     `);
             }
+
+            if (stderr.length > 0) {
+                throw new Error('got stderr: ' + stderr.join(', '));
+            }
         });
     });
     describe('hooks', () => {
@@ -79,7 +83,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxDatabase: {
                         after: createRxDatabase
@@ -89,7 +93,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual(col.database.foo, 'bar_createRxDatabase');
-            col.database.destroy();
+            col.database.close();
 
             _clearHook('createRxDatabase', createRxDatabase);
         });
@@ -99,7 +103,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxCollection: {
                         after: createRxCollection
@@ -109,7 +113,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col = await humansCollection.create();
             assert.strictEqual((col as any).foo, 'bar_createRxCollection');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxCollection', createRxCollection);
         });
         it('createRxSchema', async () => {
@@ -118,7 +122,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxSchema: {
                         after: createRxSchema
@@ -128,7 +132,7 @@ describeParallel('plugin.test.js', () => {
             addRxPlugin(plugin);
             const col: any = await humansCollection.create();
             assert.strictEqual(col.schema['foo'], 'bar_createRxSchema');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxSchema', createRxSchema);
         });
         it('createRxDocument', async () => {
@@ -137,7 +141,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     createRxDocument: {
                         after: createRxDocument
@@ -148,7 +152,7 @@ describeParallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.foo, 'bar_createRxDocument');
-            col.database.destroy();
+            col.database.close();
             _clearHook('createRxDocument', createRxDocument);
         });
         it('postCreateRxDocument', async () => {
@@ -157,7 +161,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     postCreateRxDocument: {
                         after: postCreateRxDocument
@@ -168,7 +172,7 @@ describeParallel('plugin.test.js', () => {
             const col = await humansCollection.create(5);
             const doc: any = await col.findOne().exec();
             assert.strictEqual(doc.fooPostCreate, 'bar_postCreateRxDocument');
-            await col.database.destroy();
+            await col.database.close();
             _clearHook('postCreateRxDocument', postCreateRxDocument);
         });
         it('postCleanup', async () => {
@@ -178,7 +182,7 @@ describeParallel('plugin.test.js', () => {
             };
             const plugin: RxPlugin = {
                 rxdb: true,
-                name: randomCouchString(12),
+                name: randomToken(12),
                 hooks: {
                     postCleanup: {
                         after: hook
@@ -190,7 +194,7 @@ describeParallel('plugin.test.js', () => {
             await col.cleanup();
             assert.strictEqual(runs.length, 1);
 
-            await col.database.destroy();
+            await col.database.close();
             _clearHook('postCleanup', hook);
         });
     });

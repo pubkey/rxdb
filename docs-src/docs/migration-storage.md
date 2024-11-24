@@ -16,14 +16,12 @@ The storage migration **drops deleted documents** and filters them out during th
 
 ## Usage
 
-Lets say you want to migrate from LokiJs to the [Dexie.js](./rx-storage-dexie.md) RxStorage.
+Lets say you want to migrate from [Dexie.js](./rx-storage-dexie.md) RxStorage to [IndexedDB](./rx-storage-indexeddb.md).
 
 ```ts
 import { migrateStorage } from 'rxdb/plugins/migration-storage';
-import {
-    getRxStorageLoki
-} from 'rxdb/plugins/storage-loki';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+import { getRxStorageDexie } from 'rxdb-old/plugins/storage-dexie';
 
 // create the new RxDatabase
 const db = await createRxDatabase({
@@ -40,7 +38,7 @@ await migrateStorage({
      * new database has a different name.
      */
     oldDatabaseName: 'myOldDatabaseName',
-    oldStorage: getRxStorageLoki(), // RxStorage of the old database
+    oldStorage: getRxStorageIndexedDB(), // RxStorage of the old database
     batchSize: 500, // batch size
     parallel: false, // <- true if it should migrate all collections in parallel. False (default) if should migrate in serial
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
@@ -67,9 +65,7 @@ The you can run the migration by providing the old storage:
 ```ts
 /* ... */
 import { migrateStorage } from 'rxdb/plugins/migration-storage';
-import {
-    getRxStorageLoki
-} from 'rxdb-old/plugins/storage-loki'; // <- import from the old RxDB version
+import { getRxStorageDexie } from 'rxdb-old/plugins/storage-dexie'; // <- import from the old RxDB version
 
 await migrateStorage({
     database: db as any,
@@ -79,7 +75,7 @@ await migrateStorage({
      * new database has a different name.
      */
     oldDatabaseName: 'myOldDatabaseName',
-    oldStorage: getRxStorageLoki(), // RxStorage of the old database
+    oldStorage: getRxStorageDexie(), // RxStorage of the old database
     batchSize: 500, // batch size
     parallel: false,
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {

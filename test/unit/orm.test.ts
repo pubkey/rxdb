@@ -4,7 +4,7 @@ import AsyncTestUtil from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxCollection,
     RxJsonSchema
 } from '../../plugins/core/index.mjs';
@@ -22,7 +22,7 @@ describeParallel('orm.test.js', () => {
             describe('positive', () => {
                 it('create a collection with static-methods', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -35,13 +35,13 @@ describeParallel('orm.test.js', () => {
                             }
                         }
                     });
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -58,11 +58,11 @@ describeParallel('orm.test.js', () => {
                         'RxTypeError',
                         'cannot start'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -87,7 +87,7 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
             });
         });
@@ -96,7 +96,7 @@ describeParallel('orm.test.js', () => {
                 const db = await createRxDatabase<{
                     humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>;
                 }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -111,11 +111,11 @@ describeParallel('orm.test.js', () => {
                 });
                 const res = (collections.humans as any).foobar();
                 assert.strictEqual(res, 'test');
-                db.destroy();
+                db.close();
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -131,11 +131,11 @@ describeParallel('orm.test.js', () => {
                 const collection = collections.humans;
                 const res = (collection as any).foobar();
                 assert.strictEqual(res, 'humans');
-                db.destroy();
+                db.close();
             });
             it('should be able to use this.insert()', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -152,7 +152,7 @@ describeParallel('orm.test.js', () => {
                 const res = (collection as any).foobar(schemaObjects.humanData());
                 assert.strictEqual(res.constructor.name, 'Promise');
                 await res;
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -161,7 +161,7 @@ describeParallel('orm.test.js', () => {
             describe('positive', () => {
                 it('create a collection with instance-methods', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
@@ -174,11 +174,11 @@ describeParallel('orm.test.js', () => {
                             }
                         }
                     });
-                    db.destroy();
+                    db.close();
                 });
                 it('this-scope should be bound to document', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const cols = await db.addCollections({
@@ -206,13 +206,13 @@ describeParallel('orm.test.js', () => {
                     const val = doc.myMethod();
                     assert.strictEqual(val, 'test:foobar');
 
-                    db.destroy();
+                    db.close();
                 });
             });
             describe('negative', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
@@ -228,11 +228,11 @@ describeParallel('orm.test.js', () => {
                         }),
                         'RxTypeError'
                     );
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -256,11 +256,11 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
                 it('crash when name not allowed (name is top-level field in schema)', async () => {
                     const db = await createRxDatabase({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
                     const reserved = [
@@ -285,7 +285,7 @@ describeParallel('orm.test.js', () => {
                         );
                         t++;
                     }
-                    db.destroy();
+                    db.close();
                 });
             });
         });
@@ -293,7 +293,7 @@ describeParallel('orm.test.js', () => {
         describe('run', () => {
             it('should be able to run the method', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -311,11 +311,11 @@ describeParallel('orm.test.js', () => {
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.strictEqual(res, 'test');
-                db.destroy();
+                db.close();
             });
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 const collections = await db.addCollections({
@@ -334,11 +334,11 @@ describeParallel('orm.test.js', () => {
                 const doc = await collection.findOne().exec();
                 const res = doc.foobar();
                 assert.strictEqual(res, obj.passportId);
-                db.destroy();
+                db.close();
             });
             it('should not be confused with many collections', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
@@ -365,14 +365,14 @@ describeParallel('orm.test.js', () => {
                 assert.strictEqual('1', doc1.foobar());
                 assert.strictEqual('2', doc2.foobar());
 
-                db.destroy();
+                db.close();
             });
         });
     });
     describe('ISSUES', () => {
         it('#791 Document methods are not bind() to the document', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(),
+                name: randomToken(),
                 storage: config.storage.getStorage(),
                 multiInstance: false
             });
@@ -435,7 +435,7 @@ describeParallel('orm.test.js', () => {
             assert.strictEqual(emitted[0], 'bar');
             sub.unsubscribe();
 
-            db.destroy();
+            db.close();
         });
     });
 });

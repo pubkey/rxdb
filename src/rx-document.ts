@@ -16,7 +16,9 @@ import {
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
-    getFromMapOrCreate
+    getFromMapOrCreate,
+    getFromMapOrThrow,
+    ensureNotFalsy
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -32,7 +34,9 @@ import type {
     RxDocumentWriteData,
     UpdateQuery,
     CRDTEntry,
-    ModifyFunction
+    ModifyFunction,
+    BulkWriteRow,
+    RxStorageWriteError
 } from './types/index.d.ts';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { overwritable } from './overwritable.ts';
@@ -98,11 +102,14 @@ export const basePrototype = {
      */
     get $(): Observable<RxDocumentData<any>> {
         const _this: RxDocument<{}, {}, {}> = this as any;
-        return _this.collection.$.pipe(
-            filter(changeEvent => !changeEvent.isLocal),
-            filter(changeEvent => changeEvent.documentId === this.primary),
-            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
-            startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
+        const id = this.primary;
+
+        return _this.collection.eventBulks$.pipe(
+            filter(bulk => !bulk.isLocal),
+            map(bulk => bulk.events.find(ev => ev.documentId === id)),
+            filter(event => !!event),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            startWith(_this.collection._docCache.getLatestDocumentData(id)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
             map(docData => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
@@ -363,7 +370,7 @@ export const basePrototype = {
      * Notice that there is no hard delete,
      * instead deleted documents get flagged with _deleted=true.
      */
-    remove(this: RxDocument): Promise<RxDocument> {
+    async remove(this: RxDocument): Promise<RxDocument> {
         const collection = this.collection;
         if (this.deleted) {
             return Promise.reject(newRxError('DOC13', {
@@ -372,31 +379,13 @@ export const basePrototype = {
             }));
         }
 
-        const deletedData = flatClone(this._data);
-        let removedDocData: RxDocumentData<any>;
-        return collection._runHooks('pre', 'remove', deletedData, this)
-            .then(async () => {
-                deletedData._deleted = true;
-                const writeRows = [{
-                    previous: this._data,
-                    document: deletedData
-                }];
-                const writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
-                const isError = writeResult.error[0];
-                throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return getWrittenDocumentsFromBulkWriteResponse(
-                    this.collection.schema.primaryPath,
-                    writeRows,
-                    writeResult
-                )[0];
-            })
-            .then((removed) => {
-                removedDocData = removed;
-                return this.collection._runHooks('post', 'remove', deletedData, this);
-            })
-            .then(() => {
-                return this.collection._docCache.getCachedRxDocument(removedDocData);
-            });
+        const removeResult = await removeRxDocuments([this]);
+        if (removeResult.errors.length > 0) {
+            const error = removeResult.errors[0];
+            const deletedData = getFromMapOrThrow(removeResult.deleteDataById, this.primary);
+            throwIfIsStorageWriteError(collection, this.primary, deletedData, error);
+        }
+        return removeResult.docs[0];
     },
     incrementalRemove(this: RxDocument): Promise<RxDocument> {
         return this.incrementalModify(async (docData) => {
@@ -408,7 +397,7 @@ export const basePrototype = {
             return newDoc;
         });
     },
-    destroy() {
+    close() {
         throw newRxError('DOC14');
     }
 };
@@ -548,3 +537,63 @@ function getDocumentProperty(doc: RxDocument, objPath: string): any | null {
         }
     );
 };
+
+
+
+/**
+ * To remove documents we use a bulk operations
+ * to have a better performance on RxQuery.find().remove();
+ */
+export async function removeRxDocuments<RxDocType>(
+    docs: RxDocument<RxDocType>[]
+): Promise<{
+    errors: RxStorageWriteError<RxDocType>[];
+    docs: RxDocument<RxDocType>[];
+    deleteDataById: Map<string, RxDocumentData<RxDocType>>;
+}> {
+    if (docs.length === 0) {
+        throw newRxError('SNH');
+    }
+    const collection = docs[0].collection;
+    const primaryPath = collection.schema.primaryPath;
+    const writeRows: BulkWriteRow<RxDocType>[] = [];
+    const docsById = new Map<string, RxDocument<RxDocType>>();
+    const deleteDataById = new Map<string, RxDocumentData<RxDocType>>();
+    await Promise.all(
+        docs.map(async (doc) => {
+            docsById.set(doc.primary, doc);
+            const deletedData = flatClone(doc._data);
+            await collection._runHooks('pre', 'remove', deletedData, doc);
+            deletedData._deleted = true;
+            deleteDataById.set(doc.primary, deletedData);
+            const writeRow = {
+                previous: doc._data,
+                document: deletedData
+            };
+            writeRows.push(writeRow);
+        })
+    );
+    const writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
+    const errors: RxStorageWriteError<RxDocType>[] = writeResult.error;
+    const writtenDocsData = getWrittenDocumentsFromBulkWriteResponse(
+        primaryPath,
+        writeRows,
+        writeResult
+    );
+    const returnDocs: RxDocument<RxDocType>[] = [];
+    await Promise.all(
+        writtenDocsData.map(async (writtenDocData) => {
+            const id = writtenDocData[primaryPath] as string;
+            const doc = getFromMapOrThrow(docsById, id);
+            const deletedData = getFromMapOrThrow(deleteDataById, id);
+            await collection._runHooks('post', 'remove', deletedData, doc);
+            returnDocs.push(collection._docCache.getCachedRxDocument(writtenDocData));
+        })
+    );
+
+    return {
+        docs: returnDocs,
+        errors,
+        deleteDataById
+    };
+}

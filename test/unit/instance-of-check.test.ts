@@ -23,7 +23,7 @@ describeParallel('instance-of-check.test.js', () => {
         assert.ok(isRxDocument(doc));
         assert.ok(isRxSchema(c.schema));
 
-        c.database.destroy();
+        c.database.close();
     });
     it('negative', () => {
         const anyObj = {};

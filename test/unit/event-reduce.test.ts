@@ -8,7 +8,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxCollection,
     RxDocument,
     MangoQuery
@@ -27,7 +27,7 @@ describe('event-reduce.test.js', () => {
         keyCompression = false
     ): Promise<RxCollection> {
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage,
             eventReduce
         });
@@ -142,8 +142,8 @@ describe('event-reduce.test.js', () => {
             queries
         );
 
-        colNoEventReduce.database.destroy();
-        colWithEventReduce.database.destroy();
+        colNoEventReduce.database.close();
+        colWithEventReduce.database.close();
     });
 
     it('should work with the key-compression plugin', async () => {
@@ -214,8 +214,8 @@ describe('event-reduce.test.js', () => {
             queries
         );
 
-        colNoEventReduce.database.destroy();
-        colWithEventReduce.database.destroy();
+        colNoEventReduce.database.close();
+        colWithEventReduce.database.close();
     });
 
     /**
@@ -224,10 +224,6 @@ describe('event-reduce.test.js', () => {
      * is the same as the result calculated by event-reduce.
      */
     new Array(isFastMode() ? 1 : 5).fill(0).forEach(() => {
-        if (config.storage.name === 'lokijs') {
-            // TODO why does this fail on lokijs?
-            return;
-        }
         it('random data: should have the same results as without event-reduce', async () => {
             const colNoEventReduce = await createCollection(false);
             const colWithEventReduce = await createCollection(true);
@@ -245,12 +241,7 @@ describe('event-reduce.test.js', () => {
                             $gt: 20,
                             $lt: 80
                         }
-                    },
-                    // TODO it should also work without the sorting
-                    // because RxDB should add predictable sort if primary not used in sorting
-                    sort: [{
-                        passportId: 'asc'
-                    }]
+                    }
                 }
 
             ];
@@ -335,8 +326,8 @@ describe('event-reduce.test.js', () => {
             );
 
             // clean up
-            colNoEventReduce.database.destroy();
-            colWithEventReduce.database.destroy();
+            colNoEventReduce.database.close();
+            colWithEventReduce.database.close();
         });
     });
 });

@@ -10,7 +10,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxCollection,
     RxJsonSchema
@@ -27,7 +27,7 @@ describeParallel('cleanup.test.js', () => {
 
         it('should clean up the deleted documents', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 cleanupPolicy: {
                     awaitReplicationsInSync: false,
@@ -60,14 +60,14 @@ describeParallel('cleanup.test.js', () => {
                 return !deletedDocStillInStorage;
             });
 
-            db.destroy();
+            db.close();
         });
         it('should pause the cleanup when a replication is not in sync', async () => {
             if (!config.storage.hasReplication) {
                 return;
             }
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 cleanupPolicy: {
                     awaitReplicationsInSync: true,
@@ -116,7 +116,7 @@ describeParallel('cleanup.test.js', () => {
         });
         it('should work by manually calling RxCollection.cleanup()', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const cols = await db.addCollections({
@@ -140,7 +140,7 @@ describeParallel('cleanup.test.js', () => {
             );
             assert.strictEqual(deletedDocInStorage.length, 1);
 
-            db.destroy();
+            db.close();
         });
     });
     describe('issues', () => {
@@ -150,7 +150,7 @@ describeParallel('cleanup.test.js', () => {
                 name: string;
             };
             const db = await createRxDatabase<{ projects: RxCollection<DocType>; }>({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
                 }),
@@ -211,7 +211,7 @@ describeParallel('cleanup.test.js', () => {
             const resultAfterCleanup3 = await collection.find({ selector: { name: { $ne: 'query3' } } }).exec();
             assert.strictEqual(resultAfterCleanup3.length, 1);
 
-            await db.destroy();
+            await db.close();
         });
     });
 });

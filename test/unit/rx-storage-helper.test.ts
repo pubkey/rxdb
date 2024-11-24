@@ -1,7 +1,7 @@
 
 import config, { describeParallel } from './config.ts';
 import {
-    randomCouchString,
+    randomToken,
     now,
     fillWithDefaultSettings,
     categorizeBulkWriteRows,
@@ -24,9 +24,9 @@ describeParallel('rx-storage-helper.test.ts', () => {
     describe('.categorizeBulkWriteRows()', () => {
         it('performance', async () => {
             const instance = await config.storage.getStorage().createStorageInstance({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(10),
-                collectionName: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(10),
+                collectionName: randomToken(10),
                 schema: fillWithDefaultSettings(schemas.human),
                 options: {},
                 multiInstance: false,

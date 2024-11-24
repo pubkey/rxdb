@@ -16,7 +16,7 @@ import { checkSchema } from '../../plugins/dev-mode/index.mjs';
 import {
     createRxDatabase,
     sortObject,
-    randomCouchString,
+    randomToken,
     createRxSchema,
     RxJsonSchema,
     getIndexes,
@@ -86,7 +86,7 @@ describeParallel('rx-schema.test.ts', () => {
                 };
 
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                 });
                 await db.addCollections({
@@ -95,7 +95,7 @@ describeParallel('rx-schema.test.ts', () => {
                     },
                 });
 
-                await db.destroy();
+                await db.close();
             });
 
             describe('positive', () => {
@@ -827,7 +827,7 @@ describeParallel('rx-schema.test.ts', () => {
                 indexes: ['fileInfo.watch.time']
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const cols = await db.addCollections({
@@ -859,7 +859,7 @@ describeParallel('rx-schema.test.ts', () => {
             const found = await query.exec();
             assert.strictEqual(found.length, 1);
             assert.strictEqual(found[0].fileInfo.watch.time, 1);
-            db.destroy();
+            db.close();
         });
         it('#620 indexes should not be required', async () => {
             const mySchema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; age: number; }> = {
@@ -888,7 +888,7 @@ describeParallel('rx-schema.test.ts', () => {
             };
             // create a database
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -901,7 +901,7 @@ describeParallel('rx-schema.test.ts', () => {
                 firstName: 'Bob',
                 age: 56
             });
-            db.destroy();
+            db.close();
         });
         it('#697 Indexes do not work in objects named "properties"', async () => {
             const mySchema: RxJsonSchema<{ id: string; properties: any; }> = {
@@ -932,7 +932,7 @@ describeParallel('rx-schema.test.ts', () => {
 
             // create a database
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -942,14 +942,14 @@ describeParallel('rx-schema.test.ts', () => {
             });
 
             await collections.test.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 properties: {
                     name: 'Title',
                     content: 'Post content'
                 }
             });
 
-            db.destroy();
+            db.close();
         });
         it('#697(2) should also work deep nested', async () => {
             const mySchema: RxJsonSchema<{ id: string; properties: any; }> = {
@@ -980,7 +980,7 @@ describeParallel('rx-schema.test.ts', () => {
 
             // create a database
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
             const collections = await db.addCollections({
@@ -990,7 +990,7 @@ describeParallel('rx-schema.test.ts', () => {
             });
 
             await collections.test.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 properties: {
                     name: 'Title',
                     properties: 'Post content'
@@ -1006,7 +1006,7 @@ describeParallel('rx-schema.test.ts', () => {
                 collections.test.schema.indexes
             );
 
-            db.destroy();
+            db.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/issues/3994#issuecomment-1260073490
@@ -1017,7 +1017,7 @@ describeParallel('rx-schema.test.ts', () => {
             }
 
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
 
@@ -1068,7 +1068,7 @@ describeParallel('rx-schema.test.ts', () => {
                 }
             });
 
-            db.destroy();
+            db.close();
         });
         it('#4951 patternProperties are allowed', async () => {
             /**
@@ -1080,7 +1080,7 @@ describeParallel('rx-schema.test.ts', () => {
             }
 
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
 
@@ -1164,7 +1164,7 @@ describeParallel('rx-schema.test.ts', () => {
             assert.deepStrictEqual(myDocument.tags.hello, tags.hello, 'myDocument.tags.hello');
             assert.deepStrictEqual(myDocument.tags.world, tags.world, 'myDocument.tags.world');
 
-            db.destroy();
+            db.close();
         });
         /**
          * Using Infinity as "maximum" does not work
@@ -1172,7 +1172,7 @@ describeParallel('rx-schema.test.ts', () => {
          */
         it('broken on Infinity numbers in index sizes', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage()
             });
 
@@ -1245,7 +1245,7 @@ describeParallel('rx-schema.test.ts', () => {
                 );
             }
 
-            db.destroy();
+            db.close();
         });
     });
     describe('wait a bit', () => {

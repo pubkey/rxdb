@@ -13,7 +13,7 @@ import { waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxCollection,
     RxReactivityFactory,
@@ -50,7 +50,7 @@ describeParallel('reactivity.test.js', () => {
     };
     async function getReactivityCollection(): Promise<RxCollection<SimpleHumanAgeDocumentType, {}, {}, {}, ReactivityType>> {
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             storage: getConfig().storage.getStorage(),
             localDocuments: true,
             reactivity
@@ -72,14 +72,14 @@ describeParallel('reactivity.test.js', () => {
 
             const signal = doc.$$;
             assert.deepStrictEqual(signal.init, doc._data);
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxDocument.get$$()', async () => {
             const collection = await getReactivityCollection();
             const doc = await collection.findOne().exec(true);
             const signal = doc.get$$('age');
             assert.deepStrictEqual(signal.init, doc.age);
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxDocument.deleted$$', async () => {
             const collection = await getReactivityCollection();
@@ -91,42 +91,42 @@ describeParallel('reactivity.test.js', () => {
             signal.obs.subscribe((v: boolean) => lastEmit = v);
             await doc.remove();
             await waitUntil(() => !!lastEmit);
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxDocument[proxy]$$', async () => {
             const collection = await getReactivityCollection();
             const doc = await collection.findOne().exec(true);
             const signal = (doc as any).age$$;
             assert.deepStrictEqual(signal.init, doc.age);
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('RxLocalDocument', () => {
         it('RxLocalDocument.$$', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.$$ as any; // TODO fix type
+            const signal: ReactivityType = localDoc.$$ as any;
             assert.deepStrictEqual(signal.init.data, { bar: 1 });
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxLocalDocument.get$$()', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.get$$('bar') as any; // TODO fix type
+            const signal: ReactivityType = localDoc.get$$('bar') as any;
             assert.deepStrictEqual(signal.init, 1);
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxLocalDocument.deleted$$', async () => {
             const collection = await getReactivityCollection();
             const localDoc = await collection.database.insertLocal('foo', { bar: 1 });
-            const signal: ReactivityType = localDoc.deleted$$ as any; // TODO fix type
+            const signal: ReactivityType = localDoc.deleted$$ as any;
             assert.deepStrictEqual(signal.init, false);
 
             let lastEmit = false;
             signal.obs.subscribe((v: boolean) => lastEmit = v);
             await localDoc.remove();
             await waitUntil(() => !!lastEmit);
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('RxQuery', () => {
@@ -139,7 +139,7 @@ describeParallel('reactivity.test.js', () => {
             let lastEmit = false;
             signal.obs.subscribe((v: boolean) => lastEmit = v);
             await waitUntil(() => Array.isArray(lastEmit));
-            collection.database.destroy();
+            collection.database.close();
         });
         it('RxQuery.findOne().$$', async () => {
             const collection = await getReactivityCollection();
@@ -150,7 +150,7 @@ describeParallel('reactivity.test.js', () => {
             let lastEmit = false;
             signal.obs.subscribe((v: boolean) => lastEmit = v);
             await waitUntil(() => !!lastEmit);
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('issues', () => { });

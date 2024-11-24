@@ -21,7 +21,7 @@ it(`Add test doc and fetch it from ${HeroesCollectionName} collection`, async ()
     expect(docs.length).toBe(1);
 });
 
-it(`Destroy db`, async () => {
-    await db.destroy();
+it(`close db`, async () => {
+    await db.close();
     expect(true).toBeTruthy();
 });

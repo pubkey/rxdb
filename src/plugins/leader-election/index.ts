@@ -46,12 +46,12 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
     );
 
     /**
-     * Clean up the reference on RxDatabase.destroy()
+     * Clean up the reference on RxDatabase.close()
      */
-    const oldDestroy = this.destroy.bind(this);
-    this.destroy = function () {
+    const oldClose = this.close.bind(this);
+    this.close = function () {
         removeBroadcastChannelReference(this.token, this);
-        return oldDestroy();
+        return oldClose();
     };
 
 
@@ -90,9 +90,9 @@ export function waitForLeadership(this: RxDatabase): Promise<boolean> {
 }
 
 /**
- * runs when the database gets destroyed
+ * runs when the database gets closed
  */
-export function onDestroy(db: RxDatabase) {
+export function onClose(db: RxDatabase) {
     const has = LEADER_ELECTORS_OF_DB.get(db);
     if (has) {
         has.die();
@@ -113,8 +113,8 @@ export const RxDBLeaderElectionPlugin: RxPlugin = {
     rxdb,
     prototypes,
     hooks: {
-        preDestroyRxDatabase: {
-            after: onDestroy
+        preCloseRxDatabase: {
+            after: onClose
         }
     }
 };

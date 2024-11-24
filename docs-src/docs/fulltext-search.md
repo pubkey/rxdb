@@ -4,7 +4,7 @@ slug: fulltext-search.html
 ---
 
 
-# Fulltext Search (beta)
+# Fulltext Search
 
 To run fulltext search queries on the local data, RxDB has a fulltext search plugin based on [flexsearch](https://github.com/nextapps-de/flexsearch) and [RxPipeline](./rx-pipeline.md). On each write to a given source [RxCollection](./rx-collection.md), an indexer is running to map the written document data into a fulltext search index.
 The index can then be queried efficiently with complex fulltext search operations.
@@ -37,10 +37,6 @@ The FlexSearch-based plugin allows for [sophisticated search queries](https://gi
 6. Offline-First Support and Privacy
 
 As RxDB is designed with [offline-first applications](./offline-first.md) in mind, the fulltext search plugin supports this paradigm by ensuring that all search operations can be performed offline. This is crucial for applications that need to function in environments with intermittent or no internet connectivity, offering users a consistent and reliable search experience with zero latency.
-
-:::warning beta
-The flexsearch plugin is in **beta** mode and the API might be changed without a major RxDB release.
-:::
 
 ## Using the RxDB Fulltext Search
 

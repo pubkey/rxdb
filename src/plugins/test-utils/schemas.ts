@@ -60,7 +60,7 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             multipleOf: 1
         }
     },
-    required: ['firstName', 'lastName', 'passportId', 'age'],
+    required: ['firstName', 'lastName', 'passportId'],
     indexes: ['firstName']
 } as const);
 const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);
@@ -953,14 +953,17 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         keyCompression: false,
         properties: {
             id: {
+                description: 'id',
                 type: 'string',
                 maxLength: 12
             },
             var1: {
+                description: 'var1',
                 type: 'string',
                 maxLength: 12
             },
             var2: {
+                description: 'var2',
                 type: 'number',
                 minimum: 0,
                 maximum: 50000,

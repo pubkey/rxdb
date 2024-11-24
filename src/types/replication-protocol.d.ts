@@ -1,8 +1,7 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import type {
     RxConflictHandler,
-    RxConflictHandlerInput,
-    RxConflictHandlerOutput
+    RxConflictHandlerInput
 } from './conflict-handling.d.ts';
 import type { RxError, RxTypeError } from './rx-error.d.ts';
 import type {
@@ -161,7 +160,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * renders.
      *
      * But: The longer you wait here, the higher is the risk of losing fork
-     * writes when the replication is destroyed unexpected.
+     * writes when the replication is closed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
 
@@ -190,7 +189,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
         };
         resolvedConflicts: Subject<{
             input: RxConflictHandlerInput<RxDocType>;
-            output: RxConflictHandlerOutput<RxDocType>;
+            output: WithDeleted<RxDocType>;
         }>;
         /**
          * Contains the cancel state.

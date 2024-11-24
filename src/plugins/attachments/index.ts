@@ -17,7 +17,8 @@ import type {
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
-    RxAttachmentWriteData
+    RxAttachmentWriteData,
+    RxCollection
 } from '../../types/index.ts';
 import {
     assignMethodsToAttachment,
@@ -186,7 +187,7 @@ export function allAttachments(
 export async function preMigrateDocument<RxDocType>(
     data: {
         docData: RxDocumentData<RxDocType>;
-        oldCollection: any; // TODO
+        oldCollection: RxCollection<RxDocType>;
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;

@@ -11,8 +11,6 @@ import type {
 import type {
     MangoQuerySelector,
     MangoQuerySortPart,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxJsonSchema,
     RxQueryPlan
 } from './index.d.ts';
@@ -310,14 +308,4 @@ export interface RxStorageInstance<
      * deletes all of its data.
      */
     remove(): Promise<void>;
-
-    /**
-     * Instead of passing the conflict-resolver function
-     * into the storage, we have to work with an observable that emits tasks
-     * and a resolver that takes resolved tasks.
-     * This is needed because the RxStorageInstance might run inside of a Worker
-     * other JavaScript process, so we cannot pass plain code.
-     */
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }

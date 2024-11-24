@@ -6,7 +6,7 @@ import assert from 'assert';
 import {
     createRxDatabase,
     RxCollection,
-    randomCouchString,
+    randomToken,
     createBlob
 } from '../../plugins/core/index.mjs';
 
@@ -33,11 +33,11 @@ describeParallel('import-export.test.js', () => {
                 assert.strictEqual(typeof json.schemaHash, 'string');
                 assert.strictEqual(json.docs.length, 5);
                 json.docs.map(doc => assert.strictEqual(typeof doc, 'object'));
-                col.database.destroy();
+                col.database.close();
             });
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
                 });
@@ -70,12 +70,12 @@ describeParallel('import-export.test.js', () => {
                         return;
                     }
                     const col = await humansCollection.createMultiInstance(
-                        randomCouchString(10),
+                        randomToken(10),
                         5
                     );
                     const json = await col.exportJSON();
                     const emptyCol = await humansCollection.createMultiInstance(
-                        randomCouchString(10),
+                        randomToken(10),
                         0
                     );
                     const noDocs = await emptyCol.find().exec();
@@ -94,7 +94,7 @@ describeParallel('import-export.test.js', () => {
                     if (!config.storage.hasMultiInstance) {
                         return;
                     }
-                    const col = await humansCollection.createMultiInstance(randomCouchString(10), 5);
+                    const col = await humansCollection.createMultiInstance(randomToken(10), 5);
                     const json = await col.exportJSON();
                     const differentSchemaCol = await humansCollection.createNested();
                     await AsyncTestUtil.assertThrows(
@@ -114,7 +114,7 @@ describeParallel('import-export.test.js', () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const col = await humansCollection.createMultiInstance(randomCouchString(10), 5);
+                const col = await humansCollection.createMultiInstance(randomToken(10), 5);
                 const json = await col.database.exportJSON();
 
                 assert.strictEqual(typeof json.name, 'string');
@@ -131,7 +131,7 @@ describeParallel('import-export.test.js', () => {
             });
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
                 });
@@ -157,7 +157,7 @@ describeParallel('import-export.test.js', () => {
             });
             it('export with multiple collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
                 });
@@ -189,7 +189,7 @@ describeParallel('import-export.test.js', () => {
             });
             it('export 1 of 2 collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<EncryptedObjectHumanDocumentType>; }>({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     password: await getPassword()
                 });
@@ -238,7 +238,7 @@ describeParallel('import-export.test.js', () => {
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
                     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                         multiInstance: true
                     });
@@ -250,7 +250,7 @@ describeParallel('import-export.test.js', () => {
                     const col = cols.human;
 
                     const db2 = await createRxDatabase<{ human: RxCollection<NestedHumanDocumentType>; }>({
-                        name: randomCouchString(10),
+                        name: randomToken(10),
                         storage: config.storage.getStorage(),
                         multiInstance: true
                     });
@@ -301,11 +301,11 @@ describeParallel('import-export.test.js', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const db2 = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({

@@ -17,7 +17,7 @@ import type {
     RxLocalDocumentData,
     RxStorage
 } from '../../types/index.d.ts';
-import { randomCouchString } from '../../plugins/utils/index.ts';
+import { randomToken } from '../../plugins/utils/index.ts';
 import { createRxLocalDocument } from './rx-local-document.ts';
 import { overwritable } from '../../overwritable.ts';
 
@@ -61,7 +61,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
                     ) {
                         ret = true;
                     }
-                    return ret && changeEventBulk.events[0].isLocal;
+                    return ret && changeEventBulk.isLocal;
                 }),
                 map(b => b.events)
             ),
@@ -96,15 +96,14 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             }
             const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
                 id: eventBulk.id,
+                isLocal: true,
                 internal: false,
                 collectionName: parent.database ? parent.name : undefined,
                 storageToken: databaseStorageToken,
                 events,
                 databaseToken: database.token,
                 checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context,
-                endTime: eventBulk.endTime,
-                startTime: eventBulk.startTime
+                context: eventBulk.context
             };
             database.$emit(changeEventBulk);
         });
@@ -173,7 +172,7 @@ export async function removeLocalDocumentsStorageInstance(
     databaseName: string,
     collectionName: string
 ) {
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
     const storageInstance = await createLocalDocumentStorageInstance(
         databaseInstanceToken,
         storage,

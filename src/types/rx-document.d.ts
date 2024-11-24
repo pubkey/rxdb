@@ -136,5 +136,5 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     toMutableJSON(withRevAndAttachments: true): RxDocumentData<RxDocType>;
     toMutableJSON(withRevAndAttachments?: false): RxDocType;
 
-    destroy(): void;
+    close(): void;
 }

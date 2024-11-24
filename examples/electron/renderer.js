@@ -2,6 +2,7 @@ const { getDatabase } = require('./shared');
 const renderTest = require('./test/render.test.js');
 const electron = require('electron');
 const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
+const { wrappedValidateAjvStorage } = require('rxdb/plugins/validate-ajv');
 const { getRxStorageIpcRenderer } = require('../../plugins/electron');
 
 
@@ -18,15 +19,14 @@ async function run() {
 
 
     const storage = getRxStorageIpcRenderer({
-        key: 'main-storage',
-        statics: getRxStorageMemory().statics,
+        key: 'main-storage',        
         ipcRenderer: electron.ipcRenderer
     });
 
     console.log('GET DATABASE');
     const db = await getDatabase(
         'heroesdb' + dbSuffix, // we add a random timestamp in dev-mode to reset the database on each start
-        storage
+        wrappedValidateAjvStorage({ storage: storage })
     );
     console.log('GET DATABASE DONE');
 

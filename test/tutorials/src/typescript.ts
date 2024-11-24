@@ -139,7 +139,7 @@ async function run() {
     /**
      * clean up
      */
-    myDatabase.destroy();
+    myDatabase.close();
 }
 
 run();

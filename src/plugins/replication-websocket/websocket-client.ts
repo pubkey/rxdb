@@ -12,7 +12,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     errorToPlainJson,
-    randomCouchString,
+    randomToken,
     toArray
 } from '../../plugins/utils/index.ts';
 import {
@@ -81,7 +81,7 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
             if (options.headers) {
                 const authMessage: WebsocketMessageType = {
                     collection: options.collection.name,
-                    id: randomCouchString(10),
+                    id: randomToken(10),
                     params: [options.headers],
                     method: 'auth'
                 };
@@ -119,7 +119,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     const messages$ = websocketClient.message$;
 
     let requestCounter = 0;
-    const requestFlag = randomCouchString(10);
+    const requestFlag = randomToken(10);
     function getRequestId() {
         const count = requestCounter++;
         return options.collection.database.token + '|' + requestFlag + '|' + count;
@@ -199,6 +199,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         }
     });
 
-    options.collection.onDestroy.push(() => websocketClient.socket.close());
+    options.collection.onClose.push(() => websocketClient.socket.close());
     return replicationState;
 }

@@ -4,10 +4,10 @@ import {
 import AsyncTestUtil from 'async-test-util';
 
 fixture('Example page')
-  .page('http://0.0.0.0:8888/');
+  .page('http://localhost:8888/');
 
 
-test('insert/edit/remove a hero', async (t) => {
+test.page('http://localhost:8888/')('insert/edit/remove a hero', async (t) => {
   // input name
   const heroNameInput = Selector('#insert-box input[name=name]');
   await t
@@ -35,7 +35,7 @@ test('insert/edit/remove a hero', async (t) => {
   await t.expect(Selector('#list-box .hero-name').count).eql(0);
 });
 
-test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async (t) => {
+test.page('http://localhost:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async (t) => {
 
   await t.switchToIframe('#frame_0');
 
@@ -58,7 +58,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 });
 
 
-test.page('http://0.0.0.0:8888/multitab.html?frames=6')('leader-election: Exact one tab should become leader', async (t) => {
+test.page('http://localhost:8888/multitab.html?frames=6')('leader-election: Exact one tab should become leader', async (t) => {
   // wait until last tab loaded
   await t.switchToIframe('#frame_5');
   const heroNameInput = Selector('#insert-box input[name=name]');

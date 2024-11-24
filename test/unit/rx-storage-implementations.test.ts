@@ -3,7 +3,7 @@ import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 import {
     addRxPlugin,
-    randomCouchString,
+    randomToken,
     getPseudoSchemaForVersion,
     lastOfArray,
     writeSingle,
@@ -175,10 +175,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {
-                const collectionName = randomCouchString(12);
-                const databaseName = randomCouchString(12);
+                const collectionName = randomToken(12);
+                const databaseName = randomToken(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -194,15 +194,15 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 await storageInstance.remove();
             });
             it('open many instances on the same database name', async () => {
-                const databaseName = randomCouchString(12);
+                const databaseName = randomToken(12);
                 // denokv is too slow here and will run in timeouts, so we use a lower amount
                 const amount = isDeno ? 5 : 20;
                 const storage = config.storage.getStorage();
                 const instances = await Promise.all(
                     new Array(amount).fill(0).map(() => storage.createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
+                        databaseInstanceToken: randomToken(10),
                         databaseName,
-                        collectionName: randomCouchString(12),
+                        collectionName: randomToken(12),
                         schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         options: {},
                         multiInstance: false,
@@ -222,9 +222,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 let hasThrown = false;
                 try {
                     await config.storage.getStorage().createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -251,9 +251,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 let hasThrown = false;
                 try {
                     await config.storage.getStorage().createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -270,9 +270,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.bulkWrite()', () => {
             it('should write the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -309,9 +309,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should error on conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -372,9 +372,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('when inserting the same document at the same time, the first call must succeed while the second has a conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -420,9 +420,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should not find the deleted document when findDocumentsById(false)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -484,9 +484,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should NOT be able to overwrite a deleted the document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -601,9 +601,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              */
             it('should be able to update the state of a deleted document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -665,9 +665,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 schema.required = ['key'];
 
                 const storageInstance = await config.storage.getStorage().createStorageInstance<OptionalValueTestDoc>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: schema as any,
                     options: {},
                     multiInstance: false,
@@ -730,21 +730,22 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 storageInstance.remove();
             });
             it('should be able to store a complex document with key compression', async () => {
-                const databaseName = randomCouchString(12);
+                const databaseName = randomToken(12);
                 const schema = fillWithDefaultSettings(schemas.averageSchema());
                 const compressionState = getCompressionStateByRxJsonSchema(schema);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<any>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
-                    collectionName: randomCouchString(12),
-                    schema: compressionState.schema,
+                    collectionName: randomToken(12),
+                    schema: compressionState.compressedSchema,
                     options: {},
                     multiInstance: false,
                     devMode: true
                 });
 
+                const plainData = schemaObjects.averageSchemaData();
                 const docData = Object.assign(
-                    schemaObjects.averageSchemaData(),
+                    plainData,
                     {
                         _attachments: {},
                         _deleted: false,
@@ -774,11 +775,11 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 storageInstance.remove();
             });
             it('should be able to do a write where only _meta fields are changed', async () => {
-                const databaseInstanceToken = randomCouchString(10);
+                const databaseInstanceToken = randomToken(10);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken,
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -849,11 +850,11 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 storageInstance.remove();
             });
             it('should be able to create another instance after a write', async () => {
-                const databaseName = randomCouchString(12);
+                const databaseName = randomToken(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
-                    collectionName: randomCouchString(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -876,9 +877,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
-                    collectionName: randomCouchString(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -902,9 +903,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should be able to jump more then 1 revision height in a single write operation', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -954,8 +955,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             it('must be able create multiple storage instances on the same database and write documents', async () => {
                 const collectionsAmount = 3;
                 const docsAmount = 3;
-                const databaseName = randomCouchString(10);
-                const databaseInstanceToken = randomCouchString(10);
+                const databaseName = randomToken(10);
+                const databaseInstanceToken = randomToken(10);
 
                 const storage = config.storage.getStorage();
                 const storageInstances = await Promise.all(
@@ -965,7 +966,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                             const storageInstance = await storage.createStorageInstance<TestDocType>({
                                 databaseInstanceToken,
                                 databaseName,
-                                collectionName: randomCouchString(12),
+                                collectionName: randomToken(12),
                                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                                 options: {},
                                 multiInstance: false,
@@ -977,7 +978,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                                     .map(async (_v, docId) => {
                                         const writeData: RxDocumentWriteData<TestDocType> = {
                                             key: docId + '',
-                                            value: randomCouchString(5),
+                                            value: randomToken(5),
                                             _rev: EXAMPLE_REVISION_1,
                                             _deleted: false,
                                             _meta: {
@@ -998,9 +999,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             // Some storages had problems storing non-utf-8 chars like "é"
             it('write and read with umlauts', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -1060,9 +1061,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('the plain storage should throw when overwriting a deleted doc with an insert without passing the previous', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -1168,9 +1169,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     _id: string;
                     age: number;
                 }>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: fillWithDefaultSettings({
                         version: 0,
                         type: 'object',
@@ -1224,9 +1225,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should still sort in correct order when docs do not match the selector', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getTestDataSchema(),
                     options: {},
                     multiInstance: false,
@@ -1273,9 +1274,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should work with a more complex query', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getTestDataSchema(),
                     options: {},
                     multiInstance: false,
@@ -1332,9 +1333,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {},
                     multiInstance: false,
@@ -1373,9 +1374,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<{ _id: string; }>(0, '_id' as any),
                     options: {},
                     multiInstance: false,
@@ -1463,9 +1464,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<{ key: string; value: string; }>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
                         options: {},
                         multiInstance: false,
@@ -1529,9 +1530,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<{ key: string; value: string; }>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema: getTestDataSchema(),
                         options: {},
                         multiInstance: false,
@@ -1577,9 +1578,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<{ key: string; value: string; }>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
                         options: {},
                         multiInstance: false,
@@ -1692,9 +1693,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<RandomDoc>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -1799,9 +1800,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<NestedDoc>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -1855,9 +1856,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -1900,9 +1901,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const storageInstance = await config.storage
                     .getStorage()
                     .createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
+                        databaseInstanceToken: randomToken(10),
+                        databaseName: randomToken(12),
+                        collectionName: randomToken(12),
                         schema,
                         options: {},
                         multiInstance: false,
@@ -1957,9 +1958,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -1994,9 +1995,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should find deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -2048,9 +2049,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('if withDeleted=true then even the non-deleted document must be found', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -2132,13 +2133,13 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              */
             it('should be able to insert and fetch many documents', async () => {
                 if (isDeno) {
-                    // TODO
+                    // DenoKV is too slow and would timeout on this test
                     return;
                 }
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getTestDataSchema(),
                     options: {},
                     multiInstance: false,
@@ -2164,9 +2165,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.getChangedDocumentsSince()', () => {
             it('should get the latest change', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ key: string; }>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -2247,11 +2248,11 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 storageInstance.remove();
             });
             it('should return the correct amount of documents', async () => {
-                const databaseInstanceToken = randomCouchString(10);
+                const databaseInstanceToken = randomToken(10);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken,
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getTestDataSchema(),
                     options: {},
                     multiInstance: false,
@@ -2344,9 +2345,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should be able to correctly iterate over the checkpoints', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getTestDataSchema(),
                     options: {},
                     multiInstance: false,
@@ -2398,17 +2399,14 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.changeStream()', () => {
             it('should emit exactly one event on write', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
                     devMode: true
                 });
-
-                const testStartTime = now();
-                await wait(100);
 
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
@@ -2422,8 +2420,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     )
                     .subscribe(x => {
                         // console.log(JSON.stringify({ x, testStartTime }, null, 4));
-                        assert.ok(x.startTime > testStartTime, 'startTime must be after testStartTime');
-                        assert.ok(x.startTime < x.endTime, 'startTime must be smaller endTime');
                         emitted.push(x);
                     });
 
@@ -2438,7 +2434,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     }
                 };
 
-                const context = randomCouchString();
+                const context = randomToken();
 
                 // insert
                 await storageInstance.bulkWrite([{
@@ -2498,9 +2494,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should emit all events', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -2588,9 +2584,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('it should not emit an empty eventBulk when the write had only errors', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -2638,9 +2634,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             }
             it('should be able to store and retrieve an attachment', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: Object.assign(
                         getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         {
@@ -2695,9 +2691,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should return the correct attachment object on all document fetch methods', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: Object.assign(
                         getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         {
@@ -2810,9 +2806,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should be able to add multiple attachments, one each write', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: Object.assign(
                         getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         {
@@ -2896,9 +2892,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('_deleted documents must loose all attachments', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: Object.assign(
                         getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         {
@@ -2973,8 +2969,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 const collectionsAmount = 3;
                 const docsAmount = 3;
                 const attachmentsPerDoc = 3;
-                const databaseName = 'db' + randomCouchString(10);
-                const databaseInstanceToken = randomCouchString(10);
+                const databaseName = 'db' + randomToken(10);
+                const databaseInstanceToken = randomToken(10);
 
                 const storage = config.storage.getStorage();
                 const storageInstances = await Promise.all(
@@ -3074,9 +3070,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.cleanup', () => {
             it('should have cleaned up the deleted document', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -3175,9 +3171,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should at some time return true (when all docs are cleaned up)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -3237,16 +3233,16 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         describe('.close()', () => {
             /**
              * There are cases where closing happens multiple times,
-             * like when we call collection.destroy() and replicationState.cancel()
+             * like when we call collection.close() and replicationState.cancel()
              * at the same time.
              * By making it possible to call close() multiple times,
              * many randomly failing tests are fixed.
              */
             it('closing multiple times should not error', async () => {
-                const collectionName = randomCouchString(12);
-                const databaseName = randomCouchString(12);
+                const collectionName = randomToken(12);
+                const databaseName = randomToken(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3263,11 +3259,11 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
         });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
-                const databaseName = randomCouchString(12);
-                const collectionName = randomCouchString(12);
+                const databaseName = randomToken(12);
+                const collectionName = randomToken(12);
 
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3291,7 +3287,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 ], testContext);
                 await storageInstance.remove();
                 const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken: randomToken(10),
                     databaseName,
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3307,9 +3303,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should throw on call to .remove() after .close()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -3324,9 +3320,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should NOT throw on call to .close() after .remove()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(12),
+                    collectionName: randomToken(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false,
@@ -3345,10 +3341,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             a: RxStorageInstance<TestDocType, any, any>;
             b: RxStorageInstance<TestDocType, any, any>;
         }> {
-            const databaseName = randomCouchString(12);
-            const collectionName = randomCouchString(12);
+            const databaseName = randomToken(12);
+            const collectionName = randomToken(12);
             const a = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3364,7 +3360,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             }
 
             const b = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3459,7 +3455,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             // update on B
             const newDoc: typeof foundViaQueryDoc = flatCloneDocWithMeta(foundViaQueryDoc);
             newDoc.value = 'updatedB';
-            newDoc._rev = createRevision(randomCouchString(10), foundViaQueryDoc);
+            newDoc._rev = createRevision(randomToken(10), foundViaQueryDoc);
             const updateBResult = await instances.b.bulkWrite([{
                 previous: foundViaQueryDoc,
                 document: newDoc
@@ -3492,10 +3488,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
          * This case must be properly handled by having or timeout or detecting that the current leader died etc.
          */
         it('should be able to finish a query even when the leading instance gets closed', async () => {
-            if (config.storage.name === 'lokijs') {
-                // TODO fix this with the lokijs storage
-                return;
-            }
             const instances = await getMultiInstanceRxStorageInstance();
 
             // insert a document on A
@@ -3524,10 +3516,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             await instances.b.remove();
         });
         it('should not mix up documents stored with different schema versions', async () => {
-            const databaseName = randomCouchString(10);
-            const collectionName = randomCouchString(10);
+            const databaseName = randomToken(10);
+            const collectionName = randomToken(10);
             const storageInstanceV0 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3536,7 +3528,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 devMode: true
             });
             const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
@@ -3608,8 +3600,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             const collectionName = 'aaaaa';
             const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
             const storageInstance1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(12),
                 collectionName,
                 schema,
                 options: {},
@@ -3637,8 +3629,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
 
 
             const storageInstance2 = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(12),
                 collectionName,
                 schema,
                 options: {},
@@ -3681,10 +3673,10 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
     describe('migration', () => {
         it('documents that are stored on different schema versions, should not interfere', async () => {
             const storage = config.storage.getStorage();
-            const databaseName = randomCouchString(12);
-            const collectionName = randomCouchString(12);
+            const databaseName = randomToken(12);
+            const collectionName = randomToken(12);
             const storageInstanceZero = await storage.createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -3693,7 +3685,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 devMode: true
             });
             const storageInstanceOne = await storage.createStorageInstance<TestDocType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken: randomToken(10),
                 databaseName,
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),

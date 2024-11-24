@@ -1,10 +1,11 @@
 import assert from 'assert';
 import config from './unit/config.ts';
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     ensureNotFalsy,
-    WithDeleted
+    WithDeleted,
+    addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import {
@@ -26,7 +27,7 @@ import {
     connect
 } from 'nats';
 import { wait, waitUntil } from 'async-test-util';
-
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 const connectionSettings = { servers: 'localhost:4222' };
 const connectionStatePromise = (async () => {
@@ -48,6 +49,7 @@ const connectionStatePromise = (async () => {
  * because it is too slow to setup the NATS backend.
  */
 describe('replication-nats.test.js', () => {
+    addRxPlugin(RxDBDevModePlugin);
     assert.ok(config);
     /**
      * Use a low batchSize in all tests
@@ -126,7 +128,7 @@ describe('replication-nats.test.js', () => {
             await waitUntil(async () => {
                 const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
-                const natsName = randomCouchString(10);
+                const natsName = randomToken(10);
 
                 console.log('################ 0.1');
 
@@ -140,7 +142,7 @@ describe('replication-nats.test.js', () => {
                     replicationState.awaitInitialReplication().then(() => true),
                     wait(1000).then(() => false)
                 ]);
-                await collection.database.destroy();
+                await collection.database.close();
 
                 console.log('ret: ' + ret);
                 return ret;
@@ -153,7 +155,7 @@ describe('replication-nats.test.js', () => {
         it('push replication to client-server', async () => {
             const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
 
             const replicationState = syncNats(collection, natsName);
             ensureReplicationHasNoErrors(replicationState);
@@ -187,13 +189,13 @@ describe('replication-nats.test.js', () => {
             assert.strictEqual(docsOnServer.length, 3);
             assert.ok(docsOnServer.find(d => (d as any)._deleted));
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('two collections', async () => {
             const collectionA = await humansCollection.createHumanWithTimestamp(1, undefined, false);
             const collectionB = await humansCollection.createHumanWithTimestamp(1, undefined, false);
 
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
             const replicationStateA = syncNats(collectionA, natsName);
 
             ensureReplicationHasNoErrors(replicationStateA);
@@ -243,13 +245,13 @@ describe('replication-nats.test.js', () => {
             await replicationStateB.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            collectionA.database.destroy();
-            collectionB.database.destroy();
+            collectionA.database.close();
+            collectionB.database.close();
         });
     });
     describe('conflict handling', () => {
         it('should keep the master state as default conflict handler', async () => {
-            const natsName = randomCouchString(10);
+            const natsName = randomToken(10);
             const c1 = await humansCollection.create(1);
             const c2 = await humansCollection.create(0);
 
@@ -273,8 +275,8 @@ describe('replication-nats.test.js', () => {
              */
             assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
     });
 });

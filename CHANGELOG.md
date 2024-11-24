@@ -3,6 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 
+🚀 **RxDB v16 is released**
+
+- A list of changes for RxDB v16 can be found [here](https://rxdb.info/releases/16.0.0.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

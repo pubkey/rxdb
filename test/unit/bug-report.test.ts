@@ -14,7 +14,7 @@ import config from './config.ts';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomToken
 } from '../../plugins/core/index.mjs';
 import {
     isNode
@@ -65,7 +65,7 @@ describe('bug-report.test.js', () => {
          * Always generate a random database-name
          * to ensure that different test runs do not affect each other.
          */
-        const name = randomCouchString(10);
+        const name = randomToken(10);
 
         // create a database
         const db = await createRxDatabase({
@@ -135,7 +135,7 @@ describe('bug-report.test.js', () => {
 
         // clean up afterwards
         sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        db.close();
+        dbInOtherTab.close();
     });
 });

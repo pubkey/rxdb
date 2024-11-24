@@ -185,10 +185,7 @@ export function replicateCouchDB<RxDocType>(
 
                         if (
                             pushRow.assumedMasterState &&
-                            (await conflictHandler({
-                                realMasterState,
-                                newDocumentState: pushRow.assumedMasterState
-                            }, 'couchdb-push-1')).isEqual
+                            conflictHandler.isEqual(realMasterState, pushRow.assumedMasterState, 'couchdb-push-1')
                         ) {
                             remoteRevById.set(row.id, row.doc._rev);
                             nonConflictRows.push(pushRow);

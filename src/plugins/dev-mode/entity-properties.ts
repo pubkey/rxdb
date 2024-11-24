@@ -34,7 +34,7 @@ export function rxDatabaseProperties(): string[] {
             Object.getPrototypeOf(pseudoInstance)
         );
         _rxDatabaseProperties = [...ownProperties, ...prototypeProperties];
-        pseudoInstance.destroy();
+        pseudoInstance.close();
     }
     return _rxDatabaseProperties;
 }

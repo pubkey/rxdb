@@ -89,7 +89,7 @@ export class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<R
 export function replicateFirestore<RxDocType>(
     options: SyncOptionsFirestore<RxDocType>
 ): RxFirestoreReplicationState<RxDocType> {
-    const collection = options.collection;
+    const collection: RxCollection<RxDocType> = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, FirestoreCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined;
@@ -282,10 +282,7 @@ export function replicateFirestore<RxDocType>(
                                 docInDb &&
                                 (
                                     !writeRow.assumedMasterState ||
-                                    (await collection.conflictHandler({
-                                        newDocumentState: docInDb as any,
-                                        realMasterState: writeRow.assumedMasterState
-                                    }, 'replication-firestore-push')).isEqual === false
+                                    collection.conflictHandler.isEqual(docInDb as any, writeRow.assumedMasterState, 'replication-firestore-push') === false
                                 )
                             ) {
                                 // conflict

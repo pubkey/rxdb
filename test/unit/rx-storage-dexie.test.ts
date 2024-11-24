@@ -7,7 +7,7 @@ import {
     fillWithDefaultSettings,
     MangoQuery,
     normalizeMangoQuery,
-    randomCouchString,
+    randomToken,
     now,
     createRevision,
     prepareQuery
@@ -130,12 +130,12 @@ describeParallel('rx-storage-dexie.test.js', () => {
                         */
             schema = fillWithDefaultSettings(schema);
 
-            const databaseName = randomCouchString(12);
-            const databaseInstanceToken = randomCouchString(10);
+            const databaseName = randomToken(12);
+            const databaseInstanceToken = randomToken(10);
             const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
                 databaseInstanceToken,
                 databaseName,
-                collectionName: randomCouchString(12),
+                collectionName: randomToken(12),
                 schema,
                 options: {},
                 multiInstance: false,
