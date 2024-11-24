@@ -61,7 +61,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
                     ) {
                         ret = true;
                     }
-                    return ret && changeEventBulk.events[0].isLocal;
+                    return ret && changeEventBulk.isLocal;
                 }),
                 map(b => b.events)
             ),
@@ -96,15 +96,14 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             }
             const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
                 id: eventBulk.id,
+                isLocal: true,
                 internal: false,
                 collectionName: parent.database ? parent.name : undefined,
                 storageToken: databaseStorageToken,
                 events,
                 databaseToken: database.token,
                 checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context,
-                endTime: eventBulk.endTime,
-                startTime: eventBulk.startTime
+                context: eventBulk.context
             };
             database.$emit(changeEventBulk);
         });

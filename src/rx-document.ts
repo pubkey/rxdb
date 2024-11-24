@@ -17,7 +17,8 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
     getFromMapOrCreate,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    ensureNotFalsy
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -101,11 +102,14 @@ export const basePrototype = {
      */
     get $(): Observable<RxDocumentData<any>> {
         const _this: RxDocument<{}, {}, {}> = this as any;
-        return _this.collection.$.pipe(
-            filter(changeEvent => !changeEvent.isLocal),
-            filter(changeEvent => changeEvent.documentId === this.primary),
-            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
-            startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
+        const id = this.primary;
+
+        return _this.collection.eventBulks$.pipe(
+            filter(bulk => !bulk.isLocal),
+            map(bulk => bulk.events.find(ev => ev.documentId === id)),
+            filter(event => !!event),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            startWith(_this.collection._docCache.getLatestDocumentData(id)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
             map(docData => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)

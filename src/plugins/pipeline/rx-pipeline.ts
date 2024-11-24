@@ -270,8 +270,7 @@ export async function addPipeline<RxDocType>(
                     if (pipeline.stopped) {
                         return false;
                     }
-                    const first = bulk.events[0];
-                    return !first.isLocal;
+                    return !bulk.isLocal;
                 })
             ).subscribe(() => pipeline.trigger())
         );

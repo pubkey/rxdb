@@ -112,7 +112,7 @@ export async function runCleanupAfterDelete(
          * So instead we just wait for any write event and then we anyway throttle
          * the calls with the promiseWait() below.
          */
-        await firstValueFrom(rxCollection.$).catch(() => { });
+        await firstValueFrom(rxCollection.eventBulks$).catch(() => { });
 
         await rxCollection.promiseWait(cleanupPolicy.runEach);
         if (rxCollection.closed) {

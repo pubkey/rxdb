@@ -84,14 +84,20 @@ export class RxStateBase<T, Reactivity = unknown> {
 
         this.$ = merge(
             this._ownEmits$,
-            this.collection.$.pipe(
-                tap(event => {
-                    if (
-                        this._initDone &&
-                        event.operation === 'INSERT' &&
-                        event.documentData.sId !== this._instanceId
-                    ) {
-                        mergeOperationsIntoState(this._state, event.documentData.ops);
+            this.collection.eventBulks$.pipe(
+                tap(eventBulk => {
+                    if (!this._initDone) {
+                        return;
+                    }
+                    const events = eventBulk.events;
+                    for (let index = 0; index < events.length; index++) {
+                        const event = events[index];
+                        if (
+                            event.operation === 'INSERT' &&
+                            event.documentData.sId !== this._instanceId
+                        ) {
+                            mergeOperationsIntoState(this._state, event.documentData.ops);
+                        }
                     }
                 })
             )

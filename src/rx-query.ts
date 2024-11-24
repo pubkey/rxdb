@@ -41,7 +41,8 @@ import type {
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher,
-    ModifyFunction
+    ModifyFunction,
+    RxStorageChangeEvent
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
@@ -111,12 +112,12 @@ export class RxQueryBase<
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
-            const results$ = this.collection.$.pipe(
+            const results$ = this.collection.eventBulks$.pipe(
                 /**
                  * Performance shortcut.
                  * Changes to local documents are not relevant for the query.
                  */
-                filter(changeEvent => !changeEvent.isLocal),
+                filter(bulk => !bulk.isLocal),
                 /**
                  * Start once to ensure the querying also starts
                  * when there where no changes.
@@ -572,7 +573,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
 
-            const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
+            const runChangeEvents: RxStorageChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 

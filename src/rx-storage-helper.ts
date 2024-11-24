@@ -194,9 +194,7 @@ export function categorizeBulkWriteRows<RxDocType>(
         id: eventBulkId,
         events: [],
         checkpoint: null,
-        context,
-        startTime: now(),
-        endTime: 0
+        context
     };
     const eventBulkEvents = eventBulk.events;
 

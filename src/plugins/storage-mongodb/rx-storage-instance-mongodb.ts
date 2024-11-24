@@ -149,8 +149,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 //             operation: 'INSERT',
                 //             previousDocumentData: undefined,
                 //         }],
-                //             startTime: now(),
-                //             endTime: now()
                 //     };
 
                 //     this.changes$.next(eventBulk);
@@ -303,7 +301,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     id: lastState[primaryPath],
                     lwt: lastState._meta.lwt
                 };
-                categorized.eventBulk.endTime = now();
                 this.changes$.next(categorized.eventBulk);
             }
 

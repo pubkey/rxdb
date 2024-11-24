@@ -1,7 +1,8 @@
 import type {
     RxChangeEvent,
     RxDocument,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageChangeEvent
 } from './types/index.d.ts';
 import {
     getFromMapOrThrow,
@@ -98,7 +99,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
 
     constructor(
         public readonly primaryPath: string,
-        public readonly changes$: Observable<RxChangeEvent<RxDocType>[]>,
+        public readonly changes$: Observable<RxStorageChangeEvent<RxDocType>[]>,
         /**
          * A method that can create a RxDocument by the given document data.
          */

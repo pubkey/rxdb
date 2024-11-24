@@ -51,7 +51,8 @@ import {
 
 import {
     Subscription,
-    Observable
+    Observable,
+    Subject
 } from 'rxjs';
 
 import type {
@@ -104,6 +105,7 @@ import { beforeDocumentUpdateWrite } from './rx-document.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxPipeline, RxPipelineOptions } from './plugins/pipeline/index.ts';
 import { defaultConflictHandler } from './replication-protocol/default-conflict-handler.ts';
+import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -135,7 +137,7 @@ export class RxCollectionBase<
     public readonly awaitBeforeReads = new Set<() => MaybePromise<any>>();
 
     constructor(
-        public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>,
+        public readonly database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>,
         public name: string,
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
@@ -149,6 +151,13 @@ export class RxCollectionBase<
         public conflictHandler: RxConflictHandler<RxDocumentType> = defaultConflictHandler
     ) {
         _applyHookFunctions(this.asRxCollection);
+
+
+        if (database) { // might be falsy on pseudoInstance
+            this.eventBulks$ = database.eventBulks$.pipe(
+                filter(changeEventBulk => changeEventBulk.collectionName === this.name)
+            );
+        } else { }
     }
 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
@@ -187,6 +196,12 @@ export class RxCollectionBase<
     public checkpoint$: Observable<any> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer<RxDocumentType> = {} as ChangeEventBuffer<RxDocumentType>;
 
+    /**
+     * Internally only use eventBulks$
+     * Do not use .$ or .observable$ because that has to transform
+     * the events which decreases performance.
+     */
+    public readonly eventBulks$: Observable<RxChangeEventBulk<any>> = {} as any;
 
 
     /**
@@ -213,13 +228,10 @@ export class RxCollectionBase<
             result => this._runHooks('post', 'save', result)
         );
 
-        const collectionEventBulks$ = this.database.eventBulks$.pipe(
-            filter(changeEventBulk => changeEventBulk.collectionName === this.name),
+        this.$ = this.eventBulks$.pipe(
+            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk)),
         );
-        this.$ = collectionEventBulks$.pipe(
-            mergeMap(changeEventBulk => changeEventBulk.events),
-        );
-        this.checkpoint$ = collectionEventBulks$.pipe(
+        this.checkpoint$ = this.eventBulks$.pipe(
             map(changeEventBulk => changeEventBulk.checkpoint),
         );
 
@@ -227,9 +239,9 @@ export class RxCollectionBase<
         let documentConstructor: any;
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
-            this.database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.name && !changeEventBulk.events[0].isLocal),
-                map(b => b.events)
+            this.eventBulks$.pipe(
+                filter(bulk => !bulk.isLocal),
+                map(bulk => bulk.events)
             ),
             docData => {
                 if (!documentConstructor) {
@@ -259,39 +271,18 @@ export class RxCollectionBase<
         this._subs.push(listenToRemoveSub);
 
 
-        /**
-         * TODO Instead of resolving the EventBulk array here and spit it into
-         * single events, we should fully work with event bulks internally
-         * to save performance.
-         */
         const databaseStorageToken = await this.database.storageToken;
         const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
-            const events = new Array(eventBulk.events.length);
-            const rawEvents = eventBulk.events;
-            const collectionName = this.name;
-            const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
-            for (let index = 0; index < rawEvents.length; index++) {
-                const event = rawEvents[index];
-                events[index] = {
-                    documentId: event.documentId,
-                    collectionName,
-                    isLocal: false,
-                    operation: event.operation,
-                    documentData: deepFreezeWhenDevMode(event.documentData) as any,
-                    previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData) as any
-                };
-            }
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
+                isLocal: false,
                 internal: false,
                 collectionName: this.name,
                 storageToken: databaseStorageToken,
-                events,
+                events: eventBulk.events,
                 databaseToken: this.database.token,
                 checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context,
-                endTime: eventBulk.endTime,
-                startTime: eventBulk.startTime
+                context: eventBulk.context
             };
             this.database.$emit(changeEventBulk);
         });

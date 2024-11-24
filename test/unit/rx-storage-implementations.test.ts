@@ -2423,8 +2423,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     )
                     .subscribe(x => {
                         // console.log(JSON.stringify({ x, testStartTime }, null, 4));
-                        assert.ok(x.startTime > testStartTime, 'startTime must be after testStartTime');
-                        assert.ok(x.startTime < x.endTime, 'startTime must be smaller endTime');
                         emitted.push(x);
                     });
 

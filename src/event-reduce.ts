@@ -13,11 +13,11 @@ import type {
     MangoQuery,
     RxChangeEvent,
     StringKeys,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageChangeEvent
 } from './types/index.d.ts';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
-    arrayFilterNotEmpty,
     clone,
     ensureNotFalsy,
     getFromMapOrCreate
@@ -115,7 +115,7 @@ export function getQueryParams<RxDocType>(
 
 export function calculateNewResults<RxDocumentType>(
     rxQuery: RxQuery<RxDocumentType>,
-    rxChangeEvents: RxChangeEvent<RxDocumentType>[]
+    rxChangeEvents: RxStorageChangeEvent<RxDocumentType>[]
 ): EventReduceResult<RxDocumentType> {
     if (!rxQuery.collection.database.eventReduce) {
         return {
@@ -127,9 +127,15 @@ export function calculateNewResults<RxDocumentType>(
     const previousResultsMap: Map<string, RxDocumentType> = ensureNotFalsy(rxQuery._result).docsDataMap;
     let changed: boolean = false;
 
-    const eventReduceEvents: ChangeEvent<RxDocumentType>[] = rxChangeEvents
-        .map(cE => rxChangeEventToEventReduceChangeEvent(cE))
-        .filter(arrayFilterNotEmpty);
+
+    const eventReduceEvents: ChangeEvent<RxDocumentType>[] = new Array();
+    for (let index = 0; index < rxChangeEvents.length; index++) {
+        const cE = rxChangeEvents[index];
+        const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);
+        if (eventReduceEvent) {
+            eventReduceEvents.push(eventReduceEvent);
+        }
+    }
 
     const foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
         const stateResolveFunctionInput: StateResolveFunctionInput<RxDocumentType> = {
