@@ -40,10 +40,13 @@ You can now create the [RxDatabase](./rx-database.md) instance:
 ```ts
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 const myDatabase = await createRxDatabase({
   name: 'mydatabase',
-  storage: getRxStorageDexie()
+  storage: wrappedValidateAjvStorage({
+    storage: getRxStorageDexie()
+  })
 });
 ```
 
