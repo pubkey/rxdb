@@ -41,8 +41,6 @@ import type {
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher,
-    RxJsonSchema,
-    FilledMangoQuery,
     ModifyFunction
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
@@ -55,7 +53,6 @@ import {
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
-import { getQueryPlan } from './query-planner.ts';
 import { removeRxDocuments } from './rx-document.ts';
 
 let _queryCount = 0;

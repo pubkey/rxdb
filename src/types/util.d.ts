@@ -87,7 +87,6 @@ export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocTy
 export type RxTestStorage = {
     // can be used to setup async stuff
     readonly init?: () => any;
-    // TODO remove name here, it can be read out already via getStorage().name
     readonly name: string;
     readonly getStorage: () => RxStorage<any, any>;
     /**

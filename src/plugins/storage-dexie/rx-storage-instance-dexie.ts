@@ -285,9 +285,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             state.dexieTable,
             async () => {
                 const maxDeletionTime = now() - minimumDeletedTime;
-                /**
-                 * TODO only fetch _deleted=true
-                 */
                 const toRemove = await state.dexieTable
                     .where('_meta.lwt')
                     .below(maxDeletionTime)
@@ -302,12 +299,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             }
         );
 
-        /**
-         * TODO instead of deleting all deleted docs at once,
-         * only clean up some of them and return false if there are more documents to clean up.
-         * This ensures that when many documents have to be purged,
-         * we do not block the more important tasks too long.
-         */
         return true;
     }
 
