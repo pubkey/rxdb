@@ -106,7 +106,6 @@ export function flattenEvents<EventType>(
     return nonDuplicate;
 }
 
-let c2 = 0;
 const EVENT_BULK_CACHE = new Map<RxChangeEventBulk<any>, any[]>();
 export function rxChangeEventBulkToRxChangeEvents(
     eventBulk: RxChangeEventBulk<any>
@@ -121,7 +120,6 @@ export function rxChangeEventBulkToRxChangeEvents(
             const isLocal = eventBulk.isLocal;
             const deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
             for (let index = 0; index < rawEvents.length; index++) {
-                c2++;
                 const event = rawEvents[index];
                 events[index] = {
                     documentId: event.documentId,
@@ -132,7 +130,6 @@ export function rxChangeEventBulkToRxChangeEvents(
                     previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData) as any
                 };
             }
-            console.log('c2: ' + c2);
             return events;
         }
     );
