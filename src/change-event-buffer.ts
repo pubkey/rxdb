@@ -48,8 +48,7 @@ export class ChangeEventBuffer<RxDocType> {
         public collection: RxCollection
     ) {
         this.subs.push(
-            this.collection.database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.collection.name),
+            this.collection.eventBulks$.pipe(
                 filter(bulk => !bulk.isLocal)
             ).subscribe(eventBulk => {
                 this.tasks.add(() => this._handleChangeEvents(eventBulk.events));
