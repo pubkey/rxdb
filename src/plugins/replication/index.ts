@@ -168,7 +168,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 databaseName: database.name,
                 collectionName: metaInfo.collectionName,
                 databaseInstanceToken: database.token,
-                multiInstance: database.multiInstance, // TODO is this always false?
+                multiInstance: database.multiInstance,
                 options: {},
                 schema: metaInfo.schema,
                 password: database.password,
