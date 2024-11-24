@@ -10,6 +10,7 @@ import { overwritable } from './overwritable.ts';
 
 import type {
     EventBulk,
+    RxChangeEvent,
     RxChangeEventBulk,
     RxDocumentData,
     RxStorageChangeEvent
@@ -106,7 +107,7 @@ export function flattenEvents<EventType>(
     return nonDuplicate;
 }
 
-const EVENT_BULK_CACHE = new Map<RxChangeEventBulk<any>, any[]>();
+const EVENT_BULK_CACHE = new Map<RxChangeEventBulk<any>, RxChangeEvent<any>[]>();
 export function rxChangeEventBulkToRxChangeEvents(
     eventBulk: RxChangeEventBulk<any>
 ) {
@@ -114,7 +115,7 @@ export function rxChangeEventBulkToRxChangeEvents(
         EVENT_BULK_CACHE,
         eventBulk,
         () => {
-            const events = new Array(eventBulk.events.length);
+            const events: RxChangeEvent<any>[] = new Array(eventBulk.events.length);
             const rawEvents = eventBulk.events;
             const collectionName = eventBulk.collectionName;
             const isLocal = eventBulk.isLocal;
