@@ -82,6 +82,7 @@ import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
+import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
 /**
  * stores the used database names+storage names
@@ -200,10 +201,17 @@ export class RxDatabaseBase<
     public closed: boolean = false;
     public collections: Collections = {} as any;
     public states: { [name: string]: RxState<any, Reactivity>; } = {};
+
+    /**
+     * Internally only use eventBulks$
+     * Do not use .$ or .observable$ because that has to transform
+     * the events which decreases performance.
+     */
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
+
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
-            mergeMap(changeEventBulk => changeEventBulk.events)
+            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
         );
 
     /**

@@ -147,7 +147,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            categorized.eventBulk.endTime = now();
             internals.changes$.next(categorized.eventBulk);
         }
         return awaitMe;

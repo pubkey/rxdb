@@ -82,7 +82,7 @@ export async function runCleanupAfterWrite(
          * to the collection. Otherwise the cleanup would
          * just run on intervals even if nothing has changed.
          */
-        await firstValueFrom(rxCollection.$);
+        await firstValueFrom(rxCollection.eventBulks$).catch(() => { });
         await rxCollection.promiseWait(cleanupPolicy.runEach);
         if (rxCollection.closed) {
             return;

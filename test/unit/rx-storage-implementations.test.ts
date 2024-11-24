@@ -2408,9 +2408,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const testStartTime = now();
-                await wait(100);
-
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(
@@ -2423,8 +2420,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     )
                     .subscribe(x => {
                         // console.log(JSON.stringify({ x, testStartTime }, null, 4));
-                        assert.ok(x.startTime > testStartTime, 'startTime must be after testStartTime');
-                        assert.ok(x.startTime < x.endTime, 'startTime must be smaller endTime');
                         emitted.push(x);
                     });
 

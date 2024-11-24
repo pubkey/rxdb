@@ -304,9 +304,7 @@ export function wrapRxStorageInstance<RxDocType>(
                         id: eventBulk.id,
                         events: useEvents,
                         checkpoint: eventBulk.checkpoint,
-                        context: eventBulk.context,
-                        startTime: eventBulk.startTime,
-                        endTime: eventBulk.endTime
+                        context: eventBulk.context
                     };
                     return ret;
                 }),

@@ -69,9 +69,7 @@ export class RxPipeline<RxDocType> {
         this.source.onClose.push(() => this.close());
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
-            this.source.database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.source.name)
-            ).subscribe((bulk) => {
+            this.source.eventBulks$.subscribe((bulk) => {
                 this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
                 this.somethingChanged.next({});
             })
@@ -264,14 +262,12 @@ export async function addPipeline<RxDocType>(
     startPromise.then(() => {
         pipeline.trigger();
         pipeline.subs.push(
-            this.database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.name),
+            this.eventBulks$.pipe(
                 filter(bulk => {
                     if (pipeline.stopped) {
                         return false;
                     }
-                    const first = bulk.events[0];
-                    return !first.isLocal;
+                    return !bulk.isLocal;
                 })
             ).subscribe(() => pipeline.trigger())
         );

@@ -195,7 +195,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             id: lastState[primaryPath],
                             lwt: lastState._meta.lwt
                         };
-                        categorized.eventBulk.endTime = now();
                         this.changes$.next(categorized.eventBulk);
                     }
                     break;

@@ -28,6 +28,7 @@ import type {
     RxLocalDocumentData
 } from '../../types/index.d.ts';
 import {
+    ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
@@ -75,15 +76,18 @@ const RxLocalDocumentPrototype: any = {
     get $(): Observable<RxLocalDocument<any, any>> {
         const _this: RxLocalDocumentClass = this as any;
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
-        return _this.parent.$.pipe(
-            filter(changeEvent => changeEvent.documentId === this.primary),
-            filter(changeEvent => changeEvent.isLocal),
-            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
+
+        const id = this.primary;
+        return _this.parent.eventBulks$.pipe(
+            filter(bulk => !!bulk.isLocal),
+            map(bulk => bulk.events.find(ev => ev.documentId === id)),
+            filter(event => !!event),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
             startWith(state.docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
             map(docData => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        ) as Observable<any>;
+        ) as Observable<any>;;
     },
     get $$(): any {
         const _this: RxLocalDocumentClass = this as any;
