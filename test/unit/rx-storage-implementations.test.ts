@@ -2408,9 +2408,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const testStartTime = now();
-                await wait(100);
-
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(

@@ -1,5 +1,4 @@
 import type {
-    EventBulk,
     RxDocumentData,
     RxStorageChangeEvent,
     RxStorageDefaultCheckpoint

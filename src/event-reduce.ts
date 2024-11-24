@@ -11,7 +11,6 @@ import {
 import type {
     RxQuery,
     MangoQuery,
-    RxChangeEvent,
     StringKeys,
     RxDocumentData,
     RxStorageChangeEvent
@@ -128,7 +127,7 @@ export function calculateNewResults<RxDocumentType>(
     let changed: boolean = false;
 
 
-    const eventReduceEvents: ChangeEvent<RxDocumentType>[] = new Array();
+    const eventReduceEvents: ChangeEvent<RxDocumentType>[] = [];
     for (let index = 0; index < rxChangeEvents.length; index++) {
         const cE = rxChangeEvents[index];
         const eventReduceEvent = rxChangeEventToEventReduceChangeEvent(cE);

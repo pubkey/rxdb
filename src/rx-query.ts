@@ -37,7 +37,6 @@ import type {
     MangoQuerySortPart,
     MangoQuerySelector,
     PreparedQuery,
-    RxChangeEvent,
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher,

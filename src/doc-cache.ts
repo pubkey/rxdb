@@ -1,5 +1,4 @@
 import type {
-    RxChangeEvent,
     RxDocument,
     RxDocumentData,
     RxStorageChangeEvent

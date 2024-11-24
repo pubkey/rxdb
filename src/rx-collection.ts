@@ -51,8 +51,7 @@ import {
 
 import {
     Subscription,
-    Observable,
-    Subject
+    Observable
 } from 'rxjs';
 
 import type {
