@@ -50,6 +50,7 @@ import { triggerCacheReplacement } from './query-cache.ts';
 import {
     getQueryMatcher,
     normalizeMangoQuery,
+    prepareQuery,
     runQueryUpdateFunction
 
 } from './rx-query-helper.ts';
@@ -655,34 +656,6 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
     return Promise.resolve(ret); // true if results have changed
 }
 
-/**
- * @returns a format of the query that can be used with the storage
- * when calling RxStorageInstance().query()
- */
-export function prepareQuery<RxDocType>(
-    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    mutateableQuery: FilledMangoQuery<RxDocType>
-): PreparedQuery<RxDocType> {
-    if (!mutateableQuery.sort) {
-        throw newRxError('SNH', {
-            query: mutateableQuery
-        });
-    }
-
-    /**
-     * Store the query plan together with the
-     * prepared query to save performance.
-     */
-    const queryPlan = getQueryPlan(
-        schema,
-        mutateableQuery
-    );
-
-    return {
-        query: mutateableQuery,
-        queryPlan
-    };
-}
 
 /**
  * Runs the query over the storage instance

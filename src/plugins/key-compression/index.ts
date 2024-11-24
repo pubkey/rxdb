@@ -37,7 +37,7 @@ import {
     getFromMapOrCreate,
     isMaybeReadonlyArray
 } from '../../plugins/utils/index.ts';
-import { prepareQuery } from '../../rx-query.ts';
+import { prepareQuery } from '../../rx-query-helper.ts';
 
 declare type CompressionState = {
     table: CompressionTable;

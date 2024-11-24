@@ -40,15 +40,13 @@ import {
     ensureNotFalsy,
     flatClone,
     getFromMapOrCreate,
-    getFromMapOrThrow,
     lastOfArray,
     now,
     promiseWait,
     randomToken
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
-import { prepareQuery } from './rx-query.ts';
-import { normalizeMangoQuery } from './rx-query-helper.ts';
+import { normalizeMangoQuery, prepareQuery } from './rx-query-helper.ts';
 import { runPluginHooks } from './hooks.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';

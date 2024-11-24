@@ -66,8 +66,7 @@ import {
     addConnectedStorageToCollection,
     getPrimaryKeyOfInternalDocument
 } from '../../rx-database-internal-store.ts';
-import { prepareQuery } from '../../rx-query.ts';
-import { normalizeMangoQuery } from '../../rx-query-helper.ts';
+import { normalizeMangoQuery, prepareQuery } from '../../rx-query-helper.ts';
 
 
 
