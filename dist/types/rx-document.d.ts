@@ -86,7 +86,7 @@ export declare const basePrototype: {
      */
     remove(this: RxDocument): Promise<RxDocument>;
     incrementalRemove(this: RxDocument): Promise<RxDocument>;
-    destroy(): never;
+    close(): never;
 };
 export declare function createRxDocumentConstructor(proto?: {
     readonly primaryPath: import("./types/util").StringKeys<{
@@ -174,7 +174,7 @@ export declare function createRxDocumentConstructor(proto?: {
      */
     remove(this: RxDocument): Promise<RxDocument>;
     incrementalRemove(this: RxDocument): Promise<RxDocument>;
-    destroy(): never;
+    close(): never;
 }): {
     (this: RxDocument, collection: RxCollection, docData: RxDocumentData<any>): void;
     prototype: {
@@ -263,7 +263,7 @@ export declare function createRxDocumentConstructor(proto?: {
          */
         remove(this: RxDocument): Promise<RxDocument>;
         incrementalRemove(this: RxDocument): Promise<RxDocument>;
-        destroy(): never;
+        close(): never;
     };
 };
 export declare function createWithConstructor<RxDocType>(constructor: any, collection: RxCollection<RxDocType>, jsonData: RxDocumentData<RxDocType>): RxDocument<RxDocType> | null;

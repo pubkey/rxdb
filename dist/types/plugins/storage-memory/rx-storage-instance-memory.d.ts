@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import type { BulkWriteRow, CategorizeBulkWriteRowsOutput, EventBulk, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
 import type { MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types.ts';
 /**
  * Used in tests to ensure everything
@@ -43,7 +43,5 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     remove(): Promise<void>;
     close(): Promise<void>;
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function createMemoryStorageInstance<RxDocType>(storage: RxStorageMemory, params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>, settings: RxStorageMemorySettings): Promise<RxStorageInstanceMemory<RxDocType>>;

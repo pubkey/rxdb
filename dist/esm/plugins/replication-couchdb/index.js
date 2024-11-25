@@ -123,10 +123,7 @@ export function replicateCouchDB(options) {
           }
           var realMasterState = couchDBDocToRxDocData(primaryPath, row.doc);
           var pushRow = getFromMapOrThrow(pushRowsById, row.id);
-          if (pushRow.assumedMasterState && (await conflictHandler({
-            realMasterState,
-            newDocumentState: pushRow.assumedMasterState
-          }, 'couchdb-push-1')).isEqual) {
+          if (pushRow.assumedMasterState && conflictHandler.isEqual(realMasterState, pushRow.assumedMasterState, 'couchdb-push-1')) {
             remoteRevById.set(row.id, row.doc._rev);
             nonConflictRows.push(pushRow);
           } else {

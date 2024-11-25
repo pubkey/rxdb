@@ -9,7 +9,7 @@ exports.getMigrationStateByDatabase = getMigrationStateByDatabase;
 exports.getOldCollectionMeta = getOldCollectionMeta;
 exports.migrateDocumentData = migrateDocumentData;
 exports.mustMigrate = mustMigrate;
-exports.onDatabaseDestroy = onDatabaseDestroy;
+exports.onDatabaseClose = onDatabaseClose;
 exports.runStrategyIfNotNull = runStrategyIfNotNull;
 var _rxjs = require("rxjs");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
@@ -94,10 +94,10 @@ function getMigrationStateByDatabase(database) {
 }
 
 /**
- * Complete on database destroy
+ * Complete on database close
  * so people do not have to unsubscribe
  */
-function onDatabaseDestroy(database) {
+function onDatabaseClose(database) {
   var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
   if (subject) {
     subject.complete();

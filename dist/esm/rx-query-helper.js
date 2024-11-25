@@ -1,4 +1,4 @@
-import { LOGICAL_OPERATORS } from "./query-planner.js";
+import { LOGICAL_OPERATORS, getQueryPlan } from "./query-planner.js";
 import { getPrimaryFieldOfPrimaryKey } from "./rx-schema-helper.js";
 import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray, flatClone, objectPathMonad } from "./plugins/utils/index.js";
 import { compare as mingoSortComparator } from 'mingo/util';
@@ -204,5 +204,27 @@ export async function runQueryUpdateFunction(rxQuery, fn) {
     var result = await fn(docs);
     return result;
   }
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export function prepareQuery(schema, mutateableQuery) {
+  if (!mutateableQuery.sort) {
+    throw newRxError('SNH', {
+      query: mutateableQuery
+    });
+  }
+
+  /**
+   * Store the query plan together with the
+   * prepared query to save performance.
+   */
+  var queryPlan = getQueryPlan(schema, mutateableQuery);
+  return {
+    query: mutateableQuery,
+    queryPlan
+  };
 }
 //# sourceMappingURL=rx-query-helper.js.map

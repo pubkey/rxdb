@@ -7,7 +7,7 @@ exports.RxDBLeaderElectionPlugin = void 0;
 exports.getForDatabase = getForDatabase;
 exports.getLeaderElectorByBroadcastChannel = getLeaderElectorByBroadcastChannel;
 exports.isLeader = isLeader;
-exports.onDestroy = onDestroy;
+exports.onClose = onClose;
 exports.rxdb = exports.prototypes = void 0;
 exports.waitForLeadership = waitForLeadership;
 var _broadcastChannel = require("broadcast-channel");
@@ -35,12 +35,12 @@ function getForDatabase() {
   var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(this.storage.name, this.token, this.name, this);
 
   /**
-   * Clean up the reference on RxDatabase.destroy()
+   * Clean up the reference on RxDatabase.close()
    */
-  var oldDestroy = this.destroy.bind(this);
-  this.destroy = function () {
+  var oldClose = this.close.bind(this);
+  this.close = function () {
     (0, _rxStorageMultiinstance.removeBroadcastChannelReference)(this.token, this);
-    return oldDestroy();
+    return oldClose();
   };
   var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
   if (!elector) {
@@ -69,9 +69,9 @@ function waitForLeadership() {
 }
 
 /**
- * runs when the database gets destroyed
+ * runs when the database gets closed
  */
-function onDestroy(db) {
+function onClose(db) {
   var has = LEADER_ELECTORS_OF_DB.get(db);
   if (has) {
     has.die();
@@ -90,8 +90,8 @@ var RxDBLeaderElectionPlugin = exports.RxDBLeaderElectionPlugin = {
   rxdb,
   prototypes,
   hooks: {
-    preDestroyRxDatabase: {
-      after: onDestroy
+    preCloseRxDatabase: {
+      after: onClose
     }
   }
 };

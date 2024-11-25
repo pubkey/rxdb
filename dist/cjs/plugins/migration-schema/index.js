@@ -57,8 +57,8 @@ var RxDBMigrationPlugin = exports.RxDBMigrationPlugin = {
     (0, _plugin.addRxPlugin)(_index2.RxDBLocalDocumentsPlugin);
   },
   hooks: {
-    preDestroyRxDatabase: {
-      after: _migrationHelpers.onDatabaseDestroy
+    preCloseRxDatabase: {
+      after: _migrationHelpers.onDatabaseClose
     }
   },
   prototypes: {

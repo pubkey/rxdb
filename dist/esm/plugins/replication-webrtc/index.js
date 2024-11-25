@@ -1,7 +1,7 @@
 import { BehaviorSubject, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { addRxPlugin } from "../../plugin.js";
 import { rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, getFromMapOrThrow, randomToken } from "../../plugins/utils/index.js";
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { replicateRxCollection } from "../replication/index.js";
 import { isMasterInWebRTCReplication, sendMessageAndAwaitAnswer } from "./webrtc-helper.js";
@@ -27,7 +27,7 @@ export async function replicateWebRTC(options) {
 
   // used to easier debug stuff
   var requestCounter = 0;
-  var requestFlag = randomCouchString(10);
+  var requestFlag = randomToken(10);
   function getRequestId() {
     var count = requestCounter++;
     return collection.database.token + '|' + requestFlag + '|' + count;
@@ -153,7 +153,7 @@ export var RxWebRTCReplicationPool = /*#__PURE__*/function () {
     this.collection = collection;
     this.options = options;
     this.connectionHandler = connectionHandler;
-    this.collection.onDestroy.push(() => this.cancel());
+    this.collection.onClose.push(() => this.cancel());
     this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, collection.database.token);
   }
   var _proto = RxWebRTCReplicationPool.prototype;
@@ -194,7 +194,7 @@ export var RxWebRTCReplicationPool = /*#__PURE__*/function () {
     Array.from(this.peerStates$.getValue().keys()).forEach(peer => {
       this.removePeer(peer);
     });
-    await this.connectionHandler.destroy();
+    await this.connectionHandler.close();
   };
   return RxWebRTCReplicationPool;
 }();

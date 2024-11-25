@@ -7,8 +7,7 @@ import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
 import { META_INSTANCE_SCHEMA_TITLE, awaitRxStorageReplicationFirstInSync, cancelRxStorageReplication, defaultConflictHandler, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance, rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
 import { overwritable } from "../../overwritable.js";
 import { INTERNAL_CONTEXT_MIGRATION_STATUS, addConnectedStorageToCollection, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
-import { prepareQuery } from "../../rx-query.js";
-import { normalizeMangoQuery } from "../../rx-query-helper.js";
+import { normalizeMangoQuery, prepareQuery } from "../../rx-query-helper.js";
 export var RxMigrationState = /*#__PURE__*/function () {
   function RxMigrationState(collection, migrationStrategies, statusDocKey = [collection.name, 'v', collection.schema.version].join('-')) {
     this.started = false;

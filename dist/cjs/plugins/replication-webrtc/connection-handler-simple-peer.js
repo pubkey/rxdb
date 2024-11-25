@@ -100,7 +100,7 @@ function getConnectionHandlerSimplePeer({
                   config,
                   trickle: true
                 });
-                newSimplePeer.id = (0, _index.randomCouchString)(10);
+                newSimplePeer.id = (0, _index.randomToken)(10);
                 peers.set(remotePeerId, newSimplePeer);
                 newSimplePeer.on('signal', signal => {
                   sendMessage((0, _index.ensureNotFalsy)(socket), {
@@ -172,7 +172,7 @@ function getConnectionHandlerSimplePeer({
       async send(peer, message) {
         await peer.send(JSON.stringify(message));
       },
-      destroy() {
+      close() {
         closed = true;
         (0, _index.ensureNotFalsy)(socket).close();
         error$.complete();

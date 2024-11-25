@@ -65,7 +65,7 @@ async function startSignalingServerSimplePeer(serverOptions) {
      * PeerID is created by the server to prevent malicious
      * actors from falsy claiming other peoples ids.
      */
-    var peerId = (0, _index.randomCouchString)(PEER_ID_LENGTH);
+    var peerId = (0, _index.randomToken)(PEER_ID_LENGTH);
     var peer = {
       id: peerId,
       socket: ws,

@@ -65,6 +65,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html?console=qa#cant-change-the-schema ',
   // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' + 'This often happens in react projects with hot reload that reloads the code without reloading the process.',
+  DB9: 'ignoreDuplicate is only allowed in dev-mode and must never be used in production',
   // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
   // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
@@ -77,7 +78,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   COL3: 'RxCollection.upsert() does not work without primary',
   COL4: 'RxCollection.incrementalUpsert() does not work without primary',
   COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
-  COL6: 'RxCollection.findOne() needs a queryObject or string',
+  COL6: 'RxCollection.findOne() needs a queryObject or string. Notice that in RxDB, primary keys must be strings and cannot be numbers.',
   COL7: 'hook must be a function',
   COL8: 'hooks-when not known',
   COL9: 'RxCollection.addHook() hook-name not known',
@@ -92,7 +93,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   COL18: 'collection-method not allowed because fieldname is in the schema',
   // removed in 14.0.0, use CONFLICT instead - COL19: 'Document update conflict. When changing a document you must work on the previous revision',
   COL20: 'Storage write error',
-  COL21: 'The RxCollection is destroyed or removed already, either from this JavaScript realm or from another, like a browser tab',
+  COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
   CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
   COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
   // rx-document.js
@@ -109,7 +110,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   DOC11: 'RxDocument.save(): can\'t save deleted document',
   // removed in 10.0.0 DOC12: 'RxDocument.save(): error',
   DOC13: 'RxDocument.remove(): Document is already deleted',
-  DOC14: 'RxDocument.destroy() does not exist',
+  DOC14: 'RxDocument.close() does not exist',
   DOC15: 'query cannot be an array',
   DOC16: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
   DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
@@ -191,7 +192,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   SC24: 'SchemaCheck: required fields must be set via array. See https://spacetelescope.github.io/understanding-json-schema/reference/object.html#required',
   SC25: 'SchemaCheck: compoundIndexes needs to be specified in the indexes field',
   SC26: 'SchemaCheck: indexes needs to be specified at collection schema level',
-  SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
+  // removed in 16.0.0 - SC27: 'SchemaCheck: encrypted fields need to be specified at collection schema level',
   SC28: 'SchemaCheck: encrypted fields is not defined in the schema',
   SC29: 'SchemaCheck: missing object key \'properties\'',
   SC30: 'SchemaCheck: primaryKey is required',
@@ -207,7 +208,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   SC41: 'minimum, maximum and maxLength values for indexes must be real numbers, not Infinity or -Infinity',
   // plugins/dev-mode
   // removed in 13.9.0, use PL3 instead - DEV1: 'dev-mode added multiple times',
-
+  DVM1: 'When dev-mode is enabled, your storage must use one of the schema validators at the top level. This is because most problems people have with RxDB is because they store data that is not valid to the schema which causes strange bugs and problems.',
   // plugins/validate.js
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',

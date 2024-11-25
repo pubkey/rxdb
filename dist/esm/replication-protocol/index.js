@@ -19,6 +19,7 @@ export * from "./upstream.js";
 export * from "./meta-instance.js";
 export * from "./conflicts.js";
 export * from "./helper.js";
+export * from "./default-conflict-handler.js";
 export function replicateRxStorageInstance(input) {
   input = flatClone(input);
   input.forkInstance = getUnderlyingPersistentStorage(input.forkInstance);
@@ -161,7 +162,7 @@ keepMeta = false) {
       masterDocsStateList.forEach(doc => masterDocsState.set(doc[primaryPath], doc));
       var conflicts = [];
       var writeRows = [];
-      await Promise.all(Object.entries(rowById).map(async ([id, row]) => {
+      await Promise.all(Object.entries(rowById).map(([id, row]) => {
         var masterState = masterDocsState.get(id);
         if (!masterState) {
           writeRows.push({
@@ -169,10 +170,7 @@ keepMeta = false) {
           });
         } else if (masterState && !row.assumedMasterState) {
           conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
-        } else if ((await conflictHandler({
-          realMasterState: writeDocToDocState(masterState, hasAttachments, keepMeta),
-          newDocumentState: ensureNotFalsy(row.assumedMasterState)
-        }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true) {
+        } else if (conflictHandler.isEqual(writeDocToDocState(masterState, hasAttachments, keepMeta), ensureNotFalsy(row.assumedMasterState), 'rxStorageInstanceToReplicationHandler-masterWrite') === true) {
           writeRows.push({
             previous: masterState,
             document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState, masterState)

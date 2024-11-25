@@ -1,7 +1,7 @@
 import { shareReplay } from 'rxjs';
 import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
 import { RxMigrationState } from "./rx-migration-state.js";
-import { getMigrationStateByDatabase, mustMigrate, onDatabaseDestroy } from "./migration-helpers.js";
+import { getMigrationStateByDatabase, mustMigrate, onDatabaseClose } from "./migration-helpers.js";
 import { addRxPlugin } from "../../plugin.js";
 import { RxDBLocalDocumentsPlugin } from "../local-documents/index.js";
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
@@ -12,8 +12,8 @@ export var RxDBMigrationPlugin = {
     addRxPlugin(RxDBLocalDocumentsPlugin);
   },
   hooks: {
-    preDestroyRxDatabase: {
-      after: onDatabaseDestroy
+    preCloseRxDatabase: {
+      after: onDatabaseClose
     }
   },
   prototypes: {

@@ -1,9 +1,13 @@
 var COUCH_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+
 /**
- * get a random string which can be used with couchdb
+ * Get a random string which can be used for many things in RxDB.
+ * The returned string is guaranteed to be a valid database name or collection name
+ * and also to be a valid JavaScript variable name.
+ * 
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-export function randomCouchString(length = 10) {
+export function randomToken(length = 10) {
   var text = '';
   for (var i = 0; i < length; i++) {
     text += COUCH_NAME_CHARS.charAt(Math.floor(Math.random() * COUCH_NAME_CHARS.length));

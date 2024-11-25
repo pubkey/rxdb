@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait, randomCouchString } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait, randomToken } from "../../plugins/utils/index.js";
 import { default as _Peer
 // @ts-ignore
 } from 'simple-peer/simplepeer.min.js';
@@ -93,7 +93,7 @@ export function getConnectionHandlerSimplePeer({
                   config,
                   trickle: true
                 });
-                newSimplePeer.id = randomCouchString(10);
+                newSimplePeer.id = randomToken(10);
                 peers.set(remotePeerId, newSimplePeer);
                 newSimplePeer.on('signal', signal => {
                   sendMessage(ensureNotFalsy(socket), {
@@ -165,7 +165,7 @@ export function getConnectionHandlerSimplePeer({
       async send(peer, message) {
         await peer.send(JSON.stringify(message));
       },
-      destroy() {
+      close() {
         closed = true;
         ensureNotFalsy(socket).close();
         error$.complete();

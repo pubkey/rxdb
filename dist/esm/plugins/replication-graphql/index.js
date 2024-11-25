@@ -3,8 +3,8 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with a remote graphql endpoint.
  */
-import { ensureNotFalsy, flatClone, getProperty } from "../../plugins/utils/index.js";
-import { graphQLRequest as _graphQLRequest } from "./helper.js";
+import { ensureNotFalsy, flatClone } from "../../plugins/utils/index.js";
+import { getDataFromResult, graphQLRequest as _graphQLRequest } from "./helper.js";
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { RxReplicationState, startReplicationOnLeaderShip } from "../replication/index.js";
 import { addRxPlugin } from "../../index.js";
@@ -76,8 +76,7 @@ export function replicateGraphQL({
         if (result.errors) {
           throw result.errors;
         }
-        var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-        var data = getProperty(result, dataPath);
+        var data = getDataFromResult(result, pull.dataPath);
         if (pull.responseModifier) {
           data = await pull.responseModifier(data, 'handler', lastPulledCheckpoint);
         }
@@ -102,8 +101,7 @@ export function replicateGraphQL({
         if (result.errors) {
           throw result.errors;
         }
-        var dataPath = push.dataPath || Object.keys(result.data)[0];
-        var data = getProperty(result.data, dataPath);
+        var data = getDataFromResult(result, push.dataPath);
         if (push.responseModifier) {
           data = await push.responseModifier(data);
         }

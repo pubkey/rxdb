@@ -63,8 +63,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
     var replicationStates = getFromMapOrCreate(REPLICATION_STATE_BY_COLLECTION, collection, () => []);
     replicationStates.push(this);
 
-    // stop the replication when the collection gets destroyed
-    this.collection.onDestroy.push(() => this.cancel());
+    // stop the replication when the collection gets closed
+    this.collection.onClose.push(() => this.cancel());
 
     // create getters for the observables
     Object.keys(this.subjects).forEach(key => {
@@ -95,7 +95,6 @@ export var RxReplicationState = /*#__PURE__*/function () {
       collectionName: metaInfo.collectionName,
       databaseInstanceToken: database.token,
       multiInstance: database.multiInstance,
-      // TODO is this always false?
       options: {},
       schema: metaInfo.schema,
       password: database.password,

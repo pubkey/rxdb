@@ -10,6 +10,7 @@ export * from './upstream.ts';
 export * from './meta-instance.ts';
 export * from './conflicts.ts';
 export * from './helper.ts';
+export * from './default-conflict-handler.ts';
 export declare function replicateRxStorageInstance<RxDocType>(input: RxStorageInstanceReplicationInput<RxDocType>): RxStorageInstanceReplicationState<RxDocType>;
 export declare function awaitRxStorageReplicationFirstInSync(state: RxStorageInstanceReplicationState<any>): Promise<void>;
 export declare function awaitRxStorageReplicationInSync(replicationState: RxStorageInstanceReplicationState<any>): Promise<[any, any, any]>;

@@ -1,11 +1,12 @@
 import { isBulkWriteConflictError, newRxError } from "./rx-error.js";
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from "./rx-schema-helper.js";
 import { getSingleDocument, getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "./rx-storage-helper.js";
-import { clone, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from "./plugins/utils/index.js";
-import { prepareQuery } from "./rx-query.js";
+import { clone, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomToken } from "./plugins/utils/index.js";
+import { prepareQuery } from "./rx-query-helper.js";
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export var INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
+export var INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = 'rx-pipeline-checkpoint';
 
 /**
  * Do not change the title,
@@ -35,7 +36,7 @@ export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
     },
     context: {
       type: 'string',
-      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, 'OTHER']
+      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, 'OTHER']
     },
     data: {
       type: 'object',
@@ -99,7 +100,7 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
    * we just try to insert a new document
    * and only fetch the existing one if a conflict happened.
    */
-  var storageToken = randomCouchString(10);
+  var storageToken = randomToken(10);
   var passwordHash = rxDatabase.password ? await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) : undefined;
   var docData = {
     id: STORAGE_TOKEN_DOCUMENT_ID,
@@ -163,11 +164,15 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(databaseStateVe
   if (!databaseStateVersion) {
     return false;
   }
-  if (codeVersion.includes('beta') && codeVersion !== databaseStateVersion) {
-    return false;
-  }
   var stateMajor = databaseStateVersion.split('.')[0];
   var codeMajor = codeVersion.split('.')[0];
+
+  /**
+   * Version v15 data must be upwards compatible to v16
+   */
+  if (stateMajor === '15' && codeMajor === '16') {
+    return true;
+  }
   if (stateMajor !== codeMajor) {
     return false;
   }

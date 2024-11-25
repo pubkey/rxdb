@@ -34,8 +34,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      * This hash does not have to be cryptographically secure,
      * but it is very important that is does have not create
      * collisions.
-     * Default is the sha256 from the ohash library
-     * @link https://www.npmjs.com/package/ohash
+     * Default is the sha256 from crypto.subtle.digest('SHA-256', data)
      */
     hashFunction?: HashFunction;
 

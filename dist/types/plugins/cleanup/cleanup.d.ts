@@ -5,8 +5,4 @@ export declare function initialCleanupWait(collection: RxCollection, cleanupPoli
  * Runs the cleanup for a single RxCollection
  */
 export declare function cleanupRxCollection(rxCollection: RxCollection, cleanupPolicy: RxCleanupPolicy): Promise<void>;
-/**
- * TODO this is not waiting for deletes!
- * it just runs on interval.
- */
 export declare function runCleanupAfterDelete(rxCollection: RxCollection, cleanupPolicy: RxCleanupPolicy): Promise<void>;

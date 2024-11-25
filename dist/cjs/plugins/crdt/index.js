@@ -224,20 +224,17 @@ function getCRDTConflictHandler(hashFunction, schema) {
   var crdtOptions = (0, _index.ensureNotFalsy)(schema.crdt);
   var crdtField = crdtOptions.field;
   var getCRDTValue = (0, _index.objectPathMonad)(crdtField);
-  var conflictHandler = async (i, _context) => {
-    var newDocCrdt = getCRDTValue(i.newDocumentState);
-    var masterDocCrdt = getCRDTValue(i.realMasterState);
-    if (newDocCrdt.hash === masterDocCrdt.hash) {
-      return Promise.resolve({
-        isEqual: true
-      });
+  var conflictHandler = {
+    isEqual(a, b, ctx) {
+      return getCRDTValue(a).hash === getCRDTValue(b).hash;
+    },
+    async resolve(i) {
+      var newDocCrdt = getCRDTValue(i.newDocumentState);
+      var masterDocCrdt = getCRDTValue(i.realMasterState);
+      var mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
+      var mergedDoc = rebuildFromCRDT(schema, i.newDocumentState, mergedCrdt);
+      return mergedDoc;
     }
-    var mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
-    var mergedDoc = rebuildFromCRDT(schema, i.newDocumentState, mergedCrdt);
-    return Promise.resolve({
-      isEqual: false,
-      documentData: mergedDoc
-    });
   };
   return conflictHandler;
 }

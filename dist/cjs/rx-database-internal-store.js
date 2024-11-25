@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
 exports._collectionNamePrimary = _collectionNamePrimary;
 exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
@@ -15,10 +15,11 @@ var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _rxStorageHelper = require("./rx-storage-helper.js");
 var _index = require("./plugins/utils/index.js");
-var _rxQuery = require("./rx-query.js");
+var _rxQueryHelper = require("./rx-query-helper.js");
 var INTERNAL_CONTEXT_COLLECTION = exports.INTERNAL_CONTEXT_COLLECTION = 'collection';
 var INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 var INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
+var INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = exports.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = 'rx-pipeline-checkpoint';
 
 /**
  * Do not change the title,
@@ -48,7 +49,7 @@ var INTERNAL_STORE_SCHEMA = exports.INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.
     },
     context: {
       type: 'string',
-      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, 'OTHER']
+      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, 'OTHER']
     },
     data: {
       type: 'object',
@@ -82,7 +83,7 @@ function getPrimaryKeyOfInternalDocument(key, context) {
  * with context 'collection'
  */
 async function getAllCollectionDocuments(storageInstance) {
-  var getAllQueryPrepared = (0, _rxQuery.prepareQuery)(storageInstance.schema, {
+  var getAllQueryPrepared = (0, _rxQueryHelper.prepareQuery)(storageInstance.schema, {
     selector: {
       context: INTERNAL_CONTEXT_COLLECTION,
       _deleted: {
@@ -112,7 +113,7 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
    * we just try to insert a new document
    * and only fetch the existing one if a conflict happened.
    */
-  var storageToken = (0, _index.randomCouchString)(10);
+  var storageToken = (0, _index.randomToken)(10);
   var passwordHash = rxDatabase.password ? await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) : undefined;
   var docData = {
     id: STORAGE_TOKEN_DOCUMENT_ID,
@@ -176,11 +177,15 @@ function isDatabaseStateVersionCompatibleWithDatabaseCode(databaseStateVersion, 
   if (!databaseStateVersion) {
     return false;
   }
-  if (codeVersion.includes('beta') && codeVersion !== databaseStateVersion) {
-    return false;
-  }
   var stateMajor = databaseStateVersion.split('.')[0];
   var codeMajor = codeVersion.split('.')[0];
+
+  /**
+   * Version v15 data must be upwards compatible to v16
+   */
+  if (stateMajor === '15' && codeMajor === '16') {
+    return true;
+  }
   if (stateMajor !== codeMajor) {
     return false;
   }

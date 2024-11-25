@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import type { BulkWriteRow, EventBulk, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
 import { MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageMongoDBSettings } from './mongodb-types.ts';
 import { RxStorageMongoDB } from './rx-storage-mongodb.ts';
 import { Db as MongoDatabase, Collection as MongoCollection, MongoClient, ObjectId, ClientSession } from 'mongodb';
@@ -48,7 +48,5 @@ export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageIns
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     remove(): Promise<void>;
     close(): Promise<void>;
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function createMongoDBStorageInstance<RxDocType>(storage: RxStorageMongoDB, params: RxStorageInstanceCreationParams<RxDocType, RxStorageMongoDBInstanceCreationOptions>, settings: RxStorageMongoDBSettings): Promise<RxStorageInstanceMongoDB<RxDocType>>;

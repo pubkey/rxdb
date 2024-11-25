@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import type { BulkWriteRow, EventBulk, PreparedQuery, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
 import type { FoundationDBStorageInternals, RxStorageFoundationDB, RxStorageFoundationDBInstanceCreationOptions, RxStorageFoundationDBSettings } from './foundationdb-types.ts';
 export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<RxDocType, FoundationDBStorageInternals<RxDocType>, RxStorageFoundationDBInstanceCreationOptions, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageFoundationDB;
@@ -21,8 +21,6 @@ export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStora
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, RxStorageDefaultCheckpoint>>;
     remove(): Promise<void>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
     close(): Promise<void>;
 }
 export declare function createFoundationDBStorageInstance<RxDocType>(storage: RxStorageFoundationDB, params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>, settings: RxStorageFoundationDBSettings): Promise<RxStorageInstanceFoundationDB<RxDocType>>;

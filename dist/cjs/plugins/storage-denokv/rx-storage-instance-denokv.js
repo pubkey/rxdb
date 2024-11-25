@@ -16,7 +16,6 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _utilsTime = require("../utils/utils-time.js");
 var _denokvQuery = require("./denokv-query.js");
 var _queryPlanner = require("../../query-planner.js");
-var _utilsPromise = require("../utils/utils-promise.js");
 var _utilsObject = require("../utils/utils-object.js");
 var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/function () {
   function RxStorageInstanceDenoKV(storage, databaseName, collectionName, schema, internals, options, settings, keySpace = ['rxdb', databaseName, collectionName, schema.version].join('|'), kvOptions = {
@@ -80,8 +79,9 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
         var docsInDB = new Map();
 
         /**
-         * TODO the max amount for .getMany() is 10 which is defined by deno itself.
-         * How can this be increased?
+         * The max amount for .getMany() is 10 which is defined by deno itself:
+         * @link https://docs.deno.com/deploy/kv/manual/transactions/
+         * @link https://github.com/denoland/deno/issues/19284
          */
         var readManyBatches = (0, _utilsArray.batchArray)(writeBatch, 10);
         await Promise.all(readManyBatches.map(async readManyBatch => {
@@ -151,7 +151,6 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
               id: lastState[primaryPath],
               lwt: lastState._meta.lwt
             };
-            categorized.eventBulk.endTime = (0, _utilsTime.now)();
             _this.changes$.next(categorized.eventBulk);
           }
           return 1; // break
@@ -274,12 +273,6 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
     }
     await Promise.all(promises);
     return this.close();
-  };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new _rxjs.Subject().asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return _utilsPromise.PROMISE_RESOLVE_VOID;
   };
   return RxStorageInstanceDenoKV;
 }();

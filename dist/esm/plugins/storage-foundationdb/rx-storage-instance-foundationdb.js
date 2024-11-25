@@ -114,7 +114,6 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
           id: lastState[this.primaryPath],
           lwt: lastState._meta.lwt
         };
-        categorized.eventBulk.endTime = now();
         this.changes$.next(categorized.eventBulk);
       }
     }));
@@ -207,12 +206,6 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       docIds.forEach(id => mainTx.delete(id));
     });
     return noMoreUndeleted;
-  };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new Subject().asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return PROMISE_RESOLVE_VOID;
   };
   _proto.close = async function close() {
     if (this.closed) {

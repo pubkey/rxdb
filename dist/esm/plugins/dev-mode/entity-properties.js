@@ -26,7 +26,7 @@ export function rxDatabaseProperties() {
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
     _rxDatabaseProperties = [...ownProperties, ...prototypeProperties];
-    pseudoInstance.destroy();
+    pseudoInstance.close();
   }
   return _rxDatabaseProperties;
 }

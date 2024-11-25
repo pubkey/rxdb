@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxPipeline = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = void 0;
+exports.RxPipeline = void 0;
 exports.addPipeline = addPipeline;
 exports.getCheckpointDoc = getCheckpointDoc;
 exports.setCheckpointDoc = setCheckpointDoc;
@@ -13,9 +13,6 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _docCache = require("../../doc-cache.js");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
 var _flaggedFunctions = require("./flagged-functions.js");
-var RX_PIPELINE_CHECKPOINT_CONTEXT = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
-// TODO change the context in the next major version.
-// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = _index.PROMISE_RESOLVE_VOID;
@@ -25,7 +22,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     this.lastSourceDocTime = new _rxjs.BehaviorSubject(-1);
     this.lastProcessedDocTime = new _rxjs.BehaviorSubject(0);
     this.somethingChanged = new _rxjs.Subject();
-    this.secretFunctionName = 'tx_fn_' + (0, _index.randomCouchString)(10);
+    this.secretFunctionName = 'tx_fn_' + (0, _index.randomToken)(10);
     this.waitBeforeWriteFn = async () => {
       var stack = new Error().stack;
       if (stack && stack.includes(this.secretFunctionName)) {} else {
@@ -38,9 +35,9 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     this.handler = handler;
     this.batchSize = batchSize;
     this.checkpointId = 'rx-pipeline-' + identifier;
-    this.source.onDestroy.push(() => this.destroy());
+    this.source.onClose.push(() => this.close());
     this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
-    this.subs.push(this.source.database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => changeEventBulk.collectionName === this.source.name)).subscribe(bulk => {
+    this.subs.push(this.source.eventBulks$.subscribe(bulk => {
       this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
       this.somethingChanged.next({});
     }));
@@ -48,7 +45,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       var events = eventBulk.events;
       for (var index = 0; index < events.length; index++) {
         var event = events[index];
-        if (event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT && event.documentData.key === this.checkpointId) {
+        if (event.documentData.context === _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT && event.documentData.key === this.checkpointId) {
           this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
           this.somethingChanged.next({});
         }
@@ -95,7 +92,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
           }
           lastTime = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(docsSinceResult.documents))._meta.lwt;
         }
-        if (!_this2.destination.destroyed) {
+        if (!_this2.destination.closed) {
           await setCheckpointDoc(_this2, {
             checkpoint: docsSinceResult.checkpoint,
             lastDocTime: lastTime
@@ -105,7 +102,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
           done = true;
         }
       };
-      while (!done && !this.stopped && !this.destination.destroyed && !this.source.destroyed) {
+      while (!done && !this.stopped && !this.destination.closed && !this.source.closed) {
         await _loop();
       }
     });
@@ -121,7 +118,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       }
     }
   };
-  _proto.destroy = async function destroy() {
+  _proto.close = async function close() {
     this.stopped = true;
     this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
     this.subs.forEach(s => s.unsubscribe());
@@ -145,13 +142,13 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
         throw writeResult.error;
       }
     }
-    return this.destroy();
+    return this.close();
   };
   return RxPipeline;
 }();
 async function getCheckpointDoc(pipeline) {
   var insternalStore = pipeline.destination.database.internalStore;
-  var checkpointId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT);
+  var checkpointId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT);
   var results = await insternalStore.findDocumentsById([checkpointId], false);
   var result = results[0];
   if (result) {
@@ -169,9 +166,9 @@ async function setCheckpointDoc(pipeline, newCheckpoint, previous) {
       lwt: (0, _index.now)()
     },
     _rev: (0, _index.createRevision)(pipeline.destination.database.token, previous),
-    context: RX_PIPELINE_CHECKPOINT_CONTEXT,
+    context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
     data: newCheckpoint,
-    id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT),
+    id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT),
     key: pipeline.checkpointId
   };
   var writeResult = await insternalStore.bulkWrite([{
@@ -188,12 +185,11 @@ async function addPipeline(options) {
   var startPromise = waitForLeadership ? this.database.waitForLeadership() : _index.PROMISE_RESOLVE_VOID;
   startPromise.then(() => {
     pipeline.trigger();
-    pipeline.subs.push(this.database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => changeEventBulk.collectionName === this.name), (0, _rxjs.filter)(bulk => {
+    pipeline.subs.push(this.eventBulks$.pipe((0, _rxjs.filter)(bulk => {
       if (pipeline.stopped) {
         return false;
       }
-      var first = bulk.events[0];
-      return !first.isLocal;
+      return !bulk.isLocal;
     })).subscribe(() => pipeline.trigger()));
   });
   return pipeline;

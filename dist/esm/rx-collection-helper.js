@@ -114,8 +114,8 @@ hashFunction) {
     await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
   }
 }
-export function ensureRxCollectionIsNotDestroyed(collection) {
-  if (collection.destroyed) {
+export function ensureRxCollectionIsNotClosed(collection) {
+  if (collection.closed) {
     throw newRxError('COL21', {
       collection: collection.name,
       version: collection.schema.version

@@ -116,15 +116,6 @@ export function exposeRxStorageRemote(settings) {
       };
       settings.send(message);
     }));
-    subs.push(storageInstance.conflictResultionTasks().subscribe(conflicts => {
-      var message = {
-        connectionId,
-        answerTo: 'conflictResultionTasks',
-        method: 'conflictResultionTasks',
-        return: conflicts
-      };
-      settings.send(message);
-    }));
     var connectionClosed = false;
     function closeThisConnection() {
       if (connectionClosed) {
@@ -139,14 +130,14 @@ export function exposeRxStorageRemote(settings) {
        */
     }
 
-    // also close the connection when the collection gets destroyed
+    // also close the connection when the collection gets closed
     if (settings.database) {
       var database = settings.database;
       var collection = database.collections[collectionName];
       if (collection) {
-        collection.onDestroy.push(() => closeThisConnection());
+        collection.onClose.push(() => closeThisConnection());
       } else {
-        database.onDestroy.push(() => closeThisConnection());
+        database.onClose.push(() => closeThisConnection());
       }
     }
     subs.push(settings.messages$.pipe(filter(subMsg => subMsg.connectionId === connectionId)).subscribe(async plainMessage => {
@@ -164,7 +155,7 @@ export function exposeRxStorageRemote(settings) {
            * Do not close the storageInstance if it was taken from
            * a running RxDatabase.
            * In that case we only close the instance
-           * when the RxDatabase gets destroyed.
+           * when the RxDatabase gets closed.
            */
           settings.send(createAnswer(message, null));
           return;

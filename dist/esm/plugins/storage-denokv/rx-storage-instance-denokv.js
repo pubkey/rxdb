@@ -9,7 +9,6 @@ import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
 import { now } from "../utils/utils-time.js";
 import { queryDenoKV } from "./denokv-query.js";
 import { INDEX_MAX } from "../../query-planner.js";
-import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.js";
 import { flatClone } from "../utils/utils-object.js";
 export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
   function RxStorageInstanceDenoKV(storage, databaseName, collectionName, schema, internals, options, settings, keySpace = ['rxdb', databaseName, collectionName, schema.version].join('|'), kvOptions = {
@@ -73,8 +72,9 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
         var docsInDB = new Map();
 
         /**
-         * TODO the max amount for .getMany() is 10 which is defined by deno itself.
-         * How can this be increased?
+         * The max amount for .getMany() is 10 which is defined by deno itself:
+         * @link https://docs.deno.com/deploy/kv/manual/transactions/
+         * @link https://github.com/denoland/deno/issues/19284
          */
         var readManyBatches = batchArray(writeBatch, 10);
         await Promise.all(readManyBatches.map(async readManyBatch => {
@@ -144,7 +144,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
               id: lastState[primaryPath],
               lwt: lastState._meta.lwt
             };
-            categorized.eventBulk.endTime = now();
             _this.changes$.next(categorized.eventBulk);
           }
           return 1; // break
@@ -267,12 +266,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
     }
     await Promise.all(promises);
     return this.close();
-  };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new Subject().asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return PROMISE_RESOLVE_VOID;
   };
   return RxStorageInstanceDenoKV;
 }();

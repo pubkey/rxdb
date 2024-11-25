@@ -75,7 +75,7 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       // }
       // ).on('change', change => {
 
-      //     const eventBulkId = randomCouchString(10);
+      //     const eventBulkId = randomToken(10);
       //     const newDocData: RxDocumentData<RxDocType> = (change as any).fullDocument;
       //     const documentId = newDocData[this.primaryPath] as any;
 
@@ -92,8 +92,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       //             operation: 'INSERT',
       //             previousDocumentData: undefined,
       //         }],
-      //             startTime: now(),
-      //             endTime: now()
       //     };
 
       //     this.changes$.next(eventBulk);
@@ -209,7 +207,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           id: lastState[primaryPath],
           lwt: lastState._meta.lwt
         };
-        categorized.eventBulk.endTime = (0, _index.now)();
         this.changes$.next(categorized.eventBulk);
       }
       this.runningOperations.next(this.runningOperations.getValue() - 1);
@@ -316,10 +313,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     })();
     return this.closed;
   };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new _rxjs.Subject();
-  };
-  _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceMongoDB;
 }();
 function createMongoDBStorageInstance(storage, params, settings) {

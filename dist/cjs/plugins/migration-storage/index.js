@@ -10,7 +10,7 @@ var _index = require("../../index.js");
  * Migrates collections of RxDB version A and puts them
  * into a RxDatabase that is created with version B.
  * This function only works from the previous major version upwards.
- * Do not use it to migrate like rxdb v9 to v14. 
+ * Do not use it to migrate like rxdb v9 to v14.
  */
 async function migrateStorage(params) {
   var collections = Object.values(params.database.collections);
@@ -34,26 +34,7 @@ logFunction) {
   log('start migrateCollection()');
   var schema = collection.schema.jsonSchema;
   var primaryPath = collection.schema.primaryPath;
-  var oldDatabaseInstanceToken = (0, _index.randomCouchString)(10);
-
-  /**
-   * In RxDB v15 we changed how the indexes are created.
-   * Before (v14), the storage prepended the _deleted field
-   * to all indexes.
-   * In v15, RxDB will prepend the _deleted field BEFORE sending
-   * it to the storage. Therefore we have to strip these fields
-   * when crating v14 storage instances.
-   */
-  if (!oldStorage.rxdbVersion && schema.indexes) {
-    schema = (0, _index.clone)(schema);
-    schema.indexes = (0, _index.ensureNotFalsy)(schema.indexes).map(index => {
-      index = (0, _index.toArray)(index).filter(field => field !== '_deleted');
-      if (index.includes('_meta.lwt')) {
-        return null;
-      }
-      return index;
-    }).filter(_index.arrayFilterNotEmpty);
-  }
+  var oldDatabaseInstanceToken = (0, _index.randomToken)(10);
   var oldStorageInstance = await oldStorage.createStorageInstance({
     databaseName: oldDatabaseName,
     collectionName: collection.name,
@@ -75,19 +56,7 @@ logFunction) {
     }],
     skip: 0
   };
-
-  /**
-   * In RxDB v15 we removed statics.prepareQuery()
-   * But to be downwards compatible, still use that
-   * when migrating from an old storage.
-   * TODO remove this in the next major version. v16.
-   */
-  var preparedQuery;
-  if (oldStorage.statics && oldStorage.statics.prepareQuery) {
-    preparedQuery = oldStorage.statics.prepareQuery(schema, plainQuery);
-  } else {
-    preparedQuery = (0, _index.prepareQuery)(schema, plainQuery);
-  }
+  var preparedQuery = (0, _index.prepareQuery)(schema, plainQuery);
   var _loop = async function () {
       log('loop once');
       /**
@@ -183,18 +152,7 @@ logFunction) {
         throw err;
       }
       log('deleted batch on old storage');
-      await oldStorageInstance.cleanup(0).catch(() => {
-        /**
-         * Migration from RxDB v14 to v15 had problem running the cleanup()
-         * on the old storage because the indexing structure changed.
-         * Because the periodic cleanup during migration
-         * is an optional step, we just log instead of throwing an error.
-         * @link https://github.com/pubkey/rxdb/issues/5565
-         * 
-         * TODO remove this in the next major version
-         */
-        log('oldStorageInstance.cleanup(0) has thrown');
-      });
+      await oldStorageInstance.cleanup(0);
 
       // run the handler if provided
       if (afterMigrateBatch) {

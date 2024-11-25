@@ -7,7 +7,7 @@ import type { AnyKeys, AnyObject } from '../util.d.ts';
 /**
  * We use an own type here, copied from mongoose
  * @link https://github.com/Automattic/mongoose/blob/eb292d2c4cc98ee315f118d6199a83938f06d901/types/index.d.ts#L466
- * TODO when mingo implements a schema-based type for UpdateExpression, we can use that one.
+ * When the mingo library implements a schema-based type for UpdateExpression, we can use these typings instead.
  */
 export type UpdateQuery<TSchema> = {
     $min?: AnyKeys<TSchema> & AnyObject;

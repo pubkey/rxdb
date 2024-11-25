@@ -37,7 +37,7 @@ function createLocalDocStateByParent(parent) {
       collectionName !== '' && changeEventBulk.collectionName === collectionName) {
         ret = true;
       }
-      return ret && changeEventBulk.events[0].isLocal;
+      return ret && changeEventBulk.isLocal;
     }), (0, _rxjs.map)(b => b.events)), docData => (0, _rxLocalDocument.createRxLocalDocument)(docData, parent));
     var incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
 
@@ -62,15 +62,14 @@ function createLocalDocStateByParent(parent) {
       }
       var changeEventBulk = {
         id: eventBulk.id,
+        isLocal: true,
         internal: false,
         collectionName: parent.database ? parent.name : undefined,
         storageToken: databaseStorageToken,
         events,
         databaseToken: database.token,
         checkpoint: eventBulk.checkpoint,
-        context: eventBulk.context,
-        endTime: eventBulk.endTime,
-        startTime: eventBulk.startTime
+        context: eventBulk.context
       };
       database.$emit(changeEventBulk);
     });
@@ -123,7 +122,7 @@ function closeStateByParent(parent) {
   }
 }
 async function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
-  var databaseInstanceToken = (0, _index.randomCouchString)(10);
+  var databaseInstanceToken = (0, _index.randomToken)(10);
   var storageInstance = await createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, {}, false);
   await storageInstance.remove();
 }

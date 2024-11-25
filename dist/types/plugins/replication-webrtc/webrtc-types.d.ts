@@ -22,7 +22,7 @@ export type WebRTCConnectionHandler<PeerType> = {
     response$: Observable<PeerWithResponse<PeerType>>;
     error$: Observable<RxError | RxTypeError>;
     send(peer: PeerType, message: WebRTCMessage | WebRTCResponse): Promise<void>;
-    destroy(): Promise<void>;
+    close(): Promise<void>;
 };
 export type WebRTCConnectionHandlerCreator<PeerType> = (opts: SyncOptionsWebRTC<any, PeerType>) => Promise<WebRTCConnectionHandler<PeerType>>;
 export type WebRTCSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'> & {};

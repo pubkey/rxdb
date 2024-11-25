@@ -1,7 +1,6 @@
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import type { InternalStoreDocType, RxCollection, RxDocumentData } from '../../types';
 import type { CheckpointDocData, RxPipelineHandler, RxPipelineOptions } from './types';
-export declare const RX_PIPELINE_CHECKPOINT_CONTEXT = "OTHER";
 export declare class RxPipeline<RxDocType> {
     readonly identifier: string;
     readonly source: RxCollection<RxDocType>;
@@ -21,7 +20,7 @@ export declare class RxPipeline<RxDocType> {
     constructor(identifier: string, source: RxCollection<RxDocType>, destination: RxCollection<any>, handler: RxPipelineHandler<RxDocType>, batchSize?: number);
     trigger(): void;
     awaitIdle(): Promise<void>;
-    destroy(): Promise<void>;
+    close(): Promise<void>;
     /**
      * Remove the pipeline and all metadata which it has stored
      */

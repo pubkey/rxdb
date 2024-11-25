@@ -1,13 +1,9 @@
 import { BehaviorSubject, Subject, filter, firstValueFrom } from 'rxjs';
-import { PROMISE_RESOLVE_VOID, clone, createRevision, ensureNotFalsy, lastOfArray, now, randomCouchString } from "../utils/index.js";
+import { PROMISE_RESOLVE_VOID, clone, createRevision, ensureNotFalsy, lastOfArray, now, randomToken } from "../utils/index.js";
 import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
 import { mapDocumentsDataToCacheDocs } from "../../doc-cache.js";
-import { getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
+import { INTERNAL_CONTEXT_PIPELINE_CHECKPOINT, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
 import { FLAGGED_FUNCTIONS, blockFlaggedFunctionKey, releaseFlaggedFunctionKey } from "./flagged-functions.js";
-export var RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
-// TODO change the context in the next major version.
-// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
-
 export var RxPipeline = /*#__PURE__*/function () {
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = PROMISE_RESOLVE_VOID;
@@ -17,7 +13,7 @@ export var RxPipeline = /*#__PURE__*/function () {
     this.lastSourceDocTime = new BehaviorSubject(-1);
     this.lastProcessedDocTime = new BehaviorSubject(0);
     this.somethingChanged = new Subject();
-    this.secretFunctionName = 'tx_fn_' + randomCouchString(10);
+    this.secretFunctionName = 'tx_fn_' + randomToken(10);
     this.waitBeforeWriteFn = async () => {
       var stack = new Error().stack;
       if (stack && stack.includes(this.secretFunctionName)) {} else {
@@ -30,9 +26,9 @@ export var RxPipeline = /*#__PURE__*/function () {
     this.handler = handler;
     this.batchSize = batchSize;
     this.checkpointId = 'rx-pipeline-' + identifier;
-    this.source.onDestroy.push(() => this.destroy());
+    this.source.onClose.push(() => this.close());
     this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
-    this.subs.push(this.source.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.source.name)).subscribe(bulk => {
+    this.subs.push(this.source.eventBulks$.subscribe(bulk => {
       this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
       this.somethingChanged.next({});
     }));
@@ -40,7 +36,7 @@ export var RxPipeline = /*#__PURE__*/function () {
       var events = eventBulk.events;
       for (var index = 0; index < events.length; index++) {
         var event = events[index];
-        if (event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT && event.documentData.key === this.checkpointId) {
+        if (event.documentData.context === INTERNAL_CONTEXT_PIPELINE_CHECKPOINT && event.documentData.key === this.checkpointId) {
           this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
           this.somethingChanged.next({});
         }
@@ -87,7 +83,7 @@ export var RxPipeline = /*#__PURE__*/function () {
           }
           lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
         }
-        if (!_this2.destination.destroyed) {
+        if (!_this2.destination.closed) {
           await setCheckpointDoc(_this2, {
             checkpoint: docsSinceResult.checkpoint,
             lastDocTime: lastTime
@@ -97,7 +93,7 @@ export var RxPipeline = /*#__PURE__*/function () {
           done = true;
         }
       };
-      while (!done && !this.stopped && !this.destination.destroyed && !this.source.destroyed) {
+      while (!done && !this.stopped && !this.destination.closed && !this.source.closed) {
         await _loop();
       }
     });
@@ -113,7 +109,7 @@ export var RxPipeline = /*#__PURE__*/function () {
       }
     }
   };
-  _proto.destroy = async function destroy() {
+  _proto.close = async function close() {
     this.stopped = true;
     this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
     this.subs.forEach(s => s.unsubscribe());
@@ -137,13 +133,13 @@ export var RxPipeline = /*#__PURE__*/function () {
         throw writeResult.error;
       }
     }
-    return this.destroy();
+    return this.close();
   };
   return RxPipeline;
 }();
 export async function getCheckpointDoc(pipeline) {
   var insternalStore = pipeline.destination.database.internalStore;
-  var checkpointId = getPrimaryKeyOfInternalDocument(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT);
+  var checkpointId = getPrimaryKeyOfInternalDocument(pipeline.checkpointId, INTERNAL_CONTEXT_PIPELINE_CHECKPOINT);
   var results = await insternalStore.findDocumentsById([checkpointId], false);
   var result = results[0];
   if (result) {
@@ -161,9 +157,9 @@ export async function setCheckpointDoc(pipeline, newCheckpoint, previous) {
       lwt: now()
     },
     _rev: createRevision(pipeline.destination.database.token, previous),
-    context: RX_PIPELINE_CHECKPOINT_CONTEXT,
+    context: INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
     data: newCheckpoint,
-    id: getPrimaryKeyOfInternalDocument(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT),
+    id: getPrimaryKeyOfInternalDocument(pipeline.checkpointId, INTERNAL_CONTEXT_PIPELINE_CHECKPOINT),
     key: pipeline.checkpointId
   };
   var writeResult = await insternalStore.bulkWrite([{
@@ -180,12 +176,11 @@ export async function addPipeline(options) {
   var startPromise = waitForLeadership ? this.database.waitForLeadership() : PROMISE_RESOLVE_VOID;
   startPromise.then(() => {
     pipeline.trigger();
-    pipeline.subs.push(this.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.name), filter(bulk => {
+    pipeline.subs.push(this.eventBulks$.pipe(filter(bulk => {
       if (pipeline.stopped) {
         return false;
       }
-      var first = bulk.events[0];
-      return !first.isLocal;
+      return !bulk.isLocal;
     })).subscribe(() => pipeline.trigger()));
   });
   return pipeline;

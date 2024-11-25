@@ -134,8 +134,7 @@ function replicateGraphQL({
         if (result.errors) {
           throw result.errors;
         }
-        var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-        var data = (0, _index.getProperty)(result, dataPath);
+        var data = (0, _helper.getDataFromResult)(result, pull.dataPath);
         if (pull.responseModifier) {
           data = await pull.responseModifier(data, 'handler', lastPulledCheckpoint);
         }
@@ -160,8 +159,7 @@ function replicateGraphQL({
         if (result.errors) {
           throw result.errors;
         }
-        var dataPath = push.dataPath || Object.keys(result.data)[0];
-        var data = (0, _index.getProperty)(result.data, dataPath);
+        var data = (0, _helper.getDataFromResult)(result, push.dataPath);
         if (push.responseModifier) {
           data = await push.responseModifier(data);
         }
