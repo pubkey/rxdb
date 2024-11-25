@@ -19,6 +19,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import { RxDBPipelinePlugin } from '../../plugins/pipeline/index.mjs';
 addRxPlugin(RxDBPipelinePlugin);
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
+import { assertThrows } from 'async-test-util';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 describeParallel('rx-pipeline.test.js', () => {
@@ -173,7 +174,54 @@ describeParallel('rx-pipeline.test.js', () => {
             c1.database.close();
             c2.database.close();
         });
+    });
+    describe('error handling', () => {
+        it('should not swallow the error if the handler throws', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: () => {
+                    throw new Error('myErrorNonAsync');
+                },
+                identifier: randomToken(10)
+            });
+            await c1.insert(schemaObjects.humanData('foobar'));
 
+            await assertThrows(
+                () => pipeline.awaitIdle(),
+                undefined,
+                'myErrorNonAsync'
+            );
+            c1.database.close();
+            c2.database.close();
+        });
+        it('should not swallow the error if the handler throws (async)', async () => {
+            const c1 = await humansCollection.create(0);
+            await c1.database.waitForLeadership();
+            const c2 = await humansCollection.create(0);
+            const pipeline = await c1.addPipeline({
+                destination: c2,
+                handler: async () => {
+                    await promiseWait(0);
+                    await promiseWait(0);
+                    throw new Error('myErrorAsync');
+                },
+                identifier: randomToken(10)
+            });
+            await pipeline.awaitIdle();
+            await c1.insert(schemaObjects.humanData('foobar'));
+
+            await assertThrows(
+                () => pipeline.awaitIdle(),
+                undefined,
+                'myErrorAsync'
+            );
+            await pipeline.close();
+            c1.database.close();
+            c2.database.close();
+        });
     });
     describe('checkpoints', () => {
         it('should continue from the correct checkpoint', async () => {

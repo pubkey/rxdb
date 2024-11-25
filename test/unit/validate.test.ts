@@ -81,6 +81,8 @@ validationImplementations.forEach(
             assert.ok(errors[0]);
             errors.forEach(err => {
                 assert.strictEqual(err.status, 422);
+                // 422 validation errors must include the schema for easier debugging.
+                assert.strictEqual((err as any).schema.type, 'object');
                 if (errorMustContain) {
                     if (!JSON.stringify(err).includes(errorMustContain)) {
                         throw new Error(

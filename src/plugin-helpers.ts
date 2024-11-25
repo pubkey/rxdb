@@ -118,7 +118,8 @@ export function wrappedValidateStorageFactory(
                                     isError: true,
                                     documentId,
                                     writeRow: row,
-                                    validationErrors
+                                    validationErrors,
+                                    schema: instance.schema
                                 });
                             } else {
                                 continueWrites.push(row);

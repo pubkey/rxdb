@@ -58,6 +58,13 @@ export class RxPipeline<RxDocType> {
         }
     }
 
+    /**
+     * The handler of the pipeline must never throw.
+     * If it did anyway, the pipeline will be stuck and always
+     * throw the previous error on all operations.
+     */
+    error: any;
+
     constructor(
         public readonly identifier: string,
         public readonly source: RxCollection<RxDocType>,
@@ -112,7 +119,8 @@ export class RxPipeline<RxDocType> {
                 !done &&
                 !this.stopped &&
                 !this.destination.closed &&
-                !this.source.closed
+                !this.source.closed &&
+                !this.error
             ) {
                 const checkpointDoc = await getCheckpointDoc(this);
                 const checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
@@ -140,8 +148,14 @@ export class RxPipeline<RxDocType> {
                     this.secretFunctionName = fnKey;
                     try {
                         await FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
+                    } catch (err: any) {
+                        this.error = err;
                     } finally {
                         releaseFlaggedFunctionKey(fnKey);
+                    }
+
+                    if (this.error) {
+                        return;
                     }
 
                     lastTime = ensureNotFalsy(lastOfArray(docsSinceResult.documents))._meta.lwt;
@@ -157,9 +171,15 @@ export class RxPipeline<RxDocType> {
     }
 
     async awaitIdle() {
+        if (this.error) {
+            throw this.error;
+        }
         let done = false;
         while (!done) {
             await this.processQueue;
+            if (this.error) {
+                throw this.error;
+            }
             if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
                 done = true;
             } else {
@@ -169,6 +189,7 @@ export class RxPipeline<RxDocType> {
     }
 
     async close() {
+        await this.processQueue;
         this.stopped = true;
         this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
         this.subs.forEach(s => s.unsubscribe());
