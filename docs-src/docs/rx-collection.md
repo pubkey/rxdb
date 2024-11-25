@@ -125,6 +125,20 @@ const result = await myCollection.bulkRemove([
 // }
 ```
 
+Instead of providing the document ids, you can also use the [RxDocument](./rx-document.md) instances. This can have better performance if your code knows them already at the moment of removing them:
+```js
+const result = await myCollection.bulkRemove([
+  myRxDocument1,
+  myRxDocument2,
+  /* ... */
+]);
+
+// > {
+//   success: [RxDocument, RxDocument],
+//   error: []
+// }
+```
+
 ### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
 ```js
