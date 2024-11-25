@@ -14,6 +14,12 @@ var _docCache = require("../../doc-cache.js");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
 var _flaggedFunctions = require("./flagged-functions.js");
 var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
+  /**
+   * The handler of the pipeline must never throw.
+   * If it did anyway, the pipeline will be stuck and always
+   * throw the previous error on all operations.
+   */
+
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = _index.PROMISE_RESOLVE_VOID;
     this.subs = [];
@@ -68,49 +74,64 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       this.toRun = this.toRun - 1;
       var done = false;
       var _loop = async function () {
-        var checkpointDoc = await getCheckpointDoc(_this2);
-        var checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
-        var docsSinceResult = await (0, _rxStorageHelper.getChangedDocumentsSince)(_this2.source.storageInstance, _this2.batchSize, checkpoint);
-        var lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
-        if (docsSinceResult.documents.length > 0) {
-          var rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(_this2.source._docCache, docsSinceResult.documents);
-          var _this = _this2;
+          var checkpointDoc = await getCheckpointDoc(_this2);
+          var checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
+          var docsSinceResult = await (0, _rxStorageHelper.getChangedDocumentsSince)(_this2.source.storageInstance, _this2.batchSize, checkpoint);
+          var lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
+          if (docsSinceResult.documents.length > 0) {
+            var rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(_this2.source._docCache, docsSinceResult.documents);
+            var _this = _this2;
 
-          // const o: any = {};
-          // eval(`
-          //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
-          //     o.${this.secretFunctionName} = ${this.secretFunctionName};
-          // `);
-          // await o[this.secretFunctionName](rxDocuments);
+            // const o: any = {};
+            // eval(`
+            //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
+            //     o.${this.secretFunctionName} = ${this.secretFunctionName};
+            // `);
+            // await o[this.secretFunctionName](rxDocuments);
 
-          var fnKey = (0, _flaggedFunctions.blockFlaggedFunctionKey)();
-          _this2.secretFunctionName = fnKey;
-          try {
-            await _flaggedFunctions.FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
-          } finally {
-            (0, _flaggedFunctions.releaseFlaggedFunctionKey)(fnKey);
+            var fnKey = (0, _flaggedFunctions.blockFlaggedFunctionKey)();
+            _this2.secretFunctionName = fnKey;
+            try {
+              await _flaggedFunctions.FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
+            } catch (err) {
+              _this2.error = err;
+            } finally {
+              (0, _flaggedFunctions.releaseFlaggedFunctionKey)(fnKey);
+            }
+            if (_this2.error) {
+              return {
+                v: void 0
+              };
+            }
+            lastTime = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(docsSinceResult.documents))._meta.lwt;
           }
-          lastTime = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(docsSinceResult.documents))._meta.lwt;
-        }
-        if (!_this2.destination.closed) {
-          await setCheckpointDoc(_this2, {
-            checkpoint: docsSinceResult.checkpoint,
-            lastDocTime: lastTime
-          }, checkpointDoc);
-        }
-        if (docsSinceResult.documents.length < _this2.batchSize) {
-          done = true;
-        }
-      };
-      while (!done && !this.stopped && !this.destination.closed && !this.source.closed) {
-        await _loop();
+          if (!_this2.destination.closed) {
+            await setCheckpointDoc(_this2, {
+              checkpoint: docsSinceResult.checkpoint,
+              lastDocTime: lastTime
+            }, checkpointDoc);
+          }
+          if (docsSinceResult.documents.length < _this2.batchSize) {
+            done = true;
+          }
+        },
+        _ret;
+      while (!done && !this.stopped && !this.destination.closed && !this.source.closed && !this.error) {
+        _ret = await _loop();
+        if (_ret) return _ret.v;
       }
     });
   };
   _proto.awaitIdle = async function awaitIdle() {
+    if (this.error) {
+      throw this.error;
+    }
     var done = false;
     while (!done) {
       await this.processQueue;
+      if (this.error) {
+        throw this.error;
+      }
       if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
         done = true;
       } else {
@@ -119,6 +140,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     }
   };
   _proto.close = async function close() {
+    await this.processQueue;
     this.stopped = true;
     this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
     this.subs.forEach(s => s.unsubscribe());

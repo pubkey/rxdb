@@ -182,6 +182,11 @@ export type RxStorageWriteErrorValidation<RxDocType> = RxStorageWriteErrorBase<R
      * Must be plain JSON!
      */
     validationErrors: RxValidationError[];
+    /**
+     * For easier debugging,
+     * we directly put the schema into the error.
+     */
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>;
 };
 
 export type RxStorageWriteErrorAttachment<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
