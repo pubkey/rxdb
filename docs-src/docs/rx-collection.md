@@ -132,11 +132,6 @@ const result = await myCollection.bulkRemove([
   myRxDocument2,
   /* ... */
 ]);
-
-// > {
-//   success: [RxDocument, RxDocument],
-//   error: []
-// }
 ```
 
 ### upsert()
