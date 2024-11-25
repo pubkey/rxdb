@@ -322,7 +322,7 @@ export class RxCollectionBase<
         const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
-        throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, isError);
+        throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, isError as any);
         const insertResult = ensureNotFalsy(writeResult.success[0]);
         return insertResult;
     }
