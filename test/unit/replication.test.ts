@@ -1000,6 +1000,22 @@ describe('replication.test.ts', () => {
                 ensureNotFalsy(replicationState.internalReplicationState),
                 'up'
             );
+            assert.ok(checkpointAfter);
+
+            /**
+             * Some RxStorages like the 'sharding' storage
+             * do not have a normal checkpoint but instead
+             * stack up multiple checkpoins from their shards.
+             * So if that is the case, we cannot run this test here.
+             */
+            if (
+                Array.isArray(checkpointAfter) ||
+                !checkpointAfter.id
+            ) {
+                await localCollection.database.close();
+                await remoteCollection.database.close();
+            }
+
             assert.strictEqual(ensureNotFalsy(checkpointAfter).id, lastRemoteDoc.id);
             await replicationState.cancel();
 
