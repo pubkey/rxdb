@@ -322,7 +322,7 @@ export class RxCollectionBase<
         const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
-        throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, isError);
+        throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, isError as any);
         const insertResult = ensureNotFalsy(writeResult.success[0]);
         return insertResult;
     }
@@ -436,7 +436,12 @@ export class RxCollectionBase<
     }
 
     async bulkRemove(
-        ids: string[]
+        /**
+         * You can either remove the documents by their ids
+         * or by directly providing the RxDocument instances
+         * if you have them already. This improves performance a bit.
+         */
+        idsOrDocs: string[] | RxDocument<RxDocumentType>[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
@@ -447,14 +452,21 @@ export class RxCollectionBase<
          * Optimization shortcut,
          * do nothing when called with an empty array
          */
-        if (ids.length === 0) {
+        if (idsOrDocs.length === 0) {
             return {
                 success: [],
                 error: []
             };
         }
 
-        const rxDocumentMap = await this.findByIds(ids).exec();
+        let rxDocumentMap: Map<string, RxDocument<RxDocumentType, OrmMethods>>;
+        if (typeof idsOrDocs[0] === 'string') {
+            rxDocumentMap = await this.findByIds(idsOrDocs as string[]).exec();
+        } else {
+            rxDocumentMap = new Map();
+            (idsOrDocs as RxDocument<RxDocumentType, OrmMethods>[]).forEach(d => rxDocumentMap.set(d.primary, d));
+        }
+
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
@@ -488,7 +500,14 @@ export class RxCollectionBase<
             removeDocs,
             results
         );
-        const successIds: string[] = success.map(d => d[primaryPath] as string);
+
+        const deletedRxDocuments: RxDocument<RxDocumentType, OrmMethods>[] = [];
+        const successIds: string[] = success.map(d => {
+            const id = d[primaryPath] as string;
+            const doc = this._docCache.getCachedRxDocument(d);
+            deletedRxDocuments.push(doc);
+            return id;
+        });
 
         // run hooks
         await Promise.all(
@@ -502,10 +521,9 @@ export class RxCollectionBase<
             })
         );
 
-        const rxDocuments = successIds.map(id => getFromMapOrThrow(rxDocumentMap, id));
 
         return {
-            success: rxDocuments,
+            success: deletedRxDocuments,
             error: results.error
         };
     }

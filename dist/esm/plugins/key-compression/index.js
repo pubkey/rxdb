@@ -9,7 +9,7 @@ import { wrapRxStorageInstance } from "../../plugin-helpers.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { flatCloneDocWithMeta } from "../../rx-storage-helper.js";
 import { flatClone, getFromMapOrCreate, isMaybeReadonlyArray } from "../../plugins/utils/index.js";
-import { prepareQuery } from "../../rx-query.js";
+import { prepareQuery } from "../../rx-query-helper.js";
 /**
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.

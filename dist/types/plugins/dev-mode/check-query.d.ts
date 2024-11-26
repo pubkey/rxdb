@@ -1,4 +1,4 @@
-import type { RxPluginPreCreateRxQueryArgs, RxPluginPrePrepareQueryArgs, FilledMangoQuery, RxJsonSchema, RxDocumentData } from '../../types/index.d.ts';
+import type { RxPluginPreCreateRxQueryArgs, RxPluginPrePrepareQueryArgs, FilledMangoQuery, RxJsonSchema, RxDocumentData, RxPluginPrePrepareRxQueryArgs } from '../../types/index.d.ts';
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -12,3 +12,10 @@ export declare function areSelectorsSatisfiedByIndex<RxDocType>(schema: RxJsonSc
  * @recursive
  */
 export declare function ensureObjectDoesNotContainRegExp(selector: any): void;
+/**
+ * People often use queries wrong
+ * so we have some checks here.
+ * For example people use numbers as primary keys
+ * which is not allowed.
+ */
+export declare function isQueryAllowed(args: RxPluginPrePrepareRxQueryArgs): void;

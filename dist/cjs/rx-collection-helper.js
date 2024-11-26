@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
-exports.ensureRxCollectionIsNotDestroyed = ensureRxCollectionIsNotDestroyed;
+exports.ensureRxCollectionIsNotClosed = ensureRxCollectionIsNotClosed;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = removeCollectionStorages;
 var _index = require("./plugins/utils/index.js");
@@ -122,8 +122,8 @@ hashFunction) {
     await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
   }
 }
-function ensureRxCollectionIsNotDestroyed(collection) {
-  if (collection.destroyed) {
+function ensureRxCollectionIsNotClosed(collection) {
+  if (collection.closed) {
     throw (0, _rxError.newRxError)('COL21', {
       collection: collection.name,
       version: collection.schema.version

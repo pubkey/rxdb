@@ -194,10 +194,7 @@ function replicateFirestore(options) {
           var hasWrite = false;
           await Promise.all(Object.entries(writeRowsById).map(async ([docId, writeRow]) => {
             var docInDb = docsInDbById[docId];
-            if (docInDb && (!writeRow.assumedMasterState || (await collection.conflictHandler({
-              newDocumentState: docInDb,
-              realMasterState: writeRow.assumedMasterState
-            }, 'replication-firestore-push')).isEqual === false)) {
+            if (docInDb && (!writeRow.assumedMasterState || collection.conflictHandler.isEqual(docInDb, writeRow.assumedMasterState, 'replication-firestore-push') === false)) {
               // conflict
               conflicts.push(docInDb);
             } else {

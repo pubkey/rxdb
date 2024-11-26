@@ -30,10 +30,10 @@ var HOOKS = exports.HOOKS = {
   createRxCollection: [],
   createRxState: [],
   /**
-  * runs at the end of the destroy-process of a collection
+  * runs at the end of the close-process of a collection
   * @async
   */
-  postDestroyRxCollection: [],
+  postCloseRxCollection: [],
   /**
    * Runs after a collection is removed.
    * @async
@@ -49,6 +49,7 @@ var HOOKS = exports.HOOKS = {
    * gets RxSchema as attribute
    */
   createRxSchema: [],
+  prePrepareRxQuery: [],
   preCreateRxQuery: [],
   /**
    * Runs before a query is send to the
@@ -82,9 +83,9 @@ var HOOKS = exports.HOOKS = {
    */
   postMigrateDocument: [],
   /**
-   * runs at the beginning of the destroy-process of a database
+   * runs at the beginning of the close-process of a database
    */
-  preDestroyRxDatabase: [],
+  preCloseRxDatabase: [],
   /**
    * runs after a database has been removed
    * @async
@@ -111,12 +112,14 @@ function runPluginHooks(hookKey, obj) {
 }
 
 /**
- * TODO
- * we should not run the hooks in parallel
- * this makes stuff unpredictable.
+ * We do intentionally not run the hooks in parallel
+ * because that makes stuff unpredictable and we use runAsyncPluginHooks()
+ * only in places that are not that relevant for performance.
  */
-function runAsyncPluginHooks(hookKey, obj) {
-  return Promise.all(HOOKS[hookKey].map(fun => fun(obj)));
+async function runAsyncPluginHooks(hookKey, obj) {
+  for (var fn of HOOKS[hookKey]) {
+    await fn(obj);
+  }
 }
 
 /**

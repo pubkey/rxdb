@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import type { CategorizeBulkWriteRowsOutput, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxJsonSchema, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
+import type { CategorizeBulkWriteRowsOutput, EventBulk, RxAttachmentWriteData, RxDocumentData, RxJsonSchema, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
 export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -63,12 +63,6 @@ export type MemoryStorageInternals<RxDocType> = {
      */
     ensurePersistenceTask?: CategorizeBulkWriteRowsOutput<RxDocType>;
     ensurePersistenceIdlePromise?: Promise<void>;
-    /**
-     * To easier test the conflict resolution,
-     * the memory storage exposes the conflict resolution task subject
-     * so that we can inject own tasks during tests.
-     */
-    conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
     changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
 };
 export type DocWithIndexString<RxDocType> = [

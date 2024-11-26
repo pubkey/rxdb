@@ -6,7 +6,7 @@
 //  */
 
 // import { Subject } from 'rxjs';
-// import { PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+// import { PROMISE_RESOLVE_VOID, randomToken } from '../../util';
 // import { P2PConnectionHandler, P2PConnectionHandlerCreator, P2PMessage, P2PPeer, PeerWithMessage, PeerWithResponse } from './p2p-types';
 // const wrtc = require('wrtc');
 
@@ -113,8 +113,8 @@
 //             async send(peer: P2PPeer, message: P2PMessage) {
 //                 await peer.send(JSON.stringify(message));
 //             },
-//             destroy() {
-//                 client.destroy();
+//             close() {
+//                 client.close();
 //                 connect$.complete();
 //                 disconnect$.complete();
 //                 message$.complete();

@@ -63,7 +63,7 @@ Because a JavaScript process can exit at any time, like when the user closes a b
 
 ## Pipeline handlers must not throw
 
-Pipeline handlers must never throw. If you run operations inside of the handler that might cause errors, you must wrap the handlers code with a `try catch` by yourself and also handle retries.
+Pipeline handlers must never throw. If you run operations inside of the handler that might cause errors, you must wrap the handlers code with a `try catch` by yourself and also handle retries. If your handler throws, your pipeline will be stuck and no longer be usable, which should never happen.
 
 ## Be careful when doing http requests in the handler
 

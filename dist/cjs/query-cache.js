@@ -100,7 +100,7 @@ function triggerCacheReplacement(rxCollection) {
   (0, _index.nextTick)() // wait at least one tick
   .then(() => (0, _index.requestIdlePromise)(200)) // and then wait for the CPU to be idle
   .then(() => {
-    if (!rxCollection.destroyed) {
+    if (!rxCollection.closed) {
       rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
     }
     COLLECTIONS_WITH_RUNNING_CLEANUP.delete(rxCollection);

@@ -1,5 +1,5 @@
 // import { Subject } from 'rxjs';
-// import { PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+// import { PROMISE_RESOLVE_VOID, randomToken } from '../../util';
 // import type {
 //     P2PConnectionHandler,
 //     P2PConnectionHandlerCreator,
@@ -23,7 +23,7 @@
 // //    const P2PCF = require('p2pcf');
 
 //     const creator: P2PConnectionHandlerCreator = (options) => {
-//         const clientId = randomCouchString(10);
+//         const clientId = randomToken(10);
 //         const p2p2 = new P2PCF(clientId, options.topic, p2pCFOptions);
 
 //         const connect$ = new Subject<P2PPeer>();
@@ -61,8 +61,8 @@
 //                     response
 //                 } as any;
 //             },
-//             destroy() {
-//                 p2p2.destroy();
+//             close() {
+//                 p2p2.close();
 //                 connect$.complete();
 //                 disconnect$.complete();
 //                 message$.complete();

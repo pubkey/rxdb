@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types/index.d.ts';
+import type { BulkWriteRow, EventBulk, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types/index.d.ts';
 import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types.ts';
 export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
     readonly name: string;
-    readonly rxdbVersion = "15.39.0";
+    readonly rxdbVersion = "16.0.0-beta.2";
     private seed;
     private lastRequestId;
     messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
@@ -21,7 +21,6 @@ export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInst
     readonly internals: RxStorageRemoteInternals;
     readonly options: Readonly<any>;
     private changes$;
-    private conflicts$;
     private subs;
     private closed?;
     messages$: Observable<MessageFromRemote>;
@@ -40,7 +39,5 @@ export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInst
     cleanup(minDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageRemote;

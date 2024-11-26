@@ -1,7 +1,7 @@
 import { replicateRxCollection } from "../replication/index.js";
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
-import { errorToPlainJson, randomCouchString, toArray } from "../../plugins/utils/index.js";
+import { errorToPlainJson, randomToken, toArray } from "../../plugins/utils/index.js";
 import { filter, map, Subject, firstValueFrom, BehaviorSubject } from 'rxjs';
 import { newRxError } from "../../rx-error.js";
 /**
@@ -39,7 +39,7 @@ export async function createWebSocketClient(options) {
       if (options.headers) {
         var authMessage = {
           collection: options.collection.name,
-          id: randomCouchString(10),
+          id: randomToken(10),
           params: [options.headers],
           method: 'auth'
         };
@@ -69,7 +69,7 @@ export async function replicateWithWebsocketServer(options) {
   var wsClient = websocketClient.socket;
   var messages$ = websocketClient.message$;
   var requestCounter = 0;
-  var requestFlag = randomCouchString(10);
+  var requestFlag = randomToken(10);
   function getRequestId() {
     var count = requestCounter++;
     return options.collection.database.token + '|' + requestFlag + '|' + count;
@@ -133,7 +133,7 @@ export async function replicateWithWebsocketServer(options) {
       wsClient.send(JSON.stringify(streamRequest));
     }
   });
-  options.collection.onDestroy.push(() => websocketClient.socket.close());
+  options.collection.onClose.push(() => websocketClient.socket.close());
   return replicationState;
 }
 //# sourceMappingURL=websocket-client.js.map

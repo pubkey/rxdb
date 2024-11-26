@@ -23,7 +23,8 @@ import {
     appendToArray
 } from './plugins/utils/index.ts';
 import {
-    newRxError
+    newRxError,
+    rxStorageWriteErrorToRxError
 } from './rx-error.ts';
 import {
     runPluginHooks
@@ -53,7 +54,6 @@ import {
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
-import { removeRxDocuments } from './rx-document.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -379,20 +379,18 @@ export class RxQueryBase<
      * deletes all found documents
      * @return promise with deleted documents
      */
-    remove(): Promise<RxQueryResult> {
-        return this
-            .exec()
-            .then(docs => {
-                if (Array.isArray(docs)) {
-                    if (docs.length === 0) {
-                        return [];
-                    } else {
-                        return removeRxDocuments(docs).then(r => r.docs);
-                    }
-                } else {
-                    return (docs as any).remove();
-                }
-            });
+    async remove(): Promise<RxQueryResult> {
+        const docs = await this.exec();
+        if (Array.isArray(docs)) {
+            const result = await this.collection.bulkRemove(docs);
+            if (result.error.length > 0) {
+                throw rxStorageWriteErrorToRxError(result.error[0]);
+            } else {
+                return result.success as any;
+            }
+        } else {
+            return (docs as any).remove();
+        }
     }
     incrementalRemove(): Promise<RxQueryResult> {
         return runQueryUpdateFunction(

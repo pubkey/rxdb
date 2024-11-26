@@ -1,6 +1,6 @@
 import { newRxError, newRxTypeError } from "../../rx-error.js";
 import { deepEqual } from "../utils/index.js";
-import { prepareQuery } from "../../rx-query.js";
+import { prepareQuery } from "../../rx-query-helper.js";
 
 /**
  * accidentally passing a non-valid object into the query params
@@ -139,5 +139,29 @@ export function ensureObjectDoesNotContainRegExp(selector) {
       ensureObjectDoesNotContainRegExp(value);
     }
   });
+}
+
+/**
+ * People often use queries wrong
+ * so we have some checks here.
+ * For example people use numbers as primary keys
+ * which is not allowed.
+ */
+export function isQueryAllowed(args) {
+  if (args.op === 'findOne') {
+    if (typeof args.queryObj === 'number' || Array.isArray(args.queryObj)) {
+      throw newRxTypeError('COL6', {
+        collection: args.collection.name,
+        queryObj: args.queryObj
+      });
+    }
+  } else if (args.op === 'find') {
+    if (typeof args.queryObj === 'string') {
+      throw newRxError('COL5', {
+        collection: args.collection.name,
+        queryObj: args.queryObj
+      });
+    }
+  }
 }
 //# sourceMappingURL=check-query.js.map

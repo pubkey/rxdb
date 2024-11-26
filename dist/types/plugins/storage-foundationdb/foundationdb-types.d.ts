@@ -16,7 +16,7 @@ export type RxStorageFoundationDBInstanceCreationOptions = {
     batchSize?: number;
 };
 /**
- * TODO atm we cannot import types from 'foundationdb'
+ * We cannot import types from 'foundationdb'
  * because 'foundationdb' is an optional peer dependency
  * this is NOT also in the devDependencies.
  * This is because it requires to install the foundationdb client cli

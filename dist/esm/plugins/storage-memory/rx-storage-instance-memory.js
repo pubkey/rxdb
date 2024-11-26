@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { deepEqual, ensureNotFalsy, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, randomCouchString, requestIdlePromiseNoQueue } from "../../plugins/utils/index.js";
+import { deepEqual, ensureNotFalsy, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, randomToken, requestIdlePromiseNoQueue } from "../../plugins/utils/index.js";
 import { boundGE, boundGT, boundLE, boundLT } from "./binary-search-bounds.js";
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from "./memory-helper.js";
 import { addIndexesToInternalsState, getMemoryIndexName } from "./memory-indexes.js";
@@ -73,7 +73,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
       };
-      categorized.eventBulk.endTime = now();
       internals.changes$.next(categorized.eventBulk);
     }
     return awaitMe;
@@ -271,12 +270,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     this.internals.refCount = this.internals.refCount - 1;
     return PROMISE_RESOLVE_VOID;
   };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return this.internals.conflictResultionTasks$.asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return PROMISE_RESOLVE_VOID;
-  };
   return RxStorageInstanceMemory;
 }();
 export function createMemoryStorageInstance(storage, params, settings) {
@@ -284,14 +277,13 @@ export function createMemoryStorageInstance(storage, params, settings) {
   var internals = storage.collectionStates.get(collectionKey);
   if (!internals) {
     internals = {
-      id: randomCouchString(5),
+      id: randomToken(5),
       schema: params.schema,
       removed: false,
       refCount: 1,
       documents: new Map(),
       attachments: params.schema.attachments ? new Map() : undefined,
       byIndex: {},
-      conflictResultionTasks$: new Subject(),
       changes$: new Subject()
     };
     addIndexesToInternalsState(internals, params.schema);

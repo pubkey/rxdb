@@ -13,7 +13,7 @@ export type CRDTEntry<RxDocType> = {
  * Options for the crdt plugin.
  * We set these in the schema because changing them
  * is not possible on the fly because it would
- * destroy the document state in an unpredictable way.
+ * close the document state in an unpredictable way.
  */
 export type CRDTSchemaOptions<RxDocType> = {
     /**

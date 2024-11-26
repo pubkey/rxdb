@@ -1,5 +1,5 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-import { ensureNotFalsy, isPromise, randomCouchString } from "../utils/index.js";
+import { ensureNotFalsy, isPromise, randomToken } from "../utils/index.js";
 import { enforceOptions as broadcastChannelEnforceOptions } from 'broadcast-channel';
 import events from 'node:events';
 import { wrappedKeyEncryptionCryptoJsStorage } from "../encryption-crypto-js/index.js";
@@ -100,7 +100,7 @@ export function getPassword() {
   if (getConfig().storage.hasEncryption) {
     return ensureNotFalsy(getConfig().storage.hasEncryption)();
   } else {
-    return Promise.resolve('test-password-' + randomCouchString(10));
+    return Promise.resolve('test-password-' + randomToken(10));
   }
 }
 //# sourceMappingURL=config.js.map

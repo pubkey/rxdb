@@ -25,6 +25,12 @@ import type {
 } from './index.d.ts';
 import type { RxSchema } from '../rx-schema.d.ts';
 
+export type RxPluginPrePrepareRxQueryArgs = {
+    op: RxQueryOP;
+    queryObj: MangoQuery | string | number | Array<any>;
+    collection: RxCollection;
+};
+
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
     queryObj: MangoQuery;
@@ -104,7 +110,7 @@ export interface RxPlugin {
             database: RxDatabase;
             creator: RxDatabaseCreator;
         }>;
-        preDestroyRxDatabase?: RxPluginHooks<RxDatabase>;
+        preCloseRxDatabase?: RxPluginHooks<RxDatabase>;
         postRemoveRxDatabase?: RxPluginHooks<{
             databaseName: string;
             storage: RxStorage<any, any>;
@@ -121,7 +127,7 @@ export interface RxPlugin {
             name: string;
             database: RxDatabase;
         }>;
-        postDestroyRxCollection?: RxPluginHooks<RxCollection>;
+        postCloseRxCollection?: RxPluginHooks<RxCollection>;
         postRemoveRxCollection?: RxPluginHooks<{
             storage: RxStorage<any, any>;
             databaseName: string;
@@ -129,6 +135,7 @@ export interface RxPlugin {
         }>;
         preCreateRxSchema?: RxPluginHooks<any>;
         createRxSchema?: RxPluginHooks<any>;
+        prePrepareRxQuery?: RxPluginHooks<RxPluginPrePrepareRxQueryArgs>;
         preCreateRxQuery?: RxPluginHooks<RxPluginPreCreateRxQueryArgs>;
         prePrepareQuery?: RxPluginHooks<RxPluginPrePrepareQueryArgs>;
         createRxQuery?: RxPluginHooks<RxQuery>;

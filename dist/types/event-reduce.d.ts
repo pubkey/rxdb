@@ -1,5 +1,5 @@
 import { QueryParams } from 'event-reduce-js';
-import type { RxQuery, MangoQuery, RxChangeEvent, StringKeys, RxDocumentData } from './types/index.d.ts';
+import type { RxQuery, MangoQuery, StringKeys, RxDocumentData, RxStorageChangeEvent } from './types/index.d.ts';
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;
 };
@@ -12,4 +12,4 @@ export type EventReduceResult<RxDocumentType> = EventReduceResultNeg | EventRedu
 export declare function getSortFieldsOfQuery<RxDocType>(primaryKey: StringKeys<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): (string | StringKeys<RxDocType>)[];
 export declare const RXQUERY_QUERY_PARAMS_CACHE: WeakMap<RxQuery, QueryParams<any>>;
 export declare function getQueryParams<RxDocType>(rxQuery: RxQuery<RxDocType>): QueryParams<RxDocType>;
-export declare function calculateNewResults<RxDocumentType>(rxQuery: RxQuery<RxDocumentType>, rxChangeEvents: RxChangeEvent<RxDocumentType>[]): EventReduceResult<RxDocumentType>;
+export declare function calculateNewResults<RxDocumentType>(rxQuery: RxQuery<RxDocumentType>, rxChangeEvents: RxStorageChangeEvent<RxDocumentType>[]): EventReduceResult<RxDocumentType>;

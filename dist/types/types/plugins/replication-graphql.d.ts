@@ -40,7 +40,12 @@ export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
-    dataPath?: string;
+    /**
+     * The path to the data in the GraphQL response.
+     * If set, the data will be taken from the response at this path.
+     * @example ['data', 'foo', 'bar'] or 'data.foo.bar'
+     */
+    dataPath?: string | string[];
     responseModifier?: RxGraphQLPullResponseModifier<RxDocType, CheckpointType>;
     includeWsHeaders?: boolean;
     wsOptions?: RxGraphQLPullWSOptions;
@@ -66,7 +71,12 @@ export type GraphQLSyncPushOptions<RxDocType> = Omit<
     'handler'
 > & {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
-    dataPath?: string;
+    /**
+     * The path to the data in the GraphQL response.
+     * If set, the data will be taken from the response at this path.
+     * @example ['data', 'foo', 'bar'] or 'data.foo.bar'
+     */
+    dataPath?: string | string[];
     responseModifier?: RxGraphQLPushResponseModifier<RxDocType>;
 };
 

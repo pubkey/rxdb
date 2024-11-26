@@ -96,7 +96,11 @@ export declare function getChangedDocumentsSince<RxDocType, CheckpointType>(stor
      */
     checkpoint: CheckpointType;
 }>;
-export declare function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(primaryPath: string, writeRows: BulkWriteRow<RxDocType>[], response: RxStorageBulkWriteResponse<RxDocType>): RxDocumentData<RxDocType>[];
+/**
+ * For better performance, this is done only when accessed
+ * because most of the time we do not need the results, only the errors.
+ */
+export declare function getWrittenDocumentsFromBulkWriteResponse<RxDocType>(primaryPath: string, writeRows: BulkWriteRow<RxDocType>[], response: RxStorageBulkWriteResponse<RxDocType>, reInsertIds?: Set<string>): RxDocumentData<RxDocType>[];
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.

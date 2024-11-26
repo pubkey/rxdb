@@ -67,7 +67,7 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
       // }
       // ).on('change', change => {
 
-      //     const eventBulkId = randomCouchString(10);
+      //     const eventBulkId = randomToken(10);
       //     const newDocData: RxDocumentData<RxDocType> = (change as any).fullDocument;
       //     const documentId = newDocData[this.primaryPath] as any;
 
@@ -84,8 +84,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
       //             operation: 'INSERT',
       //             previousDocumentData: undefined,
       //         }],
-      //             startTime: now(),
-      //             endTime: now()
       //     };
 
       //     this.changes$.next(eventBulk);
@@ -201,7 +199,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
           id: lastState[primaryPath],
           lwt: lastState._meta.lwt
         };
-        categorized.eventBulk.endTime = now();
         this.changes$.next(categorized.eventBulk);
       }
       this.runningOperations.next(this.runningOperations.getValue() - 1);
@@ -308,10 +305,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
     })();
     return this.closed;
   };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new Subject();
-  };
-  _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceMongoDB;
 }();
 export function createMongoDBStorageInstance(storage, params, settings) {

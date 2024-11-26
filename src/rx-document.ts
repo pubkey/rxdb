@@ -17,7 +17,6 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
     getFromMapOrCreate,
-    getFromMapOrThrow,
     ensureNotFalsy
 } from './plugins/utils/index.ts';
 import {
@@ -34,9 +33,7 @@ import type {
     RxDocumentWriteData,
     UpdateQuery,
     CRDTEntry,
-    ModifyFunction,
-    BulkWriteRow,
-    RxStorageWriteError
+    ModifyFunction
 } from './types/index.d.ts';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { overwritable } from './overwritable.ts';
@@ -371,7 +368,6 @@ export const basePrototype = {
      * instead deleted documents get flagged with _deleted=true.
      */
     async remove(this: RxDocument): Promise<RxDocument> {
-        const collection = this.collection;
         if (this.deleted) {
             return Promise.reject(newRxError('DOC13', {
                 document: this,
@@ -379,13 +375,17 @@ export const basePrototype = {
             }));
         }
 
-        const removeResult = await removeRxDocuments([this]);
-        if (removeResult.errors.length > 0) {
-            const error = removeResult.errors[0];
-            const deletedData = getFromMapOrThrow(removeResult.deleteDataById, this.primary);
-            throwIfIsStorageWriteError(collection, this.primary, deletedData, error);
+        const removeResult = await this.collection.bulkRemove([this]);
+        if (removeResult.error.length > 0) {
+            const error = removeResult.error[0];
+            throwIfIsStorageWriteError(
+                this.collection,
+                this.primary,
+                this._data,
+                error
+            );
         }
-        return removeResult.docs[0];
+        return removeResult.success[0];
     },
     incrementalRemove(this: RxDocument): Promise<RxDocument> {
         return this.incrementalModify(async (docData) => {
@@ -537,63 +537,3 @@ function getDocumentProperty(doc: RxDocument, objPath: string): any | null {
         }
     );
 };
-
-
-
-/**
- * To remove documents we use a bulk operations
- * to have a better performance on RxQuery.find().remove();
- */
-export async function removeRxDocuments<RxDocType>(
-    docs: RxDocument<RxDocType>[]
-): Promise<{
-    errors: RxStorageWriteError<RxDocType>[];
-    docs: RxDocument<RxDocType>[];
-    deleteDataById: Map<string, RxDocumentData<RxDocType>>;
-}> {
-    if (docs.length === 0) {
-        throw newRxError('SNH');
-    }
-    const collection = docs[0].collection;
-    const primaryPath = collection.schema.primaryPath;
-    const writeRows: BulkWriteRow<RxDocType>[] = [];
-    const docsById = new Map<string, RxDocument<RxDocType>>();
-    const deleteDataById = new Map<string, RxDocumentData<RxDocType>>();
-    await Promise.all(
-        docs.map(async (doc) => {
-            docsById.set(doc.primary, doc);
-            const deletedData = flatClone(doc._data);
-            await collection._runHooks('pre', 'remove', deletedData, doc);
-            deletedData._deleted = true;
-            deleteDataById.set(doc.primary, deletedData);
-            const writeRow = {
-                previous: doc._data,
-                document: deletedData
-            };
-            writeRows.push(writeRow);
-        })
-    );
-    const writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
-    const errors: RxStorageWriteError<RxDocType>[] = writeResult.error;
-    const writtenDocsData = getWrittenDocumentsFromBulkWriteResponse(
-        primaryPath,
-        writeRows,
-        writeResult
-    );
-    const returnDocs: RxDocument<RxDocType>[] = [];
-    await Promise.all(
-        writtenDocsData.map(async (writtenDocData) => {
-            const id = writtenDocData[primaryPath] as string;
-            const doc = getFromMapOrThrow(docsById, id);
-            const deletedData = getFromMapOrThrow(deleteDataById, id);
-            await collection._runHooks('post', 'remove', deletedData, doc);
-            returnDocs.push(collection._docCache.getCachedRxDocument(writtenDocData));
-        })
-    );
-
-    return {
-        docs: returnDocs,
-        errors,
-        deleteDataById
-    };
-}

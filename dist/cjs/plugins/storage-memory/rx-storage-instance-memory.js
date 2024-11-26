@@ -80,7 +80,6 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
       };
-      categorized.eventBulk.endTime = (0, _index.now)();
       internals.changes$.next(categorized.eventBulk);
     }
     return awaitMe;
@@ -278,12 +277,6 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     this.internals.refCount = this.internals.refCount - 1;
     return _index.PROMISE_RESOLVE_VOID;
   };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return this.internals.conflictResultionTasks$.asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return _index.PROMISE_RESOLVE_VOID;
-  };
   return RxStorageInstanceMemory;
 }();
 function createMemoryStorageInstance(storage, params, settings) {
@@ -291,14 +284,13 @@ function createMemoryStorageInstance(storage, params, settings) {
   var internals = storage.collectionStates.get(collectionKey);
   if (!internals) {
     internals = {
-      id: (0, _index.randomCouchString)(5),
+      id: (0, _index.randomToken)(5),
       schema: params.schema,
       removed: false,
       refCount: 1,
       documents: new Map(),
       attachments: params.schema.attachments ? new Map() : undefined,
       byIndex: {},
-      conflictResultionTasks$: new _rxjs.Subject(),
       changes$: new _rxjs.Subject()
     };
     (0, _memoryIndexes.addIndexesToInternalsState)(internals, params.schema);

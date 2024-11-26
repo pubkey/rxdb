@@ -2,6 +2,7 @@ import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalSto
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_MIGRATION_STATUS = "rx-migration-status";
+export declare const INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = "rx-pipeline-checkpoint";
 /**
  * Do not change the title,
  * we have to flag the internal schema so that

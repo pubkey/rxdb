@@ -1,11 +1,11 @@
 import { firstValueFrom, filter, Subject } from 'rxjs';
-import { RXDB_VERSION, randomCouchString } from "../../plugins/utils/index.js";
+import { RXDB_VERSION, randomToken } from "../../plugins/utils/index.js";
 import { closeMessageChannel, getMessageChannel } from "./message-channel-cache.js";
 export var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
     this.rxdbVersion = RXDB_VERSION;
-    this.seed = randomCouchString(10);
+    this.seed = randomToken(10);
     this.lastRequestId = 0;
     this.settings = settings;
     if (settings.mode === 'one') {
@@ -97,7 +97,6 @@ function getMessageReturn(msg) {
 export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   function RxStorageInstanceRemote(storage, databaseName, collectionName, schema, internals, options) {
     this.changes$ = new Subject();
-    this.conflicts$ = new Subject();
     this.subs = [];
     this.storage = storage;
     this.databaseName = databaseName;
@@ -109,9 +108,6 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.subs.push(this.messages$.subscribe(msg => {
       if (msg.method === 'changeStream') {
         this.changes$.next(getMessageReturn(msg));
-      }
-      if (msg.method === 'conflictResultionTasks') {
-        this.conflicts$.next(msg.return);
       }
     }));
   }
@@ -182,12 +178,6 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
       await closeMessageChannel(this.internals.messageChannel);
     })();
     return this.closed;
-  };
-  _proto2.conflictResultionTasks = function conflictResultionTasks() {
-    return this.conflicts$;
-  };
-  _proto2.resolveConflictResultionTask = async function resolveConflictResultionTask(taskSolution) {
-    await this.requestRemote('resolveConflictResultionTask', [taskSolution]);
   };
   return RxStorageInstanceRemote;
 }();

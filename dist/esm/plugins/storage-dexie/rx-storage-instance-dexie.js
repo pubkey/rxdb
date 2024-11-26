@@ -121,7 +121,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
-      categorized.eventBulk.endTime = now();
       this.changes$.next(categorized.eventBulk);
     }
     return ret;
@@ -168,9 +167,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     var state = await this.internals;
     await state.dexieDb.transaction('rw', state.dexieTable, async () => {
       var maxDeletionTime = now() - minimumDeletedTime;
-      /**
-       * TODO only fetch _deleted=true
-       */
       var toRemove = await state.dexieTable.where('_meta.lwt').below(maxDeletionTime).toArray();
       var removeIds = [];
       toRemove.forEach(doc => {
@@ -180,13 +176,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
       });
       await state.dexieTable.bulkDelete(removeIds);
     });
-
-    /**
-     * TODO instead of deleting all deleted docs at once,
-     * only clean up some of them and return false if there are more documents to clean up.
-     * This ensures that when many documents have to be purged,
-     * we do not block the more important tasks too long.
-     */
     return true;
   };
   _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId, _digest) {
@@ -218,10 +207,6 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     })();
     return this.closed;
   };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new Subject();
-  };
-  _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceDexie;
 }();
 export async function createDexieStorageInstance(storage, params, settings) {

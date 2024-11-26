@@ -3,7 +3,7 @@ import { DocumentCache } from './doc-cache.ts';
 import { QueryCache } from './query-cache.ts';
 import { ChangeEventBuffer } from './change-event-buffer.ts';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex, MigrationStrategies } from './types/index.d.ts';
+import type { KeyFunctionMap, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxChangeEventBulk, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex, MigrationStrategies } from './types/index.d.ts';
 import { RxSchema } from './rx-schema.ts';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
@@ -17,7 +17,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
 }, OrmMethods = {}, StaticMethods = {
     [key: string]: any;
 }, Reactivity = any> {
-    database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>;
+    readonly database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions, Reactivity>;
     name: string;
     schema: RxSchema<RxDocumentType>;
     internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
@@ -61,13 +61,19 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     checkpoint$: Observable<any>;
     _changeEventBuffer: ChangeEventBuffer<RxDocumentType>;
     /**
-     * When the collection is destroyed,
+     * Internally only use eventBulks$
+     * Do not use .$ or .observable$ because that has to transform
+     * the events which decreases performance.
+     */
+    readonly eventBulks$: Observable<RxChangeEventBulk<any>>;
+    /**
+     * When the collection is closed,
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
     */
-    onDestroy: (() => MaybePromise<any>)[];
-    destroyed: boolean;
+    onClose: (() => MaybePromise<any>)[];
+    closed: boolean;
     onRemove: (() => MaybePromise<any>)[];
     prepare(): Promise<void>;
     /**
@@ -84,7 +90,13 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }>;
-    bulkRemove(ids: string[]): Promise<{
+    bulkRemove(
+    /**
+     * You can either remove the documents by their ids
+     * or by directly providing the RxDocument instances
+     * if you have them already. This improves performance a bit.
+     */
+    idsOrDocs: string[] | RxDocument<RxDocumentType>[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }>;
@@ -139,11 +151,11 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     _runHooksSync(when: HookWhenType, key: HookKeyType, data: any, instance: any): void;
     /**
      * Returns a promise that resolves after the given time.
-     * Ensures that is properly cleans up when the collection is destroyed
+     * Ensures that is properly cleans up when the collection is closed
      * so that no running timeouts prevent the exit of the JavaScript process.
      */
     promiseWait(time: number): Promise<void>;
-    destroy(): Promise<boolean>;
+    close(): Promise<boolean>;
     /**
      * remove all data of the collection
      */

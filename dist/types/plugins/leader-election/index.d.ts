@@ -15,9 +15,9 @@ export declare function getForDatabase(this: RxDatabase): LeaderElector;
 export declare function isLeader(this: RxDatabase): boolean;
 export declare function waitForLeadership(this: RxDatabase): Promise<boolean>;
 /**
- * runs when the database gets destroyed
+ * runs when the database gets closed
  */
-export declare function onDestroy(db: RxDatabase): void;
+export declare function onClose(db: RxDatabase): void;
 export declare const rxdb = true;
 export declare const prototypes: {
     RxDatabase: (proto: any) => void;

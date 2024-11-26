@@ -31,11 +31,11 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     this._nonPersisted = [];
     this._writeQueue = _index.PROMISE_RESOLVE_VOID;
     this._initDone = false;
-    this._instanceId = (0, _index.randomCouchString)(_helpers.RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    this._instanceId = (0, _index.randomToken)(_helpers.RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     this._ownEmits$ = new _rxjs.Subject();
     this.prefix = prefix;
     this.collection = collection;
-    this.collection.onDestroy.push(() => this._writeQueue);
+    this.collection.onClose.push(() => this._writeQueue);
     this._lastIdQuery = this.collection.findOne({
       sort: [{
         id: 'desc'
@@ -43,9 +43,16 @@ var RxStateBase = exports.RxStateBase = /*#__PURE__*/function () {
     });
     // make it "hot" for better write performance
     this._lastIdQuery.$.subscribe();
-    this.$ = (0, _rxjs.merge)(this._ownEmits$, this.collection.$.pipe((0, _rxjs.tap)(event => {
-      if (this._initDone && event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
-        mergeOperationsIntoState(this._state, event.documentData.ops);
+    this.$ = (0, _rxjs.merge)(this._ownEmits$, this.collection.eventBulks$.pipe((0, _rxjs.tap)(eventBulk => {
+      if (!this._initDone) {
+        return;
+      }
+      var events = eventBulk.events;
+      for (var index = 0; index < events.length; index++) {
+        var event = events[index];
+        if (event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
+          mergeOperationsIntoState(this._state, event.documentData.ops);
+        }
       }
     }))).pipe((0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS), (0, _rxjs.map)(() => this._state));
     // directly subscribe because of the tap() side effect

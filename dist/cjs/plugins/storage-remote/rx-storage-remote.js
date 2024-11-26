@@ -12,7 +12,7 @@ var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
     this.rxdbVersion = _index.RXDB_VERSION;
-    this.seed = (0, _index.randomCouchString)(10);
+    this.seed = (0, _index.randomToken)(10);
     this.lastRequestId = 0;
     this.settings = settings;
     if (settings.mode === 'one') {
@@ -103,7 +103,6 @@ function getMessageReturn(msg) {
 var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/function () {
   function RxStorageInstanceRemote(storage, databaseName, collectionName, schema, internals, options) {
     this.changes$ = new _rxjs.Subject();
-    this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
     this.storage = storage;
     this.databaseName = databaseName;
@@ -115,9 +114,6 @@ var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/fun
     this.subs.push(this.messages$.subscribe(msg => {
       if (msg.method === 'changeStream') {
         this.changes$.next(getMessageReturn(msg));
-      }
-      if (msg.method === 'conflictResultionTasks') {
-        this.conflicts$.next(msg.return);
       }
     }));
   }
@@ -188,12 +184,6 @@ var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/fun
       await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
     })();
     return this.closed;
-  };
-  _proto2.conflictResultionTasks = function conflictResultionTasks() {
-    return this.conflicts$;
-  };
-  _proto2.resolveConflictResultionTask = async function resolveConflictResultionTask(taskSolution) {
-    await this.requestRemote('resolveConflictResultionTask', [taskSolution]);
   };
   return RxStorageInstanceRemote;
 }();

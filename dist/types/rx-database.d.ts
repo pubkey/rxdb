@@ -4,7 +4,6 @@ import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollecti
 import { Subject, Subscription, Observable } from 'rxjs';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import type { RxBackupState } from './plugins/backup/index.ts';
-import { ObliviousSet } from 'oblivious-set';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase, Reactivity = unknown> {
@@ -29,7 +28,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly allowSlowCount?: boolean | undefined;
     readonly reactivity?: RxReactivityFactory<any> | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "15.39.0";
+    readonly rxdbVersion = "16.0.0-beta.2";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
@@ -56,17 +55,22 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      */
     startupErrors: (RxError | RxTypeError)[];
     /**
-     * When the database is destroyed,
+     * When the database is closed,
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
      */
-    onDestroy: (() => MaybePromise<any>)[];
-    destroyed: boolean;
+    onClose: (() => MaybePromise<any>)[];
+    closed: boolean;
     collections: Collections;
     states: {
         [name: string]: RxState<any, Reactivity>;
     };
+    /**
+     * Internally only use eventBulks$
+     * Do not use .$ or .observable$ because that has to transform
+     * the events which decreases performance.
+     */
     readonly eventBulks$: Subject<RxChangeEventBulk<any>>;
     private observable$;
     /**
@@ -84,15 +88,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * We need this in some plugins.
      */
     storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
-    /**
-     * Contains the ids of all event bulks that have been emitted
-     * by the database.
-     * Used to detect duplicates that come in again via BroadcastChannel
-     * or other streams.
-     * TODO instead of having this here, we should add a test to ensure each RxStorage
-     * behaves equal and does never emit duplicate eventBulks.
-     */
-    emittedEventBulkIds: ObliviousSet<string>;
     /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
@@ -143,9 +138,9 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     waitForLeadership(): Promise<boolean>;
     migrationStates(): Observable<RxMigrationState[]>;
     /**
-     * destroys the database-instance and all collections
+     * closes the database-instance and all collections
      */
-    destroy(): Promise<boolean>;
+    close(): Promise<boolean>;
     /**
      * deletes the database and its stored data.
      * Returns the names of all removed collections.

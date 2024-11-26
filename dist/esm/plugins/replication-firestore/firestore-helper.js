@@ -21,6 +21,9 @@ export function isoStringToServerTimestamp(isoString) {
 export function firestoreRowToDocData(serverTimestampField, primaryPath, row) {
   var docData = stripServerTimestampField(serverTimestampField, row.data());
   docData[primaryPath] = row.id;
+  if (primaryPath !== 'id') {
+    delete docData['id'];
+  }
   return docData;
 }
 export function stripPrimaryKey(primaryPath, docData) {

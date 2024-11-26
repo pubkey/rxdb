@@ -7,9 +7,10 @@ exports.areSelectorsSatisfiedByIndex = areSelectorsSatisfiedByIndex;
 exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
 exports.ensureObjectDoesNotContainRegExp = ensureObjectDoesNotContainRegExp;
+exports.isQueryAllowed = isQueryAllowed;
 var _rxError = require("../../rx-error.js");
 var _index = require("../utils/index.js");
-var _rxQuery = require("../../rx-query.js");
+var _rxQueryHelper = require("../../rx-query-helper.js");
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -121,7 +122,7 @@ function checkMangoQuery(args) {
   ensureObjectDoesNotContainRegExp(args.mangoQuery);
 }
 function areSelectorsSatisfiedByIndex(schema, query) {
-  var preparedQuery = (0, _rxQuery.prepareQuery)(schema, query);
+  var preparedQuery = (0, _rxQueryHelper.prepareQuery)(schema, query);
   return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 
@@ -147,5 +148,29 @@ function ensureObjectDoesNotContainRegExp(selector) {
       ensureObjectDoesNotContainRegExp(value);
     }
   });
+}
+
+/**
+ * People often use queries wrong
+ * so we have some checks here.
+ * For example people use numbers as primary keys
+ * which is not allowed.
+ */
+function isQueryAllowed(args) {
+  if (args.op === 'findOne') {
+    if (typeof args.queryObj === 'number' || Array.isArray(args.queryObj)) {
+      throw (0, _rxError.newRxTypeError)('COL6', {
+        collection: args.collection.name,
+        queryObj: args.queryObj
+      });
+    }
+  } else if (args.op === 'find') {
+    if (typeof args.queryObj === 'string') {
+      throw (0, _rxError.newRxError)('COL5', {
+        collection: args.collection.name,
+        queryObj: args.queryObj
+      });
+    }
+  }
 }
 //# sourceMappingURL=check-query.js.map

@@ -121,9 +121,6 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
 
     /**
      * @overrides itself on the first call
-     *
-     * TODO this should be a pure function that
-     * caches the hash in a WeakMap.
      */
   }, {
     key: "hash",

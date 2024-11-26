@@ -137,10 +137,7 @@ function replicateNats(options) {
               throw err;
             }
           }
-          if (remoteDocState && (!writeRow.assumedMasterState || (await collection.conflictHandler({
-            newDocumentState: remoteDocState.json(),
-            realMasterState: writeRow.assumedMasterState
-          }, 'replication-firestore-push')).isEqual === false)) {
+          if (remoteDocState && (!writeRow.assumedMasterState || collection.conflictHandler.isEqual(remoteDocState.json(), writeRow.assumedMasterState, 'replication-nats-push') === false)) {
             // conflict
             conflicts.push(remoteDocState.json());
           } else {

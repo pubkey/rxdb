@@ -13,6 +13,9 @@ export function getPseudoSchemaForVersion(version, primaryKey) {
       [primaryKey]: {
         type: 'string',
         maxLength: 100
+      },
+      value: {
+        type: 'string'
       }
     },
     indexes: [[primaryKey]],

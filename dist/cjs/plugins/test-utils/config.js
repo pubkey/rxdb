@@ -117,7 +117,7 @@ function getPassword() {
   if (getConfig().storage.hasEncryption) {
     return (0, _index.ensureNotFalsy)(getConfig().storage.hasEncryption)();
   } else {
-    return Promise.resolve('test-password-' + (0, _index.randomCouchString)(10));
+    return Promise.resolve('test-password-' + (0, _index.randomToken)(10));
   }
 }
 //# sourceMappingURL=config.js.map

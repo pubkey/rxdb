@@ -81,10 +81,10 @@ export function getMigrationStateByDatabase(database) {
 }
 
 /**
- * Complete on database destroy
+ * Complete on database close
  * so people do not have to unsubscribe
  */
-export function onDatabaseDestroy(database) {
+export function onDatabaseClose(database) {
   var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
   if (subject) {
     subject.complete();

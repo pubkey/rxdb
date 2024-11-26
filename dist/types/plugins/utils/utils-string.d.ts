@@ -1,8 +1,11 @@
 /**
- * get a random string which can be used with couchdb
+ * Get a random string which can be used for many things in RxDB.
+ * The returned string is guaranteed to be a valid database name or collection name
+ * and also to be a valid JavaScript variable name.
+ *
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-export declare function randomCouchString(length?: number): string;
+export declare function randomToken(length?: number): string;
 /**
  * A random string that is never inside of any storage
  */

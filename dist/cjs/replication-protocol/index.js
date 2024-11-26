@@ -94,6 +94,18 @@ Object.keys(_conflicts).forEach(function (key) {
     }
   });
 });
+var _defaultConflictHandler = require("./default-conflict-handler.js");
+Object.keys(_defaultConflictHandler).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _defaultConflictHandler[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _defaultConflictHandler[key];
+    }
+  });
+});
 /**
  * These files contain the replication protocol.
  * It can be used to replicated RxStorageInstances or RxCollections
@@ -242,7 +254,7 @@ keepMeta = false) {
       masterDocsStateList.forEach(doc => masterDocsState.set(doc[primaryPath], doc));
       var conflicts = [];
       var writeRows = [];
-      await Promise.all(Object.entries(rowById).map(async ([id, row]) => {
+      await Promise.all(Object.entries(rowById).map(([id, row]) => {
         var masterState = masterDocsState.get(id);
         if (!masterState) {
           writeRows.push({
@@ -250,10 +262,7 @@ keepMeta = false) {
           });
         } else if (masterState && !row.assumedMasterState) {
           conflicts.push((0, _helper.writeDocToDocState)(masterState, hasAttachments, keepMeta));
-        } else if ((await conflictHandler({
-          realMasterState: (0, _helper.writeDocToDocState)(masterState, hasAttachments, keepMeta),
-          newDocumentState: (0, _index.ensureNotFalsy)(row.assumedMasterState)
-        }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true) {
+        } else if (conflictHandler.isEqual((0, _helper.writeDocToDocState)(masterState, hasAttachments, keepMeta), (0, _index.ensureNotFalsy)(row.assumedMasterState), 'rxStorageInstanceToReplicationHandler-masterWrite') === true) {
           writeRows.push({
             previous: masterState,
             document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState, masterState)

@@ -28,7 +28,7 @@ export declare const humanSchemaLiteral: import("../../index.ts").DeepReadonlyOb
             readonly multipleOf: 1;
         };
     };
-    readonly required: readonly ["firstName", "lastName", "passportId", "age"];
+    readonly required: readonly ["firstName", "lastName", "passportId"];
     readonly indexes: readonly ["firstName"];
 }>;
 declare const humanSchemaTyped: {
@@ -59,7 +59,7 @@ declare const humanSchemaTyped: {
             multipleOf: 1;
         };
     };
-    required: ["firstName", "lastName", "passportId", "age"];
+    required: ["firstName", "lastName", "passportId"];
     indexes: ["firstName"];
 };
 export type HumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanSchemaTyped>;

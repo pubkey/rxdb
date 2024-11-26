@@ -85,12 +85,12 @@ var RxDBLocalDocumentsPlugin = exports.RxDBLocalDocumentsPlugin = {
         }
       }
     },
-    preDestroyRxDatabase: {
+    preCloseRxDatabase: {
       after: db => {
         return (0, _localDocumentsHelper.closeStateByParent)(db);
       }
     },
-    postDestroyRxCollection: {
+    postCloseRxCollection: {
       after: collection => (0, _localDocumentsHelper.closeStateByParent)(collection)
     },
     postRemoveRxDatabase: {

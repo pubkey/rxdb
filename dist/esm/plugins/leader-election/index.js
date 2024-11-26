@@ -23,12 +23,12 @@ export function getForDatabase() {
   var broadcastChannel = getBroadcastChannelReference(this.storage.name, this.token, this.name, this);
 
   /**
-   * Clean up the reference on RxDatabase.destroy()
+   * Clean up the reference on RxDatabase.close()
    */
-  var oldDestroy = this.destroy.bind(this);
-  this.destroy = function () {
+  var oldClose = this.close.bind(this);
+  this.close = function () {
     removeBroadcastChannelReference(this.token, this);
-    return oldDestroy();
+    return oldClose();
   };
   var elector = getLeaderElectorByBroadcastChannel(broadcastChannel);
   if (!elector) {
@@ -57,9 +57,9 @@ export function waitForLeadership() {
 }
 
 /**
- * runs when the database gets destroyed
+ * runs when the database gets closed
  */
-export function onDestroy(db) {
+export function onClose(db) {
   var has = LEADER_ELECTORS_OF_DB.get(db);
   if (has) {
     has.die();
@@ -78,8 +78,8 @@ export var RxDBLeaderElectionPlugin = {
   rxdb,
   prototypes,
   hooks: {
-    preDestroyRxDatabase: {
-      after: onDestroy
+    preCloseRxDatabase: {
+      after: onClose
     }
   }
 };
