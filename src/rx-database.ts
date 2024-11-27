@@ -686,7 +686,7 @@ export async function removeRxDatabase(
         storage,
         databaseName,
         {},
-        false,
+        multiInstance,
         password
     );
     const collectionDocs = await getAllCollectionDocuments(dbInternalsStorageInstance);
