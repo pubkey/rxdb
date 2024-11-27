@@ -133,7 +133,12 @@ export async function removeCollectionStorages(
                     collectionName: row.collectionName,
                     databaseInstanceToken,
                     databaseName,
-                    multiInstance: false,
+                    /**
+                     * multiInstance must be set to true,
+                     * so that the storageInstance can inform other
+                     * instances about being removed.
+                     */
+                    multiInstance: true,
                     options: {},
                     schema: row.schema,
                     password,
