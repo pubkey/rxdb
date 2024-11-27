@@ -677,6 +677,7 @@ export function createRxDatabase<
 export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>,
+    multiInstance: boolean = true,
     password?: string
 ): Promise<string[]> {
     const databaseInstanceToken = randomToken(10);
@@ -700,6 +701,7 @@ export async function removeRxDatabase(
             databaseInstanceToken,
             databaseName,
             collectionName,
+            multiInstance,
             password
         ))
     );

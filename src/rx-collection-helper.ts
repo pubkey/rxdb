@@ -82,6 +82,7 @@ export async function removeCollectionStorages(
     databaseInstanceToken: string,
     databaseName: string,
     collectionName: string,
+    multiInstance: boolean,
     password?: string,
     /**
      * If no hash function is provided,
@@ -134,11 +135,12 @@ export async function removeCollectionStorages(
                     databaseInstanceToken,
                     databaseName,
                     /**
-                     * multiInstance must be set to true,
+                     * multiInstance must be set to true if multiInstance
+                     * was true on the database
                      * so that the storageInstance can inform other
                      * instances about being removed.
                      */
-                    multiInstance: true,
+                    multiInstance,
                     options: {},
                     schema: row.schema,
                     password,
