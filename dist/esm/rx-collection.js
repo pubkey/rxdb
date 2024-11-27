@@ -607,7 +607,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
      * TODO here we should pass the already existing
      * storage instances instead of creating new ones.
      */
-    await removeCollectionStorages(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.password, this.database.hashFunction);
+    await removeCollectionStorages(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.multiInstance, this.database.password, this.database.hashFunction);
   };
   return _createClass(RxCollectionBase, [{
     key: "insert$",
