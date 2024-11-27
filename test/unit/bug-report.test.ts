@@ -9,7 +9,6 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
@@ -40,25 +39,21 @@ describe('bug-report.test.js', () => {
         // create a schema
         const mySchema = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: 'id',
             type: 'object',
             properties: {
-                passportId: {
+                id: {
                     type: 'string',
                     maxLength: 100
                 },
-                firstName: {
-                    type: 'string'
+                numberIndex: {
+                  type: 'number',
+                  minimum: 1,
+                  maximum: 40,
+                  multipleOf: 1,
                 },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
+            },
+            indexes: ['numberIndex']
         };
 
         /**
@@ -87,10 +82,7 @@ describe('bug-report.test.js', () => {
 
         // insert a document
         await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            id: 'foobar'
         });
 
         /**
@@ -111,30 +103,19 @@ describe('bug-report.test.js', () => {
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        await collectionInOtherTab.mycollection.insert({
+            id: randomToken(12),
+        });
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.equal(
+          await collectionInOtherTab.mycollection.count().exec(),
+          1
+        );
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
         db.close();
         dbInOtherTab.close();
     });
