@@ -102,15 +102,14 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        // find the document in the other tab
-        await collectionInOtherTab.mycollection.insert({
-            id: randomToken(12),
-        });
-
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
+        assert.equal(
+          await collections.mycollection.count().exec(),
+          1
+        );
         assert.equal(
           await collectionInOtherTab.mycollection.count().exec(),
           1
