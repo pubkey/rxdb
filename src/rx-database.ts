@@ -504,7 +504,7 @@ export class RxDatabaseBase<
     remove(): Promise<string[]> {
         return this
             .close()
-            .then(() => removeRxDatabase(this.name, this.storage, this.password));
+            .then(() => removeRxDatabase(this.name, this.storage, this.multiInstance, this.password));
     }
 
     get asRxDatabase(): RxDatabase<

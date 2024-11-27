@@ -1005,7 +1005,7 @@ describe('replication.test.ts', () => {
             /**
              * Some RxStorages like the 'sharding' storage
              * do not have a normal checkpoint but instead
-             * stack up multiple checkpoins from their shards.
+             * stack up multiple checkpoints from their shards.
              * So if that is the case, we cannot run this test here.
              */
             if (
