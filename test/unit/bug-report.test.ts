@@ -9,133 +9,202 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
     createRxDatabase,
-    randomToken
+    randomToken,
+    RxReplicationWriteToMasterRow,
 } from '../../plugins/core/index.mjs';
 import {
-    isNode
+    HumanWithTimestampDocumentType,
+    isNode,
+    schemaObjects,
+    schemas,
 } from '../../plugins/test-utils/index.mjs';
+import { replicateGraphQL } from '../../plugins/replication-graphql/index.mjs';
+import { firstValueFrom, interval, race } from 'rxjs';
+import { startReplicationOnLeaderShip } from '../../plugins/replication/index.mjs';
+import { spawn } from '../helper/graphql-server.ts';
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async function () {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !isNode // runs only in node
-            // isNode // runs only in the browser
-        ) {
-            // return;
+    const batchSize = 5 as const;
+    const pullQueryBuilder = (checkpoint: any, limit: number) => {
+        if (!checkpoint) {
+            checkpoint = {
+                id: '',
+                updatedAt: 0,
+            };
         }
+        const query = `query FeedForRxDBReplication($checkpoint: CheckpointInput, $limit: Int!) {
+            feedForRxDBReplication(checkpoint: $checkpoint, limit: $limit) {
+                documents {
+                    id
+                    name
+                    age
+                    updatedAt
+                    deleted
+                }
+                checkpoint {
+                    id
+                    updatedAt
+                }
+            }
+        }`;
+        const variables = {
+            checkpoint,
+            limit,
+        };
+        return Promise.resolve({
+            query,
+            operationName: 'FeedForRxDBReplication',
+            variables,
+        });
+    };
+    const pullStreamQueryBuilder = (headers: { [k: string]: string; }) => {
+        const query = `subscription onHumanChanged($headers: Headers) {
+            humanChanged(headers: $headers) {
+                documents {
+                    id,
+                    name,
+                    age,
+                    updatedAt,
+                    deleted
+                },
+                checkpoint {
+                    id
+                    updatedAt
+                }
+            }
+        }`;
+        return {
+            query,
+            operationName: 'onHumanChanged',
+            variables: {
+                headers,
+            },
+        };
+    };
+    const pushQueryBuilder = (
+        rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[]
+    ) => {
+        if (!rows || rows.length === 0) {
+            throw new Error('test pushQueryBuilder(): called with no docs');
+        }
+        const query = `
+        mutation CreateHumans($writeRows: [HumanWriteRow!]) {
+            writeHumans(writeRows: $writeRows) {
+                id
+                name
+                age
+                updatedAt
+                deleted
+            }
+        }
+        `;
+        const variables = {
+            writeRows: rows,
+        };
+        return Promise.resolve({
+            query,
+            operationName: 'CreateHumans',
+            variables,
+        });
+    };
 
-        if (!config.storage.hasMultiInstance) {
+    it(`
+        should fail because it reproduces the bug #6515
+
+        Given multiple clients using GraphQL replication
+        And using Websocket protocol
+        When the Websocket connection is closed
+        Then an error should be published
+        `, async () => {
+        if (!isNode) {
             return;
         }
 
-        // create a schema
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
-        };
+        const server = await spawn();
+        server.requireHeader('token', 'Bearer token');
 
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
-        const name = randomToken(10);
+        const { db, replication } = await rxdbInitialize();
+        const { db: db2, replication: replication2 } = await rxdbInitialize();
 
-        // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        await db.humans.upsert(schemaObjects.humanWithTimestampData());
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        await firstValueFrom(race(replication.sent$, interval(1000)));
+        let [remoteEvents, errors] = await Promise.all([
+            firstValueFrom(race(replication.remoteEvents$, replication2.remoteEvents$, interval(1000))),
+            firstValueFrom(race(replication.error$, replication2.error$, interval(1000)))
+        ]);
+        await firstValueFrom(race(replication2.received$, interval(1000)));
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        let numHumans = await db.humans.count({}).exec();
+        let numHumans2 = await db2.humans.count({}).exec();
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        assert.equal(server.getDocuments().length, numHumans);
+        assert.equal(numHumans2, numHumans);
+        assert.ok(!errors, 'There is Errors');
+        assert.ok(remoteEvents, 'There is no remote events');
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+        server.subServer.dispose();
 
+        await db.humans.upsert(schemaObjects.humanWithTimestampData());
 
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
+        await firstValueFrom(race(replication.sent$, interval(1000)));
+        [remoteEvents, errors] = await Promise.all([
+            firstValueFrom(race(replication.remoteEvents$, replication2.remoteEvents$, interval(1000))),
+            firstValueFrom(race(replication.error$, replication2.error$, interval(1000)))
+        ]);
+        await firstValueFrom(race(replication2.received$, interval(1000)));
+
+        numHumans = await db.humans.count({}).exec();
+        numHumans2 = await db2.humans.count({}).exec();
+
+        assert.equal(server.getDocuments().length, numHumans);
+        assert.notEqual(numHumans2, numHumans);
+        assert.ok(!remoteEvents, 'There is remote events');
+        assert.ok(errors, 'There is no errors');
+
+        async function rxdbInitialize() {
+            const rxdb = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true,
             });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
-        // clean up afterwards
-        sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+            const collection = await rxdb.addCollections({
+                humans: {
+                    schema: schemas.humanWithTimestampAllIndex,
+                },
+            });
+
+            const replicationState = replicateGraphQL({
+                replicationIdentifier: server.url.http ?? '',
+                collection: collection.humans,
+                url: server.url,
+                pull: {
+                    batchSize,
+                    queryBuilder: pullQueryBuilder,
+                    streamQueryBuilder: pullStreamQueryBuilder,
+                    includeWsHeaders: true,
+                },
+                headers: {
+                    token: 'Bearer token',
+                },
+                push: {
+                    batchSize,
+                    queryBuilder: pushQueryBuilder,
+                },
+                live: true,
+                deletedField: 'deleted',
+                autoStart: false,
+                waitForLeadership: true,
+            });
+
+            await startReplicationOnLeaderShip(true, replicationState);
+
+            await replicationState.start();
+            return { db: rxdb, replication: replicationState };
+        }
     });
 });
