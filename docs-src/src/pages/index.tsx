@@ -513,7 +513,7 @@ export default function Home(props) {
                 applications fast and reliable.{' '}
                 {/* It does not matter if the data was changed by{' '}                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b> */}
                 Whenever your data changes, your UI reflects the new state.{' '}
-                RxDB supports <b>RxJS</b> and <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like signals, hooks or vue.js-refs.
+                RxDB supports <b>RxJS</b> and <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like <b>angular</b> signals, <b>preact</b> signals, <b>react</b> hooks or <b>vue.js</b> refs.
               </p>
               <div className="inner">
                 {/*

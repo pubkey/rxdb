@@ -137,7 +137,7 @@ export default function Premium() {
 
                             <p style={{ width: '80%' }}>
                                 RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <b>better performance</b>, regular updates, and dedicated support.
+                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, regular updates, and dedicated support.
                             </p>
                             <p style={{ width: '80%' }}>
                                 By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development,
@@ -710,12 +710,12 @@ export default function Premium() {
                                 contribution to RxDB or one of RxDB's dependencies or to the Open Source
                                 Community overall. Also for private personal projects there is the
                                 option to solve one of the
-                                <a
+                                {' '}<a
                                     href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
                                     target="_blank"
                                 >
                                     Premium Tasks
-                                </a>
+                                </a>{' '}
                                 to get 2 years access to the Premium Plugins.
                             </details>
                             <details>
