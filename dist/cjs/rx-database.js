@@ -374,7 +374,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
    * Returns the names of all removed collections.
    */;
   _proto.remove = function remove() {
-    return this.close().then(() => removeRxDatabase(this.name, this.storage, this.password));
+    return this.close().then(() => removeRxDatabase(this.name, this.storage, this.multiInstance, this.password));
   };
   return (0, _createClass2.default)(RxDatabaseBase, [{
     key: "$",
@@ -494,14 +494,14 @@ function createRxDatabase({
  *
  * Returns the names of the removed collections.
  */
-async function removeRxDatabase(databaseName, storage, password) {
+async function removeRxDatabase(databaseName, storage, multiInstance = true, password) {
   var databaseInstanceToken = (0, _index.randomToken)(10);
-  var dbInternalsStorageInstance = await createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false, password);
+  var dbInternalsStorageInstance = await createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, multiInstance, password);
   var collectionDocs = await (0, _rxDatabaseInternalStore.getAllCollectionDocuments)(dbInternalsStorageInstance);
   var collectionNames = new Set();
   collectionDocs.forEach(doc => collectionNames.add(doc.data.name));
   var removedCollectionNames = Array.from(collectionNames);
-  await Promise.all(removedCollectionNames.map(collectionName => (0, _rxCollectionHelper.removeCollectionStorages)(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName, password)));
+  await Promise.all(removedCollectionNames.map(collectionName => (0, _rxCollectionHelper.removeCollectionStorages)(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName, multiInstance, password)));
   await (0, _hooks.runAsyncPluginHooks)('postRemoveRxDatabase', {
     databaseName,
     storage
