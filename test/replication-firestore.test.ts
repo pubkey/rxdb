@@ -5,11 +5,12 @@
 import assert from 'assert';
 
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     ensureNotFalsy,
     WithDeleted,
-    createRxDatabase
+    createRxDatabase,
+    addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
@@ -23,6 +24,8 @@ import {
     HumanWithTimestampDocumentType,
     humanSchemaLiteral
 } from '../plugins/test-utils/index.mjs';
+
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 
 import {
@@ -56,6 +59,8 @@ import { wrappedValidateZSchemaStorage } from '../plugins/validate-z-schema/inde
  * because it is too slow to setup the firestore backend emulators.
  */
 describe('replication-firestore.test.ts', function () {
+    addRxPlugin(RxDBDevModePlugin);
+
     this.timeout(1000 * 20);
     /**
      * Use a low batchSize in all tests
@@ -71,7 +76,7 @@ describe('replication-firestore.test.ts', function () {
             return docData;
         }) as any;
     }
-    const projectId = randomCouchString(10);
+    const projectId = randomToken(10);
     const app = firebase.initializeApp({
         projectId,
         databaseURL: 'http://localhost:8080?ns=' + projectId
@@ -80,7 +85,7 @@ describe('replication-firestore.test.ts', function () {
     connectFirestoreEmulator(database, 'localhost', 8080);
 
     function getFirestoreState(): FirestoreOptions<TestDocType> {
-        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomCouchString(10)) as any;
+        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomToken(10)) as any;
         return {
             projectId,
             collection: useCollection,
@@ -104,7 +109,7 @@ describe('replication-firestore.test.ts', function () {
         firestoreState: FirestoreOptions<RxDocType>
     ): RxFirestoreReplicationState<RxDocType> {
         const replicationState = replicateFirestore({
-            replicationIdentifier: randomCouchString(10),
+            replicationIdentifier: randomToken(10),
             collection,
             firestore: firestoreState,
             pull: {
@@ -194,7 +199,7 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(docsOnServer.length, 3);
             assert.ok(docsOnServer.find(d => (d as any)._deleted));
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('two collections', async () => {
             const collectionA = await humansCollection.createHumanWithTimestamp(1, undefined, false);
@@ -250,8 +255,8 @@ describe('replication-firestore.test.ts', function () {
             await replicationStateB.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            collectionA.database.destroy();
-            collectionB.database.destroy();
+            collectionA.database.close();
+            collectionB.database.close();
         });
     });
     describe('conflict handling', () => {
@@ -280,8 +285,8 @@ describe('replication-firestore.test.ts', function () {
              */
             assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
-            c1.database.destroy();
-            c2.database.destroy();
+            c1.database.close();
+            c2.database.close();
         });
     });
 
@@ -309,7 +314,7 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(allLocalDocs.length, 1);
             assert.strictEqual(allLocalDocs[0].passportId, 'replicated');
 
-            collection.database.destroy();
+            collection.database.close();
         });
 
         it('should only sync filtered documents to firestore', async () => {
@@ -325,7 +330,7 @@ describe('replication-firestore.test.ts', function () {
                 pull: {},
                 push: {
                     filter(human: WithDeleted<HumanDocumentType>) {
-                        return human.age > 30;
+                        return (human as any).age > 30;
                     },
                 },
             });
@@ -335,12 +340,12 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(docsOnServer.length, 1);
             assert.strictEqual(docsOnServer[0].id, 'replicated');
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('issues', () => {
         it('#4698 adding items quickly does not send them to the server', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -388,7 +393,7 @@ describe('replication-firestore.test.ts', function () {
             const docSnap = ensureNotFalsy(await getDoc(docRef));
 
             assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
-            db.destroy();
+            db.close();
         });
         it('#5572 firestore replication not working with schema validation', async () => {
             const collection = await humansCollection.create(0, undefined, undefined, undefined, wrappedValidateZSchemaStorage({
@@ -418,7 +423,7 @@ describe('replication-firestore.test.ts', function () {
             const docSnap = ensureNotFalsy(await getDoc(docRef));
             assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('replicates all docs with identical serverTimestamp from the server', async () => {
             const firestoreState = getFirestoreState();
@@ -452,7 +457,7 @@ describe('replication-firestore.test.ts', function () {
 
             assert.strictEqual(allLocalDocs.length, 2);
 
-            collection.database.destroy();
+            collection.database.close();
         });
 
     });

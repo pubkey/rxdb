@@ -21,8 +21,8 @@ var CLEANUP_INDEX = exports.CLEANUP_INDEX = ['_deleted', '_meta.lwt'];
 /**
  * Get the global Deno variable from globalThis.Deno
  * so that compiling with plain typescript does not fail.
- * TODO download the deno typings from somewhere
- * and use them.
+ * Deno has no way to just "download" the deno typings,
+ * so we have to use the "any" type here.
  */
 function getDenoGlobal() {
   return globalThis.Deno;

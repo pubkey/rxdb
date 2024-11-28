@@ -10,9 +10,10 @@ To store the data inside of IndexedDB in the browser, you can use the [Dexie.js]
 ## Pros 
   - Can use [Dexie.js addons](https://dexie.org/docs/Tutorial/Building-Addons).
 
-## Cons
-  - Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
-  - Does not support the [Storage Buckets API](./rx-storage-indexeddb.md#storage-buckets)
+## Limitations
+- Does not allow to use non-required fields as index, because that is [not possible](https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082) with dexie.js. Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you need that.
+- Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
+- Does not support the [Storage Buckets API](./rx-storage-indexeddb.md#storage-buckets)
 
 ## Performance comparison with other RxStorage plugins
 
@@ -25,7 +26,7 @@ The performance of the Dexie.js RxStorage is good enough for most use cases but 
 ## Usage
 
 ```ts
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const db = await createRxDatabase({
@@ -41,7 +42,7 @@ Node.js has no IndexedDB API. To still run the Dexie `RxStorage` in Node.js, for
 You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageDexie()` function.
 
 ```ts
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 //> npm install fake-indexeddb --save

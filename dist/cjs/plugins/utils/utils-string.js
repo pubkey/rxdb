@@ -8,16 +8,20 @@ exports.arrayBufferToString = arrayBufferToString;
 exports.isFolderPath = isFolderPath;
 exports.lastCharOfString = lastCharOfString;
 exports.normalizeString = normalizeString;
-exports.randomCouchString = randomCouchString;
+exports.randomToken = randomToken;
 exports.stringToArrayBuffer = stringToArrayBuffer;
 exports.trimDots = trimDots;
 exports.ucfirst = ucfirst;
 var COUCH_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+
 /**
- * get a random string which can be used with couchdb
+ * Get a random string which can be used for many things in RxDB.
+ * The returned string is guaranteed to be a valid database name or collection name
+ * and also to be a valid JavaScript variable name.
+ * 
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-function randomCouchString(length = 10) {
+function randomToken(length = 10) {
   var text = '';
   for (var i = 0; i < length; i++) {
     text += COUCH_NAME_CHARS.charAt(Math.floor(Math.random() * COUCH_NAME_CHARS.length));
@@ -82,22 +86,10 @@ function isFolderPath(name) {
  * @link https://stackoverflow.com/a/76240378/3443137
  */
 function arrayBufferToString(arrayBuffer) {
-  var chunkSize = 8192;
-  var str = '';
-  var len = arrayBuffer.byteLength;
-  for (var i = 0; i < len; i += chunkSize) {
-    var chunk = new Uint8Array(arrayBuffer, i, Math.min(chunkSize, len - i));
-    str += String.fromCharCode.apply(null, chunk);
-  }
-  return str;
+  return new TextDecoder().decode(arrayBuffer);
 }
 function stringToArrayBuffer(str) {
-  var buf = new ArrayBuffer(str.length);
-  var bufView = new Uint8Array(buf);
-  for (var i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
+  return new TextEncoder().encode(str);
 }
 function normalizeString(str) {
   return str.trim().replace(/[\n\s]+/g, '');

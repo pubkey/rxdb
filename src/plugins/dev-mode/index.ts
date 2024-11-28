@@ -22,7 +22,7 @@ import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
 } from './unallowed-properties.ts';
-import { checkMangoQuery, checkQuery } from './check-query.ts';
+import { checkMangoQuery, checkQuery, isQueryAllowed } from './check-query.ts';
 import { newRxError } from '../../rx-error.ts';
 import { DeepReadonly } from '../../types/util.ts';
 import { deepFreeze } from '../../plugins/utils/index.ts';
@@ -106,6 +106,14 @@ export const RxDBDevModePlugin: RxPlugin = {
             after: checkSchema
         },
         preCreateRxDatabase: {
+            before: function (args: RxDatabaseCreator<any, any>) {
+                if (!args.storage.name.startsWith('validate-')) {
+                    throw newRxError('DVM1', {
+                        database: args.name,
+                        storage: args.storage.name
+                    });
+                }
+            },
             after: function (args: RxDatabaseCreator<any, any>) {
                 ensureDatabaseNameIsValid(args);
             }
@@ -135,6 +143,11 @@ export const RxDBDevModePlugin: RxPlugin = {
         createRxDocument: {
             before: function (doc: RxDocument) {
                 ensurePrimaryKeyValid(doc.primary, doc.toJSON(true));
+            }
+        },
+        prePrepareRxQuery: {
+            after: function (args) {
+                isQueryAllowed(args);
             }
         },
         preCreateRxQuery: {

@@ -2,7 +2,7 @@
 /**
  * hook-functions that can be extended by the plugin
  */
-export const HOOKS: { [k: string]: any[]; } = {
+export const HOOKS = {
     /**
      * Runs before a plugin is added.
      * Use this to block the usage of non-compatible plugins.
@@ -22,10 +22,10 @@ export const HOOKS: { [k: string]: any[]; } = {
     createRxCollection: [],
     createRxState: [],
     /**
-    * runs at the end of the destroy-process of a collection
+    * runs at the end of the close-process of a collection
     * @async
     */
-    postDestroyRxCollection: [],
+    postCloseRxCollection: [],
     /**
      * Runs after a collection is removed.
      * @async
@@ -41,6 +41,7 @@ export const HOOKS: { [k: string]: any[]; } = {
      * gets RxSchema as attribute
      */
     createRxSchema: [],
+    prePrepareRxQuery: [],
     preCreateRxQuery: [],
     /**
      * Runs before a query is send to the
@@ -74,9 +75,9 @@ export const HOOKS: { [k: string]: any[]; } = {
      */
     postMigrateDocument: [],
     /**
-     * runs at the beginning of the destroy-process of a database
+     * runs at the beginning of the close-process of a database
      */
-    preDestroyRxDatabase: [],
+    preCloseRxDatabase: [],
     /**
      * runs after a database has been removed
      * @async
@@ -101,27 +102,27 @@ export const HOOKS: { [k: string]: any[]; } = {
     preReplicationMasterWriteDocumentsHandle: [],
 };
 
-export function runPluginHooks(hookKey: string, obj: any) {
+export function runPluginHooks(hookKey: keyof typeof HOOKS, obj: any) {
     if (HOOKS[hookKey].length > 0) {
-        HOOKS[hookKey].forEach(fun => fun(obj));
+        HOOKS[hookKey].forEach(fun => (fun as any)(obj));
     }
 }
 
 
 /**
- * TODO
- * we should not run the hooks in parallel
- * this makes stuff unpredictable.
+ * We do intentionally not run the hooks in parallel
+ * because that makes stuff unpredictable and we use runAsyncPluginHooks()
+ * only in places that are not that relevant for performance.
  */
-export function runAsyncPluginHooks(hookKey: string, obj: any): Promise<any> {
-    return Promise.all(
-        HOOKS[hookKey].map(fun => fun(obj))
-    );
+export async function runAsyncPluginHooks(hookKey: keyof typeof HOOKS, obj: any): Promise<any> {
+    for (const fn of HOOKS[hookKey]) {
+        await (fn as any)(obj);
+    }
 }
 
 /**
  * used in tests to remove hooks
  */
-export function _clearHook(type: string, fun: Function) {
+export function _clearHook(type: keyof typeof HOOKS, fun: Function) {
     HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }

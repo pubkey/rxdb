@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxPipeline = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = void 0;
+exports.RxPipeline = void 0;
 exports.addPipeline = addPipeline;
 exports.getCheckpointDoc = getCheckpointDoc;
 exports.setCheckpointDoc = setCheckpointDoc;
@@ -13,10 +13,13 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _docCache = require("../../doc-cache.js");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
 var _flaggedFunctions = require("./flagged-functions.js");
-var RX_PIPELINE_CHECKPOINT_CONTEXT = exports.RX_PIPELINE_CHECKPOINT_CONTEXT = 'OTHER';
-// TODO change the context in the next major version.
-// export const RX_PIPELINE_CHECKPOINT_CONTEXT = 'rx-pipeline-checkpoint';
 var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
+  /**
+   * The handler of the pipeline must never throw.
+   * If it did anyway, the pipeline will be stuck and always
+   * throw the previous error on all operations.
+   */
+
   function RxPipeline(identifier, source, destination, handler, batchSize = 100) {
     this.processQueue = _index.PROMISE_RESOLVE_VOID;
     this.subs = [];
@@ -25,7 +28,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     this.lastSourceDocTime = new _rxjs.BehaviorSubject(-1);
     this.lastProcessedDocTime = new _rxjs.BehaviorSubject(0);
     this.somethingChanged = new _rxjs.Subject();
-    this.secretFunctionName = 'tx_fn_' + (0, _index.randomCouchString)(10);
+    this.secretFunctionName = 'tx_fn_' + (0, _index.randomToken)(10);
     this.waitBeforeWriteFn = async () => {
       var stack = new Error().stack;
       if (stack && stack.includes(this.secretFunctionName)) {} else {
@@ -38,9 +41,9 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     this.handler = handler;
     this.batchSize = batchSize;
     this.checkpointId = 'rx-pipeline-' + identifier;
-    this.source.onDestroy.push(() => this.destroy());
+    this.source.onClose.push(() => this.close());
     this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
-    this.subs.push(this.source.database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => changeEventBulk.collectionName === this.source.name)).subscribe(bulk => {
+    this.subs.push(this.source.eventBulks$.subscribe(bulk => {
       this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
       this.somethingChanged.next({});
     }));
@@ -48,7 +51,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       var events = eventBulk.events;
       for (var index = 0; index < events.length; index++) {
         var event = events[index];
-        if (event.documentData.context === RX_PIPELINE_CHECKPOINT_CONTEXT && event.documentData.key === this.checkpointId) {
+        if (event.documentData.context === _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT && event.documentData.key === this.checkpointId) {
           this.lastProcessedDocTime.next(event.documentData.data.lastDocTime);
           this.somethingChanged.next({});
         }
@@ -71,49 +74,64 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       this.toRun = this.toRun - 1;
       var done = false;
       var _loop = async function () {
-        var checkpointDoc = await getCheckpointDoc(_this2);
-        var checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
-        var docsSinceResult = await (0, _rxStorageHelper.getChangedDocumentsSince)(_this2.source.storageInstance, _this2.batchSize, checkpoint);
-        var lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
-        if (docsSinceResult.documents.length > 0) {
-          var rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(_this2.source._docCache, docsSinceResult.documents);
-          var _this = _this2;
+          var checkpointDoc = await getCheckpointDoc(_this2);
+          var checkpoint = checkpointDoc ? checkpointDoc.data.checkpoint : undefined;
+          var docsSinceResult = await (0, _rxStorageHelper.getChangedDocumentsSince)(_this2.source.storageInstance, _this2.batchSize, checkpoint);
+          var lastTime = checkpointDoc ? checkpointDoc.data.lastDocTime : 0;
+          if (docsSinceResult.documents.length > 0) {
+            var rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(_this2.source._docCache, docsSinceResult.documents);
+            var _this = _this2;
 
-          // const o: any = {};
-          // eval(`
-          //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
-          //     o.${this.secretFunctionName} = ${this.secretFunctionName};
-          // `);
-          // await o[this.secretFunctionName](rxDocuments);
+            // const o: any = {};
+            // eval(`
+            //     async function ${this.secretFunctionName}(docs){ const x = await _this.handler(docs); return x; }
+            //     o.${this.secretFunctionName} = ${this.secretFunctionName};
+            // `);
+            // await o[this.secretFunctionName](rxDocuments);
 
-          var fnKey = (0, _flaggedFunctions.blockFlaggedFunctionKey)();
-          _this2.secretFunctionName = fnKey;
-          try {
-            await _flaggedFunctions.FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
-          } finally {
-            (0, _flaggedFunctions.releaseFlaggedFunctionKey)(fnKey);
+            var fnKey = (0, _flaggedFunctions.blockFlaggedFunctionKey)();
+            _this2.secretFunctionName = fnKey;
+            try {
+              await _flaggedFunctions.FLAGGED_FUNCTIONS[fnKey](() => _this.handler(rxDocuments));
+            } catch (err) {
+              _this2.error = err;
+            } finally {
+              (0, _flaggedFunctions.releaseFlaggedFunctionKey)(fnKey);
+            }
+            if (_this2.error) {
+              return {
+                v: void 0
+              };
+            }
+            lastTime = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(docsSinceResult.documents))._meta.lwt;
           }
-          lastTime = (0, _index.ensureNotFalsy)((0, _index.lastOfArray)(docsSinceResult.documents))._meta.lwt;
-        }
-        if (!_this2.destination.destroyed) {
-          await setCheckpointDoc(_this2, {
-            checkpoint: docsSinceResult.checkpoint,
-            lastDocTime: lastTime
-          }, checkpointDoc);
-        }
-        if (docsSinceResult.documents.length < _this2.batchSize) {
-          done = true;
-        }
-      };
-      while (!done && !this.stopped && !this.destination.destroyed && !this.source.destroyed) {
-        await _loop();
+          if (!_this2.destination.closed) {
+            await setCheckpointDoc(_this2, {
+              checkpoint: docsSinceResult.checkpoint,
+              lastDocTime: lastTime
+            }, checkpointDoc);
+          }
+          if (docsSinceResult.documents.length < _this2.batchSize) {
+            done = true;
+          }
+        },
+        _ret;
+      while (!done && !this.stopped && !this.destination.closed && !this.source.closed && !this.error) {
+        _ret = await _loop();
+        if (_ret) return _ret.v;
       }
     });
   };
   _proto.awaitIdle = async function awaitIdle() {
+    if (this.error) {
+      throw this.error;
+    }
     var done = false;
     while (!done) {
       await this.processQueue;
+      if (this.error) {
+        throw this.error;
+      }
       if (this.lastProcessedDocTime.getValue() >= this.lastSourceDocTime.getValue()) {
         done = true;
       } else {
@@ -121,7 +139,8 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
       }
     }
   };
-  _proto.destroy = async function destroy() {
+  _proto.close = async function close() {
+    await this.processQueue;
     this.stopped = true;
     this.destination.awaitBeforeReads.delete(this.waitBeforeWriteFn);
     this.subs.forEach(s => s.unsubscribe());
@@ -145,13 +164,13 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
         throw writeResult.error;
       }
     }
-    return this.destroy();
+    return this.close();
   };
   return RxPipeline;
 }();
 async function getCheckpointDoc(pipeline) {
   var insternalStore = pipeline.destination.database.internalStore;
-  var checkpointId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT);
+  var checkpointId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT);
   var results = await insternalStore.findDocumentsById([checkpointId], false);
   var result = results[0];
   if (result) {
@@ -169,9 +188,9 @@ async function setCheckpointDoc(pipeline, newCheckpoint, previous) {
       lwt: (0, _index.now)()
     },
     _rev: (0, _index.createRevision)(pipeline.destination.database.token, previous),
-    context: RX_PIPELINE_CHECKPOINT_CONTEXT,
+    context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
     data: newCheckpoint,
-    id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, RX_PIPELINE_CHECKPOINT_CONTEXT),
+    id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(pipeline.checkpointId, _rxDatabaseInternalStore.INTERNAL_CONTEXT_PIPELINE_CHECKPOINT),
     key: pipeline.checkpointId
   };
   var writeResult = await insternalStore.bulkWrite([{
@@ -188,12 +207,11 @@ async function addPipeline(options) {
   var startPromise = waitForLeadership ? this.database.waitForLeadership() : _index.PROMISE_RESOLVE_VOID;
   startPromise.then(() => {
     pipeline.trigger();
-    pipeline.subs.push(this.database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => changeEventBulk.collectionName === this.name), (0, _rxjs.filter)(bulk => {
+    pipeline.subs.push(this.eventBulks$.pipe((0, _rxjs.filter)(bulk => {
       if (pipeline.stopped) {
         return false;
       }
-      var first = bulk.events[0];
-      return !first.isLocal;
+      return !bulk.isLocal;
     })).subscribe(() => pipeline.trigger()));
   });
   return pipeline;

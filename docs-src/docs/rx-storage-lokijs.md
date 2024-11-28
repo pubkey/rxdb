@@ -8,8 +8,8 @@ slug: rx-storage-lokijs.html
 The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached. This makes it very fast but you have the possibility to lose semingly persisted writes when the JavaScript process ends before the persistence loop has been done.
 
 
-:::warning LokiJS is deprecated
-The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **deprecated**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage might be removed in the next major RxDB version. Using LokiJS as storage is only recommended for proof-of-concepts or quick prototype apps. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Synced](./rx-storage-memory-synced.md) storage.
+:::warning LokiJS was removed in RxDB version 16
+The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Synced](./rx-storage-memory-synced.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
 :::
 
 ### Pros

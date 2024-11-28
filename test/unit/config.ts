@@ -1,6 +1,5 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
-import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
 import {
     getRxStorageDexie
 } from '../../plugins/storage-dexie/index.mjs';
@@ -21,8 +20,6 @@ import {
     indexedDB as fakeIndexedDB,
     IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
-import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
-import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
 import parallel from 'mocha.parallel';
 
 import { createRequire } from 'node:module';
@@ -62,35 +59,11 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'memory':
             return {
                 name: storageKey,
-                getStorage: () => getRxStorageMemory(),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
                 getPerformanceStorage() {
                     return {
                         description: 'memory',
                         storage: getRxStorageMemory()
-                    };
-                },
-                hasPersistence: true,
-                hasMultiInstance: false,
-                hasAttachments: true,
-                hasReplication: true
-            };
-            break;
-        /**
-         * We run the tests once together
-         * with a validation plugin
-         * to ensure we do not accidentally use non-valid data
-         * in the tests.
-         */
-        case 'memory-validation':
-            return {
-                name: storageKey,
-                getStorage: () => getRxStorageMemory(),
-                getPerformanceStorage() {
-                    return {
-                        description: 'memory',
-                        storage: wrappedValidateAjvStorage({
-                            storage: getRxStorageMemory()
-                        })
                     };
                 },
                 hasPersistence: true,
@@ -110,11 +83,13 @@ export function getStorage(storageKey: string): RxTestStorage {
 
             return {
                 name: storageKey,
-                getStorage: () => randomDelayStorage({
-                    storage: getRxStorageMemory({
-                    }),
-                    delayTimeBefore: delayFn,
-                    delayTimeAfter: delayFn
+                getStorage: () => wrappedValidateAjvStorage({
+                    storage: randomDelayStorage({
+                        storage: getRxStorageMemory({
+                        }),
+                        delayTimeBefore: delayFn,
+                        delayTimeAfter: delayFn
+                    })
                 }),
                 getPerformanceStorage() {
                     return {
@@ -133,35 +108,6 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasReplication: true
             };
             break;
-        case 'lokijs':
-            return {
-                name: storageKey,
-                getStorage: () => getRxStorageLoki(),
-                getPerformanceStorage() {
-                    if (isNode) {
-                        // Node.js
-                        return {
-                            storage: getRxStorageLoki({
-                                adapter: new LokiFsStructuredAdapter()
-                            }),
-                            description: 'loki+fs-structured-adapter'
-                        };
-                    } else {
-                        // browser
-                        return {
-                            storage: getRxStorageLoki({
-                                adapter: new LokiIncrementalIndexedDBAdapter()
-                            }),
-                            description: 'loki+incremental-indexeddb'
-                        };
-                    }
-                },
-                hasPersistence: true,
-                hasMultiInstance: true,
-                hasAttachments: false,
-                hasReplication: true
-            };
-            break;
         case 'dexie':
             return {
                 name: storageKey,
@@ -171,12 +117,14 @@ export function getStorage(storageKey: string): RxTestStorage {
                         isDeno ||
                         isFastMode()
                     ) {
-                        return getRxStorageDexie({
-                            indexedDB: fakeIndexedDB,
-                            IDBKeyRange: fakeIDBKeyRange
+                        return wrappedValidateAjvStorage({
+                            storage: getRxStorageDexie({
+                                indexedDB: fakeIndexedDB,
+                                IDBKeyRange: fakeIDBKeyRange
+                            })
                         });
                     } else {
-                        return getRxStorageDexie({});
+                        return wrappedValidateAjvStorage({ storage: getRxStorageDexie({}) });
                     }
                 },
                 getPerformanceStorage() {
@@ -214,8 +162,10 @@ export function getStorage(storageKey: string): RxTestStorage {
                 },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFnFoundation({
-                        apiVersion: foundationDBAPIVersion
+                    return wrappedValidateAjvStorage({
+                        storage: getStorageFnFoundation({
+                            apiVersion: foundationDBAPIVersion
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -245,8 +195,10 @@ export function getStorage(storageKey: string): RxTestStorage {
                 },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFnMongo({
-                        connection: mongoConnectionString
+                    return wrappedValidateAjvStorage({
+                        storage: getStorageFnMongo({
+                            connection: mongoConnectionString
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -267,9 +219,11 @@ export function getStorage(storageKey: string): RxTestStorage {
             return {
                 name: storageKey,
                 getStorage: () => {
-                    return getRxStorageRemoteWebsocket({
-                        url: 'ws://localhost:18007',
-                        mode: 'storage'
+                    return wrappedValidateAjvStorage({
+                        storage: getRxStorageRemoteWebsocket({
+                            url: 'ws://localhost:18007',
+                            mode: 'storage'
+                        })
                     });
                 },
                 getPerformanceStorage() {
@@ -290,7 +244,7 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'denokv':
             return {
                 name: storageKey,
-                getStorage: () => getRxStorageDenoKV(),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageDenoKV() as any }),
                 getPerformanceStorage() {
                     return {
                         description: 'denokv',

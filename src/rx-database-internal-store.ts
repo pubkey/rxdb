@@ -24,13 +24,14 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    randomCouchString
+    randomToken
 } from './plugins/utils/index.ts';
-import { prepareQuery } from './rx-query.ts';
+import { prepareQuery } from './rx-query-helper.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 export const INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
+export const INTERNAL_CONTEXT_PIPELINE_CHECKPOINT = 'rx-pipeline-checkpoint';
 
 /**
  * Do not change the title,
@@ -68,6 +69,7 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
                 INTERNAL_CONTEXT_MIGRATION_STATUS,
+                INTERNAL_CONTEXT_PIPELINE_CHECKPOINT,
                 'OTHER'
             ]
         },
@@ -156,7 +158,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
      * we just try to insert a new document
      * and only fetch the existing one if a conflict happened.
      */
-    const storageToken = randomCouchString(10);
+    const storageToken = randomToken(10);
 
     const passwordHash = rxDatabase.password ?
         await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
@@ -250,18 +252,20 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(
         return false;
     }
 
-    if (
-        codeVersion.includes('beta') &&
-        codeVersion !== databaseStateVersion
-    ) {
-        return false;
-    }
-
     const stateMajor = databaseStateVersion.split('.')[0];
     const codeMajor = codeVersion.split('.')[0];
+
+    /**
+     * Version v15 data must be upwards compatible to v16
+     */
+    if (stateMajor === '15' && codeMajor === '16') {
+        return true;
+    }
+
     if (stateMajor !== codeMajor) {
         return false;
     }
+
     return true;
 }
 

@@ -116,11 +116,8 @@ export type RxJsonSchema<
     /**
      * On the top level the required-array must be set
      * because we always have to set the primary key to required.
-     *
-     * TODO required should be made non-optional on the top level
      */
     required?: StringKeys<RxDocType>[] | readonly StringKeys<RxDocType>[];
-
 
     /**
      * Indexes that will be used for the queries.

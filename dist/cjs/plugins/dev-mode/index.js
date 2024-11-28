@@ -108,6 +108,14 @@ var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
       after: _checkSchema.checkSchema
     },
     preCreateRxDatabase: {
+      before: function (args) {
+        if (!args.storage.name.startsWith('validate-')) {
+          throw (0, _rxError.newRxError)('DVM1', {
+            database: args.name,
+            storage: args.storage.name
+          });
+        }
+      },
       after: function (args) {
         (0, _unallowedProperties.ensureDatabaseNameIsValid)(args);
       }
@@ -137,6 +145,11 @@ var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
     createRxDocument: {
       before: function (doc) {
         (0, _checkDocument.ensurePrimaryKeyValid)(doc.primary, doc.toJSON(true));
+      }
+    },
+    prePrepareRxQuery: {
+      after: function (args) {
+        (0, _checkQuery.isQueryAllowed)(args);
       }
     },
     preCreateRxQuery: {

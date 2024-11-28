@@ -38,7 +38,7 @@ Depending on the storage or adapter this can also be used to define the filesyst
 RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
 There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the LokiJS storage with the filesystem adapter in Node.js.
+For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the [MongoDB RxStorage](./rx-storage-mongodb.md) in Node.js.
 
 - [List of RxStorage implementations](./rx-storage.md)
 
@@ -53,14 +53,13 @@ const dbDexie = await createRxDatabase({
 });
 
 
-// ...or use the LokiJS RxStorage with the indexeddb adapter.
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
-const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
+// ...or use the MongoDB RxStorage in Node.js.
+import { getRxStorageMongoDB } from 'rxdb/plugins/storage-mongodb';
 
-const dbLoki = await createRxDatabase({
+const dbMongo = await createRxDatabase({
   name: 'mydatabase',
-  storage: getRxStorageLoki({
-    adapter: new LokiIncrementalIndexedDBAdapter()
+  storage: getRxStorageMongoDB({
+    connection: 'mongodb://localhost:27017,localhost:27018,localhost:27019'
   })
 });
 ```
@@ -89,7 +88,7 @@ For better performance, you should always set `eventReduce: true`. This will als
 `(optional=false)`
 If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
 To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`.
+In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
 
 ```js
 const db1 = await createRxDatabase({
@@ -103,6 +102,25 @@ const db2 = await createRxDatabase({
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
 });
 ```
+
+
+### hashFunction
+
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide an own hash function instead. A hash function gets a string as input and returns a `Promise` that resolves a string.
+
+```ts
+// example hash function that runs in plain JavaScript
+import { sha256 } from 'ohash';
+function myOwnHashFunction(input: string) {
+    return Promise.resolve(sha256(input));
+}
+const db = await createRxDatabase({
+  hashFunction: myOwnHashFunction
+  /* ... */
+});
+```
+
+If you get the error message `TypeError: Cannot read properties of undefined (reading 'digest')` this likely means that you are neither running on `localhost` nor on `https` which is why your browser might not allow access to `crypto.subtle.digest`.
 
 ## Methods
 
@@ -167,11 +185,12 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 
 ```
 
-### destroy()
-Destroys the databases object-instance. This is to free up memory and stop all observers and replications.
-Returns a `Promise` that resolves when the database is destroyed.
+### close()
+Closes the databases object-instance. This is to free up memory and stop all observers and replications.
+Returns a `Promise` that resolves when the database is closed.
+Closing a database will not remove the databases data. When you create the database again with `createRxDatabase()`, all data will still be there.
 ```javascript
-await myDatabase.destroy();
+await myDatabase.close();
 ```
 
 ### remove()

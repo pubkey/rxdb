@@ -15,10 +15,13 @@ import {
     createRxDatabase,
     RxJsonSchema,
     promiseWait,
-    randomCouchString,
+    randomToken,
     ensureNotFalsy,
-    deepFreeze
+    deepFreeze,
+    addRxPlugin
 } from '../../plugins/core/index.mjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
 
 import { firstValueFrom } from 'rxjs';
 
@@ -33,7 +36,7 @@ describe('rx-query.test.ts', () => {
                 'no valid query params'
             );
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should throw error when custom index not in schema indexes', async () => {
             const col = await humansCollection.create(0);
@@ -45,7 +48,7 @@ describe('rx-query.test.ts', () => {
                 'RxError',
                 'not in schem'
             );
-            col.database.destroy();
+            col.database.close();
         });
         it('should NOT throw error when custom index is in schema indexes', async () => {
             const col = await humansCollection.createAgeIndex(0);
@@ -53,7 +56,7 @@ describe('rx-query.test.ts', () => {
                 selector: {},
                 index: ['age']
             }).getPreparedQuery();
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('.toJSON()', () => {
@@ -80,7 +83,7 @@ describe('rx-query.test.ts', () => {
                 }],
                 limit: 10
             });
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('.toString()', () => {
@@ -97,7 +100,7 @@ describe('rx-query.test.ts', () => {
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should get a valid string-representation with two sort params', async () => {
             const col = await humansCollection.createAgeIndex();
@@ -110,7 +113,7 @@ describe('rx-query.test.ts', () => {
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
@@ -119,7 +122,7 @@ describe('rx-query.test.ts', () => {
             const queryString = queryWithRegex.toString();
 
             assert.ok(queryString.includes('foobar'));
-            col.database.destroy();
+            col.database.close();
         });
         it('same queries should return the same string', async () => {
             const col1 = await humansCollection.create(0);
@@ -136,8 +139,8 @@ describe('rx-query.test.ts', () => {
                 .sort('passportId').toString();
 
             assert.strictEqual(query1, query2);
-            col1.database.destroy();
-            col2.database.destroy();
+            col1.database.close();
+            col2.database.close();
         });
         it('same queries should return the same string even if on same collection', async () => {
             const col = await humansCollection.create(0);
@@ -153,7 +156,7 @@ describe('rx-query.test.ts', () => {
                 .sort('passportId').toString();
 
             assert.strictEqual(query1, query2);
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('immutable', () => {
@@ -167,7 +170,7 @@ describe('rx-query.test.ts', () => {
             const q2 = q.sort('name');
             assert.ok(isRxQuery(q2));
             assert.notStrictEqual(q, q2);
-            col.database.destroy();
+            col.database.close();
         });
         it('should not be the same object (where)', async () => {
             const col = await humansCollection.create(0);
@@ -180,7 +183,7 @@ describe('rx-query.test.ts', () => {
             assert.ok(isRxQuery(q2));
             assert.notStrictEqual(q, q2);
             assert.ok(q.id < q2.id);
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('QueryCache.js', () => {
@@ -199,7 +202,7 @@ describe('rx-query.test.ts', () => {
 
             assert.deepStrictEqual(q, q2);
             assert.strictEqual(q.id, q2.id);
-            col.database.destroy();
+            col.database.close();
         });
         it('should return the same object after exec', async () => {
             const col = await humansCollection.createPrimary(0);
@@ -210,7 +213,7 @@ describe('rx-query.test.ts', () => {
             const query2 = col.findOne(docData.passportId);
             await query2.exec();
             assert.strictEqual(query.id, query2.id);
-            col.database.destroy();
+            col.database.close();
         });
         it('should have the correct amount of cached queries', async () => {
             const col = await humansCollection.create(0);
@@ -224,7 +227,7 @@ describe('rx-query.test.ts', () => {
                 .where('name').ne('Bob');
             assert.ok(q2);
             assert.strictEqual(col._queryCache._map.size, 4);
-            col.database.destroy();
+            col.database.close();
         });
         it('return another object', async () => {
             const col = await humansCollection.create(0);
@@ -241,7 +244,7 @@ describe('rx-query.test.ts', () => {
 
             assert.notStrictEqual(q, q2);
             assert.notStrictEqual(q.id, q2.id);
-            col.database.destroy();
+            col.database.close();
         });
         it('ISSUE: ensure its the same query', async () => {
             const col = await humansCollection.create(0);
@@ -257,7 +260,7 @@ describe('rx-query.test.ts', () => {
                 .sort('passportId');
 
             assert.ok(query1 === query2);
-            col.database.destroy();
+            col.database.close();
         });
 
         it('should distinguish between different sort-orders', async () => {
@@ -277,7 +280,7 @@ describe('rx-query.test.ts', () => {
 
             assert.notStrictEqual(q, q2);
             assert.notStrictEqual(q.id, q2.id);
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('result caching', () => {
@@ -309,7 +312,7 @@ describe('rx-query.test.ts', () => {
                 docDataObject === inQueryCacheObject
             );
 
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('.doesDocMatchQuery()', () => {
@@ -318,7 +321,7 @@ describe('rx-query.test.ts', () => {
             const q = col.find().where('firstName').ne('foobar');
             const docData = schemaObjects.humanData();
             assert.ok(q.doesDocumentDataMatch(docData));
-            col.database.destroy();
+            col.database.close();
         });
         it('should not match', async () => {
             const col = await humansCollection.create(0);
@@ -326,7 +329,7 @@ describe('rx-query.test.ts', () => {
             const docData = schemaObjects.humanData();
             docData.firstName = 'foobar';
             assert.strictEqual(false, q.doesDocumentDataMatch(docData));
-            col.database.destroy();
+            col.database.close();
         });
         it('should match ($gt)', async () => {
             const col = await humansCollection.create(0);
@@ -334,7 +337,7 @@ describe('rx-query.test.ts', () => {
             const docData = schemaObjects.humanData();
             docData.age = 5;
             assert.ok(q.doesDocumentDataMatch(docData));
-            col.database.destroy();
+            col.database.close();
         });
         it('should not match ($gt)', async () => {
             const col = await humansCollection.create(0);
@@ -342,7 +345,7 @@ describe('rx-query.test.ts', () => {
             const docData = schemaObjects.humanData();
             docData.age = 5;
             assert.strictEqual(false, q.doesDocumentDataMatch(docData));
-            col.database.destroy();
+            col.database.close();
         });
         it('BUG: this should match', async () => {
             const col = await humansCollection.create(0);
@@ -358,7 +361,7 @@ describe('rx-query.test.ts', () => {
             };
 
             assert.strictEqual(true, q.doesDocumentDataMatch(docData));
-            col.database.destroy();
+            col.database.close();
         });
     });
     describeParallel('.exec()', () => {
@@ -376,36 +379,49 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 1);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should execOverDatabase when still subscribed and changeEvent comes in', async () => {
-            const col = await humansCollection.create(2);
+            const col = await humansCollection.create(0);
 
-            // it is assumed that this query can never handled by event-reduce
-            const query = col.find().sort('-passportId').limit(1);
+            await col.bulkInsert([
+                schemaObjects.humanData('aaa'),
+                schemaObjects.humanData('bbb')
+            ]);
+
+
+            /**
+             * This query can never handled by event-reduce
+             * because we later insert a new document at the bottom
+             */
+            const query = col.find({
+                selector: {},
+                sort: [{ passportId: 'desc' }],
+                limit: 1
+            });
 
             const fired: any[] = [];
             const sub1 = query.$.subscribe(res => {
                 fired.push(res);
             });
-
             await AsyncTestUtil.waitUntil(() => fired.length === 1, 1000);
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
-            const addObj = schemaObjects.humanData();
-            addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
+            const addObj = schemaObjects.humanData('zzz');
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.getCounter(), 3);
 
             await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3, 1000);
             assert.strictEqual(query._latestChangeEvent, 3);
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 2, 1000);
+            await AsyncTestUtil.waitUntil(() => {
+                return fired.length === 2;
+            }, 1000);
             assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
-            col.database.destroy();
+            col.database.close();
         });
         it('reusing exec should execOverDatabase when change happened that cannot be optimized', async () => {
             const col = await humansCollection.create(2);
@@ -437,7 +453,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(results.length, 2);
             assert.strictEqual(q._execOverDatabaseCount, 2);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('querying fast should still return the same RxDocument', async () => {
             if (
@@ -447,7 +463,7 @@ describe('rx-query.test.ts', () => {
             }
             // use a 'slow' adapter because memory might be to fast
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -466,7 +482,7 @@ describe('rx-query.test.ts', () => {
             ]);
             assert.ok(docs[0] === docs[1]);
 
-            db.destroy();
+            db.close();
         });
         it('querying after insert should always return the correct amount', async () => {
             const col = await humansCollection.create(0);
@@ -489,7 +505,7 @@ describe('rx-query.test.ts', () => {
                 assert.strictEqual(results.length, inserted);
             }
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should not make more requests then needed', async () => {
             const col = await humansCollection.createPrimary(0);
@@ -538,7 +554,7 @@ describe('rx-query.test.ts', () => {
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should not make more requests then needed on incremental upsert', async () => {
             const col = await humansCollection.createPrimary(0);
@@ -566,13 +582,13 @@ describe('rx-query.test.ts', () => {
             );
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
-            col.database.destroy();
+            col.database.close();
         });
         it('exec from other database-instance', async () => {
             if (!config.storage.hasPersistence) {
                 return;
             }
-            const dbName = randomCouchString(10);
+            const dbName = randomToken(10);
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
                 name: dbName,
@@ -593,7 +609,7 @@ describe('rx-query.test.ts', () => {
                     .map(data => col.insert(data))
             );
 
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -611,7 +627,7 @@ describe('rx-query.test.ts', () => {
             const allDocs = await col2.find().exec();
             assert.strictEqual(allDocs.length, 10);
 
-            db2.destroy();
+            db2.close();
         });
         it('exec(true) should throw if missing', async () => {
             const c = await humansCollection.create(0);
@@ -622,7 +638,7 @@ describe('rx-query.test.ts', () => {
                 'throwIfMissing'
             );
 
-            c.database.destroy();
+            c.database.close();
         });
         it('exec(true) should throw used with non-findOne', async () => {
             const c = await humansCollection.create(0);
@@ -631,7 +647,7 @@ describe('rx-query.test.ts', () => {
                 'RxError',
                 'findOne'
             );
-            c.database.destroy();
+            c.database.close();
         });
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
@@ -698,7 +714,7 @@ describe('rx-query.test.ts', () => {
             }
 
             assert.strictEqual(queryCalls, 0);
-            c.database.destroy();
+            c.database.close();
         });
     });
     describeParallel('updates to the result of the query', () => {
@@ -724,7 +740,7 @@ describe('rx-query.test.ts', () => {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
                 }
-                c.database.destroy();
+                c.database.close();
             });
             it('$unset a value on a query', async () => {
                 const c = await humansCollection.create(2);
@@ -737,7 +753,7 @@ describe('rx-query.test.ts', () => {
                 const docs = await query.exec();
                 for (const doc of docs)
                     assert.strictEqual(doc._data.age, undefined);
-                c.database.destroy();
+                c.database.close();
             });
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
@@ -750,7 +766,7 @@ describe('rx-query.test.ts', () => {
                 assert.strictEqual(updateResult, null);
                 const doc = await query.exec();
                 assert.strictEqual(doc, null);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('RxQuery.patch()', () => {
@@ -771,7 +787,7 @@ describe('rx-query.test.ts', () => {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
                 }
-                c.database.destroy();
+                c.database.close();
             });
             it('unset a value on a query by patching with undefined', async () => {
                 const c = await humansCollection.create(2);
@@ -783,7 +799,7 @@ describe('rx-query.test.ts', () => {
                 for (const doc of docs) {
                     assert.strictEqual(doc._data.age, undefined);
                 }
-                c.database.destroy();
+                c.database.close();
             });
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
@@ -793,7 +809,7 @@ describe('rx-query.test.ts', () => {
                 });
                 const doc = await query.exec();
                 assert.strictEqual(doc, null);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('RxQuery.modify()', () => {
@@ -815,7 +831,7 @@ describe('rx-query.test.ts', () => {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
                 }
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('incremental functions', () => {
@@ -836,7 +852,7 @@ describe('rx-query.test.ts', () => {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
                 }
-                c.database.destroy();
+                c.database.close();
             });
             it('.incrementalModify()', async () => {
                 const c = await humansCollection.create(2);
@@ -856,7 +872,7 @@ describe('rx-query.test.ts', () => {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
                 }
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -911,10 +927,6 @@ describe('rx-query.test.ts', () => {
             c.database.remove();
         });
         it('#585 sort by sub-path not working', async () => {
-            if (['lokijs'].includes(config.storage.name)) {
-                // TODO fix wrong sort order in lokijs
-                return;
-            }
             const schema = {
                 version: 0,
                 type: 'object',
@@ -938,7 +950,7 @@ describe('rx-query.test.ts', () => {
                 indexes: ['info.title']
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -1007,18 +1019,19 @@ describe('rx-query.test.ts', () => {
                         multipleOf: 1
                     }
                 },
-                indexes: ['created_at']
+                indexes: ['created_at'],
+                required: ['created_at']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 
             await collection.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 event_id: 1,
                 user_id: '6',
                 created_at: 1337
             });
             await collection.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 event_id: 2,
                 user_id: '6',
                 created_at: 1337
@@ -1071,7 +1084,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(resultData1[0]['event_id'], 2);
             assert.deepStrictEqual(resultData1, resultData2);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('698#issuecomment-402604237 mutating a returned array should not affect exec-calls afterwards', async () => {
             const c = await humansCollection.create(2);
@@ -1086,7 +1099,7 @@ describe('rx-query.test.ts', () => {
             const result2 = await query.exec();
             assert.strictEqual(result2.length, 2);
 
-            c.database.destroy();
+            c.database.close();
 
             // subscriptions
             const c2 = await humansCollection.create(2);
@@ -1098,7 +1111,7 @@ describe('rx-query.test.ts', () => {
             const res2 = await firstValueFrom(query2.$);
             assert.strictEqual(res2.length, 2);
 
-            c2.database.destroy();
+            c2.database.close();
         });
         it('#815 Allow null value for strings', async () => {
             // create a schema
@@ -1126,7 +1139,7 @@ describe('rx-query.test.ts', () => {
             };
 
             // generate a random database-name
-            const name = randomCouchString(10);
+            const name = randomToken(10);
 
             // create a database
             const db = await createRxDatabase({
@@ -1160,7 +1173,7 @@ describe('rx-query.test.ts', () => {
             const docsOK = await queryOK.exec();
             assert.strictEqual(docsOK.length, 2);
 
-            db.destroy();
+            db.close();
         });
         /**
          * via gitter at 11 November 2019 10:10
@@ -1185,7 +1198,7 @@ describe('rx-query.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -1290,7 +1303,7 @@ describe('rx-query.test.ts', () => {
         });
         it('should not mutate the query input', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: false
             });
@@ -1333,7 +1346,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(res1.length, 1);
             assert.ok(resOne1);
             assert.strictEqual(resOne1.age, 42);
-            db.destroy();
+            db.close();
         });
         /**
         * via gitter @sfordjasiri 27.8.2020 10:27
@@ -1341,7 +1354,7 @@ describe('rx-query.test.ts', () => {
 
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: false
             });
@@ -1396,7 +1409,7 @@ describe('rx-query.test.ts', () => {
             assert.ok(res2);
             assert.strictEqual(resOne2.age, 42);
 
-            db.destroy();
+            db.close();
         });
 
         it('#3498 RxQuery returns outdated result in second subscription', async () => {
@@ -1415,7 +1428,7 @@ describe('rx-query.test.ts', () => {
                 }
             } as const;
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -1452,7 +1465,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(Math.max(...result2a.map(r => r.length)), 0);
             assert.strictEqual(Math.max(...result2b.map(r => r.length)), 0);
 
-            db.destroy();
+            db.close();
         });
         it('#3631 Sorting a query adds in deleted documents', async () => {
             const c = await humansCollection.createAgeIndex(1);
@@ -1469,7 +1482,7 @@ describe('rx-query.test.ts', () => {
             // should not have found the deleted document
             assert.strictEqual(queryResult.length, 0);
 
-            c.database.destroy();
+            c.database.close();
         });
         it('#4552 $elemMatch query not working when there are many documents in the collection', async () => {
             const c = await humansCollection.createNested(100);
@@ -1498,7 +1511,7 @@ describe('rx-query.test.ts', () => {
 
             assert.strictEqual(newQ.other[key], data);
 
-            col.database.destroy();
+            col.database.close();
         });
         it('#4773 should not return deleted documents when queried by a primary key', async () => {
             const c = await humansCollection.create();
@@ -1513,7 +1526,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(doc3, null);
             const docs = await c.find({ selector: { passportId: docData.passportId } }).exec();
             assert.strictEqual(docs.length, 0);
-            c.database.destroy();
+            c.database.close();
         });
         it('primaryKey with value "constructor", breaks .findOne()', async () => {
             const mySchema = {
@@ -1528,7 +1541,7 @@ describe('rx-query.test.ts', () => {
                 }
             };
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
@@ -1550,7 +1563,7 @@ describe('rx-query.test.ts', () => {
             const byId = await collection.findByIds(['constructor']).exec();
             assert.ok(!byId.has('constructor'));
 
-            db.destroy();
+            db.close();
         });
     });
 });

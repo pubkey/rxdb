@@ -5,7 +5,7 @@ import {
     isRxCollection,
     isRxDatabase,
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256,
@@ -22,32 +22,35 @@ import {
 import {
     getRxStorageMemory
 } from '../../plugins/storage-memory/index.mjs';
+import {
+    wrappedValidateAjvStorage
+} from '../../plugins/validate-ajv/index.mjs';
 
 describeParallel('rx-database.test.ts', () => {
     describe('createRxDatabase()', () => {
         describe('positive', () => {
             it('normal', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 assert.ok(isRxDatabase(db));
-                db.destroy();
+                db.close();
             });
             it('with password', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     password: await getPassword()
                 });
                 assert.ok(isRxDatabase(db));
-                db.destroy();
+                db.close();
             });
             it('2 instances on same storage (if ignoreDuplicate is true)', async () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -77,50 +80,43 @@ describeParallel('rx-database.test.ts', () => {
                     'isRxDatabaseFirstTimeInstantiated must be false'
                 );
 
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
-            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets destroyed', async () => {
-                const name = randomCouchString(10);
+            it('2 instances on same adapter -> ignoreDuplicate is false but first db gets closed', async () => {
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
                 });
-                await db.destroy();
+                await db.close();
                 const db2 = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
                 });
-                db2.destroy();
+                db2.close();
             });
             it('do allow 2 databases with same name but different storage', async () => {
                 if (config.storage.name.includes('memory')) {
                     return;
                 }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStorageMemory()
+                    storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
                 });
                 const db2 = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
                 });
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
             it('2 password-instances on same adapter', async () => {
-                if (
-                    config.storage.name === 'lokijs' ||
-                    !config.storage.hasMultiInstance
-                ) {
-                    /**
-                     * TODO on lokijs this test somehow fails
-                     * to properly clean up the open broadcast channels.
-                     */
+                if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
@@ -134,11 +130,11 @@ describeParallel('rx-database.test.ts', () => {
                     password,
                     ignoreDuplicate: true
                 });
-                db.destroy();
-                db2.destroy();
+                db.close();
+                db2.close();
             });
             it('should not forget the options', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
@@ -150,10 +146,10 @@ describeParallel('rx-database.test.ts', () => {
                     }
                 });
                 assert.strictEqual(db.options.foo, 'bar');
-                db.destroy();
+                db.close();
             });
             it('should not forget the instanceCreationOptions', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
@@ -165,11 +161,11 @@ describeParallel('rx-database.test.ts', () => {
                     ignoreDuplicate: true
                 });
                 assert.strictEqual(db.internalStore.options.ajax, 'bar');
-                db.destroy();
+                db.close();
             });
             it('should respect the given hashFunction', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     async hashFunction(i: string) {
                         const hash = await defaultHashSha256(i);
@@ -178,18 +174,18 @@ describeParallel('rx-database.test.ts', () => {
                 });
                 const hasHash = await db.hashFunction('foobar');
                 assert.ok(hasHash.endsWith('xxx'));
-                db.destroy();
+                db.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/4614
              */
             it('should have eventReduce: true as a default', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 assert.strictEqual(db.eventReduce, true);
-                db.destroy();
+                db.close();
 
             });
         });
@@ -215,7 +211,7 @@ describeParallel('rx-database.test.ts', () => {
                 );
             });
             it('do not allow 2 databases with same name and storage', async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage()
@@ -228,7 +224,7 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'ignoreDuplicate'
                 );
-                db.destroy();
+                db.close();
             });
         });
     });
@@ -236,7 +232,7 @@ describeParallel('rx-database.test.ts', () => {
         describe('positive', () => {
             it('human', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 const collections = await db.addCollections({
@@ -250,13 +246,13 @@ describeParallel('rx-database.test.ts', () => {
                 // make sure defineGetter works
                 assert.strictEqual(db.human0, collection);
 
-                db.destroy();
+                db.close();
             });
             it('create 2 times on same adapter', async () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
                     name,
@@ -278,14 +274,14 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
                     name,
@@ -315,7 +311,7 @@ describeParallel('rx-database.test.ts', () => {
                 }
 
                 const storeDocsBefore = await getStoreDocs(db1);
-                await db1.destroy();
+                await db1.close();
 
                 const db2 = await createRxDatabase({
                     name,
@@ -340,13 +336,13 @@ describeParallel('rx-database.test.ts', () => {
                     storeDocsAfter[0]._rev
                 );
 
-                await db2.destroy();
+                await db2.close();
             });
         });
         describe('negative', () => {
             it('broken schema (nostringIndex)', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 await AsyncTestUtil.assertThrows(
@@ -357,11 +353,11 @@ describeParallel('rx-database.test.ts', () => {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('call 2 times on same name', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 await db.addCollections({
@@ -377,11 +373,11 @@ describeParallel('rx-database.test.ts', () => {
                     }),
                     'RxError'
                 );
-                db.destroy();
+                db.close();
             });
             it('crypt-schema without db-password', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 let hasThrown = false;
@@ -395,11 +391,11 @@ describeParallel('rx-database.test.ts', () => {
                     hasThrown = true;
                 }
                 assert.ok(hasThrown);
-                db.destroy();
+                db.close();
             });
             it('2 different schemas on same collection', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 const cols = await db.addCollections({
@@ -417,11 +413,11 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'already exists'
                 );
-                db.destroy();
+                db.close();
             });
             it('not allow collectionNames starting with lodash', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 await AsyncTestUtil.assertThrows(
@@ -433,11 +429,11 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'UT2'
                 );
-                db.destroy();
+                db.close();
             });
             it('not allow collectionNames which are properties of RxDatabase', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 const forbidden = [
@@ -445,7 +441,7 @@ describeParallel('rx-database.test.ts', () => {
                     'token',
                     'isLeader',
                     '$emit',
-                    'destroy'
+                    'close'
                 ];
                 let t = 0;
                 while (t < forbidden.length) {
@@ -461,17 +457,13 @@ describeParallel('rx-database.test.ts', () => {
                     );
                     t++;
                 }
-                db.destroy();
+                db.close();
             });
             it('create 2 times on same adapter with different schema', async () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                if (config.storage.name === 'lokijs') {
-                    // TODO
-                    return;
-                }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
                     name,
@@ -498,16 +490,16 @@ describeParallel('rx-database.test.ts', () => {
                     'RxError',
                     'different'
                 );
-                db1.destroy();
-                db2.destroy();
+                db1.close();
+                db2.close();
             });
         });
     });
-    describe('.destroy()', () => {
+    describe('.close()', () => {
         describe('positive', () => {
-            it('should not crash on destroy', async () => {
+            it('should not crash on close', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 await db.addCollections({
@@ -515,13 +507,13 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await db.destroy();
-                assert.strictEqual(db.destroyed, true);
-                await db.destroy();
+                await db.close();
+                assert.strictEqual(db.closed, true);
+                await db.close();
             });
-            it('should not crash if destroy is called twice', async () => {
+            it('should not crash if close is called twice', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage()
                 });
                 await db.addCollections({
@@ -529,9 +521,9 @@ describeParallel('rx-database.test.ts', () => {
                         schema: schemas.human
                     }
                 });
-                await db.destroy();
-                await db.destroy();
-                assert.strictEqual(db.destroyed, true);
+                await db.close();
+                await db.close();
+                assert.strictEqual(db.closed, true);
             });
         });
     });
@@ -541,7 +533,7 @@ describeParallel('rx-database.test.ts', () => {
             await c.database.remove();
         });
         it('should be possible to recreate the database with other password', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -557,7 +549,7 @@ describeParallel('rx-database.test.ts', () => {
             await db2.remove();
         });
         it('should have deleted the local documents', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),

@@ -2,9 +2,9 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { randomString, wait } from 'async-test-util';
+import AsyncTestUtil, { wait } from 'async-test-util';
 import {
-    randomCouchString,
+    randomToken,
     defaultHashSha256,
     now,
     sortDocumentsByLastWriteTime,
@@ -35,11 +35,6 @@ import {
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode/index.mjs';
 import {
-    nativeSha256,
-    jsSha256,
-    canUseCryptoSubtle
-} from '../../plugins/utils/index.mjs';
-import {
     isFastMode,
     isBun,
     EXAMPLE_REVISION_1,
@@ -56,34 +51,16 @@ describe('util.test.js', () => {
             assert.ok(hash.length > 0);
         });
         it('should get the same hash twice', async () => {
-            const str = randomCouchString(10);
+            const str = randomToken(10);
             const hash = await defaultHashSha256(str);
             const hash2 = await defaultHashSha256(str);
             assert.strictEqual(hash, hash2);
         });
         it('should work with a very large string', async () => {
-            const str = randomCouchString(5000);
+            const str = randomToken(5000);
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-        });
-        it('must have enabled canUseCryptoSubtle', () => {
-            assert.ok(canUseCryptoSubtle);
-        });
-        it('both versions must return the exact same value', async () => {
-            const values: string[] = [
-                'foobar',
-                randomString(100),
-                'asdf#äge#äö34g?!§"=$%'
-            ];
-
-            for (const value of values) {
-                const hashNative = await nativeSha256(value);
-                const hashJavaScript = await jsSha256(value);
-                if (hashJavaScript !== hashNative) {
-                    throw new Error('hashes not equal for value: ' + value);
-                }
-            }
         });
     });
     describe('.sortObject()', () => {
@@ -253,7 +230,7 @@ describe('util.test.js', () => {
         });
         it('.size() should return a deterministic value', () => {
             const amount = 30;
-            const str = randomCouchString(amount);
+            const str = randomToken(amount);
             const blob = createBlob(str, 'plain/text');
             const size = getBlobSize(blob);
             assert.strictEqual(size, amount);
@@ -315,7 +292,11 @@ describe('util.test.js', () => {
     });
     describe('.deepFreezeWhenDevMode()', () => {
         if (isBun) {
-            // TODO for somehow bun has no strict mode here
+            /**
+             * Bun has no strict mode here.
+             * This is likely a Bun bug and might
+             * be fixed in future versions.
+             */
             return;
         }
         it('should have enabled dev-mode', () => {
@@ -505,7 +486,7 @@ describe('util.test.js', () => {
     });
     describe('.arrayBufferToString() / .stringToArrayBuffer()', () => {
         it('should return the correct result', () => {
-            const str = randomStringWithSpecialChars(1000);
+            const str = randomStringWithSpecialChars(900, 1000);
             const buffer = stringToArrayBuffer(str);
             const back = arrayBufferToString(buffer);
             assert.strictEqual(str, back);
@@ -514,7 +495,7 @@ describe('util.test.js', () => {
          * @link https://github.com/pubkey/rxdb/issues/5624
          */
         it('#5624 should work with really big strings', () => {
-            const str = randomStringWithSpecialChars(1000 * 250);
+            const str = randomStringWithSpecialChars(1000 * 220, 1000 * 250);
             const buffer = stringToArrayBuffer(str);
             const back = arrayBufferToString(buffer);
             assert.strictEqual(str, back);
@@ -541,6 +522,34 @@ describe('util.test.js', () => {
             assert.deepStrictEqual(result.parameters, customError.parameters);
             assert.strictEqual(result.code, customError.code);
             assert.strictEqual(result.stack, 'CustomError: This is a custom error \n  at someFile.js');
+        });
+    });
+    describe('.randomStringWithSpecialChars()', () => {
+        it('should return a string with an emoji at some point', () => {
+            let t = 0;
+            while (t < 1000) {
+                t++;
+                const str = randomStringWithSpecialChars(3, 10);
+                if (str.includes('👵')) {
+                    return;
+                }
+            }
+            throw new Error('no emoji string created');
+        });
+        /**
+         * This test is important because emojis have 2 chars in javascript.
+         * For example '🍌'.length is 2
+         */
+        it('should never create a string the exceeds the length', () => {
+            let t = 0;
+            const length = 10;
+            while (t < 100) {
+                t++;
+                const str = randomStringWithSpecialChars(length, length);
+                if (str.length !== length) {
+                    throw new Error('string has wrong length(is: ' + str.length + ', should:' + length + '): "' + str + '"');
+                }
+            }
         });
     });
 });

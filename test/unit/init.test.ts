@@ -8,10 +8,6 @@ import {
     clearNodeFolder
 } from 'broadcast-channel';
 
-// set faker seed
-import { faker } from '@faker-js/faker';
-faker.seed(123);
-
 // add dev-mode plugin
 import { addRxPlugin, overwritable } from '../../plugins/core/index.mjs';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
@@ -80,21 +76,5 @@ describe('init.test.ts', () => {
             const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
             startTestServers();
         }
-    });
-    it('must run in strict mode', () => {
-        return; // TODO enable this and make it work
-        /**
-         * Ensure we run in strict-mode, otherwise some tests
-         * will not run correctly
-         * @link https://stackoverflow.com/a/10480227/3443137
-         */
-        const isStrict = (function () {
-            // @ts-ignore
-            return !(this as any);
-        })();
-        if (!isStrict) {
-            throw new Error('Strict Mode not enabled');
-        }
-
     });
 });

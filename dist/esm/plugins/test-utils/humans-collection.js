@@ -3,10 +3,10 @@ import * as schemas from "./schemas.js";
 import * as schemaObjects from "./schema-objects.js";
 import { getConfig } from "./config.js";
 import assert from 'assert';
-import { createRxDatabase, randomCouchString } from "../../index.js";
+import { createRxDatabase, randomToken } from "../../index.js";
 export async function create(size = 20, collectionName = 'human', multiInstance = true, eventReduce = true, storage = getConfig().storage.getStorage()) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage,
     multiInstance,
     eventReduce,
@@ -30,7 +30,7 @@ export async function create(size = 20, collectionName = 'human', multiInstance 
 }
 export async function createBySchema(schema, name = 'human', storage = getConfig().storage.getStorage(), migrationStrategies) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage,
     multiInstance: true,
     eventReduce: true,
@@ -49,7 +49,7 @@ export async function createAttachments(size = 20, name = 'human', multiInstance
     name = 'human';
   }
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     multiInstance,
     eventReduce: true,
@@ -72,14 +72,14 @@ export async function createAttachments(size = 20, name = 'human', multiInstance
 }
 export async function createNoCompression(size = 20, name = 'human') {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
   var schemaJSON = clone(schemas.human);
   schemaJSON.keyCompression = false;
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     [name]: {
       schema: schemaJSON
@@ -95,12 +95,12 @@ export async function createNoCompression(size = 20, name = 'human') {
 }
 export async function createAgeIndex(amount = 20) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humana: {
       schema: schemas.humanAgeIndex
@@ -116,12 +116,12 @@ export async function createAgeIndex(amount = 20) {
 }
 export async function multipleOnSameDB(size = 10) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.human
@@ -146,12 +146,12 @@ export async function multipleOnSameDB(size = 10) {
 }
 export async function createNested(amount = 5) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     nestedhuman: {
       schema: schemas.nestedHuman
@@ -167,11 +167,11 @@ export async function createNested(amount = 5) {
 }
 export async function createDeepNested(amount = 5) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     nestedhuman: {
       schema: schemas.deepNestedHuman
@@ -198,7 +198,7 @@ export async function createMultiInstance(name, amount = 0, password = undefined
     ignoreDuplicate: true,
     localDocuments: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.human,
@@ -212,7 +212,7 @@ export async function createMultiInstance(name, amount = 0, password = undefined
   }
   return collections.human;
 }
-export async function createPrimary(amount = 10, name = randomCouchString(10)) {
+export async function createPrimary(amount = 10, name = randomToken(10)) {
   var db = await createRxDatabase({
     name,
     storage: getConfig().storage.getStorage(),
@@ -220,7 +220,7 @@ export async function createPrimary(amount = 10, name = randomCouchString(10)) {
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.primaryHuman
@@ -234,7 +234,7 @@ export async function createPrimary(amount = 10, name = randomCouchString(10)) {
   }
   return collections.human;
 }
-export async function createHumanWithTimestamp(amount = 0, databaseName = randomCouchString(10), multiInstance = true, storage = getConfig().storage.getStorage()) {
+export async function createHumanWithTimestamp(amount = 0, databaseName = randomToken(10), multiInstance = true, storage = getConfig().storage.getStorage()) {
   var db = await createRxDatabase({
     name: databaseName,
     storage,
@@ -242,7 +242,7 @@ export async function createHumanWithTimestamp(amount = 0, databaseName = random
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humans: {
       schema: schemas.humanWithTimestamp
@@ -256,11 +256,14 @@ export async function createHumanWithTimestamp(amount = 0, databaseName = random
   }
   return collections.humans;
 }
-export async function createMigrationCollection(amount = 0, addMigrationStrategies = {}, name = randomCouchString(10), autoMigrate = false, attachment) {
+export async function createMigrationCollection(amount = 0, addMigrationStrategies = {}, name = randomToken(10), autoMigrate = false, attachment) {
   var migrationStrategies = Object.assign({
     1: doc => doc,
     2: doc => doc,
-    3: doc => doc
+    3: doc => {
+      doc.age = parseInt(doc.age, 10);
+      return doc;
+    }
   }, addMigrationStrategies);
   var colName = 'human';
   var db = await createRxDatabase({
@@ -283,7 +286,7 @@ export async function createMigrationCollection(amount = 0, addMigrationStrategi
       return doc.putAttachment(attachment);
     }
   })));
-  await db.destroy();
+  await db.close();
   var db2 = await createRxDatabase({
     name,
     storage: getConfig().storage.getStorage(),
@@ -302,7 +305,7 @@ export async function createMigrationCollection(amount = 0, addMigrationStrategi
   });
   return cols2[colName];
 }
-export async function createRelated(name = randomCouchString(10)) {
+export async function createRelated(name = randomToken(10)) {
   var db = await createRxDatabase({
     name,
     storage: getConfig().storage.getStorage(),
@@ -310,7 +313,7 @@ export async function createRelated(name = randomCouchString(10)) {
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.refHuman
@@ -324,7 +327,7 @@ export async function createRelated(name = randomCouchString(10)) {
   await collections.human.insert(doc2);
   return collections.human;
 }
-export async function createRelatedNested(name = randomCouchString(10)) {
+export async function createRelatedNested(name = randomToken(10)) {
   var db = await createRxDatabase({
     name,
     storage: getConfig().storage.getStorage(),
@@ -332,7 +335,7 @@ export async function createRelatedNested(name = randomCouchString(10)) {
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.refHumanNested
@@ -348,12 +351,12 @@ export async function createRelatedNested(name = randomCouchString(10)) {
 }
 export async function createIdAndAgeIndex(amount = 20) {
   var db = await createRxDatabase({
-    name: randomCouchString(10),
+    name: randomToken(10),
     storage: getConfig().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humana: {
       schema: schemas.humanIdAndAgeIndex

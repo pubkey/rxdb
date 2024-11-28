@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxConflictResultionTaskSolution, RxStorageDefaultCheckpoint, RxStorageCountResult, RxConflictResultionTask, PreparedQuery } from '../../types/index.d.ts';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxStorageDefaultCheckpoint, RxStorageCountResult, PreparedQuery } from '../../types/index.d.ts';
 import type { DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
 export declare class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<RxDocType, DenoKVStorageInternals<RxDocType>, DenoKVSettings, RxStorageDefaultCheckpoint> {
@@ -36,7 +36,5 @@ export declare class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInst
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;
     remove(): Promise<void>;
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
 }
 export declare function createDenoKVStorageInstance<RxDocType>(storage: RxStorageDenoKV, params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>, settings: DenoKVSettings): Promise<RxStorageInstanceDenoKV<RxDocType>>;

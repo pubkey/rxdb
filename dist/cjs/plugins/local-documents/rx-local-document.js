@@ -50,7 +50,9 @@ var RxLocalDocumentPrototype = {
   get $() {
     var _this = this;
     var state = (0, _index.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
-    return _this.parent.$.pipe((0, _rxjs.filter)(changeEvent => changeEvent.documentId === this.primary), (0, _rxjs.filter)(changeEvent => changeEvent.isLocal), (0, _rxjs.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent)), (0, _rxjs.startWith)(state.docCache.getLatestDocumentData(this.primary)), (0, _rxjs.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _rxjs.map)(docData => state.docCache.getCachedRxDocument(docData)), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
+    var id = this.primary;
+    return _this.parent.eventBulks$.pipe((0, _rxjs.filter)(bulk => !!bulk.isLocal), (0, _rxjs.map)(bulk => bulk.events.find(ev => ev.documentId === id)), (0, _rxjs.filter)(event => !!event), (0, _rxjs.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)((0, _index.ensureNotFalsy)(changeEvent))), (0, _rxjs.startWith)(state.docCache.getLatestDocumentData(this.primary)), (0, _rxjs.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _rxjs.map)(docData => state.docCache.getCachedRxDocument(docData)), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
+    ;
   },
   get $$() {
     var _this = this;

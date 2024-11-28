@@ -43,6 +43,7 @@ export declare const ERROR_MESSAGES: {
     DB5: string;
     DB6: string;
     DB8: string;
+    DB9: string;
     DB11: string;
     DB12: string;
     DB13: string;
@@ -68,6 +69,7 @@ export declare const ERROR_MESSAGES: {
     COL20: string;
     COL21: string;
     CONFLICT: string;
+    COL22: string;
     DOC1: string;
     DOC2: string;
     DOC3: string;
@@ -151,7 +153,6 @@ export declare const ERROR_MESSAGES: {
     SC24: string;
     SC25: string;
     SC26: string;
-    SC27: string;
     SC28: string;
     SC29: string;
     SC30: string;
@@ -165,6 +166,7 @@ export declare const ERROR_MESSAGES: {
     SC39: string;
     SC40: string;
     SC41: string;
+    DVM1: string;
     VD1: string;
     VD2: string;
     S1: string;
@@ -173,6 +175,7 @@ export declare const ERROR_MESSAGES: {
     CRDT1: string;
     CRDT2: string;
     CRDT3: string;
+    DXE1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

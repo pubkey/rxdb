@@ -68,6 +68,16 @@ function wrappedKeyEncryptionCryptoJsStorage(args) {
       if (schemaWithoutEncrypted.attachments) {
         schemaWithoutEncrypted.attachments.encrypted = false;
       }
+
+      /**
+       * Encrypted data is always stored as string
+       * so we have to change the schema to have "type": "string"
+       * on encrypted fields.
+       */
+      (0, _index.ensureNotFalsy)(params.schema.encrypted).forEach(key => {
+        schemaWithoutEncrypted.properties[key].type = 'string';
+        delete schemaWithoutEncrypted.properties[key].properties;
+      });
       var instance = await args.storage.createStorageInstance(Object.assign({}, params, {
         schema: schemaWithoutEncrypted
       }));

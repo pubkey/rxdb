@@ -82,6 +82,7 @@ export async function removeCollectionStorages(
     databaseInstanceToken: string,
     databaseName: string,
     collectionName: string,
+    multiInstance: boolean,
     password?: string,
     /**
      * If no hash function is provided,
@@ -133,7 +134,13 @@ export async function removeCollectionStorages(
                     collectionName: row.collectionName,
                     databaseInstanceToken,
                     databaseName,
-                    multiInstance: false,
+                    /**
+                     * multiInstance must be set to true if multiInstance
+                     * was true on the database
+                     * so that the storageInstance can inform other
+                     * instances about being removed.
+                     */
+                    multiInstance,
                     options: {},
                     schema: row.schema,
                     password,
@@ -173,10 +180,10 @@ export async function removeCollectionStorages(
 }
 
 
-export function ensureRxCollectionIsNotDestroyed(
+export function ensureRxCollectionIsNotClosed(
     collection: RxCollection | RxCollectionBase<any, any, any, any, any>
 ) {
-    if (collection.destroyed) {
+    if (collection.closed) {
         throw newRxError(
             'COL21',
             {

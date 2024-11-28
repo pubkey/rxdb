@@ -23,7 +23,8 @@ import {
     appendToArray
 } from './plugins/utils/index.ts';
 import {
-    newRxError
+    newRxError,
+    rxStorageWriteErrorToRxError
 } from './rx-error.ts';
 import {
     runPluginHooks
@@ -37,24 +38,22 @@ import type {
     MangoQuerySortPart,
     MangoQuerySelector,
     PreparedQuery,
-    RxChangeEvent,
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher,
-    RxJsonSchema,
-    FilledMangoQuery,
-    ModifyFunction
+    ModifyFunction,
+    RxStorageChangeEvent
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import {
     getQueryMatcher,
     normalizeMangoQuery,
+    prepareQuery,
     runQueryUpdateFunction
 
 } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
-import { getQueryPlan } from './query-planner.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -112,12 +111,12 @@ export class RxQueryBase<
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
-            const results$ = this.collection.$.pipe(
+            const results$ = this.collection.eventBulks$.pipe(
                 /**
                  * Performance shortcut.
                  * Changes to local documents are not relevant for the query.
                  */
-                filter(changeEvent => !changeEvent.isLocal),
+                filter(bulk => !bulk.isLocal),
                 /**
                  * Start once to ensure the querying also starts
                  * when there where no changes.
@@ -173,12 +172,6 @@ export class RxQueryBase<
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
 
-    // time stamps on when the last full exec over the database has run
-    // used to properly handle events that happen while the find-query is running
-    // TODO do we still need these properties?
-    public _lastExecStart: number = 0;
-    public _lastExecEnd: number = 0;
-
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -230,9 +223,6 @@ export class RxQueryBase<
      */
     async _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        this._lastExecStart = now();
-
-
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const result = await this.collection.storageInstance.count(preparedQuery);
@@ -276,7 +266,6 @@ export class RxQueryBase<
 
         const docsPromise = queryCollection<RxDocType>(this as any);
         return docsPromise.then(docs => {
-            this._lastExecEnd = now();
             return docs;
         });
     }
@@ -390,17 +379,18 @@ export class RxQueryBase<
      * deletes all found documents
      * @return promise with deleted documents
      */
-    remove(): Promise<RxQueryResult> {
-        return this
-            .exec()
-            .then(docs => {
-                if (Array.isArray(docs)) {
-                    // TODO use a bulk operation instead of running .remove() on each document
-                    return Promise.all(docs.map(doc => doc.remove()));
-                } else {
-                    return (docs as any).remove();
-                }
-            });
+    async remove(): Promise<RxQueryResult> {
+        const docs = await this.exec();
+        if (Array.isArray(docs)) {
+            const result = await this.collection.bulkRemove(docs);
+            if (result.error.length > 0) {
+                throw rxStorageWriteErrorToRxError(result.error[0]);
+            } else {
+                return result.success as any;
+            }
+        } else {
+            return (docs as any).remove();
+        }
     }
     incrementalRemove(): Promise<RxQueryResult> {
         return runQueryUpdateFunction(
@@ -532,7 +522,7 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
 
     // Optimisation shortcut
     if (
-        rxQuery.collection.database.destroyed ||
+        rxQuery.collection.database.closed ||
         _isResultsInSync(rxQuery)
     ) {
         return false;
@@ -555,7 +545,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
      */
     if (
         // db is closed
-        rxQuery.collection.database.destroyed ||
+        rxQuery.collection.database.closed ||
         // nothing happened since last run
         _isResultsInSync(rxQuery)
     ) {
@@ -580,7 +570,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
 
-            const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
+            const runChangeEvents: RxStorageChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
@@ -661,34 +651,6 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
     return Promise.resolve(ret); // true if results have changed
 }
 
-/**
- * @returns a format of the query that can be used with the storage
- * when calling RxStorageInstance().query()
- */
-export function prepareQuery<RxDocType>(
-    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    mutateableQuery: FilledMangoQuery<RxDocType>
-): PreparedQuery<RxDocType> {
-    if (!mutateableQuery.sort) {
-        throw newRxError('SNH', {
-            query: mutateableQuery
-        });
-    }
-
-    /**
-     * Store the query plan together with the
-     * prepared query to save performance.
-     */
-    const queryPlan = getQueryPlan(
-        schema,
-        mutateableQuery
-    );
-
-    return {
-        query: mutateableQuery,
-        queryPlan
-    };
-}
 
 /**
  * Runs the query over the storage instance

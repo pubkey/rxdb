@@ -25,30 +25,24 @@ export type RxConflictHandlerOutput<RxDocType> = {
     isEqual: true;
 };
 
-export type RxConflictHandler<RxDocType> = (
+export type RxConflictHandlerOld<RxDocType> = (
     i: RxConflictHandlerInput<RxDocType>,
     context: string
 ) => Promise<RxConflictHandlerOutput<RxDocType>>;
 
-export type RxConflictResultionTask<RxDocType> = {
-    /**
-     * Unique id for that single task.
-     */
-    id: string;
-    /**
-     * Tasks must have a context
-     * which makes it easy to filter/identify them again
-     * with plugins or other hacky stuff.
-     */
-    context: string;
-    input: RxConflictHandlerInput<RxDocType>;
-};
 
-
-export type RxConflictResultionTaskSolution<RxDocType> = {
+export type RxConflictHandler<RxDocType> = {
     /**
-     * Id of the RxConflictResultionTask
+     * This must be non-async
+     * because it will be called very often and must be fast.
      */
-    id: string;
-    output: RxConflictHandlerOutput<RxDocType>;
+    isEqual: (
+        a: WithDeleted<RxDocType>,
+        b: WithDeleted<RxDocType>,
+        context: string
+    ) => boolean;
+    resolve: (
+        i: RxConflictHandlerInput<RxDocType>,
+        context: string
+    ) => Promise<WithDeleted<RxDocType>>;
 };

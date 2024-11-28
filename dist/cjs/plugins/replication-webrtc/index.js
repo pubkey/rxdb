@@ -85,7 +85,7 @@ async function replicateWebRTC(options) {
 
   // used to easier debug stuff
   var requestCounter = 0;
-  var requestFlag = (0, _index2.randomCouchString)(10);
+  var requestFlag = (0, _index2.randomToken)(10);
   function getRequestId() {
     var count = requestCounter++;
     return collection.database.token + '|' + requestFlag + '|' + count;
@@ -211,7 +211,7 @@ var RxWebRTCReplicationPool = exports.RxWebRTCReplicationPool = /*#__PURE__*/fun
     this.collection = collection;
     this.options = options;
     this.connectionHandler = connectionHandler;
-    this.collection.onDestroy.push(() => this.cancel());
+    this.collection.onClose.push(() => this.cancel());
     this.masterReplicationHandler = (0, _index.rxStorageInstanceToReplicationHandler)(collection.storageInstance, collection.conflictHandler, collection.database.token);
   }
   var _proto = RxWebRTCReplicationPool.prototype;
@@ -252,7 +252,7 @@ var RxWebRTCReplicationPool = exports.RxWebRTCReplicationPool = /*#__PURE__*/fun
     Array.from(this.peerStates$.getValue().keys()).forEach(peer => {
       this.removePeer(peer);
     });
-    await this.connectionHandler.destroy();
+    await this.connectionHandler.close();
   };
   return RxWebRTCReplicationPool;
 }(); // export * from './connection-handler-webtorrent';

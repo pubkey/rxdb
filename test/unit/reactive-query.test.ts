@@ -17,7 +17,7 @@ import {
     RxDocument,
     isRxDocument,
     promiseWait,
-    randomCouchString,
+    randomToken,
     addRxPlugin
 } from '../../plugins/core/index.mjs';
 
@@ -46,7 +46,7 @@ describeParallel('reactive-query.test.js', () => {
             assert.ok(lastValue);
             assert.strictEqual(lastValue.length, 1);
             assert.strictEqual(count, 1);
-            c.database.destroy();
+            c.database.close();
         });
         it('get the updated docs on Collection.insert()', async () => {
             const c = await humansCollection.create(1);
@@ -72,7 +72,7 @@ describeParallel('reactive-query.test.js', () => {
                 }
             });
             assert.ok(isHere);
-            c.database.destroy();
+            c.database.close();
         });
         it('get the value twice when subscribing 2 times', async () => {
             const c = await humansCollection.create(1);
@@ -89,7 +89,7 @@ describeParallel('reactive-query.test.js', () => {
 
             await AsyncTestUtil.waitUntil(() => lastValue2 && lastValue2.length === 1);
             assert.deepStrictEqual(lastValue, lastValue2);
-            c.database.destroy();
+            c.database.close();
         });
         it('get the base-value when subscribing again later', async () => {
             const c = await humansCollection.create(1);
@@ -107,7 +107,7 @@ describeParallel('reactive-query.test.js', () => {
             await promiseWait(10);
             assert.strictEqual(lastValue2.length, 1);
             assert.deepStrictEqual(lastValue, lastValue2);
-            c.database.destroy();
+            c.database.close();
         });
         it('subscribing many times should not result in many database-requests', async () => {
             const c = await humansCollection.create(1);
@@ -129,7 +129,7 @@ describeParallel('reactive-query.test.js', () => {
 
             assert.strictEqual(countBefore, countAfter);
 
-            c.database.destroy();
+            c.database.close();
         });
         it('changing many documents in one write should not lead to many query result emits', async () => {
             const c = await humansCollection.create(0);
@@ -148,7 +148,7 @@ describeParallel('reactive-query.test.js', () => {
             );
 
             sub.unsubscribe();
-            c.database.destroy();
+            c.database.close();
         });
         it('doing insert after subscribe should end with the correct results', async () => {
             if (config.storage.name === 'foundationdb') {
@@ -170,7 +170,7 @@ describeParallel('reactive-query.test.js', () => {
             await wait(50);
             assert.strictEqual(result.length, 3);
 
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('negative', () => {
@@ -183,7 +183,7 @@ describeParallel('reactive-query.test.js', () => {
             });
             await AsyncTestUtil.waitUntil(() => received === 1);
             querySub.unsubscribe();
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('ISSUES', () => {
@@ -252,7 +252,7 @@ describeParallel('reactive-query.test.js', () => {
             if (!config.storage.hasMultiInstance) {
                 return;
             }
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const c = await humansCollection.createPrimary(1, name);
             const c2 = await humansCollection.createPrimary(0, name);
             const doc = await c.findOne().exec(true);
@@ -269,8 +269,8 @@ describeParallel('reactive-query.test.js', () => {
             assert.strictEqual((c2._docCache.getLatestDocumentData(docId) as any).passportId, docId);
 
             sub.unsubscribe();
-            c.database.destroy();
-            c2.database.destroy();
+            c.database.close();
+            c2.database.close();
         });
         it('#136 : findOne(string).$ streams all documents (_id as primary)', async () => {
             const subs = [];
@@ -348,7 +348,7 @@ describeParallel('reactive-query.test.js', () => {
                 },
                 required: ['state']
             };
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -434,25 +434,23 @@ describeParallel('reactive-query.test.js', () => {
                 return lastEmitted.state.providers === 9;
             });
 
-            // TODO this fails for unknown reasons on slow devices
-            // await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
+            await AsyncTestUtil.waitUntil(() => emittedOwn.length === 10);
 
             const last = emitted[emitted.length - 1];
             assert.strictEqual(last.state.providers, 9);
 
             // on own collection, all events should have propagated
-            // TODO this fails for unknown reason on slow device
-            // assert.strictEqual(emittedOwn.length, 10);
+            assert.strictEqual(emittedOwn.length, 10);
 
             sub.unsubscribe();
             sub2.unsubscribe();
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it(
             '#749 RxQuery subscription returns null as first result when ran immediately after another subscription or exec()',
             async () => {
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),

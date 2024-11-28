@@ -9,7 +9,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxJsonSchema,
     ensureNotFalsy,
@@ -20,7 +20,8 @@ import {
     RxConflictHandlerOutput,
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
-    defaultConflictHandler
+    defaultConflictHandler,
+    RxConflictHandler
 } from '../../plugins/core/index.mjs';
 
 
@@ -54,7 +55,7 @@ describeParallel('crdt.test.js', () => {
     ): Promise<RxCollection<WithCRDTs<RxDocType>>> {
         const useSchema = enableCRDTinSchema(schema);
         const db = await createRxDatabase({
-            name: randomCouchString(10),
+            name: randomToken(10),
             /**
              * Use the validator in tests to ensure we do not write
              * broken data.
@@ -77,7 +78,7 @@ describeParallel('crdt.test.js', () => {
         it('should throw if the wrong conflict handler is set', async () => {
             const useSchema = enableCRDTinSchema(schemas.human as any);
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: config.storage.getStorage(),
                 multiInstance: false
             });
@@ -91,12 +92,12 @@ describeParallel('crdt.test.js', () => {
                 'RxError',
                 'CRDT3'
             );
-            db.destroy();
+            db.close();
         });
         it('should automatically set the CRDT conflict handler', async () => {
             const collection = await getCRDTCollection();
             assert.ok(collection.conflictHandler !== defaultConflictHandler);
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -113,7 +114,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(firstOp);
             assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should insert document via bulkInsert', async () => {
             const collection = await getCRDTCollection();
@@ -127,7 +128,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(firstOp);
             assert.strictEqual(firstOp.body[0].ifMatch?.$set?.passportId, writeData.passportId);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('.insertCRDT()', () => {
@@ -148,7 +149,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(doc1 !== doc2);
             assert.strictEqual(doc2.getLatest().firstName, 'foobar');
 
-            collection.database.destroy();
+            collection.database.close();
         });
         /**
          * @link https://github.com/pubkey/rxdb/pull/5423
@@ -161,7 +162,7 @@ describeParallel('crdt.test.js', () => {
             };
             useSchema = enableCRDTinSchema(useSchema);
             const db = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 /**
                  * Use the validator in tests to ensure we do not write
                  * broken data.
@@ -183,7 +184,7 @@ describeParallel('crdt.test.js', () => {
             const doc1 = await collection.insert(writeData);
             assert.strictEqual(doc1.getLatest().optional_value, undefined);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should respect the if-else logic', async () => {
             const collection = await getCRDTCollection();
@@ -208,7 +209,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(doc1 !== doc2);
             assert.strictEqual(doc2.getLatest().age, 2);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
     describe('.remove()', () => {
@@ -224,7 +225,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -244,7 +245,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?.age, 10);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -264,7 +265,7 @@ describeParallel('crdt.test.js', () => {
                 'CRDT2'
             );
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
@@ -289,7 +290,7 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$inc?.age, 1);
 
-            collection.database.destroy();
+            collection.database.close();
         });
         it('should delete the document via CRDT', async () => {
             const collection = await getCRDTCollection();
@@ -309,13 +310,13 @@ describeParallel('crdt.test.js', () => {
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
-            collection.database.destroy();
+            collection.database.close();
         });
     });
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        let conflictHandler: any;
+        let conflictHandler: RxConflictHandler<any>;
         describe('init', () => {
             it('init', () => {
                 conflictHandler = getCRDTConflictHandler<WithCRDTs<HumanDocumentType>>(
@@ -335,23 +336,22 @@ describeParallel('crdt.test.js', () => {
                 const doc1 = await getDoc();
                 const doc2 = await getDoc();
 
+                const mustBeEqual = await conflictHandler.isEqual(
+                    doc1.toMutableJSON(true),
+                    doc1.toMutableJSON(true)
+                    , 'text-crdt'
+                );
+                assert.strictEqual(mustBeEqual, true);
 
-                const mustBeEqual = await conflictHandler({
-                    newDocumentState: doc1.toMutableJSON(true),
-                    realMasterState: doc1.toMutableJSON(true)
-                }, 'text-crdt');
-                assert.strictEqual(mustBeEqual.isEqual, true);
-
-                const resolved: RxConflictHandlerOutput<any> = await conflictHandler({
+                const resolved: RxConflictHandlerOutput<any> = await conflictHandler.resolve({
                     newDocumentState: doc1.toMutableJSON(true),
                     realMasterState: doc2.toMutableJSON(true)
                 }, 'text-crdt');
-                assert.strictEqual(resolved.isEqual, false);
-                const crdtData: CRDTDocumentField<any> = (resolved as any).documentData.crdts;
+                const crdtData: CRDTDocumentField<any> = (resolved as any).crdts;
                 assert.strictEqual(crdtData.operations[0].length, 2);
 
-                doc1.collection.database.destroy();
-                doc2.collection.database.destroy();
+                doc1.collection.database.close();
+                doc2.collection.database.close();
             });
         });
         describe('conflicts during replication', () => {
@@ -473,9 +473,9 @@ describeParallel('crdt.test.js', () => {
                 assert.strictEqual(docA.getLatest().toJSON().crdts?.operations[1].length, 2);
                 assert.strictEqual(docB.getLatest().toJSON().crdts?.operations[1].length, 2);
 
-                clientACollection.database.destroy();
-                clientBCollection.database.destroy();
-                serverCollection.database.destroy();
+                clientACollection.database.close();
+                clientBCollection.database.close();
+                serverCollection.database.close();
             });
         });
     });

@@ -194,8 +194,8 @@ var RxDBBackupPlugin = exports.RxDBBackupPlugin = {
     }
   },
   hooks: {
-    preDestroyRxDatabase: {
-      after: function preDestroyRxDatabase(db) {
+    preCloseRxDatabase: {
+      after: function preCloseRxDatabase(db) {
         var states = BACKUP_STATES_BY_DB.get(db);
         if (states) {
           states.forEach(state => state.cancel());

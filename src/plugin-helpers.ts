@@ -83,6 +83,7 @@ export function wrappedValidateStorageFactory(
             {},
             args.storage,
             {
+                name: 'validate-' + validatorKey + '-' + args.storage.name,
                 async createStorageInstance<RxDocType>(
                     params: RxStorageInstanceCreationParams<RxDocType, any>
                 ) {
@@ -117,7 +118,8 @@ export function wrappedValidateStorageFactory(
                                     isError: true,
                                     documentId,
                                     writeRow: row,
-                                    validationErrors
+                                    validationErrors,
+                                    schema: instance.schema
                                 });
                             } else {
                                 continueWrites.push(row);
@@ -303,46 +305,13 @@ export function wrapRxStorageInstance<RxDocType>(
                         id: eventBulk.id,
                         events: useEvents,
                         checkpoint: eventBulk.checkpoint,
-                        context: eventBulk.context,
-                        startTime: eventBulk.startTime,
-                        endTime: eventBulk.endTime
+                        context: eventBulk.context
                     };
                     return ret;
                 }),
                 tap(() => processingChangesCount$.next(processingChangesCount$.getValue() - 1))
             );
         },
-        conflictResultionTasks: () => {
-            return instance.conflictResultionTasks().pipe(
-                mergeMap(async (task) => {
-                    const assumedMasterState = await fromStorage(task.input.assumedMasterState);
-                    const newDocumentState = await fromStorage(task.input.newDocumentState);
-                    const realMasterState = await fromStorage(task.input.realMasterState);
-                    return {
-                        id: task.id,
-                        context: task.context,
-                        input: {
-                            assumedMasterState,
-                            realMasterState,
-                            newDocumentState
-                        }
-                    };
-                })
-            );
-        },
-        resolveConflictResultionTask: (taskSolution) => {
-            if (taskSolution.output.isEqual) {
-                return instance.resolveConflictResultionTask(taskSolution);
-            }
-            const useSolution = {
-                id: taskSolution.id,
-                output: {
-                    isEqual: false,
-                    documentData: taskSolution.output.documentData
-                }
-            };
-            return instance.resolveConflictResultionTask(useSolution);
-        }
     };
 
     return wrappedInstance;

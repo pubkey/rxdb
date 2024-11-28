@@ -38,6 +38,9 @@ export function getPseudoSchemaForVersion<T = any>(
             [primaryKey]: {
                 type: 'string',
                 maxLength: 100
+            },
+            value: {
+                type: 'string'
             }
         } as any,
         indexes: [
@@ -227,6 +230,7 @@ export function fillWithDefaultSettings<T = any>(
     schemaObj.required = schemaObj.required
         .filter((field: string) => !field.includes('.'))
         .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
+
 
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;

@@ -121,7 +121,6 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
           id: lastState[this.primaryPath],
           lwt: lastState._meta.lwt
         };
-        categorized.eventBulk.endTime = (0, _index.now)();
         this.changes$.next(categorized.eventBulk);
       }
     }));
@@ -214,12 +213,6 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
       docIds.forEach(id => mainTx.delete(id));
     });
     return noMoreUndeleted;
-  };
-  _proto.conflictResultionTasks = function conflictResultionTasks() {
-    return new _rxjs.Subject().asObservable();
-  };
-  _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return _index.PROMISE_RESOLVE_VOID;
   };
   _proto.close = async function close() {
     if (this.closed) {

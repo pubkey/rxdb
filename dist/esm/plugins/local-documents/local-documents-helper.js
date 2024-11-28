@@ -4,7 +4,7 @@ import { IncrementalWriteQueue } from "../../incremental-write.js";
 import { newRxError } from "../../rx-error.js";
 import { fillWithDefaultSettings } from "../../rx-schema-helper.js";
 import { getWrappedStorageInstance } from "../../rx-storage-helper.js";
-import { randomCouchString } from "../../plugins/utils/index.js";
+import { randomToken } from "../../plugins/utils/index.js";
 import { createRxLocalDocument } from "./rx-local-document.js";
 import { overwritable } from "../../overwritable.js";
 export var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
@@ -25,7 +25,7 @@ export function createLocalDocStateByParent(parent) {
       collectionName !== '' && changeEventBulk.collectionName === collectionName) {
         ret = true;
       }
-      return ret && changeEventBulk.events[0].isLocal;
+      return ret && changeEventBulk.isLocal;
     }), map(b => b.events)), docData => createRxLocalDocument(docData, parent));
     var incrementalWriteQueue = new IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
 
@@ -50,15 +50,14 @@ export function createLocalDocStateByParent(parent) {
       }
       var changeEventBulk = {
         id: eventBulk.id,
+        isLocal: true,
         internal: false,
         collectionName: parent.database ? parent.name : undefined,
         storageToken: databaseStorageToken,
         events,
         databaseToken: database.token,
         checkpoint: eventBulk.checkpoint,
-        context: eventBulk.context,
-        endTime: eventBulk.endTime,
-        startTime: eventBulk.startTime
+        context: eventBulk.context
       };
       database.$emit(changeEventBulk);
     });
@@ -111,7 +110,7 @@ export function closeStateByParent(parent) {
   }
 }
 export async function removeLocalDocumentsStorageInstance(storage, databaseName, collectionName) {
-  var databaseInstanceToken = randomCouchString(10);
+  var databaseInstanceToken = randomToken(10);
   var storageInstance = await createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, {}, false);
   await storageInstance.remove();
 }

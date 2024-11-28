@@ -135,52 +135,6 @@ jobs:
         with:
           run: npm run test:performance:dexie
 
-  # run the node tests for the LokiJS RxStorage
-  storage-lokijs:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-loki-x3-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-loki-x3-
-
-      - name: install npm dependencies
-        run: npm install
-
-      - name: build
-        run: npm run build
-
-      - name: npm run test:node:lokijs
-        run: npm run test:node:lokijs
-
-      - name: npm run test:fast:lokijs
-        run: npm run test:fast:lokijs
-
-      - name: npm run test:browser:lokijs
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run test:browser:lokijs
-
-      - name: performance test
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run test:performance:lokijs:browser
-      - run: npm run test:performance:lokijs:node
-
   storage-memory:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
@@ -215,7 +169,6 @@ jobs:
         with:
           run: npm run test:browser:memory
 
-      - run: npm run test:fast:memory-validation
       - run: npm run test:fast:memory-random-delay
 
       - name: performance test
@@ -576,23 +529,26 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v4
         with:
-          # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
-          node-version: 18.18.0
+          node-version-file: ".nvmrc"
 
       - name: prepare RxDB core
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
-          rm -r node_modules
-      - name: react-native
+          rm -rf node_modules
+      - name: react-native test dev
         run: |
           cd ./examples/react-native
-          yarn --update-checksums
-          npx yarn install
-          yarn test
+          npm run preinstall
+          npm i install --legacy-peer-deps
+          npm run test
+
+      - name: react-native test bundle
+        run: |
+          cd ./examples/react-native
           echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
           sudo sysctl -p
-          yarn test:bundle
+          npm run test:bundle
 
   example-supabase:
     runs-on: ubuntu-22.04
@@ -762,11 +718,6 @@ jobs:
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
-      - name: test test:lokijs
-        uses: coactions/setup-xvfb@v1
-        with:
-          working-directory: ./examples/graphql
-          run: npm run test:lokijs
       - name: test test:dexie
         uses: coactions/setup-xvfb@v1
         with:
@@ -906,7 +857,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "1.44.1"
+          deno-version: "1.46.3"
       - name: run deno tests:dexie
         run: |
           sudo npm i -g cross-env

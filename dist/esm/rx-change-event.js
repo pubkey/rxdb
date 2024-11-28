@@ -4,7 +4,7 @@
  */
 
 import { overwritable } from "./overwritable.js";
-import { appendToArray } from "./plugins/utils/index.js";
+import { appendToArray, getFromMapOrCreate } from "./plugins/utils/index.js";
 export function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
   if (rxChangeEvent.documentData) {
     return rxChangeEvent.documentData;
@@ -77,5 +77,27 @@ export function flattenEvents(input) {
     }
   });
   return nonDuplicate;
+}
+var EVENT_BULK_CACHE = new Map();
+export function rxChangeEventBulkToRxChangeEvents(eventBulk) {
+  return getFromMapOrCreate(EVENT_BULK_CACHE, eventBulk, () => {
+    var events = new Array(eventBulk.events.length);
+    var rawEvents = eventBulk.events;
+    var collectionName = eventBulk.collectionName;
+    var isLocal = eventBulk.isLocal;
+    var deepFreezeWhenDevMode = overwritable.deepFreezeWhenDevMode;
+    for (var index = 0; index < rawEvents.length; index++) {
+      var event = rawEvents[index];
+      events[index] = {
+        documentId: event.documentId,
+        collectionName,
+        isLocal,
+        operation: event.operation,
+        documentData: deepFreezeWhenDevMode(event.documentData),
+        previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData)
+      };
+    }
+    return events;
+  });
 }
 //# sourceMappingURL=rx-change-event.js.map

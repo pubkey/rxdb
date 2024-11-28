@@ -20,7 +20,7 @@ import config, { describeParallel } from './config.ts';
 import {
     createRxDatabase,
     RxJsonSchema,
-    randomCouchString,
+    randomToken,
     ensureNotFalsy,
     RxReplicationWriteToMasterRow,
     ReplicationPullHandlerResult,
@@ -297,11 +297,16 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
             });
             it('should be able to use the ws-subscriptions', async () => {
-                const server = await SpawnServer.spawn();
-
+                if (isFastMode()) {
+                    return;
+                }
+                const [server, graphQLWs] = await Promise.all([
+                    SpawnServer.spawn(),
+                    import('graphql-ws')
+                ]);
                 const endpointUrl = server.url.ws;
 
-                const { createClient } = await import('graphql-ws');
+                const { createClient } = graphQLWs;
                 const client = createClient({
                     url: endpointUrl,
                     shouldRetry: () => false,
@@ -339,17 +344,23 @@ describe('replication-graphql.test.ts', () => {
                         }
                     });
 
-                // we have to wait here until the connection is established
-                await wait(300);
 
-                const doc = getTestData(1).pop();
-                await server.setDocument(ensureNotFalsy(doc));
+                /**
+                 * Because we do not know when exactly the client is subscribed
+                 * and we do not want to have a wait(300) in the test suite,
+                 * we just add a new document on each try
+                 */
+                await waitUntil(async () => {
+                    const doc = getTestData(1).pop();
+                    await server.setDocument(ensureNotFalsy(doc));
+                    return emitted.length >= 1;
+                }, undefined, 50);
 
-                await waitUntil(() => emitted.length === 1);
                 assert.ok(emitted[0].data.humanChanged.checkpoint.id);
                 assert.strictEqual(emittedError.length, 0);
 
-                await server.close();
+                client.terminate();
+                server.close();
             });
         });
         describeParallel('live:false pull only', () => {
@@ -359,7 +370,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(batchSize))
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -378,7 +389,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should pull all documents in multiple batches', async () => {
                 const amount = batchSize * 4;
@@ -389,7 +400,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -412,7 +423,7 @@ describe('replication-graphql.test.ts', () => {
                 if (notInDb) throw new Error('not in db: ' + notInDb.id);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should pull documents from a custom dataPath if one is specified', async () => {
                 const [c, server] = await Promise.all([
@@ -459,7 +470,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -478,7 +489,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should pull all documents when they have the same timestamp because they are also sorted by id', async () => {
                 const amount = batchSize * 2;
@@ -491,7 +502,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -508,7 +519,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsInDb.length, amount);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should handle deleted documents', async () => {
                 const doc: any = schemaObjects.humanWithTimestampData();
@@ -518,7 +529,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn([doc])
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -534,7 +545,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 0);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/3644
@@ -587,7 +598,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -603,7 +614,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 0);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             // https://github.com/pubkey/rxdb/blob/d7c3aca4f49d605ceae8997df32f713d0fe21ee2/src/types/plugins/replication.d.ts#L47-L53
             it('#4110 should stop pulling when response returns less documents than the pull.batchSize', async () => {
@@ -614,7 +625,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
                 let responseHaveBeenCalledTimes = 0;
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -641,7 +652,7 @@ describe('replication-graphql.test.ts', () => {
                     Math.ceil(amount / batchSize)
                 );
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should retry on errors', async () => {
                 const amount = batchSize * 4;
@@ -653,7 +664,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -674,7 +685,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, amount);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('#4088 should stop retrying when canceled', async () => {
                 const amount = batchSize * 4;
@@ -686,7 +697,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -705,7 +716,7 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.cancel();
                 const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                await wait(isFastMode() ? 200 : 1500);
+                await wait(isFastMode() ? 100 : 500);
                 assert.deepStrictEqual(
                     queryBuilderCountAfterCancel,
                     queryBuilderCount
@@ -723,7 +734,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(1))
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -753,9 +764,9 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
 
-                // replication should be canceled when collection is destroyed
+                // replication should be canceled when collection is closed
                 assert.ok(replicationState.isStopped());
             });
             it('should overwrite the local doc if the remote gets deleted', async () => {
@@ -767,7 +778,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -782,7 +793,6 @@ describe('replication-graphql.test.ts', () => {
 
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, amount);
-                await wait(250);
 
                 const firstDoc: typeof testData[0] = clone(testData[0]);
                 firstDoc.updatedAt = Date.now();
@@ -798,7 +808,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs2.length, amount - 1);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should overwrite the client doc if it was deleted locally before synced from the server', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
@@ -811,7 +821,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const server = await SpawnServer.spawn();
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -834,7 +844,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsAfter.length, 1);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should fail because initial replication never resolves', async () => {
                 if (isFastMode()) {
@@ -847,7 +857,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -879,7 +889,7 @@ describe('replication-graphql.test.ts', () => {
                 await assertThrows(() => raceProm, Error, 'Timeout');
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
         });
 
@@ -891,7 +901,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -911,7 +921,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, batchSize);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should send all documents in multiple batches', async () => {
                 const amount = batchSize * 3;
@@ -920,7 +930,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -935,7 +945,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, amount);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should send deletions', async () => {
                 const amount = batchSize;
@@ -948,7 +958,7 @@ describe('replication-graphql.test.ts', () => {
                 await doc.remove();
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -966,7 +976,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual((shouldDeleted as any).deleted, true);
 
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
             });
             it('should trigger push on db-changes that have not resulted from the replication', async () => {
                 const amount = batchSize;
@@ -976,7 +986,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1011,12 +1021,12 @@ describe('replication-graphql.test.ts', () => {
                 }, 1000, 100);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should not send index-documents', async () => {
                 const server = await SpawnServer.spawn();
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
@@ -1031,7 +1041,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection = collections.humans;
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
@@ -1054,7 +1064,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(emitted.length, 0);
 
                 server.close();
-                db.destroy();
+                db.close();
             });
             it('#4088 should stop retrying when canceled', async () => {
                 const [c, server] = await Promise.all([
@@ -1064,7 +1074,7 @@ describe('replication-graphql.test.ts', () => {
 
                 let queryBuilderCount = 0;
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: { http: ERROR_URL },
                     push: {
@@ -1082,19 +1092,17 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.error$.pipe(
                     first()
                 ).toPromise();
-                await replicationState.cancel();
+                replicationState.cancel();
                 const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                await wait(isFastMode() ? 200 : 1500);
+                await wait(isFastMode() ? 100 : 500);
                 assert.deepStrictEqual(
                     queryBuilderCountAfterCancel,
                     queryBuilderCount
                 );
 
-                await Promise.all([
-                    server.close(),
-                    c.database.destroy()
-                ]);
+                server.close();
+                c.database.close();
             });
             it('should resend cancelled documents', async () => {
                 if (
@@ -1111,7 +1119,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start a replication that always errors because it has no Authorization header
                 let replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1128,7 +1136,7 @@ describe('replication-graphql.test.ts', () => {
 
 
                 replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     headers: { Authorization: 'Bearer 1234' },
@@ -1148,7 +1156,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnServer.length, batchSize);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should respect the push.responseModifier', async () => {
                 const [c, server] = await Promise.all([
@@ -1158,7 +1166,7 @@ describe('replication-graphql.test.ts', () => {
 
                 let responseHaveBeenCalledTimes = 0;
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1188,7 +1196,37 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
+            });
+            it('should push documents from a custom dataPath if one is specified', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        dataPath: 'data.writeHumans',
+                        queryBuilder: pushQueryBuilder,
+                    },
+                    live: false,
+                    retryTime: 1000,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                assert.strictEqual(replicationState.isStopped(), false);
+
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === batchSize;
+                });
+
+                server.close();
+                c.database.close();
             });
         });
         describeParallel('push and pull', () => {
@@ -1201,7 +1239,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1225,7 +1263,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should allow asynchronous push and pull queryBuilders', async () => {
                 const amount = batchSize * 4;
@@ -1243,7 +1281,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1267,7 +1305,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docsOnDb.length, amount * 2);
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should push and pull some docs; live: true', async () => {
                 const amount = batchSize;
@@ -1277,7 +1315,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1328,8 +1366,8 @@ describe('replication-graphql.test.ts', () => {
                     return docsOnClient.length === (amount * 2) + 2;
                 });
                 await replicationState.awaitInSync();
-                await server.close();
-                await c.database.destroy();
+                server.close();
+                c.database.close();
             });
             it('should push and pull many docs; live: true', async () => {
                 const amount = batchSize * 4;
@@ -1340,7 +1378,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1374,12 +1412,7 @@ describe('replication-graphql.test.ts', () => {
                     name: 'many1server'
                 }));
 
-                await waitUntil(async () => {
-                    /**
-                     * we have to do replicationState.run() each time
-                     * because pouchdb takes a while until the update_seq is increased
-                     */
-                    await replicationState.reSync();
+                await waitUntil(() => {
                     const docsOnServer2 = server.getDocuments();
                     const should = (amount * 2) + 2;
                     return docsOnServer2.length === should;
@@ -1390,18 +1423,14 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 await replicationState.awaitInSync();
-                await server.close();
-                await c.database.destroy();
+                server.close();
+                c.database.close();
             });
             it('should work with multiInstance', async () => {
                 if (!config.storage.hasMultiInstance) {
                     return;
                 }
-                if (isFastMode()) {
-                    // TODO this test randomly fails in fast mode with lokijs storage.
-                    return;
-                }
-                const name = randomCouchString(10);
+                const name = randomToken(10);
                 const server = await SpawnServer.spawn();
 
                 const db1 = await createRxDatabase({
@@ -1429,7 +1458,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection2 = collections2.humansmulti;
 
                 replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: collection1,
                     url: server.url,
                     pull: {
@@ -1444,7 +1473,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: collection2,
                     url: server.url,
                     pull: {
@@ -1478,8 +1507,8 @@ describe('replication-graphql.test.ts', () => {
                     return docs.length === 2;
                 });
 
-                await db1.destroy();
-                await db2.destroy();
+                await db1.close();
+                await db2.close();
             });
             it('should not do more requests then needed', async () => {
                 const [c, server] = await Promise.all([
@@ -1490,7 +1519,7 @@ describe('replication-graphql.test.ts', () => {
                 let pullCount = 0;
                 let pushCount = 0;
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1536,13 +1565,13 @@ describe('replication-graphql.test.ts', () => {
                  * Even after some time,
                  * no more requests should have happened
                  */
-                await wait(250);
+                await wait(isFastMode() ? 100 : 250);
                 assert.strictEqual(pushCount, 1);
                 assert.strictEqual(pullCount, 1);
 
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
         });
 
@@ -1553,7 +1582,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1596,8 +1625,8 @@ describe('replication-graphql.test.ts', () => {
                     return !doc;
                 }, 1000, 200);
 
-                await server.close();
-                await c.database.destroy();
+                server.close();
+                c.database.close();
             });
             it('should respect pull.includeWsHeaders', async () => {
                 const [c, server] = await Promise.all([
@@ -1606,7 +1635,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
                 server.requireHeader('token', 'Bearer token');
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1632,8 +1661,73 @@ describe('replication-graphql.test.ts', () => {
                     const docs = await c.find().exec();
                     return docs.length === 1;
                 });
-                await server.close();
-                await c.database.destroy();
+                server.close();
+                c.database.close();
+            });
+            it('should respect pull.wsOptions', async () => {
+                const capturedWSStates: string[] = [];
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+
+                const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomToken(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        includeWsHeaders: true,
+                        wsOptions: {
+                            on: {
+                                'connected': () => {
+                                    capturedWSStates.push('connected');
+                                },
+                                'connecting': () => {
+                                    capturedWSStates.push('connecting');
+                                },
+                                'closed': () => {
+                                    capturedWSStates.push('closed');
+                                },
+                                'error': () => {
+                                    capturedWSStates.push('error');
+                                }
+                            }
+                        },
+                    },
+                    headers: {
+                        token: 'Bearer token'
+                    },
+                    live: true,
+                    deletedField: 'deleted',
+                });
+
+                ensureReplicationHasNoErrors(replicationState);
+
+                await replicationState.awaitInitialReplication();
+
+                await waitUntil(() => {
+                    return capturedWSStates.length === 2;
+                });
+
+                assert.equal(capturedWSStates.includes('connected'), true);
+                assert.equal(capturedWSStates.includes('connecting'), true);
+                assert.equal(capturedWSStates.includes('closed'), false);
+                assert.equal(capturedWSStates.includes('error'), false);
+
+                replicationState.cancel();
+
+                await waitUntil(() => {
+                    return capturedWSStates.length === 3;
+                });
+
+                assert.equal(capturedWSStates.includes('closed'), true);
+                assert.equal(capturedWSStates.includes('error'), false);
+
+                server.close();
+                c.database.close();
             });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
@@ -1644,7 +1738,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1692,7 +1786,7 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
         });
 
@@ -1706,7 +1800,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1732,7 +1826,7 @@ describe('replication-graphql.test.ts', () => {
 
                 sub.unsubscribe();
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should emit the send documents when pushing', async () => {
                 const [c, server] = await Promise.all([
@@ -1741,7 +1835,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1766,12 +1860,12 @@ describe('replication-graphql.test.ts', () => {
 
                 sub.unsubscribe();
                 server.close();
-                c.database.destroy();
+                c.database.close();
             });
             it('should emit an error when the server is not reachable', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -1789,12 +1883,12 @@ describe('replication-graphql.test.ts', () => {
 
                 assert.strictEqual(ensureNotFalsy(error).parameters.direction, 'pull');
                 replicationState.cancel();
-                c.database.destroy();
+                c.database.close();
             });
             it('should contain include replication action data in push request failure', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -1823,7 +1917,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(newDocState.updatedAt, localDoc.updatedAt);
 
                 replicationState.cancel();
-                c.database.destroy();
+                c.database.close();
             });
         });
 
@@ -1941,7 +2035,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const output = await builder(null, batchSize);
                 const parsed = parseQuery(output.query);
-                const want =`query PullHuman($checkpoint: HumanInputCheckpoint, $limit: Int!) {
+                const want = `query PullHuman($checkpoint: HumanInputCheckpoint, $limit: Int!) {
                     pullHuman(checkpoint: $checkpoint, limit: $limit) {
                         documents {
                             id
@@ -2018,7 +2112,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const output = await builder({});
                 const parsed = parseQuery(output.query);
-                const want =`subscription onStream($headers:HumanInputHeaders) {
+                const want = `subscription onStream($headers:HumanInputHeaders) {
                     streamHuman(headers:$headers) {
                         documents {
                             id
@@ -2115,7 +2209,7 @@ describe('replication-graphql.test.ts', () => {
                         name: 'foo',
                         age: 1234,
                         updatedAt: 12343,
-                        address:{
+                        address: {
                             street: 'street',
                             suite: 'suite',
                             city: 'city',
@@ -2184,7 +2278,7 @@ describe('replication-graphql.test.ts', () => {
         describeParallel('integrations', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
@@ -2205,7 +2299,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType, any> = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     pull: {
@@ -2220,11 +2314,11 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].name, 'Alice');
 
-                db.destroy();
+                db.close();
             });
             it('pull should work with keyCompression', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: wrappedKeyCompressionStorage({
                         storage: config.storage.getStorage(),
                     }),
@@ -2246,7 +2340,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     pull: {
@@ -2262,11 +2356,11 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs[0].name, 'Alice');
 
                 server.close();
-                db.destroy();
+                db.close();
             });
             it('push should work with keyCompression', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: wrappedKeyCompressionStorage({
                         storage: config.storage.getStorage()
                     }),
@@ -2286,15 +2380,11 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn([]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
-                        /**
-                         * TODO for whatever reason this test
-                         * does not work with batchSize=1
-                         */
-                        batchSize: 10,
+                        batchSize: 1,
                         queryBuilder: doc => {
                             const ret = pushQueryBuilder(doc);
                             return ret;
@@ -2311,7 +2401,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(serverDocs[0].age);
 
                 server.close();
-                db.destroy();
+                db.close();
             });
             it('should pass and change credentials in GraphQL client', async () => {
                 const [c, server] = await Promise.all([
@@ -2320,7 +2410,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2343,7 +2433,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(replicationState.clientState.credentials, 'same-origin');
 
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
             });
             it('should work with headers', async () => {
                 const [c, server] = await Promise.all([
@@ -2353,7 +2443,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2372,7 +2462,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 1);
 
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
             });
             it('should work after headers change', async () => {
                 const [c, server] = await Promise.all([
@@ -2382,7 +2472,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2414,9 +2504,9 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 2);
 
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
 
-                // replication should be canceled when collection is destroyed
+                // replication should be canceled when collection is closed
                 assert.ok(replicationState.isStopped());
             });
             it('should not lose error information', async () => {
@@ -2427,7 +2517,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2443,7 +2533,7 @@ describe('replication-graphql.test.ts', () => {
                 const replicationError = await replicationState.error$.pipe(first()).toPromise();
                 assert.notStrictEqual(ensureNotFalsy(replicationError).message, '[object Object]');
                 server.close();
-                await c.database.destroy();
+                await c.database.close();
             });
         });
         describeParallel('issues', () => {
@@ -2453,7 +2543,7 @@ describe('replication-graphql.test.ts', () => {
                     return;
                 }
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
@@ -2478,7 +2568,7 @@ describe('replication-graphql.test.ts', () => {
                 );
                 const server = await SpawnServer.spawn(getTestData(0));
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2501,11 +2591,11 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 server.close();
-                db.destroy();
+                db.close();
             });
             it('push not working when big amount of docs was pulled before', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
@@ -2526,7 +2616,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2559,11 +2649,11 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 server.close();
-                db.destroy();
+                db.close();
             });
             it('#1812 updates fail when graphql is enabled', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: wrappedValidateAjvStorage({
                         storage: config.storage.getStorage()
                     }),
@@ -2584,7 +2674,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start live replication
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2636,12 +2726,12 @@ describe('replication-graphql.test.ts', () => {
                     return !notUpdated;
                 }, 1000, 200);
 
-                await db.destroy();
-                await server.close();
+                db.close();
+                server.close();
             });
             it('#3856 incrementalUpsert not working', async () => {
                 const db = await createRxDatabase({
-                    name: randomCouchString(10),
+                    name: randomToken(10),
                     storage: config.storage.getStorage(),
                     multiInstance: false,
                     eventReduce: true,
@@ -2660,7 +2750,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start live replication
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2714,16 +2804,16 @@ describe('replication-graphql.test.ts', () => {
                     return !notUpdated;
                 });
 
-                await db.destroy();
-                await server.close();
+                db.close();
+                server.close();
             });
-            it('#4781 GraphQL Replication Cancel With Database Destroy Bug Report', async () => {
+            it('#4781 GraphQL Replication Cancel With Database Close Bug Report', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(getTestData(1))
                 ]);
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2743,10 +2833,10 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.cancel();
 
                 let error;
-                const result = await c.database.destroy().catch(e => error = e);
+                const result = await c.database.close().catch(e => error = e);
                 assert.strictEqual(error, undefined);
                 assert.strictEqual(result, true);
-                await server.close();
+                server.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/pull/5259#discussion_r1396062635
@@ -2757,7 +2847,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn([])
                 ]);
                 const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2796,8 +2886,8 @@ describe('replication-graphql.test.ts', () => {
 
                 await replicationState.cancel();
 
-                await c.database.destroy();
-                await server.close();
+                c.database.close();
+                server.close();
             });
         });
     });
@@ -2811,7 +2901,7 @@ describe('replication-graphql.test.ts', () => {
                     // TODO for somehow bun times out here
                     return;
                 }
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),
@@ -2835,7 +2925,7 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection,
                     url: {
                         http: browserServerUrl
@@ -2854,7 +2944,7 @@ describe('replication-graphql.test.ts', () => {
                 // amount might be bigger if 2 browser run parallel
                 assert.ok(docsStart.length >= amount);
 
-                await db.destroy();
+                await db.close();
 
                 // insert one in new instance of same db
                 // which will trigger an auto push
@@ -2872,7 +2962,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const collection2 = collections2.humans;
                 const replicationState2 = replicateGraphQL<any, any>({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: collection2,
                     url: {
                         http: browserServerUrl
@@ -2893,7 +2983,7 @@ describe('replication-graphql.test.ts', () => {
                     const found = docsEnd.find(d => d.id === addDoc.id);
                     return !!found;
                 });
-                await db2.destroy();
+                await db2.close();
             });
         });
     });

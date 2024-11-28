@@ -67,7 +67,8 @@ var basePrototype = exports.basePrototype = {
    */
   get $() {
     var _this = this;
-    return _this.collection.$.pipe((0, _operators.filter)(changeEvent => !changeEvent.isLocal), (0, _operators.filter)(changeEvent => changeEvent.documentId === this.primary), (0, _operators.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent)), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _operators.map)(docData => this.collection._docCache.getCachedRxDocument(docData)), (0, _operators.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
+    var id = this.primary;
+    return _this.collection.eventBulks$.pipe((0, _operators.filter)(bulk => !bulk.isLocal), (0, _operators.map)(bulk => bulk.events.find(ev => ev.documentId === id)), (0, _operators.filter)(event => !!event), (0, _operators.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)((0, _index.ensureNotFalsy)(changeEvent))), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(id)), (0, _operators.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _operators.map)(docData => this.collection._docCache.getCachedRxDocument(docData)), (0, _operators.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
   },
   get $$() {
     var _this = this;
@@ -259,32 +260,19 @@ var basePrototype = exports.basePrototype = {
    * Notice that there is no hard delete,
    * instead deleted documents get flagged with _deleted=true.
    */
-  remove() {
-    var collection = this.collection;
+  async remove() {
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
         document: this,
         id: this.primary
       }));
     }
-    var deletedData = (0, _index.flatClone)(this._data);
-    var removedDocData;
-    return collection._runHooks('pre', 'remove', deletedData, this).then(async () => {
-      deletedData._deleted = true;
-      var writeRows = [{
-        previous: this._data,
-        document: deletedData
-      }];
-      var writeResult = await collection.storageInstance.bulkWrite(writeRows, 'rx-document-remove');
-      var isError = writeResult.error[0];
-      (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, this.primary, deletedData, isError);
-      return (0, _rxStorageHelper.getWrittenDocumentsFromBulkWriteResponse)(this.collection.schema.primaryPath, writeRows, writeResult)[0];
-    }).then(removed => {
-      removedDocData = removed;
-      return this.collection._runHooks('post', 'remove', deletedData, this);
-    }).then(() => {
-      return this.collection._docCache.getCachedRxDocument(removedDocData);
-    });
+    var removeResult = await this.collection.bulkRemove([this]);
+    if (removeResult.error.length > 0) {
+      var error = removeResult.error[0];
+      (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, this._data, error);
+    }
+    return removeResult.success[0];
   },
   incrementalRemove() {
     return this.incrementalModify(async docData => {
@@ -296,7 +284,7 @@ var basePrototype = exports.basePrototype = {
       return newDoc;
     });
   },
-  destroy() {
+  close() {
     throw (0, _rxError.newRxError)('DOC14');
   }
 };

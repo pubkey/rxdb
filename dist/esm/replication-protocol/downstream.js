@@ -199,10 +199,7 @@ export async function startReplicationDownstream(state) {
             // return PROMISE_RESOLVE_VOID;
             await state.streamQueue.up;
           }
-          var isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ? false : await state.input.conflictHandler({
-            realMasterState: assumedMaster.docData,
-            newDocumentState: forkStateDocData
-          }, 'downstream-check-if-equal-0').then(r => r.isEqual);
+          var isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ? false : state.input.conflictHandler.isEqual(assumedMaster.docData, forkStateDocData, 'downstream-check-if-equal-0');
           if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc && forkStateFullDoc._meta[state.input.identifier] && getHeightOfRevision(forkStateFullDoc._rev) === forkStateFullDoc._meta[state.input.identifier]) {
             isAssumedMasterEqualToForkState = true;
           }
@@ -215,10 +212,7 @@ export async function startReplicationDownstream(state) {
              */
             return PROMISE_RESOLVE_VOID;
           }
-          var areStatesExactlyEqual = !forkStateDocData ? false : await state.input.conflictHandler({
-            realMasterState: masterState,
-            newDocumentState: forkStateDocData
-          }, 'downstream-check-if-equal-1').then(r => r.isEqual);
+          var areStatesExactlyEqual = !forkStateDocData ? false : state.input.conflictHandler.isEqual(masterState, forkStateDocData, 'downstream-check-if-equal-1');
           if (forkStateDocData && areStatesExactlyEqual) {
             /**
              * Document states are exactly equal.

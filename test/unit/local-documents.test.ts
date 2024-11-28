@@ -9,7 +9,7 @@ import {
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
-    randomCouchString,
+    randomToken,
     addRxPlugin,
     RxJsonSchema,
     ensureNotFalsy,
@@ -41,7 +41,7 @@ describeParallel('local-documents.test.ts', () => {
                     foo: 'bar'
                 });
                 assert.ok(doc);
-                c.database.destroy();
+                c.database.close();
             });
             it('should not find the doc because its local', async () => {
                 const c = await humansCollection.create(0);
@@ -50,7 +50,7 @@ describeParallel('local-documents.test.ts', () => {
                 });
                 const doc2 = await c.findOne().exec();
                 assert.strictEqual(doc2, null);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('negative', () => {
@@ -69,7 +69,7 @@ describeParallel('local-documents.test.ts', () => {
                     thrown = true;
                 }
                 assert.ok(thrown);
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -83,7 +83,7 @@ describeParallel('local-documents.test.ts', () => {
                 const doc = await c.getLocal('foobar');
                 assert.ok(doc);
                 assert.strictEqual(doc.get('foo'), 'bar');
-                c.database.destroy();
+                c.database.close();
             });
             it('should find the document twice (doc-cache)', async () => {
                 const c = await humansCollection.create(0);
@@ -94,7 +94,7 @@ describeParallel('local-documents.test.ts', () => {
                 const doc2 = await c.getLocal('foobar');
                 assert.ok(doc);
                 assert.ok(doc === doc2);
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('negative', () => {
@@ -102,7 +102,7 @@ describeParallel('local-documents.test.ts', () => {
                 const c = await humansCollection.create(0);
                 const doc = await c.getLocal('foobar');
                 assert.strictEqual(doc, null);
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -128,7 +128,7 @@ describeParallel('local-documents.test.ts', () => {
             // 2nd must have updated data
             assert.strictEqual(emitted[1].get('foo'), 'bar2');
 
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('incremental mutation functions', () => {
@@ -153,7 +153,7 @@ describeParallel('local-documents.test.ts', () => {
                 assert.strictEqual(doc.get('foo'), 'bar');
                 assert.strictEqual(doc.get('added'), 'foo');
 
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('.incrementalModify()', () => {
@@ -171,7 +171,7 @@ describeParallel('local-documents.test.ts', () => {
                 assert.strictEqual(doc.get('foo'), 'bar');
                 assert.strictEqual(doc.get('added'), 'foo');
 
-                c.database.destroy();
+                c.database.close();
             });
         });
     });
@@ -185,7 +185,7 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(cData, null);
             assert.strictEqual(dbData, null);
 
-            c.database.destroy();
+            c.database.close();
         });
         it('should emit the document when exists', async () => {
             const c = await humansCollection.create(0);
@@ -203,7 +203,7 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(ensureNotFalsy(cDoc).get('foo'), 'bar');
             assert.strictEqual(ensureNotFalsy(dbDoc).get('foo'), 'bar');
 
-            c.database.destroy();
+            c.database.close();
         });
         it('collection: should emit again when state changed', async () => {
             const c = await humansCollection.create(0);
@@ -227,7 +227,7 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(cEmits[2].data.foo, 'bar2');
 
             sub.unsubscribe();
-            c.database.destroy();
+            c.database.close();
         });
         it('database: should emit again when state changed', async () => {
             const c = await humansCollection.create(0);
@@ -252,7 +252,7 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(cEmits[2].data.foo, 'bar2');
 
             sub.unsubscribe();
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('.upsertLocal()', () => {
@@ -264,7 +264,7 @@ describeParallel('local-documents.test.ts', () => {
                 });
                 assert.ok(doc);
                 assert.strictEqual(doc.get('foo'), 'bar');
-                c.database.destroy();
+                c.database.close();
             });
             it('should update if the document already exists', async () => {
                 const c = await humansCollection.create(0);
@@ -277,7 +277,7 @@ describeParallel('local-documents.test.ts', () => {
 
                 assert.strictEqual(doc2.get('foo'), 'bar2');
                 assert.ok(doc !== doc2);
-                c.database.destroy();
+                c.database.close();
             });
             /**
              * @link https://github.com/pubkey/rxdb/issues/2471
@@ -304,7 +304,7 @@ describeParallel('local-documents.test.ts', () => {
                 assert.strictEqual(emitted[1].get('foo'), 'barTwo');
 
                 docSub.unsubscribe();
-                c.database.destroy();
+                c.database.close();
             });
         });
         describe('negative', () => { });
@@ -318,7 +318,7 @@ describeParallel('local-documents.test.ts', () => {
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
             assert.ok(ensureNotFalsy(doc2).deleted);
-            c.database.destroy();
+            c.database.close();
         });
     });
     describe('with database', () => {
@@ -331,7 +331,7 @@ describeParallel('local-documents.test.ts', () => {
             });
             const doc2 = await db.getLocal('foobar');
             assert.strictEqual(doc1, doc2);
-            db.destroy();
+            db.close();
         });
     });
     describe('multi-instance', () => {
@@ -339,7 +339,7 @@ describeParallel('local-documents.test.ts', () => {
             return;
         }
         it('should stream events over multi-instance', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -366,11 +366,11 @@ describeParallel('local-documents.test.ts', () => {
                 return ensureNotFalsy(doc2).getLatest().get('foo') === 'bar2';
             }, 1000, 50);
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('should emit deleted', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -406,11 +406,11 @@ describeParallel('local-documents.test.ts', () => {
             await doc1.remove();
             await hasEmitted;
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('should emit changes (database)', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -434,11 +434,11 @@ describeParallel('local-documents.test.ts', () => {
                 return doc2 && doc2.toJSON().data.foo === 'bar2';
             });
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('should emit changes (collection)', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -484,11 +484,11 @@ describeParallel('local-documents.test.ts', () => {
             });
 
             sub.unsubscribe();
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('BUG insertLocal not send to other instance', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -528,11 +528,11 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(doc && doc.toJSON().data.foo, 'bar');
 
             sub.unsubscribe();
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
         it('should not conflict with non-local-doc that has same id', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -589,8 +589,8 @@ describeParallel('local-documents.test.ts', () => {
             await AsyncTestUtil.wait(20);
             assert.strictEqual(ensureNotFalsy(doc2).getLatest().get('age'), 50);
 
-            db.destroy();
-            db2.destroy();
+            db.close();
+            db2.close();
         });
     });
     describe('issues', () => {
@@ -611,10 +611,10 @@ describeParallel('local-documents.test.ts', () => {
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0], 'bar');
 
-            myCollection.database.destroy();
+            myCollection.database.close();
         });
         it('#663 Document conflicts with LocalDocument in the same Collection', async () => {
-            const name = randomCouchString(10);
+            const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
@@ -663,7 +663,7 @@ describeParallel('local-documents.test.ts', () => {
 
             // insert non-local
             await boundaryMgmtCol.insert({
-                id: randomCouchString(12),
+                id: randomToken(12),
                 boundariesGrp: [groups]
             });
 
@@ -689,7 +689,7 @@ describeParallel('local-documents.test.ts', () => {
 
             assert.deepStrictEqual(json.boundariesGrp[0], groups);
 
-            db.destroy();
+            db.close();
         });
         it('local documents not persistent on db restart', async () => {
             if (!config.storage.hasPersistence) {
@@ -698,7 +698,7 @@ describeParallel('local-documents.test.ts', () => {
             if (!isNode) {
                 return;
             }
-            const dbName: string = randomCouchString(10);
+            const dbName: string = randomToken(10);
 
             const localDocId = 'foobar';
             const localDocData = {
@@ -721,7 +721,7 @@ describeParallel('local-documents.test.ts', () => {
             await db.insertLocal(localDocId, localDocData);
             await cols.humans.insertLocal(localDocId, localDocData);
 
-            await db.destroy();
+            await db.close();
 
             const db2 = await createRxDatabase({
                 name: dbName,
@@ -745,13 +745,13 @@ describeParallel('local-documents.test.ts', () => {
             assert.strictEqual(docDb.get('foo'), 'bar');
             assert.strictEqual(docCol.get('foo'), 'bar');
 
-            await db2.destroy();
+            await db2.close();
         });
         it('doing many upsertLocal() can cause a 404 document not found', async () => {
             if (!isNode) {
                 return;
             }
-            const dbName: string = randomCouchString(10);
+            const dbName: string = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),
@@ -774,7 +774,7 @@ describeParallel('local-documents.test.ts', () => {
                 t++;
             }
 
-            db.destroy();
+            db.close();
         });
     });
 });

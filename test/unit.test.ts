@@ -23,8 +23,6 @@ import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
 
-
-import './unit/rx-storage-lokijs.test.ts';
 import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-remote.test.ts';
 
@@ -69,5 +67,7 @@ import './unit/population.test.ts';
 import './unit/leader-election.test.ts';
 import './unit/backup.test.ts';
 import './unit/import-export.test.ts';
+import './unit/database-lifecycle.ts';
 import './unit/plugin.test.ts';
+
 import './unit/last.test.ts';

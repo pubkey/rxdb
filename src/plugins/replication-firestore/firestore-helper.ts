@@ -45,6 +45,11 @@ export function firestoreRowToDocData<RxDocType>(
         row.data()
     );
     (docData as any)[primaryPath] = row.id;
+
+    if (primaryPath !== 'id') {
+        delete (docData as any)['id'];
+    }
+
     return docData;
 }
 

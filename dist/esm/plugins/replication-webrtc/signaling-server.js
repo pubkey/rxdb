@@ -1,4 +1,4 @@
-import { getFromMapOrCreate, promiseWait, randomCouchString } from "../utils/index.js";
+import { getFromMapOrCreate, promiseWait, randomToken } from "../utils/index.js";
 import { SIMPLE_PEER_PING_INTERVAL } from "./connection-handler-simple-peer.js";
 export var PEER_ID_LENGTH = 12;
 /**
@@ -58,7 +58,7 @@ export async function startSignalingServerSimplePeer(serverOptions) {
      * PeerID is created by the server to prevent malicious
      * actors from falsy claiming other peoples ids.
      */
-    var peerId = randomCouchString(PEER_ID_LENGTH);
+    var peerId = randomToken(PEER_ID_LENGTH);
     var peer = {
       id: peerId,
       socket: ws,

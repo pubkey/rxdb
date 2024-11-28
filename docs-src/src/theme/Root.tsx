@@ -41,6 +41,12 @@ function addCallToActionButton() {
             icon: '[in]'
         },
         {
+            text: 'Follow',
+            keyword: '@LinkedIn',
+            url: 'https://www.linkedin.com/in/danielmeyerdev/',
+            icon: '[in]'
+        },
+        {
             text: 'Chat',
             keyword: '@discord',
             url: 'https://rxdb.info/chat',

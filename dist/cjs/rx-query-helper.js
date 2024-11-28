@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.getQueryMatcher = getQueryMatcher;
 exports.getSortComparator = getSortComparator;
 exports.normalizeMangoQuery = normalizeMangoQuery;
+exports.prepareQuery = prepareQuery;
 exports.runQueryUpdateFunction = runQueryUpdateFunction;
 var _queryPlanner = require("./query-planner.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
@@ -205,10 +206,34 @@ async function runQueryUpdateFunction(rxQuery, fn) {
   }
   if (Array.isArray(docs)) {
     return Promise.all(docs.map(doc => fn(doc)));
+  } else if (docs instanceof Map) {
+    return Promise.all([...docs.values()].map(doc => fn(doc)));
   } else {
     // via findOne()
     var result = await fn(docs);
     return result;
   }
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+function prepareQuery(schema, mutateableQuery) {
+  if (!mutateableQuery.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: mutateableQuery
+    });
+  }
+
+  /**
+   * Store the query plan together with the
+   * prepared query to save performance.
+   */
+  var queryPlan = (0, _queryPlanner.getQueryPlan)(schema, mutateableQuery);
+  return {
+    query: mutateableQuery,
+    queryPlan
+  };
 }
 //# sourceMappingURL=rx-query-helper.js.map

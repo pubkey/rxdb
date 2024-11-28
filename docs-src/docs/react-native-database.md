@@ -126,7 +126,6 @@ const db = new PouchDB('mydb.db', {
 There are multiple ways to use RxDB in React Native:
 
 - Use the [memory RxStorage](./rx-storage-memory.md) that stores the data inside of the JavaScript memory without persistence
-- Use the [LokiJS RxStorage](./rx-storage-lokijs.md) with the [react-native-lokijs](https://github.com/cawfree/react-native-lokijs) plugin or the [loki-async-reference-adapter](https://github.com/jonnyreeves/loki-async-reference-adapter).
 - Use the [SQLite RxStorage](./rx-storage-sqlite.md) with the [react-native-quick-sqlite](https://github.com/ospfranco/react-native-quick-sqlite) plugin.
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [👑 Premium Plugins](/premium) which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.

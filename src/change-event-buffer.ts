@@ -6,13 +6,14 @@ import {
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import type {
-    RxChangeEvent,
-    RxCollection
+    RxCollection,
+    RxStorageChangeEvent
 } from './types/index.d.ts';
 import {
     appendToArray,
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
+
 
 /**
  * This buffer rembemers previous change events
@@ -28,13 +29,14 @@ export class ChangeEventBuffer<RxDocType> {
     private subs: Subscription[] = [];
     private counter: number = 0;
     private eventCounterMap: WeakMap<
-        RxChangeEvent<RxDocType>, number
+        RxStorageChangeEvent<RxDocType>,
+        number
     > = new WeakMap();
     /**
      * array with changeEvents
      * starts with oldest known event, ends with newest
     */
-    private buffer: RxChangeEvent<RxDocType>[] = [];
+    private buffer: RxStorageChangeEvent<RxDocType>[] = [];
 
     public limit: number = 100;
 
@@ -46,12 +48,8 @@ export class ChangeEventBuffer<RxDocType> {
         public collection: RxCollection
     ) {
         this.subs.push(
-            this.collection.database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.collection.name),
-                filter(bulk => {
-                    const first = bulk.events[0];
-                    return !first.isLocal;
-                })
+            this.collection.eventBulks$.pipe(
+                filter(bulk => !bulk.isLocal)
             ).subscribe(eventBulk => {
                 this.tasks.add(() => this._handleChangeEvents(eventBulk.events));
                 if (this.tasks.size <= 1) {
@@ -72,7 +70,7 @@ export class ChangeEventBuffer<RxDocType> {
         this.tasks.clear();
     }
 
-    private _handleChangeEvents(events: RxChangeEvent<RxDocType>[]) {
+    private _handleChangeEvents(events: RxStorageChangeEvent<RxDocType>[]) {
         const counterBefore = this.counter;
         this.counter = this.counter + events.length;
         if (events.length > this.limit) {
@@ -120,7 +118,7 @@ export class ChangeEventBuffer<RxDocType> {
      * get all changeEvents which came in later than the pointer-event
      * @return array with change-events. If null, pointer out of bounds
      */
-    getFrom(pointer: number): RxChangeEvent<RxDocType>[] | null {
+    getFrom(pointer: number): RxStorageChangeEvent<RxDocType>[] | null {
         this.processTasks();
         const ret = [];
         let currentIndex = this.getArrayIndexByPointer(pointer);
@@ -151,22 +149,16 @@ export class ChangeEventBuffer<RxDocType> {
     /**
      * no matter how many operations are done on one document,
      * only the last operation has to be checked to calculate the new state
-     * this function reduces the events to the last ChangeEvent of each doc
+     * this function reduces the events to the last ChangeEvent of each doc.
+     * This functionality is currently disabled. It is questionable if
+     * pre-merging the events would really be faster or actually slower.
      */
-    reduceByLastOfDoc(changeEvents: RxChangeEvent<RxDocType>[]): RxChangeEvent<RxDocType>[] {
+    reduceByLastOfDoc(changeEvents: RxStorageChangeEvent<RxDocType>[]): RxStorageChangeEvent<RxDocType>[] {
         this.processTasks();
         return changeEvents.slice(0);
-        // TODO the old implementation was wrong
-        // because it did not correctly reassigned the previousData of the changeevents
-        // this should be added to the event-reduce library and not be done in RxDB
-        const docEventMap: any = {};
-        changeEvents.forEach(changeEvent => {
-            docEventMap[changeEvent.documentId] = changeEvent;
-        });
-        return Object.values(docEventMap);
     }
 
-    destroy() {
+    close() {
         this.tasks.clear();
         this.subs.forEach(sub => sub.unsubscribe());
     }

@@ -2,13 +2,45 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX bad RxState after cleanup [#6503](https://github.com/pubkey/rxdb/pull/6503)
 
 <!-- ADD new changes here! -->
+
+### 16.0.0-beta.4 (28 November 2024)
+
+🚀 **RxDB v16 is released**
+
+- A list of changes for RxDB v16 can be found [here](https://rxdb.info/releases/16.0.0.html)
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.39.0 (21 November 2024)
+
+- FIX bulkInsert with primary keys set in preInsert hook broken in v15.38.3 [#6608](https://github.com/pubkey/rxdb/pull/6608)
+- ADD possibility to pass graphql-ws options into the replication options [#6598](https://github.com/pubkey/rxdb/pull/6598)
+
+### 15.38.3 (18 November 2024)
+
+- FIX findByIds not working with modify and patch [#6592](https://github.com/pubkey/rxdb/pull/6592)
+- FIX bulk inserting 2 docs with same primary key should throw [#6589](https://github.com/pubkey/rxdb/pull/6589)
+
+### 15.38.2 (14 November 2024)
+
+- CHANGE use variable random string lengths in the tests to ensure this works.
+
+### 15.38.1 (13 November 2024)
+
+- FIX random string creation in tests could end up with strings longer than the provided `length`
+
+### 15.38.0 (13 November 2024)
+
+- FIX bad RxState after cleanup [#6503](https://github.com/pubkey/rxdb/pull/6503)
+- FIX RxServer cors settings only applies to OPTIONS when using ExpressAdapter [#6523](https://github.com/pubkey/rxdb/issues/6523)
+- ADD random emojis and umlauts to all random strings in the tests to ensure this works correctly.
+- REMOVE faker dependency for tests and instead use random strings with emojis and umlauts.
+
+- ~FIX [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) not working anymore after a cleanup has run on documents with umlauts in the primaryKey or index fields.~ ⬅️ This has been moved to RxDB v16 because it would be a breaking change.
 
 ### 15.37.0 (5 November 2024)
 

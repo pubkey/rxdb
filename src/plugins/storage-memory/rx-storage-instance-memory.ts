@@ -16,8 +16,6 @@ import type {
     EventBulk,
     PreparedQuery,
     QueryMatcher,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -35,7 +33,7 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    randomCouchString,
+    randomToken,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
 import {
@@ -149,7 +147,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            categorized.eventBulk.endTime = now();
             internals.changes$.next(categorized.eventBulk);
         }
         return awaitMe;
@@ -476,13 +473,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         this.internals.refCount = this.internals.refCount - 1;
         return PROMISE_RESOLVE_VOID;
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.internals.conflictResultionTasks$.asObservable();
-    }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
-    }
 }
 
 export function createMemoryStorageInstance<RxDocType>(
@@ -499,14 +489,13 @@ export function createMemoryStorageInstance<RxDocType>(
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
         internals = {
-            id: randomCouchString(5),
+            id: randomToken(5),
             schema: params.schema,
             removed: false,
             refCount: 1,
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {},
-            conflictResultionTasks$: new Subject(),
             changes$: new Subject()
         };
         addIndexesToInternalsState(internals, params.schema);

@@ -23,7 +23,7 @@ export declare const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE: WeakMap<RxDatabas
 export declare function addMigrationStateToDatabase(migrationState: RxMigrationState): void;
 export declare function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubject<RxMigrationState[]>;
 /**
- * Complete on database destroy
+ * Complete on database close
  * so people do not have to unsubscribe
  */
-export declare function onDatabaseDestroy(database: RxDatabase): void;
+export declare function onDatabaseClose(database: RxDatabase): void;

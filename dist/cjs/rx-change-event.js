@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.flattenEvents = flattenEvents;
 exports.getDocumentDataOfRxChangeEvent = getDocumentDataOfRxChangeEvent;
+exports.rxChangeEventBulkToRxChangeEvents = rxChangeEventBulkToRxChangeEvents;
 exports.rxChangeEventToEventReduceChangeEvent = rxChangeEventToEventReduceChangeEvent;
 var _overwritable = require("./overwritable.js");
 var _index = require("./plugins/utils/index.js");
@@ -85,5 +86,27 @@ function flattenEvents(input) {
     }
   });
   return nonDuplicate;
+}
+var EVENT_BULK_CACHE = new Map();
+function rxChangeEventBulkToRxChangeEvents(eventBulk) {
+  return (0, _index.getFromMapOrCreate)(EVENT_BULK_CACHE, eventBulk, () => {
+    var events = new Array(eventBulk.events.length);
+    var rawEvents = eventBulk.events;
+    var collectionName = eventBulk.collectionName;
+    var isLocal = eventBulk.isLocal;
+    var deepFreezeWhenDevMode = _overwritable.overwritable.deepFreezeWhenDevMode;
+    for (var index = 0; index < rawEvents.length; index++) {
+      var event = rawEvents[index];
+      events[index] = {
+        documentId: event.documentId,
+        collectionName,
+        isLocal,
+        operation: event.operation,
+        documentData: deepFreezeWhenDevMode(event.documentData),
+        previousDocumentData: deepFreezeWhenDevMode(event.previousDocumentData)
+      };
+    }
+    return events;
+  });
 }
 //# sourceMappingURL=rx-change-event.js.map

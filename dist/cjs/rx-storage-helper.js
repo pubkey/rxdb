@@ -27,7 +27,6 @@ var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _index3 = require("./plugins/utils/index.js");
 var _rxjs = require("rxjs");
-var _rxQuery = require("./rx-query.js");
 var _rxQueryHelper = require("./rx-query-helper.js");
 var _hooks = require("./hooks.js");
 /**
@@ -134,14 +133,12 @@ onInsert, onUpdate) {
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = [];
-  var eventBulkId = (0, _index3.randomCouchString)(10);
+  var eventBulkId = (0, _index3.randomToken)(10);
   var eventBulk = {
     id: eventBulkId,
     events: [],
     checkpoint: null,
-    context,
-    startTime: (0, _index3.now)(),
-    endTime: 0
+    context
   };
   var eventBulkEvents = eventBulk.events;
   var attachmentsAdd = [];
@@ -409,8 +406,6 @@ function flatCloneDocWithMeta(doc) {
     _meta: (0, _index3.flatClone)(doc._meta)
   });
 }
-var BULK_WRITE_SUCCESS_MAP = new WeakMap();
-
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -432,7 +427,7 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkWrite(rows, context) {
+    async bulkWrite(rows, context) {
       var databaseToken = database.token;
       var toStorageWriteRows = new Array(rows.length);
       /**
@@ -462,7 +457,8 @@ rxJsonSchema) {
         storageInstance: this.originalStorageInstance,
         rows: toStorageWriteRows
       });
-      return database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context))
+      var writeResult = await database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context));
+
       /**
        * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
        * without sending the previous document version.
@@ -470,44 +466,39 @@ rxJsonSchema) {
        * We do this by automatically fixing the conflict errors for that case
        * by running another bulkWrite() and merging the results.
        * @link https://github.com/pubkey/rxdb/pull/3839
-       */.then(writeResult => {
-        var useWriteResult = {
-          error: []
-        };
-
-        /**
-         * TODO do we really have to build up the successArray
-         * here directly? Maybe we only need it when it is really accessed.
-         */
-        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, writeResult);
-        BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
-        var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
-          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _index3.ensureNotFalsy)(error.documentInDb)._deleted) {
-            return true;
-          }
-
-          // add the "normal" errors to the parent error array.
-          useWriteResult.error.push(error);
-          return false;
-        });
-        if (reInsertErrors.length > 0) {
-          var reInserts = reInsertErrors.map(error => {
-            return {
-              previous: error.documentInDb,
-              document: Object.assign({}, error.writeRow.document, {
-                _rev: (0, _index3.createRevision)(database.token, error.documentInDb)
-              })
-            };
-          });
-          return database.lockedRun(() => storageInstance.bulkWrite(reInserts, context)).then(subResult => {
-            (0, _index3.appendToArray)(useWriteResult.error, subResult.error);
-            var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
-            (0, _index3.appendToArray)(successArray, subSuccess);
-            return useWriteResult;
-          });
+      */
+      var useWriteResult = {
+        error: []
+      };
+      BULK_WRITE_ROWS_BY_RESPONSE.set(useWriteResult, toStorageWriteRows);
+      var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
+        if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _index3.ensureNotFalsy)(error.documentInDb)._deleted) {
+          return true;
         }
-        return useWriteResult;
+
+        // add the "normal" errors to the parent error array.
+        useWriteResult.error.push(error);
+        return false;
       });
+      if (reInsertErrors.length > 0) {
+        var reInsertIds = new Set();
+        var reInserts = reInsertErrors.map(error => {
+          reInsertIds.add(error.documentId);
+          return {
+            previous: error.documentInDb,
+            document: Object.assign({}, error.writeRow.document, {
+              _rev: (0, _index3.createRevision)(database.token, error.documentInDb)
+            })
+          };
+        });
+        var subResult = await database.lockedRun(() => storageInstance.bulkWrite(reInserts, context));
+        (0, _index3.appendToArray)(useWriteResult.error, subResult.error);
+        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, useWriteResult, reInsertIds);
+        var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
+        (0, _index3.appendToArray)(successArray, subSuccess);
+        return useWriteResult;
+      }
+      return useWriteResult;
     },
     query(preparedQuery) {
       return database.lockedRun(() => storageInstance.query(preparedQuery));
@@ -537,30 +528,6 @@ rxJsonSchema) {
     },
     changeStream() {
       return storageInstance.changeStream();
-    },
-    conflictResultionTasks() {
-      return storageInstance.conflictResultionTasks();
-    },
-    resolveConflictResultionTask(taskSolution) {
-      if (taskSolution.output.isEqual) {
-        return storageInstance.resolveConflictResultionTask(taskSolution);
-      }
-      var doc = Object.assign({}, taskSolution.output.documentData, {
-        _meta: (0, _index3.getDefaultRxDocumentMeta)(),
-        _rev: (0, _index3.getDefaultRevision)(),
-        _attachments: {}
-      });
-      var documentData = (0, _index3.flatClone)(doc);
-      delete documentData._meta;
-      delete documentData._rev;
-      delete documentData._attachments;
-      return storageInstance.resolveConflictResultionTask({
-        id: taskSolution.id,
-        output: {
-          isEqual: false,
-          documentData
-        }
-      });
     }
   };
   database.storageInstances.add(ret);
@@ -647,7 +614,7 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
     return storageInstance.getChangedDocumentsSince(limit, checkpoint);
   }
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
-  var query = (0, _rxQuery.prepareQuery)(storageInstance.schema, getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint));
+  var query = (0, _rxQueryHelper.prepareQuery)(storageInstance.schema, getChangedDocumentsSinceQuery(storageInstance, limit, checkpoint));
   var result = await storageInstance.query(query);
   var documents = result.documents;
   var lastDoc = (0, _index3.lastOfArray)(documents);
@@ -662,33 +629,42 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
     }
   };
 }
-function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response) {
-  var fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
-  if (fromMap) {
-    return fromMap;
-  }
-  var ret = [];
-  if (response.error.length > 0) {
-    var errorIds = new Set();
-    for (var index = 0; index < response.error.length; index++) {
-      var error = response.error[index];
-      errorIds.add(error.documentId);
+var BULK_WRITE_ROWS_BY_RESPONSE = new WeakMap();
+var BULK_WRITE_SUCCESS_MAP = new WeakMap();
+
+/**
+ * For better performance, this is done only when accessed
+ * because most of the time we do not need the results, only the errors.
+ */
+function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response, reInsertIds) {
+  return (0, _index3.getFromMapOrCreate)(BULK_WRITE_SUCCESS_MAP, response, () => {
+    var ret = [];
+    var realWriteRows = BULK_WRITE_ROWS_BY_RESPONSE.get(response);
+    if (!realWriteRows) {
+      realWriteRows = writeRows;
     }
-    for (var _index = 0; _index < writeRows.length; _index++) {
-      var doc = writeRows[_index].document;
-      if (!errorIds.has(doc[primaryPath])) {
-        ret.push(stripAttachmentsDataFromDocument(doc));
+    if (response.error.length > 0 || reInsertIds) {
+      var errorIds = reInsertIds ? reInsertIds : new Set();
+      for (var index = 0; index < response.error.length; index++) {
+        var error = response.error[index];
+        errorIds.add(error.documentId);
+      }
+      for (var _index = 0; _index < realWriteRows.length; _index++) {
+        var doc = realWriteRows[_index].document;
+        if (!errorIds.has(doc[primaryPath])) {
+          ret.push(stripAttachmentsDataFromDocument(doc));
+        }
+      }
+    } else {
+      // pre-set array size for better performance
+      ret.length = writeRows.length - response.error.length;
+      for (var _index2 = 0; _index2 < realWriteRows.length; _index2++) {
+        var _doc = realWriteRows[_index2].document;
+        ret[_index2] = stripAttachmentsDataFromDocument(_doc);
       }
     }
-  } else {
-    // pre-set array size for better performance
-    ret.length = writeRows.length - response.error.length;
-    for (var _index2 = 0; _index2 < writeRows.length; _index2++) {
-      var _doc = writeRows[_index2].document;
-      ret[_index2] = stripAttachmentsDataFromDocument(_doc);
-    }
-  }
-  return ret;
+    return ret;
+  });
 }
 
 /**
@@ -755,12 +731,6 @@ function randomDelayStorage(input) {
         },
         changeStream() {
           return storageInstance.changeStream();
-        },
-        conflictResultionTasks() {
-          return storageInstance.conflictResultionTasks();
-        },
-        resolveConflictResultionTask(a) {
-          return storageInstance.resolveConflictResultionTask(a);
         },
         async cleanup(a) {
           await (0, _index3.promiseWait)(input.delayTimeBefore());

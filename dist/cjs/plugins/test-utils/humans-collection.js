@@ -29,7 +29,7 @@ function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return 
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 async function create(size = 20, collectionName = 'human', multiInstance = true, eventReduce = true, storage = (0, _config.getConfig)().storage.getStorage()) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage,
     multiInstance,
     eventReduce,
@@ -53,7 +53,7 @@ async function create(size = 20, collectionName = 'human', multiInstance = true,
 }
 async function createBySchema(schema, name = 'human', storage = (0, _config.getConfig)().storage.getStorage(), migrationStrategies) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage,
     multiInstance: true,
     eventReduce: true,
@@ -72,7 +72,7 @@ async function createAttachments(size = 20, name = 'human', multiInstance = true
     name = 'human';
   }
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     multiInstance,
     eventReduce: true,
@@ -95,14 +95,14 @@ async function createAttachments(size = 20, name = 'human', multiInstance = true
 }
 async function createNoCompression(size = 20, name = 'human') {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
   var schemaJSON = (0, _clone.default)(schemas.human);
   schemaJSON.keyCompression = false;
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     [name]: {
       schema: schemaJSON
@@ -118,12 +118,12 @@ async function createNoCompression(size = 20, name = 'human') {
 }
 async function createAgeIndex(amount = 20) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humana: {
       schema: schemas.humanAgeIndex
@@ -139,12 +139,12 @@ async function createAgeIndex(amount = 20) {
 }
 async function multipleOnSameDB(size = 10) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.human
@@ -169,12 +169,12 @@ async function multipleOnSameDB(size = 10) {
 }
 async function createNested(amount = 5) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     nestedhuman: {
       schema: schemas.nestedHuman
@@ -190,11 +190,11 @@ async function createNested(amount = 5) {
 }
 async function createDeepNested(amount = 5) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     nestedhuman: {
       schema: schemas.deepNestedHuman
@@ -221,7 +221,7 @@ async function createMultiInstance(name, amount = 0, password = undefined, stora
     ignoreDuplicate: true,
     localDocuments: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.human,
@@ -235,7 +235,7 @@ async function createMultiInstance(name, amount = 0, password = undefined, stora
   }
   return collections.human;
 }
-async function createPrimary(amount = 10, name = (0, _index.randomCouchString)(10)) {
+async function createPrimary(amount = 10, name = (0, _index.randomToken)(10)) {
   var db = await (0, _index.createRxDatabase)({
     name,
     storage: (0, _config.getConfig)().storage.getStorage(),
@@ -243,7 +243,7 @@ async function createPrimary(amount = 10, name = (0, _index.randomCouchString)(1
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.primaryHuman
@@ -257,7 +257,7 @@ async function createPrimary(amount = 10, name = (0, _index.randomCouchString)(1
   }
   return collections.human;
 }
-async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.randomCouchString)(10), multiInstance = true, storage = (0, _config.getConfig)().storage.getStorage()) {
+async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.randomToken)(10), multiInstance = true, storage = (0, _config.getConfig)().storage.getStorage()) {
   var db = await (0, _index.createRxDatabase)({
     name: databaseName,
     storage,
@@ -265,7 +265,7 @@ async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.ra
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humans: {
       schema: schemas.humanWithTimestamp
@@ -279,11 +279,14 @@ async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.ra
   }
   return collections.humans;
 }
-async function createMigrationCollection(amount = 0, addMigrationStrategies = {}, name = (0, _index.randomCouchString)(10), autoMigrate = false, attachment) {
+async function createMigrationCollection(amount = 0, addMigrationStrategies = {}, name = (0, _index.randomToken)(10), autoMigrate = false, attachment) {
   var migrationStrategies = Object.assign({
     1: doc => doc,
     2: doc => doc,
-    3: doc => doc
+    3: doc => {
+      doc.age = parseInt(doc.age, 10);
+      return doc;
+    }
   }, addMigrationStrategies);
   var colName = 'human';
   var db = await (0, _index.createRxDatabase)({
@@ -306,7 +309,7 @@ async function createMigrationCollection(amount = 0, addMigrationStrategies = {}
       return doc.putAttachment(attachment);
     }
   })));
-  await db.destroy();
+  await db.close();
   var db2 = await (0, _index.createRxDatabase)({
     name,
     storage: (0, _config.getConfig)().storage.getStorage(),
@@ -325,7 +328,7 @@ async function createMigrationCollection(amount = 0, addMigrationStrategies = {}
   });
   return cols2[colName];
 }
-async function createRelated(name = (0, _index.randomCouchString)(10)) {
+async function createRelated(name = (0, _index.randomToken)(10)) {
   var db = await (0, _index.createRxDatabase)({
     name,
     storage: (0, _config.getConfig)().storage.getStorage(),
@@ -333,7 +336,7 @@ async function createRelated(name = (0, _index.randomCouchString)(10)) {
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.refHuman
@@ -347,7 +350,7 @@ async function createRelated(name = (0, _index.randomCouchString)(10)) {
   await collections.human.insert(doc2);
   return collections.human;
 }
-async function createRelatedNested(name = (0, _index.randomCouchString)(10)) {
+async function createRelatedNested(name = (0, _index.randomToken)(10)) {
   var db = await (0, _index.createRxDatabase)({
     name,
     storage: (0, _config.getConfig)().storage.getStorage(),
@@ -355,7 +358,7 @@ async function createRelatedNested(name = (0, _index.randomCouchString)(10)) {
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     human: {
       schema: schemas.refHumanNested
@@ -371,12 +374,12 @@ async function createRelatedNested(name = (0, _index.randomCouchString)(10)) {
 }
 async function createIdAndAgeIndex(amount = 20) {
   var db = await (0, _index.createRxDatabase)({
-    name: (0, _index.randomCouchString)(10),
+    name: (0, _index.randomToken)(10),
     storage: (0, _config.getConfig)().storage.getStorage(),
     eventReduce: true,
     ignoreDuplicate: true
   });
-  // setTimeout(() => db.destroy(), dbLifetime);
+  // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humana: {
       schema: schemas.humanIdAndAgeIndex

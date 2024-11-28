@@ -1,7 +1,7 @@
 import assert from 'assert';
 import config from './config.ts';
 import {
-    randomCouchString,
+    randomToken,
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
@@ -160,7 +160,9 @@ describe('replication-webrtc.test.ts', function () {
         it('should stream changes over the replication to other collections', async function () {
 
             /**
-             * TODO this test fails randomly.
+             * This test fails randomly because WebRTC has hickups
+             * when creating the collection. These hickups likely happen depending on the
+             * network because of finding the IP candidates and stuff.
              */
             return;
 
@@ -170,7 +172,7 @@ describe('replication-webrtc.test.ts', function () {
             console.log('--------- 0');
 
             // initial sync
-            const topic = randomCouchString(10);
+            const topic = randomToken(10);
             const firstReplicationStates = await syncCollections(topic, [c1, c2]);
 
             console.log('--------- 0.5');
@@ -230,10 +232,10 @@ describe('replication-webrtc.test.ts', function () {
             await wait(200);
 
             // remove one peer
-            await c2.database.destroy();
+            await c2.database.close();
 
-            c1.database.destroy();
-            c3.database.destroy();
+            c1.database.close();
+            c3.database.close();
         });
     });
     describe('ISSUES', () => { });

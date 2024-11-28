@@ -10,8 +10,6 @@ import type {
     BulkWriteRow,
     EventBulk,
     PreparedQuery,
-    RxConflictResultionTask,
-    RxConflictResultionTaskSolution,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -134,7 +132,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 // ).on('change', change => {
 
 
-                //     const eventBulkId = randomCouchString(10);
+                //     const eventBulkId = randomToken(10);
                 //     const newDocData: RxDocumentData<RxDocType> = (change as any).fullDocument;
                 //     const documentId = newDocData[this.primaryPath] as any;
 
@@ -151,8 +149,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 //             operation: 'INSERT',
                 //             previousDocumentData: undefined,
                 //         }],
-                //             startTime: now(),
-                //             endTime: now()
                 //     };
 
                 //     this.changes$.next(eventBulk);
@@ -305,7 +301,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     id: lastState[primaryPath],
                     lwt: lastState._meta.lwt
                 };
-                categorized.eventBulk.endTime = now();
                 this.changes$.next(categorized.eventBulk);
             }
 
@@ -445,11 +440,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         })();
         return this.closed;
     }
-
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject();
-    }
-    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
 }
 
 export function createMongoDBStorageInstance<RxDocType>(

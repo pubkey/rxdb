@@ -69,7 +69,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     const replicationHandler = state.input.replicationHandler;
     state.streamQueue.up = state.streamQueue.up.then(() => {
         return upstreamInitialSync().then(() => {
-            processTasks();
+            return processTasks();
         });
     });
 
@@ -92,12 +92,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     };
 
     const sub = state.input.forkInstance.changeStream()
-        .subscribe(async (eventBulk) => {
-            // ignore writes that came from the downstream
-            if (eventBulk.context === await state.downstreamBulkWriteFlag) {
-                return;
-            }
-
+        .subscribe((eventBulk) => {
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
@@ -195,7 +190,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         }
         state.stats.up.processTasks = state.stats.up.processTasks + 1;
         state.events.active.up.next(true);
-        state.streamQueue.up = state.streamQueue.up.then(() => {
+        state.streamQueue.up = state.streamQueue.up.then(async () => {
             /**
              * Merge/filter all open tasks
              */
@@ -211,26 +206,35 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 if (taskWithTime.time < initialSyncStartTime) {
                     continue;
                 }
-                appendToArray(
-                    docs,
-                    taskWithTime.task.events.map(r => {
-                        return r.documentData as any;
-                    })
-                );
+
+                /**
+                 * If the task came from the downstream, we can ignore these documents
+                 * because we know they are replicated already.
+                 * But even if they can be ignored, we later have to call persistToMaster()
+                 * to have the correct checkpoint set.
+                 */
+                if (taskWithTime.task.context !== await state.downstreamBulkWriteFlag) {
+                    appendToArray(
+                        docs,
+                        taskWithTime.task.events.map(r => {
+                            return r.documentData as any;
+                        })
+                    );
+                }
                 checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
             }
 
-            const promise = docs.length === 0 ? PROMISE_RESOLVE_FALSE : persistToMaster(
+            await persistToMaster(
                 docs,
                 checkpoint
             );
-            return promise.then(() => {
-                if (openTasks.length === 0) {
-                    state.events.active.up.next(false);
-                } else {
-                    processTasks();
-                }
-            });
+
+            // might have got more tasks while running persistToMaster()
+            if (openTasks.length === 0) {
+                state.events.active.up.next(false);
+            } else {
+                return processTasks();
+            }
         });
     }
 
@@ -262,7 +266,26 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(upDocsById);
+            /**
+             * Even if we do not have anything to push,
+             * we still have to store the up-checkpoint.
+             * This ensures that when many documents have been pulled
+             * from the remote (that do not have to be pushed again),
+             * we continue at the correct position and do not have to load
+             * these documents from the storage again when the replication is restarted.
+             */
+
+            function rememberCheckpointBeforeReturn() {
+                return setCheckpoint(
+                    state,
+                    'up',
+                    useCheckpoint
+                );
+            };
+
+
             if (docIds.length === 0) {
+                rememberCheckpointBeforeReturn();
                 return false;
             }
 
@@ -294,10 +317,13 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                             // if the isResolvedConflict is correct, we do not have to compare the documents.
                             assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev
                             &&
-                            (await state.input.conflictHandler({
-                                realMasterState: assumedMasterDoc.docData,
-                                newDocumentState: docData
-                            }, 'upstream-check-if-equal')).isEqual
+                            (
+                                state.input.conflictHandler.isEqual(
+                                    assumedMasterDoc.docData,
+                                    docData,
+                                    'upstream-check-if-equal'
+                                )
+                            )
                         )
                         ||
                         /**
@@ -329,6 +355,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             );
 
             if (writeRowsToMasterIds.length === 0) {
+                rememberCheckpointBeforeReturn();
                 return false;
             }
 
@@ -419,18 +446,18 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 if (resolved) {
                                     state.events.resolvedConflicts.next({
                                         input,
-                                        output: resolved.output
+                                        output: resolved
                                     });
                                     conflictWriteFork.push({
                                         previous: forkStateById[docId],
-                                        document: resolved.resolvedDoc
+                                        document: resolved
                                     });
                                     const assumedMasterDoc = assumedMasterState[docId];
                                     conflictWriteMeta[docId] = await getMetaWriteRow(
                                         state,
                                         ensureNotFalsy(realMasterState),
                                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
-                                        resolved.resolvedDoc._rev
+                                        resolved._rev
                                     );
                                 }
                             });
@@ -479,11 +506,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * but to ensure order on parallel checkpoint writes,
              * we have to use a queue.
              */
-            setCheckpoint(
-                state,
-                'up',
-                useCheckpoint
-            );
+            rememberCheckpointBeforeReturn();
 
             return hadConflictWrites;
         }).catch(unhandledError => {

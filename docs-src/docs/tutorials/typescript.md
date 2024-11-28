@@ -236,7 +236,7 @@ console.log(amount);
 /**
  * clean up
  */
-myDatabase.destroy();
+myDatabase.close();
 ```
 
 

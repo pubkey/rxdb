@@ -19,8 +19,7 @@ const _create = async () => {
     name: 'rxdbdemo',
     storage: wrappedValidateAjvStorage({
       storage: getRxStorageDexie(),
-    }),
-    ignoreDuplicate: true
+    })
   });
   await db.addCollections({ notes: { schema: noteSchema } });
   dbPromise = db;

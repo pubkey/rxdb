@@ -3,7 +3,7 @@ import { checkSchema } from "./check-schema.js";
 import { checkOrmDocumentMethods, checkOrmMethods } from "./check-orm.js";
 import { checkMigrationStrategies } from "./check-migration-strategies.js";
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from "./unallowed-properties.js";
-import { checkMangoQuery, checkQuery } from "./check-query.js";
+import { checkMangoQuery, checkQuery, isQueryAllowed } from "./check-query.js";
 import { newRxError } from "../../rx-error.js";
 import { deepFreeze } from "../../plugins/utils/index.js";
 import { checkWriteRows, ensurePrimaryKeyValid } from "./check-document.js";
@@ -64,6 +64,14 @@ export var RxDBDevModePlugin = {
       after: checkSchema
     },
     preCreateRxDatabase: {
+      before: function (args) {
+        if (!args.storage.name.startsWith('validate-')) {
+          throw newRxError('DVM1', {
+            database: args.name,
+            storage: args.storage.name
+          });
+        }
+      },
       after: function (args) {
         ensureDatabaseNameIsValid(args);
       }
@@ -93,6 +101,11 @@ export var RxDBDevModePlugin = {
     createRxDocument: {
       before: function (doc) {
         ensurePrimaryKeyValid(doc.primary, doc.toJSON(true));
+      }
+    },
+    prePrepareRxQuery: {
+      after: function (args) {
+        isQueryAllowed(args);
       }
     },
     preCreateRxQuery: {

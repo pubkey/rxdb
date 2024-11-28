@@ -48,7 +48,7 @@ async function createWebSocketClient(options) {
       if (options.headers) {
         var authMessage = {
           collection: options.collection.name,
-          id: (0, _index2.randomCouchString)(10),
+          id: (0, _index2.randomToken)(10),
           params: [options.headers],
           method: 'auth'
         };
@@ -78,7 +78,7 @@ async function replicateWithWebsocketServer(options) {
   var wsClient = websocketClient.socket;
   var messages$ = websocketClient.message$;
   var requestCounter = 0;
-  var requestFlag = (0, _index2.randomCouchString)(10);
+  var requestFlag = (0, _index2.randomToken)(10);
   function getRequestId() {
     var count = requestCounter++;
     return options.collection.database.token + '|' + requestFlag + '|' + count;
@@ -142,7 +142,7 @@ async function replicateWithWebsocketServer(options) {
       wsClient.send(JSON.stringify(streamRequest));
     }
   });
-  options.collection.onDestroy.push(() => websocketClient.socket.close());
+  options.collection.onClose.push(() => websocketClient.socket.close());
   return replicationState;
 }
 //# sourceMappingURL=websocket-client.js.map

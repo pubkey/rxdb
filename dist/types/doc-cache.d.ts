@@ -1,4 +1,4 @@
-import type { RxChangeEvent, RxDocument, RxDocumentData } from './types/index.d.ts';
+import type { RxDocument, RxDocumentData, RxStorageChangeEvent } from './types/index.d.ts';
 import { Observable } from 'rxjs';
 /**
  * Because we have to create many cache items,
@@ -48,7 +48,7 @@ declare type FinalizationRegistryValue = {
  */
 export declare class DocumentCache<RxDocType, OrmMethods> {
     readonly primaryPath: string;
-    readonly changes$: Observable<RxChangeEvent<RxDocType>[]>;
+    readonly changes$: Observable<RxStorageChangeEvent<RxDocType>[]>;
     /**
      * A method that can create a RxDocument by the given document data.
      */
@@ -66,7 +66,7 @@ export declare class DocumentCache<RxDocType, OrmMethods> {
      * but at least works.
      */
     readonly registry?: FinalizationRegistry<FinalizationRegistryValue>;
-    constructor(primaryPath: string, changes$: Observable<RxChangeEvent<RxDocType>[]>, 
+    constructor(primaryPath: string, changes$: Observable<RxStorageChangeEvent<RxDocType>[]>, 
     /**
      * A method that can create a RxDocument by the given document data.
      */

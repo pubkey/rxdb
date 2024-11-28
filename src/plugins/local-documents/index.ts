@@ -64,12 +64,12 @@ export const RxDBLocalDocumentsPlugin: RxPlugin = {
                 }
             }
         },
-        preDestroyRxDatabase: {
+        preCloseRxDatabase: {
             after: db => {
                 return closeStateByParent(db);
             }
         },
-        postDestroyRxCollection: {
+        postCloseRxCollection: {
             after: collection => closeStateByParent(collection)
         },
         postRemoveRxDatabase: {

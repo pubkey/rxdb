@@ -452,32 +452,6 @@ export function checkSchema(jsonSchema) {
     });
   });
 
-  /**
-   * TODO
-   * in 9.0.0 we changed the way encrypted fields are defined
-   * This check ensures people do not oversee the breaking change
-   * Remove this check in the future
-   */
-  Object.keys(flattenObject(jsonSchema)).map(key => {
-    // flattenObject returns only ending paths, we need all paths pointing to an object
-    var split = key.split('.');
-    split.pop(); // all but last
-    return split.join('.');
-  }).filter(key => key !== '' && key !== 'attachments').filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
-  .filter(key => {
-    // check if this path defines an encrypted field
-    var value = getProperty(jsonSchema, key);
-    return value && !!value.encrypted;
-  }).forEach(key => {
-    // replace inner properties
-    key = key.replace('properties.', ''); // first
-    key = key.replace(/\.properties\./g, '.'); // middle
-    throw newRxError('SC27', {
-      index: trimDots(key),
-      schema: jsonSchema
-    });
-  });
-
   /* ensure encrypted fields exist in the schema */
   if (jsonSchema.encrypted) {
     jsonSchema.encrypted.forEach(propPath => {

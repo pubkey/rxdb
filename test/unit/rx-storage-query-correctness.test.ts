@@ -3,7 +3,7 @@ import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 import {
     RxJsonSchema,
-    randomCouchString,
+    randomToken,
     MangoQuery,
     fillWithDefaultSettings,
     normalizeMangoQuery,
@@ -15,7 +15,8 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase,
-    prepareQuery
+    prepareQuery,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -55,6 +56,17 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     ): RxJsonSchema<RxDocType> {
         schema = clone(schema);
         schema.indexes = indexes;
+
+        const indexFields = indexes.flat();
+        const required = ensureNotFalsy(schema.required);
+        if (required) {
+            indexFields.forEach(indexField => {
+                if (!required.includes(indexField as any)) {
+                    (required as any).push(indexField);
+                }
+            });
+        }
+
         return schema;
     }
     function testCorrectQueries<RxDocType>(
@@ -70,9 +82,9 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             const schema = fillWithDefaultSettings(clone(input.schema));
             const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
             const storageInstance = await config.storage.getStorage().createStorageInstance<RxDocType>({
-                databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
-                collectionName: randomCouchString(12),
+                databaseInstanceToken: randomToken(10),
+                databaseName: randomToken(12),
+                collectionName: randomToken(12),
                 schema,
                 options: {},
                 multiInstance: false,
@@ -101,7 +113,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             );
 
             const database = await createRxDatabase({
-                name: randomCouchString(10),
+                name: randomToken(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
                 }),
@@ -1390,6 +1402,12 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     multipleOf: 1
                 }
             },
+            required: [
+                '_id',
+                'name',
+                'gender',
+                'age'
+            ],
             indexes: [
                 [
                     'name',
@@ -1660,6 +1678,77 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 expectedResultDocIds: ['eeeeee']
             },
+        ],
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/pull/6643
+     */
+    testCorrectQueries<{
+        id: string;
+        numberIndex?: number;
+    }>({
+        testTitle: 'issue: Inserting without an optional index field causes unexpected behavior',
+        /**
+         * IndexedDB has some non-indexable types, so this does not work in dexie.
+         * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+         */
+        notRunIfTrue: () => config.storage.name.includes('dexie'),
+        data: [
+            {
+                'id': 'aa',
+                'numberIndex': 2,
+            },
+            {
+                'id': 'bb'
+            },
+            {
+                'id': 'cc',
+                'numberIndex': 5,
+            }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                numberIndex: {
+                    type: 'number',
+                    minimum: 1,
+                    maximum: 40,
+                    multipleOf: 1,
+                }
+            },
+            indexes: ['numberIndex']
+        },
+        queries: [
+            {
+                info: 'without selector',
+                query: {
+                    'selector': {},
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'cc'
+                ]
+            },
+            {
+                info: 'without selector and numberIndex',
+                query: {
+                    'selector': {},
+                    sort: [{ numberIndex: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'bb',
+                    'aa',
+                    'cc'
+                ]
+            }
         ],
     });
 });

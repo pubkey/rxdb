@@ -5,11 +5,16 @@ import { HumanDocumentType } from './schemas.ts';
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
- * TODO add emojis
  */
 export declare const TEST_DATA_CHARSET = "0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\u00E4\u00F6\u00FC\u00D6\u00C4\u00DF\u00DC[]{}'";
 export declare const TEST_DATA_CHARSET_LAST_SORTED: string;
-export declare function randomStringWithSpecialChars(length: number): string;
+export declare function randomStringWithSpecialChars(minLength: number, 
+/**
+ * It has shown that alternating string lengths
+ * can reproduce various problems. So by having variable
+ * lengths we ensure that this fully works.
+ */
+maxLength: number): string;
 export interface SimpleHumanDocumentType {
     passportId: string;
     firstName: string;

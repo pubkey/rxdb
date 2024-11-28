@@ -2,15 +2,8 @@ import assert from 'assert';
 
 import config, { describeParallel } from './config.ts';
 import {
-    clone,
-    ensureNotFalsy,
-    fillWithDefaultSettings,
-    MangoQuery,
-    normalizeMangoQuery,
-    randomCouchString,
-    now,
-    createRevision,
-    prepareQuery
+    randomToken,
+    createRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -19,11 +12,7 @@ import {
     fromStorageToDexie
 } from '../../plugins/storage-dexie/index.mjs';
 
-import {
-    schemaObjects,
-    humanSchemaLiteral,
-    HumanDocumentType
-} from '../../plugins/test-utils/index.mjs';
+import { assertThrows } from 'async-test-util';
 
 /**
  * RxStorageDexie specific tests
@@ -112,111 +101,46 @@ describeParallel('rx-storage-dexie.test.js', () => {
         });
     });
     describe('.query()', () => {
-        it('should respect a custom index', async () => {
-            /**
-             * This test should only run when dexie
-             */
-            assert.strictEqual(config.storage.name, 'dexie');
-
-            const storage = config.storage.getStorage();
-
-            let schema = clone(humanSchemaLiteral) as any;
-            schema.indexes.push(['passportId', 'age']);
-            /*
-                        schema.indexes.push(['age']);
-                        schema.indexes.push(['age', 'passportId']);
-                        schema.indexes.push(['age', 'firstName', 'passportId']);
-                        schema.indexes.push(['firstName', 'age', 'passportId']);
-                        */
-            schema = fillWithDefaultSettings(schema);
-
-            const databaseName = randomCouchString(12);
-            const databaseInstanceToken = randomCouchString(10);
-            const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
-                databaseInstanceToken,
-                databaseName,
-                collectionName: randomCouchString(12),
-                schema,
-                options: {},
-                multiInstance: false,
-                devMode: true
+        /**
+         * IndexedDB has some non-indexable types, so this does not work in dexie.
+         * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+         */
+        it('should throw on optional index', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    numberIndex: {
+                        type: 'number',
+                        minimum: 1,
+                        maximum: 40,
+                        multipleOf: 1,
+                    },
+                },
+                indexes: ['numberIndex']
+            };
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
             });
-
-            await storageInstance.bulkWrite(
-                new Array(5).fill(0).map(() => {
-                    const data = schemaObjects.humanData() as any;
-                    data._attachments = {};
-                    data._deleted = false;
-                    data.age = 18;
-                    data._meta = {
-                        lwt: now()
-                    };
-                    data._rev = createRevision(databaseInstanceToken);
-                    return {
-                        document: data
-                    };
+            await assertThrows(
+                () => db.addCollections({
+                    mycollection: {
+                        schema: mySchema
+                    }
                 }),
-                'dexie-test'
+                'RxError',
+                'DXE1'
             );
-
-            // const hasIndexes = await pouch.getIndexes();
-
-            async function analyzeQuery(query: MangoQuery<HumanDocumentType>) {
-                const preparedQuery = prepareQuery(
-                    schema,
-                    normalizeMangoQuery(schema, query)
-                );
-                const queryPlan = preparedQuery.queryPlan;
-                const result = await storageInstance.query(preparedQuery);
-                return {
-                    query,
-                    preparedQuery,
-                    queryPlan,
-                    result: result.documents
-                };
-            }
-
-            const defaultAnalyzed = await analyzeQuery({
-                selector: {},
-                sort: [
-                    { passportId: 'asc' }
-                ]
-            });
-
-            const customIndexAnalyzed = await analyzeQuery({
-                selector: {},
-                sort: [
-                    { passportId: 'asc' }
-                ],
-                index: ['_deleted', 'passportId', 'age']
-            });
-
-            // default should use default index
-            assert.deepStrictEqual(
-                defaultAnalyzed.queryPlan.index,
-                ['_meta.lwt', 'passportId']
-            );
-
-            // custom should use the custom index
-            (customIndexAnalyzed.query as any).index.forEach((indexKey: string) => {
-                if (indexKey !== 'passportId') {
-                    assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index).includes(indexKey));
-                }
-            });
-
-            /**
-             * The primaryPath must always be the last index field
-             * to have deterministic sorting.
-             */
-            assert.ok(ensureNotFalsy(customIndexAnalyzed.queryPlan.index).includes('passportId'));
-
-            // both queries should have returned the same documents
-            assert.deepStrictEqual(
-                defaultAnalyzed.result,
-                customIndexAnalyzed.result
-            );
-
-            storageInstance.close();
+            db.close();
         });
     });
 });

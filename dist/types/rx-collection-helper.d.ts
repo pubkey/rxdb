@@ -14,11 +14,11 @@ export declare function createRxCollectionStorageInstance<RxDocumentType, Intern
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
  */
-export declare function removeCollectionStorages(storage: RxStorage<any, any>, databaseInternalStorage: RxStorageInstance<InternalStoreDocType<any>, any, any>, databaseInstanceToken: string, databaseName: string, collectionName: string, password?: string, 
+export declare function removeCollectionStorages(storage: RxStorage<any, any>, databaseInternalStorage: RxStorageInstance<InternalStoreDocType<any>, any, any>, databaseInstanceToken: string, databaseName: string, collectionName: string, multiInstance: boolean, password?: string, 
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
  * so we do not have to delete the meta documents.
  */
 hashFunction?: HashFunction): Promise<void>;
-export declare function ensureRxCollectionIsNotDestroyed(collection: RxCollection | RxCollectionBase<any, any, any, any, any>): void;
+export declare function ensureRxCollectionIsNotClosed(collection: RxCollection | RxCollectionBase<any, any, any, any, any>): void;

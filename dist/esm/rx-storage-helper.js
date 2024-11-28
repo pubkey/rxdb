@@ -5,10 +5,9 @@
 import { overwritable } from "./overwritable.js";
 import { newRxError } from "./rx-error.js";
 import { getPrimaryFieldOfPrimaryKey } from "./rx-schema-helper.js";
-import { PROMISE_RESOLVE_TRUE, RXDB_VERSION, RX_META_LWT_MINIMUM, appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, lastOfArray, now, promiseWait, randomCouchString } from "./plugins/utils/index.js";
+import { PROMISE_RESOLVE_TRUE, RXDB_VERSION, RX_META_LWT_MINIMUM, appendToArray, createRevision, ensureNotFalsy, flatClone, getFromMapOrCreate, lastOfArray, now, promiseWait, randomToken } from "./plugins/utils/index.js";
 import { filter, map, startWith, switchMap } from 'rxjs';
-import { prepareQuery } from "./rx-query.js";
-import { normalizeMangoQuery } from "./rx-query-helper.js";
+import { normalizeMangoQuery, prepareQuery } from "./rx-query-helper.js";
 import { runPluginHooks } from "./hooks.js";
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -110,14 +109,12 @@ onInsert, onUpdate) {
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = [];
-  var eventBulkId = randomCouchString(10);
+  var eventBulkId = randomToken(10);
   var eventBulk = {
     id: eventBulkId,
     events: [],
     checkpoint: null,
-    context,
-    startTime: now(),
-    endTime: 0
+    context
   };
   var eventBulkEvents = eventBulk.events;
   var attachmentsAdd = [];
@@ -385,8 +382,6 @@ export function flatCloneDocWithMeta(doc) {
     _meta: flatClone(doc._meta)
   });
 }
-var BULK_WRITE_SUCCESS_MAP = new WeakMap();
-
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -408,7 +403,7 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkWrite(rows, context) {
+    async bulkWrite(rows, context) {
       var databaseToken = database.token;
       var toStorageWriteRows = new Array(rows.length);
       /**
@@ -438,7 +433,8 @@ rxJsonSchema) {
         storageInstance: this.originalStorageInstance,
         rows: toStorageWriteRows
       });
-      return database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context))
+      var writeResult = await database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context));
+
       /**
        * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
        * without sending the previous document version.
@@ -446,44 +442,39 @@ rxJsonSchema) {
        * We do this by automatically fixing the conflict errors for that case
        * by running another bulkWrite() and merging the results.
        * @link https://github.com/pubkey/rxdb/pull/3839
-       */.then(writeResult => {
-        var useWriteResult = {
-          error: []
-        };
-
-        /**
-         * TODO do we really have to build up the successArray
-         * here directly? Maybe we only need it when it is really accessed.
-         */
-        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, writeResult);
-        BULK_WRITE_SUCCESS_MAP.set(useWriteResult, successArray);
-        var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
-          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && ensureNotFalsy(error.documentInDb)._deleted) {
-            return true;
-          }
-
-          // add the "normal" errors to the parent error array.
-          useWriteResult.error.push(error);
-          return false;
-        });
-        if (reInsertErrors.length > 0) {
-          var reInserts = reInsertErrors.map(error => {
-            return {
-              previous: error.documentInDb,
-              document: Object.assign({}, error.writeRow.document, {
-                _rev: createRevision(database.token, error.documentInDb)
-              })
-            };
-          });
-          return database.lockedRun(() => storageInstance.bulkWrite(reInserts, context)).then(subResult => {
-            appendToArray(useWriteResult.error, subResult.error);
-            var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
-            appendToArray(successArray, subSuccess);
-            return useWriteResult;
-          });
+      */
+      var useWriteResult = {
+        error: []
+      };
+      BULK_WRITE_ROWS_BY_RESPONSE.set(useWriteResult, toStorageWriteRows);
+      var reInsertErrors = writeResult.error.length === 0 ? [] : writeResult.error.filter(error => {
+        if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && ensureNotFalsy(error.documentInDb)._deleted) {
+          return true;
         }
-        return useWriteResult;
+
+        // add the "normal" errors to the parent error array.
+        useWriteResult.error.push(error);
+        return false;
       });
+      if (reInsertErrors.length > 0) {
+        var reInsertIds = new Set();
+        var reInserts = reInsertErrors.map(error => {
+          reInsertIds.add(error.documentId);
+          return {
+            previous: error.documentInDb,
+            document: Object.assign({}, error.writeRow.document, {
+              _rev: createRevision(database.token, error.documentInDb)
+            })
+          };
+        });
+        var subResult = await database.lockedRun(() => storageInstance.bulkWrite(reInserts, context));
+        appendToArray(useWriteResult.error, subResult.error);
+        var successArray = getWrittenDocumentsFromBulkWriteResponse(primaryPath, toStorageWriteRows, useWriteResult, reInsertIds);
+        var subSuccess = getWrittenDocumentsFromBulkWriteResponse(primaryPath, reInserts, subResult);
+        appendToArray(successArray, subSuccess);
+        return useWriteResult;
+      }
+      return useWriteResult;
     },
     query(preparedQuery) {
       return database.lockedRun(() => storageInstance.query(preparedQuery));
@@ -513,30 +504,6 @@ rxJsonSchema) {
     },
     changeStream() {
       return storageInstance.changeStream();
-    },
-    conflictResultionTasks() {
-      return storageInstance.conflictResultionTasks();
-    },
-    resolveConflictResultionTask(taskSolution) {
-      if (taskSolution.output.isEqual) {
-        return storageInstance.resolveConflictResultionTask(taskSolution);
-      }
-      var doc = Object.assign({}, taskSolution.output.documentData, {
-        _meta: getDefaultRxDocumentMeta(),
-        _rev: getDefaultRevision(),
-        _attachments: {}
-      });
-      var documentData = flatClone(doc);
-      delete documentData._meta;
-      delete documentData._rev;
-      delete documentData._attachments;
-      return storageInstance.resolveConflictResultionTask({
-        id: taskSolution.id,
-        output: {
-          isEqual: false,
-          documentData
-        }
-      });
     }
   };
   database.storageInstances.add(ret);
@@ -638,33 +605,42 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
     }
   };
 }
-export function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response) {
-  var fromMap = BULK_WRITE_SUCCESS_MAP.get(response);
-  if (fromMap) {
-    return fromMap;
-  }
-  var ret = [];
-  if (response.error.length > 0) {
-    var errorIds = new Set();
-    for (var index = 0; index < response.error.length; index++) {
-      var error = response.error[index];
-      errorIds.add(error.documentId);
+var BULK_WRITE_ROWS_BY_RESPONSE = new WeakMap();
+var BULK_WRITE_SUCCESS_MAP = new WeakMap();
+
+/**
+ * For better performance, this is done only when accessed
+ * because most of the time we do not need the results, only the errors.
+ */
+export function getWrittenDocumentsFromBulkWriteResponse(primaryPath, writeRows, response, reInsertIds) {
+  return getFromMapOrCreate(BULK_WRITE_SUCCESS_MAP, response, () => {
+    var ret = [];
+    var realWriteRows = BULK_WRITE_ROWS_BY_RESPONSE.get(response);
+    if (!realWriteRows) {
+      realWriteRows = writeRows;
     }
-    for (var _index = 0; _index < writeRows.length; _index++) {
-      var doc = writeRows[_index].document;
-      if (!errorIds.has(doc[primaryPath])) {
-        ret.push(stripAttachmentsDataFromDocument(doc));
+    if (response.error.length > 0 || reInsertIds) {
+      var errorIds = reInsertIds ? reInsertIds : new Set();
+      for (var index = 0; index < response.error.length; index++) {
+        var error = response.error[index];
+        errorIds.add(error.documentId);
+      }
+      for (var _index = 0; _index < realWriteRows.length; _index++) {
+        var doc = realWriteRows[_index].document;
+        if (!errorIds.has(doc[primaryPath])) {
+          ret.push(stripAttachmentsDataFromDocument(doc));
+        }
+      }
+    } else {
+      // pre-set array size for better performance
+      ret.length = writeRows.length - response.error.length;
+      for (var _index2 = 0; _index2 < realWriteRows.length; _index2++) {
+        var _doc = realWriteRows[_index2].document;
+        ret[_index2] = stripAttachmentsDataFromDocument(_doc);
       }
     }
-  } else {
-    // pre-set array size for better performance
-    ret.length = writeRows.length - response.error.length;
-    for (var _index2 = 0; _index2 < writeRows.length; _index2++) {
-      var _doc = writeRows[_index2].document;
-      ret[_index2] = stripAttachmentsDataFromDocument(_doc);
-    }
-  }
-  return ret;
+    return ret;
+  });
 }
 
 /**
@@ -731,12 +707,6 @@ export function randomDelayStorage(input) {
         },
         changeStream() {
           return storageInstance.changeStream();
-        },
-        conflictResultionTasks() {
-          return storageInstance.conflictResultionTasks();
-        },
-        resolveConflictResultionTask(a) {
-          return storageInstance.resolveConflictResultionTask(a);
         },
         async cleanup(a) {
           await promiseWait(input.delayTimeBefore());

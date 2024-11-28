@@ -5,7 +5,7 @@ import { getDocumentDataOfRxChangeEvent } from "../../rx-change-event.js";
 import { basePrototype, createRxDocumentConstructor } from "../../rx-document.js";
 import { newRxError, newRxTypeError } from "../../rx-error.js";
 import { getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "../../rx-storage-helper.js";
-import { flatClone, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, flatClone, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from "./local-documents-helper.js";
 import { isRxDatabase } from "../../rx-database.js";
 var RxDocumentParent = createRxDocumentConstructor();
@@ -42,7 +42,9 @@ var RxLocalDocumentPrototype = {
   get $() {
     var _this = this;
     var state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
-    return _this.parent.$.pipe(filter(changeEvent => changeEvent.documentId === this.primary), filter(changeEvent => changeEvent.isLocal), map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)), startWith(state.docCache.getLatestDocumentData(this.primary)), distinctUntilChanged((prev, curr) => prev._rev === curr._rev), map(docData => state.docCache.getCachedRxDocument(docData)), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
+    var id = this.primary;
+    return _this.parent.eventBulks$.pipe(filter(bulk => !!bulk.isLocal), map(bulk => bulk.events.find(ev => ev.documentId === id)), filter(event => !!event), map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))), startWith(state.docCache.getLatestDocumentData(this.primary)), distinctUntilChanged((prev, curr) => prev._rev === curr._rev), map(docData => state.docCache.getCachedRxDocument(docData)), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
+    ;
   },
   get $$() {
     var _this = this;

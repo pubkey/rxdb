@@ -33,6 +33,9 @@ function isoStringToServerTimestamp(isoString) {
 function firestoreRowToDocData(serverTimestampField, primaryPath, row) {
   var docData = stripServerTimestampField(serverTimestampField, row.data());
   docData[primaryPath] = row.id;
+  if (primaryPath !== 'id') {
+    delete docData['id'];
+  }
   return docData;
 }
 function stripPrimaryKey(primaryPath, docData) {

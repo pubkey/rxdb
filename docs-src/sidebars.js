@@ -121,6 +121,7 @@ const sidebars = {
       type: 'category',
       label: '🆕 Releases',
       items: [
+        'releases/16.0.0',
         'releases/15.0.0',
         'releases/14.0.0',
         'releases/13.0.0',

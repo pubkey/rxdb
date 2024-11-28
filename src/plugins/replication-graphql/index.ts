@@ -9,6 +9,7 @@ import {
 } from '../../plugins/utils/index.ts';
 
 import {
+    getDataFromResult,
     graphQLRequest
 } from './helper.ts';
 
@@ -131,8 +132,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 if (result.errors) {
                     throw result.errors;
                 }
-                const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                let data: any = getProperty(result, dataPath);
+                let data: any = getDataFromResult(result, pull.dataPath);
                 if (pull.responseModifier) {
                     data = await pull.responseModifier(
                         data,
@@ -166,9 +166,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 if (result.errors) {
                     throw result.errors;
                 }
-                const dataPath = push.dataPath || Object.keys(result.data)[0];
-                let data: any = getProperty(result.data, dataPath);
-
+                let data: any = getDataFromResult(result, push.dataPath);
                 if (push.responseModifier) {
                     data = await push.responseModifier(
                         data,
@@ -176,7 +174,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 }
 
                 return data;
-            },
+            }, 
             batchSize: push.batchSize,
             modifier: push.modifier
         };
@@ -205,7 +203,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
             const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
-            const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders);
+            const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders, pull.wsOptions);
 
             wsClient.on('connected', () => {
                 pullStream$.next('RESYNC');

@@ -38,7 +38,7 @@ export const heroSchema = {
         }
     },
     indexes: ['name', 'color', 'updatedAt'],
-    required: ['id', 'color', 'updatedAt']
+    required: ['id', 'name', 'color', 'updatedAt']
 };
 
 export const graphQLGenerationInput = {

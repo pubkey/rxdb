@@ -10,7 +10,7 @@ describeParallel('idle-queue.test.js', () => {
         it('should be able to call queue on database', async () => {
             const c = await humansCollection.create(0);
             await c.database.requestIdlePromise();
-            c.database.destroy();
+            c.database.close();
         });
         it('inserts should always be faster than idle-call', async () => {
             const c = await humansCollection.create(0);
@@ -25,7 +25,7 @@ describeParallel('idle-queue.test.js', () => {
             await AsyncTestUtil.waitUntil(() => order.length === 2);
             assert.deepStrictEqual(order, [0, 1]);
 
-            c.database.destroy();
+            c.database.close();
         });
     });
 });

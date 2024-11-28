@@ -327,10 +327,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
                         let isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ?
                             false :
-                            await state.input.conflictHandler({
-                                realMasterState: assumedMaster.docData,
-                                newDocumentState: forkStateDocData
-                            }, 'downstream-check-if-equal-0').then(r => r.isEqual);
+                            state.input.conflictHandler.isEqual(
+                                assumedMaster.docData,
+                                forkStateDocData,
+                                'downstream-check-if-equal-0'
+                            );
                         if (
                             !isAssumedMasterEqualToForkState &&
                             (
@@ -364,13 +365,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
                         const areStatesExactlyEqual = !forkStateDocData
                             ? false
-                            : await state.input.conflictHandler(
-                                {
-                                    realMasterState: masterState,
-                                    newDocumentState: forkStateDocData
-                                },
+                            : state.input.conflictHandler.isEqual(
+                                masterState,
+                                forkStateDocData,
                                 'downstream-check-if-equal-1'
-                            ).then(r => r.isEqual);
+                            );
                         if (
                             forkStateDocData &&
                             areStatesExactlyEqual

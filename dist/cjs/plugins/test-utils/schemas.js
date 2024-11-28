@@ -40,7 +40,7 @@ var humanSchemaLiteral = exports.humanSchemaLiteral = _overwritable.overwritable
       multipleOf: 1
     }
   },
-  required: ['firstName', 'lastName', 'passportId', 'age'],
+  required: ['firstName', 'lastName', 'passportId'],
   indexes: ['firstName']
 });
 var humanSchemaTyped = (0, _rxSchema.toTypedRxJsonSchema)(humanSchemaLiteral);
@@ -860,14 +860,17 @@ function averageSchema() {
     keyCompression: false,
     properties: {
       id: {
+        description: 'id',
         type: 'string',
         maxLength: 12
       },
       var1: {
+        description: 'var1',
         type: 'string',
         maxLength: 12
       },
       var2: {
+        description: 'var2',
         type: 'number',
         minimum: 0,
         maximum: 50000,
@@ -901,7 +904,7 @@ function averageSchema() {
         }
       }
     },
-    required: ['id'],
+    required: ['id', 'var1', 'var2'],
     indexes: ['var1', 'var2', 'deep.deep1',
     // one compound index
     ['var2', 'var1']],

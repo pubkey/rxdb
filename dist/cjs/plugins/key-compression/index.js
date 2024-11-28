@@ -13,7 +13,7 @@ var _pluginHelpers = require("../../plugin-helpers.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _index = require("../../plugins/utils/index.js");
-var _rxQuery = require("../../rx-query.js");
+var _rxQueryHelper = require("../../rx-query-helper.js");
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you don't use this, ensure that you set disableKeyCompression to false in your schema
@@ -110,7 +110,7 @@ function wrappedKeyCompressionStorage(args) {
         var methodBefore = wrappedInstance[methodName].bind(wrappedInstance);
         wrappedInstance[methodName] = async preparedQuery => {
           var compressedQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, preparedQuery.query);
-          var compressedPreparedQuery = (0, _rxQuery.prepareQuery)(compressionState.compressedSchema, compressedQuery);
+          var compressedPreparedQuery = (0, _rxQueryHelper.prepareQuery)(compressionState.compressedSchema, compressedQuery);
           return methodBefore(compressedPreparedQuery);
         };
       });

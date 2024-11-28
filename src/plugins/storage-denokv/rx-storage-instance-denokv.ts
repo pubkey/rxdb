@@ -14,10 +14,8 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     StringKeys,
-    RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
-    RxConflictResultionTask,
     PreparedQuery
 } from '../../types/index.d.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
@@ -110,8 +108,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
 
                 /**
-                 * TODO the max amount for .getMany() is 10 which is defined by deno itself.
-                 * How can this be increased?
+                 * The max amount for .getMany() is 10 which is defined by deno itself:
+                 * @link https://docs.deno.com/deploy/kv/manual/transactions/
+                 * @link https://github.com/denoland/deno/issues/19284
                  */
                 const readManyBatches = batchArray(writeBatch, 10);
                 await Promise.all(
@@ -196,7 +195,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             id: lastState[primaryPath],
                             lwt: lastState._meta.lwt
                         };
-                        categorized.eventBulk.endTime = now();
                         this.changes$.next(categorized.eventBulk);
                     }
                     break;
@@ -345,12 +343,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
         await Promise.all(promises);
         return this.close();
-    }
-    conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return new Subject<any>().asObservable();
-    }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
     }
 }
 

@@ -123,7 +123,6 @@ return (
 RxDB offers multiple storage layers, each backed by a different underlying technology. Developers can choose the storage layer that best suits their application's requirements. Some available options include:
 
 - [Dexie.js RxStorage](../rx-storage-dexie.md): Built on top of Dexie.js, a popular IndexedDB wrapper.
-- [LokiJS RxStorage](../rx-storage-lokijs.md): Utilizes the LokiJS in-memory database.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): The default RxDB storage layer, providing efficient data storage in modern browsers.
 - [OPFS RxStorage](../rx-storage-opfs.md): Uses the Operational File System (OPFS) for storage, suitable for [Electron applications](../electron-database.md).
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, primarily intended for testing and development purposes.

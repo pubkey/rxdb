@@ -13,7 +13,7 @@ describeParallel('change-event-buffer.test.js', () => {
         it('should contains some events', async () => {
             const col = await humansCollection.create(10);
             assert.strictEqual(col._changeEventBuffer.getBuffer().length, 10);
-            col.database.destroy();
+            col.database.close();
         });
         it('should delete older events when buffer get over limit', async () => {
             const col = await humansCollection.create(0);
@@ -126,7 +126,7 @@ describeParallel('change-event-buffer.test.js', () => {
             evs.forEach(cE => assert.ok(cE.documentId));
 
 
-            col.database.destroy();
+            col.database.close();
         });
         it('should throw if pointer to low', async () => {
             const col = await humansCollection.create(0);
@@ -177,28 +177,6 @@ describeParallel('change-event-buffer.test.js', () => {
             assert.strictEqual(evs[0].operation, 'DELETE');
 
             col.database.remove();
-        });
-    });
-    describe('.reduceByLastOfDoc()', () => {
-        it('should only have the last changeEvent for the doc', async () => {
-            return; // TODO see reduceByLastOfDoc() implementation
-            const col = await humansCollection.create(5);
-            const q = col.find();
-            await q.exec();
-            const oneDoc: any = await col.findOne().exec();
-            let newVal = 0;
-            while (newVal < 5) {
-                newVal++;
-                await oneDoc.incrementalPatch({ age: newVal });
-            }
-
-            const allEvents: any[] = q.collection._changeEventBuffer.getFrom(1) as any;
-            const reduced = q.collection._changeEventBuffer.reduceByLastOfDoc(allEvents);
-
-            assert.strictEqual(reduced.length, 5);
-            const lastEvent: any = reduced.find(cE => cE.documentId === oneDoc.primary);
-            assert.strictEqual(lastEvent.documentData.age, 5);
-            col.database.destroy();
         });
     });
 });

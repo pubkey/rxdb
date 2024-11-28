@@ -33,7 +33,7 @@ import {
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    randomCouchString,
+    randomToken,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
@@ -70,7 +70,6 @@ import {
     WrappedRxStorageInstance
 } from './rx-storage-helper.ts';
 import type { RxBackupState } from './plugins/backup/index.ts';
-import { ObliviousSet } from 'oblivious-set';
 import {
     ensureStorageTokenDocumentExists,
     getAllCollectionDocuments,
@@ -83,6 +82,7 @@ import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
+import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
 /**
  * stores the used database names+storage names
@@ -192,19 +192,26 @@ export class RxDatabaseBase<
     public startupErrors: (RxError | RxTypeError)[] = [];
 
     /**
-     * When the database is destroyed,
+     * When the database is closed,
      * these functions will be called an awaited.
      * Used to automatically clean up stuff that
      * belongs to this collection.
      */
-    public onDestroy: (() => MaybePromise<any>)[] = [];
-    public destroyed: boolean = false;
+    public onClose: (() => MaybePromise<any>)[] = [];
+    public closed: boolean = false;
     public collections: Collections = {} as any;
     public states: { [name: string]: RxState<any, Reactivity>; } = {};
+
+    /**
+     * Internally only use eventBulks$
+     * Do not use .$ or .observable$ because that has to transform
+     * the events which decreases performance.
+     */
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
+
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
-            mergeMap(changeEventBulk => changeEventBulk.events)
+            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
         );
 
     /**
@@ -224,16 +231,6 @@ export class RxDatabaseBase<
     public storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>> = PROMISE_RESOLVE_FALSE as any;
 
     /**
-     * Contains the ids of all event bulks that have been emitted
-     * by the database.
-     * Used to detect duplicates that come in again via BroadcastChannel
-     * or other streams.
-     * TODO instead of having this here, we should add a test to ensure each RxStorage
-     * behaves equal and does never emit duplicate eventBulks.
-     */
-    public emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
-
-    /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
      * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
@@ -241,11 +238,6 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEventBulk: RxChangeEventBulk<any>) {
-        if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
-            return;
-        }
-        this.emittedEventBulkIds.add(changeEventBulk.id);
-
         // emit into own stream
         this.eventBulks$.next(changeEventBulk);
     }
@@ -457,17 +449,17 @@ export class RxDatabaseBase<
     }
 
     /**
-     * destroys the database-instance and all collections
+     * closes the database-instance and all collections
      */
-    public async destroy(): Promise<boolean> {
-        if (this.destroyed) {
+    public async close(): Promise<boolean> {
+        if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }
 
-        // settings destroyed = true must be the first thing to do.
-        this.destroyed = true;
+        // settings closed = true must be the first thing to do.
+        this.closed = true;
 
-        await runAsyncPluginHooks('preDestroyRxDatabase', this);
+        await runAsyncPluginHooks('preCloseRxDatabase', this);
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
@@ -478,7 +470,7 @@ export class RxDatabaseBase<
         this._subs.map(sub => sub.unsubscribe());
 
         /**
-         * Destroying the pseudo instance will throw
+         * closing the pseudo instance will throw
          * because stuff is missing
          * TODO we should not need the pseudo instance on runtime.
          * we should generate the property list on build time.
@@ -491,14 +483,14 @@ export class RxDatabaseBase<
          * First wait until the database is idle
          */
         return this.requestIdlePromise()
-            .then(() => Promise.all(this.onDestroy.map(fn => fn())))
-            // destroy all collections
+            .then(() => Promise.all(this.onClose.map(fn => fn())))
+            // close all collections
             .then(() => Promise.all(
                 Object.keys(this.collections as any)
                     .map(key => (this.collections as any)[key])
-                    .map(col => col.destroy())
+                    .map(col => col.close())
             ))
-            // destroy internal storage instances
+            // close internal storage instances
             .then(() => this.internalStore.close())
             // remove combination from USED_COMBINATIONS-map
             .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name))
@@ -511,8 +503,8 @@ export class RxDatabaseBase<
      */
     remove(): Promise<string[]> {
         return this
-            .destroy()
-            .then(() => removeRxDatabase(this.name, this.storage, this.password));
+            .close()
+            .then(() => removeRxDatabase(this.name, this.storage, this.multiInstance, this.password));
     }
 
     get asRxDatabase(): RxDatabase<
@@ -610,10 +602,16 @@ export function createRxDatabase<
     // check if combination already used
     if (!ignoreDuplicate) {
         throwIfDatabaseNameUsed(name, storage);
+    } else {
+        if (!overwritable.isDevMode()) {
+            throw newRxError('DB9', {
+                database: name
+            });
+        }
     }
     USED_DATABASE_NAMES.add(storage.name + '|' + name);
 
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
 
     return createRxDatabaseStorageInstance<
         Internals,
@@ -679,15 +677,16 @@ export function createRxDatabase<
 export async function removeRxDatabase(
     databaseName: string,
     storage: RxStorage<any, any>,
+    multiInstance: boolean = true,
     password?: string
 ): Promise<string[]> {
-    const databaseInstanceToken = randomCouchString(10);
+    const databaseInstanceToken = randomToken(10);
     const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
         databaseInstanceToken,
         storage,
         databaseName,
         {},
-        false,
+        multiInstance,
         password
     );
     const collectionDocs = await getAllCollectionDocuments(dbInternalsStorageInstance);
@@ -702,6 +701,7 @@ export async function removeRxDatabase(
             databaseInstanceToken,
             databaseName,
             collectionName,
+            multiInstance,
             password
         ))
     );

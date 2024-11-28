@@ -110,6 +110,5 @@ const signal = myRxLocalDocument.get$$('foobar'); // get signal that represents 
 
 ## Limitations
 
-- Custom reactivity is in beta mode, it might have breaking changes without a major RxDB release.
 - TypeScript typings are not fully implemented, make a PR if something is missing or not working for you.
 - Currently not all observables things in RxDB are implemented to work with custom reactivity. Please make a PR if you have the need for any missing one.

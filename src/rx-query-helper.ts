@@ -1,4 +1,4 @@
-import { LOGICAL_OPERATORS } from './query-planner.ts';
+import { LOGICAL_OPERATORS, getQueryPlan } from './query-planner.ts';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
 import type {
     DeepReadonly,
@@ -6,6 +6,7 @@ import type {
     FilledMangoQuery,
     MangoQuery,
     MangoQuerySortDirection,
+    PreparedQuery,
     QueryMatcher,
     RxDocument,
     RxDocumentData,
@@ -242,9 +243,42 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
         return Promise.all(
             docs.map(doc => fn(doc))
         ) as any;
+    }else if(docs instanceof Map){
+        return Promise.all(
+            [...docs.values()].map((doc) => fn(doc))
+        ) as any;
     } else {
         // via findOne()
         const result = await fn(docs as any);
         return result as any;
     }
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export function prepareQuery<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    mutateableQuery: FilledMangoQuery<RxDocType>
+): PreparedQuery<RxDocType> {
+    if (!mutateableQuery.sort) {
+        throw newRxError('SNH', {
+            query: mutateableQuery
+        });
+    }
+
+    /**
+     * Store the query plan together with the
+     * prepared query to save performance.
+     */
+    const queryPlan = getQueryPlan(
+        schema,
+        mutateableQuery
+    );
+
+    return {
+        query: mutateableQuery,
+        queryPlan
+    };
 }

@@ -127,8 +127,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         );
         replicationStates.push(this);
 
-        // stop the replication when the collection gets destroyed
-        this.collection.onDestroy.push(() => this.cancel());
+        // stop the replication when the collection gets closed
+        this.collection.onClose.push(() => this.cancel());
 
         // create getters for the observables
         Object.keys(this.subjects).forEach(key => {
@@ -168,7 +168,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 databaseName: database.name,
                 collectionName: metaInfo.collectionName,
                 databaseInstanceToken: database.token,
-                multiInstance: database.multiInstance, // TODO is this always false?
+                multiInstance: database.multiInstance,
                 options: {},
                 schema: metaInfo.schema,
                 password: database.password,
@@ -181,6 +181,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             )
         ]);
         this.metaInstance = metaInstance;
+
 
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,

@@ -1,3 +1,4 @@
+import { ClientOptions } from 'graphql-ws';
 import { RxReplicationWriteToMasterRow } from '../replication-protocol.ts';
 import { ById, MaybePromise } from '../util.ts';
 import {
@@ -27,6 +28,7 @@ export type RxGraphQLReplicationPushQueryBuilder = (
     rows: RxReplicationWriteToMasterRow<any>[]
 ) => RxGraphQLReplicationQueryBuilderResponse;
 
+export type RxGraphQLPullWSOptions = Omit<ClientOptions, 'url' | 'shouldRetry' | 'webSocketImpl' | 'connectionParams'>;
 
 export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
     latestPulledCheckpoint: CheckpointType | undefined,
@@ -38,9 +40,15 @@ export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
-    dataPath?: string;
+    /**
+     * The path to the data in the GraphQL response.
+     * If set, the data will be taken from the response at this path.
+     * @example ['data', 'foo', 'bar'] or 'data.foo.bar'
+     */
+    dataPath?: string | string[];
     responseModifier?: RxGraphQLPullResponseModifier<RxDocType, CheckpointType>;
     includeWsHeaders?: boolean;
+    wsOptions?: RxGraphQLPullWSOptions;
 };
 
 export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
@@ -63,7 +71,12 @@ export type GraphQLSyncPushOptions<RxDocType> = Omit<
     'handler'
 > & {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
-    dataPath?: string;
+    /**
+     * The path to the data in the GraphQL response.
+     * If set, the data will be taken from the response at this path.
+     * @example ['data', 'foo', 'bar'] or 'data.foo.bar'
+     */
+    dataPath?: string | string[];
     responseModifier?: RxGraphQLPushResponseModifier<RxDocType>;
 };
 

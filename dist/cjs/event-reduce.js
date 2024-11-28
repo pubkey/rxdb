@@ -74,7 +74,14 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = (0, _index.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
   var previousResultsMap = (0, _index.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
-  var eventReduceEvents = rxChangeEvents.map(cE => (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE)).filter(_index.arrayFilterNotEmpty);
+  var eventReduceEvents = [];
+  for (var index = 0; index < rxChangeEvents.length; index++) {
+    var cE = rxChangeEvents[index];
+    var eventReduceEvent = (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
+    if (eventReduceEvent) {
+      eventReduceEvents.push(eventReduceEvent);
+    }
+  }
   var foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
     var stateResolveFunctionInput = {
       queryParams,

@@ -4,7 +4,7 @@ const { addRxPlugin } = require('rxdb');
 
 const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
-
+const { wrappedValidateAjvStorage } = require('rxdb/plugins/validate-ajv');
 const { getDatabase } = require('./shared');
 
 /**
@@ -48,7 +48,7 @@ app.on('ready', async function () {
     electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
 
 
-    const storage = getRxStorageMemory();
+    const storage = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
 
     exposeIpcMainRxStorage({
         key: 'main-storage',

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
-exports.ensureRxCollectionIsNotDestroyed = ensureRxCollectionIsNotDestroyed;
+exports.ensureRxCollectionIsNotClosed = ensureRxCollectionIsNotClosed;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = removeCollectionStorages;
 var _index = require("./plugins/utils/index.js");
@@ -50,7 +50,7 @@ async function createRxCollectionStorageInstance(rxDatabase, storageInstanceCrea
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
  */
-async function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName, password,
+async function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName, multiInstance, password,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -91,7 +91,13 @@ hashFunction) {
       collectionName: row.collectionName,
       databaseInstanceToken,
       databaseName,
-      multiInstance: false,
+      /**
+       * multiInstance must be set to true if multiInstance
+       * was true on the database
+       * so that the storageInstance can inform other
+       * instances about being removed.
+       */
+      multiInstance,
       options: {},
       schema: row.schema,
       password,
@@ -122,8 +128,8 @@ hashFunction) {
     await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
   }
 }
-function ensureRxCollectionIsNotDestroyed(collection) {
-  if (collection.destroyed) {
+function ensureRxCollectionIsNotClosed(collection) {
+  if (collection.closed) {
     throw (0, _rxError.newRxError)('COL21', {
       collection: collection.name,
       version: collection.schema.version

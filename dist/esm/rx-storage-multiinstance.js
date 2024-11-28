@@ -25,10 +25,6 @@ import { BroadcastChannel } from 'broadcast-channel';
  * have different broadcast channels.
  * But also it ensures that for each RxDatabase we only create a single
  * broadcast channel that can even be reused in the leader election plugin.
- *
- * TODO at the end of the unit tests,
- * we should ensure that all channels are closed and cleaned up.
- * Otherwise we have forgot something.
  */
 export var BROADCAST_CHANNEL_BY_TOKEN = new Map();
 export function getBroadcastChannelReference(storageName, databaseInstanceToken, databaseName, refObject) {

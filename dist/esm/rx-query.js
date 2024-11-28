@@ -2,13 +2,12 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import { BehaviorSubject, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
 import { sortObject, pluginMissing, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual, appendToArray } from "./plugins/utils/index.js";
-import { newRxError } from "./rx-error.js";
+import { newRxError, rxStorageWriteErrorToRxError } from "./rx-error.js";
 import { runPluginHooks } from "./hooks.js";
 import { calculateNewResults } from "./event-reduce.js";
 import { triggerCacheReplacement } from "./query-cache.js";
-import { getQueryMatcher, normalizeMangoQuery, runQueryUpdateFunction } from "./rx-query-helper.js";
+import { getQueryMatcher, normalizeMangoQuery, prepareQuery, runQueryUpdateFunction } from "./rx-query-helper.js";
 import { RxQuerySingleResult } from "./rx-query-single-result.js";
-import { getQueryPlan } from "./query-planner.js";
 var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
@@ -38,8 +37,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
     this.refCount$ = new BehaviorSubject(null);
     this._result = null;
     this._latestChangeEvent = -1;
-    this._lastExecStart = 0;
-    this._lastExecEnd = 0;
     this._ensureEqualQueue = PROMISE_RESOLVE_FALSE;
     this.op = op;
     this.mangoQuery = mangoQuery;
@@ -85,7 +82,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
    */;
   _proto._execOverDatabase = async function _execOverDatabase() {
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-    this._lastExecStart = now();
     if (this.op === 'count') {
       var preparedQuery = this.getPreparedQuery();
       var result = await this.collection.storageInstance.count(preparedQuery);
@@ -126,7 +122,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
     }
     var docsPromise = queryCollection(this);
     return docsPromise.then(docs => {
-      this._lastExecEnd = now();
       return docs;
     });
   }
@@ -213,15 +208,18 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * deletes all found documents
    * @return promise with deleted documents
    */;
-  _proto.remove = function remove() {
-    return this.exec().then(docs => {
-      if (Array.isArray(docs)) {
-        // TODO use a bulk operation instead of running .remove() on each document
-        return Promise.all(docs.map(doc => doc.remove()));
+  _proto.remove = async function remove() {
+    var docs = await this.exec();
+    if (Array.isArray(docs)) {
+      var result = await this.collection.bulkRemove(docs);
+      if (result.error.length > 0) {
+        throw rxStorageWriteErrorToRxError(result.error[0]);
       } else {
-        return docs.remove();
+        return result.success;
       }
-    });
+    } else {
+      return docs.remove();
+    }
   };
   _proto.incrementalRemove = function incrementalRemove() {
     return runQueryUpdateFunction(this.asRxQuery, doc => doc.incrementalRemove());
@@ -269,12 +267,12 @@ export var RxQueryBase = /*#__PURE__*/function () {
     key: "$",
     get: function () {
       if (!this._$) {
-        var results$ = this.collection.$.pipe(
+        var results$ = this.collection.eventBulks$.pipe(
         /**
          * Performance shortcut.
          * Changes to local documents are not relevant for the query.
          */
-        filter(changeEvent => !changeEvent.isLocal),
+        filter(bulk => !bulk.isLocal),
         /**
          * Start once to ensure the querying also starts
          * when there where no changes.
@@ -318,10 +316,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
     }
 
     // stores the changeEvent-number of the last handled change-event
-
-    // time stamps on when the last full exec over the database has run
-    // used to properly handle events that happen while the find-query is running
-    // TODO do we still need these properties?
 
     /**
      * ensures that the exec-runs
@@ -393,7 +387,7 @@ async function _ensureEqual(rxQuery) {
   }
 
   // Optimisation shortcut
-  if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
+  if (rxQuery.collection.database.closed || _isResultsInSync(rxQuery)) {
     return false;
   }
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(() => __ensureEqual(rxQuery));
@@ -412,7 +406,7 @@ function __ensureEqual(rxQuery) {
    */
   if (
   // db is closed
-  rxQuery.collection.database.destroyed ||
+  rxQuery.collection.database.closed ||
   // nothing happened since last run
   _isResultsInSync(rxQuery)) {
     return PROMISE_RESOLVE_FALSE;
@@ -494,28 +488,6 @@ function __ensureEqual(rxQuery) {
     });
   }
   return Promise.resolve(ret); // true if results have changed
-}
-
-/**
- * @returns a format of the query that can be used with the storage
- * when calling RxStorageInstance().query()
- */
-export function prepareQuery(schema, mutateableQuery) {
-  if (!mutateableQuery.sort) {
-    throw newRxError('SNH', {
-      query: mutateableQuery
-    });
-  }
-
-  /**
-   * Store the query plan together with the
-   * prepared query to save performance.
-   */
-  var queryPlan = getQueryPlan(schema, mutateableQuery);
-  return {
-    query: mutateableQuery,
-    queryPlan
-  };
 }
 
 /**

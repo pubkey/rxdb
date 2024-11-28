@@ -25,7 +25,7 @@ import {
     PROMISE_RESOLVE_VOID,
     appendToArray,
     clone,
-    randomCouchString,
+    randomToken,
     deepEqual,
     getFromMapOrCreate
 } from '../utils/index.ts';
@@ -66,14 +66,14 @@ export class RxStateBase<T, Reactivity = unknown> {
     }[] = [];
     public _writeQueue = PROMISE_RESOLVE_VOID;
     public _initDone = false;
-    public _instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    public _instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     public _ownEmits$ = new Subject<T>();
 
     constructor(
         public readonly prefix: string,
         public readonly collection: RxCollection<RxStateDocument>
     ) {
-        this.collection.onDestroy.push(() => this._writeQueue);
+        this.collection.onClose.push(() => this._writeQueue);
         this._lastIdQuery = this.collection.findOne({
             sort: [
                 { id: 'desc' }
@@ -84,14 +84,20 @@ export class RxStateBase<T, Reactivity = unknown> {
 
         this.$ = merge(
             this._ownEmits$,
-            this.collection.$.pipe(
-                tap(event => {
-                    if (
-                        this._initDone &&
-                        event.operation === 'INSERT' &&
-                        event.documentData.sId !== this._instanceId
-                    ) {
-                        mergeOperationsIntoState(this._state, event.documentData.ops);
+            this.collection.eventBulks$.pipe(
+                tap(eventBulk => {
+                    if (!this._initDone) {
+                        return;
+                    }
+                    const events = eventBulk.events;
+                    for (let index = 0; index < events.length; index++) {
+                        const event = events[index];
+                        if (
+                            event.operation === 'INSERT' &&
+                            event.documentData.sId !== this._instanceId
+                        ) {
+                            mergeOperationsIntoState(this._state, event.documentData.ops);
+                        }
                     }
                 })
             )

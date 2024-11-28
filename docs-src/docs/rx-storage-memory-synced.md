@@ -24,8 +24,9 @@ The main reason to use this is to improve initial page load and query/write time
 - The `memory-synced` plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
 
 
-:::note Consider using the Memory-Mapped RxStorage
-While the `memory-synced` storage works, it is not the best option for most users. Instead consider using the (newer) [memory-mapped RxStorage](./rx-storage-memory-mapped.md) which has better trade-offs and is easier to configure.
+:::note The memory-synced RxStorage was removed in RxDB version 16
+
+The `memory-synced` was removed in RxDB version 16. Instead consider using the newer and better [memory-mapped RxStorage](./rx-storage-memory-mapped.md) which has better trade-offs and is easier to configure.
 :::
 
 ## Usage
@@ -117,13 +118,6 @@ const storage = getMemorySyncedRxStorage({
     waitBeforePersist: () => requestIdlePromise();
 });
 ```
-
-
-## Comparison with the LokiJS RxStorage
-
-The [LokiJS RxStorage](./rx-storage-lokijs.md) also loads the whole database state into the memory to improve operation time.
-In comparison to LokiJS, the `Memory Synced` RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the initial page load by about 200 milliseconds.
-
 
 
 ## Replication and Migration with the memory-synced storage

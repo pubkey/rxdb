@@ -158,18 +158,6 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 settings.send(message);
             })
         );
-        subs.push(
-            storageInstance.conflictResultionTasks().subscribe(conflicts => {
-                const message: MessageFromRemote = {
-                    connectionId,
-                    answerTo: 'conflictResultionTasks',
-                    method: 'conflictResultionTasks',
-                    return: conflicts
-                };
-                settings.send(message);
-            })
-        );
-
 
         let connectionClosed = false;
         function closeThisConnection() {
@@ -185,14 +173,14 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
              */
         }
 
-        // also close the connection when the collection gets destroyed
+        // also close the connection when the collection gets closed
         if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
             const database = (settings as RxStorageRemoteExposeSettingsRxDatabase).database;
             const collection = database.collections[collectionName];
             if (collection) {
-                collection.onDestroy.push(() => closeThisConnection());
+                collection.onClose.push(() => closeThisConnection());
             } else {
-                database.onDestroy.push(() => closeThisConnection());
+                database.onClose.push(() => closeThisConnection());
             }
         }
 
@@ -220,7 +208,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                          * Do not close the storageInstance if it was taken from
                          * a running RxDatabase.
                          * In that case we only close the instance
-                         * when the RxDatabase gets destroyed.
+                         * when the RxDatabase gets closed.
                          */
                         settings.send(createAnswer(message, null));
                         return;

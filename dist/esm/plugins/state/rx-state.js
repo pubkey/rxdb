@@ -1,7 +1,7 @@
 import { Subject, distinctUntilChanged, map, merge, shareReplay, startWith, tap } from 'rxjs';
 import { overwritable } from "../../overwritable.js";
 import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
-import { RXJS_SHARE_REPLAY_DEFAULTS, getProperty, setProperty, PROMISE_RESOLVE_VOID, appendToArray, clone, randomCouchString, deepEqual, getFromMapOrCreate } from "../utils/index.js";
+import { RXJS_SHARE_REPLAY_DEFAULTS, getProperty, setProperty, PROMISE_RESOLVE_VOID, appendToArray, clone, randomToken, deepEqual, getFromMapOrCreate } from "../utils/index.js";
 import { RX_STATE_COLLECTION_SCHEMA, isValidWeakMapKey, nextRxStateId } from "./helpers.js";
 import { newRxError } from "../../rx-error.js";
 import { runPluginHooks } from "../../hooks.js";
@@ -23,11 +23,11 @@ export var RxStateBase = /*#__PURE__*/function () {
     this._nonPersisted = [];
     this._writeQueue = PROMISE_RESOLVE_VOID;
     this._initDone = false;
-    this._instanceId = randomCouchString(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
+    this._instanceId = randomToken(RX_STATE_COLLECTION_SCHEMA.properties.sId.maxLength);
     this._ownEmits$ = new Subject();
     this.prefix = prefix;
     this.collection = collection;
-    this.collection.onDestroy.push(() => this._writeQueue);
+    this.collection.onClose.push(() => this._writeQueue);
     this._lastIdQuery = this.collection.findOne({
       sort: [{
         id: 'desc'
@@ -35,9 +35,16 @@ export var RxStateBase = /*#__PURE__*/function () {
     });
     // make it "hot" for better write performance
     this._lastIdQuery.$.subscribe();
-    this.$ = merge(this._ownEmits$, this.collection.$.pipe(tap(event => {
-      if (this._initDone && event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
-        mergeOperationsIntoState(this._state, event.documentData.ops);
+    this.$ = merge(this._ownEmits$, this.collection.eventBulks$.pipe(tap(eventBulk => {
+      if (!this._initDone) {
+        return;
+      }
+      var events = eventBulk.events;
+      for (var index = 0; index < events.length; index++) {
+        var event = events[index];
+        if (event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
+          mergeOperationsIntoState(this._state, event.documentData.ops);
+        }
       }
     }))).pipe(shareReplay(RXJS_SHARE_REPLAY_DEFAULTS), map(() => this._state));
     // directly subscribe because of the tap() side effect
@@ -87,7 +94,11 @@ export var RxStateBase = /*#__PURE__*/function () {
              * some storages like the memory storage
              * make input data deep-frozen in dev-mode.
              */
-            setProperty(newState, writeRow.path, clone(newValue));
+            if (writeRow.path === '') {
+              newState = clone(newValue);
+            } else {
+              setProperty(newState, writeRow.path, clone(newValue));
+            }
             ops.push({
               k: writeRow.path,
               /**

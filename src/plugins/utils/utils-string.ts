@@ -1,9 +1,13 @@
 const COUCH_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+
 /**
- * get a random string which can be used with couchdb
+ * Get a random string which can be used for many things in RxDB.
+ * The returned string is guaranteed to be a valid database name or collection name
+ * and also to be a valid JavaScript variable name.
+ * 
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-export function randomCouchString(length: number = 10): string {
+export function randomToken(length: number = 10): string {
     let text = '';
 
     for (let i = 0; i < length; i++) {
@@ -74,30 +78,14 @@ export function isFolderPath(name: string) {
  * @link https://stackoverflow.com/a/76240378/3443137
  */
 export function arrayBufferToString(arrayBuffer: ArrayBuffer): string {
-    const chunkSize = 8192;
-    let str = '';
-    var len = arrayBuffer.byteLength;
-    for (let i = 0; i < len; i += chunkSize) {
-        const chunk = new Uint8Array(
-            arrayBuffer,
-            i,
-            Math.min(chunkSize, len - i)
-        );
-        str += String.fromCharCode.apply(null, chunk as any);
-    }
-    return str;
+    return new TextDecoder().decode(arrayBuffer);
 }
 
 export function stringToArrayBuffer(str: string): ArrayBuffer {
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
+    return new TextEncoder().encode(str);
 }
 
 
-export function normalizeString(str: string) : string {
+export function normalizeString(str: string): string {
     return str.trim().replace(/[\n\s]+/g, '');
 }
