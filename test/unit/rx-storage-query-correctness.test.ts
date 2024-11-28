@@ -1662,4 +1662,75 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             },
         ],
     });
+    /**
+     * @link https://github.com/pubkey/rxdb/pull/6643
+     */
+    testCorrectQueries<{
+        id: string;
+        numberIndex?: number;
+    }>({
+        testTitle: 'issue: Inserting without an optional index field causes unexpected behavior',
+        /**
+         * IndexedDB has some non-indexable types, so this does not work in dexie.
+         * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+         */
+        notRunIfTrue: () => config.storage.name.includes('dexie'),
+        data: [
+            {
+                'id': 'aa',
+                'numberIndex': 2,
+            },
+            {
+                'id': 'bb'
+            },
+            {
+                'id': 'cc',
+                'numberIndex': 5,
+            }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                numberIndex: {
+                    type: 'number',
+                    minimum: 1,
+                    maximum: 40,
+                    multipleOf: 1,
+                }
+            },
+            indexes: ['numberIndex']
+        },
+        queries: [
+            {
+                info: 'without selector',
+                query: {
+                    'selector': {},
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa',
+                    'bb',
+                    'cc'
+                ]
+            },
+            {
+                info: 'without selector and numberIndex',
+                query: {
+                    'selector': {},
+                    sort: [{ numberIndex: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'bb',
+                    'aa',
+                    'cc'
+                ]
+            }
+        ],
+    });
 });
