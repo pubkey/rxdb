@@ -998,7 +998,9 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
             }
         },
         required: [
-            'id'
+            'id',
+            'var1',
+            'var2'
         ],
         indexes: [
             'var1',

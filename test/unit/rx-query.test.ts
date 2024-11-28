@@ -1019,7 +1019,8 @@ describe('rx-query.test.ts', () => {
                         multipleOf: 1
                     }
                 },
-                indexes: ['created_at']
+                indexes: ['created_at'],
+                required: ['created_at']
             };
             const collection = await humansCollection.createBySchema(mySchema);
 

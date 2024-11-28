@@ -22,7 +22,7 @@ const noteSchema = {
       type: 'number',
     },
   },
-  required: ['name'],
+  required: ['name', 'createdAt', 'updatedAt'],
 };
 
 export default noteSchema;

@@ -250,6 +250,7 @@ export const ERROR_MESSAGES = {
     CRDT3: 'To use CRDTs you MUST NOT set a conflictHandler because the default CRDT conflict handler must be used',
 
     // plugins/storage-dexie/
+    DXE1: 'non-required index fields are not possible with the dexie.js RxStorage: https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082',
     // removed in 15.0.0, added boolean index support to dexie storage - DXE1: 'The dexie.js RxStorage does not support boolean indexes, see https://rxdb.info/rx-storage-dexie.html#boolean-index',
 
     /**
