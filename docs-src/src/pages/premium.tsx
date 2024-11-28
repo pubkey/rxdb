@@ -35,9 +35,9 @@ export const TEAM_SIZES = [
     1,
     3,
     6,
-    10,
-    15,
-    20
+    12,
+    24,
+    30
 ];
 
 export default function Premium() {
@@ -133,17 +133,16 @@ export default function Premium() {
                             <h2>
                                 RxDB <b className="underline">Premium</b>
                             </h2>
+
+
                             <p style={{ width: '80%' }}>
-                                RxDB's Premium plugins bring powerful, advanced features and optimizations tailored to meet the needs of <b>businesses and professionals</b>.
-                                Designed for users deploying RxDB in commercial or mission-critical environments,
-                                these plugins offer significant performance enhancements and include dedicated support and regular updates.
+                                RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
+                                They are ideal for commercial or critical projects, providing <b>better performance</b>, regular updates, and dedicated support.
                             </p>
                             <p style={{ width: '80%' }}>
-                                By purchasing the premium plugins, businesses not only benefit from superior functionality and support
-                                but also contribute to RxDB's sustainability, helping us ensure long-term stability,
-                                timely bug fixes, and feature updates for everyone. If you're working on a side project or personal application,
-                                you may find that the robust Open Core version of RxDB suits your needs perfectly.
-                                For <b>professional applications</b>, however, RxDB Premium delivers unmatched value to keep your projects running smoothly and efficiently.
+                                By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development,
+                                including bug fixes and new features for all users. For personal or side projects, the free Open Core
+                                version of RxDB might be enough. But for <b>professional use</b>, the RxDB Premium plugins ensure your projects run reliably and efficiently.
                             </p>
                         </div>
                     </div>
@@ -246,7 +245,7 @@ export default function Premium() {
                                                 </Select>
                                                 <div className="clear"></div>
                                                 <br />
-                                                <span>&#9432; As a developer, we count everyone who stores the <b>rxdb-premium</b> package on their device, not only the ones who directly develop with RxDB.</span>
+                                                <span>&#9432; As a developer, we count everyone who stores the <b>rxdb-premium</b> npm package on their device, not only the ones who directly develop with RxDB.</span>
                                             </div>
                                         </div>
                                         <div className="packages">
@@ -331,11 +330,6 @@ export default function Premium() {
                                                         <li>
                                                             <a href="/rx-storage-memory-mapped.html" target="_blank">
                                                                 RxStorage Memory Mapped
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a href="/rx-storage-memory-synced.html" target="_blank">
-                                                                RxStorage Memory Synced
                                                             </a>
                                                         </li>
                                                         <li>
@@ -540,16 +534,18 @@ export default function Premium() {
 
                                                 const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
                                                 const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
+                                                const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-project-per-year'));
                                                 // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
                                                 // const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
-                                                const setPrice = (element: typeof $priceCalculatorResultPerMonth, price: number) => {
+                                                const setPrice = (pricePerYear: number) => {
                                                     console.log('setPrice:');
-                                                    console.dir(price);
-                                                    element.innerHTML = Math.ceil(price).toString();
+                                                    console.dir(pricePerYear);
+                                                    $priceCalculatorResultPerMonth.innerHTML = Math.ceil(pricePerYear / 12).toString();
+                                                    $priceCalculatorResultPerYear.innerHTML = Math.ceil(pricePerYear).toString();
                                                     // (element as any).href = getConverterUrl(Math.ceil(price));
                                                 };
                                                 // const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
-                                                setPrice($priceCalculatorResultPerMonth, priceResult.totalPrice / 12);
+                                                setPrice(priceResult.totalPrice);
                                                 // if (priceCalculationInput.projectAmount !== 'infinity') {
                                                 //     setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
                                                 // } else {
@@ -591,14 +587,18 @@ export default function Premium() {
                                     <div className="inner">
 
                                         <span className="price-label">&euro;</span>
-                                        <span id="total-per-project-per-month">84</span>
+                                        <span id="total-per-project-per-month">XX</span>
                                         <span className="per-month">/month</span>
                                         <span className='clear'></span>
+                                    </div>
+                                    <div className="inner">
+                                        (total yearly license fee: <span id="total-per-project-per-year"></span> &euro;)
                                     </div>
                                     <br />
                                     <br />
                                     <div className='clear'></div>
                                     <div className="button" onClick={handleOpenDialog}>Buy Now »</div>
+                                    {/* <div className="button" onClick={handleOpenDialog}>Ask questions</div> */}
                                     <div className='clear'></div>
                                 </div>
                             </div>
@@ -838,18 +838,6 @@ export default function Premium() {
                                         </div>
                                     </div>
                                 </a>
-                                <a href="/rx-storage-memory-synced.html" target="_blank">
-                                    <div className="premium-block hover-shadow-middle bg-gradient-left-top">
-                                        <div className="premium-block-inner">
-                                            <h4>RxStorage Memory Synced</h4>
-                                            <p>
-                                                A wrapper around any other storage that creates a synced
-                                                in-memory copy which improves performance for the initial page
-                                                load time and write &amp; read operations.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </a>
                                 <a href="/query-optimizer.html" target="_blank">
                                     <div className="premium-block hover-shadow-middle bg-gradient-right-top">
                                         <div className="premium-block-inner">
@@ -1006,11 +994,11 @@ function BuyFormDialog({ onClose, open }) {
                     borderRadius: '32px',
                 }}
                 id="request-project-form"
-                src="https://webforms.pipedrive.com/f/c5cAfYVe373ccihUfJkyxdU2zg5Iz2liQB09nU6jOQCyRXOJy6W7qPdQdmomvugRj5"
+                src="https://webforms.pipedrive.com/f/ccHPh7YO0qKXOVm3x8LsA4b2pjAgyE9nLP9tTKWmWETw3NfJsVGJ6p5ms5srnf8mTV"
             >
                 Your browser doesn't support iframes,{' '}
                 <a
-                    href="https://webforms.pipedrive.com/f/c5cAfYVe373ccihUfJkyxdU2zg5Iz2liQB09nU6jOQCyRXOJy6W7qPdQdmomvugRj5"
+                    href="https://webforms.pipedrive.com/f/ccHPh7YO0qKXOVm3x8LsA4b2pjAgyE9nLP9tTKWmWETw3NfJsVGJ6p5ms5srnf8mTV"
                     target="_blank"
                     rel="nofollow"
                 >

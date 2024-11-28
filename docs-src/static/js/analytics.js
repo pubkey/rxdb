@@ -154,6 +154,7 @@ function parseQueryParams(url) {
  * show landingpage on back from somewhere else.
  */
 function historyHack() {
+    return;
     console.log('document.referrer: ' + document.referrer);
     console.log(' window.location.hostname: ' + window.location.hostname);
     const reloadWait = 100;
