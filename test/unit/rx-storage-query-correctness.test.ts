@@ -15,7 +15,8 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase,
-    prepareQuery
+    prepareQuery,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 import {
     schemaObjects,
@@ -55,6 +56,17 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     ): RxJsonSchema<RxDocType> {
         schema = clone(schema);
         schema.indexes = indexes;
+
+        const indexFields = indexes.flat();
+        const required = ensureNotFalsy(schema.required);
+        if (required) {
+            indexFields.forEach(indexField => {
+                if (!required.includes(indexField as any)) {
+                    (required as any).push(indexField);
+                }
+            });
+        }
+
         return schema;
     }
     function testCorrectQueries<RxDocType>(
@@ -1390,6 +1402,12 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     multipleOf: 1
                 }
             },
+            required: [
+                '_id',
+                'name',
+                'gender',
+                'age'
+            ],
             indexes: [
                 [
                     'name',

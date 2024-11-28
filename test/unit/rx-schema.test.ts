@@ -862,6 +862,13 @@ describeParallel('rx-schema.test.ts', () => {
             db.close();
         });
         it('#620 indexes should not be required', async () => {
+            if (config.storage.name.includes('dexie')) {
+                /**
+                 * IndexedDB has some non-indexable types, so this does not work in dexie.
+                 * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+                 */
+                return;
+            }
             const mySchema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; age: number; }> = {
                 version: 0,
                 primaryKey: 'passportId',

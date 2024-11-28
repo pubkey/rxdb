@@ -34,6 +34,7 @@ describe('event-reduce.test.js', () => {
         const schema = clone(schemas.primaryHuman);
         schema.keyCompression = keyCompression;
         schema.indexes = ['age', 'lastName', 'firstName'];
+        (schema as any).required.push('age');
         const collectionName = eventReduce ? 'with-event-reduce' : 'without-event-reduce';
         const collections = await db.addCollections({
             [collectionName]: {

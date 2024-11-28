@@ -662,8 +662,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
             });
             it('should be able to unset a property', async () => {
                 const schema = getTestDataSchema();
-                schema.required = ['key'];
-
                 const storageInstance = await config.storage.getStorage().createStorageInstance<OptionalValueTestDoc>({
                     databaseInstanceToken: randomToken(10),
                     databaseName: randomToken(12),

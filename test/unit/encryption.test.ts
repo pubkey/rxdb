@@ -549,7 +549,8 @@ describeParallel('encryption.test.ts', () => {
                             multipleOf: 1
                         }
                     },
-                    indexes: ['value']
+                    indexes: ['value'],
+                    required: ['value']
                 };
                 const db = await createRxDatabase({
                     name: randomToken(10),

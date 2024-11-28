@@ -231,6 +231,7 @@ export function fillWithDefaultSettings<T = any>(
         .filter((field: string) => !field.includes('.'))
         .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
 
+
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;
 

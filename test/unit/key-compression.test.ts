@@ -500,7 +500,12 @@ describeParallel('key-compression.test.js', () => {
                         type: 'boolean'
                     }
                 },
-                required: ['passportId', 'adult'],
+                required: [
+                    'passportId',
+                    'adult',
+                    'firstName',
+                    'lastName'
+                ],
                 indexes: [
                     'firstName',
                     'lastName',

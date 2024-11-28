@@ -2,17 +2,8 @@ import assert from 'assert';
 
 import config, { describeParallel } from './config.ts';
 import {
-    clone,
-    ensureNotFalsy,
-    fillWithDefaultSettings,
-    MangoQuery,
-    normalizeMangoQuery,
     randomToken,
-    now,
-    createRevision,
-    prepareQuery,
-    createRxDatabase,
-    RxJsonSchema
+    createRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -21,11 +12,6 @@ import {
     fromStorageToDexie
 } from '../../plugins/storage-dexie/index.mjs';
 
-import {
-    schemaObjects,
-    humanSchemaLiteral,
-    HumanDocumentType
-} from '../../plugins/test-utils/index.mjs';
 import { assertThrows } from 'async-test-util';
 
 /**
