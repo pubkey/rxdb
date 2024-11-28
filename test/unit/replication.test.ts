@@ -1014,6 +1014,7 @@ describe('replication.test.ts', () => {
             ) {
                 await localCollection.database.close();
                 await remoteCollection.database.close();
+                return;
             }
 
             assert.strictEqual(ensureNotFalsy(checkpointAfter).id, lastRemoteDoc.id);

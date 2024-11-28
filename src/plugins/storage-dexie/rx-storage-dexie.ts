@@ -15,6 +15,8 @@ import {
 } from './rx-storage-instance-dexie.ts';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
+import { getSchemaByObjectPath } from '../../rx-schema-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 
 
@@ -29,6 +31,25 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
+
+        /**
+         * Dexie does not support non-required indexes and must throw if that is used.
+         * @link https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082
+         */
+        if (params.schema.indexes) {
+            const indexFields = params.schema.indexes.flat();
+            indexFields
+                .filter(indexField => !indexField.includes('.'))
+                .forEach(indexField => {
+                    if (!params.schema.required || !params.schema.required.includes(indexField as any)) {
+                        throw newRxError('DXE1', {
+                            field: indexField,
+                            schema: params.schema,
+                        });
+                    }
+                });
+        }
+
         return createDexieStorageInstance(this, params, this.settings);
     }
 }
