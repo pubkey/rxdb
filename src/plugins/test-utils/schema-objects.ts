@@ -220,7 +220,7 @@ export interface HeroArrayDocumentType {
 }
 export function heroArrayData(): HeroArrayDocumentType {
     return {
-        name: randomStringWithSpecialChars(4, 6),
+        name: randomStringWithSpecialChars(6, 8),
         skills: new Array(3).fill(0).map(() => {
             return {
                 name: randomStringWithSpecialChars(4, 6),
@@ -236,7 +236,7 @@ export interface SimpleHeroArrayDocumentType {
 }
 export function simpleHeroArray(partial: Partial<SimpleHeroArrayDocumentType> = {}): SimpleHeroArrayDocumentType {
     const defaultObj = {
-        name: randomStringWithSpecialChars(3, 6),
+        name: randomStringWithSpecialChars(6, 8),
         skills: new Array(3).fill(0).map(() => randomStringWithSpecialChars(3, 6))
     };
     return Object.assign(
