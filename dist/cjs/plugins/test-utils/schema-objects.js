@@ -160,7 +160,7 @@ function bigHumanDocumentType() {
 }
 function heroArrayData() {
   return {
-    name: randomStringWithSpecialChars(4, 6),
+    name: randomStringWithSpecialChars(6, 8),
     skills: new Array(3).fill(0).map(() => {
       return {
         name: randomStringWithSpecialChars(4, 6),
@@ -171,7 +171,7 @@ function heroArrayData() {
 }
 function simpleHeroArray(partial = {}) {
   var defaultObj = {
-    name: randomStringWithSpecialChars(3, 6),
+    name: randomStringWithSpecialChars(6, 8),
     skills: new Array(3).fill(0).map(() => randomStringWithSpecialChars(3, 6))
   };
   return Object.assign(defaultObj, partial);

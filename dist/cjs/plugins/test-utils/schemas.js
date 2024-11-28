@@ -904,7 +904,7 @@ function averageSchema() {
         }
       }
     },
-    required: ['id'],
+    required: ['id', 'var1', 'var2'],
     indexes: ['var1', 'var2', 'deep.deep1',
     // one compound index
     ['var2', 'var1']],
