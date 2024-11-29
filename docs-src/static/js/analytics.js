@@ -143,11 +143,11 @@ window.pipedriveLeadboosterConfig = {
 
 
 
-function parseQueryParams(url) {
-    const urlSearchParams = new URL(url).searchParams;
-    const queryParams = Object.fromEntries(urlSearchParams.entries());
-    return queryParams;
-}
+// function parseQueryParams(url) {
+//     const urlSearchParams = new URL(url).searchParams;
+//     const queryParams = Object.fromEntries(urlSearchParams.entries());
+//     return queryParams;
+// }
 
 /**
  * History hack,
