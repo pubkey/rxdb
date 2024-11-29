@@ -42,7 +42,7 @@ export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
     const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
-    const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
+    // const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
 
     const [developers, setDevelopers] = React.useState<number | null>(null);
 
@@ -78,7 +78,7 @@ export default function Premium() {
                 console.log('formValueDoc:');
                 console.dir(formValueDoc);
 
-                setHomeCountryInitial(formValueDoc._data.data.homeCountry);
+                // setHomeCountryInitial(formValueDoc._data.data.homeCountry);
                 setHomeCountry(formValueDoc._data.data.homeCountry);
                 setToInput('company-size', formValueDoc._data.data.companySize);
                 // setToInput('project-amount', formValueDoc._data.data.projectAmount);
