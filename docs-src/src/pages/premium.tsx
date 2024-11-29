@@ -5,7 +5,6 @@ import Head from '@docusaurus/Head';
 import React, { useEffect } from 'react';
 import { ensureNotFalsy, lastOfArray, promiseWait } from '../../../';
 import { Modal } from 'antd';
-import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
 import {
     PACKAGE_PRICE,
     PackageName,
@@ -18,7 +17,6 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import {
     Select
 } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
 
 export type FormValueDocData = {
     developers?: number;
