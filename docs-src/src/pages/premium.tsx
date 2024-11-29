@@ -596,6 +596,7 @@ export default function Premium() {
                                     <br />
                                     <div className='clear'></div>
                                     <div className="button" onClick={handleOpenDialog}>Buy Now »</div>
+                                    <div style={{fontSize: '50%', textAlign: 'center'}}>(If you have any questions, please fill out the Buy-Now Form and add your questions at the bottom of the form)</div>
                                     {/* <div className="button" onClick={handleOpenDialog}>Ask questions</div> */}
                                     <div className='clear'></div>
                                 </div>
