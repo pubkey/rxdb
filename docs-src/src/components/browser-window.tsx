@@ -2,7 +2,12 @@
  *
  * @link https://www.w3schools.com/howto/howto_css_browser_window.asp
  */
-export function BrowserWindow(props) {
+export function BrowserWindow(props: {
+    opacity?: number;
+    iconUrl?: string;
+    iconAlt?: string;
+    children?: any;
+}) {
     const opacity = props.opacity ? props.opacity : 1;
 
     const styles = {
@@ -67,15 +72,21 @@ export function BrowserWindow(props) {
             borderRadius: 4,
             borderWidth: 1,
             paddingTop: 3
+        },
+        iconUrl: {
+            position: 'absolute',
+            height: 35,
+            marginLeft: -2,
+            marginTop: -52
         }
     } as any;
 
     return <div style={styles.container}>
         <div style={styles.row}>
             <div style={{ ...styles.column, ...styles.left }}>
-                <span style={{ ...styles.dot, ...{ background: '#ED594A' } }}></span>
-                <span style={{ ...styles.dot, ...{ background: '#FDD800' } }} ></span>
-                <span style={{ ...styles.dot, ...{ background: '#5AC05A' } }} ></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#ED594A' } }}></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#FDD800' } }} ></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#5AC05A' } }} ></span>
             </div>
             <div style={{ ...styles.column, ...styles.middle }}>
                 <input type="text" value="" disabled style={styles.input} />
@@ -89,8 +100,17 @@ export function BrowserWindow(props) {
             </div>
             <div className='clear'></div>
         </div >
-
         <div style={styles.content}>
+            {
+                props.iconUrl ? <img src={props.iconUrl} style={{ ...styles.iconUrl }} alt={props.iconAlt}></img> : ''
+            }
+            <img
+                // src="/img/hero.svg"
+                src="/files/logo/logo_text.svg"
+                className="hero-img"
+                style={{ padding: 40, paddingLeft: 80, paddingRight: 80 }}
+                alt="rxdb-image"
+            />
             {props.children}
         </div>
     </div>;
