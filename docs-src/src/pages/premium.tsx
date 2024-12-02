@@ -144,7 +144,147 @@ export default function Premium() {
                             </p>
                         </div>
                     </div>
-                    <div className="block" id="price-calculator-block">
+                    <div className="block" id="faq">
+                        <div className="content centered premium-faq">
+                            <h2>
+                                F.A.Q. <b>(click to toggle)</b>
+                            </h2>
+                            {
+                                /**
+                                 * IMPORTANT: It is a bad practice to "justify" for the price. We sell a B2B
+                                 * tool and of course it is more expensive than a comsumer netflix abo. 
+                                 */
+                            }
+                            <details>
+                                <summary>What is the process for making a purchase?</summary>
+                                <ul>
+                                    <li>Fill out the <b>Buy now</b> form above.</li>
+                                    <li>You will get a license agreement that you can sign online.</li>
+                                    <li>You will get an invoice via stripe.com.</li>
+                                    <li>After payment you get the access token that you can use to add the Premium plugins to your project with <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
+                                </ul>
+                            </details>
+                            <details>
+                                <summary>Do I need the Premium Plugins?</summary>
+                                RxDB Core is open source and many use cases can be implemented with the Open Core part of
+                                RxDB. There are many{' '}
+                                <a href="/rx-storage.html" target="_blank">
+                                    RxStorage
+                                </a>{' '}
+                                options and all core plugins that are required for replication, schema
+                                validation, encryption and so on, are totally free. As soon as your
+                                application is more then a side project you can consider using the premium plugins as an easy way
+                                to improve your applications performance and reduce the build size.
+                                <br />
+                                The main benefit of the Premium Plugins is <b>performance</b>. The
+                                Premium RxStorage implementations have a better performance so reading
+                                and writing data is much faster especially on low-end devices. You can
+                                find a performance comparison{' '}
+                                <a href="/rx-storage-performance.html" target="_blank">
+                                    here
+                                </a>
+                                . Also there are additional Premium Plugins that can be used to further
+                                optimize the performance of your application like the{' '}
+                                <a href="/query-optimizer.html" target="_blank">
+                                    Query Optimizer
+                                </a>{' '}
+                                or the{' '}
+                                <a href="/rx-storage-sharding.html" target="_blank">
+                                    Sharding
+                                </a>{' '}
+                                plugin.
+                            </details>
+                            {/* <details>
+                                <summary>Why is it not for free?</summary>
+                                The development of RxDB started in 2016 and after all these years it
+                                became clear that big implementation and improvement steps will not be
+                                done by the RxDB community. While the community submits valuable pull
+                                requests, they are mostly small improvements or bugfixes for specific
+                                edge case. Big rewrites and optimizations that require a big effort have
+                                only be done by the RxDB maintainer.
+                                <br />
+                                Selling RxDB Premium ensures that there will be always an incentive for
+                                someone to add features, keep everything up to date and to further
+                                improve and optimize the codebase. This gives the user the confidence
+                                that RxDB is a <b>future proof</b> tech stack to build on which lets
+                                RxDB stand out compared to similar technologies.
+                            </details> */}
+                            {/* <details>
+                                <summary>Why is there no free trial period?</summary>
+                                <ul>
+                                    <li>
+                                        RxDB is written in JavaScript and the code of the Premium Plugins
+                                        does not contain any tracking or measurement code that would send
+                                        information from your application to our servers in production mode.
+                                        As soon as someone has the code on his computer, the maintainer has
+                                        no chance to really ensure that after a free trial period the code
+                                        is no longer used and deleted.
+                                    </li>
+                                    <li>
+                                        Before you can use the Premium Plugins you have to debate and sign a
+                                        license agreement with the maintainer. This is a sophisticated
+                                        process that creates overhead which distracts the maintainer from
+                                        writing RxDB code. So handling trial period users is just not
+                                        manageable. For this reason there is also no monthly subscriptions.
+                                        Premium access must be paid <b>per year</b>.
+                                    </li>
+                                </ul>
+                            </details> */}
+                            {/* <details>
+                                <summary>Why is it not cheaper?</summary>
+                                The price of the Premium Plugins is chosen in way that ensures that
+                                there can be always one person that develops RxDB <b>full time</b>.
+                                Compared to other JavaScript frameworks and developer tools, RxDB
+                                satisfies an edge use case for people that want to store data inside of
+                                their application on the users device. Most web developers do not need
+                                to do that and rely on the traditional client-server stack. So RxDB
+                                cannot be sold to that many people which increases the price.
+                            </details> */}
+                            <details>
+                                <summary>Can I install/build the premium plugins in my CI?</summary>
+                                <b>Yes</b> you can safely install and use the Premium Plugins in your CI
+                                without additional payment.
+                            </details>
+                            <details>
+                                <summary>Which payment methods are accepted?</summary>
+                                <b>Stripe.com</b> is used as payment processor so most known payment
+                                options like credit card, PayPal, SEPA transfer and others are
+                                available. A list of all options can be found{' '}
+                                <a
+                                    href="https://stripe.com/docs/payments/payment-methods/overview"
+                                    title="stripe payment options"
+                                    target="_blank"
+                                >
+                                    here
+                                </a>
+                                .
+                            </details>
+                            {/* <details>
+                                <summary>Can I get a discount?</summary>
+                                Discounts are provided for people that have made a significant
+                                contribution to RxDB or one of RxDB's dependencies or to the Open Source
+                                Community overall. Also for private personal projects there is the
+                                option to solve one of the
+                                {' '}<a
+                                    href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
+                                    target="_blank"
+                                >
+                                    Premium Tasks
+                                </a>{' '}
+                                to get 2 years access to the Premium Plugins.
+                            </details> */}
+                            <details>
+                                <summary>
+                                    Is there any tracking code inside of the premium plugins?
+                                </summary>
+                                No, the premium plugins themself do not contain any tracking code. When
+                                you build your application with RxDB and deploy it to production, it
+                                will not make requests from your users to any RxDB server.
+                            </details>
+                        </div>
+                    </div>
+
+                    <div className="block dark" id="price-calculator-block">
                         <div className="content centered">
                             <h2>
                                 Price Calculator
@@ -596,135 +736,11 @@ export default function Premium() {
                                     <br />
                                     <div className='clear'></div>
                                     <div className="button" onClick={handleOpenDialog}>Buy Now »</div>
-                                    <div style={{fontSize: '50%', textAlign: 'center'}}>(If you have any questions, please fill out the Buy-Now Form and add your questions at the bottom of the form)</div>
+                                    <div style={{ fontSize: '50%', textAlign: 'center' }}>(If you have any questions, please fill out the Buy-Now Form and add your questions at the bottom of the form)</div>
                                     {/* <div className="button" onClick={handleOpenDialog}>Ask questions</div> */}
                                     <div className='clear'></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div className="block dark" id="faq">
-                        <div className="content centered premium-faq">
-                            <h2>
-                                F.A.Q. <b>(click to toggle)</b>
-                            </h2>
-                            <details>
-                                <summary>Do I need the Premium Plugins?</summary>
-                                RxDB Core is open source and many use cases can be implemented with the Open Core part of
-                                RxDB. There are many{' '}
-                                <a href="/rx-storage.html" target="_blank">
-                                    RxStorage
-                                </a>{' '}
-                                options and all core plugins that are required for replication, schema
-                                validation, encryption and so on, are totally free. As soon as your
-                                application is more then a side project you can consider using the premium plugins as an easy way
-                                to improve your applications performance and reduce the build size.
-                                <br />
-                                The main benefit of the Premium Plugins is <b>performance</b>. The
-                                Premium RxStorage implementations have a better performance so reading
-                                and writing data is much faster especially on low-end devices. You can
-                                find a performance comparison{' '}
-                                <a href="/rx-storage-performance.html" target="_blank">
-                                    here
-                                </a>
-                                . Also there are additional Premium Plugins that can be used to further
-                                optimize the performance of your application like the{' '}
-                                <a href="/query-optimizer.html" target="_blank">
-                                    Query Optimizer
-                                </a>{' '}
-                                or the{' '}
-                                <a href="/rx-storage-sharding.html" target="_blank">
-                                    Sharding
-                                </a>{' '}
-                                plugin.
-                            </details>
-                            <details>
-                                <summary>Why is it not for free?</summary>
-                                The development of RxDB started in 2016 and after all these years it
-                                became clear that big implementation and improvement steps will not be
-                                done by the RxDB community. While the community submits valuable pull
-                                requests, they are mostly small improvements or bugfixes for specific
-                                edge case. Big rewrites and optimizations that require a big effort have
-                                only be done by the RxDB maintainer.
-                                <br />
-                                Selling RxDB Premium ensures that there will be always an incentive for
-                                someone to add features, keep everything up to date and to further
-                                improve and optimize the codebase. This gives the user the confidence
-                                that RxDB is a <b>future proof</b> tech stack to build on which lets
-                                RxDB stand out compared to similar technologies.
-                            </details>
-                            <details>
-                                <summary>Why is there no free trial period?</summary>
-                                <ul>
-                                    <li>
-                                        RxDB is written in JavaScript and the code of the Premium Plugins
-                                        does not contain any tracking or measurement code that would send
-                                        information from your application to our servers in production mode.
-                                        As soon as someone has the code on his computer, the maintainer has
-                                        no chance to really ensure that after a free trial period the code
-                                        is no longer used and deleted.
-                                    </li>
-                                    <li>
-                                        Before you can use the Premium Plugins you have to debate and sign a
-                                        license agreement with the maintainer. This is a sophisticated
-                                        process that creates overhead which distracts the maintainer from
-                                        writing RxDB code. So handling trial period users is just not
-                                        manageable. For this reason there is also no monthly subscriptions.
-                                        Premium access must be paid <b>per year</b>.
-                                    </li>
-                                </ul>
-                            </details>
-                            <details>
-                                <summary>Why is it not cheaper?</summary>
-                                The price of the Premium Plugins is chosen in way that ensures that
-                                there can be always one person that develops RxDB <b>full time</b>.
-                                Compared to other JavaScript frameworks and developer tools, RxDB
-                                satisfies an edge use case for people that want to store data inside of
-                                their application on the users device. Most web developers do not need
-                                to do that and rely on the traditional client-server stack. So RxDB
-                                cannot be sold to that many people which increases the price.
-                            </details>
-                            <details>
-                                <summary>Can I install/build the premium plugins in my CI?</summary>
-                                <b>Yes</b> you can safely install and use the Premium Plugins in your CI
-                                without additional payment.
-                            </details>
-                            <details>
-                                <summary>Which payment methods are accepted?</summary>
-                                <b>Stripe.com</b> is used as payment processor so most known payment
-                                options like credit card, PayPal, SEPA transfer and others are
-                                available. A list of all options can be found{' '}
-                                <a
-                                    href="https://stripe.com/docs/payments/payment-methods/overview"
-                                    title="stripe payment options"
-                                    target="_blank"
-                                >
-                                    here
-                                </a>
-                                .
-                            </details>
-                            <details>
-                                <summary>Can I get a discount?</summary>
-                                Discounts are provided for people that have made a significant
-                                contribution to RxDB or one of RxDB's dependencies or to the Open Source
-                                Community overall. Also for private personal projects there is the
-                                option to solve one of the
-                                {' '}<a
-                                    href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
-                                    target="_blank"
-                                >
-                                    Premium Tasks
-                                </a>{' '}
-                                to get 2 years access to the Premium Plugins.
-                            </details>
-                            <details>
-                                <summary>
-                                    Is there any tracking code inside of the premium plugins?
-                                </summary>
-                                No, the premium plugins themself do not contain any tracking code. When
-                                you build your application with RxDB and deploy it to production, it
-                                will not make requests from your users to any RxDB server.
-                            </details>
                         </div>
                     </div>
                     {/* <div className="block dark" id="premium-request-form-block">
