@@ -240,7 +240,21 @@ async function startLandingpageAnimation() {
   });
 }
 
-export default function Home(props) {
+
+/**
+ * For custom pages for search engine marketing,
+ * we can swap out titles texts and icons.
+ */
+export type SemPage = {
+  metaTitle: string;
+  iconUrl?: string;
+  title: any;
+  text: any;
+};
+
+export default function Home(props: {
+  sem?: SemPage;
+}) {
   const { siteConfig } = useDocusaurusContext();
 
   const [tags] = useState([
@@ -352,17 +366,27 @@ export default function Home(props) {
         <body className="homepage" />
       </Head>
       <Layout
-        title={props.metaTitle ? props.metaTitle : siteConfig.title}
+        title={props.sem ? props.sem.metaTitle : siteConfig.title}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
           <div className="block first hero centered dark">
             <div className="content">
               <div className="inner">
                 <div className="half left">
+                  {
+                    props.sem ? (
+                      <div style={{ width: '100%', textAlign: 'left' }}>
+                        <img src={props.sem.iconUrl} style={{
+                          marginLeft: '40%',
+                          height: 51
+                        }} alt={props.sem.metaTitle}></img>
+                      </div>
+                    ) : <></>
+                  }
                   <h1 style={{
                   }}>
                     {
-                      props.title ? props.title : <>The local <b className="underline">Database</b> for{' '}
+                      props.sem ? props.sem.title : <>The local <b className="underline">Database</b> for{' '}
                         <b className="underline">JavaScript</b> Applications</>
                     }
                   </h1>
@@ -396,7 +420,7 @@ export default function Home(props) {
                   </ul> */}
                   <div className="text">
                     {
-                      props.text ? props.text : <>Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.</>
+                      props.sem ? props.sem.text : <>Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.</>
                     }
                   </div>
 
@@ -447,14 +471,7 @@ export default function Home(props) {
                   }}
                 >
                   <div style={{ paddingLeft: 80, paddingRight: 80 }}>
-                    <BrowserWindow opacity={0.3}>
-                      <img
-                        // src="/img/hero.svg"
-                        src="/files/logo/logo_text.svg"
-                        className="hero-img"
-                        style={{ padding: 40, paddingLeft: 80, paddingRight: 80 }}
-                        alt="rxdb-image"
-                      />
+                    <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
                     </BrowserWindow>
                   </div>
                   {/* <img
@@ -580,6 +597,20 @@ export default function Home(props) {
                       style={{ marginLeft: 481, marginTop: 117 }}
                     >
                       <div className="beating-color">
+                        {
+                          props.sem ? <>
+                            <img src={props.sem.iconUrl} style={{
+                              height: 23,
+                              width: 23,
+                              position: 'absolute',
+                              marginLeft: -83, marginTop: 95, zIndex: 2,
+                              backgroundColor: 'white',
+                              padding: 2,
+                              borderRadius: '50%'
+                            }}
+                              alt={props.sem.metaTitle}></img>
+                          </> : <></>
+                        }
                         <img
                           src="/files/logo/logo.svg"
                           className="beating logo"
@@ -589,6 +620,20 @@ export default function Home(props) {
                     </div>
                     <div className="device desktop" style={{ marginTop: '0%' }}>
                       <div className="beating-color">
+                        {
+                          props.sem ? <>
+                            <img src={props.sem.iconUrl} style={{
+                              height: 30,
+                              width: 30,
+                              position: 'absolute', marginLeft: -224, marginTop: 104, zIndex: 2,
+                              borderRadius: '50%',
+                              backgroundColor: 'white',
+                              padding: 2,
+
+                            }}
+                              alt={props.sem.metaTitle}></img>
+                          </> : <></>
+                        }
                         <img
                           src="/files/logo/logo.svg"
                           className="beating logo"

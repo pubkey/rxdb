@@ -59,6 +59,11 @@ const config: Config = {
       type: 'text/javascript',
       async: true,
     },
+    /*
+     * Pipedrive embedded chat.
+     * Disabled because people should fill out the premium form
+     * and ask questions there so that we have more meta info.
+     */
     // {
     //   src: 'https://leadbooster-chat.pipedrive.com/assets/loader.js',
     //   type: 'text/javascript',
