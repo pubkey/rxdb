@@ -84,9 +84,9 @@ export function BrowserWindow(props: {
     return <div style={styles.container}>
         <div style={styles.row}>
             <div style={{ ...styles.column, ...styles.left }}>
-                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#ED594A' } }}></span>
-                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#FDD800' } }} ></span>
-                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '' : '#5AC05A' } }} ></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '#f1f1f1' : '#ED594A' } }}></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '#f1f1f1' : '#FDD800' } }} ></span>
+                <span style={{ ...styles.dot, ...{ background: props.iconUrl ? '#f1f1f1' : '#5AC05A' } }} ></span>
             </div>
             <div style={{ ...styles.column, ...styles.middle }}>
                 <input type="text" value="" disabled style={styles.input} />

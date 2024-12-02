@@ -57,11 +57,16 @@ const config: Config = {
       type: 'text/javascript',
       async: true,
     },
-    {
-      src: 'https://leadbooster-chat.pipedrive.com/assets/loader.js',
-      type: 'text/javascript',
-      async: true
-    }
+    /*
+     * Pipedrive embedded chat.
+     * Disabled because people should fill out the premium form
+     * and ask questions there so that we have more meta info.
+     */
+    // {
+    //   src: 'https://leadbooster-chat.pipedrive.com/assets/loader.js',
+    //   type: 'text/javascript',
+    //   async: true
+    // }
     // {
     //   src: 'https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0',
     //   async: true,
