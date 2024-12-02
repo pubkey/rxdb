@@ -152,7 +152,7 @@ export default function Premium() {
                             {
                                 /**
                                  * IMPORTANT: It is a bad practice to "justify" for the price. We sell a B2B
-                                 * tool and of course it is more expensive than a comsumer netflix abo. 
+                                 * tool and of course it is more expensive than a consumer netflix abo. 
                                  */
                             }
                             <details>
