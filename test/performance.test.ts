@@ -40,10 +40,10 @@ describe('performance.test.ts', () => {
         const totalTimes: { [k: string]: number[]; } = {};
 
         const collectionsAmount = 4;
-        const docsAmount = 1200;
-        const serialDocsAmount = 100;
+        const docsAmount = 3000;
+        const serialDocsAmount = 200;
         const parallelQueryAmount = 4;
-        const insertBatches = docsAmount / 200;
+        const insertBatches = 4;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -69,12 +69,14 @@ describe('performance.test.ts', () => {
             updateTime();
 
             // create database
+            const dbName = 'test-db-performance-' + randomToken(10);
+            const schema = schemas.averageSchema();
             async function createDbWithCollections() {
                 if (cols) {
                     await cols[0].database.close();
                 }
                 const db = await createRxDatabase({
-                    name: 'test-db-performance-' + randomToken(10),
+                    name: dbName,
                     eventReduce: true,
                     /**
                      * A RxStorage implementation
@@ -93,27 +95,25 @@ describe('performance.test.ts', () => {
                 new Array(collectionsAmount)
                     .fill(0)
                     .forEach((_v, idx) => {
-                        const name = randomToken(10) + '_' + idx;
+                        const name = dbName + '_col_' + idx;
                         collectionNames.push(name);
                         collectionData[name] = {
-                            schema: schemas.averageSchema(),
+                            schema,
                             statics: {}
                         };
                     });
                 const firstCollectionName: string = collectionNames[0];
                 const collections = await db.addCollections(collectionData);
+                /**
+                 * Many storages have a lazy initialization.
+                 * So it makes no sense to measure the time of database/collection creation.
+                 * Insert we do a single insert an measure the time to the first insert.
+                 */
+                await collections[collectionNames[1]].insert(schemaObjects.averageSchemaData());
                 return [collections[firstCollectionName], collections[collectionNames[1]]];
             }
-            const cols = await createDbWithCollections();
-            const [collection, collection2] = cols;
-
-
-            /**
-             * Many storages have a lazy initialization.
-             * So it makes no sense to measure the time of database/collection creation.
-             * Insert we do a single insert an measure the time to the first insert.
-             */
-            await collection2.insert(schemaObjects.averageSchemaData());
+            let cols = await createDbWithCollections();
+            let [collection, collection2] = cols;
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
@@ -137,6 +137,21 @@ describe('performance.test.ts', () => {
                 await awaitBetweenTest();
             }
 
+
+            // refresh db to ensure we do not run on caches
+            cols = await createDbWithCollections();
+            [collection, collection2] = cols;
+            await awaitBetweenTest();
+
+            /**
+             * Bulk Find by id
+             */
+            updateTime();
+            const idsResult = await collection.findByIds(docIds).exec();
+            updateTime('find-by-ids-' + docsAmount);
+            assert.strictEqual(Array.from(idsResult.keys()).length, docsAmount, 'find-by-id amount');
+            await awaitBetweenTest();
+
             /**
              * Serial inserts
              */
@@ -146,13 +161,16 @@ describe('performance.test.ts', () => {
             while (c < serialDocsAmount) {
                 c++;
                 const data = schemaObjects.averageSchemaData({
-                    var1: (c % 2) + '',
-                    var2: c % parallelQueryAmount
+                    var2: 1000
                 });
                 serialIds.push(data.id);
                 await collection.insert(data);
             }
-            updateTime('serial-inserts');
+            updateTime('serial-inserts-' + serialDocsAmount);
+
+            // refresh db to ensure we do not run on caches
+            cols = await createDbWithCollections();
+            [collection, collection2] = cols;
             await awaitBetweenTest();
 
             /**
@@ -160,20 +178,9 @@ describe('performance.test.ts', () => {
              */
             updateTime();
             for (const id of serialIds) {
-                await collection.storageInstance.findDocumentsById([id], false);
+                await collection.findByIds([id]).exec();
             }
-            updateTime('serial-find-by-id');
-
-            /**
-             * Find by id,
-             * here we run the query against the storage because
-             * if we would do collection.findByIds(), it would
-             * just return the documents from the cache.
-             */
-            updateTime();
-            const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
-            updateTime('find-by-ids');
-            assert.strictEqual(Object.keys(idsResult).length, docsAmount);
+            updateTime('serial-find-by-id-' + serialDocsAmount);
             await awaitBetweenTest();
 
             // find by query
@@ -190,6 +197,11 @@ describe('performance.test.ts', () => {
             updateTime('find-by-query');
             console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
             assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
+
+
+            // refresh db to ensure we do not run on caches
+            cols = await createDbWithCollections();
+            [collection, collection2] = cols;
             await awaitBetweenTest();
 
             // find by multiple queries in parallel
@@ -207,22 +219,26 @@ describe('performance.test.ts', () => {
             updateTime('find-by-query-parallel-' + parallelQueryAmount);
             let parallelSum = 0;
             parallelResult.forEach(r => parallelSum = parallelSum + r.length);
-            assert.strictEqual(parallelSum, docsAmount + serialDocsAmount, 'parallelSum');
+            assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
             await awaitBetweenTest();
 
             // run count query
             updateTime();
-            const countQuery = collection.count({
-                selector: {
-                    var1: {
-                        $eq: '1'
+            let t = 0;
+            while (t < parallelQueryAmount) {
+                const countQuery = collection.count({
+                    selector: {
+                        var2: {
+                            $eq: t
+                        }
                     }
-                }
-            });
-            const countQueryResult = await countQuery.exec();
-            updateTime('count');
-            assert.ok(countQueryResult >= (docsAmount / 2));
-            assert.ok(countQueryResult < (docsAmount * 0.8));
+                });
+                const countQueryResult = await countQuery.exec();
+                assert.ok(countQueryResult >= ((docsAmount / insertBatches) - 5), 'count A ' + countQueryResult);
+                assert.ok(countQueryResult < (docsAmount * 0.8), 'count B ' + countQueryResult);
+                t++;
+            }
+            updateTime('4x-count');
             await awaitBetweenTest();
 
             // test property access time

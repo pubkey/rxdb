@@ -435,7 +435,7 @@ export function averageSchemaData(
     return Object.assign(
         {},
         {
-            id: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength - 3), ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength)),
+            id: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength - 1), ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength)),
             var1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength) - 3, ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength)),
             var2: randomNumber(100, ensureNotFalsy(averageSchemaForFieldLength.properties.var2.maximum)),
             deep: {
