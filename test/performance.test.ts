@@ -102,12 +102,10 @@ describe('performance.test.ts', () => {
                     });
                 const firstCollectionName: string = collectionNames[0];
                 const collections = await db.addCollections(collectionData);
-                const collection = collections[firstCollectionName];
-                const collection2 = collections[collectionNames[1]];
-                return [collection, collection2];
+                return [collections[firstCollectionName], collections[collectionNames[1]]];
             }
-            let cols = await createDbWithCollections();
-            let [collection, collection2] = cols;
+            const cols = await createDbWithCollections();
+            const [collection, collection2] = cols;
 
 
             /**
