@@ -138,7 +138,7 @@ describe('rx-collection.test.ts', () => {
                     );
 
                     await db.close();
-                })
+                });
             });
         });
         describeParallel('.checkCollectionName()', () => {

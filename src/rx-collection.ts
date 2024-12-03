@@ -164,7 +164,7 @@ export class RxCollectionBase<
 
 
         /**
-         * Must be last because the hooks might throw on dev-mode 
+         * Must be last because the hooks might throw on dev-mode
          * checks and we do not want to have broken collections here.
          * RxCollection instances created for testings do not have a database
          * so we do not add these to the list.
