@@ -4,6 +4,8 @@
  * This is mainly because error-string are hard to compress and we need a smaller build
  */
 
+import { NON_PREMIUM_COLLECTION_LIMIT } from '../utils/utils-premium.ts';
+
 
 export const ERROR_MESSAGES = {
     // util.js / config
@@ -102,6 +104,7 @@ export const ERROR_MESSAGES = {
     COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
     CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
     COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
+    COL23: 'In the open-source version of RxDB, the amount of collections that can exist in parrallel is limited to '+NON_PREMIUM_COLLECTION_LIMIT+'. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html#faq',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',

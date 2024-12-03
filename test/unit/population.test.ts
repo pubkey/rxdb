@@ -8,11 +8,14 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
+    addRxPlugin,
 } from '../../plugins/core/index.mjs';
 import {
     humansCollection,
     randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 
 describeParallel('population.test.js', () => {

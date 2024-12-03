@@ -83,7 +83,7 @@ describeParallel('orm.test.js', () => {
                                 }
                             }),
                             'RxError',
-                            reserved[t]
+                            'COL17'
                         );
                         t++;
                     }

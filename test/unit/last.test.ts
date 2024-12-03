@@ -3,7 +3,8 @@ import { waitUntil } from 'async-test-util';
 import {
     dbCount,
     BROADCAST_CHANNEL_BY_TOKEN,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    OPEN_COLLECTIONS
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -41,6 +42,18 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
     });
     it('ensure every db is cleaned up', () => {
         assert.strictEqual(dbCount(), 0);
+    });
+    it('ensure all collections are closed', async () => {
+        try {
+            await waitUntil(() => {
+                return OPEN_COLLECTIONS.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            const openCollections = Array.from(OPEN_COLLECTIONS.values()).map(c => c.name);
+            console.log('open collection names:');
+            console.log(openCollections.join(', '));
+            throw new Error('not all collections have been closed (' + openCollections.length + ')');
+        }
     });
     it('ensure all BroadcastChannels are closed', async () => {
         try {

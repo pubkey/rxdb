@@ -12,7 +12,9 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    NON_PREMIUM_COLLECTION_LIMIT,
+    hasPremiumFlag
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
@@ -112,6 +114,8 @@ const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'] as const;
 type HookKeyType = typeof HOOKS_KEYS[number];
 let hooksApplied = false;
 
+export const OPEN_COLLECTIONS = new Set<RxCollectionBase<any, any, any>>();
+
 export class RxCollectionBase<
     InstanceCreationOptions,
     RxDocumentType = { [prop: string]: any; },
@@ -157,6 +161,13 @@ export class RxCollectionBase<
                 filter(changeEventBulk => changeEventBulk.collectionName === this.name)
             );
         } else { }
+
+
+        /**
+         * Must be last because the hooks might throw on dev-mode 
+         * checks and we do not want to have broken collections here.
+         */
+        OPEN_COLLECTIONS.add(this);
     }
 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
@@ -215,6 +226,35 @@ export class RxCollectionBase<
     public onRemove: (() => MaybePromise<any>)[] = [];
 
     public async prepare(): Promise<void> {
+
+        if (!(await hasPremiumFlag())) {
+
+            /**
+             * When used in a test suite, we often open and close many databases with collections
+             * while not awaiting the database.close() call to improve the test times.
+             * So when reopening collections and the OPEN_COLLECTIONS size is full,
+             * we retry after some times to account for this.
+             */
+            let count = 0;
+            while (count < 10 && OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
+                count++;
+                await this.promiseWait(30);
+            }
+            if (OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
+                throw newRxError('COL23', {
+                    database: this.database.name,
+                    collection: this.name,
+                    args: {
+                        existing: Array.from(OPEN_COLLECTIONS.values()).map(c => ({
+                            db: c.database ? c.database.name : '',
+                            c: c.name
+                        }))
+                    }
+                });
+            }
+        }
+
+
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
@@ -880,6 +920,8 @@ export class RxCollectionBase<
             return PROMISE_RESOLVE_FALSE;
         }
 
+        OPEN_COLLECTIONS.delete(this);
+
 
         await Promise.all(this.onClose.map(fn => fn()));
 
@@ -1114,6 +1156,7 @@ export function createRxCollection(
              * we yet have to close the storage instances.
              */
             .catch(err => {
+                OPEN_COLLECTIONS.delete(collection);
                 return storageInstance.close()
                     .then(() => Promise.reject(err as Error));
             });
