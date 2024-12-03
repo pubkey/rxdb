@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 16.0.0-beta.4 (28 November 2024)
+### 16.0.0-beta.5 (3 December 2024)
 
 🚀 **RxDB v16 is released**
 
