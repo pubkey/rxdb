@@ -379,8 +379,7 @@ By setting a schema-field to `encrypted`, the value of this field will be stored
   "title": "my schema",
   "properties": {
     "secret": {
-      "type": "string",
-      "encrypted": true
+      "type": "string"
     }
   },
   "encrypted": [
