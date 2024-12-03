@@ -18,8 +18,13 @@ export default function PremiumSubmitted() {
             const database = await getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             console.dir(formValueDoc);
+
+            window.trigger(
+                'premium_lead',
+                Math.floor(formValueDoc._data.data.price / 3) // assume lead-to-sale-rate is 33%.
+            );
             if (!formValueDoc) {
-                window.trigger('premium_lead_unknown', 300);
+                window.trigger('premium_lead_unknown', 0);
                 await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
                     formSubmitted: true
                 });
@@ -30,9 +35,9 @@ export default function PremiumSubmitted() {
                 }
                 window.trigger(
                     'premium_lead_' + formValueDoc._data.data.homeCountry.toLowerCase(),
-                    Math.floor(formValueDoc._data.data.price / 3) // assume lead-to-sale-rate is 33%.
+                    0, // zero because we track the value already at the previous event trigger
                 );
-                await formValueDoc.incrementalPatch({formSubmitted: true});
+                await formValueDoc.incrementalPatch({ formSubmitted: true });
             }
         })();
     });

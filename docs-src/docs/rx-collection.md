@@ -316,3 +316,14 @@ const is = isRxCollection(myObj);
     You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will be automatically in your RxCollection each time you create it.
     </div>
 </details>
+<details>
+    <summary>How to remove the limit of 16 collections?</summary>
+    <div>
+    In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `16`.
+    To remove this limit, you can purchase the [Premium Plugins](/premium) and call the `setPremiumFlag()` function before creating a database:
+    ```ts
+    import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
+    setPremiumFlag();
+    ```
+    </div>
+</details>

@@ -7,7 +7,8 @@ import {
     ensureNotFalsy,
     defaultHashSha256,
     RXDB_UTILS_GLOBAL,
-    PREMIUM_FLAG_HASH
+    PREMIUM_FLAG_HASH,
+    hasPremiumFlag
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -82,11 +83,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
         if (
             !shownNonPremiumLog &&
-            (
-                !RXDB_UTILS_GLOBAL.premium ||
-                typeof RXDB_UTILS_GLOBAL.premium !== 'string' ||
-                (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium) !== PREMIUM_FLAG_HASH)
-            )
+            !(await hasPremiumFlag())
         ) {
             console.warn(
                 [

@@ -28,8 +28,14 @@ import {
     createBlobFromBase64,
     createBlob,
     blobToString,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    addRxPlugin
 } from '../../plugins/core/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
+addRxPlugin(RxDBMigrationSchemaPlugin);
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
+
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
