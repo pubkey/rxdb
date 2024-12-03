@@ -41,6 +41,7 @@ describe('performance.test.ts', () => {
 
         const collectionsAmount = 4;
         const docsAmount = 1200;
+        const serialDocsAmount = 100;
         const parallelQueryAmount = 4;
         const insertBatches = docsAmount / 200;
 
@@ -68,37 +69,46 @@ describe('performance.test.ts', () => {
             updateTime();
 
             // create database
-            const db = await createRxDatabase({
-                name: 'test-db-performance-' + randomToken(10),
-                eventReduce: true,
-                /**
-                 * A RxStorage implementation
-                 * might need a full leader election cycle to be usable.
-                 * So we disable multiInstance here because it would make no sense
-                 * to measure the leader election time instead of the database
-                 * creation time.
-                 */
-                multiInstance: false,
-                storage: perfStorage.storage
-            });
-
-            // create collections
-            const collectionData: any = {};
-            const collectionNames: string[] = [];
-            new Array(collectionsAmount)
-                .fill(0)
-                .forEach((_v, idx) => {
-                    const name = randomToken(10) + '_' + idx;
-                    collectionNames.push(name);
-                    collectionData[name] = {
-                        schema: schemas.averageSchema(),
-                        statics: {}
-                    };
+            async function createDbWithCollections() {
+                if (cols) {
+                    await cols[0].database.close();
+                }
+                const db = await createRxDatabase({
+                    name: 'test-db-performance-' + randomToken(10),
+                    eventReduce: true,
+                    /**
+                     * A RxStorage implementation
+                     * might need a full leader election cycle to be usable.
+                     * So we disable multiInstance here because it would make no sense
+                     * to measure the leader election time instead of the database
+                     * creation time.
+                    */
+                    multiInstance: false,
+                    storage: perfStorage.storage
                 });
-            const firstCollectionName: string = collectionNames[0];
-            const collections = await db.addCollections(collectionData);
-            const collection = collections[firstCollectionName];
-            const collection2 = collections[collectionNames[1]];
+
+                // create collections
+                const collectionData: any = {};
+                const collectionNames: string[] = [];
+                new Array(collectionsAmount)
+                    .fill(0)
+                    .forEach((_v, idx) => {
+                        const name = randomToken(10) + '_' + idx;
+                        collectionNames.push(name);
+                        collectionData[name] = {
+                            schema: schemas.averageSchema(),
+                            statics: {}
+                        };
+                    });
+                const firstCollectionName: string = collectionNames[0];
+                const collections = await db.addCollections(collectionData);
+                const collection = collections[firstCollectionName];
+                const collection2 = collections[collectionNames[1]];
+                return [collection, collection2];
+            }
+            let cols = await createDbWithCollections();
+            let [collection, collection2] = cols;
+
 
             /**
              * Many storages have a lazy initialization.
@@ -130,11 +140,37 @@ describe('performance.test.ts', () => {
             }
 
             /**
+             * Serial inserts
+             */
+            updateTime();
+            let c = 0;
+            const serialIds: string[] = [];
+            while (c < serialDocsAmount) {
+                c++;
+                const data = schemaObjects.averageSchemaData({
+                    var1: (c % 2) + '',
+                    var2: c % parallelQueryAmount
+                });
+                serialIds.push(data.id);
+                await collection.insert(data);
+            }
+            updateTime('serial-inserts');
+            await awaitBetweenTest();
+
+            /**
+             * Serial find-by-id
+             */
+            updateTime();
+            for (const id of serialIds) {
+                await collection.storageInstance.findDocumentsById([id], false);
+            }
+            updateTime('serial-find-by-id');
+
+            /**
              * Find by id,
              * here we run the query against the storage because
              * if we would do collection.findByIds(), it would
              * just return the documents from the cache.
-             *
              */
             updateTime();
             const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
@@ -155,7 +191,7 @@ describe('performance.test.ts', () => {
             const queryResult = await query.exec();
             updateTime('find-by-query');
             console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
-            assert.strictEqual(queryResult.length, docsAmount);
+            assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
             await awaitBetweenTest();
 
             // find by multiple queries in parallel
@@ -173,7 +209,7 @@ describe('performance.test.ts', () => {
             updateTime('find-by-query-parallel-' + parallelQueryAmount);
             let parallelSum = 0;
             parallelResult.forEach(r => parallelSum = parallelSum + r.length);
-            assert.strictEqual(parallelSum, docsAmount);
+            assert.strictEqual(parallelSum, docsAmount + serialDocsAmount, 'parallelSum');
             await awaitBetweenTest();
 
             // run count query
@@ -205,7 +241,7 @@ describe('performance.test.ts', () => {
             assert.ok(sum > 10);
 
 
-            await db.remove();
+            await cols[0].remove();
         }
 
 
@@ -216,7 +252,7 @@ describe('performance.test.ts', () => {
             docsAmount
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
-            timeToLog[key] = roundToTwo(averageOfTimeValues(times, 95));
+            timeToLog[key] = roundToThree(averageOfTimeValues(times, 95));
         });
 
         console.log('Performance test for ' + perfStorage.description);
@@ -251,8 +287,8 @@ export function averageOfTimeValues(
     return total / useNumbers.length;
 }
 
-function roundToTwo(num: number) {
-    return +(Math.round(num + 'e+2' as any) + 'e-2');
+function roundToThree(num: number) {
+    return Math.round(num * 1000) / 1000;
 }
 
 async function awaitBetweenTest() {
