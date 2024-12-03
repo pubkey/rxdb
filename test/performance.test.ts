@@ -72,8 +72,8 @@ describe('performance.test.ts', () => {
             const dbName = 'test-db-performance-' + randomToken(10);
             const schema = schemas.averageSchema();
             async function createDbWithCollections() {
-                if (cols) {
-                    await cols[0].database.close();
+                if (collection) {
+                    await collection.database.close();
                 }
                 const db = await createRxDatabase({
                     name: dbName,
@@ -110,10 +110,9 @@ describe('performance.test.ts', () => {
                  * Insert we do a single insert an measure the time to the first insert.
                  */
                 await collections[collectionNames[1]].insert(schemaObjects.averageSchemaData());
-                return [collections[firstCollectionName], collections[collectionNames[1]]];
+                return collections[firstCollectionName];
             }
-            let cols = await createDbWithCollections();
-            let [collection, collection2] = cols;
+            let collection = await createDbWithCollections();
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
@@ -139,8 +138,7 @@ describe('performance.test.ts', () => {
 
 
             // refresh db to ensure we do not run on caches
-            cols = await createDbWithCollections();
-            [collection, collection2] = cols;
+            collection = await createDbWithCollections();
             await awaitBetweenTest();
 
             /**
@@ -169,8 +167,7 @@ describe('performance.test.ts', () => {
             updateTime('serial-inserts-' + serialDocsAmount);
 
             // refresh db to ensure we do not run on caches
-            cols = await createDbWithCollections();
-            [collection, collection2] = cols;
+            collection = await createDbWithCollections();
             await awaitBetweenTest();
 
             /**
@@ -184,7 +181,6 @@ describe('performance.test.ts', () => {
             await awaitBetweenTest();
 
             // find by query
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START ' + performance.now());
             updateTime();
             const query = collection.find({
                 selector: {},
@@ -195,13 +191,11 @@ describe('performance.test.ts', () => {
             });
             const queryResult = await query.exec();
             updateTime('find-by-query');
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
             assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
 
 
             // refresh db to ensure we do not run on caches
-            cols = await createDbWithCollections();
-            [collection, collection2] = cols;
+            collection = await createDbWithCollections();
             await awaitBetweenTest();
 
             // find by multiple queries in parallel
@@ -255,7 +249,7 @@ describe('performance.test.ts', () => {
             assert.ok(sum > 10);
 
 
-            await cols[0].remove();
+            await collection.database.remove();
         }
 
 
