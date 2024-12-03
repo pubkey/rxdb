@@ -166,8 +166,12 @@ export class RxCollectionBase<
         /**
          * Must be last because the hooks might throw on dev-mode 
          * checks and we do not want to have broken collections here.
+         * RxCollection instances created for testings do not have a database
+         * so we do not add these to the list.
          */
-        OPEN_COLLECTIONS.add(this);
+        if (this.database) {
+            OPEN_COLLECTIONS.add(this);
+        }
     }
 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {

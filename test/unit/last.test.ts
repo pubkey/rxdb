@@ -49,9 +49,9 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
                 return OPEN_COLLECTIONS.size === 0;
             }, 5 * 1000);
         } catch (err) {
-            const openCollections = Array.from(OPEN_COLLECTIONS.values()).map(c => c.name);
-            console.log('open collection names:');
-            console.log(openCollections.join(', '));
+            const openCollections = Array.from(OPEN_COLLECTIONS.values()).map(c => ({ c: c.name, db: c.database ? c.database.name : '' }));
+            console.log('open collectios:');
+            console.dir(openCollections);
             throw new Error('not all collections have been closed (' + openCollections.length + ')');
         }
     });
