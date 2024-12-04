@@ -32,7 +32,7 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
   var _proto = RxStorageInstanceDexie.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     ensureNotClosed(this);
-    if (!shownNonPremiumLog && (!_index.RXDB_UTILS_GLOBAL.premium || typeof _index.RXDB_UTILS_GLOBAL.premium !== 'string' || (await (0, _index.defaultHashSha256)(_index.RXDB_UTILS_GLOBAL.premium)) !== _index.PREMIUM_FLAG_HASH)) {
+    if (!shownNonPremiumLog && !(await (0, _index.hasPremiumFlag)())) {
       console.warn(['-------------- RxDB Open Core RxStorage -------------------------------', 'You are using the free Dexie.js based RxStorage implementation from RxDB https://rxdb.info/rx-storage-dexie.html?console=dexie ', 'While this is a great option, we want to let you know that there are faster storage solutions available in our premium plugins.', 'For professional users and production environments, we highly recommend considering these premium options to enhance performance and reliability.', ' https://rxdb.info/premium?console=dexie ', 'If you already purchased premium access you can disable this log by calling the setPremiumFlag() function from rxdb-premium/plugins/shared.', '---------------------------------------------------------------------'].join('\n'));
       shownNonPremiumLog = true;
     } else {

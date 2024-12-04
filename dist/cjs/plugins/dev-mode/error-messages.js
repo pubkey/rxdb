@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ERROR_MESSAGES = void 0;
+var _utilsPremium = require("../utils/utils-premium.js");
 /**
  * this plugin adds the error-messages
  * without it, only error-codes will be shown
@@ -96,6 +97,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
   CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
   COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
+  COL23: 'In the open-source version of RxDB, the amount of collections that can exist in parallel is limited to ' + _utilsPremium.NON_PREMIUM_COLLECTION_LIMIT + '. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html#faq',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
   DOC2: 'cannot observe primary path',

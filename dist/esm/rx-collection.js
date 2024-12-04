@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, map, mergeMap } from 'rxjs';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from "./plugins/utils/index.js";
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, NON_PREMIUM_COLLECTION_LIMIT, hasPremiumFlag } from "./plugins/utils/index.js";
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages, ensureRxCollectionIsNotClosed } from "./rx-collection-helper.js";
 import { createRxQuery, _getDefaultQuery } from "./rx-query.js";
 import { newRxError, newRxTypeError } from "./rx-error.js";
@@ -18,6 +18,7 @@ import { rxChangeEventBulkToRxChangeEvents } from "./rx-change-event.js";
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
+export var OPEN_COLLECTIONS = new Set();
 export var RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
@@ -63,9 +64,44 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       // might be falsy on pseudoInstance
       this.eventBulks$ = database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.name));
     } else {}
+
+    /**
+     * Must be last because the hooks might throw on dev-mode
+     * checks and we do not want to have broken collections here.
+     * RxCollection instances created for testings do not have a database
+     * so we do not add these to the list.
+     */
+    if (this.database) {
+      OPEN_COLLECTIONS.add(this);
+    }
   }
   var _proto = RxCollectionBase.prototype;
   _proto.prepare = async function prepare() {
+    if (!(await hasPremiumFlag())) {
+      /**
+       * When used in a test suite, we often open and close many databases with collections
+       * while not awaiting the database.close() call to improve the test times.
+       * So when reopening collections and the OPEN_COLLECTIONS size is full,
+       * we retry after some times to account for this.
+       */
+      var count = 0;
+      while (count < 10 && OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
+        count++;
+        await this.promiseWait(30);
+      }
+      if (OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
+        throw newRxError('COL23', {
+          database: this.database.name,
+          collection: this.name,
+          args: {
+            existing: Array.from(OPEN_COLLECTIONS.values()).map(c => ({
+              db: c.database ? c.database.name : '',
+              c: c.name
+            }))
+          }
+        });
+      }
+    }
     this.storageInstance = getWrappedStorageInstance(this.database, this.internalStorageInstance, this.schema.jsonSchema);
     this.incrementalWriteQueue = new IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => beforeDocumentUpdateWrite(this, newData, oldData), result => this._runHooks('post', 'save', result));
     this.$ = this.eventBulks$.pipe(mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk)));
@@ -563,6 +599,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     if (this.closed) {
       return PROMISE_RESOLVE_FALSE;
     }
+    OPEN_COLLECTIONS.delete(this);
     await Promise.all(this.onClose.map(fn => fn()));
 
     /**
@@ -767,6 +804,7 @@ export function createRxCollection({
      * If the collection creation fails,
      * we yet have to close the storage instances.
      */.catch(err => {
+      OPEN_COLLECTIONS.delete(collection);
       return storageInstance.close().then(() => Promise.reject(err));
     });
   });

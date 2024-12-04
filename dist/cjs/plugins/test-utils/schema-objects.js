@@ -263,7 +263,7 @@ function humanWithTimestampData(givenData = {}) {
 var averageSchemaForFieldLength = schemas.averageSchema();
 function averageSchemaData(partial = {}) {
   return Object.assign({}, {
-    id: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength - 3), (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength)),
+    id: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength - 1), (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength)),
     var1: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var1.maxLength) - 3, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var1.maxLength)),
     var2: (0, _asyncTestUtil.randomNumber)(100, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var2.maximum)),
     deep: {

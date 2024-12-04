@@ -201,4 +201,15 @@ Object.keys(_utilsGlobal).forEach(function (key) {
     }
   });
 });
+var _utilsPremium = require("./utils-premium.js");
+Object.keys(_utilsPremium).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsPremium[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsPremium[key];
+    }
+  });
+});
 //# sourceMappingURL=index.js.map
