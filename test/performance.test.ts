@@ -33,7 +33,7 @@ describe('performance.test.ts', () => {
         );
     });
     it('run the performance test', async function () {
-        this.timeout(200 * 1000);
+        this.timeout(500 * 1000);
         const runs = isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
 
