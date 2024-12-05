@@ -31,7 +31,6 @@ import {
     blobToString,
     RxDocumentWriteData,
     addRxPlugin,
-    flatClone,
     randomOfArray,
     promiseWait
 } from '../../plugins/core/index.mjs';
