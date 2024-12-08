@@ -5,7 +5,7 @@
   "author": "pubkey",
   "private": true,
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/vue/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/vue/rxdb-local.tgz)",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10101 -m -d /tmp/pouchdb-server/ -n true",
     "dev": "vue-cli-service serve",

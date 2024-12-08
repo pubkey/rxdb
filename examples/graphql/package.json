@@ -2,7 +2,7 @@
   "name": "graphql",
   "version": "0.0.0",
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/graphql/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/graphql/rxdb-local.tgz)",
     "dev": "webpack serve",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "node ./server/index.js",

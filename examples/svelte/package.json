@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear --port 5000",
