@@ -474,7 +474,7 @@
     "z-schema": "6.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "7.25.9",
+    "@babel/cli": "7.26.4",
     "@babel/core": "7.26.0",
     "@babel/plugin-external-helpers": "7.25.9",
     "@babel/plugin-proposal-class-properties": "7.18.6",
