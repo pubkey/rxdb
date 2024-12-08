@@ -28,6 +28,10 @@ Create a package that normalizes and optimizes mango queries.
 - Use index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
 - If $eq on primaryKey and has other operators, use a find-by-id and the filter the results on the query operators.
 
+## Add plugin for postgREST replication
+
+[https://docs.postgrest.org/](https://docs.postgrest.org/)
+
 ## Add plugin for attachments compression
 
 Attachments can get quite big. Use compression when the api is available on firefox: https://caniuse.com/?search=compressionstream
