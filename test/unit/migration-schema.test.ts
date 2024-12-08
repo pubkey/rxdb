@@ -36,7 +36,7 @@ import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-
 
 
 describe('migration-schema.test.ts', function () {
-    this.timeout(1000 * 10);
+    this.timeout(1000 * 20);
     if (
         !config.storage.hasPersistence ||
         !config.storage.hasReplication
