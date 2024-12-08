@@ -1,5 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
+import { ObliviousSet } from 'oblivious-set';
 import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise, RxState } from './types/index.d.ts';
 import { Subject, Subscription, Observable } from 'rxjs';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
@@ -28,7 +29,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly allowSlowCount?: boolean | undefined;
     readonly reactivity?: RxReactivityFactory<any> | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "16.0.0-beta.6";
+    readonly rxdbVersion = "16.0.0-beta.7";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
@@ -88,6 +89,18 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * We need this in some plugins.
      */
     storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
+    /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     * In the past we tried to remove this and to ensure
+     * all storages only emit the same event bulks only once
+     * but it turns out this is just not possible for all storages.
+     * JavaScript processes, workers and browser tabs can be closed and started at any time
+     * which can cause cases where it is not possible to know if an event bulk has been emitted already.
+     */
+    emittedEventBulkIds: ObliviousSet<string>;
     /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
