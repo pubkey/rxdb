@@ -41,9 +41,9 @@ describe('performance.test.ts', () => {
 
         const collectionsAmount = 4;
         const docsAmount = 3000;
-        const serialDocsAmount = 200;
+        const serialDocsAmount = 30;
         const parallelQueryAmount = 4;
-        const insertBatches = 4;
+        const insertBatches = 6;
 
         let runsDone = 0;
         while (runsDone < runs) {
