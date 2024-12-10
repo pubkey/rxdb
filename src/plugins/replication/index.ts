@@ -55,7 +55,8 @@ import {
     awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
-    handlePulledDocuments
+    handlePulledDocuments,
+    preventHibernateBrowserTab
 } from './replication-helper.ts';
 import {
     addConnectedStorageToCollection, removeConnectedStorageFromCollection
@@ -154,6 +155,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         if (this.isStopped()) {
             return;
         }
+
+        preventHibernateBrowserTab(this);
+
 
         // fill in defaults for pull & push
         const pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
