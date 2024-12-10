@@ -1,18 +1,18 @@
-<!-- | Announcement                                                        |
-| :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | -->
+|                                                                                                                         <!--                                                                                                                         | Announcement |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | -->          |
 
 <!--
-| Announcement                                                        |
-| :--: |
+|                                                                                                                          Announcement                                                                                                                          |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **15.0.0** is now released, read the [CHANGELOG](https://rxdb.info/releases/15.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 -->
 
 
 <!--
-| Announcement                                                        |
-| :--: |
-| Please take part in the [RxDB user survey 2023](https://rxdb.info/survey.html). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
+|                                                                                  Announcement                                                                                  |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| Please take part in the [RxDB user survey 2023](https://rxdb.info/survey.html). This will help me to better plan the steps for the next major release. (takes about 2 minutes) |
 -->
 
 <br />
@@ -68,6 +68,23 @@
 
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
+
+<h2>
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/people.svg">&nbsp;&nbsp;Used by <b style="color: #e6008d;">many</b>
+</h2>
+
+RxDB is a proven technology used by [thousands of developers](https://github.com/pubkey/rxdb/network/dependents) worldwide. With its flexibility, RxDB is used in a diverse range of apps and services.
+
+<a href="https://rxdb.info/#reviews">
+<img height="60" src="./docs-src/static/files/companies/readwise.svg" />
+<img height="60" src="./docs-src/static/files/companies/myagro.svg" />
+<img height="60" src="./docs-src/static/files/companies/moreapp.png" />
+<img height="60" src="./docs-src/static/files/companies/altgras.png" />
+<img height="60" src="./docs-src/static/files/companies/woopos.png" />
+<img height="60" src="./docs-src/static/files/companies/atroo.png" />
+<img height="60" src="./docs-src/static/files/companies/nutrien.svg" />
+</a>
+
 <h2>
   <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
   <img height="36" src="./docs-src/static/files/icons/with-gradient/text/made-easy.svg">
@@ -117,6 +134,61 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="https://rxdb.info/electron-database.html">Electron Database</a>
 </h4>
 
+
+<h2>
+  All the features that you need
+</h2>
+
+Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building. Every feature that you need now or might need in the future is already there.
+
+
+<table>
+  <tr>
+    <td>
+      <a href="https://rxdb.info/logger.html">Logging</a><br>
+      <a href="https://rxdb.info/rx-attachment.html">Attachments</a><br>
+      <a href="https://rxdb.info/orm.html">ORM</a><br>
+      <a href="https://rxdb.info/transactions-conflicts-revisions.html">Conflict Handling</a><br>
+      <a href="https://rxdb.info/middleware.html">Middleware</a><br>
+      <a href="https://rxdb.info/reactivity.html">Signals</a>
+    </td>
+    <td>
+      <a href="https://rxdb.info/rx-state.html">State</a><br>
+      <a href="https://rxdb.info/backup.html">Backup</a><br>
+      <a href="https://rxdb.info/replication.html">Replication</a><br>
+      <a href="https://rxdb.info/rx-server.html">Server</a><br>
+      <a href="https://rxdb.info/rx-storage.html">Storages</a><br>
+      <a href="https://rxdb.info/rx-local-document.html">Local Documents</a>
+    </td>
+    <td>
+      <a href="https://rxdb.info/schema-validation.html">Schema Validation</a><br>
+      <a href="https://rxdb.info/key-compression.html">Compression</a><br>
+      <a href="https://rxdb.info/migration-schema.html">Migration</a><br>
+      <a href="https://rxdb.info/encryption.html">Encryption</a><br>
+      <a href="https://rxdb.info/crdt.html">CRDT</a><br>
+      <a href="https://rxdb.info/population.html">Population</a>
+    </td>
+  </tr>
+</table>
+
+<!-- - [Logging](https://rxdb.info/logger.html)
+- [Attachments](https://rxdb.info/rx-attachment.html)
+- [ORM](https://rxdb.info/orm.html)
+- [Conflict Handling](https://rxdb.info/transactions-conflicts-revisions.html)
+- [Middleware](https://rxdb.info/middleware.html)
+- [Signals](https://rxdb.info/reactivity.html)
+- [State](https://rxdb.info/rx-state.html)
+- [Backup](https://rxdb.info/backup.html)
+- [Replication](https://rxdb.info/replication.html)
+- [Server](https://rxdb.info/rx-server.html)
+- [Storages](https://rxdb.info/rx-storage.html)
+- [Local Documents](https://rxdb.info/rx-local-document.html)
+- [Schema Validation](https://rxdb.info/schema-validation.html)
+- [Compression](https://rxdb.info/key-compression.html)
+- [Migration](https://rxdb.info/migration-schema.html)
+- [Encryption](https://rxdb.info/encryption.html)
+- [CRDT](https://rxdb.info/crdt.html)
+- [Population](https://rxdb.info/population.html) -->
 
 
 <h2>
@@ -192,268 +264,6 @@ await db.heroes.find({
 
 
 Continue with the [quickstart here](https://rxdb.info/quickstart.html).
-
-
-
-<h2>
-  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
-</h2>
-
-
-
-<details>
-<summary>
-  <b>Subscribe to events, query results, documents and event single fields of a document</b>
-  <p>
-
-RxDB implements [rxjs](https://github.com/ReactiveX/rxjs) to make your data reactive.
-This makes it easy to always show the real-time database-state in the dom without manually re-submitting your queries.
-You can also add [custom reactiveness libraries](https://rxdb.info/reactivity.html) like signals or other state management.</p>
-
-</summary>
-
-```javascript
-db.heroes
-  .find()
-  .sort('name')
-  .$ // <- returns observable of query
-  .subscribe( docs => {
-    myDomElement.innerHTML = docs
-      .map(doc => '<li>' + doc.name + '</li>')
-      .join();
-  });
-```
-
-![reactive.gif](docs-src/static/files/reactive.gif)
-
-</details>
-
-<details>
-<summary>
-  <b>MultiWindow/Tab</b>
-  <p>
-
-RxDB supports multi tab/window usage out of the box. When data is changed at one browser tab/window or Node.js process, the change will automatically be broadcasted to all other tabs so that they can update the UI properly.
-
-</p>
-</summary>
-
-![multiwindow.gif](docs-src/static/files/multiwindow.gif)
-
-</details>
-
-<details>
-<summary>
-  <b>EventReduce</b>
-  <p>
-    One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB internally uses the <a href="https://github.com/pubkey/event-reduce">Event-Reduce algorithm</a>. This makes sure that when you update/insert/remove documents,
-    the query does not have to re-run over the whole database but the new results will be calculated from the events. This creates a huge performance-gain
-    with zero cost.
-  </p>
-</summary>
-
-### Use-Case-Example
-
-Imagine you have a very big collection with many user-documents. At your page you want to display a toplist with users which have the most `points` and are currently logged in.
-You create a query and subscribe to it.
-
-```js
-const query = usersCollection.find().where('loggedIn').eq(true).sort('points');
-query.$.subscribe(users => {
-    document.querySelector('body').innerHTML = users
-        .reduce((prev, cur) => prev + cur.username+ '<br/>', '');
-});
-```
-
-As you may detect, the query can take very long time to run, because you have thousands of users in the collection.
-When a user now logs off, the whole query will re-run over the database which takes again very long.
-
-```js
-await anyUser.incrementalPatch({loggedIn: false});
-```
-
-But not with the EventReduce.
-Now, when one user logs off, it will calculate the new results from the current results plus the RxChangeEvent. This often can be done in-memory without making IO-requests to the storage-engine. EventReduce not only works on subscribed queries, but also when you do multiple `.exec()`'s on the same query.
-
-</details>
-
-<details>
-<summary>
-  <b>Schema</b>
-  <p>
-
-Schemas are defined via [jsonschema](http://json-schema.org/) and are used to describe your data.</p>
-
-</summary>
-
-```javascript
-const mySchema = {
-    title: "hero schema",
-    version: 0,                 // <- incremental version-number
-    description: "describes a simple hero",
-    primaryKey: 'name',         // <- 'name' is the primary key for the collection, it must be unique, required and of the type string 
-    type: "object",
-    properties: {
-        name: {
-            type: "string",
-            maxLength: 30
-        },
-        secret: {
-            type: "string",
-        },
-        skills: {
-            type: "array",
-            maxItems: 5,
-            uniqueItems: true,
-            item: {
-                type: "object",
-                properties: {
-                    name: {
-                        type: "string"
-                    },
-                    damage: {
-                        type: "number"
-                    }
-                }
-            }
-        }
-    },
-    required: ["color"],
-    encrypted: ["secret"] // <- this means that the value of this field is stored encrypted
-};
-```
-
-</details>
-
-<details>
-<summary>
-  <b>Mango / Chained queries</b>
-  <p>
-RxDB can be queried by standard NoSQL mango queries like you maybe know from other NoSQL Databases like <b>mongoDB</b>.
-
-Also you can use the [query-builder plugin](https://rxdb.info/rx-query.html#query-builder) to create chained mango-queries.
-  </p>
-</summary>
-
-```javascript
-
-// normal query
-myCollection.find({
-  selector: {
-    name: {
-      $ne: 'Alice'
-    },
-    age: {
-      $gt: 67
-    }
-  },
-  sort: [{ age: 'desc' }],
-  limit: 10
-})
-
-// chained query
-myCollection
-  .find()
-  .where('name').ne('Alice')
-  .where('age').gt(18).lt(67)
-  .limit(10)
-  .sort('-age')
-  .exec().then( docs => {
-    console.dir(docs);
-  });
-```
-
-</details>
-
-<details>
-<summary>
-  <b>Encryption</b>
-  <p>
-
-By setting a schema-field to `encrypted`, the value of this field will be stored in encryption-mode and can't be read without the password. Of course you can also encrypt nested objects. Example:</p>
-
-</summary>
-
-```json
-{
-  "title": "my schema",
-  "properties": {
-    "secret": {
-      "type": "string",
-      "encrypted": true
-    }
-  },
-  "encrypted": [
-    "secret"
-  ]
-}
-```
-
-</details>
-
-
-
-<details>
-<summary>
-  <b>Import / Export</b>
-  <p>
-
-RxDB lets you import and export the whole database or single collections into json-objects. This is helpful to trace bugs in your application or to move to a given state in your tests.</p>
-
-</summary>
-
-```js
-// export a single collection
-const jsonCol = await myCollection.dump();
-
-// export the whole database
-const jsonDB = await myDatabase.dump();
-
-// import the dump to the collection
-await emptyCollection.importDump(json);
-
-
-// import the dump to the database
-await emptyDatabase.importDump(json);
-```
-
-</details>
-
-<details>
-<summary>
-  <b>Key-Compression</b>
-  <p>
-
-Depending on which adapter and in which environment you use RxDB, client-side storage is [limited](https://pouchdb.com/2014/10/26/10-things-i-learned-from-reading-and-writing-the-pouchdb-source.html) in some way or the other. To save disc-space, RxDB uses a schema based [keycompression](https://github.com/pubkey/jsonschema-key-compression) to minimize the size of saved documents. This saves about 40% of used storage.</p>
-
-</summary>
-
-Example:
-
-```js
-// when you save an object with big keys
-await myCollection.insert({
-  firstName: 'foo'
-  lastName:  'bar'
-  stupidLongKey: 5
-});
-
-// key compression will internally transform it to
-{
-  '|a': 'foo'
-  '|b':  'bar'
-  '|c': 5
-}
-
-// so instead of 46 chars, the compressed-version has only 28
-// the compression works internally, so you can of course still access values via the original key.names and run normal queries.
-console.log(myDoc.firstName);
-// 'foo'
-```
-
-</details>
-
-And for any other use case, there are [many more plugins and addons](https://rxdb.info/quickstart.html).
 
 
 <h2>
