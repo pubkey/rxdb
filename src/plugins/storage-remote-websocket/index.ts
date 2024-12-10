@@ -39,7 +39,8 @@ export function startRxStorageRemoteWebsocketServer(
         send(msg) {
             const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
             ws.send(JSON.stringify(msg));
-        }
+        },
+        fakeVersion: options.fakeVersion
     };
     const exposeState = exposeRxStorageRemote(exposeSettings);
 
