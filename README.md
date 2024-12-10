@@ -76,11 +76,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 RxDB is a proven technology used by [thousands of developers](https://github.com/pubkey/rxdb/network/dependents) worldwide. With its flexibility, RxDB is used in a diverse range of apps and services.
 
 <a href="https://rxdb.info/#reviews">
-<img height="60" src="./docs-src/static/files/companies/readwise.svg" />
-<img height="60" src="./docs-src/static/files/companies/myagro.svg" />
-<img height="60" src="./docs-src/static/files/companies/altgras.png" />
-<img height="60" src="./docs-src/static/files/companies/woopos.png" />
-<img height="60" src="./docs-src/static/files/companies/nutrien.svg" />
+<img src="./docs-src/static/files/used-by-many.png" />
 </a>
 <br />
 (<a href="https://forms.gle/7taae27VqLXqd4sF6">add yours</a>)
