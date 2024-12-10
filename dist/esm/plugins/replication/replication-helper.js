@@ -1,6 +1,5 @@
 import { flatClone } from "../../plugins/utils/index.js";
 import { getComposedPrimaryKeyOfDocumentData } from "../../rx-schema-helper.js";
-
 // does nothing
 export var DEFAULT_MODIFIER = d => Promise.resolve(d);
 export function swapDefaultDeletedTodeletedField(deletedField, doc) {
@@ -64,5 +63,24 @@ export function awaitRetry(collection, retryTime) {
   return Promise.race([onlineAgain, collection.promiseWait(retryTime)]).then(() => {
     window.removeEventListener('online', listener);
   });
+}
+
+/**
+ * When a replication is running and the leading tab get hibernated
+ * by the browser, the replication will be stuck.
+ * To prevent this, we fire a mouseeven each X seconds while the replication is not canceled.
+ * 
+ * If you find a better way to prevent hibernation, please make a pull request.
+ */
+export function preventHibernateBrowserTab(replicationState) {
+  function simulateActivity() {
+    if (typeof document === 'undefined' || typeof document.dispatchEvent !== 'function') {
+      return;
+    }
+    var event = new Event('mousemove');
+    document.dispatchEvent(event);
+  }
+  var intervalId = setInterval(simulateActivity, 20 * 1000); // Simulate activity every 20 seconds
+  replicationState.onCancel.push(() => clearInterval(intervalId));
 }
 //# sourceMappingURL=replication-helper.js.map

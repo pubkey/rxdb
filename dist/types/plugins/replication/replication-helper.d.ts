@@ -1,4 +1,5 @@
 import type { RxCollection, WithDeleted } from '../../types/index.d.ts';
+import type { RxReplicationState } from './index.ts';
 export declare const DEFAULT_MODIFIER: (d: any) => Promise<any>;
 export declare function swapDefaultDeletedTodeletedField<RxDocType>(deletedField: string, doc: WithDeleted<RxDocType>): RxDocType;
 /**
@@ -12,3 +13,11 @@ export declare function handlePulledDocuments<RxDocType>(collection: RxCollectio
  * but will skip the wait time if the online-state changes.
  */
 export declare function awaitRetry(collection: RxCollection, retryTime: number): Promise<void>;
+/**
+ * When a replication is running and the leading tab get hibernated
+ * by the browser, the replication will be stuck.
+ * To prevent this, we fire a mouseeven each X seconds while the replication is not canceled.
+ *
+ * If you find a better way to prevent hibernation, please make a pull request.
+ */
+export declare function preventHibernateBrowserTab(replicationState: RxReplicationState<any, any>): void;

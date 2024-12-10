@@ -8,6 +8,7 @@ var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
 var _storageRemoteHelpers = require("./storage-remote-helpers.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
+var _rxError = require("../../rx-error.js");
 /**
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
@@ -51,7 +52,17 @@ function exposeRxStorageRemote(settings) {
       throw new Error('no base given');
     }
   }
+  var mustBeRxDBVersion = settings.fakeVersion ? settings.fakeVersion : _index.RXDB_VERSION;
   settings.messages$.pipe((0, _rxjs.filter)(msg => msg.method === 'create')).subscribe(async msg => {
+    if (msg.version !== mustBeRxDBVersion) {
+      settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, (0, _rxError.newRxError)('RM1', {
+        args: {
+          mainVersion: msg.version,
+          remoteVersion: mustBeRxDBVersion
+        }
+      })));
+      return;
+    }
     var connectionId = msg.connectionId;
 
     /**
