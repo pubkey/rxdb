@@ -7,6 +7,11 @@ export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {
     storage?: RxStorage<any, any>;
     database?: RxDatabase<any, any, any>;
     customRequestHandler?: CustomRequestHandler<any, any>;
+    /**
+     * Used in tests to simulate what happens if the remote
+     * was build on a different RxDB version.
+     */
+    fakeVersion?: string;
 };
 export type RxStorageRemoteWebsocketServerState = {
     serverState: WebsocketServerState;

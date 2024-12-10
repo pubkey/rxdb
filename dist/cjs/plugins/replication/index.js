@@ -92,6 +92,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     if (this.isStopped()) {
       return;
     }
+    (0, _replicationHelper.preventHibernateBrowserTab)(this);
 
     // fill in defaults for pull & push
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : _replicationHelper.DEFAULT_MODIFIER;

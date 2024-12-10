@@ -2,7 +2,7 @@
   "name": "graphql",
   "version": "0.0.0",
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/graphql/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/graphql/rxdb-local.tgz)",
     "dev": "webpack serve",
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "node ./server/index.js",
@@ -50,7 +50,7 @@
     "style-loader": "4.0.0",
     "testcafe": "3.7.0",
     "testcafe-hammerhead": "31.7.4",
-    "webpack": "5.96.1",
+    "webpack": "5.97.0",
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "5.1.0"
   }

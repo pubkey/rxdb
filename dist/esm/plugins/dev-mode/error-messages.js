@@ -4,6 +4,7 @@
  * This is mainly because error-string are hard to compress and we need a smaller build
  */
 
+import { NON_PREMIUM_COLLECTION_LIMIT } from "../utils/utils-premium.js";
 export var ERROR_MESSAGES = {
   // util.js / config
   UT1: 'given name is no string or empty',
@@ -90,6 +91,7 @@ export var ERROR_MESSAGES = {
   COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
   CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
   COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
+  COL23: 'In the open-source version of RxDB, the amount of collections that can exist in parallel is limited to ' + NON_PREMIUM_COLLECTION_LIMIT + '. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html#faq',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
   DOC2: 'cannot observe primary path',
@@ -226,6 +228,8 @@ export var ERROR_MESSAGES = {
   DXE1: 'non-required index fields are not possible with the dexie.js RxStorage: https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082',
   // removed in 15.0.0, added boolean index support to dexie storage - DXE1: 'The dexie.js RxStorage does not support boolean indexes, see https://rxdb.info/rx-storage-dexie.html#boolean-index',
 
+  // plugins/storage-remote
+  RM1: 'Cannot communicate with a remote that was build on a different RxDB version. Did you forget to rebuild your workers when updating RxDB?',
   /**
    * Should never be thrown, use this for
    * null checks etc. so you do not have to increase the

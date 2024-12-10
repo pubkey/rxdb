@@ -12,6 +12,9 @@ declare const HOOKS_WHEN: readonly ["pre", "post"];
 type HookWhenType = typeof HOOKS_WHEN[number];
 declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
 type HookKeyType = typeof HOOKS_KEYS[number];
+export declare const OPEN_COLLECTIONS: Set<RxCollectionBase<any, any, any, {
+    [key: string]: any;
+}, any>>;
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
     [prop: string]: any;
 }, OrmMethods = {}, StaticMethods = {

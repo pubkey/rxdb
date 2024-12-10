@@ -30,7 +30,6 @@ import type {
     RxStorageRemoteSettings
 } from './storage-remote-types.ts';
 import { closeMessageChannel, getMessageChannel } from './message-channel-cache.ts';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
@@ -90,6 +89,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
         messageChannel.send({
             connectionId,
             method: 'create',
+            version: RXDB_VERSION,
             requestId,
             params
         });
@@ -124,6 +124,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
         messageChannel.send({
             connectionId,
             method: 'custom',
+            version: RXDB_VERSION,
             requestId,
             params: data
         });
@@ -203,6 +204,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         const message: MessageToRemote = {
             connectionId: this.internals.connectionId,
             requestId,
+            version: RXDB_VERSION,
             method: methodName,
             params
         };

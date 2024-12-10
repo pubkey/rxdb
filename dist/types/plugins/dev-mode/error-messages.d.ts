@@ -70,6 +70,7 @@ export declare const ERROR_MESSAGES: {
     COL21: string;
     CONFLICT: string;
     COL22: string;
+    COL23: string;
     DOC1: string;
     DOC2: string;
     DOC3: string;
@@ -176,6 +177,7 @@ export declare const ERROR_MESSAGES: {
     CRDT2: string;
     CRDT3: string;
     DXE1: string;
+    RM1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

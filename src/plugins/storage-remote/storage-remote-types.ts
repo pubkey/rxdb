@@ -25,6 +25,13 @@ export type MessageToRemote = {
      */
     requestId: string;
     method: keyof RxStorageInstance<any, any, any> | 'create' | 'custom';
+    /**
+     * We send the RxDB version to the remote
+     * to ensure we are communicating with an RxDB instance
+     * of the same version. This is to prevent bugs
+     * when people forget to rebuild their workers.
+     */
+    version: string;
     params:
     RxStorageInstanceCreationParams<any, any> | // used in the create call
     any[] | // used to call RxStorageInstance methods
@@ -76,6 +83,11 @@ export type RxStorageRemoteExposeSettingsBase = {
     send(msg: MessageFromRemote): void;
     messages$: Observable<MessageToRemote>;
     customRequestHandler?: CustomRequestHandler<any, any>;
+    /**
+     * Used in tests to simulate what happens if the remote
+     * was build on a different RxDB version.
+     */
+    fakeVersion?: string;
 };
 
 export type RxStorageRemoteExposeSettingsRxDatabase = RxStorageRemoteExposeSettingsBase & {

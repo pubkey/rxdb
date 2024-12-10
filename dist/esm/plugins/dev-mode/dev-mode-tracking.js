@@ -1,4 +1,4 @@
-import { PREMIUM_FLAG_HASH, RXDB_UTILS_GLOBAL, RXDB_VERSION, defaultHashSha256 } from "../utils/index.js";
+import { RXDB_VERSION, hasPremiumFlag } from "../utils/index.js";
 var iframeShown = false;
 
 /**
@@ -16,7 +16,7 @@ export async function addDevModeTrackingIframe(db) {
   }
 
   // do not show if premium flag is set.
-  if (RXDB_UTILS_GLOBAL.premium && typeof RXDB_UTILS_GLOBAL.premium === 'string' && (await defaultHashSha256(RXDB_UTILS_GLOBAL.premium)) === PREMIUM_FLAG_HASH) {
+  if (await hasPremiumFlag()) {
     return;
   }
   iframeShown = true;

@@ -4,7 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxCollectionBase = void 0;
+exports.RxCollectionBase = exports.OPEN_COLLECTIONS = void 0;
 exports.createRxCollection = createRxCollection;
 exports.isRxCollection = isRxCollection;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -27,6 +27,7 @@ var _rxChangeEvent = require("./rx-change-event.js");
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
+var OPEN_COLLECTIONS = exports.OPEN_COLLECTIONS = new Set();
 var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
@@ -72,9 +73,44 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
       // might be falsy on pseudoInstance
       this.eventBulks$ = database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => changeEventBulk.collectionName === this.name));
     } else {}
+
+    /**
+     * Must be last because the hooks might throw on dev-mode
+     * checks and we do not want to have broken collections here.
+     * RxCollection instances created for testings do not have a database
+     * so we do not add these to the list.
+     */
+    if (this.database) {
+      OPEN_COLLECTIONS.add(this);
+    }
   }
   var _proto = RxCollectionBase.prototype;
   _proto.prepare = async function prepare() {
+    if (!(await (0, _index.hasPremiumFlag)())) {
+      /**
+       * When used in a test suite, we often open and close many databases with collections
+       * while not awaiting the database.close() call to improve the test times.
+       * So when reopening collections and the OPEN_COLLECTIONS size is full,
+       * we retry after some times to account for this.
+       */
+      var count = 0;
+      while (count < 10 && OPEN_COLLECTIONS.size > _index.NON_PREMIUM_COLLECTION_LIMIT) {
+        count++;
+        await this.promiseWait(30);
+      }
+      if (OPEN_COLLECTIONS.size > _index.NON_PREMIUM_COLLECTION_LIMIT) {
+        throw (0, _rxError.newRxError)('COL23', {
+          database: this.database.name,
+          collection: this.name,
+          args: {
+            existing: Array.from(OPEN_COLLECTIONS.values()).map(c => ({
+              db: c.database ? c.database.name : '',
+              c: c.name
+            }))
+          }
+        });
+      }
+    }
     this.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(this.database, this.internalStorageInstance, this.schema.jsonSchema);
     this.incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => (0, _rxDocument.beforeDocumentUpdateWrite)(this, newData, oldData), result => this._runHooks('post', 'save', result));
     this.$ = this.eventBulks$.pipe((0, _rxjs.mergeMap)(changeEventBulk => (0, _rxChangeEvent.rxChangeEventBulkToRxChangeEvents)(changeEventBulk)));
@@ -572,6 +608,7 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     if (this.closed) {
       return _index.PROMISE_RESOLVE_FALSE;
     }
+    OPEN_COLLECTIONS.delete(this);
     await Promise.all(this.onClose.map(fn => fn()));
 
     /**
@@ -775,6 +812,7 @@ function createRxCollection({
      * If the collection creation fails,
      * we yet have to close the storage instances.
      */.catch(err => {
+      OPEN_COLLECTIONS.delete(collection);
       return storageInstance.close().then(() => Promise.reject(err));
     });
   });

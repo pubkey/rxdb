@@ -1,7 +1,8 @@
 import { filter } from 'rxjs';
-import { deepEqual, ensureNotFalsy } from "../../plugins/utils/index.js";
+import { deepEqual, ensureNotFalsy, RXDB_VERSION } from "../../plugins/utils/index.js";
 import { createAnswer, createErrorAnswer } from "./storage-remote-helpers.js";
 import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
+import { newRxError } from "../../rx-error.js";
 
 /**
  * Run this on the 'remote' part,
@@ -46,7 +47,17 @@ export function exposeRxStorageRemote(settings) {
       throw new Error('no base given');
     }
   }
+  var mustBeRxDBVersion = settings.fakeVersion ? settings.fakeVersion : RXDB_VERSION;
   settings.messages$.pipe(filter(msg => msg.method === 'create')).subscribe(async msg => {
+    if (msg.version !== mustBeRxDBVersion) {
+      settings.send(createErrorAnswer(msg, newRxError('RM1', {
+        args: {
+          mainVersion: msg.version,
+          remoteVersion: mustBeRxDBVersion
+        }
+      })));
+      return;
+    }
     var connectionId = msg.connectionId;
 
     /**

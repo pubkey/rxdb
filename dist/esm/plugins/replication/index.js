@@ -10,7 +10,7 @@ import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray, toPromise } from "../../plugins/utils/index.js";
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from "../../replication-protocol/index.js";
 import { newRxError } from "../../rx-error.js";
-import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from "./replication-helper.js";
+import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments, preventHibernateBrowserTab } from "./replication-helper.js";
 import { addConnectedStorageToCollection, removeConnectedStorageFromCollection } from "../../rx-database-internal-store.js";
 import { addRxPlugin } from "../../plugin.js";
 import { hasEncryption } from "../../rx-storage-helper.js";
@@ -84,6 +84,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (this.isStopped()) {
       return;
     }
+    preventHibernateBrowserTab(this);
 
     // fill in defaults for pull & push
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;

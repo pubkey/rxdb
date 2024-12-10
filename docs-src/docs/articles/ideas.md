@@ -1,7 +1,7 @@
 # ideas for articles
 
 
-- Indexeddb vs localstorage vs cookies vs websql vs opfs
+- storing and searching through 1mio emails in a browser database
 - Finding the optimal way to shorten vector embeddings
 - Performance and quality of vector comparison functions (euclideanDistance etc)
 - performance and quality of vector indexing methods

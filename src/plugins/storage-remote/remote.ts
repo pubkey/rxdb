@@ -5,7 +5,8 @@ import type {
 } from '../../types/index.d.ts';
 import {
     deepEqual,
-    ensureNotFalsy
+    ensureNotFalsy,
+    RXDB_VERSION
 } from '../../plugins/utils/index.ts';
 import { createAnswer, createErrorAnswer } from './storage-remote-helpers.ts';
 import type {
@@ -17,6 +18,7 @@ import type {
     RxStorageRemoteExposeType
 } from './storage-remote-types.ts';
 import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Run this on the 'remote' part,
@@ -79,9 +81,20 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         }
     }
 
+    const mustBeRxDBVersion = settings.fakeVersion ? settings.fakeVersion : RXDB_VERSION;
     settings.messages$.pipe(
         filter(msg => msg.method === 'create')
     ).subscribe(async (msg) => {
+        if (msg.version !== mustBeRxDBVersion) {
+            settings.send(createErrorAnswer(msg, newRxError('RM1', {
+                args: {
+                    mainVersion: msg.version,
+                    remoteVersion: mustBeRxDBVersion
+                }
+            })));
+            return;
+        }
+
         const connectionId = msg.connectionId;
 
         /**

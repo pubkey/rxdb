@@ -19,8 +19,8 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-describeParallel('hooks.test.js', () => {
-    describe('get/set', () => {
+describe('hooks.test.js', () => {
+    describeParallel('get/set', () => {
         it('should set a hook', async () => {
             const c = await humansCollection.create(0);
             c.preSave(function () { }, false);
@@ -43,7 +43,7 @@ describeParallel('hooks.test.js', () => {
             c.database.close();
         });
     });
-    describe('insert', () => {
+    describeParallel('insert', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -182,7 +182,7 @@ describeParallel('hooks.test.js', () => {
             });
         });
     });
-    describe('save', () => {
+    describeParallel('save', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -308,7 +308,7 @@ describeParallel('hooks.test.js', () => {
             describe('negative', () => { });
         });
     });
-    describe('remove', () => {
+    describeParallel('remove', () => {
         describe('pre', () => {
             describe('positive', () => {
                 it('series', async () => {
@@ -469,7 +469,7 @@ describeParallel('hooks.test.js', () => {
             describe('negative', () => { });
         });
     });
-    describe('postCreate', () => {
+    describeParallel('postCreate', () => {
         describe('positive', () => {
             it('should define a getter', async () => {
                 const db = await createRxDatabase({
@@ -523,7 +523,7 @@ describeParallel('hooks.test.js', () => {
             });
         });
     });
-    describe('issues', () => {
+    describeParallel('issues', () => {
         it('ISSUE #158 : Throwing error in async preInsert does not prevent insert', async () => {
             const c = await humansCollection.create(0);
             c.preInsert(async function () {
