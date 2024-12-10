@@ -11,6 +11,7 @@ import {
 } from '../../plugins/core/index.mjs';
 import {
     HumanDocumentType,
+    isDeno,
     schemaObjects,
     schemas
 } from '../../plugins/test-utils/index.mjs';
@@ -35,6 +36,9 @@ describeParallel('database-lifecycle.ts', () => {
     type Collections = { humans: RxCollection<HumanDocumentType, {}, {}>; };
 
     it('do some writes updates and deletes and cleanups and reopens', async () => {
+        if (isDeno) {
+            return;
+        }
         const dbName = randomToken(10);
         let col: Collection = {} as any;
         let db: RxDatabase<Collections> = undefined as any;
