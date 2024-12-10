@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear --port 5000",
@@ -17,7 +17,7 @@
     "@rollup/plugin-node-resolve": "15.3.0",
     "async-test-util": "2.5.0",
     "concurrently": "9.1.0",
-    "rollup": "4.28.0",
+    "rollup": "4.28.1",
     "rollup-plugin-css-only": "4.5.2",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",

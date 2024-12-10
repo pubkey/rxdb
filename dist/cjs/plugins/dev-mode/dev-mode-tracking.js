@@ -22,7 +22,7 @@ async function addDevModeTrackingIframe(db) {
   }
 
   // do not show if premium flag is set.
-  if (_index.RXDB_UTILS_GLOBAL.premium && typeof _index.RXDB_UTILS_GLOBAL.premium === 'string' && (await (0, _index.defaultHashSha256)(_index.RXDB_UTILS_GLOBAL.premium)) === _index.PREMIUM_FLAG_HASH) {
+  if (await (0, _index.hasPremiumFlag)()) {
     return;
   }
   iframeShown = true;

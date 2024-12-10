@@ -2,14 +2,16 @@ import {
     createRxDatabase,
     randomToken,
     overwritable,
-    requestIdlePromise
+    requestIdlePromise,
+    RxCollection
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import {
     schemaObjects,
     schemas,
     isFastMode,
-    isDeno
+    isDeno,
+    AverageSchemaDocumentType
 } from '../plugins/test-utils/index.mjs';
 import config from './unit/config.ts';
 import { wait } from 'async-test-util';
@@ -33,16 +35,17 @@ describe('performance.test.ts', () => {
         );
     });
     it('run the performance test', async function () {
-        this.timeout(200 * 1000);
+        this.timeout(500 * 1000);
         const runs = isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimes: { [k: string]: number[]; } = {};
 
         const collectionsAmount = 4;
-        const docsAmount = 1200;
+        const docsAmount = 3000;
+        const serialDocsAmount = 50;
         const parallelQueryAmount = 4;
-        const insertBatches = docsAmount / 200;
+        const insertBatches = 6;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -68,44 +71,51 @@ describe('performance.test.ts', () => {
             updateTime();
 
             // create database
-            const db = await createRxDatabase({
-                name: 'test-db-performance-' + randomToken(10),
-                eventReduce: true,
-                /**
-                 * A RxStorage implementation
-                 * might need a full leader election cycle to be usable.
-                 * So we disable multiInstance here because it would make no sense
-                 * to measure the leader election time instead of the database
-                 * creation time.
-                 */
-                multiInstance: false,
-                storage: perfStorage.storage
-            });
-
-            // create collections
-            const collectionData: any = {};
-            const collectionNames: string[] = [];
-            new Array(collectionsAmount)
-                .fill(0)
-                .forEach((_v, idx) => {
-                    const name = randomToken(10) + '_' + idx;
-                    collectionNames.push(name);
-                    collectionData[name] = {
-                        schema: schemas.averageSchema(),
-                        statics: {}
-                    };
+            const dbName = 'test-db-performance-' + randomToken(10);
+            const schema = schemas.averageSchema();
+            let collection: RxCollection<AverageSchemaDocumentType>;
+            async function createDbWithCollections() {
+                if (collection) {
+                    await collection.database.close();
+                }
+                const db = await createRxDatabase({
+                    name: dbName,
+                    eventReduce: true,
+                    /**
+                     * A RxStorage implementation
+                     * might need a full leader election cycle to be usable.
+                     * So we disable multiInstance here because it would make no sense
+                     * to measure the leader election time instead of the database
+                     * creation time.
+                    */
+                    multiInstance: false,
+                    storage: perfStorage.storage
                 });
-            const firstCollectionName: string = collectionNames[0];
-            const collections = await db.addCollections(collectionData);
-            const collection = collections[firstCollectionName];
-            const collection2 = collections[collectionNames[1]];
 
-            /**
-             * Many storages have a lazy initialization.
-             * So it makes no sense to measure the time of database/collection creation.
-             * Insert we do a single insert an measure the time to the first insert.
-             */
-            await collection2.insert(schemaObjects.averageSchemaData());
+                // create collections
+                const collectionData: any = {};
+                const collectionNames: string[] = [];
+                new Array(collectionsAmount)
+                    .fill(0)
+                    .forEach((_v, idx) => {
+                        const name = dbName + '_col_' + idx;
+                        collectionNames.push(name);
+                        collectionData[name] = {
+                            schema,
+                            statics: {}
+                        };
+                    });
+                const firstCollectionName: string = collectionNames[0];
+                const collections = await db.addCollections(collectionData);
+                /**
+                 * Many storages have a lazy initialization.
+                 * So it makes no sense to measure the time of database/collection creation.
+                 * Insert we do a single insert an measure the time to the first insert.
+                 */
+                await collections[collectionNames[1]].insert(schemaObjects.averageSchemaData());
+                return collections[firstCollectionName];
+            }
+            collection = await createDbWithCollections();
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
@@ -129,21 +139,51 @@ describe('performance.test.ts', () => {
                 await awaitBetweenTest();
             }
 
+
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
+            await awaitBetweenTest();
+
             /**
-             * Find by id,
-             * here we run the query against the storage because
-             * if we would do collection.findByIds(), it would
-             * just return the documents from the cache.
-             *
+             * Bulk Find by id
              */
             updateTime();
-            const idsResult = await collection.storageInstance.findDocumentsById(docIds, false);
-            updateTime('find-by-ids');
-            assert.strictEqual(Object.keys(idsResult).length, docsAmount);
+            const idsResult = await collection.findByIds(docIds).exec();
+            updateTime('find-by-ids-' + docsAmount);
+            assert.strictEqual(Array.from(idsResult.keys()).length, docsAmount, 'find-by-id amount');
+            await awaitBetweenTest();
+
+            /**
+             * Serial inserts
+             */
+            updateTime();
+            let c = 0;
+            const serialIds: string[] = [];
+            while (c < serialDocsAmount) {
+                c++;
+                const data = schemaObjects.averageSchemaData({
+                    var2: 1000
+                });
+                serialIds.push(data.id);
+                await collection.insert(data);
+            }
+            updateTime('serial-inserts-' + serialDocsAmount);
+
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
+            await awaitBetweenTest();
+
+            /**
+             * Serial find-by-id
+             */
+            updateTime();
+            for (const id of serialIds) {
+                await collection.findByIds([id]).exec();
+            }
+            updateTime('serial-find-by-id-' + serialDocsAmount);
             await awaitBetweenTest();
 
             // find by query
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START ' + performance.now());
             updateTime();
             const query = collection.find({
                 selector: {},
@@ -154,8 +194,11 @@ describe('performance.test.ts', () => {
             });
             const queryResult = await query.exec();
             updateTime('find-by-query');
-            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
-            assert.strictEqual(queryResult.length, docsAmount);
+            assert.strictEqual(queryResult.length, docsAmount + serialDocsAmount, 'find-by-query');
+
+
+            // refresh db to ensure we do not run on caches
+            collection = await createDbWithCollections();
             await awaitBetweenTest();
 
             // find by multiple queries in parallel
@@ -173,22 +216,26 @@ describe('performance.test.ts', () => {
             updateTime('find-by-query-parallel-' + parallelQueryAmount);
             let parallelSum = 0;
             parallelResult.forEach(r => parallelSum = parallelSum + r.length);
-            assert.strictEqual(parallelSum, docsAmount);
+            assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
             await awaitBetweenTest();
 
             // run count query
             updateTime();
-            const countQuery = collection.count({
-                selector: {
-                    var1: {
-                        $eq: '1'
+            let t = 0;
+            while (t < parallelQueryAmount) {
+                const countQuery = collection.count({
+                    selector: {
+                        var2: {
+                            $eq: t
+                        }
                     }
-                }
-            });
-            const countQueryResult = await countQuery.exec();
-            updateTime('count');
-            assert.ok(countQueryResult >= (docsAmount / 2));
-            assert.ok(countQueryResult < (docsAmount * 0.8));
+                });
+                const countQueryResult = await countQuery.exec();
+                assert.ok(countQueryResult >= ((docsAmount / insertBatches) - 5), 'count A ' + countQueryResult);
+                assert.ok(countQueryResult < (docsAmount * 0.8), 'count B ' + countQueryResult);
+                t++;
+            }
+            updateTime('4x-count');
             await awaitBetweenTest();
 
             // test property access time
@@ -205,7 +252,7 @@ describe('performance.test.ts', () => {
             assert.ok(sum > 10);
 
 
-            await db.remove();
+            await collection.database.remove();
         }
 
 
@@ -216,7 +263,7 @@ describe('performance.test.ts', () => {
             docsAmount
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
-            timeToLog[key] = roundToTwo(averageOfTimeValues(times, 95));
+            timeToLog[key] = roundToThree(averageOfTimeValues(times, 95));
         });
 
         console.log('Performance test for ' + perfStorage.description);
@@ -251,8 +298,8 @@ export function averageOfTimeValues(
     return total / useNumbers.length;
 }
 
-function roundToTwo(num: number) {
-    return +(Math.round(num + 'e+2' as any) + 'e-2');
+function roundToThree(num: number) {
+    return Math.round(num * 1000) / 1000;
 }
 
 async function awaitBetweenTest() {

@@ -26,11 +26,13 @@ In the following you can find some performance measurements and comparisons. Not
 Here the following metrics are measured:
 
 - time-to-first-insert: Many storages run lazy, so it makes no sense to compare the time which is required to create a database with collections. Instead we measure the **time-to-first-insert** which is the whole timespan from database creation until the first single document write is done.
-- insert 200 documents: Insert 200 documents with a single bulk-insert operation.
-- find 1200 documents by id: Here we fetch 100% of the stored documents with a single `findByIds()` call.
-- find 12000 documents by query: Here we fetch 100% of the stored documents with a single `find()` call.
-- find 300x4 documents by query: Here we fetch 100% of the stored documents with a 4 `find()` calls that run in parallel.
-- count 1200 documents: Counts 100% of the stored documents with a single `count()` call.
+- insert documents (bulk): Insert 200 documents with a single bulk-insert operation.
+- insert documents (serial): Insert 100 documents, one after each other.
+- find documents by id (bulk): Here we fetch 100% of the stored documents with a single `findByIds()` call.
+- find documents by id (serial): Here we 100 documents in serial with one `findByIds()` call per document.
+- find documents by query: Here we fetch 100% of the stored documents with a single `find()` call.
+- find documents by query: Here we fetch 100% of the stored documents with a 4 `find()` calls that run in parallel.
+- count documents: Counts 100% of the stored documents with a single `count()` call.
 
 
 ## Browser based Storages Performance Comparison

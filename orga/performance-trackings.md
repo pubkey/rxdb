@@ -2194,3 +2194,121 @@ AFTER: (lazy data-to-RxDocument transformation):
 "insert-documents-50000": 42.21
 "insert-documents-50000": 37.32
 "insert-documents-50000": 42.39
+
+
+## 9 December 2020 SQLite serial inserts
+
+BEFORE:
+"serial-inserts-200": 4005.75,
+
+AFTER (await sqliteBasics.setPragma(db, 'synchronous', 'normal');):
+"serial-inserts-200": 2815.81
+"serial-inserts-200": 2821.52
+"serial-inserts-200": 2753.91
+
+AFTER (using non-tx for small inserts)
+
+
+
+{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 27.75,
+    "insert-documents-500": 7.98,
+    "find-by-ids-3000": 19.21,
+    "serial-inserts-200": 49.06,
+    "serial-find-by-id-200": 1.02,
+    "find-by-query": 16.66
+}
+{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 26.41,
+    "insert-documents-500": 8.4,
+    "find-by-ids-3000": 21.81,
+    "serial-inserts-200": 45.58,
+    "serial-find-by-id-200": 0.93,
+    "find-by-query": 17.91
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+LOG LOG: '{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 5.4,
+    "insert-documents-500": 24.38,
+    "find-by-ids-3000": 52.5,
+    "serial-inserts-200": 118.8,
+    "serial-find-by-id-200": 4.05,
+    "find-by-query": 37.35
+}'
+
+LOG LOG: '{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 4.7,
+    "insert-documents-500": 26.18,
+    "find-by-ids-3000": 52.85,
+    "serial-inserts-200": 82.85,
+    "serial-find-by-id-200": 4,
+    "find-by-query": 37.2
+}'
+
+
+
+
+WITHOUT UNIQUE:
+
+{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 25.84,
+    "insert-documents-500": 8.97,
+    "find-by-ids-3000": 19.61,
+    "serial-inserts-200": 48.7,
+    "serial-find-by-id-200": 0.92,
+    "find-by-query": 16.88,
+    "find-by-query-parallel-4": 18.08,
+    "4x-count": 1.69,
+    "property-access": 5.09
+}
+
+WITH UNIQUE:
+
+
+{
+    "description": "sqlite node",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 3000,
+    "time-to-first-insert": 26.68,
+    "insert-documents-500": 8.06,
+    "find-by-ids-3000": 19.67,
+    "serial-inserts-200": 46.61,
+    "serial-find-by-id-200": 0.94,
+    "find-by-query": 16.96,
+    "find-by-query-parallel-4": 13.08,
+    "4x-count": 1.54,
+    "property-access": 3.81
+}

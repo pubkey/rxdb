@@ -39,7 +39,9 @@ import {
     getFromMapOrThrow,
     RxCollectionCreator,
     parseRevision,
-    getChangedDocumentsSince
+    getChangedDocumentsSince,
+    hasPremiumFlag,
+    NON_PREMIUM_COLLECTION_LIMIT
 } from '../../plugins/core/index.mjs';
 
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
@@ -105,6 +107,37 @@ describe('rx-collection.test.ts', () => {
                     });
                     assert.strictEqual(collections.human.options.foo, 'bar');
                     db.close();
+                });
+            });
+            describe('negative', () => {
+                it('if not premium, it should limit the collections amount', async () => {
+                    if ((await hasPremiumFlag())) {
+                        return;
+                    }
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    let t = NON_PREMIUM_COLLECTION_LIMIT + 1;
+                    await assertThrows(
+                        async () => {
+                            while (t > 0) {
+                                await db.addCollections({
+                                    ['human_' + t]: {
+                                        schema: schemas.human,
+                                        options: {
+                                            foo: 'bar'
+                                        }
+                                    }
+                                });
+                                t--;
+                            }
+                        },
+                        'RxError',
+                        'COL23'
+                    );
+
+                    await db.close();
                 });
             });
         });

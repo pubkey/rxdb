@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "preinstall": "(cd ../../ && npx yarn@1.22.10 pack ../../ --filename ./examples/supabase/rxdb-local.tgz)",
+    "preinstall": "(cd ../../ && npx yarn@1.22.22 pack ../../ --filename ./examples/supabase/rxdb-local.tgz)",
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",

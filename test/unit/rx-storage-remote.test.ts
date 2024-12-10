@@ -20,6 +20,7 @@ import {
 } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { assertThrows } from 'async-test-util';
 
 describeParallel('rx-storage-remote.test.ts', () => {
     /**
@@ -347,6 +348,57 @@ describeParallel('rx-storage-remote.test.ts', () => {
             await storageInstanceA.close();
             await storageInstanceB.close();
             await storageInstanceOther.close();
+            await database.close();
+        });
+    });
+    describe('other', () => {
+        /**
+         * Many people forgot to rebuild their webworkers and shared workers when updating
+         * RxDB which lead to strange bugs.
+         * To prevent this, the remote storage itself should ensure that it only communicates
+         * with remote instances that have the same RxDB version.
+         */
+        it('should throw when the remote was build on a different RxDB version', async () => {
+            const port = await nextPort();
+
+            const database = await createRxDatabase({
+                name: randomToken(10),
+                storage: memoryStorageWithValidation
+            });
+            await database.addCollections({
+                one: {
+                    schema: schemas.human
+                },
+                two: {
+                    schema: schemas.human
+                }
+            });
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database,
+                fakeVersion: 'wrong-version'
+            });
+            assert.ok(server);
+
+            const storage = getRxStorageRemoteWebsocket({
+                url: 'ws://localhost:' + port,
+                mode: 'collection'
+            });
+
+            await assertThrows(
+                () => storage.createStorageInstance({
+                    databaseInstanceToken: randomToken(10),
+                    databaseName: randomToken(10),
+                    collectionName: 'one',
+                    devMode: true,
+                    multiInstance: false,
+                    options: {},
+                    schema: fillWithDefaultSettings(schemas.human)
+                }),
+                Error,
+                ['RM1', 'wrong-version']
+            );
+
             await database.close();
         });
     });

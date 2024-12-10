@@ -43,6 +43,7 @@ var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
     messageChannel.send({
       connectionId,
       method: 'create',
+      version: _index.RXDB_VERSION,
       requestId,
       params
     });
@@ -65,6 +66,7 @@ var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
     messageChannel.send({
       connectionId,
       method: 'custom',
+      version: _index.RXDB_VERSION,
       requestId,
       params: data
     });
@@ -124,6 +126,7 @@ var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/fun
     var message = {
       connectionId: this.internals.connectionId,
       requestId,
+      version: _index.RXDB_VERSION,
       method: methodName,
       params
     };

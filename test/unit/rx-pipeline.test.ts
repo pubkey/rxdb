@@ -22,14 +22,14 @@ import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mj
 import { assertThrows } from 'async-test-util';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-describeParallel('rx-pipeline.test.js', () => {
+describe('rx-pipeline.test.js', () => {
     if (
         config.storage.name.includes('random-delay')
     ) {
         // TODO
         return;
     }
-    describe('basics', () => {
+    describeParallel('basics', () => {
         it('add and remove a pipeline', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -150,7 +150,7 @@ describeParallel('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describe('.awaitIdle()', () => {
+    describeParallel('.awaitIdle()', () => {
         it('should have updated its internal timestamps', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -175,7 +175,7 @@ describeParallel('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describe('error handling', () => {
+    describeParallel('error handling', () => {
         it('should not swallow the error if the handler throws', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();
@@ -223,7 +223,7 @@ describeParallel('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describe('checkpoints', () => {
+    describeParallel('checkpoints', () => {
         it('should continue from the correct checkpoint', async () => {
             const dbName = randomToken(10);
             const identifier = randomToken(10);
@@ -249,7 +249,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.database.close();
         });
     });
-    describe('multiInstance', () => {
+    describeParallel('multiInstance', () => {
         if (
             !config.storage.hasMultiInstance
             // config.storage.name === 'remote' // TODO
@@ -299,6 +299,7 @@ describeParallel('rx-pipeline.test.js', () => {
             await c1.addPipeline({
                 destination: c2,
                 handler: async () => {
+                    await promiseWait(0);
                     runAt.push('c1.1');
                     await promiseWait(50);
                     runAt.push('c1.2');
@@ -323,7 +324,7 @@ describeParallel('rx-pipeline.test.js', () => {
             c2.database.close();
         });
     });
-    describe('transactional behavior', () => {
+    describeParallel('transactional behavior', () => {
         it('should not block reads/writes that come from inside the pipeline handler', async () => {
             const c1 = await humansCollection.create(0);
             await c1.database.waitForLeadership();

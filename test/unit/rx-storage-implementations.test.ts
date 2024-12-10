@@ -3138,7 +3138,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                  * Running .cleanup() with a height minimumDeletedTime
                  * should not remove the deleted document.
                  */
-                await storageInstance.cleanup(1000 * 60 * 60);
+                while (!await storageInstance.cleanup(1000 * 60 * 6)) { }
 
                 const mustBeThereButDeleted = await storageInstance.findDocumentsById(
                     [id],
@@ -3148,7 +3148,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 assert.ok(doc._deleted);
 
                 // clean up the deleted document
-                await storageInstance.cleanup(0);
+                while (!await storageInstance.cleanup(0)) { }
 
                 const mustNotBeThere = await storageInstance.findDocumentsById(
                     [id],
@@ -3178,10 +3178,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                let done = false;
-                while (!done) {
-                    done = await storageInstance.cleanup(0);
-                }
+                while (!await storageInstance.cleanup(0)) { }
 
                 const id = 'foobar';
                 /**
@@ -3220,10 +3217,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 }], testContext);
                 assert.deepStrictEqual(deleteResult.error, []);
 
-                done = false;
-                while (!done) {
-                    done = await storageInstance.cleanup(0);
-                }
+                while (!await storageInstance.cleanup(0)) { }
 
                 await storageInstance.remove();
             });

@@ -14,6 +14,7 @@ exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
 exports.removeRxDatabase = removeRxDatabase;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _customIdleQueue = require("custom-idle-queue");
+var _obliviousSet = require("oblivious-set");
 var _index = require("./plugins/utils/index.js");
 var _rxError = require("./rx-error.js");
 var _rxSchema = require("./rx-schema.js");
@@ -62,6 +63,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
     this.observable$ = this.eventBulks$.pipe((0, _operators.mergeMap)(changeEventBulk => (0, _rxChangeEvent.rxChangeEventBulkToRxChangeEvents)(changeEventBulk)));
     this.storageToken = _index.PROMISE_RESOLVE_FALSE;
     this.storageTokenDocument = _index.PROMISE_RESOLVE_FALSE;
+    this.emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
     this.name = name;
     this.token = token;
     this.storage = storage;
@@ -149,6 +151,18 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * Stores the whole state of the internal storage token document.
    * We need this in some plugins.
+   */
+
+  /**
+   * Contains the ids of all event bulks that have been emitted
+   * by the database.
+   * Used to detect duplicates that come in again via BroadcastChannel
+   * or other streams.
+   * In the past we tried to remove this and to ensure
+   * all storages only emit the same event bulks only once
+   * but it turns out this is just not possible for all storages.
+   * JavaScript processes, workers and browser tabs can be closed and started at any time
+   * which can cause cases where it is not possible to know if an event bulk has been emitted already.
    */;
   /**
    * This is the main handle-point for all change events
@@ -158,7 +172,10 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
    */
   _proto.$emit = function $emit(changeEventBulk) {
-    // emit into own stream
+    if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
+      return;
+    }
+    this.emittedEventBulkIds.add(changeEventBulk.id);
     this.eventBulks$.next(changeEventBulk);
   }
 

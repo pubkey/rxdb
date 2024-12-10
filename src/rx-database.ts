@@ -2,6 +2,7 @@ import { IdleQueue } from 'custom-idle-queue';
 import type {
     LeaderElector
 } from 'broadcast-channel';
+import { ObliviousSet } from 'oblivious-set';
 import type {
     CollectionsOfDatabase,
     RxDatabase,
@@ -231,6 +232,19 @@ export class RxDatabaseBase<
     public storageTokenDocument: Promise<RxDocumentData<InternalStoreStorageTokenDocType>> = PROMISE_RESOLVE_FALSE as any;
 
     /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     * In the past we tried to remove this and to ensure
+     * all storages only emit the same event bulks only once
+     * but it turns out this is just not possible for all storages.
+     * JavaScript processes, workers and browser tabs can be closed and started at any time
+     * which can cause cases where it is not possible to know if an event bulk has been emitted already.
+     */
+    public emittedEventBulkIds: ObliviousSet<string> = new ObliviousSet(60 * 1000);
+
+    /**
      * This is the main handle-point for all change events
      * ChangeEvents created by this instance go:
      * RxDocument -> RxCollection -> RxDatabase.$emit -> MultiInstance
@@ -238,7 +252,10 @@ export class RxDatabaseBase<
      * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
      */
     $emit(changeEventBulk: RxChangeEventBulk<any>) {
-        // emit into own stream
+        if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
+            return;
+        }
+        this.emittedEventBulkIds.add(changeEventBulk.id);
         this.eventBulks$.next(changeEventBulk);
     }
 

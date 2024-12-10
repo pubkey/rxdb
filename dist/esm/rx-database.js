@@ -1,5 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
+import { ObliviousSet } from 'oblivious-set';
 import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomToken, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashSha256, RXDB_VERSION } from "./plugins/utils/index.js";
 import { newRxError } from "./rx-error.js";
 import { createRxSchema } from "./rx-schema.js";
@@ -49,6 +50,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     this.observable$ = this.eventBulks$.pipe(mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk)));
     this.storageToken = PROMISE_RESOLVE_FALSE;
     this.storageTokenDocument = PROMISE_RESOLVE_FALSE;
+    this.emittedEventBulkIds = new ObliviousSet(60 * 1000);
     this.name = name;
     this.token = token;
     this.storage = storage;
@@ -136,6 +138,18 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * Stores the whole state of the internal storage token document.
    * We need this in some plugins.
+   */
+
+  /**
+   * Contains the ids of all event bulks that have been emitted
+   * by the database.
+   * Used to detect duplicates that come in again via BroadcastChannel
+   * or other streams.
+   * In the past we tried to remove this and to ensure
+   * all storages only emit the same event bulks only once
+   * but it turns out this is just not possible for all storages.
+   * JavaScript processes, workers and browser tabs can be closed and started at any time
+   * which can cause cases where it is not possible to know if an event bulk has been emitted already.
    */;
   /**
    * This is the main handle-point for all change events
@@ -145,7 +159,10 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
    * MultiInstance -> RxDatabase.$emit -> RxCollection -> RxDatabase
    */
   _proto.$emit = function $emit(changeEventBulk) {
-    // emit into own stream
+    if (this.emittedEventBulkIds.has(changeEventBulk.id)) {
+      return;
+    }
+    this.emittedEventBulkIds.add(changeEventBulk.id);
     this.eventBulks$.next(changeEventBulk);
   }
 

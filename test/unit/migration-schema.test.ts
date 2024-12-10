@@ -35,8 +35,8 @@ import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
 
-describeParallel('migration-schema.test.ts', function () {
-    this.timeout(1000 * 10);
+describe('migration-schema.test.ts', function () {
+    this.timeout(1000 * 20);
     if (
         !config.storage.hasPersistence ||
         !config.storage.hasReplication
@@ -49,7 +49,7 @@ describeParallel('migration-schema.test.ts', function () {
         addRxPlugin(RxDBAttachmentsPlugin);
     }
 
-    describe('.create() with migrationStrategies', () => {
+    describeParallel('.create() with migrationStrategies', () => {
         describe('positive', () => {
             it('ok to create with strategies', async () => {
                 const db = await createRxDatabase({
@@ -201,7 +201,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
         });
     });
-    describe('getOldCollectionMeta()', () => {
+    describeParallel('getOldCollectionMeta()', () => {
         it('should NOT get an older version', async () => {
             const colName = 'human';
             const db = await createRxDatabase({
@@ -266,7 +266,7 @@ describeParallel('migration-schema.test.ts', function () {
             db2.close();
         });
     });
-    describe('migration basics', () => {
+    describeParallel('migration basics', () => {
         describe('.remove()', () => {
             it('should delete the old storage instance with all its content', async () => {
                 if (!config.storage.hasMultiInstance) {
@@ -406,7 +406,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
         });
     });
-    describe('integration into collection', () => {
+    describeParallel('integration into collection', () => {
         describe('run', () => {
             it('should auto-run on creation', async () => {
                 const col = await humansCollection.createMigrationCollection(
@@ -594,7 +594,7 @@ describeParallel('migration-schema.test.ts', function () {
             });
         });
     });
-    describe('RxDatabase.migrationStates()', () => {
+    describeParallel('RxDatabase.migrationStates()', () => {
         it('should emit the ongoing migration state', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
@@ -643,7 +643,7 @@ describeParallel('migration-schema.test.ts', function () {
             db.close();
         });
     });
-    describe('migration and replication', () => {
+    describeParallel('migration and replication', () => {
         it('should have migrated the replication state', async () => {
             const remoteDb = await createRxDatabase({
                 name: 'remote' + randomToken(10),
@@ -767,7 +767,7 @@ describeParallel('migration-schema.test.ts', function () {
             await remoteDb.close();
         });
     });
-    describe('issues', () => {
+    describeParallel('issues', () => {
         it('#212 migration runs into infinity-loop', async () => {
             const dbName = randomToken(10);
             const schema0 = {

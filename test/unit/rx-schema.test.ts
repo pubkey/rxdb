@@ -1047,12 +1047,10 @@ describeParallel('rx-schema.test.ts', () => {
                     },
                     'createdAt': {
                         'type': 'string',
-                        'format': 'date-time',
                         'maxLength': 24
                     },
                     'updatedAt': {
                         'type': 'string',
-                        'format': 'date-time',
                         'maxLength': 24
                     }
                 },

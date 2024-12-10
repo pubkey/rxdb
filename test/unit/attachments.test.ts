@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config, { describeParallel } from './config.ts';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { randomBoolean } from 'async-test-util';
 
 import {
     schemaObjects,
@@ -10,7 +10,8 @@ import {
     isNode,
     isDeno,
     HumanDocumentType,
-    getEncryptedStorage
+    getEncryptedStorage,
+    randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 import {
     clone,
@@ -28,8 +29,16 @@ import {
     createBlobFromBase64,
     createBlob,
     blobToString,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    addRxPlugin,
+    randomOfArray,
+    promiseWait
 } from '../../plugins/core/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
+addRxPlugin(RxDBMigrationSchemaPlugin);
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
+
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
@@ -296,6 +305,52 @@ describeParallel('attachments.test.ts', () => {
             assert.ok(hasThrown);
 
             c.database.remove();
+        });
+    });
+    describe('atomicity', () => {
+        it('write and read many attachments in parallel', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+
+            let x = 10;
+            const attachmentIds: string[] = [];
+            const promises: Promise<any>[] = [];
+            while (x > 0) {
+                x--;
+                if (randomBoolean()) {
+                    // add
+                    const id = randomStringWithSpecialChars(10, 14) + '-att';
+                    promises.push(
+                        doc.putAttachment({
+                            id,
+                            data: createBlob(randomStringWithSpecialChars(10, 14), 'text/plain'),
+                            type: 'text/plain'
+                        }).then((attachment) => {
+                            attachment.getStringData();
+                            attachmentIds.push(id);
+                        })
+                    );
+                } else {
+                    // read
+                    promises.push(
+                        (async () => {
+                            while (true) {
+                                const id = randomOfArray(attachmentIds);
+                                if (!id) {
+                                    await promiseWait(10);
+                                } else {
+                                    const attachment = doc.getLatest().getAttachment(id);
+                                    await ensureNotFalsy(attachment, 'missing attachment ' + id).getData();
+                                    break;
+                                }
+                            }
+                        })()
+                    );
+                }
+            }
+
+            await Promise.all(promises);
+            await c.database.close();
         });
     });
     describe('RxAttachment.getData()', () => {
