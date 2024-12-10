@@ -299,6 +299,7 @@ describe('rx-pipeline.test.js', () => {
             await c1.addPipeline({
                 destination: c2,
                 handler: async () => {
+                    await promiseWait(0);
                     runAt.push('c1.1');
                     await promiseWait(50);
                     runAt.push('c1.2');
