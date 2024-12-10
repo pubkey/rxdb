@@ -2,14 +2,16 @@ import {
     createRxDatabase,
     randomToken,
     overwritable,
-    requestIdlePromise
+    requestIdlePromise,
+    RxCollection
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import {
     schemaObjects,
     schemas,
     isFastMode,
-    isDeno
+    isDeno,
+    AverageSchemaDocumentType
 } from '../plugins/test-utils/index.mjs';
 import config from './unit/config.ts';
 import { wait } from 'async-test-util';
@@ -71,6 +73,7 @@ describe('performance.test.ts', () => {
             // create database
             const dbName = 'test-db-performance-' + randomToken(10);
             const schema = schemas.averageSchema();
+            let collection: RxCollection<AverageSchemaDocumentType>;
             async function createDbWithCollections() {
                 if (collection) {
                     await collection.database.close();
@@ -112,7 +115,7 @@ describe('performance.test.ts', () => {
                 await collections[collectionNames[1]].insert(schemaObjects.averageSchemaData());
                 return collections[firstCollectionName];
             }
-            let collection = await createDbWithCollections();
+            collection = await createDbWithCollections();
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 

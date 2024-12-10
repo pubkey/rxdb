@@ -315,9 +315,6 @@ describeParallel('attachments.test.ts', () => {
             let x = 10;
             const attachmentIds: string[] = [];
             const promises: Promise<any>[] = [];
-            console.log('######################################');
-            console.log('######################################');
-            console.log('######################################');
             while (x > 0) {
                 x--;
                 if (randomBoolean()) {
@@ -330,7 +327,6 @@ describeParallel('attachments.test.ts', () => {
                             type: 'text/plain'
                         }).then((attachment) => {
                             attachment.getStringData();
-                            console.log('stored: ' + id);
                             attachmentIds.push(id);
                         })
                     );
@@ -343,10 +339,8 @@ describeParallel('attachments.test.ts', () => {
                                 if (!id) {
                                     await promiseWait(10);
                                 } else {
-                                    console.log('start read: ' + id);
                                     const attachment = doc.getLatest().getAttachment(id);
                                     await ensureNotFalsy(attachment, 'missing attachment ' + id).getData();
-                                    console.log('got');
                                     break;
                                 }
                             }

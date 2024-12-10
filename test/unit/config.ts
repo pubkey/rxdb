@@ -67,7 +67,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                     };
                 },
                 hasPersistence: true,
-                hasMultiInstance: false,
+                hasMultiInstance: true,
                 hasAttachments: true,
                 hasReplication: true
             };
