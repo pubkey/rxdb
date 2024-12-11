@@ -27,16 +27,16 @@ Another way to increases the server capacity is to put the storage into a [Worke
 ### Use an in-memory storage at the user facing level
 
 Another way to serve more requests to your end users, is to use an [in-memory](./rx-storage-memory.md) storage that has the [best](./rx-storage-performance.md) read- and write performance. It outperformans persistend storages by a factor of 10x.
-So instead of directly serving requests from the persistence layer, you add an in-memory layer on top of that. You could either do a [replication](./replication.md) from your memory database to the persistend one, or you use the [memory synced](./rx-storage-memory-synced.md) storage which has this build in.
+So instead of directly serving requests from the persistence layer, you add an in-memory layer on top of that. You could either do a [replication](./replication.md) from your memory database to the persistend one, or you use the [memory mapped](./rx-storage-memory-mapped.md) storage which has this build in.
 
 ```ts
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';
-import { getMemorySyncedRxStorage } from 'rxdb-premium/plugins/storage-memory-synced';
+import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
 const myRxDatabase = await createRxDatabase({
     name: 'mydb',
-    storage: getMemorySyncedRxStorage({
+    storage: getMemoryMappedRxStorage({
         storage: getRxStorageFilesystemNode({
             basePath: path.join(__dirname, 'my-database-folder')
         })
@@ -50,7 +50,7 @@ const myServer = await startRxServer({
 });
 ```
 
-But notice that you have to check your persistence requirements. When a write happens to the memory layer and the server crashes while it has not persisted, in rare cases the write operation might get lost. You can remove that risk by setting `awaitWritePersistence: true` on the  [memory synced storage](./rx-storage-memory-synced.md) settings.
+But notice that you have to check your persistence requirements. When a write happens to the memory layer and the server crashes while it has not persisted, in rare cases the write operation might get lost. You can remove that risk by setting `awaitWritePersistence: true` on the  [memory mapped storage](./rx-storage-memory-mapped.md) settings.
 
 ## Horizontal Scaling
 

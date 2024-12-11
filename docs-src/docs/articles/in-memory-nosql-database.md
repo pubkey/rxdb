@@ -42,7 +42,7 @@ const db = await createRxDatabase({
 ```
 
 
-Also the [memory synced RxStorage](../rx-storage-memory-synced.md) exists as a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence. The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.
+Also the [memory mapped RxStorage](../rx-storage-memory-mapped.md) exists as a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence. The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.
 
 
 ## Use Cases for RxDB

@@ -37,7 +37,7 @@ RxDB handles the encryption and decryption of data internally. This means that w
 This means the encryption works with all [RxStorage](./rx-storage.md) like **SQLite**, **IndexedDB**, **OPFS** and so on.
 
 However, there's a limitation when it comes to querying encrypted fields. **Encrypted fields cannot be used as operators in queries**. This means you cannot perform queries like "find all documents where the encrypted field equals a certain value." RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
-You could however use the [memory synced](./rx-storage-memory-synced.md) RxStorage to replicate the encrypted documents into a non-encrypted in-memory storage and then query them like normal.
+You could however use the [memory mapped](./rx-storage-memory-mapped.md) RxStorage to replicate the encrypted documents into a non-encrypted in-memory storage and then query them like normal.
 
 ## Password handling
 RxDB does not define how you should store or retrieve the encryption password. It only requires you to provide the password on database creation which grants you flexibility in how you manage encryption passwords.

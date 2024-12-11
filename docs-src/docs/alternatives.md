@@ -1,7 +1,7 @@
 ---
-title: Alternatives for realtime offline-first JavaScript applications and local databases
+title: Alternatives for realtime local-first JavaScript applications and local databases
 slug: alternatives.html
-description: Explore real-time, offline-first JS alternatives to RxDB. Compare Firebase, Meteor, AWS, CouchDB, and more for robust, seamless web/mobile app development.
+description: Explore real-time, local-first JS alternatives to RxDB. Compare Firebase, Meteor, AWS, CouchDB, and more for robust, seamless web/mobile app development.
 ---
 
 
