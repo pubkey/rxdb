@@ -27,7 +27,6 @@ import { trigger } from '../components/trigger-event';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
-import { BrowserWindow } from '../components/browser-window';
 import { TagCloud } from 'react-tagcloud';
 import CountUp from 'react-countup';
 import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
