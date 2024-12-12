@@ -10,7 +10,7 @@ export default function FooterWrapper() {
       },
       {
         href: '/consulting',
-        label: 'Consulting',
+        label: 'Support',
       },
       {
         label: 'Documentation',

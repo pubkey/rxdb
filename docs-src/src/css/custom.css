@@ -50,6 +50,9 @@ html[data-theme="dark"] {
     display: none;
 }
 
+
+
+
 @media (max-width: 500px) {
     .navbar__search #search_input_react {
         width: 6rem;
@@ -614,7 +617,7 @@ body {
 }
 
 .device.desktop .beating.logo {
-    width: 22%;
+    width: 42%;
 }
 
 .device.server {
@@ -851,7 +854,7 @@ body {
 @media (max-width: 500px) {
     .block.replication .replicate-graphql {
         margin-left: 0%;
-    }    
+    }
 }
 
 .block.replication .replicate-couchdb {
@@ -1097,7 +1100,7 @@ body {
 
 .block.sixth .buy-option-inner {
     box-sizing: content-box;
-    background-color: var(--bg-color);
+    background-color: var(--bg-color-dark);
     padding: 10px;
     border-radius: 4px;
     position: relative;
@@ -1768,7 +1771,7 @@ samp .cm-comment {
 .premium-blocks .premium-block-inner {
     box-sizing: content-box;
     height: calc(100% - 20px);
-    background-color: var(--bg-color-dark);
+    background-color: var(--bg-color);
     padding: 10px;
     border-radius: 4px;
     position: relative;
@@ -3886,5 +3889,3 @@ footer a:visited {
         margin: 0 10px;
     }
 }
-
-

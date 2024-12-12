@@ -137,27 +137,35 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: '/code',
+            to: '/chat',
             target: '_blank',
-            label: 'Code',
+            label: 'Community',
             position: 'right',
+            className: 'navbar-icon-discord'
           },
           {
             href: '/premium',
-            label: 'Pricing',
+            label: 'Premium',
             position: 'right',
           },
           {
             href: '/consulting',
-            label: 'Consulting',
+            label: 'Support',
             position: 'right',
           },
-          {
-            to: '/chat',
-            target: '_blank',
-            label: 'Chat',
-            position: 'right',
-          },
+          // {
+          //   href: '/code',
+          //   target: '_blank',
+          //   label: 'Code',
+          //   position: 'right',
+          // },
+          // {
+          //   to: '/chat',
+          //   target: '_blank',
+          //   label: ' ',
+          //   position: 'right',
+          //   className: 'navbar-icon-discord'
+          // },
         ],
       },
       footer: {

@@ -31,6 +31,7 @@ import { BrowserWindow } from '../components/browser-window';
 import { TagCloud } from 'react-tagcloud';
 import CountUp from 'react-countup';
 import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
+import { DevicesSync } from '../components/devices-sync';
 
 type MousePositionType = {
   x: number;
@@ -467,19 +468,21 @@ export default function Home(props: {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    paddingLeft: '4%',
+                    paddingRight: '4%'
                   }}
                 >
-                  <div style={{ paddingLeft: 80, paddingRight: 80 }}>
-                    <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
-                    </BrowserWindow>
-                  </div>
+
+                  <DevicesSync sem={props.sem} />
+                    </div>
+                    {/* <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
+                    </BrowserWindow> */}
                   {/* <img
               src="/files/logo/logo_text.svg"
               id="heartbeat-logo"
               alt="RxDB"
           /> */}
-                </div>
                 <div className='clear'></div>
               </div>
             </div>
@@ -517,7 +520,21 @@ export default function Home(props: {
           </a>
 
 
-
+          <div className="block reviews" id="reviews">
+            <div className="content centered">
+              <div className="inner">
+                <h2>
+                  Used by <b className="underline">many</b>
+                </h2>
+                <p>
+                  RxDB is a proven technology used by thousands of developers worldwide. <br />
+                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                </p>
+                <br /><br />
+              </div>
+            </div>
+            <ReviewsBlock></ReviewsBlock>
+          </div>
 
           <div className="block second dark">
             <div className="content">
@@ -591,92 +608,7 @@ export default function Home(props: {
                   </fieldset>
                 </div>
                 <div className="canvas half">
-                  <div className="content-canvas">
-                    <div
-                      className="device tablet"
-                      style={{ marginLeft: 481, marginTop: 117 }}
-                    >
-                      <div className="beating-color">
-                        {
-                          props.sem ? <>
-                            <img src={props.sem.iconUrl} style={{
-                              height: 23,
-                              width: 23,
-                              position: 'absolute',
-                              marginLeft: -83, marginTop: 95, zIndex: 2,
-                              backgroundColor: 'white',
-                              padding: 2,
-                              borderRadius: '50%'
-                            }}
-                              alt={props.sem.metaTitle}></img>
-                          </> : <></>
-                        }
-                        <img
-                          src="/files/logo/logo.svg"
-                          className="beating logo"
-                          alt="RxDB"
-                        />
-                      </div>
-                    </div>
-                    <div className="device desktop" style={{ marginTop: '0%' }}>
-                      <div className="beating-color">
-                        {
-                          props.sem ? <>
-                            <img src={props.sem.iconUrl} style={{
-                              height: 30,
-                              width: 30,
-                              position: 'absolute', marginLeft: -224, marginTop: 104, zIndex: 2,
-                              borderRadius: '50%',
-                              backgroundColor: 'white',
-                              padding: 2,
-
-                            }}
-                              alt={props.sem.metaTitle}></img>
-                          </> : <></>
-                        }
-                        <img
-                          src="/files/logo/logo.svg"
-                          className="beating logo"
-                          alt="RxDB"
-                        />
-                      </div>
-                    </div>
-                    <div
-                      className="device server"
-                      style={{ marginLeft: 0, marginTop: 168 }}
-                    >
-                      <div className="beating-color one"></div>
-                      <div className="beating-color two"></div>
-                      <div className="beating-color three"></div>
-                    </div>
-                    {/* <div class="left third centered">
-                  <img
-                      src="/files/logo/logo.svg"
-                      class="beating logo"
-                      alt="RxDB"
-                  />
-              </div>
-              <div
-                  class="third centered left"
-                  style="padding-left: 0px;"
-              >
-                  <img
-                      src="/files/icons/arrows/left-arrow.svg"
-                      alt="left"
-                      class="beating-first arrow"
-                  />
-                  <img
-                      src="/files/icons/arrows/right-arrow.svg"
-                      alt="right"
-                      class="beating-second arrow arrow-right"
-                  />
-              </div>
-              <div class="right third centered">
-                  <div class="smartphone">
-                      <div class="smartphone-color beating-color"></div>
-                  </div>
-              </div> */}
-                  </div>
+                  <DevicesSync sem={props.sem} />
                 </div>
               </div>
             </div>
@@ -1184,23 +1116,7 @@ export default function Home(props: {
             </div>
           </div> */}
 
-          <div className="block reviews" id="reviews">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Used by <b className="underline">many</b>
-                </h2>
-                <p>
-                  RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of apps and services.
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
-
-          <div className="block sixth dark">
+          <div className="block sixth">
             <div className="content">
               <h2>Free <b className='underline'>Open Core</b> Model</h2>
               <br />
@@ -1366,7 +1282,7 @@ export default function Home(props: {
                         onClick={() => trigger('request_premium_main_page', 3)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
-                          Request Premium
+                        Get Premium
                         </div>
                       </a>
                     </div>
@@ -1403,7 +1319,7 @@ export default function Home(props: {
             </div>
           </div>
 
-          <div className="block last">
+          <div className="block dark last">
             <div className="content">
               <h2>
                 Start using <b className="underline">RxDB</b> today
