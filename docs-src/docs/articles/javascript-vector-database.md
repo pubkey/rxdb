@@ -305,7 +305,7 @@ However our full-scan method presents a significant challenge: it does not scale
 
 ## Indexing the Embeddings for Better Performance
 
-To address the scalability issue, we need to store embeddings in a way that allows us to avoid fetching all of them from storage during a query. In traditional databases, you can sort documents by an **index field**, allowing efficient queries that retrieve only the necessary documents. An index organizes data in a structured, sortable manner, much **like a phone book**. However, with vector embeddings we are not dealing with simple, single values. Instead, we have large **lists of numbers**, which makes indexing more complex because we have more then one dimension.
+To address the scalability issue, we need to store embeddings in a way that allows us to avoid fetching all of them from storage during a query. In traditional databases, you can sort documents by an **index field**, allowing efficient queries that retrieve only the necessary documents. An index organizes data in a structured, sortable manner, much **like a phone book**. However, with vector embeddings we are not dealing with simple, single values. Instead, we have large **lists of numbers**, which makes indexing more complex because we have more than one dimension.
 
 ### Vector Indexing Methods
 

@@ -8,7 +8,7 @@ description: Optimize browser, Electron, and hybrid app performance with Indexed
 
 The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or hybrid apps.
 Compared to other browser based storages, the IndexedDB storage has the smallest write- and read latency, the fastest initial page load
-and the smallest build size. Only for big datasets (more then 10k documents), the [OPFS storage](./rx-storage-opfs.md) is better suited.
+and the smallest build size. Only for big datasets (more than 10k documents), the [OPFS storage](./rx-storage-opfs.md) is better suited.
 
 While the IndexedDB API itself can be very slow, the IndexedDB storage uses many tricks and performance optimizations, some of which are described [here](./slow-indexeddb.md). For example it uses custom index strings instead of the native IndexedDB indexes, batches cursor for faster bulk reads and many other improvements. The IndexedDB storage also operates on [Write-ahead logging](https://en.wikipedia.org/wiki/Write-ahead_logging) similar to SQLite, to improve write latency while still ensuring consistency on writes.
 

@@ -187,7 +187,7 @@ const replicationState = replicateGraphQL(
             dataPath: undefined, // (optional) specifies the object path to access the document(s). Otherwise, the first result of the response data is used.
             /**
              * Amount of documents that the remote will send in one request.
-             * If the response contains less then [batchSize] documents,
+             * If the response contains less than [batchSize] documents,
              * RxDB will assume there are no more changes on the backend
              * that are not replicated.
              * This value is the same as the limit in the pullHuman() schema.

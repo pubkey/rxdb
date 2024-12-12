@@ -52,7 +52,7 @@ const { value } = await Preferences.get({ key: 'foo' }); // > 'bar'
 await Preferences.remove({ key: 'foo' });
 ```
 
-The preferences API is good when only a small amount of data needs to be stored and when no query capabilities besides the key access are required. Complex queries or other features like indexes or replication are not supported which makes the preferences API not suitable for anything more then storing simple data like user settings.
+The preferences API is good when only a small amount of data needs to be stored and when no query capabilities besides the key access are required. Complex queries or other features like indexes or replication are not supported which makes the preferences API not suitable for anything more than storing simple data like user settings.
 
 ### Localstorage/IndexedDB/WebSQL
 

@@ -34,7 +34,7 @@ const myState = await database.addState();
 const myChildState = await database.addState('myNamepsace');
 ```
 
-## Writing data and Persistense
+## Writing data and Persistence
 
 Writing data to the state happen by a so called `modifier`. It is a simple JavaScript function that gets the current value as input and returns the new, modified value.
 
@@ -134,7 +134,7 @@ addRxPlugin(RxDBCleanupPlugin);
 
 RxState is optimized for correctness, not for performance. Compared to other state libraries, RxState directly persists data to storage and ensures write conflicts are handled properly. Other state libraries are handles mainly in-memory and lazily persist to disc without caring about conflicts or multiple browser tabs which can cause problems and hard to reproduce bugs.
 
-RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more then sufficient. Also to further improve write performance you can use more RxState instances (with an different namespace) to split writes across multiple storage instances.
+RxState still uses RxDB which has a range of [great performing storages](./rx-storage-performance.md) so the write speed is more than sufficient. Also to further improve write performance you can use more RxState instances (with an different namespace) to split writes across multiple storage instances.
 
 Reads happen directly in-memory which makes RxState read performance comparable to other state libraries.
 

@@ -96,7 +96,7 @@ await myRxCollection.cleanup(1000);
 
 /**
  * Purge all deleted documents no
- * mather when they where deleted
+ * matter when they where deleted
  * by setting minimumDeletedTime to zero.
  */
 await myRxCollection.cleanup(0);
