@@ -39,7 +39,7 @@ const value = await AsyncStorage.getItem('myKey');
 
 AsyncStorage was originally included in [React Native itself](https://reactnative.dev/docs/asyncstorage). But it was deprecated by the React Native Team which recommends to use a community based package instead. There is a [community fork of AsyncStorage](https://github.com/react-native-async-storage/async-storage) that is actively maintained and open source.
 
-AsyncStorage is fine when only a small amount of data needs to be stored and when no query capabilities besides the key-access are required. Complex queries or features are not supported which makes AsyncStorage not suitable for anything more then storing simple user settings data.
+AsyncStorage is fine when only a small amount of data needs to be stored and when no query capabilities besides the key-access are required. Complex queries or features are not supported which makes AsyncStorage not suitable for anything more than storing simple user settings data.
 
 
 ### SQLite

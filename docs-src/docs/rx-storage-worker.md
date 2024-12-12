@@ -151,7 +151,7 @@ module.exports = {
 
 ## One worker per database
 
-Each call to `getRxStorageWorker()` will create a different worker instance so that when you have more then one `RxDatabase`, each database will have its own JavaScript worker process.
+Each call to `getRxStorageWorker()` will create a different worker instance so that when you have more than one `RxDatabase`, each database will have its own JavaScript worker process.
 
 To reuse the worker instance in more than one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
 

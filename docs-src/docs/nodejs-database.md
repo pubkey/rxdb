@@ -111,17 +111,17 @@ node --max-old-space-size=8192 index.js
 
 ## Hybrid In-memory-persistence-synced storage
 
-If you want to have the performance of an **in-memory database** but require persistency of the data, you can use the [memory-synced storage](./rx-storage-memory-synced.md). On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistent storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.
+If you want to have the performance of an **in-memory database** but require persistency of the data, you can use the [memory-mapped storage](./rx-storage-memory-mapped.md). On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistent storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.
 
 
 ```typescript
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageFoundationDB } from 'rxdb/plugins/storage-foundationdb';
-import { getMemorySyncedRxStorage } from 'rxdb-premium/plugins/storage-memory-synced';
+import { getMemoryMappedRxStorage } from 'rxdb-premium/plugins/storage-memory-mapped';
 
 const db = await createRxDatabase({
     name: 'exampledb',
-    storage: getMemorySyncedRxStorage({
+    storage: getMemoryMappedRxStorage({
         storage: getRxStorageFoundationDB({
             apiVersion: 620,
             clusterFile: '/path/to/fdb.cluster'

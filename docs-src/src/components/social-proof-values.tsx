@@ -1,5 +1,5 @@
 export const SOCIAL_PROOF_VALUES = {
-    github: 20816,
-    twitter: 2954,
-    discord: 891
+    github: 21699,
+    twitter: 2987,
+    discord: 1070
 };

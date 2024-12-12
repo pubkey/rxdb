@@ -44,14 +44,16 @@ const config: Config = {
     //   src: 'https://consent.cookiebot.com/c429ebbd-6e92-4150-b700-ca186e06bc7c/cd.js',
     //   type: 'text/javascript'
     // }
-    {
-      id: 'Cookiebot',
-      src: 'https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c',
-      'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
-      'data-blockingmode': 'auto',
-      type: 'text/javascript',
-      async: true
-    },
+
+    // already included via google tag manager
+    // {
+    //   id: 'Cookiebot',
+    //   src: 'https://consent.cookiebot.com/uc.js?cbid=c429ebbd-6e92-4150-b700-ca186e06bc7c',
+    //   'data-cbid': 'c429ebbd-6e92-4150-b700-ca186e06bc7c',
+    //   'data-blockingmode': 'auto',
+    //   type: 'text/javascript',
+    //   async: true
+    // },
     {
       src: '/js/analytics.js',
       type: 'text/javascript',
@@ -135,27 +137,35 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: '/code',
+            to: '/chat',
             target: '_blank',
-            label: 'Code',
+            label: 'Community',
             position: 'right',
+            className: 'navbar-icon-discord'
           },
           {
             href: '/premium',
-            label: 'Pricing',
+            label: 'Premium',
             position: 'right',
           },
           {
             href: '/consulting',
-            label: 'Consulting',
+            label: 'Support',
             position: 'right',
           },
-          {
-            to: '/chat',
-            target: '_blank',
-            label: 'Chat',
-            position: 'right',
-          },
+          // {
+          //   href: '/code',
+          //   target: '_blank',
+          //   label: 'Code',
+          //   position: 'right',
+          // },
+          // {
+          //   to: '/chat',
+          //   target: '_blank',
+          //   label: ' ',
+          //   position: 'right',
+          //   className: 'navbar-icon-discord'
+          // },
         ],
       },
       footer: {

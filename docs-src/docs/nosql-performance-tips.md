@@ -136,7 +136,7 @@ Notice that RxDB has the [Query Optimizer Plugin](./query-optimizer.md) that can
 
 ## Make a Query "hot" to reduce load
 
-Having a query where the up-to-date result set is needed more then once, you might want to make the query "hot" by permanently subscribing to it. This ensures that the query result is kept up to date by RxDB ant the [EventReduce algorithm](https://github.com/pubkey/event-reduce) at any time so that at the moment you need the current results, it has them already.
+Having a query where the up-to-date result set is needed more than once, you might want to make the query "hot" by permanently subscribing to it. This ensures that the query result is kept up to date by RxDB ant the [EventReduce algorithm](https://github.com/pubkey/event-reduce) at any time so that at the moment you need the current results, it has them already.
 
 For example when you use RxDB at Node.js for a webserver, you should use an outer "hot" query instead of running the same query again on every request to a route.
 
