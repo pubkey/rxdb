@@ -12,7 +12,7 @@ export function DevicesSync(props: {
                     style={{ marginLeft: 481, marginTop: 117 }}
                 >
                     <div className="beating-color">
-                        {
+                        {/* {
                             props.sem ? <>
                                 <img src={props.sem.iconUrl} style={{
                                     height: 23,
@@ -25,7 +25,7 @@ export function DevicesSync(props: {
                                 }}
                                     alt={props.sem.metaTitle}></img>
                             </> : <></>
-                        }
+                        } */}
                         <img
                             src="/files/logo/logo.svg"
                             className="beating logo"
@@ -35,7 +35,7 @@ export function DevicesSync(props: {
                 </div>
                 <div className="device desktop" style={{ marginTop: '0%' }}>
                     <div className="beating-color">
-                        {
+                        {/* {
                             props.sem ? <>
                                 <img src={props.sem.iconUrl} style={{
                                     height: 30,
@@ -48,7 +48,7 @@ export function DevicesSync(props: {
                                 }}
                                     alt={props.sem.metaTitle}></img>
                             </> : <></>
-                        }
+                        } */}
                         <img
                             src="/files/logo/logo_text.svg"
                             className="beating logo"
