@@ -96,7 +96,8 @@ RxDB is a proven technology used by [thousands of developers](https://github.com
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
-There are also plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC</a>,<a href="https://github.com/marceljuenemann/rxdb-supabase">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
+You do not have to use a specific cloud or backend database. The protocol works by implementing three simple HTTP endpoints.
+There are also production-ready plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC (P2P)</a>,<a href="https://github.com/marceljuenemann/rxdb-supabase">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
 
 
 <h2>
