@@ -367,7 +367,7 @@ describe('replication.test.ts', () => {
             const replicationState = replicateRxCollection({
                 collection: otherSchemaCollection as any,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
+                live: true,
                 pull: {
                     handler: getPullHandler(remoteCollection)
                 },
