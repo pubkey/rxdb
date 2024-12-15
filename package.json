@@ -529,7 +529,7 @@
     "express": "4.21.2",
     "express-graphql": "0.12.0",
     "fake-indexeddb": "6.0.0",
-    "firebase-tools": "13.27.0",
+    "firebase-tools": "13.29.1",
     "get-port": "5.1.1",
     "globals": "15.13.0",
     "graphql-subscriptions": "2.0.0",
