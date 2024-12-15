@@ -1,6 +1,6 @@
 import { SemPage } from '../pages';
 
-export function DevicesSync(props: {
+export function DevicesSync(_props: {
     sem?: SemPage;
 }) {
 
