@@ -43,8 +43,7 @@ import {
     requestIdlePromise,
     prepareQuery,
     addRxPlugin,
-    getLastCheckpointDoc,
-    now
+    getLastCheckpointDoc
 } from '../../plugins/core/index.mjs';
 
 import {
