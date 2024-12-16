@@ -14,7 +14,7 @@
   "devDependencies": {
     "rxdb": "file:rxdb-local.tgz",
     "@rollup/plugin-commonjs": "28.0.1",
-    "@rollup/plugin-node-resolve": "15.3.0",
+    "@rollup/plugin-node-resolve": "15.3.1",
     "async-test-util": "2.5.0",
     "concurrently": "9.1.0",
     "rollup": "4.28.1",
