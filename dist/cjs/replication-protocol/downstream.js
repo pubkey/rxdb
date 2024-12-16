@@ -284,6 +284,7 @@ async function startReplicationDownstream(state) {
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);
             });
+            var mustThrow;
             forkWriteResult.error.forEach(error => {
               /**
                * We do not have to care about downstream conflict errors here
@@ -293,10 +294,15 @@ async function startReplicationDownstream(state) {
                 return;
               }
               // other non-conflict errors must be handled
-              state.events.error.next((0, _rxError.newRxError)('RC_PULL', {
+              var throwMe = (0, _rxError.newRxError)('RC_PULL', {
                 writeError: error
-              }));
+              });
+              state.events.error.next(throwMe);
+              mustThrow = mustThrow = throwMe;
             });
+            if (mustThrow) {
+              throw mustThrow;
+            }
           });
         }
       }).then(() => {

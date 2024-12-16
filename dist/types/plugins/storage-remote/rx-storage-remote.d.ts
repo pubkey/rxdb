@@ -4,7 +4,7 @@ import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals,
 export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
     readonly name: string;
-    readonly rxdbVersion = "16.0.0-beta.9";
+    readonly rxdbVersion = "16.0.0-beta.10";
     private seed;
     private lastRequestId;
     messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
