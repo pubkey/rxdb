@@ -554,7 +554,7 @@
     "mocha": "10.8.2",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.1",
-    "node-datachannel": "0.12.0",
+    "node-datachannel": "0.23.0",
     "node-pre-gyp": "0.17.0",
     "pre-commit": "1.2.2",
     "process": "0.11.10",
