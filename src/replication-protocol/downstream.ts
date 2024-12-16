@@ -14,7 +14,8 @@ import type {
     ById,
     WithDeleted,
     DocumentsWithCheckpoint,
-    WithDeletedAndAttachments
+    WithDeletedAndAttachments,
+    RxError
 } from '../types/index.d.ts';
 import {
     appendToArray,
@@ -472,6 +473,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
                         });
+                        let mustThrow: RxError | undefined;
                         forkWriteResult.error.forEach(error => {
                             /**
                              * We do not have to care about downstream conflict errors here
@@ -481,10 +483,16 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 return;
                             }
                             // other non-conflict errors must be handled
-                            state.events.error.next(newRxError('RC_PULL', {
+                            const throwMe = newRxError('RC_PULL', {
                                 writeError: error
-                            }));
+                            });
+                            state.events.error.next(throwMe);
+                            mustThrow =
+                                mustThrow = throwMe;
                         });
+                        if (mustThrow) {
+                            throw mustThrow;
+                        }
                     });
                 }
             }).then(() => {

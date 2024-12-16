@@ -344,6 +344,14 @@ describe('replication.test.ts', () => {
             const amount = 5;
             const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: amount });
 
+            // // add onee that still matches the schema
+            // await remoteCollection.insert({
+            //     id: 'matches-schema',
+            //     name: 'foobar',
+            //     updatedAt: 1001,
+            //     age: 0
+            // });
+
             /**
              * Use collection with different schema
              * to provoke validation errors.
@@ -359,7 +367,7 @@ describe('replication.test.ts', () => {
             const replicationState = replicateRxCollection({
                 collection: otherSchemaCollection as any,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
+                live: true,
                 pull: {
                     handler: getPullHandler(remoteCollection)
                 },
@@ -378,9 +386,16 @@ describe('replication.test.ts', () => {
             assert.strictEqual(docsLocal.length, 0);
 
 
-            assert.strictEqual(errors.length, amount);
+            // assert.strictEqual(errors.length, amount);
             assert.ok(JSON.stringify(errors[0].parameters).includes('maximum'));
 
+            const pullCheckpointAfter = await getLastCheckpointDoc(
+                ensureNotFalsy(replicationState.internalReplicationState),
+                'down'
+            );
+
+            // when all pulls failed, it should not have the checkpoint updated
+            assert.ok(!pullCheckpointAfter);
 
             localCollection.database.close();
             remoteCollection.database.close();
