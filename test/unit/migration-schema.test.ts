@@ -37,6 +37,7 @@ import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
+import { migrateStorage } from '../../plugins/migration-storage/index.mjs';
 
 describe('migration-schema.test.ts', function () {
     this.timeout(1000 * 20);
@@ -1052,155 +1053,215 @@ describe('migration-schema.test.ts', function () {
             await newDb.close();
         });
     });
-});
 
-//  "more than one old collection meta found"
-describe('old collection meta', () => {
-    it('should not find more than one old collection meta', async function () {
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        // if (
-        //     !isNode // runs only in node
-        //     // isNode // runs only in the browser
-        // ) {
-        //     // return;
-        // }
+    //  "more than one old collection meta found"
+    describe('use migration storage to add a field while keeping version same, then try a normal migration strategy', () => {
+        it('should migrate from v0 to v1 schema', async function () {
+            /**
+             * If your test should only run in nodejs or only run in the browser,
+             * you should comment in the return operator and adapt the if statement.
+             */
+            // if (
+            //     !isNode // runs only in node
+            //     // isNode // runs only in the browser
+            // ) {
+            //     // return;
+            // }
 
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
+            if (!config.storage.hasMultiInstance) {
+                return;
+            }
 
-        // create a schema
-        const mySchemaV0 = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100,
+            // create a schema
+            const mySchemaV0 = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
                 },
-                firstName: {
-                    type: 'string',
-                },
-                lastName: {
-                    type: 'string',
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150,
-                },
-            },
-        };
+            };
 
-        const mySchemaV1 = {
-            version: 1,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100,
-                },
-                firstName: {
-                    type: 'string',
-                },
-                lastName: {
-                    type: 'string',
-                },
-                country: {
-                    type: 'string',
-                },
-                criminal: {
-                    type: 'boolean',
-                    default: false,
-                },
-                parents: {
-                    type: 'array',
-                    items: {
+            const mySchemaV1_newStorage = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                    friend: {
                         type: 'string',
                     },
                 },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150,
+            };
+
+            const mySchemaV2 = {
+                version: 1,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    country: {
+                        type: 'string',
+                    },
+                    friend: {
+                        type: 'string',
+                    },
+                    doctor: {
+                        type: 'boolean',
+                        default: false,
+                    },
                 },
-            },
-        };
+            };
 
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
 
-        // Disregarding above note, as I want to test database persistence.
-        // In production, databases remain the same name.
-        const name = 'meta-db-test';
+            // Disregarding above note, as I want to test database persistence.
+            // In production, databases remain the same name.
+            const name = 'meta-db-test';
+            const newName = 'migrate-storage-db';
 
-        const db = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true,
-        });
-        // create a collection
-        const v0collection = await db.addCollections({
-            mycollection: {
-                schema: mySchemaV0,
-            },
-        });
-
-        // insert a document
-        await v0collection.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56,
-        });
-
-        await db.close();
-
-        const dbv1 = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true,
-        });
-
-        const v1collection = await dbv1.addCollections({
-            mycollection: {
-                schema: mySchemaV1,
-                migrationStrategies: {
-                    1: (d) => d,
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true,
+            });
+            // create a collection
+            const v0collection = await db.addCollections({
+                mycollection: {
+                    schema: mySchemaV0,
                 },
-            },
+            });
+
+            // insert a document
+            await v0collection.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+            });
+
+            await db.close();
+
+            // Use migration storage and add fields in between the storage migration
+            const dbv1 = await createRxDatabase({
+                name: newName,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true,
+            });
+
+            await migrateStorage({
+                database: dbv1 as any,
+                oldDatabaseName: name,
+                oldStorage: config.storage.getStorage(),
+            });
+
+            console.log('STORAGE MIGRATED');
+
+            const v1collection = await dbv1.addCollections({
+                mycollection: {
+                    schema: mySchemaV1_newStorage,
+                },
+            });
+
+            console.log('V1 SCHEMA ADDED');
+
+            const newDocv1 = await v1collection.mycollection.insert({
+                passportId: 'barbaz',
+                firstName: 'J',
+                lastName: 'D',
+                age: 56,
+                friend: 'Elliot',
+            });
+
+            // before and after patch tests on newly added schema
+            assert.strictEqual(newDocv1.friend, 'Elliot');
+
+            console.log('V1 DOC ADDED');
+
+            await dbv1.close();
+
+            // Now we try to migrate using regular migration strategy
+            const dbv2 = await createRxDatabase({
+                name: newName,
+                storage: config.storage.getStorage(),
+                // eventReduce: true,
+                // ignoreDuplicate: true,
+            });
+
+            const v2collection = await dbv2.addCollections({
+                mycollection: {
+                    schema: mySchemaV2,
+                    migrationStrategies: {
+                        1: (d) => d,
+                    },
+                },
+            });
+
+            console.log('V2 SCHEMA ADDED');
+
+            const docv2 = await v2collection.mycollection
+                .findOne('foobar')
+                .exec();
+
+            const newDocv2 = await docv2.patch({
+                firstName: 'J',
+                lastName: 'D',
+                age: 56,
+                friend: 'Elliot',
+                doctor: true,
+            });
+
+            /*
+             * assert things,
+             * here your tests should fail to show that there is a bug
+             */
+            assert.strictEqual(docv2.doctor, false);
+            assert.strictEqual(newDocv2.doctor, true);
+
+            // clean up afterwards
+            dbv2.close();
         });
-
-        const docv1 = await v1collection.mycollection.findOne('foobar').exec();
-
-        const newDoc = await docv1.patch({
-            firstName: 'J',
-            lastName: 'D',
-            age: 56,
-            criminal: true,
-            parents: ['Perry', 'Elliot'],
-            country: 'USA',
-        });
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(docv1.country, undefined);
-        assert.strictEqual(docv1.criminal, undefined);
-        assert.strictEqual(newDoc.country, 'USA');
-        assert.strictEqual(newDoc.criminal, true);
-
-        // clean up afterwards
-        db.close();
     });
 });
