@@ -2,7 +2,11 @@ import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import { humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import {
+    humansCollection,
+    schemaObjects,
+    schemas,
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -19,13 +23,13 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
 } from '../../plugins/core/index.mjs';
 
 import {
     RxMigrationState,
     RxMigrationStatus,
-    getOldCollectionMeta
+    getOldCollectionMeta,
 } from '../../plugins/migration-schema/index.mjs';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
@@ -34,13 +38,9 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 
-
 describe('migration-schema.test.ts', function () {
     this.timeout(1000 * 20);
-    if (
-        !config.storage.hasPersistence ||
-        !config.storage.hasReplication
-    ) {
+    if (!config.storage.hasPersistence || !config.storage.hasReplication) {
         return;
     }
     addRxPlugin(RxDBMigrationPlugin);
@@ -61,11 +61,11 @@ describe('migration-schema.test.ts', function () {
                         schema: schemas.simpleHumanV3,
                         autoMigrate: false,
                         migrationStrategies: {
-                            1: () => { },
-                            2: () => { },
-                            3: () => { }
-                        }
-                    }
+                            1: () => {},
+                            2: () => {},
+                            3: () => {},
+                        },
+                    },
                 });
                 db.close();
             });
@@ -75,30 +75,30 @@ describe('migration-schema.test.ts', function () {
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
-                    ignoreDuplicate: true
+                    ignoreDuplicate: true,
                 });
                 await db.addCollections({
                     [colName]: {
                         schema: schemas.human,
-                        autoMigrate: false
-                    }
+                        autoMigrate: false,
+                    },
                 });
 
                 const db2 = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
-                    ignoreDuplicate: true
+                    ignoreDuplicate: true,
                 });
                 await db2.addCollections({
                     [colName]: {
                         schema: schemas.simpleHumanV3,
                         autoMigrate: false,
                         migrationStrategies: {
-                            1: () => { },
-                            2: () => { },
-                            3: () => { }
-                        }
-                    }
+                            1: () => {},
+                            2: () => {},
+                            3: () => {},
+                        },
+                    },
                 });
                 db.close();
                 db2.close();
@@ -111,13 +111,14 @@ describe('migration-schema.test.ts', function () {
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
-                        foobar: {
-                            schema: schemas.human,
-                            autoMigrate: false,
-                            migrationStrategies: [] as any
-                        }
-                    }),
+                    () =>
+                        db.addCollections({
+                            foobar: {
+                                schema: schemas.human,
+                                autoMigrate: false,
+                                migrationStrategies: [] as any,
+                            },
+                        }),
                     'RxTypeError'
                 );
                 db.close();
@@ -128,15 +129,16 @@ describe('migration-schema.test.ts', function () {
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
-                        foobar: {
-                            schema: schemas.human,
-                            autoMigrate: false,
-                            migrationStrategies: {
-                                foo: function () { }
-                            }
-                        }
-                    } as any),
+                    () =>
+                        db.addCollections({
+                            foobar: {
+                                schema: schemas.human,
+                                autoMigrate: false,
+                                migrationStrategies: {
+                                    foo: function () {},
+                                },
+                            },
+                        } as any),
                     'RxError'
                 );
                 db.close();
@@ -147,15 +149,16 @@ describe('migration-schema.test.ts', function () {
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
-                        foobar: {
-                            schema: schemas.human,
-                            autoMigrate: false,
-                            migrationStrategies: {
-                                '1.1': function () { }
-                            }
-                        }
-                    }),
+                    () =>
+                        db.addCollections({
+                            foobar: {
+                                schema: schemas.human,
+                                autoMigrate: false,
+                                migrationStrategies: {
+                                    '1.1': function () {},
+                                },
+                            },
+                        }),
                     'RxError'
                 );
                 db.close();
@@ -166,15 +169,16 @@ describe('migration-schema.test.ts', function () {
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
-                        foobar: {
-                            schema: schemas.human,
-                            autoMigrate: false,
-                            migrationStrategies: {
-                                1: 'foobar'
-                            }
-                        }
-                    } as any),
+                    () =>
+                        db.addCollections({
+                            foobar: {
+                                schema: schemas.human,
+                                autoMigrate: false,
+                                migrationStrategies: {
+                                    1: 'foobar',
+                                },
+                            },
+                        } as any),
                     'RxError'
                 );
                 db.close();
@@ -185,16 +189,17 @@ describe('migration-schema.test.ts', function () {
                     storage: config.storage.getStorage(),
                 });
                 await AsyncTestUtil.assertThrows(
-                    () => db.addCollections({
-                        foobar: {
-                            schema: schemas.simpleHumanV3,
-                            autoMigrate: false,
-                            migrationStrategies: {
-                                1: () => { },
-                                3: () => { }
-                            }
-                        }
-                    }),
+                    () =>
+                        db.addCollections({
+                            foobar: {
+                                schema: schemas.simpleHumanV3,
+                                autoMigrate: false,
+                                migrationStrategies: {
+                                    1: () => {},
+                                    3: () => {},
+                                },
+                            },
+                        }),
                     'RxError'
                 );
                 db.close();
@@ -213,11 +218,11 @@ describe('migration-schema.test.ts', function () {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
-                    }
-                }
+                        1: () => {},
+                        2: () => {},
+                        3: () => {},
+                    },
+                },
             });
             const col = cols[colName];
             const old = await getOldCollectionMeta(col.getMigrationState());
@@ -230,33 +235,35 @@ describe('migration-schema.test.ts', function () {
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
             });
             await db.addCollections({
                 [colName]: {
                     schema: schemas.simpleHuman,
-                    autoMigrate: false
-                }
+                    autoMigrate: false,
+                },
             });
 
             const db2 = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
             });
             const cols2 = await db2.addCollections({
                 [colName]: {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
                     migrationStrategies: {
-                        1: () => { },
-                        2: () => { },
-                        3: () => { }
-                    }
-                }
+                        1: () => {},
+                        2: () => {},
+                        3: () => {},
+                    },
+                },
             });
             const col2 = cols2[colName];
-            const oldCollectionMeta = await getOldCollectionMeta(col2.getMigrationState());
+            const oldCollectionMeta = await getOldCollectionMeta(
+                col2.getMigrationState()
+            );
             assert.ok(oldCollectionMeta);
 
             // ensure it is an OldCollection
@@ -273,19 +280,25 @@ describe('migration-schema.test.ts', function () {
                     return;
                 }
                 const dbName = randomToken(10);
-                const col = await humansCollection.createMigrationCollection(10, {}, dbName, true);
+                const col = await humansCollection.createMigrationCollection(
+                    10,
+                    {},
+                    dbName,
+                    true
+                );
                 await col.database.close();
 
-
-                const db = await createRxDatabase<{ human: RxCollection<SimpleHumanAgeDocumentType>; }>({
+                const db = await createRxDatabase<{
+                    human: RxCollection<SimpleHumanAgeDocumentType>;
+                }>({
                     name: dbName,
                     storage: config.storage.getStorage(),
-                    ignoreDuplicate: true
+                    ignoreDuplicate: true,
                 });
                 const cols = await db.addCollections({
                     human: {
                         schema: schemas.simpleHuman,
-                    }
+                    },
                 });
                 const newCollection = cols.human;
                 const docsAfter = await newCollection.find().exec();
@@ -300,12 +313,15 @@ describe('migration-schema.test.ts', function () {
                 await col.database.close();
             });
             it('should resolve finished when some docs are in the collection', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
-                    3: (doc: any) => {
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
+                const col = await humansCollection.createMigrationCollection(
+                    10,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        },
                     }
-                });
+                );
                 await col.migratePromise();
 
                 // check if in new collection
@@ -323,13 +339,13 @@ describe('migration-schema.test.ts', function () {
                             await promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
-                        }
+                        },
                     }
                 );
 
                 const state$ = col.getMigrationState().$;
                 const states: RxMigrationStatus[] = [];
-                const sub = state$.subscribe(state => {
+                const sub = state$.subscribe((state) => {
                     states.push(state);
                 });
 
@@ -343,11 +359,14 @@ describe('migration-schema.test.ts', function () {
             });
 
             it('should remove the document when migration-strategy returns null', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
-                    3: () => {
-                        return null;
+                const col = await humansCollection.createMigrationCollection(
+                    10,
+                    {
+                        3: () => {
+                            return null;
+                        },
                     }
-                });
+                );
 
                 await col.migratePromise();
                 const docs = await col.find().exec();
@@ -356,11 +375,14 @@ describe('migration-schema.test.ts', function () {
                 col.database.close();
             });
             it('should throw when document cannot be migrated', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
-                    3: () => {
-                        throw new Error('foobarInStrategy');
+                const col = await humansCollection.createMigrationCollection(
+                    10,
+                    {
+                        3: () => {
+                            throw new Error('foobarInStrategy');
+                        },
                     }
-                });
+                );
 
                 await AsyncTestUtil.assertThrows(
                     () => col.migratePromise(),
@@ -373,18 +395,20 @@ describe('migration-schema.test.ts', function () {
         describe('.migratePromise()', () => {
             describe('positive', () => {
                 it('should resolve when nothing to migrate', async () => {
-                    const col = await humansCollection.createMigrationCollection(0, {});
+                    const col =
+                        await humansCollection.createMigrationCollection(0, {});
                     await col.migratePromise();
                     await col.database.close();
                 });
 
                 it('should resolve when migrating data', async () => {
-                    const col = await humansCollection.createMigrationCollection(5, {
-                        3: (doc: any) => {
-                            doc.age = parseInt(doc.age, 10);
-                            return doc;
-                        }
-                    });
+                    const col =
+                        await humansCollection.createMigrationCollection(5, {
+                            3: (doc: any) => {
+                                doc.age = parseInt(doc.age, 10);
+                                return doc;
+                            },
+                        });
                     await col.migratePromise();
                     const docs = await col.find().exec();
                     assert.strictEqual(docs.length, 5);
@@ -393,13 +417,14 @@ describe('migration-schema.test.ts', function () {
             });
             describe('negative', () => {
                 it('should reject when migration fails', async () => {
-                    const col = await humansCollection.createMigrationCollection(5, {
-                        3: () => {
-                            throw new Error('foobar');
-                        }
-                    });
+                    const col =
+                        await humansCollection.createMigrationCollection(5, {
+                            3: () => {
+                                throw new Error('foobar');
+                            },
+                        });
                     let failed = false;
-                    await col.migratePromise().catch(() => failed = true);
+                    await col.migratePromise().catch(() => (failed = true));
                     assert.ok(failed);
                     await col.database.close();
                 });
@@ -415,7 +440,7 @@ describe('migration-schema.test.ts', function () {
                         3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
                             return doc;
-                        }
+                        },
                     },
                     randomToken(10),
                     true
@@ -434,10 +459,10 @@ describe('migration-schema.test.ts', function () {
                     properties: {
                         id: {
                             type: 'string',
-                            maxLength: 100
-                        }
+                            maxLength: 100,
+                        },
                     },
-                    required: ['id']
+                    required: ['id'],
                 };
                 const schema1 = {
                     version: 1,
@@ -446,13 +471,13 @@ describe('migration-schema.test.ts', function () {
                     properties: {
                         id: {
                             type: 'string',
-                            maxLength: 100
+                            maxLength: 100,
                         },
                         name: {
-                            type: 'string'
-                        }
+                            type: 'string',
+                        },
                     },
-                    required: ['id', 'name']
+                    required: ['id', 'name'],
                 };
                 const db = await createRxDatabase({
                     name: dbName,
@@ -460,12 +485,12 @@ describe('migration-schema.test.ts', function () {
                 });
                 const cols = await db.addCollections({
                     heroes: {
-                        schema: schema0
-                    }
+                        schema: schema0,
+                    },
                 });
                 const col = cols.heroes;
                 await col.insert({
-                    id: 'niven'
+                    id: 'niven',
                 });
                 await db.close();
 
@@ -478,11 +503,13 @@ describe('migration-schema.test.ts', function () {
                         schema: schema1,
                         migrationStrategies: {
                             1: (oldDoc: any) => {
-                                oldDoc.name = (oldDoc.id as string).toUpperCase();
+                                oldDoc.name = (
+                                    oldDoc.id as string
+                                ).toUpperCase();
                                 return oldDoc;
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 });
                 const col2 = cols2.heroes;
 
@@ -502,7 +529,7 @@ describe('migration-schema.test.ts', function () {
                             await promiseWait(10);
                             doc.age = parseInt(doc.age, 10);
                             return doc;
-                        }
+                        },
                     },
                     randomToken(10),
                     true
@@ -520,22 +547,24 @@ describe('migration-schema.test.ts', function () {
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
-                    ignoreDuplicate: true
+                    ignoreDuplicate: true,
                 });
                 await db.addCollections({
                     human: {
                         schema: schemas.simpleHuman,
-                        autoMigrate: false
-                    }
+                        autoMigrate: false,
+                    },
                 });
-                const doc = await db.human.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' }));
+                const doc = await db.human.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'local-1' })
+                );
                 const lwtBefore = doc.toJSON(true)._meta.lwt;
                 await db.close();
 
                 const db2 = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
-                    ignoreDuplicate: true
+                    ignoreDuplicate: true,
                 });
 
                 const cols2 = await db2.addCollections({
@@ -543,14 +572,14 @@ describe('migration-schema.test.ts', function () {
                         schema: schemas.simpleHumanV3,
                         autoMigrate: true,
                         migrationStrategies: {
-                            1: d => d,
-                            2: d => d,
-                            3: d => {
+                            1: (d) => d,
+                            2: (d) => d,
+                            3: (d) => {
                                 d.age = parseInt(d.age, 10);
                                 return d;
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 });
                 const col2 = cols2.human;
 
@@ -570,24 +599,30 @@ describe('migration-schema.test.ts', function () {
                 col.database.close();
             });
             it('return false if nothing to migrate', async () => {
-                const col = await humansCollection.createMigrationCollection(5, {
-                    3: (doc: any) => {
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
+                const col = await humansCollection.createMigrationCollection(
+                    5,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        },
                     }
-                });
+                );
                 await col.migratePromise();
                 const needed = await col.migrationNeeded();
                 assert.strictEqual(needed, false);
                 col.database.close();
             });
             it('return true if something to migrate', async () => {
-                const col = await humansCollection.createMigrationCollection(5, {
-                    3: (doc: any) => {
-                        doc.age = parseInt(doc.age, 10);
-                        return doc;
+                const col = await humansCollection.createMigrationCollection(
+                    5,
+                    {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        },
                     }
-                });
+                );
                 const needed = await col.migrationNeeded();
                 assert.strictEqual(needed, true);
                 col.database.close();
@@ -601,37 +636,39 @@ describe('migration-schema.test.ts', function () {
                 storage: config.storage.getStorage(),
             });
             const migrationStrategies = {
-                1: () => { },
-                2: () => { },
-                3: () => { }
+                1: () => {},
+                2: () => {},
+                3: () => {},
             };
 
             const emitted: RxMigrationState[][] = [];
-            db.migrationStates().subscribe(x => emitted.push(x));
+            db.migrationStates().subscribe((x) => emitted.push(x));
 
             await db.addCollections({
                 foobar: {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
-                    migrationStrategies
+                    migrationStrategies,
                 },
                 foobar2: {
                     schema: schemas.simpleHumanV3,
                     autoMigrate: false,
-                    migrationStrategies
-                }
+                    migrationStrategies,
+                },
             });
 
             await Promise.all([
                 db.foobar.getMigrationState().migratePromise(),
-                db.foobar2.getMigrationState().migratePromise()
+                db.foobar2.getMigrationState().migratePromise(),
             ]);
 
             assert.ok(emitted.length >= 2);
             const endStates = await Promise.all(
-                ensureNotFalsy(lastOfArray(emitted)).map(state => state.migratePromise())
+                ensureNotFalsy(lastOfArray(emitted)).map((state) =>
+                    state.migratePromise()
+                )
             );
-            emitted.map(list => list.map((i: any) => i.state)).pop();
+            emitted.map((list) => list.map((i: any) => i.state)).pop();
             if (!endStates) {
                 throw new Error('endStates missing');
             }
@@ -651,8 +688,8 @@ describe('migration-schema.test.ts', function () {
             });
             await remoteDb.addCollections({
                 humans: {
-                    schema: schemas.simpleHuman
-                }
+                    schema: schemas.simpleHuman,
+                },
             });
             const name = randomToken(10);
             const db = await createRxDatabase({
@@ -661,20 +698,44 @@ describe('migration-schema.test.ts', function () {
             });
             await db.addCollections({
                 humans: {
-                    schema: schemas.simpleHuman
-                }
+                    schema: schemas.simpleHuman,
+                },
             });
             await Promise.all([
-                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' })),
-                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-2' })),
-                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-3' })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-1' })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-2' })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-3' })),
+                db.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'local-1' })
+                ),
+                db.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'local-2' })
+                ),
+                db.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'local-3' })
+                ),
+                remoteDb.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'remote-1' })
+                ),
+                remoteDb.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'remote-2' })
+                ),
+                remoteDb.humans.insert(
+                    schemaObjects.simpleHumanAge({ passportId: 'remote-3' })
+                ),
 
                 // one with full primaryKey length
-                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomToken(schemas.simpleHuman.properties.passportId.maxLength) })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomToken(schemas.simpleHuman.properties.passportId.maxLength) }))
+                db.humans.insert(
+                    schemaObjects.simpleHumanAge({
+                        passportId: randomToken(
+                            schemas.simpleHuman.properties.passportId.maxLength
+                        ),
+                    })
+                ),
+                remoteDb.humans.insert(
+                    schemaObjects.simpleHumanAge({
+                        passportId: randomToken(
+                            schemas.simpleHuman.properties.passportId.maxLength
+                        ),
+                    })
+                ),
             ]);
 
             const helper = rxStorageInstanceToReplicationHandler(
@@ -689,11 +750,11 @@ describe('migration-schema.test.ts', function () {
                 autoStart: true,
                 waitForLeadership: false,
                 pull: {
-                    handler: helper.masterChangesSince
+                    handler: helper.masterChangesSince,
                 },
                 push: {
-                    handler: helper.masterWrite
-                }
+                    handler: helper.masterWrite,
+                },
             });
             ensureReplicationHasNoErrors(replicationState);
 
@@ -705,7 +766,6 @@ describe('migration-schema.test.ts', function () {
                 name,
                 storage: config.storage.getStorage(),
             });
-
 
             const ensureNoUnknownStrategy: MigrationStrategy = (d) => {
                 if (d._meta) {
@@ -720,14 +780,14 @@ describe('migration-schema.test.ts', function () {
             const migrationStrategies: MigrationStrategies = {
                 1: ensureNoUnknownStrategy,
                 2: ensureNoUnknownStrategy,
-                3: ensureNoUnknownStrategy
+                3: ensureNoUnknownStrategy,
             };
 
             await db2.addCollections({
                 humans: {
                     schema: schemas.simpleHumanV3,
-                    migrationStrategies
-                }
+                    migrationStrategies,
+                },
             });
 
             const replicationState2 = replicateRxCollection({
@@ -737,11 +797,11 @@ describe('migration-schema.test.ts', function () {
                 autoStart: true,
                 waitForLeadership: false,
                 pull: {
-                    handler: helper.masterChangesSince
+                    handler: helper.masterChangesSince,
                 },
                 push: {
-                    handler: helper.masterWrite
-                }
+                    handler: helper.masterWrite,
+                },
             });
             ensureReplicationHasNoErrors(replicationState2);
 
@@ -760,7 +820,9 @@ describe('migration-schema.test.ts', function () {
             await replicationState2.cancel();
 
             if (hasTransferred) {
-                throw new Error('should not have transferred data: ' + hasTransferred);
+                throw new Error(
+                    'should not have transferred data: ' + hasTransferred
+                );
             }
 
             await db2.close();
@@ -779,13 +841,13 @@ describe('migration-schema.test.ts', function () {
                 properties: {
                     name: {
                         type: 'string',
-                        maxLength: 100
+                        maxLength: 100,
                     },
                     color: {
-                        type: 'string'
-                    }
+                        type: 'string',
+                    },
                 },
-                required: ['color']
+                required: ['color'],
             };
             const schema1 = {
                 title: 'hero schema',
@@ -796,16 +858,16 @@ describe('migration-schema.test.ts', function () {
                 properties: {
                     name: {
                         type: 'string',
-                        maxLength: 100
+                        maxLength: 100,
                     },
                     color: {
-                        type: 'string'
+                        type: 'string',
                     },
                     level: {
-                        type: 'string'
-                    }
+                        type: 'string',
+                    },
                 },
-                required: ['color']
+                required: ['color'],
             };
             const db = await createRxDatabase({
                 name: dbName,
@@ -813,13 +875,13 @@ describe('migration-schema.test.ts', function () {
             });
             const cols = await db.addCollections({
                 heroes: {
-                    schema: schema0
-                }
+                    schema: schema0,
+                },
             });
             const col = cols.heroes;
             await col.insert({
                 name: 'Niven',
-                color: 'black'
+                color: 'black',
             });
             await db.close();
 
@@ -834,9 +896,9 @@ describe('migration-schema.test.ts', function () {
                         1: (oldDoc: any) => {
                             oldDoc.level = 'ss';
                             return oldDoc;
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
             const col2 = cols2.heroes;
 
@@ -852,28 +914,23 @@ describe('migration-schema.test.ts', function () {
                 return;
             }
             const attachmentData = AsyncTestUtil.randomString(20);
-            const dataBlob = createBlob(
-                attachmentData,
-                'text/plain'
-            );
+            const dataBlob = createBlob(attachmentData, 'text/plain');
             const col = await humansCollection.createMigrationCollection(
                 10,
                 {
                     3: (doc: any) => {
                         doc.age = parseInt(doc.age, 10);
                         return doc;
-                    }
+                    },
                 },
                 randomToken(10),
                 false,
                 {
                     id: 'foo',
                     data: dataBlob,
-                    type: 'text/plain'
+                    type: 'text/plain',
                 }
             );
-
-
 
             await col.migratePromise();
 
@@ -894,40 +951,49 @@ describe('migration-schema.test.ts', function () {
             await db.storageTokenDocument;
 
             // fake an older database state by changing the internal version.
-            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
+            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (
+                await db.internalStore.findDocumentsById(
+                    [STORAGE_TOKEN_DOCUMENT_ID],
+                    false
+                )
+            )[0];
             const newTokenDoc = clone(tokenDoc);
             newTokenDoc.data.rxdbVersion = '14.x.x';
 
-            const writeResponse = await db.internalStore.bulkWrite([{
-                previous: tokenDoc,
-                document: newTokenDoc
-            }], 'fake-old-version');
+            const writeResponse = await db.internalStore.bulkWrite(
+                [
+                    {
+                        previous: tokenDoc,
+                        document: newTokenDoc,
+                    },
+                ],
+                'fake-old-version'
+            );
             assert.deepStrictEqual(writeResponse.error, []);
             await db.close();
-
 
             const newDb = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),
             });
 
-
             await AsyncTestUtil.assertThrows(
-                () => newDb.addCollections({
-                    foo: {
-                        schema: {
-                            version: 0,
-                            primaryKey: 'name',
-                            type: 'object',
-                            properties: {
-                                name: {
-                                    type: 'string',
-                                    maxLength: 100
+                () =>
+                    newDb.addCollections({
+                        foo: {
+                            schema: {
+                                version: 0,
+                                primaryKey: 'name',
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        maxLength: 100,
+                                    },
                                 },
-                            }
-                        }
-                    }
-                }),
+                            },
+                        },
+                    }),
                 'RxError',
                 'DM5'
             );
@@ -942,17 +1008,26 @@ describe('migration-schema.test.ts', function () {
             await db.storageTokenDocument;
 
             // fake an older database state by changing the internal version.
-            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
+            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (
+                await db.internalStore.findDocumentsById(
+                    [STORAGE_TOKEN_DOCUMENT_ID],
+                    false
+                )
+            )[0];
             const newTokenDoc = clone(tokenDoc);
             newTokenDoc.data.rxdbVersion = '15.x.x';
 
-            const writeResponse = await db.internalStore.bulkWrite([{
-                previous: tokenDoc,
-                document: newTokenDoc
-            }], 'fake-old-version');
+            const writeResponse = await db.internalStore.bulkWrite(
+                [
+                    {
+                        previous: tokenDoc,
+                        document: newTokenDoc,
+                    },
+                ],
+                'fake-old-version'
+            );
             assert.deepStrictEqual(writeResponse.error, []);
             await db.close();
-
 
             const newDb = await createRxDatabase({
                 name: dbName,
@@ -968,13 +1043,164 @@ describe('migration-schema.test.ts', function () {
                         properties: {
                             name: {
                                 type: 'string',
-                                maxLength: 100
+                                maxLength: 100,
                             },
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
             await newDb.close();
         });
+    });
+});
+
+//  "more than one old collection meta found"
+describe('old collection meta', () => {
+    it('should not find more than one old collection meta', async function () {
+        /**
+         * If your test should only run in nodejs or only run in the browser,
+         * you should comment in the return operator and adapt the if statement.
+         */
+        // if (
+        //     !isNode // runs only in node
+        //     // isNode // runs only in the browser
+        // ) {
+        //     // return;
+        // }
+
+        if (!config.storage.hasMultiInstance) {
+            return;
+        }
+
+        // create a schema
+        const mySchemaV0 = {
+            version: 0,
+            primaryKey: 'passportId',
+            type: 'object',
+            properties: {
+                passportId: {
+                    type: 'string',
+                    maxLength: 100,
+                },
+                firstName: {
+                    type: 'string',
+                },
+                lastName: {
+                    type: 'string',
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                },
+            },
+        };
+
+        const mySchemaV1 = {
+            version: 1,
+            primaryKey: 'passportId',
+            type: 'object',
+            properties: {
+                passportId: {
+                    type: 'string',
+                    maxLength: 100,
+                },
+                firstName: {
+                    type: 'string',
+                },
+                lastName: {
+                    type: 'string',
+                },
+                country: {
+                    type: 'string',
+                },
+                criminal: {
+                    type: 'boolean',
+                    default: false,
+                },
+                parents: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                    },
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                },
+            },
+        };
+
+        /**
+         * Always generate a random database-name
+         * to ensure that different test runs do not affect each other.
+         */
+
+        // Disregarding above note, as I want to test database persistence.
+        // In production, databases remain the same name.
+        const name = 'meta-db-test';
+
+        const db = await createRxDatabase({
+            name,
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true,
+        });
+        // create a collection
+        const v0collection = await db.addCollections({
+            mycollection: {
+                schema: mySchemaV0,
+            },
+        });
+
+        // insert a document
+        await v0collection.mycollection.insert({
+            passportId: 'foobar',
+            firstName: 'Bob',
+            lastName: 'Kelso',
+            age: 56,
+        });
+
+        await db.close();
+
+        const dbv1 = await createRxDatabase({
+            name,
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true,
+        });
+
+        const v1collection = await dbv1.addCollections({
+            mycollection: {
+                schema: mySchemaV1,
+                migrationStrategies: {
+                    1: (d) => d,
+                },
+            },
+        });
+
+        const docv1 = await v1collection.mycollection.findOne('foobar').exec();
+
+        const newDoc = await docv1.patch({
+            firstName: 'J',
+            lastName: 'D',
+            age: 56,
+            criminal: true,
+            parents: ['Perry', 'Elliot'],
+            country: 'USA',
+        });
+
+        /*
+         * assert things,
+         * here your tests should fail to show that there is a bug
+         */
+        assert.strictEqual(docv1.country, undefined);
+        assert.strictEqual(docv1.criminal, undefined);
+        assert.strictEqual(newDoc.country, 'USA');
+        assert.strictEqual(newDoc.criminal, true);
+
+        // clean up afterwards
+        db.close();
     });
 });
