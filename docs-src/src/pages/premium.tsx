@@ -48,11 +48,11 @@ export default function Premium() {
 
     const [initDone, setInitDone] = React.useState<boolean>(false);
 
-    async function submitCalculator() {
+    async function submitCalculator(withTrackingEvent: boolean) {
         await promiseWait(0);
         const priceCalculateForm = document.getElementById('price-calculator-submit');
         if (priceCalculateForm) {
-            priceCalculateForm.click();
+            recalculatePrice(withTrackingEvent);
         }
 
     }
@@ -96,7 +96,7 @@ export default function Premium() {
                 });
 
                 // auto-submit form
-                submitCalculator();
+                submitCalculator(false);
             }
             setInitDone(true);
         })();
@@ -113,6 +113,95 @@ export default function Premium() {
     };
 
 
+    async function recalculatePrice(withTrackingEvent = false) {
+        console.log('............. recalculatePrice()');
+        console.dir({
+            developers
+        });
+        if (withTrackingEvent) {
+            trigger('calculate_premium_price', 3);
+        }
+        const $priceCalculatorForm: HTMLFormElement = ensureNotFalsy(document.getElementById('price-calculator-form')) as any;
+        const isValid = ($priceCalculatorForm as any).reportValidity();
+        if (!isValid) {
+            console.log('form not valid');
+            return;
+        }
+
+        const formDataPlain = new FormData($priceCalculatorForm);
+        const formData = Object.fromEntries((formDataPlain as any).entries());
+
+        console.log('formData:');
+        console.dir(formDataPlain);
+        console.dir(formData);
+        console.dir(homeCountry);
+        const developersValue = developers ? developers : 1;
+
+        // const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+        //     .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
+        // if (!homeCountryObject) {
+        //     return;
+        // }
+
+        const packageFields = Object.entries(formData)
+            .filter(([k, _v]) => k.startsWith('package-'));
+        const packages: PackageName[] = packageFields
+            .map(([k]) => lastOfArray(k.split('-')) as any);
+
+        const priceCalculationInput: PriceCalculationInput = {
+            teamSize: developersValue,
+            // projectAmount: '1', // formData['project-amount'] as any,
+            // licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
+            // homeCountryCode: homeCountryObject.code,
+            packages
+        };
+
+        const priceResult = calculatePrice(priceCalculationInput);
+        console.log('priceResult:');
+        console.log(JSON.stringify(priceResult, null, 4));
+
+
+        const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
+        const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
+        const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-project-per-year'));
+        // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
+        // const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
+        const setPrice = (pricePerYear: number) => {
+            console.log('setPrice:');
+            console.dir(pricePerYear);
+            $priceCalculatorResultPerMonth.innerHTML = Math.ceil(pricePerYear / 12).toString();
+            $priceCalculatorResultPerYear.innerHTML = Math.ceil(pricePerYear).toString();
+            // (element as any).href = getConverterUrl(Math.ceil(price));
+        };
+        // const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
+        setPrice(priceResult.totalPrice);
+        // if (priceCalculationInput.projectAmount !== 'infinity') {
+        //     setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
+        // } else {
+        //     setPrice($priceCalculatorResultPerMonth, 0);
+        // }
+        // setPrice($priceCalculatorResultPerYear, pricePerYear);
+        // setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
+
+        /**
+         * Save the input
+         * so we have to not re-insert manually on page reload.
+         */
+        const database = await getDatabase();
+        await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+            developers: developers,
+            companySize: formData['company-size'] as any,
+            // projectAmount: formData['project-amount'] as any,
+            // licensePeriod: formData['license-period'] as any,
+            // homeCountry: homeCountryObject.name,
+            packages,
+            price: priceResult.totalPrice,
+            formSubmitted: false
+        });
+
+
+        $priceCalculatorResult.style.display = 'block';
+    }
 
     return (
         <>
@@ -226,10 +315,14 @@ export default function Premium() {
                                                     popupMatchSelectWidth
                                                     optionFilterProp="value"
                                                     value={developers ? developers : 1}
-                                                    onChange={(value) => {
+                                                    onChange={async (value) => {
                                                         if (value !== developers) {
+                                                            console.log('.----- 0 ' + value);
                                                             setDevelopers(value);
-                                                            submitCalculator();
+                                                            console.log('.----- 1 ');
+                                                            await promiseWait(500);
+                                                            submitCalculator(true);
+                                                            console.log('.----- 2 ');
                                                         }
                                                     }}
                                                 >
@@ -254,7 +347,7 @@ export default function Premium() {
                                                         type="checkbox"
                                                         className="package-checkbox"
                                                         defaultChecked={true}
-                                                        onChange={() => submitCalculator()}
+                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>Browser Package</h4>
                                                     <ul>
@@ -288,7 +381,7 @@ export default function Premium() {
                                                         type="checkbox"
                                                         className="package-checkbox"
                                                         defaultChecked={false}
-                                                        onChange={() => submitCalculator()}
+                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>Native Package</h4>
                                                     <ul>
@@ -315,7 +408,7 @@ export default function Premium() {
                                                         type="checkbox"
                                                         className="package-checkbox"
                                                         defaultChecked={false}
-                                                        onChange={() => submitCalculator()}
+                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>Performance Package</h4>
                                                     <ul>
@@ -357,7 +450,7 @@ export default function Premium() {
                                                         type="checkbox"
                                                         className="package-checkbox"
                                                         defaultChecked={false}
-                                                        onChange={() => submitCalculator()}
+                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>Server Package</h4>
                                                     <ul>
@@ -382,7 +475,7 @@ export default function Premium() {
                                                         className="package-checkbox"
                                                         defaultChecked={true}
                                                         disabled={true}
-                                                        onChange={() => submitCalculator()}
+                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>
                                                         Utilities Package <b>(always included)</b>
@@ -487,89 +580,7 @@ export default function Premium() {
                                             id="price-calculator-submit"
                                             style={{
                                             }}
-                                            onClick={async () => {
-                                                trigger('calculate_premium_price', 3);
-                                                const $priceCalculatorForm: HTMLFormElement = ensureNotFalsy(document.getElementById('price-calculator-form')) as any;
-                                                const isValid = ($priceCalculatorForm as any).reportValidity();
-                                                if (!isValid) {
-                                                    console.log('form not valid');
-                                                    return;
-                                                }
-
-                                                const formDataPlain = new FormData($priceCalculatorForm);
-                                                const formData = Object.fromEntries((formDataPlain as any).entries());
-
-                                                console.log('formData:');
-                                                console.dir(formDataPlain);
-                                                console.dir(formData);
-                                                console.dir(homeCountry);
-                                                const developersValue = developers ? developers : 1;
-
-                                                // const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-                                                //     .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
-                                                // if (!homeCountryObject) {
-                                                //     return;
-                                                // }
-
-                                                const packageFields = Object.entries(formData)
-                                                    .filter(([k, _v]) => k.startsWith('package-'));
-                                                const packages: PackageName[] = packageFields
-                                                    .map(([k]) => lastOfArray(k.split('-')) as any);
-
-                                                const priceCalculationInput: PriceCalculationInput = {
-                                                    teamSize: developersValue,
-                                                    // projectAmount: '1', // formData['project-amount'] as any,
-                                                    // licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
-                                                    // homeCountryCode: homeCountryObject.code,
-                                                    packages
-                                                };
-
-                                                const priceResult = calculatePrice(priceCalculationInput);
-                                                console.log('priceResult:');
-                                                console.log(JSON.stringify(priceResult, null, 4));
-
-
-                                                const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
-                                                const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
-                                                const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-project-per-year'));
-                                                // const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
-                                                // const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
-                                                const setPrice = (pricePerYear: number) => {
-                                                    console.log('setPrice:');
-                                                    console.dir(pricePerYear);
-                                                    $priceCalculatorResultPerMonth.innerHTML = Math.ceil(pricePerYear / 12).toString();
-                                                    $priceCalculatorResultPerYear.innerHTML = Math.ceil(pricePerYear).toString();
-                                                    // (element as any).href = getConverterUrl(Math.ceil(price));
-                                                };
-                                                // const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
-                                                setPrice(priceResult.totalPrice);
-                                                // if (priceCalculationInput.projectAmount !== 'infinity') {
-                                                //     setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
-                                                // } else {
-                                                //     setPrice($priceCalculatorResultPerMonth, 0);
-                                                // }
-                                                // setPrice($priceCalculatorResultPerYear, pricePerYear);
-                                                // setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
-
-                                                /**
-                                                 * Save the input
-                                                 * so we have to not re-insert manually on page reload.
-                                                 */
-                                                const database = await getDatabase();
-                                                await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-                                                    developers: developers,
-                                                    companySize: formData['company-size'] as any,
-                                                    // projectAmount: formData['project-amount'] as any,
-                                                    // licensePeriod: formData['license-period'] as any,
-                                                    // homeCountry: homeCountryObject.name,
-                                                    packages,
-                                                    price: priceResult.totalPrice,
-                                                    formSubmitted: false
-                                                });
-
-
-                                                $priceCalculatorResult.style.display = 'block';
-                                            }}
+                                            onClick={() => recalculatePrice(true)}
                                         >
                                             Calculate Price
                                         </div>
