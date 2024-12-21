@@ -3,7 +3,7 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
-import { ensureNotFalsy, lastOfArray, promiseWait } from '../../../';
+import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNotFalsy, lastOfArray, promiseWait } from '../../../';
 import { Modal } from 'antd';
 import {
     PACKAGE_PRICE,
@@ -17,12 +17,13 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import {
     Select
 } from 'antd';
+import { distinctUntilChanged, map } from 'rxjs';
 
 export type FormValueDocData = {
-    developers?: number;
+    developers: number;
     homeCountry?: string;
     companySize?: number;
-    packages?: PackageName[];
+    packages: PackageName[];
     price?: number;
     formSubmitted: boolean;
 };
@@ -38,24 +39,54 @@ export const TEAM_SIZES = [
     30
 ];
 
+
+const formValueDocPromise = (async () => {
+    console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
+    const database = await getDatabase();
+    let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
+    if (!formValueDoc) {
+        formValueDoc = await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+            formSubmitted: false,
+            developers: TEAM_SIZES[0],
+            packages: [
+                'browser'
+            ]
+        });
+    }
+    return formValueDoc;
+})();
+
+
+function PackageCheckbox(props: {
+    packageName: PackageName;
+    formValue?: FormValueDocData;
+    onToggle: () => void
+}) {
+    return <input
+        name={"package-" + props.packageName}
+        type="checkbox"
+        className="package-checkbox"
+        checked={props.formValue?.packages.includes(props.packageName) ? true : false}
+        readOnly
+        onClick={() => {
+            trigger('calculate_premium_price', 3);
+            props.onToggle();
+        }}
+    />;
+}
+
+
 export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
     const isBrowser = useIsBrowser();
-    const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
+    // const [homeCountry, setHomeCountry] = React.useState<string | null>(null);
     // const [homeCountryInitial, setHomeCountryInitial] = React.useState<string | null>(null);
 
-    const [developers, setDevelopers] = React.useState<number | null>(null);
-
     const [initDone, setInitDone] = React.useState<boolean>(false);
+    const [formValue, setFormValue] = React.useState<FormValueDocData>(null);
 
-    async function submitCalculator(withTrackingEvent: boolean) {
-        await promiseWait(0);
-        const priceCalculateForm = document.getElementById('price-calculator-submit');
-        if (priceCalculateForm) {
-            recalculatePrice(withTrackingEvent);
-        }
 
-    }
+
 
     useEffect(() => {
         if (!isBrowser || !hasIndexedDB()) {
@@ -66,39 +97,46 @@ export default function Premium() {
         if (initDone) {
             return;
         }
+        setInitDone(true);
         if (isBrowser) {
             window.trigger('open_pricing_page', 1);
         }
 
         (async () => {
+            console.log('########################################## ASYN>C INIT');
             // load previous form data
-            const database = await getDatabase();
-            const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
-            if (formValueDoc) {
-                console.log('formValueDoc:');
-                console.dir(formValueDoc);
+            const formValueDoc = await formValueDocPromise;
+
+
+            formValueDoc.$.pipe(
+                map((d: RxLocalDocument<RxDatabase<CollectionsOfDatabase, any, any, any>, FormValueDocData>) => d._data.data),
+                distinctUntilChanged(deepEqual)
+            ).subscribe((data: FormValueDocData) => {
+                console.log('XXX new data:');
+                console.dir(data);
+
+                setFormValue(data);
 
                 // setHomeCountryInitial(formValueDoc._data.data.homeCountry);
-                setHomeCountry(formValueDoc._data.data.homeCountry);
-                setToInput('company-size', formValueDoc._data.data.companySize);
-                // setToInput('project-amount', formValueDoc._data.data.projectAmount);
-                // setToInput('license-period', formValueDoc._data.data.licensePeriod);
+                // setHomeCountry(formValueDoc._data.data.homeCountry);
+                // setToInput('company-size', formValueDoc._data.data.companySize);
+                // // setToInput('project-amount', formValueDoc._data.data.projectAmount);
+                // // setToInput('license-period', formValueDoc._data.data.licensePeriod);
 
-                setDevelopers(formValueDoc._data.data.developers);
-                setToInput('developer-count', formValueDoc._data.data.developers);
+                // console.log('################# setDevelopers() ' + formValueDoc._data.data.developers);
+                // setDevelopers(formValueDoc._data.data.developers);
+                // setToInput('developer-count', formValueDoc._data.data.developers);
 
 
-                Object.keys(PACKAGE_PRICE).forEach(packageName => {
-                    setToInput('package-' + packageName, false);
-                });
-                formValueDoc._data.data.packages.forEach(packageName => {
-                    setToInput('package-' + packageName, true);
-                });
+                // Object.keys(PACKAGE_PRICE).forEach(packageName => {
+                //     setToInput('package-' + packageName, formValueDoc._data.data.packages.includes(packageName as any));
+                // });
 
                 // auto-submit form
-                submitCalculator(false);
-            }
-            setInitDone(true);
+                // submitCalculator(false);
+                recalculatePrice(false);
+
+            });
         })();
     });
 
@@ -114,46 +152,18 @@ export default function Premium() {
 
 
     async function recalculatePrice(withTrackingEvent = false) {
-        console.log('............. recalculatePrice()');
-        console.dir({
-            developers
-        });
-        if (withTrackingEvent) {
-            trigger('calculate_premium_price', 3);
-        }
-        const $priceCalculatorForm: HTMLFormElement = ensureNotFalsy(document.getElementById('price-calculator-form')) as any;
-        const isValid = ($priceCalculatorForm as any).reportValidity();
-        if (!isValid) {
-            console.log('form not valid');
-            return;
-        }
-
-        const formDataPlain = new FormData($priceCalculatorForm);
-        const formData = Object.fromEntries((formDataPlain as any).entries());
+        console.log('............. recalculatePrice() developers');
 
         console.log('formData:');
-        console.dir(formDataPlain);
-        console.dir(formData);
-        console.dir(homeCountry);
-        const developersValue = developers ? developers : 1;
-
-        // const homeCountryObject = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
-        //     .find(o => o.name.toLowerCase() === homeCountry.toLowerCase());
-        // if (!homeCountryObject) {
-        //     return;
-        // }
-
-        const packageFields = Object.entries(formData)
-            .filter(([k, _v]) => k.startsWith('package-'));
-        const packages: PackageName[] = packageFields
-            .map(([k]) => lastOfArray(k.split('-')) as any);
+        const formValueDoc = await formValueDocPromise;
+        const formData = formValueDoc.getLatest()._data.data;
 
         const priceCalculationInput: PriceCalculationInput = {
-            teamSize: developersValue,
+            teamSize: formData.developers,
             // projectAmount: '1', // formData['project-amount'] as any,
             // licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
             // homeCountryCode: homeCountryObject.code,
-            packages
+            packages: formData.packages
         };
 
         const priceResult = calculatePrice(priceCalculationInput);
@@ -187,20 +197,38 @@ export default function Premium() {
          * Save the input
          * so we have to not re-insert manually on page reload.
          */
-        const database = await getDatabase();
-        await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-            developers: developers,
-            companySize: formData['company-size'] as any,
-            // projectAmount: formData['project-amount'] as any,
-            // licensePeriod: formData['license-period'] as any,
-            // homeCountry: homeCountryObject.name,
-            packages,
-            price: priceResult.totalPrice,
-            formSubmitted: false
-        });
+
+        // const database = await getDatabase();
+        // console.log('uipsert local developers: ' + developers);
+        // await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+        //     developers: developers,
+        //     companySize: formData['company-size'] as any,
+        //     // projectAmount: formData['project-amount'] as any,
+        //     // licensePeriod: formData['license-period'] as any,
+        //     // homeCountry: homeCountryObject.name,
+        //     packages,
+        //     price: priceResult.totalPrice,
+        //     formSubmitted: false
+        // });
 
 
         $priceCalculatorResult.style.display = 'block';
+    }
+
+
+    async function togglePackage(name: PackageName) {
+        console.log('------------------------------ togglePackage() ' + name);
+        return formValueDocPromise.then(d => d.incrementalModify(d => {
+            if (d.packages.includes(name)) {
+                d.packages = d.packages.filter(p => p !== name)
+            } else {
+                d.packages.push(name);
+            }
+
+            console.log('UPDATE PACKAGAES ' + name + ' SSSS ');
+            console.dir(d);
+            return d;
+        }))
     }
 
     return (
@@ -314,16 +342,14 @@ export default function Premium() {
                                                     style={{ width: '100%' }}
                                                     popupMatchSelectWidth
                                                     optionFilterProp="value"
-                                                    value={developers ? developers : 1}
+                                                    value={formValue?.developers ? formValue?.developers : 1}
                                                     onChange={async (value) => {
-                                                        if (value !== developers) {
+                                                        formValueDocPromise.then(d => d.incrementalModify(d => {
                                                             console.log('.----- 0 ' + value);
-                                                            setDevelopers(value);
+                                                            d.developers = value;
                                                             console.log('.----- 1 ');
-                                                            await promiseWait(500);
-                                                            submitCalculator(true);
-                                                            console.log('.----- 2 ');
-                                                        }
+                                                            return d;
+                                                        }))
                                                     }}
                                                 >
                                                     {
@@ -342,13 +368,7 @@ export default function Premium() {
                                             <h3>Packages:</h3>
                                             <div className="package bg-gradient-left-top">
                                                 <div className="package-inner">
-                                                    <input
-                                                        name="package-browser"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                        defaultChecked={true}
-                                                        onChange={() => submitCalculator(true)}
-                                                    />
+                                                    <PackageCheckbox packageName='browser' onToggle={() => togglePackage('browser')} formValue={formValue} />
                                                     <h4>Browser Package</h4>
                                                     <ul>
                                                         <li>
@@ -376,13 +396,7 @@ export default function Premium() {
                                             </div>
                                             <div className="package bg-gradient-left-top">
                                                 <div className="package-inner">
-                                                    <input
-                                                        name="package-native"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                        defaultChecked={false}
-                                                        onChange={() => submitCalculator(true)}
-                                                    />
+                                                    <PackageCheckbox packageName='native' onToggle={() => togglePackage('native')} formValue={formValue} />
                                                     <h4>Native Package</h4>
                                                     <ul>
                                                         <li>
@@ -403,13 +417,7 @@ export default function Premium() {
                                             </div>
                                             <div className="package bg-gradient-left-top">
                                                 <div className="package-inner">
-                                                    <input
-                                                        name="package-performance"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                        defaultChecked={false}
-                                                        onChange={() => submitCalculator(true)}
-                                                    />
+                                                    <PackageCheckbox packageName='performance' onToggle={() => togglePackage('performance')} formValue={formValue} />
                                                     <h4>Performance Package</h4>
                                                     <ul>
                                                         <li>
@@ -445,13 +453,7 @@ export default function Premium() {
                                             </div>
                                             <div className="package bg-gradient-left-top">
                                                 <div className="package-inner">
-                                                    <input
-                                                        name="package-server"
-                                                        type="checkbox"
-                                                        className="package-checkbox"
-                                                        defaultChecked={false}
-                                                        onChange={() => submitCalculator(true)}
-                                                    />
+                                                    <PackageCheckbox packageName='server' onToggle={() => togglePackage('server')} formValue={formValue} />
                                                     <h4>Server Package</h4>
                                                     <ul>
                                                         <li>
@@ -475,7 +477,6 @@ export default function Premium() {
                                                         className="package-checkbox"
                                                         defaultChecked={true}
                                                         disabled={true}
-                                                        onChange={() => submitCalculator(true)}
                                                     />
                                                     <h4>
                                                         Utilities Package <b>(always included)</b>
@@ -575,7 +576,7 @@ export default function Premium() {
                                             </div> */}
                                             <div className="clear" />
                                         </div>
-                                        <div
+                                        {/* <div
                                             className="button"
                                             id="price-calculator-submit"
                                             style={{
@@ -583,7 +584,7 @@ export default function Premium() {
                                             onClick={() => recalculatePrice(true)}
                                         >
                                             Calculate Price
-                                        </div>
+                                        </div> */}
                                     </form>
                                 </div>
                             </div>
@@ -980,7 +981,7 @@ export default function Premium() {
 //     return 'https://www.xe.com/en/currencyconverter/convert/?Amount=' + price + '&From=EUR&To=USD';
 // }
 
-function setToInput(name: string, value: any) {
+function XX_setToInput(name: string, value: any) {
     if (typeof value === 'undefined') {
         return;
     }
@@ -995,7 +996,9 @@ function setToInput(name: string, value: any) {
         return;
     }
 
-    (element as any).value = value;
+    if ((element as any).value !== value) {
+        (element as any).value = value;
+    }
 }
 
 
