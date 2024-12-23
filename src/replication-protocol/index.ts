@@ -43,6 +43,7 @@ import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState 
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
+import { newRxError } from '../rx-error.ts';
 
 
 export * from './checkpoint.ts';
@@ -298,7 +299,10 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 
                 result.error.forEach(err => {
                     if (err.status !== 409) {
-                        throw new Error('non conflict error');
+                        throw newRxError('SNH', {
+                            name: 'non conflict error',
+                            error: err as any
+                        });
                     } else {
                         conflicts.push(
                             writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments, keepMeta)
