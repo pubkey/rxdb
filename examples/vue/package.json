@@ -46,7 +46,7 @@
     "node-sass": "9.0.0",
     "sass-loader": "16.0.4",
     "testcafe": "3.7.0",
-    "typescript": "5.6.3"
+    "typescript": "5.7.2"
   },
   "eslintConfig": {
     "root": true,
