@@ -3,10 +3,9 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
-import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNotFalsy, lastOfArray, promiseWait } from '../../../';
+import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNotFalsy } from '../../../';
 import { Modal } from 'antd';
 import {
-    PACKAGE_PRICE,
     PackageName,
     PriceCalculationInput,
     calculatePrice
@@ -60,10 +59,10 @@ const formValueDocPromise = (async () => {
 function PackageCheckbox(props: {
     packageName: PackageName;
     formValue?: FormValueDocData;
-    onToggle: () => void
+    onToggle: () => void;
 }) {
     return <input
-        name={"package-" + props.packageName}
+        name={'package-' + props.packageName}
         type="checkbox"
         className="package-checkbox"
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
@@ -103,7 +102,6 @@ export default function Premium() {
         }
 
         (async () => {
-            console.log('########################################## ASYN>C INIT');
             // load previous form data
             const formValueDoc = await formValueDocPromise;
 
@@ -151,10 +149,7 @@ export default function Premium() {
     };
 
 
-    async function recalculatePrice(withTrackingEvent = false) {
-        console.log('............. recalculatePrice() developers');
-
-        console.log('formData:');
+    async function recalculatePrice() {
         const formValueDoc = await formValueDocPromise;
         const formData = formValueDoc.getLatest()._data.data;
 
@@ -216,19 +211,15 @@ export default function Premium() {
     }
 
 
-    async function togglePackage(name: PackageName) {
-        console.log('------------------------------ togglePackage() ' + name);
-        return formValueDocPromise.then(d => d.incrementalModify(d => {
+    function togglePackage(name: PackageName) {
+        return formValueDocPromise.then(doc => doc.incrementalModify(d => {
             if (d.packages.includes(name)) {
-                d.packages = d.packages.filter(p => p !== name)
+                d.packages = d.packages.filter(p => p !== name);
             } else {
                 d.packages.push(name);
             }
-
-            console.log('UPDATE PACKAGAES ' + name + ' SSSS ');
-            console.dir(d);
             return d;
-        }))
+        }));
     }
 
     return (
@@ -343,13 +334,11 @@ export default function Premium() {
                                                     popupMatchSelectWidth
                                                     optionFilterProp="value"
                                                     value={formValue?.developers ? formValue?.developers : 1}
-                                                    onChange={async (value) => {
-                                                        formValueDocPromise.then(d => d.incrementalModify(d => {
-                                                            console.log('.----- 0 ' + value);
+                                                    onChange={(value) => {
+                                                        formValueDocPromise.then(doc => doc.incrementalModify(d => {
                                                             d.developers = value;
-                                                            console.log('.----- 1 ');
                                                             return d;
-                                                        }))
+                                                        }));
                                                     }}
                                                 >
                                                     {
@@ -980,26 +969,6 @@ export default function Premium() {
 // function getConverterUrl(price: number) {
 //     return 'https://www.xe.com/en/currencyconverter/convert/?Amount=' + price + '&From=EUR&To=USD';
 // }
-
-function XX_setToInput(name: string, value: any) {
-    if (typeof value === 'undefined') {
-        return;
-    }
-    const element = document.querySelector('[name=' + name + ']') as any;
-    if (!element) {
-        return;
-    }
-
-
-    if (element.type && element.type === 'checkbox') {
-        element.checked = value;
-        return;
-    }
-
-    if ((element as any).value !== value) {
-        (element as any).value = value;
-    }
-}
 
 
 // components
