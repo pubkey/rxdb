@@ -38,22 +38,31 @@ export const TEAM_SIZES = [
     30
 ];
 
+let formValueDocPromiseCache: Promise<RxLocalDocument<RxDatabase<CollectionsOfDatabase, any, any, any>, FormValueDocData>>;
 
-const formValueDocPromise = (async () => {
-    console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
-    const database = await getDatabase();
-    let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
-    if (!formValueDoc) {
-        formValueDoc = await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-            formSubmitted: false,
-            developers: TEAM_SIZES[0],
-            packages: [
-                'browser'
-            ]
-        });
+function getFormValueDoc() {
+    if (!formValueDocPromiseCache) {
+        formValueDocPromiseCache = (async () => {
+            console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
+            const database = await getDatabase();
+            let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
+            if (!formValueDoc) {
+                formValueDoc = await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+                    formSubmitted: false,
+                    developers: TEAM_SIZES[0],
+                    packages: [
+                        'browser'
+                    ]
+                });
+            }
+            return formValueDoc;
+        })();
     }
-    return formValueDoc;
-})();
+    return formValueDocPromiseCache;
+}
+
+
+
 
 
 function PackageCheckbox(props: {
@@ -103,7 +112,7 @@ export default function Premium() {
 
         (async () => {
             // load previous form data
-            const formValueDoc = await formValueDocPromise;
+            const formValueDoc = await getFormValueDoc();
 
 
             formValueDoc.$.pipe(
@@ -132,7 +141,7 @@ export default function Premium() {
 
                 // auto-submit form
                 // submitCalculator(false);
-                recalculatePrice(false);
+                recalculatePrice();
 
             });
         })();
@@ -150,7 +159,7 @@ export default function Premium() {
 
 
     async function recalculatePrice() {
-        const formValueDoc = await formValueDocPromise;
+        const formValueDoc = await getFormValueDoc();
         const formData = formValueDoc.getLatest()._data.data;
 
         const priceCalculationInput: PriceCalculationInput = {
@@ -212,7 +221,7 @@ export default function Premium() {
 
 
     function togglePackage(name: PackageName) {
-        return formValueDocPromise.then(doc => doc.incrementalModify(d => {
+        return getFormValueDoc().then(doc => doc.incrementalModify(d => {
             if (d.packages.includes(name)) {
                 d.packages = d.packages.filter(p => p !== name);
             } else {
@@ -335,7 +344,7 @@ export default function Premium() {
                                                     optionFilterProp="value"
                                                     value={formValue?.developers ? formValue?.developers : 1}
                                                     onChange={(value) => {
-                                                        formValueDocPromise.then(doc => doc.incrementalModify(d => {
+                                                        getFormValueDoc().then(doc => doc.incrementalModify(d => {
                                                             d.developers = value;
                                                             return d;
                                                         }));
