@@ -18,22 +18,34 @@ const sidebars = {
 
   // But you can create a sidebar manually
   tutorialSidebar: [
-    'quickstart',
-    'install',
-    'dev-mode',
-    'rx-database',
-    'rx-schema',
-    'rx-collection',
-    'rx-document',
-    'rx-query',
-    'rx-attachment',
-    'rx-pipeline',
     {
       type: 'category',
-      label: '💾 RxStorage',
+      label: 'Getting Started with RxDB',
+      collapsed: false,
+      items: [
+        'quickstart',
+        'install',
+        'dev-mode',
+        'tutorials/typescript',
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Core Entities',
+      collapsed: false,
+      items: [
+        'rx-database',
+        'rx-schema',
+        'rx-collection',
+        'rx-document',
+        'rx-query'
+      ]
+    },
+    {
+      type: 'category',
+      label: '💾 Storages',
       items: [
         'rx-storage',
-        'rx-storage-performance',
         'rx-storage-indexeddb',
         'rx-storage-sqlite',
         'rx-storage-memory',
@@ -42,8 +54,17 @@ const sidebars = {
         'rx-storage-filesystem-node',
         'rx-storage-mongodb',
         'rx-storage-denokv',
-        'rx-storage-foundationdb',
-        'rx-storage-lokijs',
+        'rx-storage-foundationdb'
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Storage Wrappers',
+      items: [
+        'schema-validation',
+        'encryption',
+        'key-compression',
+        'logger',
         'rx-storage-remote',
         'rx-storage-worker',
         'rx-storage-shared-worker',
@@ -79,44 +100,52 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Migration',
+      label: 'How RxDB works',
       items: [
-        'migration-schema',
-        'migration-storage'
+        'transactions-conflicts-revisions',
+        'query-cache',
+        'plugins',
+        'errors',
+      ],
+    },    {
+      type: 'category',
+      label: 'Advanced Features',
+      items: [
+        {
+          type: 'category',
+          label: 'Migration',
+          items: [
+            'migration-schema',
+            'migration-storage'
+          ],
+        },
+        'rx-attachment',
+        'rx-pipeline',
+        'reactivity',
+        'rx-state',
+        'rx-local-document',
+        'cleanup',
+        'backup',
+        'leader-election',
+        'middleware',
+        'crdt',
+        'population',
+        'orm',
+        'fulltext-search',
+        'query-optimizer',
+        'third-party-plugins',
       ],
     },
-    'schema-validation',
-    'reactivity',
-    'rx-state',
-    'rx-local-document',
-    'encryption',
-    'key-compression',
-    'leader-election',
-    'cleanup',
-    'backup',
-    'transactions-conflicts-revisions',
-    'middleware',
-    'query-cache',
-    'crdt',
-    'population',
-    'orm',
-    'fulltext-search',
-    'query-optimizer',
-    'logger',
-    'plugins',
-    'nosql-performance-tips',
-    'errors',
-    'third-party-plugins',
     {
       type: 'category',
-      label: 'Tutorials',
+      label: 'Performance',
       items: [
-        'tutorials/typescript',
-        'nodejs-database'
+        'rx-storage-performance',
+        'nosql-performance-tips',
+        'slow-indexeddb',
+        'articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm',
       ],
     },
-    'questions-answers',
-    'contribute',
     {
       type: 'category',
       label: '🆕 Releases',
@@ -138,8 +167,8 @@ const sidebars = {
       items: [
         'offline-first',
         'downsides-of-offline-first',
-        'slow-indexeddb',
         'why-nosql',
+        'nodejs-database',
         'alternatives',
         'react-native-database',
         'articles/javascript-vector-database',
@@ -154,7 +183,6 @@ const sidebars = {
         'articles/ionic-database',
         'articles/json-database',
         'articles/websockets-sse-polling-webrtc-webtransport',
-        'articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm',
         'articles/localstorage',
         'articles/mobile-database',
         'articles/progressive-web-app-database',
@@ -163,7 +191,37 @@ const sidebars = {
         'capacitor-database',
         'electron-database'
       ],
-    }
+    },
+    'contribute',
+    {
+      type: 'category',
+      label: 'Contact',
+      items: [
+        {
+          type: 'link',
+          label: 'Consulting',
+          href: '/consulting'
+        },
+        {
+          type: 'link',
+          label: 'Discord',
+          href: '/chat',
+          customProps: {
+            /**
+             * Does not work! Missing feature in docusaurus.
+             * @link https://docusaurus.canny.io/feature-requests/p/support-target-for-sidebar-links
+             */
+            target: '_blank'
+          }
+        },
+        {
+          type: 'link',
+          label: 'LinkedIn',
+          href: 'https://www.linkedin.com/company/rxdb/'
+        },
+      ],
+    },
+
   ],
 };
 

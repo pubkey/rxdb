@@ -15,7 +15,7 @@ This page is an overview over the different adapters with recommendations on wha
 ---------------------- 
 
 :::warning
-The PouchDB RxStorage [is removed from RxDB](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and can no longer be used in new projects. You should switch to a different [RxStorage](./rx-storage.md).
+The PouchDB RxStorage [is removed from RxDB](./rx-storage-pouchdb.md) and can no longer be used in new projects. You should switch to a different [RxStorage](./rx-storage.md).
 :::
 
 ---------------------- 

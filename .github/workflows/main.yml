@@ -391,7 +391,7 @@ jobs:
 
       - run: npm run build:rollup
 
-      - name: test docs build
+      - name: npm run docs:build
         run: |
           npm -v
           (cd docs-src && npm install)
