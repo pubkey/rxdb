@@ -152,8 +152,9 @@ export function ReviewsBlock() {
                         <img
                             src="/img/quote.svg"
                             className="review-img"
-                            alt="quote"
-                        />
+                            alt="RxDB review quote"
+                            loading="lazy"
+                            />
                         <h3>{item.description}</h3>
                         <div className="slider-profile">
                             <img
