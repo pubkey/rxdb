@@ -4,7 +4,6 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -338,6 +337,7 @@ body {
     /** font **/
     color: white;
     font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    letter-spacing: 0.03rem;
 }
 
 .navbar {
@@ -2935,11 +2935,10 @@ footer a:visited {
 }
 
 .slick-dots li {
-    /* width: max-content !important; */
     padding: 0 0px 0px 7px !important;
-    /* margin: 0 !important; */
     width: 7px !important;
     height: 7px !important;
+    margin: 0 8px !important;
 }
 
 .slick-dots li.slick-active {

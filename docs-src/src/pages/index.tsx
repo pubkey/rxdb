@@ -809,7 +809,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular" />
+                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular database" />
                   Angular
                 </div>
               </a>
@@ -821,7 +821,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '10%', left: '58%' }}
                 >
-                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
+                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor database" />
                   Capacitor
                 </div>
               </a>
@@ -833,7 +833,7 @@ export default function Home(props: {
                   className="neumorphism-circle-s circle centered enlarge-on-mouse"
                   style={{ top: '-4%', left: '44%' }}
                 >
-                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
+                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno database" />
                   Deno
                 </div>
               </a>
@@ -845,7 +845,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js" />
+                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js database" />
                   Node.js
                 </div>
               </a>
@@ -857,7 +857,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img loading="lazy" src="/files/icons/react.svg" alt="React" />
+                  <img loading="lazy" src="/files/icons/react.svg" alt="React database" />
                   React
                 </div>
               </a>
@@ -869,7 +869,7 @@ export default function Home(props: {
                   className="neumorphism-circle-s circle centered enlarge-on-mouse"
                   style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
                 >
-                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
+                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte database" />
                   Svelte
                 </div>
               </a>
@@ -907,7 +907,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron" />
+                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron database" />
                     Electron
                   </div>
                 </a>
@@ -919,7 +919,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js" />
+                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js database" />
                     Vue.js
                   </div>
                 </a>
@@ -931,7 +931,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic" />
+                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic database" />
                     Ionic
                   </div>
                 </a>
@@ -943,7 +943,7 @@ export default function Home(props: {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '46%', left: '11%' }}
                   >
-                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
+                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript database" />
                     NativeScript
                   </div>
                 </a>
@@ -955,7 +955,7 @@ export default function Home(props: {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native" />
+                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native database" />
                     React Native
                   </div>
                 </a>
@@ -963,7 +963,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js" />
+                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js database" />
                   Next.js
                 </div>
                 <a
@@ -974,7 +974,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter" />
+                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter database" />
                     Flutter
                   </div>
                 </a>
