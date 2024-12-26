@@ -781,7 +781,7 @@ body {
 
 
 .block.second .inner {
-    margin-top: 70px;
+    margin-top: 10px;
     display: flex;
 }
 
@@ -791,7 +791,7 @@ body {
     justify-content: center;
     overflow: hidden;
 
-    margin-top: 30px;
+    margin-top: 0px;
 }
 
 @media (max-width: 900px) {
@@ -1534,6 +1534,7 @@ body {
     background-color: var(--bg-color);
     text-align: left;
     width: calc(100% - 26px);
+    font-size: 16px;
 }
 
 @media (max-width: 830px) {
@@ -1582,6 +1583,10 @@ samp .cm-variable {
     color: #e5c07b;
 }
 
+samp .cm-html {
+    color: #c5436d;
+}
+
 samp .cm-property {
     color: #e06c75;
 }
@@ -1605,6 +1610,33 @@ samp .cm-operator {
 samp .cm-comment {
     color: #7f848e;
 }
+
+.observe-code-example-tabs {
+    color: white;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-btn {
+    color: white;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-btn[aria-selected=true] {
+    color: var(--color-top) !important;
+}
+
+.observe-code-example-tabs .ant-tabs-ink-bar {
+    background: var(--color-top) !important;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-icon {
+    margin-inline-end: 8px;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-icon img {
+    height: 30px;
+    float: left;
+    margin-top: -6px;
+}
+
 
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3
