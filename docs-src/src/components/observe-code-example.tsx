@@ -114,7 +114,7 @@ export function ObserveCodeExample(props: {
             children: <ObserveCodeExampleParent name="Vue Refs">
                 <span className="cm-html">&lt;template&gt;</span><br />
                 &emsp;<span className="cm-html">&lt;body</span> v-if=&quot;<span className="cm-variable">doc</span>&quot; :style=&quot;&#123;<br />
-                &emsp;&emsp;<span className="cm-property">backgroundColor</span>: <span className="cm-variable">doc</span>.<span className="cm-property">color$$</span>.<span className="cm-property beating-color">value</span><br/>
+                &emsp;&emsp;<span className="cm-property">backgroundColor</span>: <span className="cm-variable">doc</span>.<span className="cm-property">color$$</span>.<span className="cm-property beating-color">value</span><br />
                 &emsp;&#125;&quot;&gt;<br />
                 &emsp;<span className="cm-html">&lt;/body&gt;</span><br />
                 <span className="cm-html">&lt;/template&gt;</span><br />
@@ -129,82 +129,33 @@ export function ObserveCodeExample(props: {
             key: 'Svelte',
             label: 'Svelte',
             icon: <img src="/files/icons/svelte.svg" loading='lazy' alt="Svelte Store" />,
-            children: <ObserveCodeExampleParent name="Svelte">           
-                <span className="cm-html">&lt;script&gt;</span><br  />
-                &emsp;<span className="cm-keyword">let</span> <span className="cm-variable">doc</span>;<br  />
+            children: <ObserveCodeExampleParent name="Svelte">
+                <span className="cm-html">&lt;script&gt;</span><br />
+                &emsp;<span className="cm-keyword">let</span> <span className="cm-variable">doc</span>;<br />
                 &emsp;<span className="cm-method">onMount</span>(<br />
                 &emsp;&emsp;<span className="cm-keyword">async</span>() =&gt; (<br />
                 &emsp;&emsp;&emsp;<span className="cm-variable">doc</span> = <span className="cm-keyword">await</span> <span className="cm-variable">collection</span>.<span className="cm-method">findOne</span>(<span className="cm-string">&#39;foobar&#39;</span>).<span className="cm-method">exec</span>()<br />
                 &emsp;&emsp;)<br />
-                &emsp;);<br  />
-                <span className="cm-html">&lt;/script&gt;</span><br  />
+                &emsp;);<br />
+                <span className="cm-html">&lt;/script&gt;</span><br />
 
-                &#123;#if doc&#125;<br  />
-                &emsp;<span className="cm-html">&lt;body</span> style=&quot;background-color: &#123;<span className="cm-variable">$doc</span>.<span className="cm-property beating-color">color$$</span>&#125;&quot;&gt;<br  />
-                &emsp;<span className="cm-html">&lt;/body&gt;</span><br  />
+                &#123;#if doc&#125;<br />
+                &emsp;<span className="cm-html">&lt;body</span> style=&quot;background-color: &#123;<span className="cm-variable">$doc</span>.<span className="cm-property beating-color">color$$</span>&#125;&quot;&gt;<br />
+                &emsp;<span className="cm-html">&lt;/body&gt;</span><br />
                 &#123;/if&#125;
             </ObserveCodeExampleParent>
         }
     ];
 
     let activeTab = 'RxJS';
-    if(props.sem && props.sem.appName){
+    if (props.sem && props.sem.appName) {
         activeTab = props.sem.appName;
-        if(props.sem.appName === 'React Native'){
+        if (props.sem.appName === 'React Native') {
             activeTab = 'React';
         }
     }
 
-    return <Tabs className='observe-code-example-tabs' type="line" defaultActiveKey={activeTab} items={items} style={{ minHeight: 650 }} />
-
-    if (props.sem && props.sem.appName === 'Angular') {
-        return <fieldset
-            className="samp-wrapper"
-            style={{ backgroundColor: 'var(--bg-color)' }}
-        >
-            <legend>Observe (Angular Async Pipe)</legend>
-            <samp style={{ backgroundColor: 'var(--bg-color)' }}>
-
-                &lt;body<br />
-                &emsp;[style.backgroundColor]=&quot;(<br />
-                &emsp;&emsp;<span className="cm-variable">collection</span><br />
-                &emsp;&emsp;&emsp;.<span className="cm-method">findOne(<span className="cm-string">&#39;foobar&#39;</span>)</span><br />
-                &emsp;&emsp;&emsp;.<span className="cm-property">$</span> <span className="cm-comment"> // get observable</span><br />
-                &emsp;&emsp;&emsp;.<span className="cm-method">pipe(<span className="cm-variable">doc</span> =&gt; <span className="cm-variable">doc</span>.<span className="cm-property beating-color">color</span>)</span><br />
-                &emsp;&emsp;| <span className="cm-keyword">async</span><br />
-                &emsp;)&quot;<br />
-                &gt;&lt;/body&gt;
-            </samp>
-        </fieldset>
-    }
-
-    return <fieldset
-        className="samp-wrapper"
-        style={{ backgroundColor: 'var(--bg-color)' }}
-    >
-        <legend>Observe</legend>
-        <samp style={{ backgroundColor: 'var(--bg-color)' }}>
-            <span className="cm-keyword">await </span>
-            <span className="cm-variable">collection</span>.
-            <span className="cm-method">
-                findOne(<span className="cm-string">'foobar'</span>)
-            </span>
-            <br />
-            &nbsp;.<span className="cm-property">$</span>
-            <span className="cm-comment"> // get observable</span>
-            <br />
-            &nbsp;.<span className="cm-method">subscribe</span>(
-            <span className="cm-def">d</span>
-            <span className="cm-operator"> =&gt;</span> {'{'}
-            <br />
-            <span className="cm-variable">&nbsp;&nbsp; screen</span>.
-            <span className="cm-property">backgroundColor</span>
-            <span className="cm-operator"> = </span>
-            <span className="cm-variable">d</span>.
-            <span className="cm-property beating-color">color</span>;<br />
-            &nbsp;{'}'});
-        </samp>
-    </fieldset>
+    return <Tabs className='observe-code-example-tabs' type="line" defaultActiveKey={activeTab} items={items} style={{ minHeight: 650 }} />;
 }
 
 

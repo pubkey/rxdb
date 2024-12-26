@@ -36,7 +36,7 @@ export const REVIEW_ITEMS: {
         {
             label: 'myAgro, Africa',
             description: 'We rely on RxDB to manage all our data in one place. Our custom store became unwieldy, so we switched to RxDB for schema migrations, real-time replication, conflict resolution, and reactive programming. Its push and pull handlers also integrate smoothly with our existing APIs.',
-            
+
             href: 'https://www.myagro.org/',
             target: '_blank',
             logo: '/files/companies/myagro.svg',

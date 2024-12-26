@@ -106,7 +106,7 @@ export default function FooterWrapper() {
                       href={link.href}
                       target={link.target ? '_blank' : ''}
                     >
-                      <img src={link.logo} alt={"RxDB " + link.label} loading="lazy"
+                      <img src={link.logo} alt={'RxDB ' + link.label} loading="lazy"
                       />
                     </a>
                   ))}
