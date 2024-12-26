@@ -1537,12 +1537,6 @@ body {
     font-size: 16px;
 }
 
-@media (max-width: 830px) {
-    .samp-wrapper {
-        width: 70%;
-    }
-}
-
 @media (max-width: 600px) {
     .samp-wrapper {
         width: 90%;
@@ -1613,6 +1607,11 @@ samp .cm-comment {
 
 .observe-code-example-tabs {
     color: white;
+    padding-bottom: 20px;
+}
+
+.observe-code-example-tabs .ant-tabs-tab {
+    margin-left: 10px;
 }
 
 .observe-code-example-tabs .ant-tabs-tab-btn {
@@ -1628,13 +1627,19 @@ samp .cm-comment {
 }
 
 .observe-code-example-tabs .ant-tabs-tab-icon {
-    margin-inline-end: 8px;
+    margin-inline-end: 5px !important;
 }
 
 .observe-code-example-tabs .ant-tabs-tab-icon img {
     height: 30px;
     float: left;
     margin-top: -6px;
+}
+
+@media (max-width: 1200px) {
+    .observe-code-example-tabs .ant-tabs-tab-icon img {
+        display: none;
+    }
 }
 
 
