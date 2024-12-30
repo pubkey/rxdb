@@ -157,7 +157,7 @@ export const simpleHumanV3: RxJsonSchema<SimpleHumanV3DocumentType> = overwritab
     title: 'human schema',
     version: 3,
     keyCompression: false,
-    description: 'describes a simple human being',
+    description: 'describes a simple human being (V3 with age as number)',
     type: 'object',
     primaryKey: 'passportId',
     properties: {
