@@ -257,7 +257,7 @@ async function createPrimary(amount = 10, name = (0, _index.randomToken)(10)) {
   }
   return collections.human;
 }
-async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.randomToken)(10), multiInstance = true, storage = (0, _config.getConfig)().storage.getStorage()) {
+async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.randomToken)(10), multiInstance = true, storage = (0, _config.getConfig)().storage.getStorage(), conflictHandler) {
   var db = await (0, _index.createRxDatabase)({
     name: databaseName,
     storage,
@@ -268,6 +268,7 @@ async function createHumanWithTimestamp(amount = 0, databaseName = (0, _index.ra
   // setTimeout(() => db.close(), dbLifetime);
   var collections = await db.addCollections({
     humans: {
+      conflictHandler,
       schema: schemas.humanWithTimestamp
     }
   });

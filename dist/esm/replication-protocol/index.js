@@ -13,6 +13,7 @@ import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState 
 import { startReplicationUpstream } from "./upstream.js";
 import { fillWriteDataForAttachmentsChange } from "../plugins/attachments/index.js";
 import { getChangedDocumentsSince } from "../rx-storage-helper.js";
+import { newRxError } from "../rx-error.js";
 export * from "./checkpoint.js";
 export * from "./downstream.js";
 export * from "./upstream.js";
@@ -183,7 +184,10 @@ keepMeta = false) {
         var result = await instance.bulkWrite(writeRows, 'replication-master-write');
         result.error.forEach(err => {
           if (err.status !== 409) {
-            throw new Error('non conflict error');
+            throw newRxError('SNH', {
+              name: 'non conflict error',
+              error: err
+            });
           } else {
             conflicts.push(writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments, keepMeta));
           }

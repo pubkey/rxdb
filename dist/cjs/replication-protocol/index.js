@@ -70,6 +70,7 @@ Object.keys(_upstream).forEach(function (key) {
 });
 var _index2 = require("../plugins/attachments/index.js");
 var _rxStorageHelper = require("../rx-storage-helper.js");
+var _rxError = require("../rx-error.js");
 var _metaInstance = require("./meta-instance.js");
 Object.keys(_metaInstance).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -275,7 +276,10 @@ keepMeta = false) {
         var result = await instance.bulkWrite(writeRows, 'replication-master-write');
         result.error.forEach(err => {
           if (err.status !== 409) {
-            throw new Error('non conflict error');
+            throw (0, _rxError.newRxError)('SNH', {
+              name: 'non conflict error',
+              error: err
+            });
           } else {
             conflicts.push((0, _helper.writeDocToDocState)((0, _index.ensureNotFalsy)(err.documentInDb), hasAttachments, keepMeta));
           }

@@ -293,7 +293,7 @@ export async function startReplicationDownstream(state) {
                 writeError: error
               });
               state.events.error.next(throwMe);
-              mustThrow = mustThrow = throwMe;
+              mustThrow = throwMe;
             });
             if (mustThrow) {
               throw mustThrow;

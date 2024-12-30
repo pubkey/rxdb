@@ -6,6 +6,7 @@ import { resolveConflictError } from "./conflicts.js";
 import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from "./helper.js";
 import { getAssumedMasterState, getMetaWriteRow } from "./meta-instance.js";
 import { fillWriteDataForAttachmentsChange } from "../plugins/attachments/index.js";
+import { newRxError } from "../rx-error.js";
 
 /**
  * Writes all document changes from the fork to the master.
@@ -308,12 +309,27 @@ export async function startReplicationUpstream(state) {
           hadConflictWrites = true;
           state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
           var forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork, 'replication-up-write-conflict');
-          /**
-           * Errors in the forkWriteResult must not be handled
-           * because they have been caused by a write to the forkInstance
-           * in between which will anyway trigger a new upstream cycle
-           * that will then resolved the conflict again.
-           */
+          var mustThrow;
+          forkWriteResult.error.forEach(error => {
+            /**
+             * Conflict-Errors in the forkWriteResult must not be handled
+             * because they have been caused by a write to the forkInstance
+             * in between which will anyway trigger a new upstream cycle
+             * that will then resolved the conflict again.
+             */
+            if (error.status === 409) {
+              return;
+            }
+            // other non-conflict errors must be handled
+            var throwMe = newRxError('RC_PUSH', {
+              writeError: error
+            });
+            state.events.error.next(throwMe);
+            mustThrow = throwMe;
+          });
+          if (mustThrow) {
+            throw mustThrow;
+          }
           var useMetaWrites = [];
           var success = getWrittenDocumentsFromBulkWriteResponse(state.primaryPath, conflictWriteFork, forkWriteResult);
           success.forEach(docData => {
