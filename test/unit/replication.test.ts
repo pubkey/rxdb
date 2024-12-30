@@ -43,7 +43,8 @@ import {
     requestIdlePromise,
     prepareQuery,
     addRxPlugin,
-    getLastCheckpointDoc
+    getLastCheckpointDoc,
+    defaultConflictHandler
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -400,6 +401,58 @@ describe('replication.test.ts', () => {
             localCollection.database.close();
             remoteCollection.database.close();
             otherSchemaCollection.database.close();
+        });
+        it('should not update the push checkpoint when the conflict handler returns invalid documents that do not match the schema', async () => {
+            const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false, undefined, {
+                isEqual: defaultConflictHandler.isEqual,
+                resolve(i) {
+                    const ret = clone(i.realMasterState);
+                    ret.additionalField = 'foobar';
+                    return ret;
+                }
+            });
+            const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
+
+            // add one that conflicts
+            await Promise.all([localCollection, remoteCollection].map((c, i) => c.insert({
+                id: 'conflicting-doc',
+                name: 'myname',
+                updatedAt: 1001,
+                age: i
+            })));
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection as any,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                },
+                retryTime: 100
+            });
+            const errors: (RxError | RxTypeError)[] = [];
+            replicationState.error$.subscribe(err => errors.push(err));
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            await wait(isFastMode() ? 0 : 100);
+
+            assert.ok(errors.length > 0);
+            assert.ok(JSON.stringify(errors[0].parameters).includes('additionalField'));
+
+            // when handling the push failed, it should not have the checkpoint updated
+            const pushCheckpointAfter = await getLastCheckpointDoc(
+                ensureNotFalsy(replicationState.internalReplicationState),
+                'up'
+            );
+            assert.ok(!pushCheckpointAfter);
+
+
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on erroring replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });

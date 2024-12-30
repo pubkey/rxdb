@@ -10,6 +10,7 @@ import type {
     ById,
     EventBulk,
     RxDocumentData,
+    RxError,
     RxReplicationWriteToMasterRow,
     RxStorageChangeEvent,
     RxStorageInstanceReplicationState,
@@ -40,6 +41,7 @@ import {
     getMetaWriteRow
 } from './meta-instance.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
+import { newRxError } from '../rx-error.ts';
 
 /**
  * Writes all document changes from the fork to the master.
@@ -472,12 +474,29 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         conflictWriteFork,
                         'replication-up-write-conflict'
                     );
-                    /**
-                     * Errors in the forkWriteResult must not be handled
-                     * because they have been caused by a write to the forkInstance
-                     * in between which will anyway trigger a new upstream cycle
-                     * that will then resolved the conflict again.
-                     */
+
+                    let mustThrow: RxError | undefined;
+                    forkWriteResult.error.forEach(error => {
+                        /**
+                         * Conflict-Errors in the forkWriteResult must not be handled
+                         * because they have been caused by a write to the forkInstance
+                         * in between which will anyway trigger a new upstream cycle
+                         * that will then resolved the conflict again.
+                         */
+                        if (error.status === 409) {
+                            return;
+                        }
+                        // other non-conflict errors must be handled
+                        const throwMe = newRxError('RC_PUSH', {
+                            writeError: error
+                        });
+                        state.events.error.next(throwMe);
+                        mustThrow = throwMe;
+                    });
+                    if (mustThrow) {
+                        throw mustThrow;
+                    }
+
                     const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
                     const success = getWrittenDocumentsFromBulkWriteResponse(
                         state.primaryPath,
