@@ -740,7 +740,17 @@ describe('migration-schema.test.ts', function () {
                     handler: helper.masterChangesSince
                 },
                 push: {
-                    handler: helper.masterWrite
+                    handler(rows) {
+                        rows = rows.map(row => {
+                            if (row.assumedMasterState) {
+                                row.assumedMasterState.age = row.assumedMasterState.age + '';
+                            }
+                            row.newDocumentState.age = row.newDocumentState.age + '';
+                            return row;
+                        });
+                        const result = helper.masterWrite(rows);
+                        return result;
+                    }
                 }
             });
             ensureReplicationHasNoErrors(replicationState2);

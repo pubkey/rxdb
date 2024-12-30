@@ -12,7 +12,8 @@ import {
     randomToken,
     MigrationStrategies,
     RxAttachmentCreator,
-    RxStorage
+    RxStorage,
+    RxConflictHandler
 } from '../../index.ts';
 
 import { HumanDocumentType } from './schemas.ts';
@@ -342,7 +343,9 @@ export async function createHumanWithTimestamp(
     amount = 0,
     databaseName = randomToken(10),
     multiInstance = true,
-    storage = getConfig().storage.getStorage()
+    storage = getConfig().storage.getStorage(),
+    conflictHandler?: RxConflictHandler<any>
+
 ): Promise<RxCollection<schemaObjects.HumanWithTimestampDocumentType>> {
 
     const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithTimestampDocumentType>; }>({
@@ -355,6 +358,7 @@ export async function createHumanWithTimestamp(
     // setTimeout(() => db.close(), dbLifetime);
     const collections = await db.addCollections({
         humans: {
+            conflictHandler,
             schema: schemas.humanWithTimestamp
         }
     });
