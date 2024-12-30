@@ -45,7 +45,7 @@
     "local-web-server": "5.4.0",
     "node-sass": "9.0.0",
     "sass-loader": "16.0.4",
-    "testcafe": "3.7.0",
+    "testcafe": "3.7.1",
     "typescript": "5.6.3"
   },
   "eslintConfig": {
