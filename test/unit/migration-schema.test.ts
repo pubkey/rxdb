@@ -747,7 +747,7 @@ describe('migration-schema.test.ts', function () {
                             }
                             row.newDocumentState.age = row.newDocumentState.age + '';
                             return row;
-                        })
+                        });
                         const result = helper.masterWrite(rows);
                         return result;
                     }
