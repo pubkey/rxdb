@@ -1,16 +1,18 @@
 ---
 title: RxDocument
 slug: rx-document.html
+description: Master RxDB's RxDocument - Insert, find, update, remove, and more for streamlined data handling in modern apps.
 ---
 
 # RxDocument
-A document is a single object which is stored in a collection. It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts, or as result-set of queries.
+A RxDocument is a object which represents the data of a single JSON document is stored in a collection. It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts/updates, or as result-set of [queries](./rx-query.md).
 
+RxDB works on RxDocuments instead of plain JSON data to have more convenient operations on the documents. Also Documents that are fetched multiple times by different quries or operations are automatically de-duplicated by RxDB in memory.
 
 ## insert
 To insert a document into a collection, you have to call the collection's .insert()-function.
 ```js
-myCollection.insert({
+await myCollection.insert({
   name: 'foo',
   lastname: 'bar'
 });
@@ -19,8 +21,7 @@ myCollection.insert({
 ## find
 To find documents in a collection, you have to call the collection's .find()-function. [See RxQuery](./rx-query.md).
 ```js
-myCollection.find().exec() // <- find all documents
-  .then(documents => console.dir(documents));
+const docs = await myCollection.find().exec(); // <- find all documents
 ```
 
 
@@ -30,7 +31,9 @@ myCollection.find().exec() // <- find all documents
 This will get a single field of the document. If the field is encrypted, it will be automatically decrypted before returning.
 
 ```js
-var name = myDocument.get('name'); // returns the name
+const name = myDocument.get('name'); // returns the name
+// OR
+const name = myDocument.name;
 ```
 
 ### get$()
@@ -46,6 +49,14 @@ myDocument.get$('name')
 
 await myDocument.incrementalPatch({name: 'foobar2'});
 console.dir(isName); // isName is now 'foobar2'
+
+// OR
+
+myDocument.name$
+  .subscribe(newName => {
+    isName = newName;
+  });
+
 ```
 
 

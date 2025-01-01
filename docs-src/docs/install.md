@@ -1,10 +1,11 @@
 ---
 title: Installation
 slug: install.html
+description: Learn how to install RxDB via npm, configure polyfills, and fix global variable errors in Angular or Webpack for a seamless setup.
 ---
 
 
-# Install
+# Install RxDB
 
 ## npm
 
@@ -49,7 +50,7 @@ In the [examples](https://github.com/pubkey/rxdb/tree/master/examples) folder yo
 
 Consult [package.json](https://github.com/pubkey/rxdb/blob/master/package.json) for the versions of the packages supported.
 
-## Latest
+## Installing the latest RxDb build
 
 If you need the latest development state of RxDB, add it as git-dependency into your `package.json`.
 

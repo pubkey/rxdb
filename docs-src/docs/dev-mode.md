@@ -89,7 +89,6 @@ async function createDb() {
     const db = createRxDatabase( /* ... */ );
     // ...
 }
-
 ```
 
 
