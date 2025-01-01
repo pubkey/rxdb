@@ -425,7 +425,7 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
 - We use the the JSON based Mango Query Syntax because:
   - Mango Queries work better with TypeScript compared to SQL strings.
   - Mango Queries are composeable and easy to transform by code without joining SQL strings.
-  - Queries can be run very fast and eficient with only a minimal query planer to plan the best indexes and operations.
+  - Queries can be run very fast and efficient with only a minimal query planer to plan the best indexes and operations.
   - NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm to improve performance of observed and cached queries.
 
 

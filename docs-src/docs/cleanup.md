@@ -105,7 +105,7 @@ await myRxCollection.cleanup(0);
 
 ## Using the cleanup plugin to empty a collection
 
-When you have a collection with documents and you want to empty it by purging all documents, the recommened way is to call `myRxCollection.remove()`. However this will destroy the JavaScript class of the collection and stop all listeners and observables.
+When you have a collection with documents and you want to empty it by purging all documents, the recommended way is to call `myRxCollection.remove()`. However this will destroy the JavaScript class of the collection and stop all listeners and observables.
 Sometimes the better option might be to manually delete all documents and then use the cleanup plugin to purge the deleted documents:
 
 ```ts
@@ -121,6 +121,6 @@ await myRxCollection.cleanup(0);
 <details>
     <summary>When does the cleanup run</summary>
 <div>
-  The cleanup cycles are optimzied to run only when the database is idle and it is unlikely that another database interactions performance will be decreased in the meantime. For example by default the cleanup does not run in the first 60 seconds of a collections creation to ensure an initial page load of your website will not be slowed down. Also we use mechanisms like the `requestIdleCallback()` API to improve the correct timing of the cleanup cycle.
+  The cleanup cycles are optimized to run only when the database is idle and it is unlikely that another database interactions performance will be decreased in the meantime. For example by default the cleanup does not run in the first 60 seconds of a collections creation to ensure an initial page load of your website will not be slowed down. Also we use mechanisms like the `requestIdleCallback()` API to improve the correct timing of the cleanup cycle.
 </div>
 </details>
