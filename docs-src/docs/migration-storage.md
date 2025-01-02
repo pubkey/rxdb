@@ -13,6 +13,12 @@ The storage migration plugin can be used to migrate all data from one existing R
 <!-- TODO this was inherited from PouchDB, we should remove this in the future and also migrate deleted documents. -->
 The storage migration **drops deleted documents** and filters them out during the migration.
 
+:::warning Do never change the schema while doing a storage migration
+
+When you migrate between storages, you might want to change the schema in the same process. You should never do that because it will lead to problems afterwards and might make your database in usable.
+
+When you also want to change your schema, first run the storage migration and afterwards run a normal [schema migration](./migration-schema.md).
+:::
 
 ## Usage
 
