@@ -415,8 +415,8 @@ describe('util.test.js', () => {
             1.2,
             Infinity,
             ''
-        ].map(value => {
-            it(`should throw error for ${value} argument`, () => {
+        ].map((value, i) => {
+            it(`should throw error for #${i} argument`, () => {
                 assert.throws(() => ensureInteger(value));
             });
         });
