@@ -52,6 +52,7 @@ describe('replication-webrtc.test.ts', function () {
     describe('init', () => {
         it('import WebRTC polyfills on Node.js', async () => {
             if (isNode) {
+                // @ts-ignore
                 const wrtcModule = await import('node-datachannel/polyfill');
                 wrtc = wrtcModule.default as any;
 
