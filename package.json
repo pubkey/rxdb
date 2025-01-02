@@ -551,7 +551,7 @@
     "leveldown": "6.1.1",
     "madge": "8.0.0",
     "mini-css-extract-plugin": "2.9.2",
-    "mocha": "10.8.2",
+    "mocha": "11.0.1",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.1",
     "node-datachannel": "0.12.0",
