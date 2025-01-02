@@ -26,7 +26,7 @@ export function getDatabase(): Promise<RxDatabase> {
         dbPromise = (async () => {
             addRxPlugin(RxDBLocalDocumentsPlugin);
             const database = await createRxDatabase({
-                name: 'rxdb-landing-v3',
+                name: 'rxdb-landing-v4',
                 localDocuments: true,
                 storage: getRxStorageDexie()
             });

@@ -31,6 +31,7 @@ import { TagCloud } from 'react-tagcloud';
 import CountUp from 'react-countup';
 import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
 import { DevicesSync } from '../components/devices-sync';
+import { ObserveCodeExample } from '../components/observe-code-example';
 
 type MousePositionType = {
   x: number;
@@ -242,6 +243,25 @@ async function startLandingpageAnimation() {
 
 
 /**
+ * Will be filled into landingpage text whenever
+ * the App words appear.
+ * Like having "sync data in Capacitor Apps" instead of "sync data in Apps".
+ * This improves the google-ads landingpage relevance.
+ */
+export type AppName = |
+  'Capacitor' |
+  'React' |
+  'Angular' |
+  'JavaScript' |
+  'Browser' |
+  'Electron' |
+  'Ionic' |
+  'Node.js' |
+  'React Native' |
+  'Svelte' |
+  'Vue.js';
+
+/**
  * For custom pages for search engine marketing,
  * we can swap out titles texts and icons.
  */
@@ -249,7 +269,8 @@ export type SemPage = {
   metaTitle: string;
   iconUrl?: string;
   title: any;
-  text: any;
+  text?: any;
+  appName?: AppName;
 };
 
 export default function Home(props: {
@@ -360,6 +381,11 @@ export default function Home(props: {
       animationStarted = false;
     };
   });
+
+  function getAppName() {
+    return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
+  }
+
   return (
     <>
       <Head>
@@ -374,7 +400,7 @@ export default function Home(props: {
               <div className="inner">
                 <div className="half left">
                   {
-                    props.sem ? (
+                    props.sem && props.sem.iconUrl ? (
                       <div style={{ width: '100%', textAlign: 'left' }}>
                         <img src={props.sem.iconUrl} style={{
                           marginLeft: '40%',
@@ -420,7 +446,7 @@ export default function Home(props: {
                   </ul> */}
                   <div className="text">
                     {
-                      props.sem ? props.sem.text : <>Store data locally to build high performance realtime applications that sync data with the backend and even work when offline.</>
+                      props.sem && props.sem.text ? props.sem.text : <>Store data locally to build high performance realtime {getAppName()} applications that sync data with the backend and even work when offline.</>
                     }
                   </div>
 
@@ -474,10 +500,10 @@ export default function Home(props: {
                 >
 
                   <DevicesSync sem={props.sem} />
-                    </div>
-                    {/* <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
+                </div>
+                {/* <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
                     </BrowserWindow> */}
-                  {/* <img
+                {/* <img
               src="/files/logo/logo_text.svg"
               id="heartbeat-logo"
               alt="RxDB"
@@ -527,7 +553,7 @@ export default function Home(props: {
                 </h2>
                 <p>
                   RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of apps and services.
+                  With its flexibility, RxDB is used in a diverse range of {getAppName()} apps and services.
                 </p>
                 <br /><br />
               </div>
@@ -542,8 +568,8 @@ export default function Home(props: {
               </h2>
               <p>
                 From the results of a query, to a single field of a document, with RxDB
-                you can <b>observe everything</b>. This enables you to build realtime
-                applications fast and reliable.{' '}
+                you can <b>observe everything</b>. This enables you to build
+                realtime {getAppName()} applications fast and reliable.{' '}
                 {/* It does not matter if the data was changed by{' '}                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b> */}
                 Whenever your data changes, your UI reflects the new state.{' '}
                 RxDB supports <b>RxJS</b> and <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like <b>angular</b> signals, <b>preact</b> signals, <b>react</b> hooks or <b>vue.js</b> refs.
@@ -554,57 +580,7 @@ export default function Home(props: {
           to craft html from code. (inspect the element)
       */}
                 <div className="code half">
-                  <fieldset
-                    className="samp-wrapper"
-                    style={{ backgroundColor: 'var(--bg-color)' }}
-                  >
-                    <legend>Write</legend>
-                    <samp>
-                      <span className="cm-keyword">await </span>
-                      <span className="cm-variable">collection</span>.
-                      <span className="cm-method">upsert</span>({'{'}
-                      <br />
-                      <span className="cm-property">&nbsp; id</span>: <span className="cm-string">'foobar'</span>,<br />
-                      <span className="cm-property">&nbsp; color</span>: <span className="cm-string">
-                        '
-                        <span className="beating-color-string beating-color">
-                          #e6008d
-                        </span>
-                        '
-                      </span>
-                      <br />
-                      {'}'});
-                    </samp>
-                  </fieldset>
-                  <br />
-                  <br />
-                  <fieldset
-                    className="samp-wrapper"
-                    style={{ backgroundColor: 'var(--bg-color)' }}
-                  >
-                    <legend>Observe</legend>
-                    <samp style={{ backgroundColor: 'var(--bg-color)' }}>
-                      <span className="cm-keyword">await </span>
-                      <span className="cm-variable">collection</span>.
-                      <span className="cm-method">
-                        findOne(<span className="cm-string">'foobar'</span>)
-                      </span>
-                      <br />
-                      &nbsp;.<span className="cm-property">$</span>
-                      <span className="cm-comment"> // get observable</span>
-                      <br />
-                      &nbsp;.<span className="cm-method">subscribe</span>(
-                      <span className="cm-def">d</span>
-                      <span className="cm-operator"> =&gt;</span> {'{'}
-                      <br />
-                      <span className="cm-variable">&nbsp;&nbsp; screen</span>.
-                      <span className="cm-property">backgroundColor</span>
-                      <span className="cm-operator"> = </span>
-                      <span className="cm-variable">d</span>.
-                      <span className="cm-property beating-color">color</span>;<br />
-                      &nbsp;{'}'});
-                    </samp>
-                  </fieldset>
+                  <ObserveCodeExample sem={props.sem} />
                 </div>
                 <div className="canvas half">
                   <DevicesSync sem={props.sem} />
@@ -650,7 +626,7 @@ export default function Home(props: {
                 <p>
 
                   RxDB has a simple yet high performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
-                  run a realtime replication between clients and servers. While there are many plugins for specific endpoints like{' '}
+                  run a realtime replication between {getAppName()} clients and servers. While there are many plugins for specific endpoints like{' '}
                   <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
                   <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
                   <a href="/replication-webrtc.html">P2P</a>,{' '}
@@ -775,7 +751,7 @@ export default function Home(props: {
                       Offline First
                     </a>{' '}
                     paradigm where an application must work as well offline as it does
-                    online. This is done by persisting data locally on the client side and
+                    online. This is done by persisting data locally on the {getAppName()} client application and
                     replicating it in the background. RxDB can even be used solely on
                     the client side, with no backend at all.
                   </p>
@@ -783,7 +759,7 @@ export default function Home(props: {
                 <div className="half right">
                   <ul className="checked">
                     <li>
-                      Your application still <b>works offline</b>
+                      Your {getAppName()} application still <b>works offline</b>
                     </li>
                     <li>
                       Increases <b>perceived performance</b>
@@ -809,7 +785,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-10%', left: '10%' }}
                 >
-                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular" />
+                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular database" />
                   Angular
                 </div>
               </a>
@@ -821,7 +797,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '10%', left: '58%' }}
                 >
-                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor" />
+                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor database" />
                   Capacitor
                 </div>
               </a>
@@ -833,7 +809,7 @@ export default function Home(props: {
                   className="neumorphism-circle-s circle centered enlarge-on-mouse"
                   style={{ top: '-4%', left: '44%' }}
                 >
-                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno" />
+                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno database" />
                   Deno
                 </div>
               </a>
@@ -845,7 +821,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '-5%', left: '85%' }}
                 >
-                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js" />
+                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js database" />
                   Node.js
                 </div>
               </a>
@@ -857,7 +833,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '4%', left: '26%' }}
                 >
-                  <img loading="lazy" src="/files/icons/react.svg" alt="React" />
+                  <img loading="lazy" src="/files/icons/react.svg" alt="React database" />
                   React
                 </div>
               </a>
@@ -869,7 +845,7 @@ export default function Home(props: {
                   className="neumorphism-circle-s circle centered enlarge-on-mouse"
                   style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
                 >
-                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte" />
+                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte database" />
                   Svelte
                 </div>
               </a>
@@ -907,7 +883,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '18%' }}
                   >
-                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron" />
+                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron database" />
                     Electron
                   </div>
                 </a>
@@ -919,7 +895,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '3%', left: '45%' }}
                   >
-                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js" />
+                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js database" />
                     Vue.js
                   </div>
                 </a>
@@ -931,7 +907,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '2%', left: '71%' }}
                   >
-                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic" />
+                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic database" />
                     Ionic
                   </div>
                 </a>
@@ -943,7 +919,7 @@ export default function Home(props: {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '46%', left: '11%' }}
                   >
-                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript" />
+                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript database" />
                     NativeScript
                   </div>
                 </a>
@@ -955,7 +931,7 @@ export default function Home(props: {
                     className="neumorphism-circle-m circle centered enlarge-on-mouse"
                     style={{ top: '45%', left: '35%' }}
                   >
-                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native" />
+                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native database" />
                     React Native
                   </div>
                 </a>
@@ -963,7 +939,7 @@ export default function Home(props: {
                   className="neumorphism-circle-m circle centered enlarge-on-mouse"
                   style={{ top: '45%', left: '62%' }}
                 >
-                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js" />
+                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js database" />
                   Next.js
                 </div>
                 <a
@@ -974,7 +950,7 @@ export default function Home(props: {
                     className="neumorphism-circle-s circle centered enlarge-on-mouse"
                     style={{ top: '40%', left: '86%' }}
                   >
-                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter" />
+                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter database" />
                     Flutter
                   </div>
                 </a>
@@ -986,7 +962,8 @@ export default function Home(props: {
             <div className="content">
               <h2>All the <b className="underline">features</b> that you need</h2>
               <p>
-                Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it a flexible full solution regardless of which type of application you are building.
+                Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it
+                a flexible full solution regardless of which type of {getAppName()} application you are building.
                 Every feature that you need now or might need in the future is already there.
               </p>
               <div style={{
@@ -1133,7 +1110,7 @@ export default function Home(props: {
                           that's freely accessible to everyone.
                           <br />
                           This core includes all the essential features you need to develop efficient,
-                          real-time applications like storages, replication and other plugins.
+                          real-time {getAppName()} applications like storages, replication and other plugins.
                           <br />
                           <br />
                           Our open-core approach encourages a vibrant community of developers,
@@ -1281,7 +1258,7 @@ export default function Home(props: {
                         onClick={() => trigger('request_premium_main_page', 3)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
-                        Get Premium
+                          Get Premium
                         </div>
                       </a>
                     </div>

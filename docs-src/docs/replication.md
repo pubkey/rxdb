@@ -1,6 +1,7 @@
 ---
 title: ⚙️ Replication Protocol
 slug: replication.html
+description: Replicate data in real-time with RxDB's offline-first protocol. Enjoy efficient syncing, conflict resolution, and advanced multi-tab support.
 ---
 
 # RxDB Database Replication Protocol
@@ -12,6 +13,18 @@ For example you can replicate with a custom GraphQL endpoint or a [http server](
 
 The replication is made to support the [Offline-First](./offline-first.md) paradigm, so that when the client goes offline, the RxDB database can still read and write locally and will continue the replication when the client goes online again.
 
+
+## Design Decisions
+
+In contrast to other database replication protocols, the RxDB replication protocol is optimized for client side apps.
+
+- **Backend-Agnostic**: Because it relies on a clearly defined interface and simple methods, the RxDB replication protocol can integrate with any existing backend infrastructure. There's no need to set up a special server or database solution - just implement the pullHandler, pushHandler, and pullStream according to your existing architecture.
+
+- **Optimized for Browser Environments**: The protocol takes advantage of bulk document handling in one go, which drastically reduces network overhead. By grouping updates and fetches into batches, client apps can push and pull large sets of changes efficiently, keeping your UI responsive.
+
+- **Straightforward Implementation**: The RxDB replication logic mirrors a "git-like" approach for merging and conflict resolution, making it easy to understand. The steps are clear: you pull updates, push local changes, and handle conflicts if both sides have updated the same document.
+
+- **Offline-First Support**: By incorporating conflict handling at the client side, the protocol fully supports offline-first apps. Users can continue making changes while offline, and those updates will sync seamlessly once a connection is reestablished - all without risking data loss or having undefined behavior.
 
 ## Replication protocol on the document level
 

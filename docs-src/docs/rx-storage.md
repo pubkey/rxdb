@@ -1,5 +1,5 @@
 ---
-title: ⚙️ Rxstorage Layer
+title: ⚙️ RxStorage Layer
 slug: rx-storage.html
 ---
 

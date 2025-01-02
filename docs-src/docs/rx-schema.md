@@ -335,3 +335,72 @@ For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-
 
 </div>
 </details>
+
+<details>
+    <summary>How to store schemaless data?</summary>
+<div>
+    By design, RxDB requires that every collection has a schema. This means you cannot create a truly "schema-less" collection where top-level fields are unknown at schema creation time. RxDB must know about all fields of a document at the top level to perform validation, index creation, and other internal optimizations.
+    However, there is a way to store data of arbitrary structure at sub-fields. To do this, define a property with `type: "object"` in your schema. For example:
+    ```ts
+    {
+        "version": 0,
+        "primaryKey": "id",
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "maxLength": 100
+            },
+            "myDynamicData": {
+                "type": "object"
+                // Here you can store any JSON data
+                // because it's an open object.
+            }
+        },
+        "required": ["id"]
+    }
+    ```
+
+</div>
+</details>
+
+<details>
+    <summary>Why does RxDB automatically set `additionalProperties: false` at the top level</summary>
+<div>
+    RxDB automatically sets `additionalProperties: false` at the top level of a schema to ensure that all top-level fields are known in advance. This design choice offers several benefits:
+
+- Prevents collisions with RxDocument class properties:
+RxDB documents have built-in class methods (e.g., .toJSON, .save) at the top level. By forbidding unknown top-level properties, we avoid accidental naming collisions with these built-in methods.
+
+- Avoids conflicts with user-defined ORM functions:
+Developers can add custom [ORM methods](./orm.md) to RxDocuments. If top-level properties were unbounded, a property name could accidentally conflict with a method name, leading to unexpected behavior.
+
+- Improves TypeScript typings:
+If RxDB didn't know about all top-level fields, the document type would effectively become `any`. That means a simple typo like `myDocument.toJOSN()` would only be caught at runtime, not at build time. By disallowing unknown properties, TypeScript can provide strict typing and catch errors sooner.
+
+</div>
+</details>
+
+<details>
+    <summary>Can't change the schema of a collection</summary>
+<div>
+    When you make changes to the schema of a collection, you sometimes can get an error like
+`Error: addCollections(): another instance created this collection with a different schema`.
+
+This means you have created a collection before and added document-data to it.
+When you now just change the schema, it is likely that the new schema does not match the saved documents inside of the collection.
+This would cause strange bugs and would be hard to debug, so RxDB check's if your schema has changed and throws an error.
+
+To change the schema in **production**-mode, do the following steps:
+
+- Increase the `version` by 1
+- Add the appropriate [migrationStrategies](https://pubkey.github.io/rxdb/migration-schema.html) so the saved data will be modified to match the new schema
+
+
+In **development**-mode, the schema-change can be simplified by **one of these** strategies:
+
+-   Use the memory-storage so your db resets on restart and your schema is not saved permanently
+-   Call `removeRxDatabase('mydatabasename', RxStorage);` before creating a new RxDatabase-instance
+-   Add a timestamp as suffix to the database-name to create a new one each run like `name: 'heroesDB' + new Date().getTime()`
+</div>
+</details>

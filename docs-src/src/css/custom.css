@@ -4,7 +4,6 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -338,6 +337,7 @@ body {
     /** font **/
     color: white;
     font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    letter-spacing: 0.03rem;
 }
 
 .navbar {
@@ -781,7 +781,7 @@ body {
 
 
 .block.second .inner {
-    margin-top: 70px;
+    margin-top: 10px;
     display: flex;
 }
 
@@ -791,7 +791,7 @@ body {
     justify-content: center;
     overflow: hidden;
 
-    margin-top: 30px;
+    margin-top: 0px;
 }
 
 @media (max-width: 900px) {
@@ -1534,12 +1534,7 @@ body {
     background-color: var(--bg-color);
     text-align: left;
     width: calc(100% - 26px);
-}
-
-@media (max-width: 830px) {
-    .samp-wrapper {
-        width: 70%;
-    }
+    font-size: 16px;
 }
 
 @media (max-width: 600px) {
@@ -1582,6 +1577,10 @@ samp .cm-variable {
     color: #e5c07b;
 }
 
+samp .cm-html {
+    color: #c5436d;
+}
+
 samp .cm-property {
     color: #e06c75;
 }
@@ -1605,6 +1604,44 @@ samp .cm-operator {
 samp .cm-comment {
     color: #7f848e;
 }
+
+.observe-code-example-tabs {
+    color: white;
+    padding-bottom: 20px;
+}
+
+.observe-code-example-tabs .ant-tabs-tab {
+    margin-left: 10px;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-btn {
+    color: white;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-btn[aria-selected=true] {
+    color: var(--color-top) !important;
+}
+
+.observe-code-example-tabs .ant-tabs-ink-bar {
+    background: var(--color-top) !important;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-icon {
+    margin-inline-end: 5px !important;
+}
+
+.observe-code-example-tabs .ant-tabs-tab-icon img {
+    height: 30px;
+    float: left;
+    margin-top: -6px;
+}
+
+@media (max-width: 1200px) {
+    .observe-code-example-tabs .ant-tabs-tab-icon img {
+        display: none;
+    }
+}
+
 
 /*
  * The animation must use the same steps as the soundwave of the heartbeat.mp3
@@ -2913,7 +2950,7 @@ footer a:visited {
 .slick-list {
     padding: 0;
     height: auto !important;
-    max-height: 500px;
+    max-height: 700px;
 }
 
 .slick-dots {
@@ -2935,11 +2972,10 @@ footer a:visited {
 }
 
 .slick-dots li {
-    /* width: max-content !important; */
     padding: 0 0px 0px 7px !important;
-    /* margin: 0 !important; */
     width: 7px !important;
     height: 7px !important;
+    margin: 0 8px !important;
 }
 
 .slick-dots li.slick-active {

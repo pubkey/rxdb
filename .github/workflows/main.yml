@@ -391,7 +391,7 @@ jobs:
 
       - run: npm run build:rollup
 
-      - name: test docs build
+      - name: npm run docs:build
         run: |
           npm -v
           (cd docs-src && npm install)
@@ -429,12 +429,17 @@ jobs:
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
-      - name: spelling docs-src
+      - name: spelling docs-src/docs
+        uses: codespell-project/actions-codespell@v2.1
+        with:
+          ignore_words_file: config/codespellignore.txt
+          path: docs-src/docs
+      - name: spelling docs-src/src
         uses: codespell-project/actions-codespell@v2.1
         with:
           ignore_words_file: config/codespellignore.txt
           skip: legal-notice.tsx
-          path: docs-src
+          path: docs-src/src
       - name: spelling docs-src/releases
         uses: codespell-project/actions-codespell@v2.1
         with:

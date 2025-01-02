@@ -1,6 +1,7 @@
 ---
-title: RxDB TypeScript Tutorial
+title: TypeScript Setup
 slug: typescript.html
+description: Use RxDB with TypeScript to define typed schemas, create typed collections, and build fully typed ORM methods. A quick step-by-step guide.
 ---
 
 # Using RxDB with TypeScript
@@ -10,7 +11,7 @@ slug: typescript.html
 In this tutorial you will learn how to use RxDB with TypeScript.
 We will create a basic database with one collection and several ORM-methods, fully typed!
 
-RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
+RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB requires that you are using Typescript v3.8 or newer.
 Our way to go is
 
 - First define what the documents look like

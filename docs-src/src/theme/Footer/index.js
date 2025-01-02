@@ -48,7 +48,7 @@ export default function FooterWrapper() {
         label: 'Github',
         target: '_blank',
         href: '/code',
-        logo: '/img/community-links/github-logo.svg',
+        logo: '/img/community-links/github-logo.svg'
       },
       {
         label: 'Twitter',
@@ -93,7 +93,7 @@ export default function FooterWrapper() {
                   href="/"
                   className="footer-logo-button"
                 >
-                  <img src="/files/logo/logo.svg" alt="RxDB" />
+                  <img src="/files/logo/logo.svg" alt="RxDB" loading="lazy" />
                   <div>
                     RxDB
                   </div>
@@ -106,7 +106,8 @@ export default function FooterWrapper() {
                       href={link.href}
                       target={link.target ? '_blank' : ''}
                     >
-                      <img src={link.logo} alt="logo" />
+                      <img src={link.logo} alt={'RxDB ' + link.label} loading="lazy"
+                      />
                     </a>
                   ))}
                 </div>
@@ -144,6 +145,7 @@ export default function FooterWrapper() {
               className="footer-img desktop-img"
               src="/img/footer-column.svg"
               alt="columns"
+              loading="lazy"
             />
           </div>
         </div>

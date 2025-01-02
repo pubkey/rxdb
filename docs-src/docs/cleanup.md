@@ -1,20 +1,21 @@
 ---
 title: Cleanup
 slug: cleanup.html
+description: Optimize storage and speed up queries with RxDB’s Cleanup Plugin, automatically removing old deleted docs while preserving replication states.
 ---
 
 
 
 # 🧹 Cleanup
 
-To make the replication work, and for other reasons, RxDB has to keep deleted documents in the storage.
+To make the replication work, and for other reasons, RxDB has to keep deleted documents in the storage so that it is able to replication the deletion state of documents.
 This ensures that when a client is offline, the deletion state is still known and can be replicated with the backend when the client goes online again.
 
 Keeping too many deleted documents in the storage, can slow down queries or fill up too much disc space.
 With the cleanup plugin, RxDB will run cleanup cycles that clean up deleted documents when it can be done safely.
 
 
-## Add the cleanup plugin
+## Installation
 
 ```ts
 import { addRxPlugin } from 'rxdb';
@@ -101,3 +102,25 @@ await myRxCollection.cleanup(1000);
  */
 await myRxCollection.cleanup(0);
 ```
+
+## Using the cleanup plugin to empty a collection
+
+When you have a collection with documents and you want to empty it by purging all documents, the recommended way is to call `myRxCollection.remove()`. However this will destroy the JavaScript class of the collection and stop all listeners and observables.
+Sometimes the better option might be to manually delete all documents and then use the cleanup plugin to purge the deleted documents:
+
+```ts
+// delete all documents
+await myRxCollection.find().remove();
+// purge all deleted documents
+await myRxCollection.cleanup(0);
+```
+
+
+## FAQ
+
+<details>
+    <summary>When does the cleanup run</summary>
+<div>
+  The cleanup cycles are optimized to run only when the database is idle and it is unlikely that another database interactions performance will be decreased in the meantime. For example by default the cleanup does not run in the first 60 seconds of a collections creation to ensure an initial page load of your website will not be slowed down. Also we use mechanisms like the `requestIdleCallback()` API to improve the correct timing of the cleanup cycle.
+</div>
+</details>

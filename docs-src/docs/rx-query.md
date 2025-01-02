@@ -1,12 +1,12 @@
 ---
 title: RxQuery
 slug: rx-query.html
+description: Master RxQuery in RxDB - find, update, remove documents using Mango syntax, chained queries, real-time observations, indexing, and more.
 ---
 
 # RxQuery
 
-A query allows to find documents in your collection.
-Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango). It is also possible to use [chained methods](https://docs.mongodb.com/manual/reference/method/db.collection.find/#combine-cursor-methods) with the `query-builder` plugin.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more then once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -60,20 +60,14 @@ const results = await query.exec();
 console.dir(results); // > [RxDocument,RxDocument,RxDocument..]
 ```
 
-## Query Builder
-
-To use chained query methods, you can use the `query-builder` plugin.
+On `.findOne()` queries, you can call `.exec(true)` to ensure your document exists and to make TypeScript handling easier:
 
 ```ts
+// docOrUndefined can be the type RxDocument or null which then has to be handled to be typesafe.
+const docOrUndefined = await myCollection.findOne().exec();
 
-// add the query builder plugin
-import { addRxPlugin } from 'rxdb';
-import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-addRxPlugin(RxDBQueryBuilderPlugin);
-
-// now you can use chained query methods
-
-const query = myCollection.find().where('age').gt(18);
+// with .exec(true), it will throw if the document cannot be found and always have the type RxDocument
+const doc = await myCollection.findOne().exec(true);
 ```
 
 
@@ -198,6 +192,21 @@ myCollection.find({
 ```
 
 
+## Query Builder Plugin
+
+To use chained query methods, you can also use the `query-builder` plugin.
+
+```ts
+// add the query builder plugin
+import { addRxPlugin } from 'rxdb';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
+// now you can use chained query methods
+
+const query = myCollection.find().where('age').gt(18);
+const result = await query.exec();
+```
 
 
 ## Query Examples
@@ -248,6 +257,11 @@ myCollection.find({
 myCollection.find().where('name').eq('foo')
 .exec().then(documents => console.dir(documents));
 ```
+
+:::note RxDB will always append the primary key to the sort parameters
+For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
+This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
+:::
 
 
 ## Setting a specific index
@@ -379,10 +393,6 @@ Doing this is mostly not wanted, because it would run the counting on the storag
 This is only recommended if the RxStorage is running remotely like in a WebWorker and you not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
 
 
-## RxDB will always append the primary key to the sort parameters
-For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
-This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
-:::
 
 ## RxQuery's are immutable
 Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
@@ -407,3 +417,40 @@ Returns true if the given object is an instance of RxQuery. Returns false if not
 ```js
 const is = isRxQuery(myObj);
 ```
+
+## Design Decisions
+
+Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango) similar to MongoDB and others.
+
+- We use the the JSON based Mango Query Syntax because:
+  - Mango Queries work better with TypeScript compared to SQL strings.
+  - Mango Queries are composeable and easy to transform by code without joining SQL strings.
+  - Queries can be run very fast and efficient with only a minimal query planer to plan the best indexes and operations.
+  - NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm to improve performance of observed and cached queries.
+
+
+## FAQ
+
+
+<details>
+    <summary>Can I specify which document fields are returned by an RxDB query?</summary>
+<div>
+  No, RxDB does not support partial document retrieval. Because RxDB is a client-side database with limited memory, it caches and de-duplicates entire documents across multiple queries. Even if you only need a few fields, most storages must still fetch the entire JSON data, so subselecting fields would not significantly improve performance. Therefore, RxDB always returns full documents. If you only need certain fields, you can filter them out in your application code or consider storing just the necessary data in a separate collection.
+</div>
+</details>
+
+
+<details>
+    <summary>Why doesn't RxDB support aggregations on queries?</summary>
+<div>
+  RxDB runs entirely on the client side. Any "aggregation" or data processing you might do within RxDB would still happen in the same JavaScript environment as your application code. Therefore, there's no real performance advantage or difference between doing the aggregation in RxDB vs. doing it in your own code after fetching the data. As a result, RxDB doesn't provide built-in aggregation methods. Instead, just query the documents you need and perform any calculations directly in your app's code.
+</div>
+</details>
+
+
+<details>
+    <summary>Why does RxDB not support cross-collection queries?</summary>
+<div>
+  RxDB is a client-side database and does not provide built-in cross-collection queries or transactions. Instead, you can execute multiple queries in your JavaScript code and combine their results as needed. Because everything runs in the same environment, this approach offers the same performance you would get if cross-collection queries were built in - without the added complexity.
+</div>
+</details>
