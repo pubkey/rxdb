@@ -515,7 +515,7 @@
     "brfs": "2.0.2",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
-    "concurrently": "9.1.1",
+    "concurrently": "9.1.2",
     "copy-webpack-plugin": "12.0.2",
     "cors": "2.8.5",
     "cross-env": "7.0.3",
