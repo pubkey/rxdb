@@ -5,15 +5,15 @@
 
 <!-- ADD new changes here! -->
 
-### 16.0.0-beta.11 (30 December 2024)
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+### 16.0.0 (2 January 2025)
 
 🚀 **RxDB v16 is released**
 
 - A list of changes for RxDB v16 can be found [here](https://rxdb.info/releases/16.0.0.html)
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 15.39.0 (21 November 2024)
 
