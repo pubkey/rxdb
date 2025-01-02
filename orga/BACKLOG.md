@@ -3,6 +3,10 @@
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
 
+## PostgreSQL RxStorage
+
+https://github.com/thomas4019/mongo-query-to-postgres-jsonb
+
 ## PGLite RxStorage
 
 Like https://github.com/XuHaoJun/rxdb-storage-pglite
