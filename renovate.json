@@ -24,7 +24,7 @@
     "src/plugins/flutter/dart/pubspec.yaml"
   ],
   "rebaseStalePrs": true,
-  "prConcurrentLimit": 6,
+  "prConcurrentLimit": 8,
   "prHourlyLimit": 2,
   "dependencyDashboard": false
 }
