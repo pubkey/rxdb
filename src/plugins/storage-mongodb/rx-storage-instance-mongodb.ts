@@ -101,7 +101,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
-
         
         const mongoOptions: any = {};
         mongoOptions.driverInfo = {
