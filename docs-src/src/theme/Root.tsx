@@ -14,14 +14,11 @@ export default function Root({ children }) {
 
         addCallToActionButton();
         triggerClickEventWhenFromCode();
-
     });
     return <>{children}</>;
 }
 
-
 function addCallToActionButton() {
-
     // do only show on docs-pages, not on landingpages like premium or consulting page.
     if (!location.pathname.includes('.html')) {
         return;
@@ -32,37 +29,37 @@ function addCallToActionButton() {
             text: 'Follow',
             keyword: '@twitter',
             url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-            icon: '🐦'
+            icon: '🐦',
         },
         {
             text: 'Follow',
             keyword: '@LinkedIn',
             url: 'https://www.linkedin.com/company/rxdb',
-            icon: '[in]'
+            icon: '[in]',
         },
         {
             text: 'Follow',
             keyword: '@LinkedIn',
             url: 'https://www.linkedin.com/in/danielmeyerdev/',
-            icon: '[in]'
+            icon: '[in]',
         },
         {
             text: 'Chat',
             keyword: '@discord',
             url: 'https://rxdb.info/chat',
-            icon: '💬'
+            icon: '💬',
         },
         {
             text: 'Star',
             keyword: '@github',
             url: 'https://rxdb.info/code',
-            icon: '🐙💻'
+            icon: '🐙💻',
         },
         {
             text: 'Subscribe',
             keyword: '@newsletter',
             url: 'https://rxdb.info/newsletter',
-            icon: '📰'
+            icon: '📰',
         },
         // {
         //     text: 'Take Part in the',
@@ -72,7 +69,10 @@ function addCallToActionButton() {
         // }
     ];
     function insertAfter(referenceNode, newNode) {
-        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        referenceNode.parentNode.insertBefore(
+            newNode,
+            referenceNode.nextSibling
+        );
     }
     const callToActionButtonId = 'rxdb-call-to-action-button';
     function setCallToActionOnce() {
@@ -90,8 +90,8 @@ function addCallToActionButton() {
             alreadyThere.parentNode.removeChild(alreadyThere);
         }
 
-
-        const positionReferenceElement = document.querySelector('.navbar__items');
+        const positionReferenceElement =
+            document.querySelector('.navbar__items');
         if (!positionReferenceElement) {
             // not loaded yet!
             return;
@@ -106,12 +106,19 @@ function addCallToActionButton() {
         };
         newElement.classList.add('hover-shadow-top');
         newElement.id = callToActionButtonId;
-        newElement.innerHTML = callToAction.text + ' <b class="call-to-action-keyword">' + callToAction.keyword + '</b>' +
-            '<b class="call-to-action-icon">' + callToAction.icon + '</b>';
+        newElement.innerHTML =
+            '<div class="call-to-action-text">' +
+            callToAction.text +
+            '</div>' +
+            ' <b class="call-to-action-keyword">' +
+            callToAction.keyword +
+            '</b>' +
+            '<b class="call-to-action-icon">' +
+            callToAction.icon +
+            '</b>';
         newElement.href = callToAction.url;
         newElement.target = '_blank';
         newElementWrapper.append(newElement);
-
 
         insertAfter(positionReferenceElement, newElementWrapper);
     }
@@ -158,7 +165,10 @@ function addCommunityChatButton() {
 
     const styleSheet = document.createElement('style');
     styleSheet.type = 'text/css';
-    styleSheet.innerText = '#' + chatButtonId + ' {' +
+    styleSheet.innerText =
+        '#' +
+        chatButtonId +
+        ' {' +
         'color: white;' +
         'position: fixed;' +
         'right: 0;' +
@@ -178,8 +188,7 @@ function addCommunityChatButton() {
         '#fixed-chat-button:hover {' +
         'box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;' +
         'text-decoration: underline;' +
-        '}'
-        ;
+        '}';
     document.head.appendChild(styleSheet);
     document.body.appendChild(elemDiv);
 }
