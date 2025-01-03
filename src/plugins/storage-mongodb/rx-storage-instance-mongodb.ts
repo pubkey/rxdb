@@ -52,6 +52,7 @@ import {
     swapMongoToRxDoc,
     swapRxDocToMongo
 } from './mongodb-helper.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -105,7 +106,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         const mongoOptions: any = {};
         mongoOptions.driverInfo = {
             name: 'RxDB',
-            version: 'X.Y.Z'
+            version: RXDB_VERSION
         };
         this.mongoClient = new MongoClient(storage.databaseSettings.connection, mongoOptions);
         this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
