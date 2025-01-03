@@ -448,14 +448,13 @@ body {
 }
 
 /* Exclude homepage from navbar width constraint */
-body:not(.homepage) .navbar {
+.navbar {
     max-width: 88rem;
     width: 100%;
     margin: 0 auto;
 }
 
 .navbar__items a {
-    text-decoration: none;
     color: var(--fontColor-offwhite);
     font-weight: 400;
 }
