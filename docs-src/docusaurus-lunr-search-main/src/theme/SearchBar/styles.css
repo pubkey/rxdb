@@ -8,10 +8,10 @@
 .search-icon {
   background-image: var(--ifm-navbar-search-input-icon);
   height: auto;
-  width: 24px;
+  width: 1.25rem;
   cursor: pointer;
   padding: 8px;
-  line-height: 32px;
+  line-height: 1.5rem;
   background-repeat: no-repeat;
   background-position: center;
   display: none;
