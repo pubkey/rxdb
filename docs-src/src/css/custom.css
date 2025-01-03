@@ -409,7 +409,7 @@ ul.checked li:before {
     vertical-align: middle;
 }
 
-/* Docs Main Body ontent Styling */
+/* Docs Main Body Content Styling */
 body {
     color: var(--fontColor-offwhite);
     font-weight: 400;
