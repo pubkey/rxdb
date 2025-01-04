@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Include RxDB version details in MongoDB handshake [#6722](https://github.com/pubkey/rxdb/pull/6722)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
