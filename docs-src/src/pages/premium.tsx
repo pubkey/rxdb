@@ -10,13 +10,12 @@ import {
     PriceCalculationInput,
     calculatePrice
 } from '../components/price-calculator';
-import { trigger } from '../components/trigger-event';
-import { getDatabase, hasIndexedDB } from '../components/database';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import {
     Select
 } from 'antd';
 import { distinctUntilChanged, map } from 'rxjs';
+import { triggerTrackingEvent } from '../components/trigger-event';
 
 export type FormValueDocData = {
     developers: number;
@@ -44,7 +43,10 @@ function getFormValueDoc() {
     if (!formValueDocPromiseCache) {
         formValueDocPromiseCache = (async () => {
             console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
-            const database = await getDatabase();
+            const dbModule = await import('../components/database.module');
+            console.log('aaaaaa dbmodule:');
+            console.dir(dbModule);
+            const database = await dbModule.getDatabase();
             let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             if (!formValueDoc) {
                 formValueDoc = await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
@@ -77,7 +79,7 @@ function PackageCheckbox(props: {
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
         readOnly
         onClick={() => {
-            trigger('calculate_premium_price', 3);
+            triggerTrackingEvent('calculate_premium_price', 3, true);
             props.onToggle();
         }}
     />;
@@ -97,7 +99,7 @@ export default function Premium() {
 
 
     useEffect(() => {
-        if (!isBrowser || !hasIndexedDB()) {
+        if (!isBrowser) {
             return;
         }
 
@@ -107,7 +109,7 @@ export default function Premium() {
         }
         setInitDone(true);
         if (isBrowser) {
-            window.trigger('open_pricing_page', 1);
+            triggerTrackingEvent('open_pricing_page', 1, false);
         }
 
         (async () => {
@@ -150,7 +152,7 @@ export default function Premium() {
     // for dialog
     const [open, setOpen] = React.useState(false);
     const handleOpenDialog = () => {
-        trigger('open_premium_submit_popup', 20);
+        triggerTrackingEvent('open_premium_submit_popup', 20, true);
         setOpen(true);
     };
     const handleClose = () => {
