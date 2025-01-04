@@ -11,32 +11,25 @@ import { Modal } from 'antd';
 import { Tabs } from 'antd';
 import { Collapse } from 'antd';
 
-import { getDatabase, hasIndexedDB } from '../components/database';
 const FILE_EVENT_ID = 'consulting-link-clicked';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
 import { ReviewsBlock } from '../components/review-block';
+import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
 
     const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (!isBrowser || !hasIndexedDB()) {
+        if (!isBrowser) {
             return;
         }
 
-        (async () => {
-            const database = await getDatabase();
-            const flagDoc = await database.getLocal(FILE_EVENT_ID);
-            if (flagDoc) {
-                console.log('# already tracked ' + FILE_EVENT_ID);
-            } else {
-                window.trigger(FILE_EVENT_ID, 100);
-                await database.upsertLocal(FILE_EVENT_ID, {});
-            }
+        (() => {
+            triggerTrackingEvent(FILE_EVENT_ID, 100, false);
         })();
     });
 

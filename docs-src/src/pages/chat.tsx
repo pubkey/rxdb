@@ -2,6 +2,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Chat() {
     const { siteConfig } = useDocusaurusContext();
@@ -9,7 +10,7 @@ export default function Chat() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
         if (isBrowser) {
-            window.trigger('join_chat', 0.40);
+            triggerTrackingEvent('join_chat', 0.40, false);
         }
     });
 

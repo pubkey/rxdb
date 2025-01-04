@@ -1,12 +1,12 @@
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect } from 'react';
-import { getDatabase, hasIndexedDB } from '../components/database';
 import { FORM_VALUE_DOCUMENT_ID, FormValueDocData } from './premium';
+import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function PremiumSubmitted() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (!isBrowser || !hasIndexedDB()) {
+        if (!isBrowser) {
             return;
         }
 
@@ -15,30 +15,17 @@ export default function PremiumSubmitted() {
          * and lead value
          */
         (async () => {
-            const database = await getDatabase();
+            const dbModule = await import('../components/database.module');
+            console.log('aaaaaa dbmodule:');
+            console.dir(dbModule);
+            const database = await dbModule.getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             console.dir(formValueDoc);
-
-            window.trigger(
+            triggerTrackingEvent(
                 'premium_lead',
-                Math.floor(formValueDoc._data.data.price / 3) // assume lead-to-sale-rate is 33%.
+                Math.floor(formValueDoc._data.data.price / 3), // assume lead-to-sale-rate is 33%.
+                true
             );
-            if (!formValueDoc) {
-                window.trigger('premium_lead_unknown', 0);
-                await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
-                    formSubmitted: true
-                });
-            } else {
-                if (formValueDoc._data.data.formSubmitted) {
-                    console.log('# lead already tracked');
-                    return;
-                }
-                window.trigger(
-                    'premium_lead_' + formValueDoc._data.data.homeCountry.toLowerCase(),
-                    0, // zero because we track the value already at the previous event trigger
-                );
-                await formValueDoc.incrementalPatch({ formSubmitted: true });
-            }
         })();
     });
 

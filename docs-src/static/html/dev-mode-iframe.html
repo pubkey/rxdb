@@ -13,7 +13,7 @@
          * visits the RxDB docs page.
          * This prevents us from creating events from non-developers when the dev-mode
          * is accidentally used in production.
-         * Also it fixies problems with the origins of the google tag manager.
+         * Also it fixes problems with the origins of the google tag manager.
          */
         const DEV_MODE_EVENT_ID = 'dev_mode_tracking_iframe';
         const searchParams = new URLSearchParams(window.location.search);
@@ -25,55 +25,9 @@
         bc.postMessage({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() });
         // console.dir({ DEV_MODE_EVENT_ID, version, expiryDate: expiryDate.toGMTString() })
     </script>
-    <!-- <script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0"
-    ></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-62D63SY3S0');
-    </script>
-
-
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || []; w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            }); var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-PL63TR5');</script>
-
-    <script src="/js/analytics.js"></script>
-    <script>
-        const EVENT_ID = 'dev_mode_tracking_iframe';
-        const searchParams = new URLSearchParams(window.location.search);
-        const version = searchParams.get('version');
-        if (!localStorage.getItem(EVENT_ID)) {
-            console.log('track me');
-            localStorage.setItem(EVENT_ID, '1');
-            window.trigger(EVENT_ID, 10);
-            window.trigger(EVENT_ID + '_' + version, 10);
-        } else {
-            console.log('tracked already');
-        }
-    </script> -->
 </head>
 
 <body>
-    <!-- <noscript><iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5"
-            height="0"
-            width="0"
-            style="display:none;visibility:hidden"
-        ></iframe></noscript>
-
-    This is the tracking page for dev-mode. <a
-        href="https://rxdb.info/dev-mode.html#disable-the-tracking-iframe"
-        target="_blank"
-    >Read More</a>. -->
 </body>
 
 </html>

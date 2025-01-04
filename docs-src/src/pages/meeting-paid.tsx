@@ -2,7 +2,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
-import { getDatabase, hasIndexedDB } from '../components/database';
+import { triggerTrackingEvent } from '../components/trigger-event';
 const FILE_EVENT_ID = 'paid-meeting-link-clicked';
 
 export default function Meeting() {
@@ -10,21 +10,11 @@ export default function Meeting() {
 
     const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (!isBrowser || !hasIndexedDB()) {
+        if (!isBrowser) {
             return;
         }
-        (async () => {
-            const database = await getDatabase();
-            const flagDoc = await database.getLocal(FILE_EVENT_ID);
-            if (flagDoc) {
-                console.log('# already tracked ' + FILE_EVENT_ID);
-            } else {
-                window.trigger(
-                    FILE_EVENT_ID,
-                    100
-                );
-                await database.upsertLocal(FILE_EVENT_ID, {});
-            }
+        (() => {
+            triggerTrackingEvent(FILE_EVENT_ID, 100, true);
         })();
     });
 
