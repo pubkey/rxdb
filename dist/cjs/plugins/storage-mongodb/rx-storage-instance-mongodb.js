@@ -13,6 +13,7 @@ var _index = require("../../plugins/utils/index.js");
 var _mongodb = require("mongodb");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _mongodbHelper = require("./mongodb-helper.js");
+var _utilsRxdbVersion = require("../utils/utils-rxdb-version.js");
 var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/function () {
   // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
 
@@ -46,7 +47,12 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     }
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.schema.primaryKey);
     this.inMongoPrimaryPath = this.primaryPath === '_id' ? _mongodbHelper.MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
-    this.mongoClient = new _mongodb.MongoClient(storage.databaseSettings.connection);
+    var mongoOptions = {};
+    mongoOptions.driverInfo = {
+      name: 'RxDB',
+      version: _utilsRxdbVersion.RXDB_VERSION
+    };
+    this.mongoClient = new _mongodb.MongoClient(storage.databaseSettings.connection, mongoOptions);
     this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
     var indexes = (this.schema.indexes ? this.schema.indexes.slice() : []).map(index => {
       var arIndex = (0, _index.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];

@@ -18,7 +18,7 @@ export declare const basePrototype: {
     /**
      * returns the observable which emits the plain-data of this document
      */
-    readonly $: Observable<any>;
+    readonly $: Observable<RxDocumentData<any>>;
     readonly $$: any;
     /**
      * returns observable of the value of the given path
@@ -106,7 +106,7 @@ export declare function createRxDocumentConstructor(proto?: {
     /**
      * returns the observable which emits the plain-data of this document
      */
-    readonly $: Observable<any>;
+    readonly $: Observable<RxDocumentData<any>>;
     readonly $$: any;
     /**
      * returns observable of the value of the given path
@@ -195,7 +195,7 @@ export declare function createRxDocumentConstructor(proto?: {
         /**
          * returns the observable which emits the plain-data of this document
          */
-        readonly $: Observable<any>;
+        readonly $: Observable<RxDocumentData<any>>;
         readonly $$: any;
         /**
          * returns observable of the value of the given path

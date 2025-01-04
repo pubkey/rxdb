@@ -41,7 +41,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * Uniquely identifies the instance
      * of this RxDatabase.
      */
-    token: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean | undefined, options: any, 
+    token: string, storage: RxStorage<Internals, InstanceCreationOptions>, instanceCreationOptions: InstanceCreationOptions, password: any, multiInstance: boolean, eventReduce: boolean | undefined, options: any | undefined, 
     /**
      * Stores information documents about the collections of the database
      */
