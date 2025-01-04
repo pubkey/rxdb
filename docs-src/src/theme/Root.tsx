@@ -12,9 +12,11 @@ export default function Root({ children }) {
 
         // addCommunityChatButton();
 
-        startAnalytics();
-        addCallToActionButton();
-        triggerClickEventWhenFromCode();
+        setTimeout(() => {
+            startAnalytics();
+            addCallToActionButton();
+            triggerClickEventWhenFromCode();
+        }, 0);
 
     });
     return <>{children}</>;
@@ -190,7 +192,7 @@ function startAnalytics() {
     // detect scroll to bottom of landingpage
     let scrollTriggerDone = false;
     let nextScrollTimestamp = 0;
-    if (location.pathname === '/') {
+    if (location.pathname === '/' || location.pathname.includes('/sem/')) {
         window.addEventListener('scroll', (event) => {
             const newTimestamp = event.timeStamp;
             if (!scrollTriggerDone && nextScrollTimestamp < newTimestamp) {
@@ -260,7 +262,7 @@ function startAnalytics() {
             p.callQueue = [];
             const t = d.createElement('script');
             t.src = 'https://www.redditstatic.com/ads/pixel.js';
-            t.async = !0;
+            t.async = true;
             const s = d.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(t, s);
         }
