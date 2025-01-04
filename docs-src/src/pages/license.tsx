@@ -24,7 +24,7 @@ export default function LicensePreview() {
             return;
         }
 
-        (async () => {
+        (() => {
             try {
                 const myParamValue = new URLSearchParams(window.location.search).get('v');
                 const value = myParamValue ? parseInt(myParamValue, 10) : 300;

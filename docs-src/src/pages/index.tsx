@@ -30,7 +30,7 @@ export const colors = [
 
 
 let animationStarted = false;
-async function startLandingpageAnimation() {
+function startLandingpageAnimation() {
 
   if (animationStarted) {
     return;
@@ -1366,8 +1366,8 @@ function startEnlargeOnMousePos() {
 
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      function easeInQuint(x: number): number {
-        return x ^ 1.9;
+      function easeInQuint(xx: number): number {
+        return xx ^ 1.9;
       }
 
       let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
@@ -1417,37 +1417,6 @@ function ensureInRange(val: number): number {
 
 function randomBoolean() {
   return Math.random() < 0.5;
-}
-
-
-/**
-* @link https://stackoverflow.com/questions/16801687/javascript-random-ordering-with-seed
-*/
-function shuffleWithSeed<T>(array: T[], seed: number): T[] {
-  array = array.slice(0);
-  let m = array.length;
-  let t;
-  let i;
-
-  // While there remain elements to shuffle…
-  while (m) {
-
-    // Pick a remaining element…
-    i = Math.floor(random(seed) * m--);
-
-    // And swap it with the current element.
-    t = array[m];
-    array[m] = array[i];
-    array[i] = t;
-    ++seed;
-  }
-
-  return array;
-}
-
-function random(seed: number) {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
 }
 
 

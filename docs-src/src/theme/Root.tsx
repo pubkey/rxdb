@@ -124,7 +124,7 @@ function addCallToActionButton() {
  * These logs can contain links with the query param ?console=foobar
  * which allows us to detect that a user has really installed and started RxDB.
  */
-async function triggerClickEventWhenFromCode() {
+function triggerClickEventWhenFromCode() {
     const TRIGGER_CONSOLE_EVENT_ID = 'console-log-click';
     const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.has('console')) {
@@ -244,27 +244,31 @@ function startAnalytics() {
     // /track dev_mode_tracking_iframe event
 
     // reddit pixel
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
-    // @ts-ignore
-    !function (w, d) {
+    // @ts-ignore eslint-disable-next-line
+    (function (w, d) {
         if (!(w as any).rdt) {
             // @ts-ignore
-            var p = w.rdt = function () {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
+            const p: any = w.rdt = function () {
                 // @ts-ignore
-                p.sendEvent ? p.sendEvent.apply(p, arguments) : p.callQueue.push(arguments);
-                // @ts-ignore
-            }; p.callQueue = [];
-            var t = d.createElement('script');
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-unused-expressions
-            t.src = 'https://www.redditstatic.com/ads/pixel.js', t.async = !0;
-            var s = d.getElementsByTagName('script')[0]; s.parentNode.insertBefore(t, s);
+                if (p.sendEvent) {
+                    p.sendEvent.apply(p, arguments);
+                } else {
+                    p.callQueue.push(arguments);
+                }
+            };
+            p.callQueue = [];
+            const t = d.createElement('script');
+            t.src = 'https://www.redditstatic.com/ads/pixel.js';
+            t.async = !0;
+            const s = d.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(t, s);
         }
-    }(window, document); (window as any).rdt('init', 't2_131k54', {
+    })(window, document);
+    (window as any).rdt('init', 't2_131k54', {
         'aaid': '<AAID-HERE>', 'email': '<EMAIL-HERE>', 'externalId': '<EXTERNAL-ID-HERE>', 'idfa': '<IDFA-HERE>'
     });
     (window as any).rdt('track', 'PageVisit');
-    // /redddit pixel
+    // /reddit pixel
 
 
 
@@ -273,7 +277,7 @@ function startAnalytics() {
         base: 'leadbooster-chat.pipedrive.com', companyId: 11404711, playbookUuid:
             '16a8caba-6b26-4bb1-a1fa-434c4171d542', version: 2
     }; (function () {
-        var w = window; if ((w as any).LeadBooster) {
+        const w = window; if ((w as any).LeadBooster) {
             console.warn('LeadBooster already exists');
         } else {
             (w as any).LeadBooster = {

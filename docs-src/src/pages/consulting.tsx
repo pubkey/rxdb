@@ -28,7 +28,7 @@ export default function Consulting() {
             return;
         }
 
-        (async () => {
+        (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 100, false);
         })();
     });

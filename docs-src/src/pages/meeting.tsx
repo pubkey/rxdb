@@ -13,7 +13,7 @@ export default function Meeting() {
         if (!isBrowser) {
             return;
         }
-        (async () => {
+        (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 40, true);
         })();
     });

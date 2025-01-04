@@ -13,7 +13,7 @@ export default function ServiceSubmitted() {
         if (!isBrowser) {
             return;
         }
-        (async () => {
+        (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 100, true);
         })();
     });
