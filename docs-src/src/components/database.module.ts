@@ -1,3 +1,8 @@
+/**
+ * Important: Only dynamically load this module
+ * because the landingpage pageload is really
+ * important to get a good google-ads ranking.
+ */
 import {
     getRxStorageDexie
 } from '../../../plugins/storage-dexie';
@@ -35,9 +40,3 @@ export function getDatabase(): Promise<RxDatabase> {
     }
     return dbPromise;
 }
-
-export const colors = [
-    '#e6008d',
-    '#8d2089',
-    '#5f2688'
-];

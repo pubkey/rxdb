@@ -54,11 +54,6 @@ const config: Config = {
     //   type: 'text/javascript',
     //   async: true
     // },
-    {
-      src: '/js/analytics.js',
-      type: 'text/javascript',
-      async: true,
-    },
     /*
      * Pipedrive embedded chat.
      * Disabled because people should fill out the premium form
