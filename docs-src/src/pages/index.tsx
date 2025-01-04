@@ -646,7 +646,7 @@ export default function Home(props: {
           <div className="block offline-first dark">
             <div className="offline-image-wrapper">
               <img
-                src="files/icons/wifi/wifi_1a202c.svg"
+                src="/files/icons/wifi/wifi_1a202c.svg"
                 className="offline-image beating-second"
                 loading="lazy"
                 alt="offline"
