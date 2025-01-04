@@ -11,6 +11,10 @@ https://github.com/thomas4019/mongo-query-to-postgres-jsonb
 
 Like https://github.com/XuHaoJun/rxdb-storage-pglite
 
+## Zero-Sync replication plugin
+
+https://www.youtube.com/watch?v=hAxdOUgjctk&ab_channel=Syntax
+
 ## Upsert atomic with attachments
 
 See [#494](https://github.com/pubkey/rxdb/issues/494)
