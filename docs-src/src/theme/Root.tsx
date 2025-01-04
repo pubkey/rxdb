@@ -238,9 +238,10 @@ function startAnalytics() {
         triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, true);
     }
     checkDevModeEvent();
-    // also listen for upcoming events
-    const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
-    bc.onmessage = () => checkDevModeEvent();
+    // also listen for upcoming events 
+    // DISABLED because it kill the google metric "Page prevented back/forward cache restoration"
+    // const bc = new BroadcastChannel(DEV_MODE_EVENT_ID);
+    // bc.onmessage = () => checkDevModeEvent();
     // /track dev_mode_tracking_iframe event
 
     // reddit pixel
