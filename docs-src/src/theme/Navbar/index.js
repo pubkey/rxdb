@@ -6,23 +6,7 @@ import {
 import Navbar from '@theme-original/Navbar';
 
 export default function NavbarWrapper(props) {
-
-
-  const styles = {
-    scrollIndicator: {
-      position: 'fixed',
-      display: 'block',
-      zIndex: 10,
-      height: 3,
-      backgroundColor: 'var(--color-top)',
-      top: 60,
-      borderTopRightRadius: 2,
-      borderBottomRightRadius: 2,
-    }
-  };
-
-
-
+  const [isHomepage, setIsHomepage] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const handleScroll = () => {
     const position = currentScrollPercentage().toFixed(2);
@@ -30,6 +14,8 @@ export default function NavbarWrapper(props) {
   };
 
   useEffect(() => {
+    setIsHomepage(window.location.pathname === '/' || window.location.pathname === '/premium' || window.location.pathname === '/consulting');
+
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
@@ -37,11 +23,24 @@ export default function NavbarWrapper(props) {
     };
   }, []);
 
-
+  const styles = {
+    scrollIndicator: {
+      position: 'fixed',
+      display: 'block',
+      zIndex: 10,
+      height: 1.5,
+      backgroundColor: 'var(--color-top)',
+      top: 62.5,
+      borderTopRightRadius: 2,
+      borderBottomRightRadius: 2,
+      maxWidth: isHomepage ? 'none' : '88rem',
+      left: isHomepage ? 0 : 'calc((100% - 88rem) / 2)',
+    }
+  };
   return (
     <>
       <Navbar {...props} />
-      <div style={{ ...styles.scrollIndicator, ...{ width: scrollPosition + '%' } }}></div>
+      {<div style={{ ...styles.scrollIndicator, ...{ width: scrollPosition + '%' } }}></div>}
     </>
   );
 }
