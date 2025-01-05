@@ -14,7 +14,7 @@ export default function NavbarWrapper(props) {
   };
 
   useEffect(() => {
-    setIsHomepage(window.location.pathname === '/' || window.location.pathname === '/premium' || window.location.pathname === '/consulting');
+    setIsHomepage(!location.pathname.includes('.html'));
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
