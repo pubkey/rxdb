@@ -255,7 +255,34 @@ function startAnalytics() {
     // bc.onmessage = () => checkDevModeEvent();
     // /track dev_mode_tracking_iframe event
 
-    // reddit pixel
+
+    // google tag manager
+    /**
+     * We use this manual code instead of the docusaurus gtm plugin because we have
+     * to defer the loading to improve the Interaction to Next Paint (INP) metric
+     */
+    /**
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0"></script>
+    <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <script>window.dataLayer=window.dataLayer||[]</script>
+    <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,
+    m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script>
+     */
+
+    // google tag    
+    (function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+            j: any = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.defer = true; j.src =
+                'https://www.googletagmanager.com/gtm.js?id=' + i + dl; (f as any).parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PL63TR5');
+    // /google tag manager
+
+
+    // reddit pixel TODO move into google tag manager
     // @ts-ignore eslint-disable-next-line
     (function (w, d) {
         if (!(w as any).rdt) {
@@ -272,7 +299,7 @@ function startAnalytics() {
             const t = d.createElement('script');
             t.src = 'https://www.redditstatic.com/ads/pixel.js';
             t.async = true;
-            const s = d.getElementsByTagName('script')[0];
+            const s: any = d.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(t, s);
         }
     })(window, document);

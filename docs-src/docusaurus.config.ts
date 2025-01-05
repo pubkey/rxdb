@@ -59,11 +59,6 @@ const config: Config = {
         //   type: 'text/javascript',
         //   async: true
         // },
-        {
-            src: '/js/analytics.js',
-            type: 'text/javascript',
-            async: true,
-        },
         /*
          * Pipedrive embedded chat.
          * Disabled because people should fill out the premium form
@@ -85,13 +80,6 @@ const config: Config = {
             'classic',
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
-                gtag: {
-                    trackingID: 'G-62D63SY3S0',
-                    anonymizeIP: false,
-                },
-                googleTagManager: {
-                    containerId: 'GTM-PL63TR5',
-                },
                 docs: {
                     sidebarPath: './sidebars.js',
                     routeBasePath: '',
