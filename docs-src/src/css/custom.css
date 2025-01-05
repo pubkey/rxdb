@@ -376,7 +376,7 @@ p {
     color: white;
     font-weight: 600;
     text-decoration: underline;
-    text-decoration-color: var(--color-top);
+    text-decoration-color: var(--color-top) !important;
     text-decoration-thickness: 1.25px;
     text-underline-offset: 4px;
 }
