@@ -15,11 +15,10 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import { TagCloud } from 'react-tagcloud';
-import CountUp from 'react-countup';
-import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
 import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 
 
 export const colors = [
@@ -430,33 +429,14 @@ export default function Home(props: {
             <br />
           </div >
 
-          <a
+          <Trophy
             href="/code"
-            target="_blank"
-          >
-            <div className="trophy github">
-              <img
-                loading="lazy" src="/files/icons/github-star-with-logo.svg"
-                alt="RxDB github star"
-              />
-              <div style={{ flex: 1 }}>
-                <div className="subtitle">Open Source on</div>
-                <div className="title">GitHub</div>
-              </div>
-              <div>
-                <div className="valuetitle">stars</div>
-                <div className="value">
-                  <CountUp
-                    end={SOCIAL_PROOF_VALUES.github}
-                    start={SOCIAL_PROOF_VALUES.github - 20}
-                    duration={6}
-                  ></CountUp>
-                  <div className="arrow-up"> </div>
-                </div>
-              </div>
-            </div>
-          </a>
-
+            title="GitHub"
+            subTitle='Open Source on'
+            value={SOCIAL_PROOF_VALUES.github}
+            imgUrl="/files/icons/github-star-with-logo.svg"
+            valueTitle='stars'
+          />
 
           <div className="block reviews" id="reviews">
             <div className="content centered">
@@ -501,30 +481,16 @@ export default function Home(props: {
               </div>
             </div>
           </div>
-          <a
+
+
+          <Trophy
             href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            onClick={() => triggerTrackingEvent('twitter_trophy_click', 0.20, false)}
-            target="_blank"
-          >
-            <div className="trophy twitter">
-              <img loading="lazy" src="/files/icons/twitter-blue.svg" alt="RxDB Twitter" />
-              <div style={{ flex: 1 }}>
-                <div className="subtitle">Follow on</div>
-                <div className="title">Twitter</div>
-              </div>
-              <div>
-                <div className="valuetitle">followers</div>
-                <div className="value">
-                  <CountUp
-                    end={SOCIAL_PROOF_VALUES.twitter}
-                    start={SOCIAL_PROOF_VALUES.twitter - 30}
-                    duration={2}
-                  ></CountUp>
-                  <div className="arrow-up"> </div>
-                </div>
-              </div>
-            </div>
-          </a>
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            imgUrl="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
+          />
           <div className="block replication">
             <div className="content">
               <div className="half left">
@@ -616,32 +582,15 @@ export default function Home(props: {
             </div>
           </div>
 
-          <a
+
+          <Trophy
             href="/chat"
-            target="_blank"
-          >
-            <div className="trophy discord">
-              <img loading="lazy" src="/files/icons/discord.svg" alt="RxDB Discord chat" />
-              <div style={{ flex: 1 }}>
-                <div className="subtitle">Chat on</div>
-                <div className="title">Discord</div>
-              </div>
-              <div>
-                <div className="valuetitle">members</div>
-                <div className="value">
-                  <CountUp
-                    end={SOCIAL_PROOF_VALUES.discord}
-                    start={SOCIAL_PROOF_VALUES.discord - 30}
-                    duration={2}
-                  ></CountUp>
-                  <div className="arrow-up"> </div>
-                </div>
-              </div>
-            </div>
-          </a>
-
-
-
+            title="Discord"
+            subTitle='Chat on'
+            value={SOCIAL_PROOF_VALUES.discord}
+            imgUrl="/files/icons/discord.svg"
+            valueTitle='members'
+          />
 
           <div className="block offline-first dark">
             <div className="offline-image-wrapper">
