@@ -6,7 +6,6 @@ import {
 import Navbar from '@theme-original/Navbar';
 
 export default function NavbarWrapper(props) {
-  const [isHomepage, setIsHomepage] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
   const handleScroll = () => {
     const position = currentScrollPercentage().toFixed(2);
@@ -14,10 +13,7 @@ export default function NavbarWrapper(props) {
   };
 
   useEffect(() => {
-    setIsHomepage(!location.pathname.includes('.html'));
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -33,8 +29,6 @@ export default function NavbarWrapper(props) {
       top: 62.5,
       borderTopRightRadius: 2,
       borderBottomRightRadius: 2,
-      maxWidth: isHomepage ? 'none' : '88rem',
-      left: isHomepage ? 0 : 'calc((100% - 88rem) / 2)',
     }
   };
   return (

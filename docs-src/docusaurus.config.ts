@@ -100,69 +100,69 @@ const config: Config = {
     ],
 
     themeConfig:
-        /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-        {
-            // Replace with your project's social card
-            image: 'img/rxdb_social_card.png',
-            colorMode: {
-                defaultMode: 'dark',
-                disableSwitch: true,
-                respectPrefersColorScheme: false,
-            },
-            navbar: {
-                title: 'RxDB',
-                logo: {
-                    alt: 'RxDB Logo',
-                    src: 'files/logo/logo.svg',
-                },
-                items: [
-                    {
-                        href: '/quickstart.html',
-                        label: 'Docs',
-                        position: 'right',
-                    },
-                    {
-                        to: '/chat',
-                        target: '_blank',
-                        label: 'Community',
-                        position: 'right',
-                        className: 'navbar-icon-discord'
-                      },
-                    {
-                        href: '/premium',
-                        label: 'Premium',
-                        position: 'right',
-                    },
-                    {
-                        href: '/consulting',
-                        label: 'Support',
-                        position: 'right',
-                    },
-                    // {
-                    //   href: '/code',
-                    //   target: '_blank',
-                    //   label: 'Code',
-                    //   position: 'right',
-                    // },
-                    // {
-                    //   to: '/chat',
-                    //   target: '_blank',
-                    //   label: ' ',
-                    //   position: 'right',
-                    //   className: 'navbar-icon-discord'
-                    // },
-                ],
-            },
-            footer: {
-                style: 'dark',
-                links: [],
-                copyright: ' ',
-            },
-            prism: {
-                theme: prismThemes.github,
-                darkTheme: prismThemes.dracula,
-            },
+    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+    {
+        // Replace with your project's social card
+        image: 'img/rxdb_social_card.png',
+        colorMode: {
+            defaultMode: 'dark',
+            disableSwitch: true,
+            respectPrefersColorScheme: false,
         },
+        navbar: {
+            title: 'RxDB',
+            logo: {
+                alt: 'RxDB Logo',
+                src: 'files/logo/logo.svg',
+            },
+            items: [
+                {
+                    href: '/consulting',
+                    label: 'Support',
+                    position: 'right',
+                },
+                {
+                    href: '/premium',
+                    label: 'Premium',
+                    position: 'right',
+                },
+                {
+                    to: '/chat',
+                    target: '_blank',
+                    label: 'Community',
+                    position: 'right',
+                    className: 'navbar-icon-discord'
+                },
+                {
+                    href: '/quickstart.html',
+                    label: 'Docs',
+                    position: 'right',
+                },
+                // {
+                //   href: '/code',
+                //   target: '_blank',
+                //   label: 'Code',
+                //   position: 'right',
+                // },
+                // {
+                //   to: '/chat',
+                //   target: '_blank',
+                //   label: ' ',
+                //   position: 'right',
+                //   className: 'navbar-icon-discord'
+                // },
+            ],
+        },
+        footer: {
+            style: 'dark',
+            links: [],
+            copyright: ' ',
+        },
+        prism: {
+            theme: prismThemes.github,
+            darkTheme: prismThemes.dracula,
+        },
+    },
 };
 
 export default config;

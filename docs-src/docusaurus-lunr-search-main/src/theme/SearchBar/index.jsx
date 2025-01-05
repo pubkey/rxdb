@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from "react";
+import React, { useRef, useCallback, useState, useEffect } from "react";
 import clsx from "clsx";
 import { useHistory } from "@docusaurus/router";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
@@ -15,6 +15,10 @@ const Search = props => {
   const isBrowser = useIsBrowser();
   const { baseUrl } = siteConfig;
   const assetUrl = pluginConfig && pluginConfig[1]?.assetUrl || baseUrl;
+  const [isDocsPage, setIsDocsPage] = useState(false);
+  useEffect(() => {
+    setIsDocsPage(location.pathname.includes('.html'));
+  }, []);
   const initAlgolia = (searchDocs, searchIndex, DocSearch, options) => {
     new DocSearch({
       searchDocs,
@@ -103,6 +107,10 @@ const Search = props => {
       'Search ⌘+K' : 'Search Ctrl+K'
   }
 
+  if(!isDocsPage){
+    return;
+  }
+
   return (
     <div className="navbar__search" key="search-box">
       <span
@@ -118,7 +126,7 @@ const Search = props => {
       <input
         id="search_input_react"
         type="search"
-        placeholder={indexReady ? placeholder : 'Loading...'}
+        placeholder={placeholder}
         aria-label="Search"
         className={clsx(
           "navbar__search-input",

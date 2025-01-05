@@ -78,7 +78,7 @@ function startLandingpageAnimation() {
   getBeatCurrentBeatInfo();
 
   (async () => {
-    await promiseWait(heartbeatDuration);
+    await promiseWait(heartbeatDuration * 1);
     let lastPeriod = 0;
     while (animationStarted) {
       const beatInfo = getBeatCurrentBeatInfo();

@@ -456,15 +456,27 @@ body {
     box-shadow: none;
     border-bottom: 1px solid var(--ifm-toc-border-color);
     font-size: var(--fontSizes-s);
-    max-width: 88rem;
     width: 100%;
     margin: 0 auto;
 }
 
-/* Exclude homepage from navbar width constraint */
-.homepage .navbar {
-    max-width: none;
+.navbar .navbar__inner {
+    max-width: 86rem;
+    margin-left: auto;
+    margin-right: auto;
 }
+
+
+/**
+ * Reversed order because the lunr search input
+ * must be on the left so we have no "blinking" when
+ * switching between langinpages and docs
+ */
+.navbar .navbar__items--right {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
 
 .navbar__items a {
     color: var(--fontColor-offwhite);
