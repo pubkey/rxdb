@@ -4,6 +4,20 @@
  * work well for content-centric websites.
  */
 
+@font-face {
+    font-family: "Geist";
+    src: url("/fonts/Geist-VariableFont_wght.ttf") format("ttf");
+    font-weight: 100 900; /* Variable font weights */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Geist Mono";
+    src: url("/fonts/GeistMono-VariableFont_wght.ttf") format("ttf");
+    font-weight: 100 900; /* Variable font weights */
+    font-style: normal;
+}
+
 /* You can override the default Infima variables here. */
 :root {
     --ifm-color-primary: #e6008d;
@@ -62,6 +76,7 @@ pre code {
     --fontSizes-4xl: 2.25rem;
     --fontSizes-5xl: 2.5rem;
     --fontSizes-6xl: 4.5rem;
+    --fontSizes-7xl: 5rem;
 
     --space-between-blocks: 0px;
 
@@ -316,13 +331,9 @@ h1 .underline {
     color: white;
 }
 
-/* h1 {
-    font-size: var(--fontSizes-4xl);
-} */
-
 h2 {
     margin-top: 0px;
-    font-size: var(--fontSizes-xl);
+    font-size: var(--fontSizes-4xl);
 }
 
 h3 {
@@ -445,13 +456,14 @@ body {
     box-shadow: none;
     border-bottom: 1px solid var(--ifm-toc-border-color);
     font-size: var(--fontSizes-s);
-}
-
-/* Exclude homepage from navbar width constraint */
-.navbar {
     max-width: 88rem;
     width: 100%;
     margin: 0 auto;
+}
+
+/* Exclude homepage from navbar width constraint */
+.homepage .navbar {
+    max-width: none;
 }
 
 .navbar__items a {
@@ -482,7 +494,6 @@ body {
 /* Breadcrumbs */
 .breadcrumbs__item--active .breadcrumbs__link {
     color: var(--fontColor-offwhite);
-
 }
 
 .header-space {
@@ -742,6 +753,8 @@ body {
     top: 84%;
 }
 
+/* Home Page Block Styling */
+
 .block {
     width: 100%;
     min-height: 250px;
@@ -749,19 +762,6 @@ body {
     padding-bottom: 150px;
     background-color: var(--bg-color);
     position: relative;
-}
-
-.block.reviews {
-    min-height: 150px;
-    padding-bottom: 0px;
-}
-
-.block.reviews .inner {
-    max-width: 1224px;
-}
-
-.reviews h2 {
-    text-align: center;
 }
 
 .block.first {
@@ -808,31 +808,29 @@ body {
     margin-top: 90px;
 }
 
-.block.first.hero h1 {
-    color: white;
-    font-size: var(--fontSizes-5xl);
+.block.first.hero h1,
+.block.first.hero h1 b {
+    font-size: var(--fontSizes-6xl);
     font-family: Helvetica;
     font-weight: 400;
-    letter-spacing: -1px;
     line-height: 140%;
     text-align: left;
+    letter-spacing: -0.1rem;
+}
+
+.block.first.hero h1 {
+    color: white;
 }
 
 .block.first.hero h1 b {
     color: var(--color-top);
-    font-size: var(--fontSizes-5xl);
-    font-family: Helvetica;
-    font-weight: 400;
-    letter-spacing: -0.05rem;
-    line-height: 140%;
-    text-align: left;
 }
 
 .block.first.hero .text {
-    color: #8e8e8e;
+    color: #b5b5b5;
     font-size: var(--fontSizes-l);
     font-weight: 400;
-    line-height: 125%;
+    line-height: 150%;
     letter-spacing: -0.05rem;
     margin-bottom: 0;
     text-align: left;
@@ -866,6 +864,20 @@ body {
     .block.first.hero h1 {
         font-size: 3em;
     }
+}
+
+/* REVIEWS BLOCK */
+.block.reviews {
+    min-height: 150px;
+    padding-bottom: 0px;
+}
+
+.block.reviews .inner {
+    max-width: 1224px;
+}
+
+.reviews h2 {
+    text-align: center;
 }
 
 .block.second .inner {
@@ -2537,10 +2549,6 @@ footer a:visited {
     letter-spacing: -0.02rem;
     white-space: pre-line;
     margin-bottom: 0;
-}
-
-.consulting-page .block.first .half:first-child {
-    margin-right: 80px;
 }
 
 .consulting-page .block.first .half.left {
