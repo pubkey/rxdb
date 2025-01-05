@@ -270,14 +270,18 @@ function startAnalytics() {
     m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script>
      */
 
-    // google tag    
+    // google tag
     (function (w, d, s, l, i) {
         w[l] = w[l] || []; w[l].push({
             'gtm.start':
                 new Date().getTime(), event: 'gtm.js'
-        }); var f = d.getElementsByTagName(s)[0],
-            j: any = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.defer = true; j.src =
-                'https://www.googletagmanager.com/gtm.js?id=' + i + dl; (f as any).parentNode.insertBefore(j, f);
+        });
+        const f = d.getElementsByTagName(s)[0];
+
+        const j: any = d.createElement(s);
+        const dl = l !== 'dataLayer' ? '&l=' + l : '';
+        j.defer = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl; (f as any).parentNode.insertBefore(j, f);
     })(window, document, 'script', 'dataLayer', 'GTM-PL63TR5');
     // /google tag manager
 
