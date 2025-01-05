@@ -99,7 +99,6 @@ const Search = props => {
 
   let placeholder
   if (isBrowser) {
-    loadAlgolia();
     placeholder = window.navigator.platform.startsWith("Mac") ?
       'Search ⌘+K' : 'Search Ctrl+K'
   }
