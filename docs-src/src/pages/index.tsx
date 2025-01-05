@@ -3,26 +3,13 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
 import {
-  merge,
-  fromEvent,
-  map,
-  distinctUntilChanged
-} from 'rxjs';
-import {
   ensureNotFalsy,
-  RxLocalDocument,
-  now,
   promiseWait,
   ucfirst,
   hashStringToNumber
 } from '../../../';
-import {
-  colors,
-  getDatabase,
-  hasIndexedDB
-} from '../components/database';
 import React, { useEffect, useState } from 'react';
-import { trigger } from '../components/trigger-event';
+import { triggerTrackingEvent } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -32,23 +19,18 @@ import CountUp from 'react-countup';
 import { SOCIAL_PROOF_VALUES } from '../components/social-proof-values';
 import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
-type MousePositionType = {
-  x: number;
-  y: number;
-  time: number;
-};
 
-type BeatingValuesType = {
-  beatPeriod: number;
-  text1: string;
-  text2: string;
-  color: string;
-};
+export const colors = [
+  '#e6008d',
+  '#8d2089',
+  '#5f2688'
+];
 
 
 let animationStarted = false;
-async function startLandingpageAnimation() {
+function startLandingpageAnimation() {
 
   if (animationStarted) {
     return;
@@ -71,83 +53,8 @@ async function startLandingpageAnimation() {
     return;
   }
 
-
-  if (!hasIndexedDB()) {
-    return;
-  }
-  const database = await getDatabase();
-
-
-  // once insert if not exists
-  try {
-    await database.insertLocal<BeatingValuesType>('beatingvalues', {
-      beatPeriod: 0,
-      text1: 'JavaScript',
-      text2: 'you deserve',
-      color: colors[0]
-    });
-  } catch (err) { }
-
-  const beatingValuesDoc = ensureNotFalsy(await database.getLocal<BeatingValuesType>('beatingvalues'));
-  (async () => {
-    await promiseWait(heartbeatDuration);
-    while (animationStarted) {
-      const beatInfo = getBeatCurrentBeatInfo();
-      const nextBeatPromise = promiseWait(beatInfo.timeToNextPeriod);
-      // only every second interval so we have a pause in between
-      if (beatInfo.period % 2 === 0) {
-        try {
-          await beatingValuesDoc.incrementalModify(docData => {
-            if (docData.beatPeriod >= beatInfo.period) {
-              return docData;
-            }
-            docData.beatPeriod = beatInfo.period;
-            docData.color = colors[beatInfo.period % 3];
-
-            if (beatInfo.period % 4 === 0) {
-              docData.text1 = shuffleWithSeed(textsFirst, beatInfo.period)[0];
-            } else {
-              docData.text2 = shuffleWithSeed(textsSecond, beatInfo.period)[0];
-            }
-
-            return docData;
-          });
-        } catch (err) { }
-      }
-      await nextBeatPromise;
-    }
-  })();
-
-
-  // track mouse position
-  const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
-    x: 0,
-    y: 0,
-    time: 0
-  });
-  let currentMousePosition: number[] = [];
-  window.addEventListener('mousemove', (ev) => {
-    currentMousePosition = [ev.clientX, ev.clientY];
-  });
-
-
-  merge(
-    fromEvent(window, 'mousemove'),
-    fromEvent(window, 'scroll'),
-    fromEvent(window, 'resize')
-  ).subscribe(() => {
-    mousePointerDoc.incrementalPatch({
-      x: currentMousePosition[0],
-      y: currentMousePosition[1],
-      time: now()
-    });
-  });
-
-
-
-
-  startTiltToMouse(mousePointerDoc);
-  startEnlargeOnMousePos(mousePointerDoc);
+  startTiltToMouse();
+  startEnlargeOnMousePos();
 
 
   /**
@@ -171,33 +78,36 @@ async function startLandingpageAnimation() {
 
   getBeatCurrentBeatInfo();
 
+  (async () => {
+    await promiseWait(heartbeatDuration);
+    let lastPeriod = 0;
+    while (animationStarted) {
+      const beatInfo = getBeatCurrentBeatInfo();
+      const nextBeatPromise = promiseWait(beatInfo.timeToNextPeriod);
+      // only every second interval so we have a pause in between
+      const period = beatInfo.period;
+      if (period === lastPeriod) {
+        await nextBeatPromise;
+        continue;
+      }
+      lastPeriod = period;
+      if (period % 2 === 0) {
+        const color = colors[period % 3];
+        heartbeatListeners.forEach(function (listener) {
+          listener(heartbeatIndex);
+        });
+        heartbeatIndex = heartbeatIndex + 1;
+        Array.from($$beatingColor).forEach(function (element) {
+          element.style.backgroundColor = color;
+        });
 
-
-  beatingValuesDoc.$
-    .pipe(
-      map(asdfasdfsdad => asdfasdfsdad._data.data),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
-    )
-    .subscribe((beatingValuesDocInner: BeatingValuesType) => {
-
-      heartbeatListeners.forEach(function (listener) {
-        listener(heartbeatIndex);
-      });
-      heartbeatIndex = heartbeatIndex + 1;
-
-
-      // $swapOutFirst.innerHTML = beatingValuesDocInner.text1;
-      // $swapOutSecond.innerHTML = beatingValuesDocInner.text2;
-
-      const color = beatingValuesDocInner.color;
-      Array.from($$beatingColor).forEach(function (element) {
-        element.style.backgroundColor = color;
-      });
-
-      Array.from($$beatingColorString).forEach(function (element) {
-        element.innerHTML = color;
-      });
-    });
+        Array.from($$beatingColorString).forEach(function (element) {
+          element.innerHTML = color;
+        });
+      }
+      await nextBeatPromise;
+    }
+  })();
 
   /**
    * css animation of big logo on heartbeat
@@ -374,8 +284,11 @@ export default function Home(props: {
     return i;
   }));
 
+  const isBrowser = useIsBrowser();
   useEffect(() => {
-    startLandingpageAnimation();
+    if (isBrowser) {
+      startLandingpageAnimation();
+    }
     return () => {
       console.log('stop animation');
       animationStarted = false;
@@ -456,13 +369,13 @@ export default function Home(props: {
                   <a
                     className="button"
                     href="/quickstart.html"
-                    onClick={() => trigger('start_now', 0.4)}
+                    onClick={() => triggerTrackingEvent('start_now', 0.4, false)}
                   >
                     Get Started &#x27A4;
                   </a>
                   <a
                     href="/premium#price-calculator-block"
-                    onClick={() => trigger('request_premium_main_page', 3)}
+                    onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
                     className='buy-premium-hero'
                   >
                     Buy Premium
@@ -590,7 +503,7 @@ export default function Home(props: {
           </div>
           <a
             href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            onClick={() => trigger('twitter_trophy_click', 0.20)}
+            onClick={() => triggerTrackingEvent('twitter_trophy_click', 0.20, false)}
             target="_blank"
           >
             <div className="trophy twitter">
@@ -733,7 +646,7 @@ export default function Home(props: {
           <div className="block offline-first dark">
             <div className="offline-image-wrapper">
               <img
-                src="files/icons/wifi/wifi_1a202c.svg"
+                src="/files/icons/wifi/wifi_1a202c.svg"
                 className="offline-image beating-second"
                 loading="lazy"
                 alt="offline"
@@ -1134,7 +1047,7 @@ export default function Home(props: {
                         href="/code"
                         target="_blank"
                         rel="noopener"
-                        onClick={() => trigger('get_the_code_main_page', 0.8)}
+                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8, false)}
                       >
                         <div className="buy-option-action bg-top hover-shadow-top">
                           Get the Code
@@ -1255,7 +1168,7 @@ export default function Home(props: {
                       </div> */}
                       <a
                         href="/premium"
-                        onClick={() => trigger('request_premium_main_page', 3)}
+                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
                           Get Premium
@@ -1282,7 +1195,7 @@ export default function Home(props: {
                       </div>
                       <a
                         href="/consulting"
-                        onClick={() => trigger('consulting_session_request_main_page', 4)}
+                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4, false)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
                           Get in Contact
@@ -1305,7 +1218,7 @@ export default function Home(props: {
                   href="/quickstart.html"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('start_now_main_bottom', 0.40)}
+                  onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40, false)}
                 >
                   <div
                     className="button get-premium"
@@ -1318,7 +1231,7 @@ export default function Home(props: {
                   href="/newsletter"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('newsletter_main_bottom', 0.40)}
+                  onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40, false)}
                 >
                   <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     Get the Newsletter
@@ -1328,7 +1241,7 @@ export default function Home(props: {
                   href="/chat"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('join_chat_main_bottom', 0.40)}
+                  onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40, false)}
                 >
                   <div
                     className="button"
@@ -1337,7 +1250,7 @@ export default function Home(props: {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium" onClick={() => trigger('get_premium_main_bottom', 0.40)}>
+                <a href="/premium" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40, false)}>
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1349,7 +1262,7 @@ export default function Home(props: {
                   href="https://twitter.com/intent/user?screen_name=rxdbjs"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('follow_twitter_main_bottom', 0.40)}
+                  onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40, false)}
                 >
                   <div
                     className="button"
@@ -1362,7 +1275,7 @@ export default function Home(props: {
                   href="/code"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => trigger('get_code_main_bottom', 0.40)}
+                  onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40, false)}
                 >
                   <div
                     className="button"
@@ -1385,7 +1298,7 @@ export default function Home(props: {
 /**
  * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
  */
-function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
+function startTiltToMouse() {
   const $$tiltToMouse: any[] = document.getElementsByClassName('tilt-to-mouse') as any;
 
   const constrain = 100;
@@ -1401,15 +1314,14 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
     el.style.transform = transforms.apply(null, xyEl as any);
   }
 
-  mousePosDoc.$.subscribe((mousePos) => {
-    if (!mousePos._data.data.time) {
-      return;
-    }
+  window.addEventListener('mousemove', (ev) => {
+    const x = ev.clientX;
+    const y = ev.clientY;
     Array.from($$tiltToMouse).forEach($element => {
       if (!isInViewport($element)) {
         return;
       }
-      const position = ensureNotFalsy([mousePos._data.data.x, mousePos._data.data.y]).concat([$element]);
+      const position = ensureNotFalsy([x, y]).concat([$element]);
       transformElement($element, position);
     });
   });
@@ -1418,7 +1330,7 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
 /**
  * @link https://stackoverflow.com/a/16225919/3443137
  */
-function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
+function startEnlargeOnMousePos() {
   const $$enlargeOnMouse: any[] = document.getElementsByClassName('enlarge-on-mouse') as any;
 
   function getElementPosition(el: HTMLElement) {
@@ -1440,72 +1352,37 @@ function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionT
     el.style.transform = transform;
   }
 
-  mousePosDoc.$
-    .pipe(
-      map(d => d._data)
-    )
-    .subscribe((mousePos) => {
-      if (
-        !mousePos.data.time ||
-        !mousePos.data.x ||
-        !mousePos.data.y
-      ) {
+  window.addEventListener('mousemove', (ev) => {
+    const x = ev.clientX;
+    const y = ev.clientY;
+    Array.from($$enlargeOnMouse).forEach($element => {
+      if (!isInViewport($element)) {
         return;
       }
+      const elementPosition = getElementPosition($element);
 
-      Array.from($$enlargeOnMouse).forEach($element => {
-        if (!isInViewport($element)) {
-          return;
-        }
-        const elementPosition = getElementPosition($element);
+      const dx = x - elementPosition.centerX;
+      const dy = y - elementPosition.centerY;
 
-        const dx = mousePos.data.x - elementPosition.centerX;
-        const dy = mousePos.data.y - elementPosition.centerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-        const distance = Math.sqrt(dx * dx + dy * dy);
+      function easeInQuint(xx: number): number {
+        return xx ^ 1.9;
+      }
 
-        function easeInQuint(x: number): number {
-          return x ^ 1.9;
-        }
+      let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
+      if (scale > 1.5) {
+        scale = 1.5;
+      }
+      if (scale < 1.01) {
+        scale = 1;
+      }
 
-        let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
-        if (scale > 1.5) {
-          scale = 1.5;
-        }
-        if (scale < 1.01) {
-          scale = 1;
-        }
+      enlargeElement($element, scale);
 
-        enlargeElement($element, scale);
-
-      });
     });
+  });
 }
-
-const textsFirst = [
-  'NoSQL',
-  'OfflineFirst',
-  'JavaScript',
-  'observable',
-  'reactive',
-  'realtime',
-  'client side',
-  'fast'
-];
-const textsSecond = [
-  'for the Web',
-  'for Node.js',
-  'for Browsers',
-  'for Capacitor',
-  'for Electron',
-  'for hybrid apps',
-  'for PWAs',
-  'for React Native',
-  'for NativeScript',
-  'for UI apps',
-  'you deserve',
-  'that syncs',
-];
 
 const heartbeatDuration = 851;
 
@@ -1540,37 +1417,6 @@ function ensureInRange(val: number): number {
 
 function randomBoolean() {
   return Math.random() < 0.5;
-}
-
-
-/**
-* @link https://stackoverflow.com/questions/16801687/javascript-random-ordering-with-seed
-*/
-function shuffleWithSeed<T>(array: T[], seed: number): T[] {
-  array = array.slice(0);
-  let m = array.length;
-  let t;
-  let i;
-
-  // While there remain elements to shuffle…
-  while (m) {
-
-    // Pick a remaining element…
-    i = Math.floor(random(seed) * m--);
-
-    // And swap it with the current element.
-    t = array[m];
-    array[m] = array[i];
-    array[i] = t;
-    ++seed;
-  }
-
-  return array;
-}
-
-function random(seed: number) {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
 }
 
 

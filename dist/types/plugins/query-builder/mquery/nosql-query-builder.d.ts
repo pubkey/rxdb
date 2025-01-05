@@ -5,7 +5,7 @@ declare type MQueryOptions = {
     sort?: any;
 };
 export declare class NoSqlQueryBuilderClass<DocType> {
-    _path?: any;
+    _path?: any | undefined;
     options: MQueryOptions;
     _conditions: MangoQuerySelector<DocType>;
     _fields: any;
@@ -18,7 +18,7 @@ export declare class NoSqlQueryBuilderClass<DocType> {
      *     query.where('age').gte(21).exec(callback);
      *
      */
-    constructor(mangoQuery?: MangoQuery<DocType>, _path?: any);
+    constructor(mangoQuery?: MangoQuery<DocType>, _path?: any | undefined);
     /**
      * Specifies a `path` for use with chaining.
      */
