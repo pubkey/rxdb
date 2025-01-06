@@ -11,6 +11,7 @@ This list will be regularly updated with new Tasks, all updates will be posted o
 - Update the CI and tests from Deno `1.44.1` to Deno `2.0.6` or newer.
 - Update the [foundationdb package](https://github.com/search?q=repo%3Apubkey%2Frxdb+%22npm%20install%20foundationdb%22+path%3A.github%2Fworkflows%2Fmain.yml&type=code) to the newest version while ensuring the tests still work.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
+- Update [Bun.js to the latest version](https://github.com/pubkey/rxdb/blob/master/.github/workflows/main.yml#L843) while ensuring the tests still work
 ```ts
 const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
