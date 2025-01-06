@@ -1,8 +1,12 @@
 # Premium Tasks
 
-If you are a **single developer** and you use RxDB in your **side project**, you can get free 2 years access to the [RxDB Premium](https://rxdb.info/premium) package by solving one Task of this list. Before you start working on that task, please make an issue where you tell about the estimated time to finish the task.
+If you are a **single developer** and you use RxDB in your **side project**, you can get free 2 years access to the [RxDB Premium](https://rxdb.info/premium) package by solving one Task of this list.
 
 This list will be regularly updated with new Tasks, all updates will be posted on [discord](https://rxdb.info/chat).
+
+## How to claim a task
+
+To ensure there are not multiple people working on the same task, before you start working on that task, [create an issue](https://github.com/pubkey/rxdb/issues/new) where you tell about the estimated time to finish the task.
 
 ## Open Tasks
 
