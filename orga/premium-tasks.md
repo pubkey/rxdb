@@ -7,7 +7,6 @@ This list will be regularly updated with new Tasks, all updates will be posted o
 ## Open Tasks
 
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
-- [#5589](https://github.com/pubkey/rxdb/issues/5589) Add electric-sql to the [client-side-databases](https://github.com/pubkey/client-side-databases) project to measure the performance metrics. For that, create an angular subproject like the already existing ones and then implement the logic interface.
 - Update the CI and tests from Deno `1.44.1` to Deno `2.0.6` or newer.
 - Update the [foundationdb package](https://github.com/search?q=repo%3Apubkey%2Frxdb+%22npm%20install%20foundationdb%22+path%3A.github%2Fworkflows%2Fmain.yml&type=code) to the newest version while ensuring the tests still work.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
