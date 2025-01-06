@@ -800,6 +800,7 @@ body {
 .block.first h1 {
     font-size: var(--fontSizes-5xl);
     text-align: center;
+    word-wrap: normal;
 }
 
 .block.first .half.left {
