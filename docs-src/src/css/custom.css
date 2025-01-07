@@ -861,6 +861,27 @@ body {
     margin-left: 30px;
 }
 
+.block.first.hero .hero-action {
+    display: inline-block;
+    width: 235px;
+    margin-right: 0px;
+}
+
+@media (max-width: 900px) {
+    .block.first.hero .hero-action {
+        width: 98%;
+    }
+
+    .block.first.hero .hero-action .button {
+        width: 90%;
+    }
+}
+
+.block.first.hero .hero-action span {
+    font-size: 85%;
+}
+
+
 .block.first.hero .buy-premium-hero {
     display: inline-block;
     margin-top: 7px;
@@ -2332,7 +2353,7 @@ footer a:visited {
     height: 30px;
     overflow: hidden;
     text-align: center;
-    align-items: center; 
+    align-items: center;
     justify-content: center;
     display: flex;
     cursor: pointer;
@@ -2351,7 +2372,7 @@ footer a:visited {
     line-height: 2rem;
     color: white;
     margin-top: 20px;
-    display: inline-block;    
+    display: inline-block;
     vertical-align: middle;
     width: auto;
 }

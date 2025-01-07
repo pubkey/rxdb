@@ -19,6 +19,8 @@ import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import PriceTag from '../components/price-tag';
+import { Modal } from 'antd';
 
 
 export const colors = [
@@ -298,6 +300,8 @@ export default function Home(props: {
     return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
   }
 
+  const [starterPackOpen, setStarterPackOpen] = useState(false);
+
   return (
     <>
       <Head>
@@ -365,20 +369,99 @@ export default function Home(props: {
                   <br />
                   <br />
 
-                  <a
-                    className="button"
-                    href="/quickstart.html"
-                    onClick={() => triggerTrackingEvent('start_now', 0.4, false)}
-                  >
-                    Get Started &#x27A4;
-                  </a>
-                  <a
+
+                  <div className="hero-action">
+                    <a
+                      className="button"
+                      href="/quickstart.html"
+                      onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
+                    >
+                      RxDB Quickstart &#x27A4;<br />
+                      <span>(for self learners)</span>
+                    </a>
+                  </div>
+
+                  <div className="hero-action">
+
+                    <div style={{
+                      position: 'relative',
+                      right: 0,
+                      float: 'right',
+                      marginTop: -37,
+                      top: 16,
+                      left: 33,
+                      transform: 'rotate(-20deg)'
+                    }}>
+                      <PriceTag price="€89" />
+                    </div>
+                    <div
+                      className="button"
+                      onClick={() => {
+                        triggerTrackingEvent('hero_section_buy_starter_pack', 0.4, false);
+                        setStarterPackOpen(true);
+                      }}
+                    >
+                      RxDB Starter Pack &#x27A4;<br />
+                      <span>(get expert guidance)</span>
+                    </div>
+                    <Modal
+                      className="modal-consulting-page"
+                      open={starterPackOpen}
+                      width={1000}
+                      onCancel={() => setStarterPackOpen(false)}
+                      closeIcon={null}
+                      footer={null}
+                    >
+                      <div style={{
+                        backgroundColor: 'var(--bg-color)',
+                        padding: 20,
+                        borderRadius: 10,
+                        color: 'white'
+                      }}>
+                        <div style={{
+                          position: 'relative',
+                          right: 0,
+                          float: 'right',
+                          marginTop: -37,
+                          top: 16,
+                          left: 33,
+                          transform: 'rotate(-20deg)'
+                        }}>
+                          <PriceTag price="€89" />
+                        </div>
+                          <h2>RxDB Starter Pack</h2>
+                        <p>Unlock the full potential of RxDB for your project with our Starter Pack! Whether you're just getting started or looking for expert guidance, this pack is designed to help you use RxDB efficiently and effectively. Here's what you'll get:</p>
+                        <ul>
+                          <li>
+                            <b>30-Minute Consulting Session:</b>
+                            <p>Speak directly with the RxDB maintainer to discuss your specific use case, challenges, and goals. Receive personalized advice on how to implement RxDB to solve your problems efficiently.</p>
+                          </li>
+                          <li>
+                            <b>Expert Email Support:</b>
+                            <p>Get up to 5 follow-up emails with detailed answers to your additional questions, ensuring you have ongoing support as you work through your project.</p>
+                          </li>
+                        </ul>
+                        <a href="https://book.stripe.com/3cs9DL5gu5SA6c0bIK" target='_blank' className='button' style={{
+                          width: 200,
+                          display: 'block',
+                          marginLeft: 'auto',
+                          marginRight: 'auto',
+                          marginTop: 30,
+                          marginBottom: 30,
+                          color: 'white'
+                        }}>Book Now</a>
+                      </div>
+
+                    </Modal>
+                  </div>
+
+                  {/* <a
                     href="/premium#price-calculator-block"
                     onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
                     className='buy-premium-hero'
                   >
                     Buy Premium
-                  </a>
+                  </a> */}
                   {/* <a
                     className="button light"
                     href="/code"
