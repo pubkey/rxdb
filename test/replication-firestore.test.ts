@@ -2,7 +2,7 @@
  * this test checks the integration with firestore
  * You need a running firebase backend
  */
-import assert from 'assert';
+import assert from 'node:assert';
 
 import {
     randomToken,

@@ -5,7 +5,7 @@ import {
     requestIdlePromise,
     RxCollection
 } from '../plugins/core/index.mjs';
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import {
     schemaObjects,
     schemas,

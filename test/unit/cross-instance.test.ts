@@ -5,7 +5,7 @@
  * The tests for this behaviour are done here
  */
 
-import assert from 'assert';
+import assert from 'node:assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
 import config, { describeParallel } from './config.ts';

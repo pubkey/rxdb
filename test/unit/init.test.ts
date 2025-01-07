@@ -3,7 +3,7 @@ import sourceMapSupport from 'source-map-support';
 sourceMapSupport.install();
 import '@babel/polyfill';
 import config from './config.ts';
-import assert from 'assert';
+import assert from 'node:assert';
 import {
     clearNodeFolder
 } from 'broadcast-channel';
@@ -68,11 +68,11 @@ describe('init.test.ts', () => {
     });
     it('start test servers', async () => {
         if (isNode) {
-            console.log('START TEST SERVERS');
+            console.log('START TEST SERVERS...NODE');
             const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
             startTestServers();
         } else if (isDeno) {
-            console.log('START TEST SERVERS');
+            console.log('START TEST SERVERS...DENO');
             const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
             startTestServers();
         }

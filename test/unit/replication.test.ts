@@ -4,7 +4,7 @@
  * we do that inside of the GraphQL replication plugin.
  */
 
-import assert from 'assert';
+import assert from 'node:assert';
 import {
     clone,
     wait,

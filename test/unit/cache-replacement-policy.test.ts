@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import { describeParallel } from './config.ts';
 import {

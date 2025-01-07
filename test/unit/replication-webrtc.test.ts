@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import config from './config.ts';
 import {
     randomToken,

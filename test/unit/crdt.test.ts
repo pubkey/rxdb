@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';

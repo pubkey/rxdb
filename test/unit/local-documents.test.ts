@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import AsyncTestUtil, { wait, waitUntil, randomString } from 'async-test-util';
 
 import {

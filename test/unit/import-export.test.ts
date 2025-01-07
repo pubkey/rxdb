@@ -1,7 +1,7 @@
 /**
  * this test is to the import/export behaviour
  */
-import assert from 'assert';
+import assert from 'node:assert';
 
 import {
     createRxDatabase,

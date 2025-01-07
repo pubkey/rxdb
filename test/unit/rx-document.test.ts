@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
