@@ -19,7 +19,7 @@ const callToActions: CallToActionItem[] = [
         icon: '🐙💻',
     },
     {
-        title: 'Enjoying RXDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
+        title: 'Enjoying RxDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
         text: 'Follow',
         keyword: '@twitter',
         url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
@@ -40,14 +40,14 @@ const callToActions: CallToActionItem[] = [
         icon: '[in]',
     },
     {
-        title: 'Love RXDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
+        title: 'Love RxDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
         text: 'Chat',
         keyword: '@discord',
         url: 'https://rxdb.info/chat',
         icon: '💬',
     },
     {
-        title: 'Love RXDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
+        title: 'Love RxDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
         text: 'Subscribe',
         keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter',
