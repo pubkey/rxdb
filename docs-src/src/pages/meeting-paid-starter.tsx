@@ -3,7 +3,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
-const FILE_EVENT_ID = 'paid-meeting-link-clicked';
+const FILE_EVENT_ID = 'paid-meeting-link-clicked-starter-pack';
 
 export default function Meeting() {
     const { siteConfig } = useDocusaurusContext();
