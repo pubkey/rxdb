@@ -64,13 +64,8 @@ const callToActions: CallToActionItem[] = [
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
-    const isBrowser = useIsBrowser();
     const [showPopup, setShowPopup] = useState<CallToActionItem>();
     useEffect(() => {
-        // if (!isBrowser) {
-        //     console.log('NOT BROWSER');
-        //     return;
-        // }
 
         // addCommunityChatButton();
 
