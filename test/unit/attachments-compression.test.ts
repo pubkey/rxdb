@@ -6,7 +6,8 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    HumanDocumentType
+    HumanDocumentType,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 import {
     clone,
@@ -29,6 +30,11 @@ import {
 const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
     describeParallel('attachments-compression.test.ts (mode: ' + mode + ')', () => {
+        if (isBun) {
+            // CompressionStream not supported in bun yet
+            // https://github.com/oven-sh/bun/issues/1723
+            return;
+        }
         if (!config.storage.hasAttachments) {
             return;
         }
