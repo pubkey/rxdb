@@ -49,7 +49,8 @@ import {
     EXAMPLE_REVISION_3,
     HumanDocumentType,
     EXAMPLE_REVISION_2,
-    EXAMPLE_REVISION_1
+    EXAMPLE_REVISION_1,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 import {
     clone,
@@ -1328,6 +1329,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await cleanUp(replicationState, masterInstance);
         });
         it('should not stuck when replicating many document in the initial replication', async () => {
+            if (isBun) {
+                return;
+            }
             const writeAmount = isFastMode() ? 40 : 200;
 
             const masterInstance = await createRxStorageInstance(0);

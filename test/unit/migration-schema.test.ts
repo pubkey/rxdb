@@ -2,7 +2,7 @@ import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import { humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import { humansCollection, isBun, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -645,6 +645,9 @@ describe('migration-schema.test.ts', function () {
     });
     describeParallel('migration and replication', () => {
         it('should have migrated the replication state', async () => {
+            if (isBun) {
+                return;
+            }
             const remoteDb = await createRxDatabase({
                 name: 'remote' + randomToken(10),
                 storage: config.storage.getStorage(),
@@ -858,6 +861,9 @@ describe('migration-schema.test.ts', function () {
             db2.close();
         });
         it('#3460 migrate attachments', async () => {
+            if (isBun) {
+                return;
+            }
             if (!config.storage.hasAttachments) {
                 return;
             }

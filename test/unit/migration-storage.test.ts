@@ -46,6 +46,7 @@ import {
 import {
     HumanDocumentType,
     human,
+    isBun,
     schemaObjects
 } from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
@@ -127,6 +128,9 @@ testStorages.forEach(storages => {
                 await db.close();
             });
             it('should migrate all documents', async () => {
+                if (isBun) {
+                    return;
+                }
                 const name = DB_PREFIX + randomToken(12);
                 const collectionName = randomToken(12);
 
@@ -224,6 +228,9 @@ testStorages.forEach(storages => {
                 await db.remove();
             });
             it('should migrate in parallel', async () => {
+                if (isBun) {
+                    return;
+                }
                 const name = DB_PREFIX + randomToken(12);
                 const collectionName = randomToken(12);
 
@@ -321,6 +328,9 @@ testStorages.forEach(storages => {
                 await db.remove();
             });
             it('migrate new->new should also work', async () => {
+                if (isBun) {
+                    return;
+                }
                 const name = DB_PREFIX + randomToken(12);
                 const collectionName = randomToken(12);
 

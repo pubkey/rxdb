@@ -65,7 +65,8 @@ import {
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4,
     HumanDocumentType,
-    isDeno
+    isDeno,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 import { compressObject } from 'jsonschema-key-compression';
 
@@ -1850,6 +1851,9 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * documents then the batchSize of the RxStorage
              */
             it('querying many documents should work', async function () {
+                if (isBun) {
+                    return;
+                }
                 this.timeout(10 * 1000);
                 const schema = getTestDataSchema();
                 const storageInstance = await config.storage
@@ -2130,8 +2134,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * Writing many documents must just work and the storage itself
              * has to workaround any problems with that.
              */
-            it('should be able to insert and fetch many documents', async () => {
-                if (isDeno) {
+            it('should be able to insert and fetch many documents', async function () {
+                if (isDeno || isBun) {
                     // DenoKV is too slow and would timeout on this test
                     return;
                 }

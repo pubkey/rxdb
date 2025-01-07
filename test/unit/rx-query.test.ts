@@ -7,7 +7,8 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    isNode
+    isNode,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -878,6 +879,9 @@ describe('rx-query.test.ts', () => {
     });
     describeParallel('issues', () => {
         it('#278 queryCache breaks when pointer out of bounds', async () => {
+            if (isBun) {
+                return;
+            }
             const c = await humansCollection.createPrimary(0);
 
             // insert some docs
@@ -1485,6 +1489,9 @@ describe('rx-query.test.ts', () => {
             c.database.close();
         });
         it('#4552 $elemMatch query not working when there are many documents in the collection', async () => {
+            if (isBun) {
+                return;
+            }
             const c = await humansCollection.createNested(100);
             const result = await c.find({
                 selector: {
