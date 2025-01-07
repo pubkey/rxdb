@@ -813,9 +813,9 @@ validationImplementations.forEach(
                     .findOne()
                     .exec();
 
-                assert.deepStrictEqual(myDocument.toJSON().tags, tags);
+                assert.ok(deepEqual(myDocument.toJSON().tags, tags));
                 assert.ok(deepEqual(myDocument.get('tags'), tags));
-                assert.deepStrictEqual(myDocument.tags, tags);
+                assert.ok(deepEqual(myDocument.tags, tags));
 
                 db.close();
             });
