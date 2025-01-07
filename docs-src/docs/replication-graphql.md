@@ -333,7 +333,9 @@ const replicationState = replicateGraphQL(
             
             // Websocket options that can be passed as a parameter to initialize the subscription
             // Can be applied anything from the graphql-ws ClientOptions - https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions
-            // Excepting parameters: 'url', 'shouldRetry', 'webSocketImpl', 'connectionParams' - locked for the internal usage
+            // Except these parameters: 'url', 'shouldRetry', 'webSocketImpl' - locked for internal usage
+            // Note: if you provide connectionParams as a wsOption, make sure it returns any necessary headers (e.g. authorization)
+            // because providing your own connectionParams prevents headers from being included automatically
             wsOptions: { 
                 retryAttempts: 10,
             }
