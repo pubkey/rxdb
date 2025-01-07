@@ -1,4 +1,3 @@
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { randomOfArray } from '../../../plugins/utils';
