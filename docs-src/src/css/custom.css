@@ -7,14 +7,16 @@
 @font-face {
     font-family: "Geist";
     src: url("/fonts/Geist-VariableFont_wght.ttf") format("ttf");
-    font-weight: 100 900; /* Variable font weights */
+    font-weight: 100 900;
+    /* Variable font weights */
     font-style: normal;
 }
 
 @font-face {
     font-family: "Geist Mono";
     src: url("/fonts/GeistMono-VariableFont_wght.ttf") format("ttf");
-    font-weight: 100 900; /* Variable font weights */
+    font-weight: 100 900;
+    /* Variable font weights */
     font-style: normal;
 }
 
@@ -117,7 +119,8 @@ pre code {
 /* Don't use main-wrapper class, affects home page */
 body:not(.homepage) .main-wrapper {
     width: 100%;
-    max-width: 88rem; /* equivalent to 1408px */
+    max-width: 88rem;
+    /* equivalent to 1408px */
     margin: 0 auto;
 }
 
@@ -268,6 +271,7 @@ h1 .underline {
 }
 
 @media (max-width: 500px) {
+
     /**
      * Underline gets broken on mobile,
      * so better disable it.
@@ -1407,48 +1411,38 @@ body {
 }
 
 .bg-gradient-right-bottom {
-    background: linear-gradient(
-        to right bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-bottom {
-    background: linear-gradient(
-        to left bottom,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left bottom,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-right-top {
-    background: linear-gradient(
-        to right top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to right top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-left-top {
-    background: linear-gradient(
-        to left top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to left top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .bg-gradient-top {
-    background: linear-gradient(
-        to top,
-        var(--color-top),
-        var(--color-middle),
-        var(--color-bottom)
-    );
+    background: linear-gradient(to top,
+            var(--color-top),
+            var(--color-middle),
+            var(--color-bottom));
 }
 
 .star-at-github {
@@ -2213,8 +2207,7 @@ footer a:visited {
     color: white;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 .redirectBox .ul-container {
     text-align: center;
@@ -2229,8 +2222,7 @@ footer a:visited {
     margin: 10px 0;
 }
 
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 /*
  * Call to action button
@@ -2294,6 +2286,76 @@ footer a:visited {
         display: none;
     }
 }
+
+.call-to-action-popup {
+    position: fixed;
+    width: 500px;
+    min-height: 200px;
+    background-color: white;
+    bottom: 0;
+    right: 0;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    border-radius: var(--ifm-pre-border-radius);
+    border: 1px solid var(--color-top);
+    background-color: var(--bg-color);
+    transform: translateY(200%);
+    will-change: transform;
+    text-align: center;
+    padding: 20px;
+    z-index: 20;
+}
+
+@media (max-width: 700px) {
+    .call-to-action-popup {
+        width: 90%;
+        margin-right: 5%;
+    }
+}
+
+.call-to-action-popup.active {
+    transition: 0.5s;
+    transform: translateY(0);
+}
+
+.call-to-action-popup h3 {
+    width: calc(100% - 30px);
+}
+
+.call-to-action-popup .close {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    border-radius: 50%;
+    background-color: grey;
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    text-align: center;
+    align-items: center; 
+    justify-content: center;
+    display: flex;
+    cursor: pointer;
+}
+
+.call-to-action-popup a {
+    cursor: pointer;
+    box-sizing: content-box;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: 1px solid var(--color-top);
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+    font-size: var(--fontSizes-xl);
+    height: 2rem;
+    line-height: 2rem;
+    color: white;
+    margin-top: 20px;
+    display: inline-block;    
+    vertical-align: middle;
+    width: auto;
+}
+
 
 @media (max-width: 340px) {
     .navbar .text {
@@ -2703,8 +2765,7 @@ footer a:visited {
     gap: 8px;
     align-items: center;
     text-wrap: nowrap;
-    transition: color var(--ifm-transition-fast)
-        var(--ifm-transition-timing-default);
+    transition: color var(--ifm-transition-fast) var(--ifm-transition-timing-default);
     display: flex;
     font-size: 1.14em;
     line-height: 150%;
@@ -3367,6 +3428,7 @@ footer a:visited {
 }
 
 @media (max-width: 1360px) {
+
     /** packages **/
     .consulting-page .block.packages .item-package.flex-column {
         max-width: 48.5%;
@@ -3374,6 +3436,7 @@ footer a:visited {
 }
 
 @media (max-width: 1280px) {
+
     /** hero **/
     .consulting-page .block.first .inner {
         margin-top: 38px;
@@ -3423,6 +3486,7 @@ footer a:visited {
 }
 
 @media (max-width: 1200px) {
+
     /** packages **/
     .consulting-page .block.packages .flex-row {
         gap: 20px;

@@ -1,14 +1,76 @@
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
+import { randomOfArray } from '../../../plugins/utils';
+
+
+type CallToActionItem = {
+    title: string;
+    text: string;
+    keyword: string;
+    url: string;
+    icon: string;
+};
+const callToActions: CallToActionItem[] = [
+    {
+        title: 'If RxDB has helped you, please give us a star on GitHub! Your support means the world.',
+        text: 'Star',
+        keyword: '@github',
+        url: 'https://rxdb.info/code',
+        icon: '🐙💻',
+    },
+    {
+        title: 'Enjoying RXDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
+        text: 'Follow',
+        keyword: '@twitter',
+        url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+        icon: '🐦',
+    },
+    {
+        title: 'Enjoying RxDB? Follow us on LinkedIn for updates, tips, and more! Your support keeps us going.',
+        text: 'Follow',
+        keyword: '@LinkedIn',
+        url: 'https://www.linkedin.com/company/rxdb',
+        icon: '[in]',
+    },
+    {
+        title: 'Enjoying RxDB? Follow me on LinkedIn for updates, tips, and more! Your support keeps us going.',
+        text: 'Follow',
+        keyword: '@LinkedIn',
+        url: 'https://www.linkedin.com/in/danielmeyerdev/',
+        icon: '[in]',
+    },
+    {
+        title: 'Love RXDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
+        text: 'Chat',
+        keyword: '@discord',
+        url: 'https://rxdb.info/chat',
+        icon: '💬',
+    },
+    {
+        title: 'Love RXDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
+        text: 'Subscribe',
+        keyword: '@newsletter',
+        url: 'https://rxdb.info/newsletter',
+        icon: '📰',
+    },
+    // {
+    //     text: 'Take Part in the',
+    //     keyword: 'User Survey 2024',
+    //     url: 'https://rxdb.info/survey',
+    //     icon: '📝'
+    // }
+];
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
     const isBrowser = useIsBrowser();
+    const [showPopup, setShowPopup] = useState<CallToActionItem>();
     useEffect(() => {
-        if (!isBrowser) {
-            return;
-        }
+        // if (!isBrowser) {
+        //     console.log('NOT BROWSER');
+        //     return;
+        // }
 
         // addCommunityChatButton();
 
@@ -17,8 +79,29 @@ export default function Root({ children }) {
             addCallToActionButton();
             triggerClickEventWhenFromCode();
         }, 0);
-    });
-    return <>{children}</>;
+
+        const showTime = location.pathname.includes('.html') ? 30 : 60;
+        setTimeout(() => {
+            setShowPopup(randomOfArray(callToActions));
+        }, showTime * 1000);
+    }, []);
+    function closePopup() {
+        setShowPopup(undefined);
+    }
+    return <>
+        {children}
+        <div className={'call-to-action-popup ' + (showPopup ? 'active' : '')}>
+            {
+                showPopup ? <>
+                    <h3>{showPopup.title}</h3>
+                    <a href={showPopup.url} className='hover-shadow-top' id="rxdb-call-to-action-button" target="_blank">
+                        {showPopup.text} {showPopup.keyword}
+                    </a>
+                </> : ''
+            }
+            <div className='close' onClick={() => closePopup()}>&#x2715;</div>
+        </div>
+    </>;
 }
 
 function addCallToActionButton() {
@@ -27,50 +110,6 @@ function addCallToActionButton() {
         return;
     }
 
-    const callToActions = [
-        {
-            text: 'Follow',
-            keyword: '@twitter',
-            url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-            icon: '🐦',
-        },
-        {
-            text: 'Follow',
-            keyword: '@LinkedIn',
-            url: 'https://www.linkedin.com/company/rxdb',
-            icon: '[in]',
-        },
-        {
-            text: 'Follow',
-            keyword: '@LinkedIn',
-            url: 'https://www.linkedin.com/in/danielmeyerdev/',
-            icon: '[in]',
-        },
-        {
-            text: 'Chat',
-            keyword: '@discord',
-            url: 'https://rxdb.info/chat',
-            icon: '💬',
-        },
-        {
-            text: 'Star',
-            keyword: '@github',
-            url: 'https://rxdb.info/code',
-            icon: '🐙💻',
-        },
-        {
-            text: 'Subscribe',
-            keyword: '@newsletter',
-            url: 'https://rxdb.info/newsletter',
-            icon: '📰',
-        },
-        // {
-        //     text: 'Take Part in the',
-        //     keyword: 'User Survey 2024',
-        //     url: 'https://rxdb.info/survey',
-        //     icon: '📝'
-        // }
-    ];
     function insertAfter(referenceNode, newNode) {
         referenceNode.parentNode.insertBefore(
             newNode,
