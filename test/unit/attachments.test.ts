@@ -11,7 +11,8 @@ import {
     isDeno,
     HumanDocumentType,
     getEncryptedStorage,
-    randomStringWithSpecialChars
+    randomStringWithSpecialChars,
+    isBun
 } from '../../plugins/test-utils/index.mjs';
 import {
     clone,
@@ -102,7 +103,7 @@ describeParallel('attachments.test.ts', () => {
 
     describe('base64 blob transformations', () => {
         it('should create the same base64 string in the browser as it did on node.js', async () => {
-            if (isNode) {
+            if (isNode || isBun) {
                 return;
             }
             const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
@@ -118,7 +119,7 @@ describeParallel('attachments.test.ts', () => {
             );
         });
         it('image attachment should be usable as img-element after base64<->Blob transformations', async function () {
-            if (isNode || isDeno) {
+            if (isNode || isDeno || isBun) {
                 return;
             }
             const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
@@ -487,7 +488,7 @@ describeParallel('attachments.test.ts', () => {
             c.database.close();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
-            if (isNode || isDeno) {
+            if (isNode || isDeno || isBun) {
                 return;
             }
             const c = await createEncryptedAttachmentsCollection(1);
