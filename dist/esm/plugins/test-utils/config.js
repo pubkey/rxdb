@@ -3,7 +3,7 @@ import { ensureNotFalsy, isPromise, randomToken } from "../utils/index.js";
 import { enforceOptions as broadcastChannelEnforceOptions } from 'broadcast-channel';
 import events from 'node:events';
 import { wrappedKeyEncryptionCryptoJsStorage } from "../encryption-crypto-js/index.js";
-export var isDeno = typeof window !== 'undefined' && 'Deno' in window;
+export var isDeno = typeof Deno !== 'undefined' || typeof window !== 'undefined' && 'Deno' in window;
 export var isBun = typeof process !== 'undefined' && !!process.versions.bun;
 export var isNode = !isDeno && !isBun && typeof window === 'undefined';
 var config;

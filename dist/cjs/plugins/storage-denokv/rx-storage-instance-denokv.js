@@ -137,7 +137,7 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
         try {
           txResult = await tx.commit();
         } catch (err) {
-          if (err.message.includes('Error code 5:') || err.message.includes('Error code 517:')) {
+          if (err.message.includes('Error code 5:') || err.message.includes('Error code 517:') || err.message.includes('database is locked')) {
             // retry
           } else {
             throw err;
