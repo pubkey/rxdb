@@ -377,7 +377,7 @@ export default function Home(props: {
                       href="/quickstart.html"
                       onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
                     >
-                      RxDB Quickstart &#x27A4;<br />
+                      Get Started For Free &#x27A4;<br />
                       <span>(for self learners)</span>
                     </a>
                   </div>
@@ -393,7 +393,7 @@ export default function Home(props: {
                       left: 33,
                       transform: 'rotate(-20deg)'
                     }}>
-                      <PriceTag price="€89" />
+                      <PriceTag price="89" />
                     </div>
                     <div
                       className="button"
@@ -428,7 +428,7 @@ export default function Home(props: {
                           left: 33,
                           transform: 'rotate(-20deg)'
                         }}>
-                          <PriceTag price="€89" />
+                          <PriceTag price="89" />
                         </div>
                           <h2>RxDB Starter Pack</h2>
                         <p>Unlock the full potential of RxDB for your project with our Starter Pack! Whether you're just getting started or looking for expert guidance, this pack is designed to help you use RxDB efficiently and effectively. Here's what you'll get:</p>

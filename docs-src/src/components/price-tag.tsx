@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * @link https://codepen.io/uberpwner/pen/xvdJxx
  */
-const PriceTag = ({ price }) => {
+const PriceTag = ({ price, currency = '€' }) => {
     const color = 'var(--color-middle)';
     const styles = {
         cardPrice: {
@@ -43,13 +43,23 @@ const PriceTag = ({ price }) => {
             left: '-9px',
             top: '17px',
         },
+        text: {
+            lineHeight: '31px'
+        },
+        currency: {
+            fontSize: '65%',
+            verticalAlign: 'super'
+        }
     };
 
     return (
         <div style={styles.cardPrice}>
             <div style={styles.triangle}></div>
             <div style={styles.circle}></div>
-            {price}
+            <div style={styles.text}>
+                <span style={styles.currency}>{currency}</span>
+                {price}
+            </div>
         </div>
     );
 };
