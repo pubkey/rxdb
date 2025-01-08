@@ -169,6 +169,7 @@ export type AppName = |
   'Ionic' |
   'Node.js' |
   'React Native' |
+  'Expo' |
   'Svelte' |
   'Vue.js';
 
