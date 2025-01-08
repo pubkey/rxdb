@@ -1693,8 +1693,14 @@ describe('replication-graphql.test.ts', () => {
                                 },
                                 'error': () => {
                                     capturedWSStates.push('error');
-                                }
-                            }
+                                },
+                            },
+                            connectionParams: () => {
+                                capturedWSStates.push('connectionParams');
+                                return {
+                                    token: 'Bearer token'
+                                };
+                            },
                         },
                     },
                     headers: {
@@ -1709,18 +1715,19 @@ describe('replication-graphql.test.ts', () => {
                 await replicationState.awaitInitialReplication();
 
                 await waitUntil(() => {
-                    return capturedWSStates.length === 2;
+                    return capturedWSStates.length === 3;
                 });
 
                 assert.equal(capturedWSStates.includes('connected'), true);
                 assert.equal(capturedWSStates.includes('connecting'), true);
+                assert.equal(capturedWSStates.includes('connectionParams'), true);
                 assert.equal(capturedWSStates.includes('closed'), false);
                 assert.equal(capturedWSStates.includes('error'), false);
 
                 replicationState.cancel();
 
                 await waitUntil(() => {
-                    return capturedWSStates.length === 3;
+                    return capturedWSStates.length === 4;
                 });
 
                 assert.equal(capturedWSStates.includes('closed'), true);
