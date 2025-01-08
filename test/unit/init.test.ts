@@ -68,11 +68,11 @@ describe('init.test.ts', () => {
     });
     it('start test servers', async () => {
         if (isNode) {
-            console.log('START TEST SERVERS...NODE');
+            console.log('START TEST SERVERS');
             const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
             startTestServers();
         } else if (isDeno) {
-            console.log('START TEST SERVERS...DENO');
+            console.log('START TEST SERVERS');
             const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
             startTestServers();
         }
