@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "node:assert": "node:assert",
+    "assert": "node:assert"
+  }
+}

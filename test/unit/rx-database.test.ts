@@ -1,5 +1,5 @@
 import config, { describeParallel } from './config.ts';
-import assert from 'node:assert';
+import assert from 'assert';
 
 import {
     isRxCollection,

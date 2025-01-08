@@ -2,7 +2,7 @@ import clone from 'clone';
 import * as schemas from './schemas.ts';
 import * as schemaObjects from './schema-objects.ts';
 import { getConfig } from './config.ts';
-import assert from 'node:assert';
+import assert from 'assert';
 
 import {
     createRxDatabase,

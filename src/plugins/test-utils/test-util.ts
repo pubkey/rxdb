@@ -1,5 +1,5 @@
 import type { Func } from 'mocha';
-import assert from 'node:assert';
+import assert from 'assert';
 import type { RxCollection } from '../../types';
 import { requestIdlePromise } from '../utils/index.ts';
 import type { RxReplicationState } from '../replication/index.ts';

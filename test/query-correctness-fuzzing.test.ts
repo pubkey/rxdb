@@ -8,7 +8,7 @@ import {
     ensureNotFalsy,
     normalizeMangoQuery
 } from '../plugins/core/index.mjs';
-import * as assert from 'node:assert';
+import * as assert from 'assert';
 import config from './unit/config.ts';
 import {
     randomOfArray

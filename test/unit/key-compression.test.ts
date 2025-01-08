@@ -1,7 +1,7 @@
 /**
  * this test is for the keycompression-capabilities of rxdb
  */
-import assert from 'node:assert';
+import assert from 'assert';
 import config, { describeParallel } from './config.ts';
 
 

@@ -1,7 +1,7 @@
 /**
  * this tests the behaviour of util.js
  */
-import assert from 'node:assert';
+import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import {
     randomToken,

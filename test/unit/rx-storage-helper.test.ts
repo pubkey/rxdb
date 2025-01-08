@@ -15,7 +15,7 @@ import {
     EXAMPLE_REVISION_1,
     HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
-import assert from 'node:assert';
+import assert from 'assert';
 
 
 const testContext = 'rx-storage-helper.test.ts';

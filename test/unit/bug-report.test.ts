@@ -8,7 +8,7 @@
  * - 'npm run test:node' so it runs in nodejs
  * - 'npm run test:browser' so it runs in the browser
  */
-import assert from 'node:assert';
+import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 

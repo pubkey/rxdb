@@ -5,7 +5,7 @@
 /**
  * this checks if typings work as expected
  */
-import * as assert from 'node:assert';
+import * as assert from 'assert';
 import {
     HumanCompositePrimaryDocType,
     schemas

@@ -3,7 +3,7 @@ import sourceMapSupport from 'source-map-support';
 sourceMapSupport.install();
 import '@babel/polyfill';
 import config from './config.ts';
-import assert from 'node:assert';
+import assert from 'assert';
 import {
     clearNodeFolder
 } from 'broadcast-channel';

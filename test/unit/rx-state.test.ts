@@ -1,4 +1,4 @@
-import assert from 'node:assert';
+import assert from 'assert';
 import { randomBoolean, randomNumber, wait, waitUntil } from 'async-test-util';
 import { Observable } from 'rxjs';
 

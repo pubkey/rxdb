@@ -3,7 +3,7 @@
  * this is run in a separate node-process via plugin.test.js
  */
 
-import assert from 'node:assert';
+import assert from 'assert';
 import { assertThrows } from 'async-test-util';
 
 /**
