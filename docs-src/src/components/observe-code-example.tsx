@@ -150,7 +150,7 @@ export function ObserveCodeExample(props: {
     let activeTab = 'RxJS';
     if (props.sem && props.sem.appName) {
         activeTab = props.sem.appName;
-        if (props.sem.appName === 'React Native') {
+        if (props.sem.appName === 'React Native' || props.sem.appName === 'Expo') {
             activeTab = 'React';
         }
     }
