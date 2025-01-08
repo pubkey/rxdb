@@ -17,7 +17,7 @@ export type TestConfig = {
     storage: RxTestStorage;
 };
 
-export const isDeno = typeof window !== 'undefined' && 'Deno' in window;
+export const isDeno = typeof Deno !== 'undefined' || (typeof window !== 'undefined' && 'Deno' in window);
 export const isBun = typeof process !== 'undefined' && !!process.versions.bun;
 export const isNode = !isDeno && !isBun && typeof window === 'undefined';
 
