@@ -20,7 +20,7 @@ var _nodeEvents = _interopRequireDefault(require("node:events"));
 var _index2 = require("../encryption-crypto-js/index.js");
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
-var isDeno = exports.isDeno = typeof window !== 'undefined' && 'Deno' in window;
+var isDeno = exports.isDeno = typeof Deno !== 'undefined' || typeof window !== 'undefined' && 'Deno' in window;
 var isBun = exports.isBun = typeof process !== 'undefined' && !!process.versions.bun;
 var isNode = exports.isNode = !isDeno && !isBun && typeof window === 'undefined';
 var config;

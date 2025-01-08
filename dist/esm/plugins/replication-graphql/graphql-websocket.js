@@ -7,14 +7,15 @@ var {
 export var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 export function getGraphQLWebSocket(url, headers, options = {}) {
   var has = getFromMapOrCreate(GRAPHQL_WEBSOCKET_BY_URL, url, () => {
+    var connectionParamsHeaders = headers ? {
+      headers
+    } : undefined;
     var wsClient = createClient({
       ...options,
       url,
       shouldRetry: () => true,
       webSocketImpl: IsomorphicWebSocket,
-      connectionParams: headers ? {
-        headers
-      } : undefined
+      connectionParams: options.connectionParams || connectionParamsHeaders
     });
     return {
       url,

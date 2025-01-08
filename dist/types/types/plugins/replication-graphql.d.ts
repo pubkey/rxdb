@@ -28,7 +28,7 @@ export type RxGraphQLReplicationPushQueryBuilder = (
     rows: RxReplicationWriteToMasterRow<any>[]
 ) => RxGraphQLReplicationQueryBuilderResponse;
 
-export type RxGraphQLPullWSOptions = Omit<ClientOptions, 'url' | 'shouldRetry' | 'webSocketImpl' | 'connectionParams'>;
+export type RxGraphQLPullWSOptions = Omit<ClientOptions, 'url' | 'shouldRetry' | 'webSocketImpl'>;
 
 export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
     latestPulledCheckpoint: CheckpointType | undefined,
