@@ -97,7 +97,7 @@ AWS Amplify is a collection of tools and libraries to develop web- and mobile fr
 
 ### AWS Datastore
 
-Since december 2019 the Amplify library includes the AWS Datastore which is a document-based, client side database that is able to replicate data via AWS AppSync in the background.
+Since December 2019 the Amplify library includes the AWS Datastore which is a document-based, client side database that is able to replicate data via AWS AppSync in the background.
 The main difference to other projects is the complex project configuration via the amplify cli and the bit confusing query syntax that works over functions. Complex Queries with multiple `OR/AND` statements are not possible which might change in the future.
 Local development is hard because the AWS AppSync mock does not support realtime replication. It also is not really offline-first because a user login is always required.
 
@@ -250,7 +250,7 @@ SignalDB provides a reactive, in-memory local-lirst JavaScript database with rea
 
 ### PowerSync
 
-PowerSync is a flexible "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoratitive server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends.  Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+PowerSync is a flexible "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends.  Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 # Read further
 

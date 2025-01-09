@@ -58,7 +58,7 @@ So you need a way to **make IndexedDB faster**. In the following I lay out some 
 
 With [IndexedDB 2.0](https://caniuse.com/indexeddb2), new methods were introduced which can be utilized to improve performance. With the `getAll()` method, a faster alternative to the old `openCursor()` can be created which improves performance when reading data from the IndexedDB store.
 
-Lets say we want to query all user documents that have an `age` greater then `25` out of the store.
+Lets say we want to query all user documents that have an `age` greater than `25` out of the store.
 To implement a fast batched cursor that only needs calls to `getAll()` and not to `getAllKeys()`, we first need to create an `age` index that contains the primary `id` as last field.
 
 ```ts

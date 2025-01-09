@@ -6,7 +6,7 @@ description: Master RxQuery in RxDB - find, update, remove documents using Mango
 
 # RxQuery
 
-To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more then once.
+To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the RxQuery interface that handles all query operations: it serves as the main interface for fetching documents, relies on a MongoDB-like [Mango Query Syntax](https://github.com/cloudant/mango), and provides three types of queries: [find()](#find), [findOne()](#findone) and [count()](#count). By caching and de-duplicating results, RxQuery ensures efficient in-memory handling, and when queries are observed or re-run, the [EventReduce algorithm](https://github.com/pubkey/event-reduce) speeds up updates for a fast real-time experience and queries that run more than once.
 
 ## find()
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
@@ -422,7 +422,7 @@ const is = isRxQuery(myObj);
 
 Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango) similar to MongoDB and others.
 
-- We use the the JSON based Mango Query Syntax because:
+- We use the JSON based Mango Query Syntax because:
   - Mango Queries work better with TypeScript compared to SQL strings.
   - Mango Queries are composeable and easy to transform by code without joining SQL strings.
   - Queries can be run very fast and efficient with only a minimal query planer to plan the best indexes and operations.
