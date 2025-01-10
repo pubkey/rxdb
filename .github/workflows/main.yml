@@ -290,7 +290,7 @@ jobs:
             ${{ runner.os }}-npm-storage-mongodb-x3-
 
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.11.0
+        uses: supercharge/mongodb-github-action@1.12.0
         with:
           mongodb-version: 7.0.1
 
