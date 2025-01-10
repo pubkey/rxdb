@@ -188,6 +188,8 @@ const sidebars = {
         'articles/progressive-web-app-database',
         'articles/react-database',
         'articles/realtime-database',
+        'articles/angular-indexeddb',
+        'articles/react-indexeddb',
         'capacitor-database',
         'electron-database'
       ],

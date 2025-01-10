@@ -15,7 +15,7 @@ The [local-first](../offline-first.md) revolution is here, changing the way we b
     </a>
 </center>
 
-But here's where things get even more exciting: when building local-first apps, traditional databases often fall short. They’re great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
+But here's where things get even more exciting: when building local-first apps, traditional databases often fall short. They're great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
 
 
 
@@ -30,7 +30,7 @@ But unfortunately, most vector databases are designed for server-side use, typic
 
 A local vector database offers several key benefits:
 
-- **Zero network latency**: Data is processed locally on the user’s device, ensuring near-instant responses.
+- **Zero network latency**: Data is processed locally on the user's device, ensuring near-instant responses.
 - **Offline functionality**: Data can be queried even without an internet connection.
 - **Enhanced privacy**: Sensitive information remains on the device, never needing to leave for external processing.
 - **Simple setup**: No backend servers are required, making deployment straightforward.
@@ -53,13 +53,13 @@ Vector databases handle multiple types of data beyond **text**, including **imag
 
 Vector databases are highly effective in various types of applications:
 
-- **Similarity Search**: Finds the closest matches to a query, even when the query doesn’t contain the exact terms.
+- **Similarity Search**: Finds the closest matches to a query, even when the query doesn't contain the exact terms.
 - **Clustering**: Groups similar items based on the proximity of their vector representations.
 - **Recommendations**: Suggests items based on shared characteristics.
 - **Anomaly Detection**: Identifies outliers that differ from the norm.
-- **Classification**: Assigns categories to data based on its vector’s nearest neighbors.
+- **Classification**: Assigns categories to data based on its vector's nearest neighbors.
 
-In this tutorial, we will build a vector database designed as a **Similarity Search** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why [RxDB](https://rxdb.info/) doesn’t provide a dedicated vector-database plugin, but rather offers utility functions to help you build your own vector search system.
+In this tutorial, we will build a vector database designed as a **Similarity Search** for **text**. For other use cases, the setup can be adapted accordingly. This flexibility is why [RxDB](https://rxdb.info/) doesn't provide a dedicated vector-database plugin, but rather offers utility functions to help you build your own vector search system.
 
 <center>
         <img src="../files/icons/transformers.js.svg" alt="transformers.js" width="40" />
@@ -170,7 +170,7 @@ const vectorCollection = db.vector;
 
 When storing documents in the database, we need to ensure that the embeddings for these documents are generated and stored automatically. This requires a handler that runs during every document write, calling the machine learning model to generate the embeddings and storing them in a separate vector collection.
 
-Since our app runs in a browser, it's essential to avoid duplicate work when **multiple browser tabs** are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it’s closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes items and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in a separate vector collection.
+Since our app runs in a browser, it's essential to avoid duplicate work when **multiple browser tabs** are open and ensure efficient use of resources. Furthermore, we want the app to resume processing documents from where it left off if it's closed or interrupted. To achieve this, RxDB provides a [pipeline plugin](../rx-pipeline.md), which allows us to set up a workflow that processes items and stores their embeddings. In our example, a pipeline takes batches of 10 documents, generates embeddings, and stores them in a separate vector collection.
 
 ```ts
 const pipeline = await itemsCollection.addPipeline({
@@ -252,7 +252,7 @@ const pipeline = await itemsCollection.addPipeline({
 });
 ```
 
-This setup allows us to utilize the full hardware capacity of the client’s machine. By setting the batch size to match the number of logical processors available (using the [navigator.hardwareConcurrency](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency) API) and running one worker per processor, we can reduce the processing time for 10k embeddings to **about 5 minutes** on my developer laptop with 32 CPU cores.
+This setup allows us to utilize the full hardware capacity of the client's machine. By setting the batch size to match the number of logical processors available (using the [navigator.hardwareConcurrency](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/hardwareConcurrency) API) and running one worker per processor, we can reduce the processing time for 10k embeddings to **about 5 minutes** on my developer laptop with 32 CPU cores.
 
 ## Comparing Vectors by calculating the distance
 
@@ -494,7 +494,7 @@ And that's it for the implementation. We now have a local first vector database 
 
 In server-side databases, performance can be improved by scaling hardware or adding more servers. However, [local-first](../offline-first.md) apps face the unique challenge that the hardware is determined by the end user, making performance unpredictable. Some users may have **high-end gaming PCs**, while others might be using **outdated smartphones in power-saving mode**. Therefore, when building a local-first app that processes more than a few documents, performance becomes a critical factor and should be thoroughly tested upfront.
 
-Let’s run performance benchmarks on my **high-end gaming PC** to give you a sense of how long different operations take and what's achievable.
+Let's run performance benchmarks on my **high-end gaming PC** to give you a sense of how long different operations take and what's achievable.
 
 
 ### Performance of the Query Methods
@@ -524,7 +524,7 @@ Let's also look at the time taken to calculate a single embedding across various
 | WhereIsAI/UAE-Large-V1                       | 3499                       | 1024        | 337             |
 | Xenova/multilingual-e5-large                 | 4215                       | 1024        | 562             |
 
-From these benchmarks, it’s evident that models with larger vector outputs **take longer to process**. Additionally, the model size significantly affects performance, with larger models requiring more time to compute embeddings. This trade-off between model complexity and performance must be considered when choosing the right model for your use case.
+From these benchmarks, it's evident that models with larger vector outputs **take longer to process**. Additionally, the model size significantly affects performance, with larger models requiring more time to compute embeddings. This trade-off between model complexity and performance must be considered when choosing the right model for your use case.
 
 ## Potential Performance Optimizations
 

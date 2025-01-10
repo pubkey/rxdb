@@ -22,7 +22,7 @@ In this article we will explore what a realtime database is, and more important,
 
 When "normal" developers hear the word "realtime", they think of **Real-time computing (RTC)**. Real-time computing is a type of computer processing that **guarantees specific response times** for tasks or events, crucial in applications like industrial control, automotive systems, and aerospace. It relies on specialized operating systems (RTOS) to ensure predictability and low latency. Hard real-time systems must never miss deadlines, while soft real-time systems can tolerate occasional delays. Real-time responses are often understood to be in the order of milliseconds, and sometimes microseconds.
 
-Consider the role of real-time computing in car airbags: sensors detect collision force, swiftly process the data, and immediately decide to deploy the airbags within milliseconds. Such rapid action is imperative for safeguarding passengers. Hence, the controlling chip must **guarantee a certain response time** — it must operate in "realtime".
+Consider the role of real-time computing in car airbags: sensors detect collision force, swiftly process the data, and immediately decide to deploy the airbags within milliseconds. Such rapid action is imperative for safeguarding passengers. Hence, the controlling chip must **guarantee a certain response time** - it must operate in "realtime".
 
 
 
