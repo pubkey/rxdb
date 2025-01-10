@@ -1,11 +1,11 @@
 ---
-title: Using IndexedDB in React - RxDB on Top of IndexedDB Simplifies Your Database
+title: IndexedDB Database in React Apps - The Power of RxDB
 slug: react-indexeddb.html
 description: Discover how RxDB simplifies IndexedDB in React, offering reactive queries, offline-first capability, encryption, compression, and effortless integration.
 ---
 
 
-# Using IndexedDB in React: RxDB on Top of IndexedDB Simplifies Your Database
+# IndexedDB Database in React Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) React applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in React applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
 

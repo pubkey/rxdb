@@ -4,7 +4,7 @@ slug: angular-indexeddb.html
 description: Discover how to harness IndexedDB in Angular with RxDB for robust offline apps. Learn reactive queries, advanced features, and more.
 ---
 
-# Using IndexedDB in Angular: RxDB on Top of IndexedDB Simplifies Your Database Needs
+# Build Smarter Offline-First Angular Apps: How RxDB Beats IndexedDB Alone
 
 In modern web applications, offline capabilities and fast interactions are crucial. IndexedDB, the [browser](./browser-database.md)'s built-in database, allows you to store data locally, making your Angular application more robust and responsive. However, IndexedDB can be cumbersome to work with directly. That's where RxDB (Reactive Database) shines. In this article, we'll walk you through how to utilize IndexedDB in your Angular project using [RxDB](https://rxdb.info/) as a convenient abstraction layer.
 
