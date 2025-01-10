@@ -601,7 +601,7 @@ export default function Premium() {
                                         <span className='clear'></span>
                                     </div>
                                     <div className="inner">
-                                        (total yearly license fee: <span id="total-per-project-per-year"></span> &euro;)
+                                        (billed yearly: <span id="total-per-project-per-year"></span> &euro;)
                                     </div>
                                     <br />
                                     <br />
