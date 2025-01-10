@@ -84,7 +84,7 @@ Compared to RxDB, Minimongo has no concept of revisions or conflict handling, wh
   <img src="./files/alternatives/watermelondb.png" alt="WatermelonDB alternative" height="60" />
 </p>
 
-WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for React and React Native, it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** within an application with lots of data.
+WatermelonDB is a reactive & asynchronous JavaScript database. While originally made for [React](./articles/react-database.md) and [React Native](./react-native-database.md), it can also be used with other JavaScript frameworks. The main goal of WatermelonDB is **performance** within an application with lots of data.
 In React Native, WatermelonDB uses the provided SQLite database. Also there is an Expo plugin for WatermelonDB. In a browser, WatermelonDB uses the LokiJS in-memory database to store and query data. WatermelonDB is one of the rare projects that support both Flow and Typescript at the same time.
 
 
@@ -154,7 +154,7 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 </p>
 
 
-PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlying storage layer. There are many adapters like for IndexedDB, SQLite, the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
+PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlying storage layer. There are many adapters like for [IndexedDB](./rx-storage-indexeddb.md), [SQLite](./rx-storage-sqlite.md), the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
 Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
 RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](./releases/10.0.0.md) so it now allows to use different `RxStorage` implementations. PouchDB has some performance issues because of how it has to store the document revision tree to stay compatible with the CouchDB API.
 
