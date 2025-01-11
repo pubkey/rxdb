@@ -3,13 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- Include RxDB version details in MongoDB handshake [#6722](https://github.com/pubkey/rxdb/pull/6722)
-- ADD Allow connectionParams to be provided as part of wsOptions for replication-graphql [#6741](https://github.com/pubkey/rxdb/pull/6741)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.1.0 (11 January 2025)
+
+- Include RxDB version details in MongoDB handshake [#6722](https://github.com/pubkey/rxdb/pull/6722)
+- ADD Allow connectionParams to be provided as part of wsOptions for replication-graphql [#6741](https://github.com/pubkey/rxdb/pull/6741)
 
 ### 16.0.0 (2 January 2025)
 
