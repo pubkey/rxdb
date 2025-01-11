@@ -80,6 +80,10 @@ const config: Config = {
             'classic',
             /** @type {import('@docusaurus/preset-classic').Options} */
             {
+                gtag: {
+                    trackingID: 'G-62D63SY3S0',
+                    anonymizeIP: false,
+                },
                 docs: {
                     sidebarPath: './sidebars.js',
                     routeBasePath: '',

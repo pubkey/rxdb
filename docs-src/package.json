@@ -21,6 +21,7 @@
     "autocomplete.js": "0.37.0",
     "clsx": "2.1.0",
     "gauge": "5.0.1",
+    "@docusaurus/plugin-google-gtag": "3.0.1",
     "hast-util-select": "4.0.0",
     "hast-util-to-text": "2.0.0",
     "hogan.js": "3.0.2",
