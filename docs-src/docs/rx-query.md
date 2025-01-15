@@ -454,3 +454,33 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
   RxDB is a client-side database and does not provide built-in cross-collection queries or transactions. Instead, you can execute multiple queries in your JavaScript code and combine their results as needed. Because everything runs in the same environment, this approach offers the same performance you would get if cross-collection queries were built in - without the added complexity.
 </div>
 </details>
+
+<details>
+    <summary>Why Doesn't RxDB Support Case-Insensitive Search?</summary>
+<div>
+  RxDB relies on various storage engines as its backend, and these storage engines generally do not support case-insensitive search natively, like [IndexedDB](./rx-storage-indexeddb.md) or [FoundationDB](./rx-storage-foundationdb.md). This limitation arises from the design of these engines, which prioritize efficiency and flexibility for specific types of queries rather than universal features like case-insensitivity. Although RxDB does not offer built-in support for case-insensitive search, there are two common workarounds:
+  - **Store Data in a Meta-Field for Lowercase Search**: To enable case-insensitive search, you can store an additional field in your documents where the relevant text data is preprocessed and saved in lowercase.
+```ts
+const document = {
+  name: 'John Doe',
+  nameLowercase: 'john doe' // Meta-field
+};
+await myCollection.insert(document);
+
+const query = myCollection.find({
+  selector: {
+    nameLowercase: { $eq: 'john doe' }
+  }
+});
+```
+  - **Use a Regex Query**: Regular expressions can perform case-insensitive searches. For example:
+```ts
+const query = myCollection.find({
+  selector: {
+    name: { $regex: '^john doe$', $options: 'i' } // Case-insensitive regex
+  }
+});
+```
+However, this method has a significant downside: regex queries often cannot leverage indexes efficiently. As a result, they may be slower, especially for large datasets.
+</div>
+</details>
