@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD `RxCollection.insertIfNotExists()`
-- Allow uppercase chars at the middle of collection names like `fooBar`.
-- FIX RxServer to not have `process is not defined` [#6764](https://github.com/pubkey/rxdb/issues/6764)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.2.0 (16 January 2025)
+
+- ADD `RxCollection.insertIfNotExists()`
+- Allow uppercase chars at the middle of collection names like `fooBar`.
+- FIX RxServer to not have `process is not defined` [#6764](https://github.com/pubkey/rxdb/issues/6764)
 
 ### 16.1.0 (11 January 2025)
 

@@ -176,6 +176,19 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var insertResult = ensureNotFalsy(writeResult.success[0]);
     return insertResult;
   };
+  _proto.insertIfNotExists = async function insertIfNotExists(json) {
+    var writeResult = await this.bulkInsert([json]);
+    if (writeResult.error.length > 0) {
+      var error = writeResult.error[0];
+      if (error.status === 409) {
+        var conflictDocData = error.documentInDb;
+        return mapDocumentsDataToCacheDocs(this._docCache, [conflictDocData])[0];
+      } else {
+        throw error;
+      }
+    }
+    return writeResult.success[0];
+  };
   _proto.bulkInsert = async function bulkInsert(docsData) {
     ensureRxCollectionIsNotClosed(this);
     /**

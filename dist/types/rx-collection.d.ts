@@ -89,6 +89,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     startMigration(batchSize?: number): Promise<void>;
     migratePromise(batchSize?: number): Promise<any>;
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    insertIfNotExists(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     bulkInsert(docsData: RxDocumentType[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];

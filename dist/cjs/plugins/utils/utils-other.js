@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RXJS_SHARE_REPLAY_DEFAULTS = void 0;
+exports.customFetchWithFixedHeaders = customFetchWithFixedHeaders;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
 exports.nameFunction = nameFunction;
@@ -50,5 +51,19 @@ function nameFunction(name, body) {
       return body.apply(this, args);
     }
   }[name];
+}
+function customFetchWithFixedHeaders(headers) {
+  function customFetch(url, options = {}) {
+    // Ensure options object exists and headers property is initialized
+    options.headers = {
+      ...headers,
+      // include default custom headers
+      ...(options.headers || {}) // merge any headers passed in the function call
+    };
+
+    // Call the original fetch with the modified options
+    return fetch(url, options);
+  }
+  return customFetch;
 }
 //# sourceMappingURL=utils-other.js.map

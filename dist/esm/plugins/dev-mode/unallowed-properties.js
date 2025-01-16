@@ -36,7 +36,13 @@ export function ensureDatabaseNameIsValid(args) {
     }
   }
 }
-var validCouchDBStringRegexStr = '^[a-z][_$a-z0-9\\-]*$';
+
+/**
+ * In contrast to CouchDB, we still allow inner uppercase letters
+ * like the name fooBar. This makes it way less confusing when naming
+ * collections with a JavaScript variable name convention.
+ */
+var validCouchDBStringRegexStr = '^[a-z][_$a-zA-Z0-9\\-]*$';
 var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 
 /**

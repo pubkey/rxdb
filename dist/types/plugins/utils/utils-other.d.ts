@@ -17,3 +17,4 @@ export declare const RXJS_SHARE_REPLAY_DEFAULTS: {
  * @link https://stackoverflow.com/a/41854075/3443137
  */
 export declare function nameFunction<T>(name: string, body: T): T;
+export declare function customFetchWithFixedHeaders(headers: any): (url: string | URL, options?: any) => Promise<Response>;
