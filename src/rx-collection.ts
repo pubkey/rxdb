@@ -371,6 +371,23 @@ export class RxCollectionBase<
         return insertResult;
     }
 
+    async insertIfNotExists(
+        json: RxDocumentType | RxDocument
+    ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        const writeResult = await this.bulkInsert([json as any]);
+        if (writeResult.error.length > 0) {
+            const error = writeResult.error[0];
+            if (error.status === 409) {
+                const conflictDocData = error.documentInDb;
+                return mapDocumentsDataToCacheDocs(this._docCache, [conflictDocData])[0];
+
+            } else {
+                throw error;
+            }
+        }
+        return writeResult.success[0];
+    }
+
     async bulkInsert(
         docsData: RxDocumentType[]
     ): Promise<{
