@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `RxCollection.insertIfNotExists()`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

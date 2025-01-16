@@ -375,6 +375,39 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
+        describeParallel('.insertIfNotExists()', () => {
+            it('should insert the document when not exists', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                const doc = await collections.human.insertIfNotExists(schemaObjects.humanData('foobar'));
+                assert.ok(isRxDocument(doc));
+                assert.strictEqual(doc.primary, 'foobar');
+                db.close();
+            });
+            it('should not overwrite if already there', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage: config.storage.getStorage(),
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: schemas.human
+                    }
+                });
+                await collections.human.insert(schemaObjects.humanData('foobar', 1));
+                const doc = await collections.human.insertIfNotExists(schemaObjects.humanData('foobar', 2));
+                assert.ok(isRxDocument(doc));
+                assert.strictEqual(doc.age, 1);
+                db.close();
+            });
+        });
         describeParallel('.bulkInsert()', () => {
             describe('positive', () => {
                 it('should insert some humans', async () => {

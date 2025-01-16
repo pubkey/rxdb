@@ -84,6 +84,19 @@ const doc = await myCollection.insert({
 });
 ```
 
+### insertIfNotExists()
+
+The insertIfNotExists() method attempts to insert a new document into the collection only if a document with the same primary key does not already exist. This is useful for ensuring uniqueness without having to manually check for existing records before inserting or handling [conflicts](./transactions-conflicts-revisions.md).
+
+Returns either the newly added [RxDocument](./rx-document.md) or the previous existing document.
+
+```js
+const doc = await myCollection.insertIfNotExists({
+  name: 'foo',
+  lastname: 'bar'
+});
+```
+
 ### bulkInsert()
 
 When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
