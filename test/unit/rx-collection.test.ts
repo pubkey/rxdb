@@ -193,7 +193,7 @@ describe('rx-collection.test.ts', () => {
                     );
                     db.close();
                 });
-                it('not allow uppercase-letters', async () => {
+                it('not allow uppercase-letters at the beginning', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),
                         storage: config.storage.getStorage(),
@@ -206,14 +206,14 @@ describe('rx-collection.test.ts', () => {
                         }),
                         'RxError'
                     );
-                    await AsyncTestUtil.assertThrows(
-                        () => db.addCollections({
-                            'fooBar': {
-                                schema: schemas.human
-                            }
-                        }),
-                        'RxError'
-                    );
+
+                    // in the middle, uppercase must be allowed
+                    await db.addCollections({
+                        'fooBar': {
+                            schema: schemas.human
+                        }
+                    });
+
                     db.close();
                 });
             });

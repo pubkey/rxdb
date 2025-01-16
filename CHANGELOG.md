@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- Allow uppercase chars at the middle of collection names like `fooBar`.
 
 <!-- ADD new changes here! -->
 
