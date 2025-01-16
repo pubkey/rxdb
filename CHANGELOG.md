@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD `RxCollection.insertIfNotExists()`
+- Allow uppercase chars at the middle of collection names like `fooBar`.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

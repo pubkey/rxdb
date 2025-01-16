@@ -117,6 +117,9 @@ describe('util.test.js', () => {
             it('should validate a normal string', () => {
                 validateDatabaseName('foobar');
             });
+            it('should validate a normal string with an uppercase letter', () => {
+                validateDatabaseName('fooBar');
+            });
             it('should allow _ and $ after the first character', () => {
                 validateDatabaseName('foo_bar');
                 validateDatabaseName('foobar_');

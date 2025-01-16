@@ -45,7 +45,12 @@ export function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>) {
 
 
 
-const validCouchDBStringRegexStr = '^[a-z][_$a-z0-9\\-]*$';
+/**
+ * In contrast to CouchDB, we still allow inner uppercase letters
+ * like the name fooBar. This makes it way less confusing when naming
+ * collections with a JavaScript variable name convention.
+ */
+const validCouchDBStringRegexStr = '^[a-z][_$a-zA-Z0-9\\-]*$';
 const validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 
 /**
