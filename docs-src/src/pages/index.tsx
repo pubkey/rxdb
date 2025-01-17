@@ -443,7 +443,7 @@ export default function Home(props: {
                             <p>Get up to 5 follow-up emails with detailed answers to your additional questions, ensuring you have ongoing support as you work through your project.</p>
                           </li>
                         </ul>
-                        <a href="https://book.stripe.com/3cs9DL5gu5SA6c0bIK" target='_blank' className='button' style={{
+                        <a href="https://buy.stripe.com/3cs4jr9wK1CkgQEbIL" target='_blank' className='button' style={{
                           width: 200,
                           display: 'block',
                           marginLeft: 'auto',
