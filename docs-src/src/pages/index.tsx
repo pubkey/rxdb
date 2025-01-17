@@ -29,6 +29,7 @@ export const colors = [
   '#5f2688'
 ];
 
+const STARTER_PACK_PRICE = 24;
 
 let animationStarted = false;
 function startLandingpageAnimation() {
@@ -393,7 +394,7 @@ export default function Home(props: {
                       left: 33,
                       transform: 'rotate(-20deg)'
                     }}>
-                      <PriceTag price="89" />
+                      <PriceTag price={STARTER_PACK_PRICE + ''} />
                     </div>
                     <div
                       className="button"
@@ -428,7 +429,7 @@ export default function Home(props: {
                           left: 33,
                           transform: 'rotate(-20deg)'
                         }}>
-                          <PriceTag price="89" />
+                          <PriceTag price={STARTER_PACK_PRICE + ''} />
                         </div>
                           <h2>RxDB Starter Pack</h2>
                         <p>Unlock the full potential of RxDB for your project with our Starter Pack! Whether you're just getting started or looking for expert guidance, this pack is designed to help you use RxDB efficiently and effectively. Here's what you'll get:</p>
