@@ -179,7 +179,7 @@ This component subscribes to the collection's changes, updating the UI automatic
 
 ### With Preact Signals
 
-RxDB also supports Preact Signals for reactivity, which can be integrated into React applications via a [premium plugin](/premium). Preact Signals offer a modern, fine-grained reactivity model.
+RxDB also supports Preact Signals for reactivity, which can be integrated into React applications via a [premium plugin](/premium/). Preact Signals offer a modern, fine-grained reactivity model.
 
 First, install the necessary package:
 ```bash

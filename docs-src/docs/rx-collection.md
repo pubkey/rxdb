@@ -333,7 +333,7 @@ const is = isRxCollection(myObj);
     <summary>How to remove the limit of 16 collections?</summary>
     <div>
     In the open-source version of RxDB, the amount of RxCollections that can exist in parallel is limited to `16`.
-    To remove this limit, you can purchase the [Premium Plugins](/premium) and call the `setPremiumFlag()` function before creating a database:
+    To remove this limit, you can purchase the [Premium Plugins](/premium/) and call the `setPremiumFlag()` function before creating a database:
     ```ts
     import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
     setPremiumFlag();

@@ -141,7 +141,7 @@ Ensuring data consistency between your client-side application and backend is a 
 In addition to security and offline capabilities, RxDB also offers [data compression](https://rxdb.info/key-compression.html). This means that the data stored on the client's device is efficiently compressed, reducing storage requirements and improving overall app performance. This compression ensures that your app remains responsive and efficient, even as data volumes grow.
 
 ### Cost-Effective Solution
-In addition to its security features, RxDB offers cost-effective benefits. RxDB is [priced more affordably](/premium) compared to some other secure storage solutions, making it an attractive option for developers seeking robust security without breaking the bank. For many users, the free version of RxDB provides ample features to meet their application's security and data management needs.
+In addition to its security features, RxDB offers cost-effective benefits. RxDB is [priced more affordably](/premium/) compared to some other secure storage solutions, making it an attractive option for developers seeking robust security without breaking the bank. For many users, the free version of RxDB provides ample features to meet their application's security and data management needs.
 
 
 
@@ -152,7 +152,7 @@ In addition to its security features, RxDB offers cost-effective benefits. RxDB 
 
 - Try out the [RxDB ionic example project](https://github.com/pubkey/rxdb/tree/master/examples/ionic2)
 - Try out the [RxDB Quickstart](https://rxdb.info/quickstart.html)
-- Join the [RxDB Chat](https://rxdb.info/chat)
+- Join the [RxDB Chat](https://rxdb.info/chat/)
 
 
 

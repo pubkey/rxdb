@@ -8,7 +8,7 @@ slug: rx-storage-shared-worker.html
 The SharedWorker [RxStorage](./rx-storage.md) uses the [SharedWorker API](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) to run the storage inside of a separate JavaScript process **in browsers**. Compared to a normal [WebWorker](./rx-storage-worker.md), the SharedWorker is created exactly once, even when there are multiple browser tabs opened. Because of having exactly one worker, multiple performance optimizations can be done because the storage itself does not have to handle multiple opened database connections.
 
 :::note Premium
-This plugin is part of [RxDB Premium 👑](/premium). It is not part of the default RxDB module.
+This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
 :::
 
 ## Usage
@@ -74,7 +74,7 @@ const database = await createRxDatabase({
 
 The `shared-worker.js` must be a self containing JavaScript file that contains all dependencies in a bundle.
 To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
-You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium 👑 Plugin](/premium). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`
+You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium 👑 Plugin](/premium/). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`
 
 Any valid `worker.js` JavaScript file can be used both, for normal Workers and SharedWorkers.
 

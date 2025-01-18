@@ -215,4 +215,4 @@ replicateWebRTC({
 
 You are now ready to dive deeper into RxDB. 
 There is a full implementation of the [quickstart guide here](https://github.com/pubkey/rxdb-quickstart) so you can clone that repository and play with the code.
-Also please continue reading the documentation, join the community on our [Discord chat](./chat), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [👑 Premium package](/premium) which includes additional plugins and utilities.
+Also please continue reading the documentation, join the community on our [Discord chat](/chat/), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [👑 Premium package](/premium/) which includes additional plugins and utilities.

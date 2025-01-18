@@ -106,7 +106,7 @@ disableWarnings();
 ## Disable the tracking iframe
 
 When used in localhost and in the browser, the dev-mode plugin can add a tracking iframe to the DOM. This is used to track the effectiveness of marketing efforts of RxDB.
-If you have [premium access](/premium) and want to disable this iframe, you can call `setPremiumFlag()` before creating the database.
+If you have [premium access](/premium/) and want to disable this iframe, you can call `setPremiumFlag()` before creating the database.
 
 ```js
 import { setPremiumFlag } from 'rxdb-premium/plugins/shared';

@@ -458,7 +458,7 @@ export default function Home(props: {
                   </div>
 
                   {/* <a
-                    href="/premium#price-calculator-block"
+                    href="/premium/#price-calculator-block"
                     onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
                     className='buy-premium-hero'
                   >
@@ -466,7 +466,7 @@ export default function Home(props: {
                   </a> */}
                   {/* <a
                     className="button light"
-                    href="/code"
+                    href="/code/"
                     target="_blank"
                   >
                     <svg
@@ -515,7 +515,7 @@ export default function Home(props: {
           </div >
 
           <Trophy
-            href="/code"
+            href="/code/"
             title="GitHub"
             subTitle='Open Source on'
             value={SOCIAL_PROOF_VALUES.github}
@@ -669,7 +669,7 @@ export default function Home(props: {
 
 
           <Trophy
-            href="/chat"
+            href="/chat/"
             title="Discord"
             subTitle='Chat on'
             value={SOCIAL_PROOF_VALUES.discord}
@@ -959,7 +959,7 @@ export default function Home(props: {
                   <div className="label">Github Stars</div>
                   <a
                     className="value"
-                    href="/code"
+                    href="/code/"
                     rel="noopener"
                     target="_blank"
                   >
@@ -1078,7 +1078,7 @@ export default function Home(props: {
                         </ul>
                       </div> */}
                       <a
-                        href="/code"
+                        href="/code/"
                         target="_blank"
                         rel="noopener"
                         onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8, false)}
@@ -1201,7 +1201,7 @@ export default function Home(props: {
                         </ul>
                       </div> */}
                       <a
-                        href="/premium"
+                        href="/premium/"
                         onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
@@ -1228,7 +1228,7 @@ export default function Home(props: {
                         </p>
                       </div>
                       <a
-                        href="/consulting"
+                        href="/consulting/"
                         onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4, false)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
@@ -1272,7 +1272,7 @@ export default function Home(props: {
                   </div>
                 </a>
                 <a
-                  href="/chat"
+                  href="/chat/"
                   rel="noopener"
                   target="_blank"
                   onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40, false)}
@@ -1284,7 +1284,7 @@ export default function Home(props: {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40, false)}>
+                <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40, false)}>
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1306,7 +1306,7 @@ export default function Home(props: {
                   </div>
                 </a>
                 <a
-                  href="/code"
+                  href="/code/"
                   rel="noopener"
                   target="_blank"
                   onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40, false)}

@@ -39,13 +39,13 @@ export default function NotFoundContent({ className }) {
                 <a href="https://rxdb.info/quickstart.html">RxDB Documentation</a>
               </li>
               <li>
-                <a href="/chat">RxDB Discord Channel</a>
+                <a href="/chat/">RxDB Discord Channel</a>
               </li>
               <li>
                 <a href="https://twitter.com/intent/user?screen_name=rxdbjs">RxDB on twitter</a>
               </li>
               <li>
-                <a href="/code">RxDB at Github</a>
+                <a href="/code/">RxDB at Github</a>
               </li>
             </ul>
           </div>

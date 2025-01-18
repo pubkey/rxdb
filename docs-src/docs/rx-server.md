@@ -35,7 +35,7 @@ await myServer.start();
 
 ### Using RxServer with Fastify
 
-There is also a [RxDB Premium 👑](/premium) adapter to use the RxServer with [Fastify](https://fastify.dev/) instead of express. Fastify has shown to have better performance and in general is more modern.
+There is also a [RxDB Premium 👑](/premium/) adapter to use the RxServer with [Fastify](https://fastify.dev/) instead of express. Fastify has shown to have better performance and in general is more modern.
 
 ```ts
 import { createRxServer } from 'rxdb-server/plugins/server';
@@ -51,7 +51,7 @@ await myServer.start();
 
 ### Using RxServer with Koa
 
-There is also a [RxDB Premium 👑](/premium) adapter to use the RxServer with [Koa](https://koajs.com/) instead of express. Koa has shown to have better compared to express.
+There is also a [RxDB Premium 👑](/premium/) adapter to use the RxServer with [Koa](https://koajs.com/) instead of express. Koa has shown to have better compared to express.
 
 ```ts
 import { createRxServer } from 'rxdb-server/plugins/server';

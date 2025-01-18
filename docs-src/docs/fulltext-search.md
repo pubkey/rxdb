@@ -41,7 +41,7 @@ As RxDB is designed with [offline-first applications](./offline-first.md) in min
 
 ## Using the RxDB Fulltext Search
 
-The flexsearch search is a [RxDB Premium Package 👑](/premium) which must be purchased and imported from the `rxdb-premium` npm package.
+The flexsearch search is a [RxDB Premium Package 👑](/premium/) which must be purchased and imported from the `rxdb-premium` npm package.
 
 Step 1: Add the `RxDBFlexSearchPlugin` to RxDB.
 

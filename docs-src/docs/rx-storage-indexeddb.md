@@ -23,7 +23,7 @@ Here is some performance comparison with other storages. Compared to the non-mem
 
 ## Using the IndexedDB RxStorage
 
-To use the indexedDB storage you import it from the [RxDB Premium 👑](/premium) npm module and use `getRxStorageIndexedDB()` when creating the [RxDatabase](./rx-database.md).
+To use the indexedDB storage you import it from the [RxDB Premium 👑](/premium/) npm module and use `getRxStorageIndexedDB()` when creating the [RxDatabase](./rx-database.md).
 
 ```ts
 import {
@@ -99,6 +99,6 @@ const db = await createRxDatabase({
 
 ## Limitations of the IndexedDB RxStorage
 
-- It is part of the [RxDB Premium 👑](/premium) plugin that must be purchased. If you just need a storage that works in the browser and you do not have to care about performance, you can use the [Dexie.js storage](./rx-storage-dexie.md) instead.
+- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased. If you just need a storage that works in the browser and you do not have to care about performance, you can use the [Dexie.js storage](./rx-storage-dexie.md) instead.
 - The IndexedDB storage requires support for [IndexedDB v2](https://caniuse.com/indexeddb2), it does not work on Internet Explorer. 
 

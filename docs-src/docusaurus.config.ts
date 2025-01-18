@@ -146,7 +146,7 @@ const config: Config = {
                     position: 'right',
                 },
                 // {
-                //   href: '/code',
+                //   href: '/code/',
                 //   target: '_blank',
                 //   label: 'Code',
                 //   position: 'right',

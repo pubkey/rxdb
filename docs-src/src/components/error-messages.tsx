@@ -55,7 +55,7 @@ export function ErrorMessages() {
                             <a href={'https://github.com/pubkey/rxdb/search?q=' + errorCode + '&type=issues'} target="_blank">Search In Issues</a>
                         </li>
                         <li>
-                            <a href='/chat' target="_blank">Search In Chat</a>
+                            <a href='/chat/' target="_blank">Search In Chat</a>
                         </li>
                     </ul>
                 </li>;

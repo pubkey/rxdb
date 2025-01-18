@@ -15,7 +15,7 @@ const callToActions: CallToActionItem[] = [
         title: 'If RxDB has helped you, please give us a star on GitHub! Your support means the world.',
         text: 'Star',
         keyword: '@github',
-        url: 'https://rxdb.info/code',
+        url: 'https://rxdb.info/code/',
         icon: '🐙💻',
     },
     {
@@ -43,7 +43,7 @@ const callToActions: CallToActionItem[] = [
         title: 'Love RxDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
         text: 'Chat',
         keyword: '@discord',
-        url: 'https://rxdb.info/chat',
+        url: 'https://rxdb.info/chat/',
         icon: '💬',
     },
     {
@@ -185,7 +185,7 @@ function addCommunityChatButton() {
 
     const elemDiv = document.createElement('a');
     elemDiv.id = chatButtonId;
-    elemDiv.href = '/chat';
+    elemDiv.href = '/chat/';
     elemDiv.target = '_blank';
     elemDiv.innerHTML = '💬 Community Chat';
 

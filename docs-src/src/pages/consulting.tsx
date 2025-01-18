@@ -112,27 +112,27 @@ export default function Consulting() {
 function NavBarBlock({ onOpenDialog }) {
     const items = [
         {
-            to: '/consulting#packages',
+            to: '/consulting/#packages',
             label: 'Packages',
             position: 'left',
         },
         {
-            to: '/consulting#benefits',
+            to: '/consulting/#benefits',
             label: 'Benefits',
             position: 'left',
         },
         {
-            to: '/consulting#steps',
+            to: '/consulting/#steps',
             label: 'How it works',
             position: 'left',
         },
         {
-            to: '/consulting#faq',
+            to: '/consulting/#faq',
             label: 'FAQs',
             position: 'left',
         },
         {
-            to: '/consulting#contact',
+            to: '/consulting/#contact',
             label: 'Contact us',
             position: 'left',
         },
@@ -199,7 +199,7 @@ function HeroBlock({ onOpenDialog }) {
                         <a className="button" onClick={onOpenDialog}>
                             Get started
                         </a>
-                        <a className="button-empty" href="/consulting#steps">
+                        <a className="button-empty" href="/consulting/#steps">
                             See how it works
                         </a>
                     </div>

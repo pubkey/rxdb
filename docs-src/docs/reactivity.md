@@ -55,7 +55,7 @@ An example of how signals are used in angular with RxDB, can be found at the [Rx
 
 When adding custom reactivity for other JavaScript frameworks or libraries, make sure to correctly unsubscribe whenever you call `observable.subscribe()` in the `fromObservable()` method.
 
-There are also some [👑 Premium Plugins](/premium) that can be used with other (non-angular frameworks):
+There are also some [👑 Premium Plugins](/premium/) that can be used with other (non-angular frameworks):
 
 ### Vue Shallow Refs
 

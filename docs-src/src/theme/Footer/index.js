@@ -6,10 +6,10 @@ export default function FooterWrapper() {
     navLinks: [
       {
         label: 'Pricing',
-        href: '/premium'
+        href: '/premium/'
       },
       {
-        href: '/consulting',
+        href: '/consulting/',
         label: 'Support',
       },
       {
@@ -19,12 +19,12 @@ export default function FooterWrapper() {
       {
         label: 'Discord',
         target: '_blank',
-        href: '/chat',
+        href: '/chat/',
       },
       {
         label: 'Github',
         target: '_blank',
-        href: '/code',
+        href: '/code/',
       },
       {
         label: 'Twitter',
@@ -41,13 +41,13 @@ export default function FooterWrapper() {
       {
         label: 'Discord',
         target: '_blank',
-        href: '/chat',
+        href: '/chat/',
         logo: '/img/community-links/discord-logo.svg',
       },
       {
         label: 'Github',
         target: '_blank',
-        href: '/code',
+        href: '/code/',
         logo: '/img/community-links/github-logo.svg'
       },
       {
@@ -73,7 +73,7 @@ export default function FooterWrapper() {
       {
         label: 'Legal Notice',
         target: '_blank',
-        href: '/legal-notice',
+        href: '/legal-notice/',
       },
     ],
   };
