@@ -10,3 +10,5 @@
 ## Seo keywords:
 
 - "local database"
+- "firebase alternative"
+- "jquery database"
