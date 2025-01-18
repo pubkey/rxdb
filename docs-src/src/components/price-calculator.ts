@@ -32,7 +32,7 @@ export function calculatePrice(input: PriceCalculationInput) {
     console.log('-------------------- calculatePrice:');
     console.dir(input);
 
-    const baseFee = 550;
+    const baseFee = 150;
     const developerSalary = 60_000;
 
     let aimInPercent = 0;

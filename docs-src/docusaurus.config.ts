@@ -130,16 +130,16 @@ const config: Config = {
                 },
                 {
                     href: '/premium',
-                    label: 'Premium',
+                    label: 'Pricing',
                     position: 'right',
                 },
-                {
-                    to: '/chat',
-                    target: '_blank',
-                    label: 'Community',
-                    position: 'right',
-                    className: 'navbar-icon-discord'
-                },
+                // {
+                //     to: '/chat',
+                //     target: '_blank',
+                //     label: 'Community',
+                //     position: 'right',
+                //     className: 'navbar-icon-discord'
+                // },
                 {
                     href: '/quickstart.html',
                     label: 'Docs',

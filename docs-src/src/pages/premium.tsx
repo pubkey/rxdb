@@ -253,7 +253,7 @@ export default function Premium() {
 
 
                             <p style={{ width: '80%' }}>
-                                RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
+                                While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
                                 They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines, secure encryption and other features.
                             </p>
                             <p style={{ width: '80%' }}>
@@ -636,6 +636,29 @@ export default function Premium() {
                                 </ul>
                             </details>
                             <details>
+                                <summary>Can I get a discount?</summary>
+                                There are multiple ways to get a discount:
+                                <ul>
+                                    <li>
+                                        <h5>Contritube to the RxDB github repository</h5>
+                                        <p>If you have made significant contributions to the RxDB github repository, you can apply for a discount depending on your contribution.</p>
+                                    </li>
+                                    <li>
+                                        <h5>Get 25% off by writing about how you use RxDB</h5>
+                                        <p>
+                                            On your company/project website, publish an article/blogpost about how you use RxDB in your project.
+                                            Include how your setup looks like,
+                                            how you use RxDB in that setup and what problems you had and how did you overcome them.
+                                            You also need to link to the RxDB website or documentation pages.
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <h5>Be active in the RxDB community</h5>
+                                        <p>If you are active in the RxDB community and discord channel by helping others out or creationg educational content like videos and tutorials, feel free to apply for a discount.</p>
+                                    </li>
+                                </ul>
+                            </details>
+                            <details>
                                 <summary>Do I need the Premium Plugins?</summary>
                                 RxDB Core is open source and many use cases can be implemented with the Open Core part of
                                 RxDB. There are many{' '}
@@ -713,7 +736,7 @@ export default function Premium() {
                             </details> */}
                             <details>
                                 <summary>Can I install/build the premium plugins in my CI?</summary>
-                                <b>Yes</b> you can safely install and use the Premium Plugins in your CI
+                                Yes, you can safely install and use the Premium Plugins in your CI
                                 without additional payment.
                             </details>
                             <details>
