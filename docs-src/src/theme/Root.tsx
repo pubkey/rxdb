@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { randomOfArray } from '../../../plugins/utils';
+import { randomNumber } from '../../../src/plugins/utils';
 
 
 type CallToActionItem = {
-    title: string;
+    /**
+     * Titles are an array, so we can do A-B tests
+     * on the clickrate.
+     */
+    title: string[];
     text: string;
     keyword: string;
     url: string;
@@ -12,48 +17,91 @@ type CallToActionItem = {
 };
 const callToActions: CallToActionItem[] = [
     {
-        title: 'If RxDB has helped you, please give us a star on GitHub! Your support means the world.',
+        title: [
+            'If RxDB has helped you, please give us a star on GitHub! Your support means the world.',
+            'Found RxDB useful? Let us know by leaving a star on GitHub!',
+            'Help RxDB grow - your GitHub star means a lot to us!',
+            'Enjoying RxDB? Show your support with a quick star on GitHub.',
+            'RxDB saved you time? Reward us with a star on GitHub!',
+            'Support our open-source journey - star RxDB on GitHub today!'
+        ],
         text: 'Star',
         keyword: '@github',
         url: 'https://rxdb.info/code/',
         icon: '🐙💻',
     },
     {
-        title: 'Enjoying RxDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
+        title: [
+            'Enjoying RxDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
+            'Stay updated - follow RxDB on Twitter for news, tips, and more!',
+            'Love RxDB? Follow us on Twitter for the latest buzz!',
+            'We’re tweeting all things RxDB - join us on Twitter!',
+            'Never miss an RxDB update - follow us on Twitter today!',
+            'Connect with the RxDB community - follow our Twitter feed!'
+        ],
         text: 'Follow',
         keyword: '@twitter',
         url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
         icon: '🐦',
     },
     {
-        title: 'Enjoying RxDB? Follow us on LinkedIn for updates, tips, and more! Your support keeps us going.',
+        title: [
+            'Enjoying RxDB? Follow us on LinkedIn for updates, tips, and more! Your support keeps us going.',
+            'Stay connected - follow RxDB on LinkedIn for the latest insights!',
+            'Get tips, updates, and more - follow RxDB on LinkedIn today!',
+            'Support RxDB by following our LinkedIn page for exclusive updates!',
+            'Want more RxDB? Follow us on LinkedIn for deeper dives and news!',
+            'Join RxDB\'s professional network - follow us on LinkedIn!'
+        ],
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/company/rxdb',
         icon: '[in]',
     },
     {
-        title: 'Enjoying RxDB? Follow me on LinkedIn for updates, tips, and more! Your support keeps us going.',
+        title: [
+            'Enjoying RxDB? Follow me on LinkedIn for updates, tips, and more! Your support keeps us going.',
+            'Join me on LinkedIn for RxDB insights and behind-the-scenes updates!',
+            'Learn more about RxDB - connect with me on LinkedIn!',
+            'Stay in the know - follow my LinkedIn profile for the latest RxDB news!',
+            'Expand your network - follow my LinkedIn for RxDB updates and more!',
+            'Want more RxDB insights? Follow me on LinkedIn and let’s connect!'
+        ],
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/in/danielmeyerdev/',
         icon: '[in]',
     },
     {
-        title: 'Love RxDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
+        title: [
+            'Love RxDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
+            'Join our RxDB Discord community - your questions and ideas are welcome!',
+            'Let’s talk RxDB! Join our Discord server and connect with fellow developers.',
+            'Share, learn, and grow - be part of our RxDB Discord community!',
+            'Got questions? Join us on Discord to get quick support and real-time interaction!',
+            'Meet other RxDB enthusiasts on Discord - let’s build great apps together!'
+        ],
         text: 'Chat',
         keyword: '@discord',
         url: 'https://rxdb.info/chat/',
         icon: '💬',
     },
     {
-        title: 'Love RxDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
+        title: [
+            'Love RxDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
+            'Stay informed - subscribe to the RxDB newsletter for exclusive content!',
+            'Don’t miss a beat - get RxDB news and tips via our newsletter!',
+            'Level up your RxDB knowledge - subscribe to our newsletter!',
+            'Be the first to know - subscribe for RxDB updates, tricks, and more!',
+            'Join our community - subscribe to the RxDB newsletter and never miss an update!'
+        ],
         text: 'Subscribe',
         keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter',
         icon: '📰',
     },
     // {
+    //     title: 'RxDB needs your feedback, please take part in our user Survey',
     //     text: 'Take Part in the',
     //     keyword: 'User Survey 2024',
     //     url: 'https://rxdb.info/survey',
@@ -63,7 +111,12 @@ const callToActions: CallToActionItem[] = [
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
-    const [showPopup, setShowPopup] = useState<CallToActionItem>();
+    const [showPopup, setShowPopup] = useState<{
+        callToAction: CallToActionItem;
+        callToActionId: number;
+        titleId: number;
+    }>();
+    const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
 
         // addCommunityChatButton();
@@ -75,21 +128,67 @@ export default function Root({ children }) {
         }, 0);
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
-        setTimeout(() => {
-            setShowPopup(randomOfArray(callToActions));
+        // const showTime = 2;
+        const intervalId = setInterval(() => {
+            setShowPopup(prevValue => {
+                if (prevValue) {
+                    return prevValue;
+                }
+                const callToActionId = randomNumber(0, callToActions.length - 1);
+                const callToAction = callToActions[callToActionId];
+                const titleId = randomNumber(0, callToAction.title.length - 1);
+
+                /**
+                 * Also prepend (1) to the browser tab title
+                 * so people reopen the tab and see the notification.
+                 * (only once per hour)
+                 */
+                const dayKey = new Date().toISOString().split('T')[0] + '_' + new Date().getHours();
+                const localStorageItemId = 'notification_popup_title_ping_' + dayKey;
+                const pinged = localStorage.getItem(localStorageItemId);
+                if (!pinged) {
+                    document.title = DOC_TITLE_PREFIX + document.title;
+                    localStorage.setItem(localStorageItemId, '1');
+                }
+                return {
+                    callToAction,
+                    callToActionId,
+                    titleId
+                };
+            });
         }, showTime * 1000);
+
+        return () => {
+            clearInterval(intervalId);
+        };
     }, []);
     function closePopup() {
         setShowPopup(undefined);
+        document.title = document.title.replace(DOC_TITLE_PREFIX, '');
     }
     return <>
         {children}
         <div className={'call-to-action-popup ' + (showPopup ? 'active' : '')}>
             {
                 showPopup ? <>
-                    <h3>{showPopup.title}</h3>
-                    <a href={showPopup.url} className='hover-shadow-top' id="rxdb-call-to-action-button" target="_blank">
-                        {showPopup.text} {showPopup.keyword}
+                    <h3>{showPopup.callToAction.title[showPopup.titleId]}</h3>
+                    <a
+                        href={showPopup.callToAction.url}
+                        className='hover-shadow-top'
+                        id="rxdb-call-to-action-button"
+                        target="_blank"
+                        onClick={() => {
+                            triggerTrackingEvent('notification_call_to_action', 0.40, false);
+                            // track the ids also so we can delete the ones with a low clickrate.
+                            triggerTrackingEvent(
+                                'notification_call_to_action_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
+                                0.01,
+                                false
+                            );
+                            closePopup();
+                        }}
+                    >
+                        {showPopup.callToAction.text} {showPopup.callToAction.keyword}
                     </a>
                 </> : ''
             }

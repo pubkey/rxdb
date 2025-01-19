@@ -1,13 +1,14 @@
 /**
  * this file contains objects which match the schemas in schemas.js
  */
-
-import {
-    randomNumber
-} from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
 import * as schemas from './schemas.ts';
-import { appendToArray, ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import {
+    appendToArray,
+    ensureNotFalsy,
+    lastOfArray,
+    randomNumber
+} from '../utils/index.ts';
 
 
 /**

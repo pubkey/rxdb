@@ -1,21 +1,22 @@
 ---
 title: 🚀 Quickstart
 slug: quickstart.html
+description: Learn how to build a realtime TODO app with RxDB. Follow this quickstart for setup, schema creation, data operations, and real-time syncing.
 ---
 
 # RxDB Quickstart
 
-Welcome to the RxDB Quickstart. Here we'll create a simple realtime TODO-app with RxDB to demonstrate the basic concepts.
+Welcome to the RxDB Quickstart. Here we'll create a simple realtime TODO app with RxDB to demonstrate the basic concepts.
 
 ## Installation
 
-RxDB is distributed via npm and uses rxjs as a dependency. Install both with:
+RxDB is distributed via npm and uses RxJS as a dependency. Install both with:
 
-`npm install rxjs rxdb --save`
+`npm install rxdb rxjs --save`
 
 ## Enable dev-mode
 
-When you use RxDB in development, you should enable the [dev-mode plugin](./dev-mode.md) which adds helpful checks and validations and tells you if you do something wrong.
+When you use RxDB in development, you should enable the [dev-mode plugin](./dev-mode.md), which adds helpful checks and validations, and tells you if you do something wrong.
 
 ```ts
 import { addRxPlugin } from 'rxdb';
@@ -27,7 +28,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 ### Choose an RxStorage adapter
 
-RxDB can be used in a range of JavaScript runtime environments, and depending on the runtime the appropriate [RxStorage adapter](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage adapter](./rx-storage-dexie.md) which is bundled with RxDB.
+RxDB can be used in a range of JavaScript runtime environments, and depending on the runtime, the appropriate [RxStorage adapter](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage adapter](./rx-storage-dexie.md), which is bundled with RxDB.
 
 ```ts
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
@@ -52,11 +53,11 @@ const myDatabase = await createRxDatabase({
 
 ### Create an RxCollection
 
-An RxDatabase contains [RxCollection](./rx-collection.md)s for storing and querying data. A collection is similar to a SQL table, and individual records are stored in the collection as JSON documents. An RxDatabase can have as many collections as you need.
+An RxDatabase contains [RxCollection](./rx-collection.md)s for storing and querying data. A collection is similar to an SQL table, and individual records are stored in the collection as JSON documents. An RxDatabase can have as many collections as you need.
 
 #### Creating a schema for a collection
 
-RxDB uses [JSON Schema](https://json-schema.org) to describe the documents stored in each collection. For our example app we create a simple schema that describes a todo document:
+RxDB uses [JSON Schema](https://json-schema.org) to describe the documents stored in each collection. For our example app, we create a simple schema that describes a todo document:
 
 ```ts
 const todoSchema = {
@@ -66,7 +67,7 @@ const todoSchema = {
     properties: {
         id: {
             type: 'string',
-            maxLength: 100 // <- the primary key must have set maxLength
+            maxLength: 100 // <- the primary key must have maxLength
         },
         name: {
             type: 'string'
@@ -132,7 +133,7 @@ await myDocument.modify(docData => {
 
 ### Delete a document
 
-You can soft delete an RxDocument by calling `myDocument.remove()`. This will set the document's state to `DELETED` which ensures that it will not be returned in query results. RxDB keeps deleted documents in the database so that it is able to sync the deleted state to other instances during database [replication](./replication.md). Deleted documents can be purged in a later point with the [cleanup plugin](./cleanup.md) if needed.
+You can soft delete an RxDocument by calling `myDocument.remove()`. This will set the document's state to `DELETED` which ensures that it will not be returned in query results. RxDB keeps deleted documents in the database so that it is able to sync the deleted state to other instances during database [replication](./replication.md). Deleted documents can be purged at a later point with the [cleanup plugin](./cleanup.md) if needed.
 
 
 ## Query Operations
@@ -159,7 +160,7 @@ More Mango query examples can be found at the [RxQuery Examples](./rx-query.html
 
 ## Observing data
 
-You might want to subscribe to data changes so that your UI is always up-to-date with the data stored on disc. RxDB allows you to subscribe to data changes even when the change happens in another part of your application, another browser tab, or during database [replication/synchronization](./replication.md).
+You might want to subscribe to data changes so that your UI is always up-to-date with the data stored on disk. RxDB allows you to subscribe to data changes even when the change happens in another part of your application, another browser tab, or during database [replication/synchronization](./replication.md).
 
 
 ### Observing queries
@@ -175,7 +176,7 @@ const observable = myDatabase.todos.find({
     }
 }).$;
 observable.subscribe(notDone => {
-    console.log('Currently have ' + notDone.length + 'things to do');
+    console.log('Currently have ' + notDone.length + ' things to do');
 });
 ```
 
@@ -192,8 +193,8 @@ myDocument.done$.subscribe(isDone => {
 
 ### Replication
 
-RxDB has multiple [replication plugins](./replication.md) to replicated database state with a server.
-The easiest way to replicate data between your clients devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything.
+RxDB has multiple [replication plugins](./replication.md) to replicate database state with a server.
+The easiest way to replicate data between your clients' devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything.
 
 ```ts
 import {
@@ -215,4 +216,4 @@ replicateWebRTC({
 
 You are now ready to dive deeper into RxDB. 
 There is a full implementation of the [quickstart guide here](https://github.com/pubkey/rxdb-quickstart) so you can clone that repository and play with the code.
-Also please continue reading the documentation, join the community on our [Discord chat](/chat/), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [👑 Premium package](/premium/) which includes additional plugins and utilities.
+Also please continue reading the documentation, join the community on our [Discord chat](/chat/), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and are able to support its continued development, please take a look at the [👑 Premium package](/premium/) which includes additional plugins and utilities.

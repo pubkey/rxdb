@@ -654,7 +654,7 @@ export default function Premium() {
                                     </li>
                                     <li>
                                         <h5>Be active in the RxDB community</h5>
-                                        <p>If you are active in the RxDB community and discord channel by helping others out or creationg educational content like videos and tutorials, feel free to apply for a discount.</p>
+                                        <p>If you are active in the RxDB community and discord channel by helping others out or creating educational content like videos and tutorials, feel free to apply for a discount.</p>
                                     </li>
                                 </ul>
                             </details>
