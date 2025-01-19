@@ -656,6 +656,20 @@ export default function Premium() {
                                         <h5>Be active in the RxDB community</h5>
                                         <p>If you are active in the RxDB community and discord channel by helping others out or creating educational content like videos and tutorials, feel free to apply for a discount.</p>
                                     </li>
+                                    <li>
+                                        <h5>Solve one of the free-premium-tasks</h5>
+                                        <p>
+                                            For private personal projects there is the
+                                            option to solve one of the
+                                            {' '}<a
+                                                href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
+                                                target="_blank"
+                                            >
+                                                Premium Tasks
+                                            </a>{' '}
+                                            to get a free 2 years access to the Premium Plugins.
+                                        </p>
+                                    </li>
                                 </ul>
                             </details>
                             <details>
