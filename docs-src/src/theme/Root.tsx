@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { randomOfArray } from '../../../plugins/utils';
-import { randomNumber } from '../../../src/plugins/utils';
+import { randomNumber } from '../../../plugins/utils';
 
 
 type CallToActionItem = {
