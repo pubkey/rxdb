@@ -199,7 +199,7 @@ export var ERROR_MESSAGES = {
   SC36: 'A field of this type cannot be used as index',
   SC37: 'Fields of type number that are used in an index, must have set the minimum and maximum attribute in the schema',
   SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
-  SC39: 'The primary key must have the maxLength attribute set',
+  SC39: 'The primary key must have the maxLength attribute set. Ensure you use the dev-mode plugin when developing with RxDB.',
   SC40: '$ref fields in the schema are not allowed. RxDB cannot resolve related schemas because it would have a negative performance impact.' + 'It would have to run http requests on runtime. $ref fields should be resolved during build time.',
   SC41: 'minimum, maximum and maxLength values for indexes must be real numbers, not Infinity or -Infinity',
   // plugins/dev-mode

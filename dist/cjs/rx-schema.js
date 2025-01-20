@@ -24,6 +24,17 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
 
     // primary is always required
     this.primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(this.jsonSchema.primaryKey);
+
+    /**
+     * Many people accidentally put in wrong schema state
+     * without the dev-mode plugin, so we need this check here
+     * even in non-dev-mode.
+     */
+    if (!jsonSchema.properties[this.primaryPath].maxLength) {
+      throw (0, _rxError.newRxError)('SC39', {
+        schema: jsonSchema
+      });
+    }
     this.finalFields = (0, _rxSchemaHelper.getFinalFields)(this.jsonSchema);
   }
   var _proto = RxSchema.prototype;

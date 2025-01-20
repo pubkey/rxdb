@@ -25,7 +25,8 @@ var _overwritable = require("./overwritable.js");
 function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
-  ret += 'Given parameters: {\n';
+  ret += '-'.repeat(20) + '\n';
+  ret += 'Parameters:\n';
   ret += Object.keys(parameters).map(k => {
     var paramStr = '[object Object]';
     try {
@@ -37,13 +38,13 @@ function parametersToString(parameters) {
         }, 2);
       }
     } catch (e) {}
-    return k + ':' + paramStr;
+    return k + ': ' + paramStr;
   }).join('\n');
-  ret += '}';
+  ret += '\n';
   return ret;
 }
 function messageForError(message, code, parameters) {
-  return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
+  return '' + '\n' + message + '\n' + parametersToString(parameters);
 }
 var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
   // always true, use this to detect if its an rxdb-error
@@ -111,7 +112,7 @@ function getErrorUrl(code) {
   return 'https://rxdb.info/errors.html?console=errors#' + code;
 }
 function errorUrlHint(code) {
-  return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
+  return '\nFind out more about this error here: ' + getErrorUrl(code) + ' \n';
 }
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code) + errorUrlHint(code), parameters);

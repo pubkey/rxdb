@@ -100,7 +100,8 @@ var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
         console.error('RxDB: Error-Code not known: ' + code);
         throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
       }
-      return _errorMessages.ERROR_MESSAGES[code];
+      var errorMessage = _errorMessages.ERROR_MESSAGES[code];
+      return "\nError message: " + errorMessage + "\nError code: " + code;
     }
   },
   hooks: {
