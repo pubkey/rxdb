@@ -23,6 +23,12 @@ You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so 
 
 There are multiple database solutions that can be used with React Native. While I would recommend to use [RxDB](./) for most use cases, it is still helpful to learn about other alternatives.
 
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
+    </a>
+</center>
+
 ### AsyncStorage
 
 AsyncStorage is a key->value storage solution that works similar to the browsers [localstorage API](./articles/localstorage.md). The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is `Promise` based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.

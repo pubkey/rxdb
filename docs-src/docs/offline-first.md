@@ -17,6 +17,13 @@ Mobile networks become better and having no internet becomes less common even in
 So if we did not care about offline first applications in the past, why should we even care now?
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
+    </a>
+</center>
+
 ## UX is better without loading spinners
 
 In 'normal' web applications, most user interactions like fetching, saving or deleting data, correspond to a request to the backend server. This means that each of these interactions require the user to await the unknown latency to and from a remote server while looking at a loading spinner.

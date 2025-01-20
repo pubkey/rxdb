@@ -17,7 +17,8 @@ function parametersToString(parameters: any): string {
     let ret = '';
     if (Object.keys(parameters).length === 0)
         return ret;
-    ret += 'Given parameters: {\n';
+    ret +='-'.repeat(20) + '\n';
+    ret += 'Parameters:\n';
     ret += Object.keys(parameters)
         .map(k => {
             let paramStr = '[object Object]';
@@ -30,10 +31,10 @@ function parametersToString(parameters: any): string {
                     }, 2);
                 }
             } catch (e) { }
-            return k + ':' + paramStr;
+            return k + ': ' + paramStr;
         })
         .join('\n');
-    ret += '}';
+    ret += '\n';
     return ret;
 }
 
@@ -42,7 +43,7 @@ function messageForError(
     code: string,
     parameters: any
 ): string {
-    return 'RxError (' + code + '):' + '\n' +
+    return '' + '\n' +
         message + '\n' +
         parametersToString(parameters);
 }
@@ -115,7 +116,7 @@ export function getErrorUrl(code: RxErrorKey) {
 }
 
 export function errorUrlHint(code: RxErrorKey) {
-    return '\n You can find out more about this error here: ' + getErrorUrl(code) + ' ';
+    return '\nFind out more about this error here: ' + getErrorUrl(code) + ' \n';
 }
 
 export function newRxError(

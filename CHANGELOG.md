@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Run the check for `maxLength` on primary keys also in non-dev mode because people often forget to set this.
+- Make error messages prettier and more readable.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -218,6 +218,9 @@ LowDB is a small, local JSON database powered by the Lodash library. It is desig
 
 As an alternative to LowDB, [RxDB](./) offers real-time reactivity, allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust [query capabilities](./rx-query.md), including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.
 
+### localForage
+localForage is a popular JavaScript library for offline storage that provides a simple, promise-based API. It abstracts over different storage mechanisms such as [IndexedDB](./rx-storage-indexeddb.md), WebSQL, or [localStorage](./articles/localstorage.md), making it easier to write code once and have it work seamlessly across various browsers. While localForage is great for storing data locally in a key-value manner, it doesn't provide the real-time reactive queries, [conflict handling](./transactions-conflicts-revisions.md), or revision-based replication that RxDB does. This makes localForage a useful choice for straightforward caching or persistent storage needs, but not ideal for advanced offline-first scenarios requiring multi-user collaboration or complex querying.
+
 ### MongoDB Realm
 
 Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
@@ -239,6 +242,11 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 ### InstantDB
 
 InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless optimistic updates and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the offline data is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+
+
+### Yjs
+
+Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library focused on enabling real-time collaboration - particularly for text editing, although it can handle other data types as well. While it provides powerful conflict resolution and peer-to-peer synchronization out of the box, Yjs itself is not a full-fledged database. Instead, you typically combine Yjs with other storage or networking layers to achieve a [local-first architecture](./offline-first.md). This flexibility allows for sophisticated [real-time](./articles/realtime-database.md) features, but also means you must handle indexing, queries, and persistence on your own if you need them. Compared to RxDB, Yjs does not offer built-in replication adapters or a query system, so developers who require a more complete solution for conflict resolution, data persistence, and offline-first capabilities may find RxDB more convenient.
 
 ### ElectricSQL
 
