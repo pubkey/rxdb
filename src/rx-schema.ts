@@ -1,8 +1,7 @@
 import {
     overwriteGetterForCaching,
     isMaybeReadonlyArray,
-    deepEqual,
-    ensureNotFalsy
+    deepEqual
 } from './plugins/utils/index.ts';
 import {
     newRxError,
