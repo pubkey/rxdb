@@ -1,7 +1,8 @@
 import {
     overwriteGetterForCaching,
     isMaybeReadonlyArray,
-    deepEqual
+    deepEqual,
+    ensureNotFalsy
 } from './plugins/utils/index.ts';
 import {
     newRxError,
@@ -43,6 +44,15 @@ export class RxSchema<RxDocType = any> {
 
         // primary is always required
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
+
+        /**
+         * Many people accidentially put in wrong schema state
+         * without the dev-mode plugin, so we need this check here
+         * even in non-dev-mode.
+         */
+        if (!jsonSchema.properties[this.primaryPath].maxLength) {
+            throw newRxError('SC39', { schema: jsonSchema });
+        }
 
         this.finalFields = getFinalFields(this.jsonSchema);
     }
