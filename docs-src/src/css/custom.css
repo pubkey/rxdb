@@ -375,7 +375,13 @@ p {
     color: whitesmoke;
 }
 
-.markdown a {
+.markdown b,
+p b {
+    color: var(--fontColor-offwhite);
+}
+
+.markdown a,
+p a {
     /* color: var(--color-top); */
     color: white;
     font-weight: 600;
@@ -385,7 +391,8 @@ p {
     text-underline-offset: 4px;
 }
 
-.markdown a:hover {
+.markdown a:hover,
+p a:hover {
     color: var(--color-top);
     text-decoration-color: var(--color-top);
 }
@@ -807,17 +814,22 @@ body {
     word-wrap: normal;
 }
 
+.block h4 {
+    width: 100%;
+    /* text-align: center; */
+}
+
 .block.first .half.left {
     flex: 1.6;
 }
 
 @media (max-width: 900px) {
     .block.first .inner {
-        margin-top: 38px;
+        margin-top: 0px;
     }
 
     .block.first.hero .inner {
-        flex-direction: column;
+        flex-direction: column-reverse;
     }
 }
 
@@ -910,6 +922,10 @@ body {
     padding-bottom: 0px;
 }
 
+.block.reviews p {
+    max-width: 900px;
+}
+
 .block.reviews .inner {
     max-width: 1224px;
 }
@@ -924,8 +940,9 @@ body {
 }
 
 .block.second .canvas.half {
+    padding-top: 100px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     overflow: hidden;
 
@@ -933,6 +950,12 @@ body {
 }
 
 @media (max-width: 900px) {
+    .block.second .canvas.half {
+        position: relative;
+        top: -100px;
+        padding-top: 0px;
+    }
+
     .block.second .inner {
         flex-direction: column;
     }
@@ -1058,6 +1081,16 @@ body {
     top: -12%;
 }
 
+.block.offline-first p {
+    margin-top: 50px;
+}
+
+@media (max-width: 900px) {
+    .block.offline-first p {
+        margin-top: 0px;
+    }
+}
+
 @media (max-width: 900px) {
     .block.offline-first .offline-image-wrapper {
         transform: rotate(110deg);
@@ -1085,17 +1118,18 @@ body {
     position: relative;
 }
 
-.block.offline-first ul li {
+ul.checked li {
     font-size: 26px;
     text-align: left;
+    line-height: 200%;
 }
 
-.block.offline-first ul li b {
+ul.checked li b {
     font-size: 26px;
 }
 
-.block.offline-first ul li:before {
-    font-size: 33px;
+ul.checked li:before {
+    font-size: 45px;
 }
 
 .block.frameworks .content {
@@ -1575,7 +1609,7 @@ body {
     left: 50%;
 }
 
-.trophy:hover {
+.trophy {
     box-shadow: 2px 2px 13px #eac54f, -2px -1px 14px #eac54f;
 }
 
@@ -1637,7 +1671,7 @@ body {
     background-color: var(--bg-color-dark);
 }
 
-.trophy.twitter:hover {
+.trophy.twitter {
     box-shadow: 2px 2px 13px white, -2px -1px 14px white;
 }
 
@@ -1649,7 +1683,7 @@ body {
     color: #5962ee;
 }
 
-.trophy.discord:hover {
+.trophy.discord {
     box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee;
 }
 
@@ -2669,8 +2703,14 @@ footer a:visited {
     transform: scale(-1, 1);
 }
 
-.consulting-page .hero-img {
+.hero-img {
     max-width: fit-content;
+}
+
+@media (max-width: 900px) {
+    .hero-img {
+        max-height: 300px;
+    }
 }
 
 .consulting-page .hero-bottom-group-mobile {
@@ -3104,6 +3144,7 @@ footer a:visited {
 
 .review-img {
     max-height: 24px;
+    padding-bottom: 5px;
 }
 
 .slider-content .slider-profile img.slider-logo-white {
@@ -3143,6 +3184,28 @@ footer a:visited {
     padding: 0;
     height: auto !important;
     max-height: 700px;
+
+    /**
+     * @link https://stackoverflow.com/questions/54507178/fade-out-a-div-with-a-css-js-gradient
+     */
+    mask-image: -webkit-gradient(linear,
+            left center,
+            right center,
+            color-stop(0, rgba(0, 0, 0, 0)),
+            /* fully transparent at left edge */
+            color-stop(0.3, rgba(0, 0, 0, 1)),
+            /* fade in to solid by 20% */
+            color-stop(0.7, rgba(0, 0, 0, 1)),
+            /* stay solid until 80% */
+            color-stop(1, rgba(0, 0, 0, 0))
+            /* fade out to transparent at right edge */
+        );
+}
+
+@media (max-width: 1200px) {
+    .slick-list {
+        mask-image: none;
+    }
 }
 
 .slick-dots {

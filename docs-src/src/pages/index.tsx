@@ -431,7 +431,7 @@ export default function Home(props: {
                         }}>
                           <PriceTag price={STARTER_PACK_PRICE + ''} />
                         </div>
-                          <h2>RxDB Starter Pack</h2>
+                        <h2>RxDB Starter Pack</h2>
                         <p>Unlock the full potential of RxDB for your project with our Starter Pack! Whether you're just getting started or looking for expert guidance, this pack is designed to help you use RxDB efficiently and effectively. Here's what you'll get:</p>
                         <ul>
                           <li>
@@ -491,12 +491,11 @@ export default function Home(props: {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    paddingLeft: '4%',
-                    paddingRight: '4%'
+                    paddingLeft: '6%',
+                    paddingRight: '2%'
                   }}
                 >
-
-                  <DevicesSync sem={props.sem} />
+                  <img src="/img/hero.svg" className="hero-img" alt="rxdb-image" />
                 </div>
                 {/* <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
                     </BrowserWindow> */}
@@ -523,35 +522,23 @@ export default function Home(props: {
             valueTitle='stars'
           />
 
-          <div className="block reviews" id="reviews">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Used by <b className="underline">many</b>
-                </h2>
-                <p>
-                  RxDB is a proven technology used by thousands of developers worldwide. <br />
-                  With its flexibility, RxDB is used in a diverse range of {getAppName()} apps and services.
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
-
           <div className="block second dark">
             <div className="content">
               <h2>
-                Realtime applications <b className="underline">made easy</b>
+                Realtime Applications <b className="underline">made easy</b>
               </h2>
               <p>
-                From the results of a query, to a single field of a document, with RxDB
-                you can <b>observe everything</b>. This enables you to build
-                realtime {getAppName()} applications fast and reliable.{' '}
-                {/* It does not matter if the data was changed by{' '}                <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b> */}
-                Whenever your data changes, your UI reflects the new state.{' '}
-                RxDB supports <b>RxJS</b> and <a href="/reactivity.html" target="_blank">any reactiveness libraries</a> like <b>angular</b> signals, <b>preact</b> signals, <b>react</b> hooks or <b>vue.js</b> refs.
+                In RxDB, everything is observable. <b>Query Results</b>, <b>Documents</b>, <b>Document Fields</b>, <b>Events</b>.
               </p>
+              <ul className="checked">
+                <li>Whenever your data changes, your UI reflects the new state.</li>
+                <li>Realtime updates across components, browser tabs and user devices</li>
+                {
+                  props.sem && props.sem.appName ?
+                    <li>Supports {props.sem.appName} and all major frameworks:</li> :
+                    <li>All major frameworks Supported:</li>
+                }
+              </ul>
               <div className="inner">
                 {/*
           Use https://www.programiz.com/html/online-compiler/
@@ -585,17 +572,13 @@ export default function Home(props: {
                 <br />
                 <br />
                 <h2>
-                  Sync with <b>any backend</b>
+                  Sync with <b className="underline">any Backend</b>
                 </h2>
                 <p>
-
-                  RxDB has a simple yet high performance <a href="/replication.html" target="_blank">replication protocol</a> that enables you to
-                  run a realtime replication between {getAppName()} clients and servers. While there are many plugins for specific endpoints like{' '}
-                  <a href="/replication-couchdb.html" target="_blank">CouchDB</a>,{' '}
-                  <a href="/replication-graphql.html" target="_blank">GraphQL</a>,{' '}
-                  <a href="/replication-webrtc.html">P2P</a>,{' '}
-                  <a href="/replication-firestore.html" target="_blank">Firestore</a> or <a href="/replication-nats.html" target="_blank">NATS</a>,{' '}
-                  the protocol is not bound to a specific backend and can be used with any <a href="/replication-http.html" target="_blank">existing infrastructure</a>.
+                  RxDB’s high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName()} clients and servers.
+                  While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
+                  , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
+                  it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
                 </p>
               </div>
               <div className="half left">
@@ -688,34 +671,28 @@ export default function Home(props: {
             </div>
             <div className="content">
               <h2>
-                Online <b className="underline">is optional</b>
+                Online <b className="underline">is Optional</b>
               </h2>
               <div className="full-width">
                 <div className="half left">
                   <p>
-                    RxDB follows the{' '}
-                    <a href="/offline-first.html" target="_blank">
-                      Offline First
-                    </a>{' '}
-                    paradigm where an application must work as well offline as it does
-                    online. This is done by persisting data locally on the {getAppName()} client application and
-                    replicating it in the background. RxDB can even be used solely on
-                    the client side, with no backend at all.
+                    RxDB adopts an <a href="/offline-first.html" target="_blank">offline-first</a> approach, keeping your app fully functional even without a connection.
+                    Data is stored locally on the {getAppName()} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
                   </p>
                 </div>
                 <div className="half right">
                   <ul className="checked">
                     <li>
-                      Your {getAppName()} application still <b>works offline</b>
+                      Keep your {getAppName()} app running <b>offline</b>
                     </li>
                     <li>
-                      Increases <b>perceived performance</b>
+                      Boost perceived <b>performance</b>
                     </li>
                     <li>
-                      Easier and <b>faster implementation</b>
+                      Simplify and <b>speed up development</b>
                     </li>
                     <li>
-                      Needs less backend resources and <b>scales better</b>
+                      Reduces backend load and <b>scales better</b>
                     </li>
                   </ul>
                 </div>
@@ -802,24 +779,20 @@ export default function Home(props: {
               <br />
               <br />
               <h2>
-                Runs in <b className="underline">any JavaScript Runtime</b>
+                Runs in <b className="underline">Any JavaScript Runtime</b>
               </h2>
+
+
               <p>
-                RxDB is based on storage plugins that enables you to swap out the
-                underlying storage engine depending on your runtime. We have storages for <b>Browsers</b>, <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/react-native"
+                RxDB’s modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
+                , <a
+                  href="/rx-storage-sqlite.html"
                   target="_blank"
-                >ReactNative</a>,{' '}<a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/node"
+                >React Native</a>, <a href="/rx-storage-filesystem-node.html" target="_blank">Node.js</a>, <a
+                  href="/electron.html"
                   target="_blank"
-                >Node.js</a>,{' '}<a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/electron"
-                  target="_blank"
-                >Electron</a> and any other.
-                This increases code reuse because the same
-                database and replication logic can be used in all your apps
-                by just switching out the storage settings.
-                <br />
+                >Electron</a>, and beyond.
+                Simply switch the storage plugin to reuse the same database and replication logic across all your {getAppName()} apps, saving time and ensuring consistency.
               </p>
               <div className="below-text">
                 <a
@@ -907,11 +880,12 @@ export default function Home(props: {
 
           <div className="block features dark">
             <div className="content">
-              <h2>All the <b className="underline">features</b> that you need</h2>
+              <h2>All the <b className="underline">Features</b> You’ll Ever Need</h2>
               <p>
-                Since its beginning in 2018, RxDB has gained a huge set of features and plugins which makes it
-                a flexible full solution regardless of which type of {getAppName()} application you are building.
-                Every feature that you need now or might need in the future is already there.
+                Since its creation in 2018,
+                RxDB has evolved into a powerhouse of features and plugins, offering an all-inclusive,
+                future-proof solution for any type of {getAppName()} application. Whatever you need now or might need down the road, is already built in.
+                Giving you the confidence to create robust, scalable apps with ease.
               </p>
               <div style={{
                 marginTop: 65,
@@ -946,6 +920,22 @@ export default function Home(props: {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="block reviews" id="reviews">
+            <div className="content centered">
+              <div className="inner">
+                <h2>
+                  Used by <b className="underline">Thousands Worldwide</b>
+                </h2>
+                <p>
+                  RxDB is a proven, battle-tested solution used by countless developers across the globe.
+                  With its flexibility, RxDB is used in a vast spectrum of {getAppName()} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
+                </p>
+                <br /><br />
+              </div>
+            </div>
+            <ReviewsBlock></ReviewsBlock>
           </div>
 
           {/* <div className="block fifth dark">
@@ -1039,7 +1029,7 @@ export default function Home(props: {
             </div>
           </div> */}
 
-          <div className="block sixth">
+          {/* <div className="block sixth">
             <div className="content">
               <h2>Free <b className='underline'>Open Core</b> Model</h2>
               <br />
@@ -1066,17 +1056,6 @@ export default function Home(props: {
                         <br />
 
                       </div>
-                      {/* <div className="buy-option-features">
-                        <ul>
-                          <li>Basic RxStorages</li>
-                          <li>Realtime Replication</li>
-                          <li>Live Queries</li>
-                          <li>Schema Validation</li>
-                          <li>Multi-Tab Support</li>
-                          <li>Encryption</li>
-                          <li>Compression</li>
-                        </ul>
-                      </div> */}
                       <a
                         href="/code/"
                         target="_blank"
@@ -1116,90 +1095,6 @@ export default function Home(props: {
                         <br />
 
                       </div>
-                      {/* <div className="buy-option-features">
-                        <ul>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-sqlite.html"
-                              target="_blank"
-                            >
-                              SQLite RxStorage
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-opfs.html"
-                              target="_blank"
-                            >
-                              OPFS RxStorage
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-indexeddb.html"
-                              target="_blank"
-                            >
-                              IndexedDB RxStorage
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-memory-synced.html"
-                              target="_blank"
-                            >
-                              Memory-Synced RxStorage
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-sharding.html"
-                              target="_blank"
-                            >
-                              Sharding Plugin
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/query-optimizer.html"
-                              target="_blank"
-                            >
-                              Query Optimizer
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/migration-storage.html"
-                              target="_blank"
-                            >
-                              Storage Migrator
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-localstorage-meta-optimizer.html"
-                              target="_blank"
-                            >
-                              RxStorage Localstorage Meta Optimizer
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-shared-worker.html"
-                              target="_blank"
-                            >
-                              Shared Worker
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="https://rxdb.info/rx-storage-worker.html"
-                              target="_blank"
-                            >
-                              Worker
-                            </a>
-                          </li>
-                        </ul>
-                      </div> */}
                       <a
                         href="/premium/"
                         onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
@@ -1240,7 +1135,7 @@ export default function Home(props: {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="block dark last">
             <div className="content">

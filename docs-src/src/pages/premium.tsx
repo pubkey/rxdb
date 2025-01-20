@@ -254,7 +254,8 @@ export default function Premium() {
 
                             <p style={{ width: '80%' }}>
                                 While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
-                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines, secure encryption and other features.
+                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines,
+                                {' '}<a href="https://rxdb.info/encryption.html" target="_blank">secure encryption</a> and other features.
                             </p>
                             <p style={{ width: '80%' }}>
                                 By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development.

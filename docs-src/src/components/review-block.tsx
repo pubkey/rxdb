@@ -19,16 +19,16 @@ export const REVIEW_ITEMS: {
         },
         {
             label: 'SafeEx, Denmark',
-            description: 'We rely on RxDB to power our offline-first inspection software. Its seamless offline capabilities keep data accurate even under poor connectivity, and switching between different database providers through one interface significantly simplifies our development. RxDB\'s flexibility positions us to confidently expand into more platforms and environments.',
-            href: 'https://www.safeex.com/',
+            description: 'We use RxDB for our offline-first inspection software. It ensures accurate data even under poor connectivity, while its single interface for multiple databases streamlines development. RxDB\'s flexibility also supports easy expansion to more platforms and environments.',
+            href: 'https://safeex.com/',
             target: '_blank',
             logo: '/files/companies/safeex.svg',
             logoStyle: 'slider-logo-white '
         },
         {
             label: 'WebWare, Italy',
-            description: 'We built an offline-first application for technicians worldwide using RxDB. Its well-thought-out logic, extensive features, and the ability to maintain full control make RxDB a perfect fit for our needs. It ensures reliable performance, even in challenging network conditions, resulting in a seamless global maintenance solution.',
-            href: 'https://www.webware.dev/',
+            description: 'We use RxDB in our global offline-first app for technicians. Its robust features and total control ensure reliable performance, even with poor connectivity, resulting in a seamless maintenance solution.',
+            href: 'https://webware.dev/',
             target: '_blank',
             logo: '/files/companies/webware.svg',
             logoStyle: 'slider-logo-black '
@@ -37,7 +37,7 @@ export const REVIEW_ITEMS: {
             label: 'myAgro, Africa',
             description: 'We rely on RxDB to manage all our data in one place. Our custom store became unwieldy, so we switched to RxDB for schema migrations, real-time replication, conflict resolution, and reactive programming. Its push and pull handlers also integrate smoothly with our existing APIs.',
 
-            href: 'https://www.myagro.org/',
+            href: 'https://myagro.org/',
             target: '_blank',
             logo: '/files/companies/myagro.svg',
             logoStyle: 'slider-logo-black ',
@@ -84,7 +84,7 @@ export const REVIEW_ITEMS: {
         {
             label: 'Nutrien, Canada',
             description: 'With RxDB we have built an offline capable Progressive Web Application that is used by our borer operators to report on conditions at the mineface.',
-            href: 'https://www.nutrien.com/',
+            href: 'https://nutrien.com/',
             target: '_blank',
             logo: '/files/companies/nutrien.svg',
             logoStyle: 'slider-logo-white ',
@@ -189,14 +189,17 @@ export function ReviewsBlock() {
                             />
                             <div className="slider-info">
                                 <p className="developer">{item.label}</p>
-                                <a
+                                <span className="company-link"                                >
+                                    {new URL(item.href).hostname}
+                                </span>
+                                {/* <a
                                     href={item.href}
                                     rel='nofollow noopener'
                                     target={item.target ? '_blank' : '_self'}
                                     className="company-link"
                                 >
                                     {item.href}
-                                </a>
+                                </a> */}
                             </div>
                         </div>
                     </div>

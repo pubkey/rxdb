@@ -35,7 +35,7 @@ export const overwritable = {
         RxDB Error-Code: ${message}.
         Hint: Error messages are not included in RxDB core to reduce build size.
         To show the full error messages and to ensure that you do not make any mistakes when using RxDB,
-        use the dev-mode plugin when you are in developement mode: https://rxdb.info/dev-mode.html?console=error
+        use the dev-mode plugin when you are in development mode: https://rxdb.info/dev-mode.html?console=error
         `;
     }
 };
