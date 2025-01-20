@@ -21,7 +21,7 @@ const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
 - Update [Bun.js to the latest version](https://github.com/pubkey/rxdb/blob/master/.github/workflows/main.yml#L843) while ensuring the tests still work
-- Add granular binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
+- Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
 
 ## Tasks already in progress (do no work on these!)
 
