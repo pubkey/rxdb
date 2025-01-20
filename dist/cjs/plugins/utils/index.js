@@ -102,6 +102,17 @@ Object.keys(_utilsString).forEach(function (key) {
     }
   });
 });
+var _utilsNumber = require("./utils-number.js");
+Object.keys(_utilsNumber).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsNumber[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsNumber[key];
+    }
+  });
+});
 var _utilsObjectDeepEqual = require("./utils-object-deep-equal.js");
 Object.keys(_utilsObjectDeepEqual).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

@@ -2,9 +2,8 @@
  * this file contains objects which match the schemas in schemas.js
  */
 
-import { randomNumber } from 'async-test-util';
 import * as schemas from "./schemas.js";
-import { appendToArray, ensureNotFalsy, lastOfArray } from "../utils/index.js";
+import { appendToArray, ensureNotFalsy, lastOfArray, randomNumber } from "../utils/index.js";
 
 /**
  * Some storages had problems with umlauts and other special chars.

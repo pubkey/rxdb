@@ -29,7 +29,6 @@ exports.simpleHeroArray = simpleHeroArray;
 exports.simpleHumanAge = simpleHumanAge;
 exports.simpleHumanData = simpleHumanData;
 exports.simpleHumanV3Data = simpleHumanV3Data;
-var _asyncTestUtil = require("async-test-util");
 var schemas = _interopRequireWildcard(require("./schemas.js"));
 var _index = require("../utils/index.js");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -59,7 +58,7 @@ maxLength) {
   if (!minLength || !maxLength || minLength > maxLength) {
     throw new Error('invalid length given ' + minLength + ' ' + maxLength);
   }
-  var length = (0, _asyncTestUtil.randomNumber)(minLength, maxLength);
+  var length = (0, _index.randomNumber)(minLength, maxLength);
   while (text.length < length) {
     if (text.length === 0) {
       /**
@@ -83,7 +82,7 @@ maxLength) {
   }
   return text;
 }
-function humanData(passportId = randomStringWithSpecialChars(8, 12), age = (0, _asyncTestUtil.randomNumber)(10, 50), firstName = randomStringWithSpecialChars(8, 12)) {
+function humanData(passportId = randomStringWithSpecialChars(8, 12), age = (0, _index.randomNumber)(10, 50), firstName = randomStringWithSpecialChars(8, 12)) {
   return {
     passportId: passportId,
     firstName,
@@ -101,14 +100,14 @@ function simpleHumanData() {
 function simpleHumanV3Data(partial = {}) {
   var defaultObj = {
     passportId: randomStringWithSpecialChars(8, 12),
-    age: (0, _asyncTestUtil.randomNumber)(10, 50)
+    age: (0, _index.randomNumber)(10, 50)
   };
   return Object.assign(defaultObj, partial);
 }
 function simpleHumanAge(partial = {}) {
   var defaultObj = {
     passportId: randomStringWithSpecialChars(8, 12),
-    age: (0, _asyncTestUtil.randomNumber)(10, 50) + ''
+    age: (0, _index.randomNumber)(10, 50) + ''
   };
   return Object.assign(defaultObj, partial);
 }
@@ -116,7 +115,7 @@ function humanWithSubOther() {
   return {
     passportId: randomStringWithSpecialChars(8, 12),
     other: {
-      age: (0, _asyncTestUtil.randomNumber)(10, 50)
+      age: (0, _index.randomNumber)(10, 50)
     }
   };
 }
@@ -155,7 +154,7 @@ function bigHumanDocumentType() {
     dnaHash: randomStringWithSpecialChars(8, 12),
     firstName: randomStringWithSpecialChars(8, 12),
     lastName: randomStringWithSpecialChars(8, 12),
-    age: (0, _asyncTestUtil.randomNumber)(10, 50)
+    age: (0, _index.randomNumber)(10, 50)
   };
 }
 function heroArrayData() {
@@ -164,7 +163,7 @@ function heroArrayData() {
     skills: new Array(3).fill(0).map(() => {
       return {
         name: randomStringWithSpecialChars(4, 6),
-        damage: (0, _asyncTestUtil.randomNumber)(10, 50)
+        damage: (0, _index.randomNumber)(10, 50)
       };
     })
   };
@@ -217,7 +216,7 @@ function compoundIndexData() {
   return {
     passportId: randomStringWithSpecialChars(8, 12),
     passportCountry: randomStringWithSpecialChars(8, 12),
-    age: (0, _asyncTestUtil.randomNumber)(10, 50)
+    age: (0, _index.randomNumber)(10, 50)
   };
 }
 function compoundIndexNoStringData() {
@@ -226,7 +225,7 @@ function compoundIndexNoStringData() {
     passportCountry: {
       [randomStringWithSpecialChars(8, 12)]: randomStringWithSpecialChars(8, 12)
     },
-    age: (0, _asyncTestUtil.randomNumber)(10, 50)
+    age: (0, _index.randomNumber)(10, 50)
   };
 }
 function nostringIndex() {
@@ -253,7 +252,7 @@ function humanWithTimestampData(givenData = {}) {
   var ret = {
     id: randomStringWithSpecialChars(8, 12),
     name: randomStringWithSpecialChars(8, 12),
-    age: (0, _asyncTestUtil.randomNumber)(1, 100),
+    age: (0, _index.randomNumber)(1, 100),
     // use some time in the past week
     updatedAt: Date.now()
   };
@@ -265,12 +264,12 @@ function averageSchemaData(partial = {}) {
   return Object.assign({}, {
     id: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength - 1), (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.id.maxLength)),
     var1: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var1.maxLength) - 3, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var1.maxLength)),
-    var2: (0, _asyncTestUtil.randomNumber)(100, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var2.maximum)),
+    var2: (0, _index.randomNumber)(100, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.var2.maximum)),
     deep: {
       deep1: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength) - 3, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength)),
       deep2: randomStringWithSpecialChars((0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength) - 3, (0, _index.ensureNotFalsy)(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength)),
       deeper: {
-        deepNr: (0, _asyncTestUtil.randomNumber)(0, 10)
+        deepNr: (0, _index.randomNumber)(0, 10)
       }
     },
     list: new Array(5).fill(0).map(() => ({
@@ -282,11 +281,11 @@ function averageSchemaData(partial = {}) {
 function pointData() {
   return {
     id: randomStringWithSpecialChars(8, 12),
-    x: (0, _asyncTestUtil.randomNumber)(1, 100),
-    y: (0, _asyncTestUtil.randomNumber)(1, 100)
+    x: (0, _index.randomNumber)(1, 100),
+    y: (0, _index.randomNumber)(1, 100)
   };
 }
-function humanWithIdAndAgeIndexDocumentType(age = (0, _asyncTestUtil.randomNumber)(1, 100)) {
+function humanWithIdAndAgeIndexDocumentType(age = (0, _index.randomNumber)(1, 100)) {
   return {
     id: randomStringWithSpecialChars(8, 12),
     name: randomStringWithSpecialChars(8, 12),
@@ -298,7 +297,7 @@ function humanWithCompositePrimary(partial = {}) {
     firstName: randomStringWithSpecialChars(8, 12),
     lastName: randomStringWithSpecialChars(8, 12),
     info: {
-      age: (0, _asyncTestUtil.randomNumber)(10, 50)
+      age: (0, _index.randomNumber)(10, 50)
     }
   };
   return Object.assign(defaultObj, partial);

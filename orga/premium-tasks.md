@@ -4,9 +4,12 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 This list will be regularly updated with new Tasks, all updates will be posted on [discord](https://rxdb.info/chat).
 
-## How to claim a task
+## How to claim and solve a task
 
 To ensure there are not multiple people working on the same task, before you start working on that task, [create an issue](https://github.com/pubkey/rxdb/issues/new) where you tell about the estimated time to finish the task.
+- To solve a task, you must do it fully on your own.
+- The maintainer might answer your questions but will not do the work.
+- The CI must still be green afterwards. Commenting out broken tests is not allowed.
 
 ## Open Tasks
 
@@ -18,6 +21,7 @@ const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
 - Update [Bun.js to the latest version](https://github.com/pubkey/rxdb/blob/master/.github/workflows/main.yml#L843) while ensuring the tests still work
+- Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
 
 ## Tasks already in progress (do no work on these!)
 

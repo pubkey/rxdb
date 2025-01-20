@@ -7,6 +7,7 @@ export * from "./utils-hash.js";
 export * from "./utils-promise.js";
 export * from "./utils-regex.js";
 export * from "./utils-string.js";
+export * from "./utils-number.js";
 export * from "./utils-object-deep-equal.js";
 export * from "./utils-object-dot-prop.js";
 export * from "./utils-object.js";

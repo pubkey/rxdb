@@ -7,6 +7,7 @@ export * from './utils-hash.ts';
 export * from './utils-promise.ts';
 export * from './utils-regex.ts';
 export * from './utils-string.ts';
+export * from './utils-number.ts';
 export * from './utils-object-deep-equal.ts';
 export * from './utils-object-dot-prop.ts';
 export * from './utils-object.ts';
