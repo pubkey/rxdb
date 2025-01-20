@@ -952,7 +952,7 @@ body {
 @media (max-width: 900px) {
     .block.second .canvas.half {
         position: relative;
-        top: -100px;
+        top: 0px;
         padding-top: 0px;
     }
 
