@@ -7,7 +7,9 @@ This list will be regularly updated with new Tasks, all updates will be posted o
 ## How to claim and solve a task
 
 To ensure there are not multiple people working on the same task, before you start working on that task, [create an issue](https://github.com/pubkey/rxdb/issues/new) where you tell about the estimated time to finish the task.
-To solve a task, you must do it fully on your own. The maintainer might answer your questions but will not do the work. The CI must still be green afterwards.
+- To solve a task, you must do it fully on your own.
+- The maintainer might answer your questions but will not do the work.
+- The CI must still be green afterwards. Commenting out broken tests is not allowed.
 
 ## Open Tasks
 
