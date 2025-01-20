@@ -97,7 +97,7 @@ complex queries can pose a challenge with IndexedDB, and while its performance i
 addEventListener("storage", (event) => {});
 ```
 
-For those looking to harness the full power of IndexedDB with added capabilities, using wrapper libraries like [RxDB](https://rxdb.info/) or [Dexie.js](../rx-storage-dexie.md) is recommended. These libraries augment IndexedDB with features such as complex queries and observability, enhancing its usability for modern applications.
+For those looking to harness the full power of IndexedDB with added capabilities, using wrapper libraries like [RxDB](https://rxdb.info/) is recommended. These libraries augment IndexedDB with features such as complex queries and observability, enhancing its usability for modern applications by providing a real database instead of only a key-value store.
 
 <center>
     <a href="https://rxdb.info/">

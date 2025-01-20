@@ -46,7 +46,7 @@ export class RxSchema<RxDocType = any> {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.jsonSchema.primaryKey);
 
         /**
-         * Many people accidentially put in wrong schema state
+         * Many people accidentally put in wrong schema state
          * without the dev-mode plugin, so we need this check here
          * even in non-dev-mode.
          */
