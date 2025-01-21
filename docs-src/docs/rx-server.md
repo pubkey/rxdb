@@ -240,7 +240,7 @@ const endpoint = await server.addReplicationEndpoint({
 ```
 
 
-# Server-only indexes
+## Server-only indexes
 
 Normal RxDB schema indexes get the `_deleted` field prepended because all [RxQueries](./rx-query.md) automatically only search for documents with `_deleted=false`.
 When you use RxDB on a server, this might not be optimal because there can be the need to query for documents where the value of `_deleted` does not matter. Mostly this is required in the [pull.stream$](./replication.md#checkpoint-iteration) of a replication when a [queryModifier](#query-modifier) is used to add an additional field to the query.
