@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Run the check for `maxLength` on primary keys also in non-dev mode because people often forget to set this.
-- Make error messages prettier and more readable.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.3.0 (22 January 2025)
+
+- Run the check for `maxLength` on primary keys also in non-dev mode because people often forget to set this.
+- Make error messages prettier and more readable.
 
 ### 16.2.0 (16 January 2025)
 
