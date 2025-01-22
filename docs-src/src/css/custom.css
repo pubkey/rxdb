@@ -2343,13 +2343,15 @@ footer a:visited {
 }
 
 .call-to-action-popup {
-    position: fixed;
-    width: 500px;
+    position: sticky;
+    width: 550px;
     min-height: 200px;
     background-color: white;
-    bottom: 0;
-    right: 0;
-    margin-right: 20px;
+    bottom: 20px;
+
+    margin-right: auto;
+    margin-left: auto;
+
     margin-bottom: 20px;
     border-radius: var(--ifm-pre-border-radius);
     border: 1px solid var(--color-top);
