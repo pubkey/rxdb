@@ -9,12 +9,28 @@
 
 ## Seo keywords:
 
+X- "optimistic ui"
+
 - "local database"
+
 - "firebase alternative"
+
 - "jquery database"
+
 - "store local storage"
+
 - "react localstorage"
+
 - "local database"
+
 - "ionic storage"
+
 - "vue database"
+
 - "store array in localstorage", "localStorage array of objects"
+
+
+- "real time web apps"
+
+- "reactive database"
+ 

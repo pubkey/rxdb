@@ -107,7 +107,7 @@ const sidebars = {
         'plugins',
         'errors',
       ],
-    },    {
+    }, {
       type: 'category',
       label: 'Advanced Features',
       items: [
@@ -191,7 +191,8 @@ const sidebars = {
         'articles/angular-indexeddb',
         'articles/react-indexeddb',
         'capacitor-database',
-        'electron-database'
+        'electron-database',
+        'articles/optimistic-ui',
       ],
     },
     'contribute',
