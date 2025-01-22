@@ -21,6 +21,8 @@ X- "optimistic ui"
 
 - "react localstorage"
 
+- "react-native encryption"
+
 - "local database"
 
 - "ionic storage"

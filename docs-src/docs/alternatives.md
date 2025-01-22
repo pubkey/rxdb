@@ -241,7 +241,7 @@ Replicache can be used in most frontend technologies like browsers, React/Remix,
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless optimistic updates and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the offline data is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and synced when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the offline data is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
 
 
 ### Yjs

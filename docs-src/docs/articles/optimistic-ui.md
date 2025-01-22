@@ -43,7 +43,7 @@ A local database is the heart of an Optimistic UI. With RxDB, **all application 
 
 - **Instant Writes**: When users perform an action (like clicking a button or submitting a form), the changes are written directly to the local RxDB database. This immediate local write makes the UI feel snappy and removes the dependency on instantaneous server responses.
 
-- **Offline-First**: Because data is managed locally, your app continues to operate smoothly even without an internet connection. Users can view, create, and update data at any time, assured that changes will sync automatically once they're back online.
+- [Offline-First](../offline-first.md): Because data is managed locally, your app continues to operate smoothly even without an internet connection. Users can view, create, and update data at any time, assured that changes will sync automatically once they're back online.
 
 
 
@@ -54,7 +54,7 @@ A local database is the heart of an Optimistic UI. With RxDB, **all application 
 RxDB's core is built around observables that react to any state changes - whether from local writes or incoming replication from the server.
 
 - **Automatic UI refresh**: Any query or document subscription in RxDB automatically notifies your UI layer when data changes. There's no need to manually poll or refetch.  
-- **Cross-tab updates**: If you have the same RxDB database open in multiple browser tabs, changes in one tab instantly propagate to the others.  
+- **Cross-tab updates**: If you have the same RxDB database open in multiple [browser](./browser-database.md) tabs, changes in one tab instantly propagate to the others.  
 
 <p align="center">
   <img src="/files/multiwindow.gif" alt="RxDB multi tab" width="450" />
@@ -96,7 +96,7 @@ To learn more about these protocols and their integration with RxDB, check out [
 </center>
 
 
-Angular's `async` pipe works smoothly with RxDB's observables. Suppose you have a `myCollection` of documents, you can directly subscribe in the template:
+[Angular](./angular-database.md)'s `async` pipe works smoothly with RxDB's observables. Suppose you have a `myCollection` of documents, you can directly subscribe in the template:
 
 ```html
 <ul *ngIf="(myCollection.find().$ | async) as docs">
@@ -107,7 +107,7 @@ Angular's `async` pipe works smoothly with RxDB's observables. Suppose you have 
 ```
 This snippet:
 
-- Subscribes to `myCollection.find().$`, which emits live updates whenever documents in the collection change.
+- Subscribes to `myCollection.find().$`, which emits live updates whenever [documents](../rx-document.md) in the [collection](../rx-collection.md) change.
 - Passes the emitted array of documents into docs.
 - Renders each document in a list item, instantly reflecting any changes.
 
@@ -117,16 +117,14 @@ This snippet:
 </center>
 
 
-In React, you can utilize signals or other state management tools. For instance, if we have an RxDB extension that exposes a **signal**:
+In [React](./react-database.md), you can utilize signals or other state management tools. For instance, if we have an [RxDB extension](../reactivity.md) that exposes a **signal**:
 
 ```tsx
 import React from 'react';
-import { useSignal } from 'some-react-signal-library';
 
 function MyComponent({ myCollection }) {
   // .find().$$ provides a signal that updates whenever data changes
   const docsSignal = myCollection.find().$$;
-  const docs = useSignal(docsSignal);
 
   return (
     <ul>
@@ -140,7 +138,7 @@ function MyComponent({ myCollection }) {
 export default MyComponent;
 ```
 
-When you call `docsSignal.value` or use a hook like useSignal, it pulls the latest value from the RxDB query. Whenever the collection updates, the signal emits the new data, and React re-renders the component instantly.
+When you call `docsSignal.value` or use a hook like useSignal, it pulls the latest value from the [RxDB query](../rx-query.md). Whenever the collection updates, the signal emits the new data, and React re-renders the component instantly.
 
 
 
@@ -158,7 +156,7 @@ Users may see changes that haven't yet been confirmed by the server. If a subseq
 The server must be capable of storing and returning revision metadata (for instance, a timestamp or versioning system). Check out RxDB's [replication docs](../replication.md) for details on how to structure your back end.
 
 - **Storage Limits**:
-Storing data in the client has practical size limits. IndexedDB or other client-side storages have constraints (though usually quite large). See [storage comparisons](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md).
+Storing data in the client has practical size limits. [IndexedDB](../rx-storage-indexeddb.md) or other client-side storages have constraints (though usually quite large). See [storage comparisons](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md).
 
 
 ## Conflict Resolution Strategies
@@ -174,9 +172,9 @@ RxDB's default approach is to let the first successful push define the latest ve
 
 ## When (and When Not) to Use Optimistic UI
 - When to Use
-  - Real-time interactions like chat apps, social feeds, or “Likes."
+  - [Real-time interactions](./realtime-database.md) like chat apps, social feeds, or “Likes."
 Situations where high success rates of operations are expected (most writes don't fail).
-  - Apps that need an offline-first approach or handle intermittent connectivity gracefully.
+  - Apps that need an [offline-first approach](../offline-first.md) or handle intermittent connectivity gracefully.
 
 - When Not to Use
   - Large, complex transactions with high failure rates.
