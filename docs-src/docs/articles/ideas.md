@@ -10,8 +10,7 @@
 ## Seo keywords:
 
 X- "optimistic ui"
-
-- "local database"
+X- "local database"
 
 - "firebase alternative"
 

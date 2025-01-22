@@ -37,7 +37,7 @@ async function run() {
     console.log(JSON.stringify(files, null, 4));
 
     let output = 'CONTEXT: \n\n\n\n';
-    const contents = await Promise.all(
+    await Promise.all(
         files.map(async (file) => {
 
             const isInIgnoreList = ignoreFiles.find(ign => file.includes(ign));
