@@ -35,7 +35,7 @@ Browser databases distribute the query workload to users' devices, allowing quer
 Browser databases offer the advantage of running queries locally, resulting in low latency. Eliminating the need for server round-trips significantly improves query performance, ensuring faster data retrieval and a more responsive application.
 
 ### Faster initial application start time
-Storing data in the browser reduces the initial application start time. Instead of waiting for data to be fetched from the server, the application can leverage the local database, resulting in faster initialization and improved user satisfaction right from the start.
+Storing data in the browser reduces the initial application start time. Instead of waiting for data to be fetched from the server, the application can leverage the [local database](./local-database.md), resulting in faster initialization and improved user satisfaction right from the start.
 
 ### Easier integration with JavaScript frameworks
 Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as [Angular](./angular-database.md), React.js, Vue.js, and Svelte. This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.

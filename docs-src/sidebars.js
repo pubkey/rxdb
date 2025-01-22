@@ -193,6 +193,7 @@ const sidebars = {
         'capacitor-database',
         'electron-database',
         'articles/optimistic-ui',
+        'articles/local-database',
       ],
     },
     'contribute',

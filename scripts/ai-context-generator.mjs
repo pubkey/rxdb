@@ -20,6 +20,12 @@ const additionalFiles = [
     '../CHANGELOG.md'
 ];
 
+const ignoreFiles = [
+    'rx-storage-pouchdb.md',
+    'adapters.md',
+    'rx-storage-lokijs.md'
+];
+
 
 async function run() {
 
@@ -33,7 +39,9 @@ async function run() {
     let output = 'CONTEXT: \n\n\n\n';
     const contents = await Promise.all(
         files.map(async (file) => {
-            if (!file.endsWith(fileExtension)) {
+
+            const isInIgnoreList = ignoreFiles.find(ign => file.includes(ign));
+            if (isInIgnoreList || !file.endsWith(fileExtension)) {
                 return;
             }
             console.log('f: ' + file);

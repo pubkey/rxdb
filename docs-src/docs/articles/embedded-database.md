@@ -28,7 +28,7 @@ In the context of UI applications, an embedded database serves as a local data s
 - Seamless integration with JavaScript frameworks: Embedded databases, including RxDB, integrate seamlessly with popular JavaScript frameworks like Angular, React.js, Vue.js, and Svelte. This compatibility allows developers to leverage the capabilities of these frameworks while benefiting from embedded database functionality.
 - Running queries locally has low latency: With an embedded database, queries are executed locally on the client device, resulting in minimal latency. This improves the overall performance and responsiveness of the application.
 - Data is portable and always accessible by the user: Embedded databases enable data portability, allowing users to seamlessly transition between devices while maintaining their data and application state. This ensures that data is always accessible and available to the user.
-- Using a local database for state management: Instead of relying on additional state management libraries like Redux or NgRx, an embedded database can be used for local state management. This simplifies state management and ensures data consistency within the application.
+- Using a [local database](./local-database.md) for state management: Instead of relying on additional state management libraries like Redux or NgRx, an embedded database can be used for local state management. This simplifies state management and ensures data consistency within the application.
 
 ## Why RxDB as an Embedded Database for Real-time Applications
 RxDB is a JavaScript-based embedded database that offers numerous advantages for building real-time applications. Let's explore why RxDB is a compelling choice:
