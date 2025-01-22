@@ -30,7 +30,7 @@ async function run() {
 
     console.log(JSON.stringify(files, null, 4));
 
-    let output = '';
+    let output = 'CONTEXT: \n\n\n\n';
     const contents = await Promise.all(
         files.map(async (file) => {
             if (!file.endsWith(fileExtension)) {
