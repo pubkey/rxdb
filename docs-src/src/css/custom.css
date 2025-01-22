@@ -3128,6 +3128,7 @@ footer a:visited {
     display: flex !important;
     flex-grow: 1;
     height: auto;
+    max-width: 600px;
 }
 
 .slider-content .slider-profile img {
