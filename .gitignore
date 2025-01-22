@@ -24,3 +24,4 @@ release-body.md
 dist/typings
 *-debug.log
 .vscode
+ai-context.txt
