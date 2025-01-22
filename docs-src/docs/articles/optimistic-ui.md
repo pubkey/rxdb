@@ -24,7 +24,7 @@ Optimistic UIs offer a host of advantages, from improving the user experience to
 ### Better Scaling and Easier to Implement
 - **Fewer server endpoints**: Instead of sending a separate HTTP request for every single user interaction, you can batch updates and sync them in bulk.
 - **Less server load**: By handling changes locally and syncing in batches, you reduce the volume of server round-trips.
-- **Automated error handling**: If a request fails or a document is in conflict, RxDB's replication mechanism can seamlessly retry and resolve conflicts in the background, without requiring a separate endpoint or manual user intervention.
+- **Automated error handling**: If a request fails or a document is in conflict, RxDB's [replication](../replication.md) mechanism can seamlessly retry and resolve conflicts in the background, without requiring a separate endpoint or manual user intervention.
 
 
 <center>
@@ -65,10 +65,10 @@ RxDB's core is built around observables that react to any state changes - whethe
 
 ### Replication with a Server
 
-While local storage is key to an Optimistic UI, most applications ultimately need to sync with a remote back end. RxDB offers a [powerful replication system](./replication.md) that can sync your local data with virtually any server/database in the background:  
+While local storage is key to an Optimistic UI, most applications ultimately need to sync with a remote back end. RxDB offers a [powerful replication system](../replication.md) that can sync your local data with virtually any server/database in the background:  
 - **Incremental and real-time**: RxDB continuously pushes local changes to the server when a network is available and fetches server updates as they happen.  
 - **Conflict resolution**: If changes happen offline or multiple clients update the same data, RxDB detects conflicts and makes it straightforward to resolve them.  
-- **Flexible transport**: Beyond simple HTTP polling, you can incorporate WebSockets, Server-Sent Events (SSE), or other protocols for instant, server-confirmed changes broadcast to all connected clients. See [this guide](../websockets-sse-polling-webrtc-webtransport.md) to learn more.
+- **Flexible transport**: Beyond simple HTTP polling, you can incorporate WebSockets, Server-Sent Events (SSE), or other protocols for instant, server-confirmed changes broadcast to all connected clients. See [this guide](./websockets-sse-polling-webrtc-webtransport.md) to learn more.
 
 By combining local-first data handling with real-time synchronization, RxDB delivers most of what an Optimistic UI needs - right out of the box. The result is a seamless user experience where interactions never feel blocked by slow networks, and any conflicts or final validations are quietly handled in the background.
 
