@@ -11,6 +11,7 @@
 
 X- "optimistic ui"
 X- "local database"
+X- "react-native encryption"
 
 - "firebase alternative"
 
@@ -20,7 +21,6 @@ X- "local database"
 
 - "react localstorage"
 
-- "react-native encryption"
 
 - "local database"
 

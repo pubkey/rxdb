@@ -29,7 +29,7 @@ Optimistic UIs offer a host of advantages, from improving the user experience to
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220" />
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Database" width="220" />
     </a>
 </center>
 

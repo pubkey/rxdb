@@ -1,7 +1,7 @@
 ---
 title: Cleanup
 slug: cleanup.html
-description: Optimize storage and speed up queries with RxDB’s Cleanup Plugin, automatically removing old deleted docs while preserving replication states.
+description: Optimize storage and speed up queries with RxDB's Cleanup Plugin, automatically removing old deleted docs while preserving replication states.
 ---
 
 

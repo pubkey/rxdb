@@ -194,6 +194,7 @@ const sidebars = {
         'electron-database',
         'articles/optimistic-ui',
         'articles/local-database',
+        'articles/react-native-encryption',
       ],
     },
     'contribute',
