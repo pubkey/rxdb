@@ -194,6 +194,8 @@ const attachment = await doc.putAttachment({
 ## Follow Up
 
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.
+- A good way to learn using RxDB database with React Native is to check out the [RxDB React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native) and use that as a tutorial.
 - Check out the [RxDB GitHub repository](https://github.com/pubkey/rxdb) and leave a star ⭐ if you find it useful.
+- Learn more about the [RxDB encryption plugins](../encryption.md).
 
 By following these best practices and leveraging RxDB's powerful encryption plugins, you can build secure, performant, and robust React Native applications that keep your users' data safe.
