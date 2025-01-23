@@ -1,5 +1,5 @@
 ---
-title: React Native Encrpytion and Encrypted Database/Storage
+title: React Native Encryption and Encrypted Database/Storage
 slug: react-native-encryption.html
 description: Secure your React Native app with RxDB encryption. Learn why it matters, how to implement encrypted databases, and best practices to protect user data.
 ---
@@ -11,7 +11,7 @@ Data security is a critical concern in modern mobile applications. As React Nati
 
 This article explains why encryption is important, how to set it up with RxDB in [React Native](../react-native-database.md), and best practices to keep your app secure.
 
-## Why Encryption Matters
+## 🔒 Why Encryption Matters
 
 Encryption ensures that, even if an unauthorized party obtains physical access to your device or intercepts data, they cannot read the information without the encryption key. Sensitive user data such as credentials, personal information, or financial details should always be encrypted. Proper encryption practices reduce the risk of data breaches and help your application remain compliant with regulations like [GDPR](https://gdpr.eu/) or [HIPAA](https://www.hhs.gov/hipaa/index.html).
 
