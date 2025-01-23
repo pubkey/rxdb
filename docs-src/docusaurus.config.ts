@@ -124,12 +124,12 @@ const config: Config = {
             },
             items: [
                 {
-                    href: '/consulting',
+                    href: '/consulting/',
                     label: 'Support',
                     position: 'right',
                 },
                 {
-                    href: '/premium',
+                    href: '/premium/',
                     label: 'Pricing',
                     position: 'right',
                 },

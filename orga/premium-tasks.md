@@ -1,6 +1,6 @@
 # Premium Tasks
 
-If you are a **single developer** and you use RxDB in your **side project**, you can get free 2 years access to the [RxDB Premium](https://rxdb.info/premium) package by solving one Task of this list.
+If you are a **single developer** and you use RxDB in your **side project**, you can get free 2 years access to the [RxDB Premium](https://rxdb.info/premium/) package by solving one Task of this list.
 
 This list will be regularly updated with new Tasks, all updates will be posted on [discord](https://rxdb.info/chat).
 

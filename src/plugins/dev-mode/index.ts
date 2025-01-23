@@ -78,7 +78,7 @@ export const RxDBDevModePlugin: RxPlugin = {
                     'you did something wrong because the dev-mode plugin will decrease the performance.',
                     '',
                     '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
-                    'to get access to faster storages and more professional features: https://rxdb.info/premium?console=dev-mode ',
+                    'to get access to faster storages and more professional features: https://rxdb.info/premium/?console=dev-mode ',
                     '',
                     'You can disable this warning by calling disableWarnings() from the dev-mode plugin.',
                     // '',

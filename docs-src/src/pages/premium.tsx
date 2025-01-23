@@ -237,6 +237,7 @@ export default function Premium() {
         <>
             <Head>
                 <body className="homepage" />
+                <link rel="canonical" href="/premium/" />
             </Head>
 
             <Layout

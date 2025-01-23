@@ -308,6 +308,7 @@ export default function Home(props: {
     <>
       <Head>
         <body className="homepage" />
+        <link rel="canonical" href="https://rxdb.info/" />
       </Head>
       <Layout
         title={props.sem ? props.sem.metaTitle : siteConfig.title}

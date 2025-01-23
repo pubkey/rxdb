@@ -46,6 +46,7 @@ export default function Consulting() {
         <>
             <Head>
                 <body className="homepage consulting-page" />
+                <link rel="canonical" href="/consulting/" />
             </Head>
             <Layout
                 title={`${siteConfig.title}`}

@@ -205,12 +205,12 @@ const sidebars = {
         {
           type: 'link',
           label: 'Consulting',
-          href: '/consulting'
+          href: '/consulting/'
         },
         {
           type: 'link',
           label: 'Discord',
-          href: '/chat',
+          href: '/chat/',
           customProps: {
             /**
              * Does not work! Missing feature in docusaurus.

@@ -273,7 +273,7 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 - **Leave a Star ☝️**
 - [Check out how you can contribute to this project](https://rxdb.info/contribution.html).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
-- [Buy access to the premium plugins](https://rxdb.info/premium)
+- [Buy access to the premium plugins](https://rxdb.info/premium/)
 - [Join us at discord to get help](https://rxdb.info/chat)
 - [Follow us at LinkedIn](https://www.linkedin.com/company/rxdb/)
 - [Give Feedback (anonymous)](https://forms.gle/vGaZB7zrub1hgqDk8)
