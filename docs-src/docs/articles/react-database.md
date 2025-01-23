@@ -139,7 +139,7 @@ RxDB offers a range of [replication plugins](../replication.md) that facilitate 
 
 ### Advanced RxDB Features and Techniques
 Encryption of Local Data
-Security is paramount when handling sensitive user data. RxDB supports data encryption, ensuring that locally stored information remains protected from unauthorized access. This feature is particularly valuable when dealing with sensitive data in offline scenarios.
+Security is paramount when handling sensitive user data. RxDB supports [data encryption](./react-native-encryption.md), ensuring that locally stored information remains protected from unauthorized access. This feature is particularly valuable when dealing with sensitive data in offline scenarios.
 
 ### Indexing and Performance Optimization
 Efficient indexing is critical for achieving optimal database performance. RxDB provides mechanisms to define indexes on specific fields, enhancing query speed and reducing the computational overhead of data retrieval.
