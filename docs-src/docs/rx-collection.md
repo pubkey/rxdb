@@ -1,6 +1,7 @@
 ---
-title: RxCollection
+title: Master Data - Create and Manage RxCollections
 slug: rx-collection.html
+description: Discover how to create, manage, and migrate documents in RxCollections. Harness real-time data flows, secure encryption, and powerful performance in RxDB.
 ---
 
 # RxCollection

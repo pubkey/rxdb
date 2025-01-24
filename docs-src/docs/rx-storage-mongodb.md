@@ -1,7 +1,7 @@
 ---
 title: Unlock MongoDB Power with RxDB
 slug: rx-storage-mongodb.html
-description: Combine RxDB’s real-time sync with MongoDB’s scalability. Harness the MongoDB RxStorage to seamlessly expand your database capabilities.
+description: Combine RxDB's real-time sync with MongoDB's scalability. Harness the MongoDB RxStorage to seamlessly expand your database capabilities.
 ---
 
 # MongoDB RxStorage (beta)

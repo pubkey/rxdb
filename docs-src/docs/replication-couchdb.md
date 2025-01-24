@@ -1,6 +1,7 @@
 ---
-title: CouchDB Replication
+title: RxDB's CouchDB Replication Plugin
 slug: replication-couchdb.html
+description: Replicate your RxDB collections with CouchDB the fast way. Enjoy faster sync, easier conflict handling, and flexible storage using this modern plugin.
 ---
 
 # Replication with CouchDB

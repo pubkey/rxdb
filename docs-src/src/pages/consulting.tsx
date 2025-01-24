@@ -456,7 +456,7 @@ function BenefitsBlock() {
 function StepsBlock({ onOpenDialog }) {
     const title = 'How it works';
     const description =
-        'Here you’ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.';
+        'Here you\'ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.';
 
     const stepsItems = [
         {

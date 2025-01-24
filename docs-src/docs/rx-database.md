@@ -1,6 +1,7 @@
 ---
-title: RxDatabase
+title: RxDatabase - The Core of Your Realtime Data
 slug: rx-database.html
+description: Get started with RxDatabase and integrate multiple storages. Learn to create, encrypt, and optimize your realtime database today.
 ---
 
 # RxDatabase

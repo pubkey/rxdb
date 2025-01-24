@@ -1,6 +1,7 @@
 ---
-title: Pipelines
+title: RxPipeline - Automate Data Flows in RxDB
 slug: rx-pipeline.html
+description: Discover how RxPipeline automates your data workflows. Seamlessly process writes, manage leader election, and ensure crash-safe operations in RxDB.
 ---
 
 # RxPipeline (beta)

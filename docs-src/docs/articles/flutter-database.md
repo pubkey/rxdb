@@ -1,7 +1,7 @@
 ---
 title: Supercharge Flutter Apps with the RxDB Database
 slug: flutter-database.html
-description: Harness RxDB’s reactive database to bring real-time, offline-first data storage and syncing to your next Flutter application.
+description: Harness RxDB's reactive database to bring real-time, offline-first data storage and syncing to your next Flutter application.
 ---
 
 

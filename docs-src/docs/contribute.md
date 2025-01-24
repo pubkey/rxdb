@@ -1,6 +1,7 @@
 ---
-title: Contribute to RxDB
+title: Contribute & Innovate with RxDB
 slug: contribution.html
+description: Got a fix or fresh idea? Learn how to contribute to RxDB, run tests, and shape the future of this cutting-edge NoSQL database for JavaScript.
 ---
 
 

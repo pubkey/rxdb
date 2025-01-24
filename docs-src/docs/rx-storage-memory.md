@@ -1,6 +1,7 @@
 ---
-title: Memory RxStorage
+title: Lightning-Fast Memory Storage for RxDB
 slug: rx-storage-memory.html
+description: Use Memory RxStorage for a high-performance, JavaScript in-memory database. Built for speed, making it perfect for unit tests and rapid prototyping.
 ---
 
 # Memory RxStorage

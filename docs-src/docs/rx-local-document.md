@@ -1,6 +1,7 @@
 ---
-title: Local Documents
+title: Master Local Documents in RxDB
 slug: rx-local-document.html
+description: Effortlessly store custom metadata and app settings in RxDB. Learn how Local Documents keep data flexible, secure, and easy to manage.
 ---
 
 # Local Documents

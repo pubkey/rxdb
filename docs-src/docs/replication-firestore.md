@@ -1,6 +1,7 @@
 ---
-title: Firestore Replication
+title: Smooth Firestore Sync for Offline Apps
 slug: replication-firestore.html
+description: Leverage RxDB to enable real-time, offline-first replication with Firestore. Cut cloud costs, resolve conflicts, and speed up your app.
 ---
 
 # Replication with Firestore from Firebase
