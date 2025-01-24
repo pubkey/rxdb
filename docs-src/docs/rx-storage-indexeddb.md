@@ -1,7 +1,7 @@
 ---
-title: IndexedDB RxStorage 👑
+title: Instant Performance with IndexedDB RxStorage
 slug: rx-storage-indexeddb.html
-description: Optimize browser, Electron, and hybrid app performance with IndexedDB RxStorage with the fastest, smallest build size storage solution for small to medium datasets.
+description: Choose IndexedDB RxStorage for unmatched speed and minimal build size. Perfect for fast-performing apps that demand reliable, lightweight data solutions.
 ---
 
 # IndexedDB RxStorage

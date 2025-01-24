@@ -1,7 +1,7 @@
 ---
-title: React Native local Database
+title: React Native Database - Sync & Store Like a Pro
 slug: react-native-database.html
-description: Explore React Native local database solutions for cross-platform apps - AsyncStorage, SQLite, RxDB, and more. Tailored for iOS, Android, and Windows, ensuring seamless data storage and sync.
+description: Discover top React Native local database solutions - AsyncStorage, SQLite, RxDB, and more. Build offline-ready apps for iOS, Android, and Windows with easy sync.
 ---
 
 # React Native Database

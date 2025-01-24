@@ -1,6 +1,7 @@
 ---
-title: RxState
+title: Effortless Reactive State with RxDB’s RxState
 slug: rx-state.html
+description: Get real-time, persistent state without the hassle. RxState integrates easily with signals and hooks, ensuring smooth updates across tabs and devices.
 ---
 
 # RxState

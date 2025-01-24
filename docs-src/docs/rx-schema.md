@@ -1,6 +1,7 @@
 ---
-title: RxSchema
+title: Design Perfect Schemas in RxDB
 slug: rx-schema.html
+description: Learn how to define, secure, and validate your data in RxDB. Master primary keys, indexes, encryption, and more with the RxSchema approach.
 ---
 
 # RxSchema

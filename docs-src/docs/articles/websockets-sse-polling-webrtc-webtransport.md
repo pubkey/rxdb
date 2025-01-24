@@ -1,7 +1,7 @@
 ---
 title: WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 slug: websockets-sse-polling-webrtc-webtransport.html
-description: Explore the pivotal roles of WebSockets, Server-Sent Events, Long-Polling, WebRTC, and WebTransport in shaping real-time web apps. Dive into their unique advantages, limitations, and optimal use cases for informed development choices.
+description: Learn the unique benefits and pitfalls of each real-time tech. Make informed decisions on WebSockets, SSE, Polling, WebRTC, and WebTransport.
 ---
 # WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 
@@ -184,9 +184,6 @@ From consutling many [RxDB](https://rxdb.info/) users, it was shown that in ente
         <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Database" width="220" />
     </a>
 </center>
-
-
-
 
 ## Performance Comparison
 

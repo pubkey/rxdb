@@ -1,7 +1,7 @@
 ---
-title: FoundationDB RxStorage
+title: RxDB on FoundationDB - Performance at Scale
 slug: rx-storage-foundationdb.html
-description: Explore the advanced features of RxDB with FoundationDB RxStorage - Efficient indexing, complex NoSQL queries, real-time updates, data compression, and attachment management for optimized database performance and scalability
+description: Combine FoundationDB's reliability with RxDB’s indexing and schema validation. Build scalable apps with faster queries and real-time data.
 ---
 
 # RxDB Database on top of FoundationDB

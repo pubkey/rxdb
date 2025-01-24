@@ -115,8 +115,16 @@ const sidebars = {
           type: 'category',
           label: 'Migration',
           items: [
-            'migration-schema',
-            'migration-storage'
+            {
+              type: 'doc',
+              id: 'migration-schema',
+              label: 'Schema Migration'
+            },
+            {
+              type: 'doc',
+              id: 'migration-storage',
+              label: 'Storage Migration'
+            }
           ],
         },
         'rx-attachment',

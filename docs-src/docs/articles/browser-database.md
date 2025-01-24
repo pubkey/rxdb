@@ -1,6 +1,7 @@
 ---
-title: The benefits of Browser Databases and RxDB
+title: Benefits of RxDB & Browser Databases
 slug: browser-database.html
+description: Find out why RxDB is the go-to solution for browser databases. See how it boosts performance, simplifies replication, and powers real-time UIs.
 ---
 
 # RxDB: The benefits of Browser Databases

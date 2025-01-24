@@ -1,6 +1,7 @@
 ---
 title: Transactions, Conflicts and Revisions
 slug: transactions-conflicts-revisions.html
+description: Learn RxDB’s approach to local and replication conflicts. Discover how incremental writes and custom handlers keep your app stable and efficient.
 ---
 
 # Transactions, Conflicts and Revisions

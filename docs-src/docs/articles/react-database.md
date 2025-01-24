@@ -1,7 +1,7 @@
 ---
 title: RxDB as a Database for React Applications
 slug: react-database.html
-description: Discover how RxDB enhances React applications by offering efficient data management, real-time updates, and offline capabilities. This article explores RxDB's integration with React for dynamic, responsive UIs.
+description: earn how the RxDB database supercharges React apps with offline access, real-time updates, and smooth data flow. Boost performance and engagement.
 ---
 
 # RxDB as a Database for React Applications

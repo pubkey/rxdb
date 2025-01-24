@@ -1,6 +1,7 @@
 ---
-title: Slow IndexedDB
+title: Solving IndexedDB Slowness for Seamless Apps
 slug: slow-indexeddb.html
+description: Struggling with IndexedDB performance? Discover hidden bottlenecks, advanced tuning techniques, and next-gen storage like the File System Access API.
 ---
 
 # Why IndexedDB is slow and what to use instead
