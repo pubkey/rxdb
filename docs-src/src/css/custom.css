@@ -2343,20 +2343,20 @@ footer a:visited {
 }
 
 .call-to-action-popup {
-    position: sticky;
+    position: fixed;
     width: 550px;
+    max-width: 90%;
     min-height: 200px;
     background-color: white;
     bottom: 20px;
 
-    margin-right: auto;
-    margin-left: auto;
+    left: 50%;
+    transform: translateX(-50%) translateY(200%);
 
     margin-bottom: 20px;
     border-radius: var(--ifm-pre-border-radius);
     border: 1px solid var(--color-top);
     background-color: var(--bg-color);
-    transform: translateY(200%);
     will-change: transform;
     text-align: center;
     padding: 20px;
@@ -2372,7 +2372,7 @@ footer a:visited {
 
 .call-to-action-popup.active {
     transition: 0.5s;
-    transform: translateY(0);
+    transform: translateY(0) translateX(-50%);
 }
 
 .call-to-action-popup h3 {
@@ -2393,6 +2393,12 @@ footer a:visited {
     justify-content: center;
     display: flex;
     cursor: pointer;
+    transform: translate(-10% -10%);
+
+}
+
+.call-to-action-popup .close .text {
+    margin-top: 2px;
 }
 
 .call-to-action-popup a {
@@ -2413,6 +2419,9 @@ footer a:visited {
     width: auto;
 }
 
+.call-to-action-popup a:hover {
+    text-decoration: underline;
+}
 
 @media (max-width: 340px) {
     .navbar .text {

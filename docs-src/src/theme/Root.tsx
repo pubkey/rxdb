@@ -127,7 +127,7 @@ export default function Root({ children }) {
         }, 0);
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
-        // const showTime = 2;
+        // const showTime = 1;
         const intervalId = setInterval(() => {
             setShowPopup(prevValue => {
                 if (prevValue) {
@@ -191,7 +191,9 @@ export default function Root({ children }) {
                     </a>
                 </> : ''
             }
-            <div className='close' onClick={() => closePopup()}>&#x2715;</div>
+            <div className='close' onClick={() => closePopup()}>
+                <div className='text'>&#x2715;</div>
+            </div>
         </div>
     </>;
 }

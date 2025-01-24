@@ -28,7 +28,7 @@ export default function LegalNotice() {
                             Emsdettener Str. 10<br />
                             48268 Greven<br />
                             Email: <br />
-                            <img src="/files/imprint-email.png" />
+                            <img src="/files/imprint-email.png" alt="RxDB Email" />
                         </p>
                     </div>
 
