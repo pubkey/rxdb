@@ -6,7 +6,7 @@ description: Uncover RxDB's approach to modern database needs. From JSON-based q
 
 # RxDB Tradeoffs
 
-[RxDB](https://rxdb.info) is client-side, offline first Database for JavaScript applications.
+[RxDB](https://rxdb.info) is client-side, [offline first](./offline-first.md) Database for JavaScript applications.
 While RxDB could be used on the server side, most people use it on the client side together with an UI based application.
 Therefore RxDB was optimized for client side applications and had to take completely different tradeoffs than what a server side database would do.
 

@@ -37,7 +37,7 @@ The user clicks the edit button and expects to not have anyone else change the d
 Using a transaction to ensure nothing is changed in between, is not an option because the transaction could be open for a long
 time and other background tasks, like replication, would no longer work.
 
-So whenever a human is involved, this kind of logic has to be implemented using other strategies. Most NoSQL databases like [RxDB](./) or CouchDB use a system based on [revision and conflicts](./transactions-conflicts-revisions.md) to handle these.
+So whenever a human is involved, this kind of logic has to be implemented using other strategies. Most NoSQL databases like [RxDB](./) or [CouchDB](./replication-couchdb.md) use a system based on [revision and conflicts](./transactions-conflicts-revisions.md) to handle these.
 
 
 

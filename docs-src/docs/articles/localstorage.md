@@ -72,7 +72,7 @@ Despite its convenience, localStorage does come with a set of limitations that d
 
 ### Is localStorage Slow?
 
-Contrary to concerns about performance, the localStorage API in JavaScript is surprisingly fast when compared to alternative storage solutions like IndexedDB or OPFS. It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option. For example RxDB uses localStorage in the [localStorage meta optimizer](../rx-storage-localstorage-meta-optimizer.md) to manage simple key values pairs while storing the "normal" documents inside of another storage like IndexedDB.
+Contrary to concerns about performance, the localStorage API in JavaScript is surprisingly fast when compared to alternative storage solutions like [IndexedDB or OPFS](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md). It excels in handling small key-value assignments efficiently. Due to its simplicity and direct integration with browsers, accessing and modifying localStorage data incur minimal overhead. For scenarios where quick and straightforward data storage is required, localStorage remains a viable option. For example RxDB uses localStorage in the [localStorage meta optimizer](../rx-storage-localstorage-meta-optimizer.md) to manage simple key values pairs while storing the "normal" documents inside of another storage like IndexedDB.
 
 ## When Not to Use localStorage
 

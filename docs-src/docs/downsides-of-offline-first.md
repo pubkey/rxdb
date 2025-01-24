@@ -24,7 +24,7 @@ You want to display chat messages like Whatsapp? No problem. Syncing all the mes
 Want to make a tool that displays server logs? Good luck downloading terabytes of data to the client just to search for a single string. This will not work.
 
 Besides the network usage, there is another limit for the size of your data.
-In browsers you have some options for storage: Cookies, Localstorage, WebSQL and IndexedDB.
+In browsers you have some options for storage: Cookies, [Localstorage](./articles/localstorage.md), [WebSQL](./articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm.md#what-was-websql) and [IndexedDB](./rx-storage-indexeddb.md).
 
 Because Cookies and [Localstorage](./articles/localstorage.md) is slow and WebSQL is deprecated, you will use IndexedDB.
 The limit of how much data you can store in IndexedDB depends on two factors: Which browser is used and how much disc space is left on the device. You can assume that at least a couple of [hundred megabytes](https://web.dev/storage-for-the-web/) are available at least. The maximum is potentially hundreds of gigabytes or more, but the browser implementations vary. Chrome allows the browser to use up to 60% of the total disc space per origin. Firefox allows up to 50%. But on safari you can only store up to 1GB and the browser will prompt the user on each additional 200MB increment.

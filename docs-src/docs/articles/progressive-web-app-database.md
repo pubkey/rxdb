@@ -56,10 +56,10 @@ Integrating RxDB into a Progressive Web App, driven by technologies like React, 
 ## Exploring Different RxStorage Layers
 RxDB caters to diverse needs through its various RxStorage layers:
 
-- Dexie.js RxStorage: Leveraging the capabilities of the Dexie.js library for storage.
-- IndexedDB RxStorage: Tapping into the browser's IndexedDB for efficient data storage.
-- OPFS RxStorage: Interfacing with the Offline-First Persistence System for seamless persistence.
-- Memory RxStorage: Storing data in memory, ideal for temporary data requirements.
+- [Dexie.js RxStorage](../rx-storage-dexie.md): Leveraging the capabilities of the Dexie.js library for storage.
+- [IndexedDB RxStorage](../rx-storage-indexeddb.md): Tapping into the browser's IndexedDB for efficient data storage.
+- [OPFS RxStorage](../rx-storage-opfs.md): Interfacing with the Offline-First Persistence System for seamless persistence.
+- [Memory RxStorage](../rx-storage-memory.md): Storing data in memory, ideal for temporary data requirements.
 This flexibility empowers developers to optimize data storage based on the unique needs of their PWA.
 
 Synchronizing Data with RxDB between PWA Clients and Servers
