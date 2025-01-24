@@ -1,6 +1,7 @@
 ---
-title: RxDB as In-memory NoSQL Database - Empowering Real-Time Applications
+title: RxDB In-Memory NoSQL - Supercharge Real-Time Apps
 slug: in-memory-nosql-database.html
+description: Discover how RxDB’s in-memory NoSQL engine delivers blazing speed for real-time apps, ensuring responsive experiences and seamless data sync.
 ---
 
 # RxDB as In-memory NoSQL Database: Empowering Real-Time Applications

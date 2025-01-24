@@ -1,7 +1,7 @@
 ---
-title: RxServer Scaling
+title: RxServer Scaling - Vertical or Horizontal
 slug: rx-server-scaling.html
-description: Explore how to scale the RxServer with vertical and horizontal methods, including multiple processes, worker threads, in-memory storage, and replication strategies for enhanced performance.
+description: Discover vertical and horizontal techniques to boost RxServer. Learn multiple processes, worker threads, and replication for limitless performance.
 ---
 
 
