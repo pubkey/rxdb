@@ -1,6 +1,7 @@
 ---
-title: Dexie.js RxStorage
+title: Lightning-Fast Browser DB - RxDB Dexie RxStorage
 slug: rx-storage-dexie.html
+description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie addons, and reliable storage for small apps or prototypes.
 ---
 
 # RxStorage Dexie.js

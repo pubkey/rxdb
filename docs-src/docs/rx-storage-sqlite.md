@@ -1,6 +1,7 @@
 ---
-title: SQLite RxStorage 👑
+title: RxDB SQLite RxStorage for Hybrid Apps
 slug: rx-storage-sqlite.html
+description: Unlock seamless persistence with SQLite RxStorage. Explore usage in hybrid apps, compare performance, and leverage advanced features like attachments.
 ---
 
 # SQLite RxStorage

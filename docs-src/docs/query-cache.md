@@ -1,6 +1,7 @@
 ---
-title: Query Cache
+title: Efficient RxDB Queries via Query Cache
 slug: query-cache.html
+description: Learn how RxDB's Query Cache boosts performance by reusing queries. Discover its default replacement policy and how to define your own.
 ---
 
 # QueryCache

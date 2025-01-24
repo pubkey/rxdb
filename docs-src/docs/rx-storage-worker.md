@@ -1,6 +1,7 @@
 ---
-title: Worker RxStorage 👑
+title: Turbocharge RxDB with Worker RxStorage
 slug: rx-storage-worker.html
+description: Offload RxDB queries to WebWorkers or Worker Threads, freeing the main thread and boosting performance. Experience smoother apps with Worker RxStorage.
 ---
 
 # Worker RxStorage

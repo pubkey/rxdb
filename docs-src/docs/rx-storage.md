@@ -1,6 +1,7 @@
 ---
-title: ⚙️ RxStorage Layer
+title: ⚙️ RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
 slug: rx-storage.html
+description: Discover how RxDB's modular RxStorage lets you swap engines and unlock top performance, no matter the environment or use case.
 ---
 
 # RxStorage
@@ -45,7 +46,7 @@ const myDatabase = await createRxDatabase({
 
 ### High query Load
 
-Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the shardingstorage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the localstorage-meta-optimizer to improve initialization time.
+Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the shardingstorage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the [localstorage-meta-optimizer](./rx-storage-localstorage-meta-optimizer.md) to improve initialization time.
 
 ```ts
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';
@@ -150,7 +151,7 @@ The main reason to use this is to improve query/write performance while still ha
 
 ### 👑 Localstorage Meta Optimizer
 
-The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses `localstorage` to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers. [Read more](./rx-storage-localstorage-meta-optimizer.md)
+The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses [localstorage](./articles/localstorage.md) to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers. [Read more](./rx-storage-localstorage-meta-optimizer.md)
 
 ### Electron IpcRenderer & IpcMain
 

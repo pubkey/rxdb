@@ -1,6 +1,7 @@
 ---
-title: Node.js Database
+title: RxDB - The Real-Time Database for Node.js
 slug: nodejs-database.html
+description: Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale effortlessly, persist data, and power your server-side apps with ease.
 ---
 
 # Node.js Database

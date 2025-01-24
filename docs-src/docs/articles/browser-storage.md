@@ -10,7 +10,7 @@ description: Explore RxDB for browser storage its advantages, limitations, and w
 
 **Storing Data in the Browser**
 
-When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are Localstorage and IndexedDB. These browser-based storage options serve various purposes and cater to different needs in web development.
+When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are Localstorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.
 
 <center>
     <a href="https://rxdb.info/">

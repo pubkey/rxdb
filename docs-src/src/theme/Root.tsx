@@ -34,7 +34,7 @@ const callToActions: CallToActionItem[] = [
             'Enjoying RxDB? Follow us on Twitter to get the latest updates and news. Your support keeps us going!',
             'Stay updated - follow RxDB on Twitter for news, tips, and more!',
             'Love RxDB? Follow us on Twitter for the latest buzz!',
-            'We’re tweeting all things RxDB - join us on Twitter!',
+            'We\'re tweeting all things RxDB - join us on Twitter!',
             'Never miss an RxDB update - follow us on Twitter today!',
             'Connect with the RxDB community - follow our Twitter feed!'
         ],
@@ -64,7 +64,7 @@ const callToActions: CallToActionItem[] = [
             'Learn more about RxDB - connect with me on LinkedIn!',
             'Stay in the know - follow my LinkedIn profile for the latest RxDB news!',
             'Expand your network - follow my LinkedIn for RxDB updates and more!',
-            'Want more RxDB insights? Follow me on LinkedIn and let’s connect!'
+            'Want more RxDB insights? Follow me on LinkedIn and let\'s connect!'
         ],
         text: 'Follow',
         keyword: '@LinkedIn',
@@ -75,10 +75,10 @@ const callToActions: CallToActionItem[] = [
         title: [
             'Love RxDB? Connect with our community on Discord for support and lively chat. Your presence makes our community stronger!',
             'Join our RxDB Discord community - your questions and ideas are welcome!',
-            'Let’s talk RxDB! Join our Discord server and connect with fellow developers.',
+            'Let\'s talk RxDB! Join our Discord server and connect with fellow developers.',
             'Share, learn, and grow - be part of our RxDB Discord community!',
             'Got questions? Join us on Discord to get quick support and real-time interaction!',
-            'Meet other RxDB enthusiasts on Discord - let’s build great apps together!'
+            'Meet other RxDB enthusiasts on Discord - let\'s build great apps together!'
         ],
         text: 'Chat',
         keyword: '@discord',
@@ -89,7 +89,7 @@ const callToActions: CallToActionItem[] = [
         title: [
             'Love RxDB? Subscribe to our newsletter for the latest updates, tips, and news delivered straight to your inbox.',
             'Stay informed - subscribe to the RxDB newsletter for exclusive content!',
-            'Don’t miss a beat - get RxDB news and tips via our newsletter!',
+            'Don\'t miss a beat - get RxDB news and tips via our newsletter!',
             'Level up your RxDB knowledge - subscribe to our newsletter!',
             'Be the first to know - subscribe for RxDB updates, tricks, and more!',
             'Join our community - subscribe to the RxDB newsletter and never miss an update!'

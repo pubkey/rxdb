@@ -1,7 +1,7 @@
 ---
 title: RxDB as a Database in an Angular Application
 slug: angular-database.html
-description: Discover the RxDB Revolution for Angular Apps! 🚀 Learn how to supercharge your web applications with RxDB's reactive, offline-first database capabilities. Master real-time data synchronization and build ultra-responsive Angular applications. Click now for expert tips and techniques that will elevate your development game!
+description: Level up your Angular projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
 ---
 
 

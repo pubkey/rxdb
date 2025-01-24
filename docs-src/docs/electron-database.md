@@ -1,7 +1,7 @@
 ---
 title: Electron Database - Storage adapters for SQLite, Filesystem and In-Memory
 slug: electron-database.html
-description: SQLite, Filesystem, IndexedDB and In-Memory database with RxDB for creating fast local-first Electron apps. Perfect for complex, real-time client-side applications
+description: Harness the database power of SQLite, Filesystem, and in-memory storage in Electron with RxDB. Build fast, offline-first apps that sync in real time.
 ---
 
 # Electron Database - RxDB with different storage for SQLite, Filesystem and In-Memory

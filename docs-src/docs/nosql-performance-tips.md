@@ -1,7 +1,7 @@
 ---
 title: RxDB NoSQL Performance Tips
 slug: nosql-performance-tips.html
-description: Enhance your NoSQL database performance with RxDB creator's tips on bulk operations, query optimization, and efficient use of hooks and plugins, perfect for developers looking to improve speed and efficiency
+description: Skyrocket your NoSQL speed with RxDB tips. Learn about bulk writes, optimized queries, and lean plugin usage for peak performance.
 ---
 
 # Performance tips for RxDB and other NoSQL databases

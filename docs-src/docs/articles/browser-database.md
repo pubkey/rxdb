@@ -1,6 +1,7 @@
 ---
-title: The benefits of Browser Databases and RxDB
+title: Benefits of RxDB & Browser Databases
 slug: browser-database.html
+description: Find out why RxDB is the go-to solution for browser databases. See how it boosts performance, simplifies replication, and powers real-time UIs.
 ---
 
 # RxDB: The benefits of Browser Databases
@@ -63,7 +64,7 @@ While SQL databases, such as SQLite, excel in server-side scenarios, they are no
 SQL databases typically rely on a push/pull mechanism, where the server pushes updates to the client or the client pulls data from the server. This approach is not inherently reactive and requires additional effort to implement real-time data updates. In contrast, browser databases like [RxDB](https://rxdb.info/) provide built-in reactive mechanisms, allowing the application to react to data changes seamlessly.
 
 ### Build size of server-side databases
-Server-side databases, designed to handle large-scale applications, often have significant build sizes that are unsuitable for browser applications. In contrast, browser databases are specifically optimized for browser environments and leverage browser APIs like IndexedDB, OPFS, and Webworker, resulting in smaller build sizes.
+Server-side databases, designed to handle large-scale applications, often have significant build sizes that are unsuitable for browser applications. In contrast, browser databases are specifically optimized for browser environments and leverage browser APIs like [IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md), and [Webworker](../rx-storage-worker.md), resulting in smaller build sizes.
 
 ### Initialization time and performance
 The initialization time and performance of server-side databases can be suboptimal in browser applications. Browser databases, on the other hand, are designed to provide fast initialization and efficient performance within the browser environment, ensuring a smooth user experience.

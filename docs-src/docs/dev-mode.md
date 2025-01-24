@@ -14,7 +14,7 @@ using RxDB in development mode.
 
 - Adds readable error messages.
 - Ensures that `readonly` JavaScript objects are not accidentally mutated.
-- Adds validation check for validity of schemas, queries, ORM methods and document fields.
+- Adds validation check for validity of schemas, queries, [ORM](./orm.md) methods and document fields.
   - Notice that the `dev-mode` plugin does not perform schema checks against the data see [schema validation](./schema-validation.md) for that.
 
 :::warning

@@ -1,6 +1,7 @@
 ---
-title: RxDB as a Database in a Flutter Application
+title: Supercharge Flutter Apps with the RxDB Database
 slug: flutter-database.html
+description: Harness RxDB's reactive database to bring real-time, offline-first data storage and syncing to your next Flutter application.
 ---
 
 
@@ -38,7 +39,7 @@ RxDB is a powerful NoSQL database solution that is designed to work seamlessly w
 To understand how RxDB can be utilized in a Flutter application, let's explore its core features and advantages.
 
 ### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database built on top of IndexedDB, which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
+[RxDB](https://rxdb.info/) is a client-side database built on top of [IndexedDB](../rx-storage-indexeddb.md), which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
 
 <center>
     <a href="https://rxdb.info/">

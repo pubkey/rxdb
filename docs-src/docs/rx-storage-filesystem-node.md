@@ -1,6 +1,7 @@
 ---
-title: Node Filesystem RxStorage 👑
+title: Blazing-Fast Node Filesystem Storage
 slug: rx-storage-filesystem-node.html
+description: Get up and running quickly with RxDB's Filesystem Node RxStorage. Store data in JSON, embrace multi-instance support, and enjoy a simpler database.
 ---
 
 # Filesystem Node RxStorage (beta)
@@ -12,13 +13,12 @@ Using the same database folder in parallel with multiple Node.js processes is su
 
 ### Pros
 
-- Easier setup compared to SQLite
-- Fast
+- Easier setup compared to [SQLite](./rx-storage-sqlite.md)
+- [Fast](./rx-storage-performance.md)
 
 ### Cons
 
 - It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
-- It is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.
 
 <p align="center">
   <img src="./files/rx-storage-performance-node.png" alt="RxStorage performance - Node.js" width="700" />
@@ -31,7 +31,9 @@ Using the same database folder in parallel with multiple Node.js processes is su
 import {
     createRxDatabase
 } from 'rxdb';
-import { getRxStorageFilesystemNode } from 'rxdb-premium/plugins/storage-filesystem-node';
+import {
+    getRxStorageFilesystemNode
+} from 'rxdb-premium/plugins/storage-filesystem-node';
 
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',

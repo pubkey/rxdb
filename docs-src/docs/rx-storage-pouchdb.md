@@ -1,6 +1,7 @@
 ---
-title: PouchDB RxStorage
+title: PouchDB RxStorage - Migrate for Better Performance
 slug: rx-storage-pouchdb.html
+description: Discover why PouchDB RxStorage is deprecated in RxDB. Learn its legacy, performance drawbacks, and how to upgrade to a faster solution.
 ---
 
 # RxStorage PouchDB

@@ -576,7 +576,7 @@ export default function Home(props: {
                   Sync with <b className="underline">any Backend</b>
                 </h2>
                 <p>
-                  RxDB’s high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName()} clients and servers.
+                  RxDB's high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName()} clients and servers.
                   While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
                   , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
                   it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
@@ -785,7 +785,7 @@ export default function Home(props: {
 
 
               <p>
-                RxDB’s modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
+                RxDB's modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
                 , <a
                   href="/rx-storage-sqlite.html"
                   target="_blank"
@@ -881,7 +881,7 @@ export default function Home(props: {
 
           <div className="block features dark">
             <div className="content">
-              <h2>All the <b className="underline">Features</b> You’ll Ever Need</h2>
+              <h2>All the <b className="underline">Features</b> You'll Ever Need</h2>
               <p>
                 Since its creation in 2018,
                 RxDB has evolved into a powerhouse of features and plugins, offering an all-inclusive,

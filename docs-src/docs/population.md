@@ -1,6 +1,7 @@
 ---
-title: Population
+title: Populate and Link Docs in RxDB
 slug: population.html
+description: Learn how to reference and link documents across collections in RxDB. Discover easy population without joins and handle complex relationships.
 ---
 
 # Population
