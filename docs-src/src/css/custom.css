@@ -381,7 +381,8 @@ p b {
 }
 
 .markdown a,
-p a {
+p a,
+td a {
     /* color: var(--color-top); */
     color: white;
     font-weight: 600;
@@ -1377,6 +1378,20 @@ ul.checked li:before {
     padding-right: 38px;
     border-radius: 10px;
     font-size: 37px;
+}
+
+
+.block table {
+    border-radius: 6px;
+    padding: 0px;
+    width: 80%;
+    margin-top: 20px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    font-size: 120%;
+    background-color: var(--bg-color);
+    box-shadow: 0px 0px 12px 8px var(--bg-color);
 }
 
 /**

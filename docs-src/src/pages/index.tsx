@@ -184,6 +184,10 @@ export type SemPage = {
   title: any;
   text?: any;
   appName?: AppName;
+  /**
+   * Additional blocks to be shown
+   */
+  blocks?: React.JSX.Element[];
 };
 
 export default function Home(props: {
@@ -513,6 +517,13 @@ export default function Home(props: {
             <br />
             <br />
           </div >
+
+          {
+            props.sem && props.sem.blocks ?
+              <>
+                {props.sem.blocks}
+              </> : ''
+          }
 
           <Trophy
             href="/code/"

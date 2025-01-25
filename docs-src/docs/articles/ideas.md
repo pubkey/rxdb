@@ -14,6 +14,8 @@ X- "local database"
 X- "react-native encryption"
 
 - "firebase alternative"
+- "firestore alternative" 
+- "supabase alternative"
 
 - "jquery database"
 
@@ -34,4 +36,3 @@ X- "react-native encryption"
 - "real time web apps"
 
 - "reactive database"
- 
