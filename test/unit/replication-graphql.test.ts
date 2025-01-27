@@ -2900,131 +2900,6 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
             });
 
-            it.only('should not leak _attachments when using a sqlite storage', async () => {
-                SpawnServer = await import('../helper/graphql-server.js');
-                const server = await SpawnServer.spawn();
-                addRxPlugin(RxDBMigrationSchemaPlugin);
-                addRxPlugin(RxDBUpdatePlugin);
-
-                const pushQueryBuilderWithAssert = (rows: RxReplicationWriteToMasterRow<HumanWithTimestampDocumentType>[]) => {
-                    if (!rows || rows.length === 0) {
-                        throw new Error('test pushQueryBuilder(): called with no docs');
-                    }
-                    const query = `
-                    mutation CreateHumans($writeRows: [HumanWriteRow!]) {
-                        writeHumans(writeRows: $writeRows) {
-                            id
-                            name
-                            age
-                            updatedAt
-                            deleted
-                        }
-                    }
-                    `;
-
-                    // It should fail when using a sqlite storage
-                    const firstRow = rows[0];
-                    if (firstRow.assumedMasterState) {
-                        console.log('in the _attachments assert');
-                        assert.strictEqual(firstRow.assumedMasterState._attachments, undefined);
-                    }
-
-                    const variables = {
-                        writeRows: rows
-                    };
-                    return Promise.resolve({
-                        query,
-                        operationName: 'CreateHumans',
-                        variables
-                    });
-                };
-
-                const dbName = randomCouchString(10);
-
-                // TODO : change the storage type for a sqlite. It should leak _attachments when applying the new migration
-                // I can't get a sqlite storage because I don't have access to the premium package
-                const storage = config.storage.getStorage();
-
-                const db = await createRxDatabase({
-                    name: dbName,
-                    storage,
-                    multiInstance: false,
-                    eventReduce: true,
-                });
-                const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
-                const collections = await db.addCollections({
-                    humans: {
-                        schema,
-                    },
-                });
-
-                const collection = collections.humans;
-
-                // add one doc to the client database
-                const testData = getTestData(1).pop();
-                delete (testData as any).deleted;
-                await collection.insert(testData);
-
-                await db.destroy();
-                const db2 = await createRxDatabase({
-                    name: dbName,
-                    storage,
-                    multiInstance: false,
-                    eventReduce: true,
-                });
-
-                const schemaV2 = clone(schema);
-                schemaV2.version = 1;
-                const newCollection = await db2.addCollections({
-                    humans: {
-                        schema: schemaV2,
-                        autoMigrate: false,
-                        migrationStrategies: {
-                            1: (doc) => doc
-                        }
-                    },
-                });
-
-                // const server = await SpawnServer.spawn();
-                assert.strictEqual(server.getDocuments().length, 0);
-
-                // start live replication
-                const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
-                    collection: newCollection.humans,
-                    url: server.url,
-                    push: {
-                        batchSize,
-                        queryBuilder: pushQueryBuilderWithAssert,
-                    },
-                    pull: {
-                        batchSize,
-                        queryBuilder: pullQueryBuilder,
-                    },
-                    live: true,
-                    deletedField: 'deleted'
-                });
-
-                ensureReplicationHasNoErrors(replicationState);
-                await replicationState.awaitInitialReplication();
-
-                // make sure the migration should be executed
-                assert.strictEqual(await newCollection.humans.migrationNeeded(), true);
-                await newCollection.humans.startMigration();
-
-                // Should sync in the replication ({assumedMasterState, newDocumentState})
-                await newCollection.humans.findOne({ selector: { id: testData?.id } }).update({ $set: {
-                        age: 12
-                    }
-                });
-
-                const graphQlData = server.getDocuments();
-                assert.strictEqual(graphQlData.length, 1);
-                assert.strictEqual(graphQlData._attachments, undefined);
-
-                await db2.destroy();
-                await server.close();
-            });
 
             it.only('should not leak _attachments when using a sqlite storage', async () => {
                 SpawnServer = await import('../helper/graphql-server.js');
@@ -3065,7 +2940,7 @@ describe('replication-graphql.test.ts', () => {
                     });
                 };
 
-                const dbName = randomCouchString(10);
+                const dbName = randomToken(10);
 
                 // TODO : change the storage type for a sqlite. It should leak _attachments when applying the new migration
                 // I can't get a sqlite storage because I don't have access to the premium package
@@ -3091,7 +2966,7 @@ describe('replication-graphql.test.ts', () => {
                 delete (testData as any).deleted;
                 await collection.insert(testData);
 
-                await db.destroy();
+                await db.close();
                 const db2 = await createRxDatabase({
                     name: dbName,
                     storage,
@@ -3116,7 +2991,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start live replication
                 const replicationState = replicateGraphQL({
-                    replicationIdentifier: randomCouchString(10),
+                    replicationIdentifier: randomToken(10),
                     collection: newCollection.humans,
                     url: server.url,
                     push: {
@@ -3148,7 +3023,7 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(graphQlData.length, 1);
                 assert.strictEqual(graphQlData._attachments, undefined);
 
-                await db2.destroy();
+                await db2.close();
                 await server.close();
             });
         });
