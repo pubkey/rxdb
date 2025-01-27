@@ -7,7 +7,7 @@ description: Secure your React Native app with RxDB encryption. Learn why it mat
 
 # React Native Encryption and Encrypted Database/Storage
 
-Data security is a critical concern in modern mobile applications. As React Native continues to grow in popularity for building cross-platform apps, ensuring that your data is protected—both at rest and in transit—is paramount. RxDB, a real-time database for JavaScript applications, offers powerful encryption features that can help you secure your React Native app's data.
+Data security is a critical concern in modern mobile applications. As React Native continues to grow in popularity for building cross-platform apps, ensuring that your data is protected is paramount. RxDB, a real-time database for JavaScript applications, offers powerful encryption features that can help you secure your React Native app's data.
 
 This article explains why encryption is important, how to set it up with RxDB in [React Native](../react-native-database.md), and best practices to keep your app secure.
 
@@ -19,7 +19,7 @@ Encryption ensures that, even if an unauthorized party obtains physical access t
 ## React Native Encryption Overview
 
 
-React Native supports multiple ways to secure data at rest:
+React Native supports multiple ways to secure local data:
 
 1. **Encrypted Databases**  
    Use databases with built-in encryption capabilities, such as SQLite with encryption layers or RxDB with its [encryption plugin](../encryption.md).  

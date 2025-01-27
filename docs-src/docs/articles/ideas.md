@@ -23,6 +23,8 @@ X- "react-native encryption"
 
 - "react localstorage"
 
+- "react-native storage"
+
 
 - "local database"
 
