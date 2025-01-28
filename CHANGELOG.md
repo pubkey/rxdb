@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REMOVE `console.log('exposeWorkerRxStorage()');` from the worker RxStorage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
