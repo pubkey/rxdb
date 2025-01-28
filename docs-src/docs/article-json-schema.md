@@ -71,7 +71,7 @@ const mySchema = {
 
 Although RxDB aims to remain compatible with JSON Schema, it does impose some extra restrictions:
 
-The schema requires top-level field names to match the regex ^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$. This rule helps ensure that property names don't conflict with JavaScript keywords or RxDocument method names. For instance, having a property named delete at the top level could conflict with methods on the RxDocument object.
+The schema requires top-level field names to match the regex `^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$`. This rule ensures that property names are valid JavaScript identifiers.
 
 At the top level of the schema, `additionalProperties` must be set to `false`. This prevents silently introducing new fields that could potentially clash with built-in RxDocument methods (like `.toJSON()`). By making you list out each property, RxDB ensures you can't unknowingly overwrite or conflict with standard methods.
 
