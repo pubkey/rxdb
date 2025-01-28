@@ -130,7 +130,7 @@ Also it makes your types consisted across your codebase: No more out-of-sync def
 
 ## Different JSON Schema Validators
 
-In order to validate whether a given document complies with the schema, RxDB uses pluggable validators. Historically, RxDB supportes/supported:
+In order to validate whether a given document complies with the schema, RxDB uses pluggable validators. Historically, RxDB supports/supported:
 
 - [ajv](https://ajv.js.org/)
 - [z-schema](https://github.com/zaggino/z-schema)
