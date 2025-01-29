@@ -29,8 +29,9 @@ While RxDB adopts the JSON Schema Core and Validation specifications, it also ex
 - `indexes`: Defines which fields (or combination of fields) RxDB indexes. You can have single-field indexes or compound indexes.
 - `version`: Indicates the version of the schema. Whenever you change your schema, you must increment this version so RxDB can handle migrations or other adjustments. This is important because data migration on a client-side database can be tricky when you have many clients out there that update your app at different points in time.
 - `encryption`: Specifies which fields should be stored in an encrypted form. This is useful for sensitive data that you do not want to store in plaintext on the client's device.
+- `keyCompression`: Can be set to `true` to enable the key-compression plugin.
 
-RxDB also supports a [compression plugin](https://rxdb.info/key-compression.html) that uses a "compression table." This is essentially a lookup table derived from your JSON Schema which assigns shorter keys or transforms fields so that the stored data becomes more compact. By analyzing the schema, the plugin understands which fields appear repeatedly and can replace them with shorter tokens. Remarkably, RxDB can still query the data in its compressed form. This leads to performance improvements, especially in environments where local storage space is limited.
+RxDB supports a [compression plugin](https://rxdb.info/key-compression.html) that uses a "compression table." This is essentially a lookup table derived from your JSON Schema which assigns shorter keys or transforms fields so that the stored data becomes more compact. By analyzing the schema, the plugin understands which fields appear repeatedly and can replace them with shorter tokens. Remarkably, RxDB can still query the data in its compressed form. This leads to performance improvements, especially in environments where local storage space is limited.
 
 Below is a sample RxDB schema that demonstrates how standard JSON Schema vocabularies combine with RxDB's custom extensions:
 
@@ -75,7 +76,7 @@ The schema requires top-level field names to match the regex `^[a-zA-Z][a-zA-Z0-
 
 At the top level of the schema, `additionalProperties` must be set to `false`. This prevents silently introducing new fields that could potentially clash with built-in RxDocument methods (like `.toJSON()`). By making you list out each property, RxDB ensures you can't unknowingly overwrite or conflict with standard methods.
 
-RxDB does not allow `$ref` to other files or external schema fragments. The goal is to keep schema loading fast and self-contained. If a schema needs to be composed of multiple parts, you must combine them at build time or otherwise ensure they are merged before passing them to RxDB at runtime. This approach also prevents any network calls or asynchronous fetches that could slow down your application's startup.
+RxDB does not allow `$ref` to other files or external schema fragments or `$dynamicRef`. The goal is to keep schema loading fast and self-contained. If a schema needs to be composed of multiple parts, you must combine them at build time or otherwise ensure they are merged before passing them to RxDB at runtime. This approach also prevents any network calls or asynchronous fetches that could slow down your application's startup.
 
 
 ## Inferring Document Types with TypeScript
@@ -136,13 +137,15 @@ In order to validate whether a given document complies with the schema, RxDB use
 
 No single validator is perfect; each has its trade-offs in performance, build size, and correctness edge cases. Some libraries rely on `eval()` or `new Function`, which can break in strict Content-Security-Policy (CSP) environments. Others have issues with large integers. RxDB encourages you to pick a validator that matches your app's needs and environment constraints.
 
-One important consideration is that each validator has a unique format for its **error messages**. If your application inspects validation errors and makes decisions (e.g., showing descriptive warnings to the user), be aware that switching validators later can require extensive code changes.
+Notice that RxDB itself does not define a specific JSON Schema draft. Instead it fully depends on the validation plugin is use, which parts of the JSON schema spec are accepted.
 
-## Performance comparison of validators
+One important consideration is that each validator has a unique format for its **error messages**. If your application inspects validation errors and makes decisions (e.g., showing descriptive warnings to the user), be aware that switching validators later can require extensive code changes. In theory this is solved by the JSON schema specification with the [output formatting](https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting) but for now this is not implemented in the listed schema validators.
+
+## Performance Comparison of Validators
 
 Performance is a critical factor in deciding whether to validate documents at runtime, especially in production environments. The following tables illustrate a basic comparison of initialization time (time-to-first-insert) and bulk insertion speed for different validators on two RxDB storages
 
-The RxDB team ran performance benchmarks using two storage options:
+The RxDB team ran performance benchmarks using two storage options on an ubuntu 24 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU so notice that your average users' device will be way slower.
 
 Dexie Storage (based on IndexedDB in the browser):
 
@@ -190,11 +193,11 @@ If you must keep validation enabled in production but you have to ensure that yo
 
 Over time, RxDB has evolved its usage of JSON Schema, learning from real production experiences and feedback from the community. Here are some key takeaways:
 
-- Avoid inlined `required` fields: Some validators let you write `"required": true` inside the property definition, but the official JSON Schema specification requires you to declare an array of required fields at the parent object level. Following the standard from the start avoids confusion and ensures broader validator compatibility.
+- Avoid inlined `required` fields: Some validators let you write `"required": true` inside the property definition because that was part of JSON Schema Draft 3. But the newer JSON Schema drafts require you to declare an array of required fields at the parent object level. Following the standard from the start avoids confusion and ensures broader validator compatibility.
 
 - Keep Custom Fields at the Top Level: Originally, RxDB allowed custom definitions (`index`, `encrypted`, etc.) to appear deeply nested. This caused performance hits because the library had to traverse large schema objects to find them. By placing these fields at the top level, RxDB can parse and apply them much faster, improving startup times.
 
-- Error messages are not standardized: Each validator produces a different structure for error messages. If your app logic inspects these errors, you risk partial or complete rewrites if you ever switch validators. Decide early on which validator meets your needs and plan on sticking with it long-term.
+- Error messages are not standardized: Each validator produces a different structure for error messages. If your app logic inspects these errors, you risk partial or complete rewrites if you ever switch validators. Decide early on which validator meets your needs and plan on sticking with it long-term. This might be solved in the future when all validators support the [standard output formatting](https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting).
 
 
 ## Follow Up
