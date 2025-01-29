@@ -19,8 +19,8 @@ import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
-import PriceTag from '../components/price-tag';
-import { Modal } from 'antd';
+// import PriceTag from '../components/price-tag';
+// import { Modal } from 'antd';
 
 
 export const colors = [
@@ -29,7 +29,7 @@ export const colors = [
   '#5f2688'
 ];
 
-const STARTER_PACK_PRICE = 24;
+// const STARTER_PACK_PRICE = 24;
 
 let animationStarted = false;
 function startLandingpageAnimation() {
@@ -306,7 +306,7 @@ export default function Home(props: {
     return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
   }
 
-  const [starterPackOpen, setStarterPackOpen] = useState(false);
+  // const [starterPackOpen, setStarterPackOpen] = useState(false);
   const reviewsRef = useRef<HTMLDivElement>(null);
 
   return (
