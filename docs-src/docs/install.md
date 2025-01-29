@@ -50,7 +50,7 @@ In the [examples](https://github.com/pubkey/rxdb/tree/master/examples) folder yo
 
 Consult [package.json](https://github.com/pubkey/rxdb/blob/master/package.json) for the versions of the packages supported.
 
-## Installing the latest RxDb build
+## Installing the latest RxDB build
 
 If you need the latest development state of RxDB, add it as git-dependency into your `package.json`.
 

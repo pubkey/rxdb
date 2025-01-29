@@ -16,6 +16,7 @@ X- "react-native encryption"
 - "firebase alternative"
 - "firestore alternative" 
 - "supabase alternative"
+- "reactjs storage"
 
 - "jquery database"
 
