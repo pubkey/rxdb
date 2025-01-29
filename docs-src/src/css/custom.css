@@ -316,6 +316,17 @@ h1 .underline {
     transition: all 0.15s ease-in-out;
 }
 
+.button.button-empty {
+    cursor: pointer;
+    border-style: solid;
+    border-color: white;
+    background-color: unset;
+}
+.button.button-empty:hover {
+    color: white;
+    text-decoration: underline;
+}
+
 .button a {
     text-decoration: none;
 }
@@ -876,8 +887,7 @@ body {
 
 .block.first.hero .hero-action {
     display: inline-block;
-    width: 235px;
-    margin-right: 0px;
+    margin-right: 10px;
 }
 
 @media (max-width: 900px) {

@@ -8,7 +8,7 @@ import {
   ucfirst,
   hashStringToNumber
 } from '../../../';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
@@ -19,8 +19,8 @@ import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
-import PriceTag from '../components/price-tag';
-import { Modal } from 'antd';
+// import PriceTag from '../components/price-tag';
+// import { Modal } from 'antd';
 
 
 export const colors = [
@@ -29,7 +29,7 @@ export const colors = [
   '#5f2688'
 ];
 
-const STARTER_PACK_PRICE = 24;
+// const STARTER_PACK_PRICE = 24;
 
 let animationStarted = false;
 function startLandingpageAnimation() {
@@ -306,7 +306,8 @@ export default function Home(props: {
     return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
   }
 
-  const [starterPackOpen, setStarterPackOpen] = useState(false);
+  // const [starterPackOpen, setStarterPackOpen] = useState(false);
+  const reviewsRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
@@ -378,17 +379,29 @@ export default function Home(props: {
 
 
                   <div className="hero-action">
+                    <div
+                      className="button button-empty"
+                      onClick={() => {
+                        triggerTrackingEvent('hero_section_how_others', 0.4, false);
+                        reviewsRef.current?.scrollIntoView({
+                          behavior: 'smooth'
+                        });
+                      }}
+                    >
+                      How others use it
+                    </div>
+                  </div>
+                  <div className="hero-action">
                     <a
                       className="button"
                       href="/quickstart.html"
                       onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
                     >
                       Get Started For Free &#x27A4;<br />
-                      <span>(for self learners)</span>
                     </a>
                   </div>
 
-                  <div className="hero-action">
+                  {/* <div className="hero-action">
 
                     <div style={{
                       position: 'relative',
@@ -460,7 +473,7 @@ export default function Home(props: {
                       </div>
 
                     </Modal>
-                  </div>
+                  </div> */}
 
                   {/* <a
                     href="/premium/#price-calculator-block"
@@ -934,7 +947,7 @@ export default function Home(props: {
             </div>
           </div>
 
-          <div className="block reviews" id="reviews">
+          <div className="block reviews" id="reviews" ref={reviewsRef}>
             <div className="content centered">
               <div className="inner">
                 <h2>
