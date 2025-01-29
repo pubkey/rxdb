@@ -69,7 +69,7 @@ const mySchema = {
 
 ## Restrictions
 
-Although RxDB aims to remain compatible with JSON Schema, it does impose some extra restrictions:
+Although RxDB aims to remain fully spec compliant with JSON Schema, it does impose some extra restrictions:
 
 The schema requires top-level field names to match the regex `^[a-zA-Z][a-zA-Z0-9_]*[a-zA-Z0-9]$`. This rule ensures that property names are valid JavaScript identifiers.
 
