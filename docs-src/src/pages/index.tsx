@@ -8,7 +8,7 @@ import {
   ucfirst,
   hashStringToNumber
 } from '../../../';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
@@ -307,6 +307,7 @@ export default function Home(props: {
   }
 
   const [starterPackOpen, setStarterPackOpen] = useState(false);
+  const reviewsRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
@@ -378,17 +379,29 @@ export default function Home(props: {
 
 
                   <div className="hero-action">
+                    <div
+                      className="button button-empty"
+                      onClick={() => {
+                        triggerTrackingEvent('hero_section_how_others', 0.4, false);
+                        reviewsRef.current?.scrollIntoView({
+                          behavior: 'smooth'
+                        });
+                      }}
+                    >
+                      How others use it
+                    </div>
+                  </div>
+                  <div className="hero-action">
                     <a
                       className="button"
                       href="/quickstart.html"
                       onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
                     >
                       Get Started For Free &#x27A4;<br />
-                      <span>(for self learners)</span>
                     </a>
                   </div>
 
-                  <div className="hero-action">
+                  {/* <div className="hero-action">
 
                     <div style={{
                       position: 'relative',
@@ -460,7 +473,7 @@ export default function Home(props: {
                       </div>
 
                     </Modal>
-                  </div>
+                  </div> */}
 
                   {/* <a
                     href="/premium/#price-calculator-block"
@@ -934,7 +947,7 @@ export default function Home(props: {
             </div>
           </div>
 
-          <div className="block reviews" id="reviews">
+          <div className="block reviews" id="reviews" ref={reviewsRef}>
             <div className="content centered">
               <div className="inner">
                 <h2>
