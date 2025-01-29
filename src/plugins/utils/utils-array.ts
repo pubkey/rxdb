@@ -21,7 +21,7 @@ export function randomOfArray<T>(arr: T[]): T {
 
 
 export function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[] {
-    return Array.isArray(input) ? (input as any[]).slice(0) : [input];
+    return Array.isArray(input) ? (input as any[]).slice(0) : ([input] as any);
 }
 
 /**
