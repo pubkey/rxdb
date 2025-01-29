@@ -84,7 +84,7 @@ JSON Schema is not just for validation and structural guarantees, it can also he
 
 To improve developer experience, RxDB offers a [built-in way](https://rxdb.info/tutorials/typescript.html) to infer the document's TypeScript type from the schema during runtime. This is helpful because you get Immediate feedback in your IDE: As soon as you update the schema, TypeScript picks up the changes. You'll see type errors in your code if you attempt to use fields that are no longer valid or if you forget to include newly required fields.
 
-Below is an example on how to interfer the TypeScript type of a document from its JSON-schema:
+Below is an example on how to interfere the TypeScript type of a document from its JSON-schema:
 
 ```ts
 import {
