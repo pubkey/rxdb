@@ -2,7 +2,7 @@
 
 [RxDB](https://rxdb.info/) is a NoSQL database designed primarily for client-side JavaScript applications, focusing on the [offline-first approach](https://rxdb.info/offline-first.html), multi-tab operations, and data replication. It seamlessly integrates with modern web and mobile app frameworks, supports various storage backends, and provides a plugin-based architecture to handle encryption, compression, type generation, and more.
 
-One of RxDB's standout architectural choices is its reliance on JSON Schema to define data modelsin Collections. Instead of inventing a custom schema language, RxDB adopts a standard that is already well-established in the broader JavaScript community. By doing so, RxDB solves several major hurdles that often arise when developers are introduced to new databases:
+One of RxDB's standout architectural choices is its reliance on JSON Schema to define data models for documents in collections. Instead of inventing a custom schema language, RxDB adopts a standard that is already well-established in the broader JavaScript community. By doing so, RxDB solves several major hurdles that often arise when developers are introduced to new databases:
 
 - **Familiarity**: Most JavaScript developers have already encountered JSON-based schema definitions, either via OpenAPI or other tooling. Thus, they can quickly understand and adopt RxDB's schemas without investing time in learning a proprietary format.
 
@@ -11,7 +11,7 @@ One of RxDB's standout architectural choices is its reliance on JSON Schema to d
 - **Long-term maintainability**: Because JSON Schema is recognized as a standard, future updates and ecosystem support are more reliable than a custom, one-off solution.
 
 
-By building on JSON Schema, RxDB has a foundation that makes schema design, data validation, and typing straightforward, making it easier for developeers to build robust, safe applications in production.
+By building on JSON Schema, RxDB has a foundation that makes schema design, data validation, and typing straightforward, making it easier for developers to build robust, safe applications in production.
 
 
 <center>
@@ -23,14 +23,14 @@ By building on JSON Schema, RxDB has a foundation that makes schema design, data
 ## How RxDB uses JSON Schema
 
 
-While RxDB reuses the core JSON Schema specification, it also extends that schema to introduce RxDB-specific features. In typical NoSQL databases, you might manually define which fields to encrypt, which ones to index, and how to interpret specific fields for queries. RxDB encodes these considerations directly into the JSON Schema with additional properties:
+While RxDB reuses the core JSON Schema specification, it also extends that schema to introduce RxDB-specific features. Like in other NoSQL databases, you manually define which fields to encrypt, which ones to index, and how to interpret specific fields for queries. RxDB puts these configurations directly into the JSON Schema with additional properties:
 
-- `primaryKey`: Specifies which field in the document serves as the primary key. This is important for how RxDB identifies documents and can greatly simplify queries.
-- `indexes`: Defines which fields (or combination of fields) RxDB indexes. You can have single-field indexes or compound indexes. This helps speed up queries on large collections.
-- `version`: Indicates the version of the schema. Whenever you change your schema significantly, you can increment this version so RxDB can handle migrations or other adjustments. This is important because data migration on a client-side database can be tricky when you have many clients out there that update your app at different points in time.
+- `primaryKey`: Specifies which field in the document serves as the primary key.
+- `indexes`: Defines which fields (or combination of fields) RxDB indexes. You can have single-field indexes or compound indexes.
+- `version`: Indicates the version of the schema. Whenever you change your schema, you must increment this version so RxDB can handle migrations or other adjustments. This is important because data migration on a client-side database can be tricky when you have many clients out there that update your app at different points in time.
 - `encryption`: Specifies which fields should be stored in an encrypted form. This is useful for sensitive data that you do not want to store in plaintext on the client's device.
 
-RxDB also supports a [compression plugin](https://rxdb.info/key-compression.html) that uses a "compression table.” This is essentially a lookup table derived from your JSON Schema which assigns shorter keys or transforms fields so that the stored data becomes more compact. By analyzing the schema, the plugin understands which fields appear repeatedly and can replace them with shorter tokens. Remarkably, RxDB can still query the data in its compressed form. This leads to performance improvements, especially in environments where bandwidth or local storage space are limited.
+RxDB also supports a [compression plugin](https://rxdb.info/key-compression.html) that uses a "compression table." This is essentially a lookup table derived from your JSON Schema which assigns shorter keys or transforms fields so that the stored data becomes more compact. By analyzing the schema, the plugin understands which fields appear repeatedly and can replace them with shorter tokens. Remarkably, RxDB can still query the data in its compressed form. This leads to performance improvements, especially in environments where local storage space is limited.
 
 Below is a sample RxDB schema that demonstrates how standard JSON Schema fields combine with RxDB's custom properties:
 
@@ -80,9 +80,11 @@ RxDB does not allow `$ref` to other files or external schema fragments. The goal
 
 ## Inferring Document Types with TypeScript
 
-JSON Schema is not just for validation and structural guarantees, it can also help generate or infer TypeScript types. In many projects, developers rely on tools like [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript) to produce `.d.ts` files or interface definitions from schema files. However, that requires a separate build step, which may slow down your workflow if you change schemas frequently.
+JSON Schema is not just for validation and structural guarantees, it can also help generate or infer TypeScript types. In many projects, developers rely on tools like [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript) to produce `.d.ts` files or interface definitions from schema files at build time. However, that requires a separate build step, which slows down your workflow.
 
-To improve developer experience, RxDB offers a [built-in way](https://rxdb.info/tutorials/typescript.html) to infer the document's TypeScript type from the schema during runtime. Below is an example:
+To improve developer experience, RxDB offers a [built-in way](https://rxdb.info/tutorials/typescript.html) to infer the document's TypeScript type from the schema during runtime. This is helpful because you get Immediate feedback in your IDE: As soon as you update the schema, TypeScript picks up the changes. You'll see type errors in your code if you attempt to use fields that are no longer valid or if you forget to include newly required fields.
+
+Below is an example on how to interfer the TypeScript type of a document from its JSON-schema:
 
 ```ts
 import {
@@ -122,10 +124,6 @@ export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
 // Example usage: create a typed collection
 const myCollection: RxCollection<HeroDocType> = db.heroes;
 ```
-
-This is helpful becausey ou get Immediate feedback in your IDE: As soon as you update the schema, TypeScript picks up the changes. You'll see type errors in your code if you attempt to use fields that are no longer valid or if you forget to include newly required fields.
-
-Also it makes your types consisted across your codebase: No more out-of-sync definitions between your database schema and the types used in your application logic. This reduces accidental bugs caused by mismatched data types.
 
 
 ## Different JSON Schema Validators
@@ -183,7 +181,7 @@ Including a validator can substantially increase your final bundle size. For lar
 
 Many teams limit JSON Schema validation to development builds to avoid performance overhead in production. However, if your application deals with highly sensitive or mission-critical data, keeping validation enabled ensures data integrity and can prevent costly errors, despite the added CPU and bundle-size costs. Ultimately, the choice depends on your performance targets and  the risk of invalid data.
 
-### Running Validation in a WebWorker
+### Running the Validation in a WebWorker
 
 If you must keep validation enabled in production but you have to ensure that your UI does not lack during validation, you might consider the [RxDB WebWorker plugin](https://rxdb.info/rx-storage-worker.html). This plugin runs the RxDB storage & validation in a separate Web Worker, offloading the main UI thread. While it won't reduce the absolute time spent on validation, it can help maintain a smooth UI by preventing blocking operations on the main thread.
 
@@ -192,7 +190,7 @@ If you must keep validation enabled in production but you have to ensure that yo
 
 Over time, RxDB has evolved its usage of JSON Schema, learning from real production experiences and feedback from the community. Here are some key takeaways:
 
-- Avoid inlined `required` fields: Some validators let you write required: true inside the property definition, but the official JSON Schema specification requires you to declare an array of required fields at the parent object level. Following the standard from the start avoids confusion and ensures broader validator compatibility.
+- Avoid inlined `required` fields: Some validators let you write `"required": true` inside the property definition, but the official JSON Schema specification requires you to declare an array of required fields at the parent object level. Following the standard from the start avoids confusion and ensures broader validator compatibility.
 
 - Keep Custom Fields at the Top Level: Originally, RxDB allowed custom definitions (`index`, `encrypted`, etc.) to appear deeply nested. This caused performance hits because the library had to traverse large schema objects to find them. By placing these fields at the top level, RxDB can parse and apply them much faster, improving startup times.
 
@@ -201,6 +199,6 @@ Over time, RxDB has evolved its usage of JSON Schema, learning from real product
 
 ## Follow Up
 
-Leveraging JSON Schema in RxDB has greatly simplified schema definitions, tooling integration, and type inference. Although some restrictions and performance considerations come into play, the overall developer experience is significantly improved by using a well-known standard rather than reinventing the wheel.
+Using JSON-schema in RxDB has greatly simplified schema definitions, tooling integration, and type inference. Although some restrictions and performance considerations come into play, the overall developer experience is significantly improved by using a well-known standard rather than reinventing the wheel.
 
 For more information on RxDB, including further details on schema extensions and advanced plugins, check out the [official RxDB documentation](https://rxdb.info/quickstart.html).
