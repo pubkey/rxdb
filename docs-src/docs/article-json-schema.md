@@ -82,7 +82,7 @@ RxDB does not allow `$ref` to other files or external schema fragments. The goal
 
 JSON Schema is not just for validation and structural guarantees, it can also help generate or infer TypeScript types. In many projects, developers rely on tools like [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript) to produce `.d.ts` files or interface definitions from schema files at build time. However, that requires a separate build step, which slows down your workflow.
 
-To improve developer experience, RxDB offers a [built-in way](https://rxdb.info/tutorials/typescript.html) to infer the document's TypeScript type from the schema during runtime. This is helpful because you get Immediate feedback in your IDE: As soon as you update the schema, TypeScript picks up the changes. You'll see type errors in your code if you attempt to use fields that are no longer valid or if you forget to include newly required fields.
+To improve developer experience, RxDB offers a [built-in way](https://rxdb.info/tutorials/typescript.html) to infer the document's TypeScript type from the schema during runtime. This is helpful because you get immediate feedback in your IDE: As soon as you update the schema, TypeScript picks up the changes. You'll see type errors in your code if you attempt to use fields that are no longer valid or if you forget to include newly required fields.
 
 Below is an example on how to interfere the TypeScript type of a document from its JSON-schema:
 
