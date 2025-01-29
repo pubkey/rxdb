@@ -199,6 +199,6 @@ Over time, RxDB has evolved its usage of JSON Schema, learning from real product
 
 ## Follow Up
 
-Using JSON-schema in RxDB has greatly simplified schema definitions, tooling integration, and type inference. Although some restrictions and performance considerations come into play, the overall developer experience is significantly improved by using a well-known standard rather than reinventing the wheel.
+Using JSON Schema in RxDB has greatly simplified data definitions, tooling integration, and type inference. Although some restrictions and performance considerations come into play, the overall developer experience is significantly improved by using a well-known standard rather than reinventing the wheel.
 
 For more information on RxDB, including further details on schema extensions and advanced plugins, check out the [official RxDB documentation](https://rxdb.info/quickstart.html).
