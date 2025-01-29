@@ -32,7 +32,7 @@ While RxDB adopts the JSON Schema Core and Validation specifications, it also ex
 
 RxDB also supports a [compression plugin](https://rxdb.info/key-compression.html) that uses a "compression table." This is essentially a lookup table derived from your JSON Schema which assigns shorter keys or transforms fields so that the stored data becomes more compact. By analyzing the schema, the plugin understands which fields appear repeatedly and can replace them with shorter tokens. Remarkably, RxDB can still query the data in its compressed form. This leads to performance improvements, especially in environments where local storage space is limited.
 
-Below is a sample RxDB schema that demonstrates how standard JSON Schema fields combine with RxDB's custom properties:
+Below is a sample RxDB schema that demonstrates how standard JSON Schema vocabularies combine with RxDB's custom extensions:
 
 ```ts
 const mySchema = {
