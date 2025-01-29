@@ -10,6 +10,7 @@ To ensure there are not multiple people working on the same task, before you sta
 - To solve a task, you must do it fully on your own.
 - The maintainer might answer your questions but will not do the work.
 - The CI must still be green afterwards. Commenting out broken tests is not allowed.
+- Your PR must be complete or it will not be merged. Do not expect to have the maintainer finish your work or asking you each week about the progress.
 
 ## Open Tasks
 
