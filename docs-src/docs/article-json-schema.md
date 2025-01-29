@@ -23,7 +23,7 @@ By building on JSON Schema, RxDB has a foundation that makes schema design, data
 ## How RxDB uses JSON Schema
 
 
-While RxDB reuses the core JSON Schema specification, it also extends that schema to introduce RxDB-specific features. Like in other NoSQL databases, you manually define which fields to encrypt, which ones to index, and how to interpret specific fields for queries. RxDB puts these configurations directly into the JSON Schema with additional properties:
+While RxDB adopts the JSON Schema Core and Validation specifications, it also extends it to introduce RxDB-specific functionality. Like in other NoSQL databases, you can manually define which fields to encrypt, which ones to index, and how to interpret specific fields for queries. RxDB enables these configurations as custom JSON Schema keywords:
 
 - `primaryKey`: Specifies which field in the document serves as the primary key.
 - `indexes`: Defines which fields (or combination of fields) RxDB indexes. You can have single-field indexes or compound indexes.
