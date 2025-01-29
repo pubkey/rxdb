@@ -4,6 +4,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import noteSchema from './schema';
 
 /**
@@ -11,6 +12,7 @@ import noteSchema from './schema';
  */
 
 addRxPlugin(RxDBQueryBuilderPlugin);
+addRxPlugin(RxDBDevModePlugin);
 
 let dbPromise;
 
