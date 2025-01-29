@@ -1,4 +1,4 @@
-# How RxDB benefits from JSON Schema to build its NoSQL Database
+# How RxDB embraces JSON Schema to build its NoSQL Database
 
 [RxDB](https://rxdb.info/) is a NoSQL database designed primarily for client-side JavaScript applications, focusing on the [offline-first approach](https://rxdb.info/offline-first.html), multi-tab operations, and data replication. It seamlessly integrates with modern web and mobile app frameworks, supports various storage backends, and provides a plugin-based architecture to handle encryption, compression, type generation, and more.
 
