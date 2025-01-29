@@ -4,7 +4,7 @@
 
 One of RxDB's standout architectural choices is its reliance on JSON Schema to define data models for documents in collections. Instead of inventing a custom schema language, RxDB adopts a standard that is already well-established in the broader JavaScript community. By doing so, RxDB solves several major hurdles that often arise when developers are introduced to new databases:
 
-- **Familiarity**: Most JavaScript developers have already encountered JSON-based schema definitions, either via OpenAPI or other tooling. Thus, they can quickly understand and adopt RxDB's schemas without investing time in learning a proprietary format.
+- **Familiarity**: Most JavaScript developers have already encountered JSON Schema, either via OpenAPI or other tooling. Thus, they can quickly understand and adopt RxDB's schemas without investing time in learning a new schema language.
 
 - **Tooling ecosystem**: JSON Schema boasts a robust set of libraries, validators, and code generators. RxDB leverages these rather than maintaining its own schema validation library, giving teams the freedom to pick what works best for them.
 
