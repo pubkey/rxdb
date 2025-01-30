@@ -1818,7 +1818,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
-                info: 'oneOptional is emtpy object',
+                info: 'oneOptional is empty object',
                 query: {
                     'selector': {
                         oneOptional: {}
