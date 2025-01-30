@@ -36,6 +36,10 @@ export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
+
+
+    console.log('normalizeMangoQuery()');
+    console.dir(mangoQuery);
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     mangoQuery = flatClone(mangoQuery);
 
@@ -66,7 +70,20 @@ export function normalizeMangoQuery<RxDocType>(
         Object
             .entries(normalizedMangoQuery.selector)
             .forEach(([field, matcher]) => {
+
+                if (typeof matcher === 'undefined') {
+                    console.log('-- add $eq for undefined');
+                    (normalizedMangoQuery as any).selector[field] = {
+                        $type: 'undefined'
+                    };
+                    return;
+                }
+
                 if (typeof matcher !== 'object' || matcher === null) {
+                    console.dir({
+                        field,
+                        matcher
+                    });
                     (normalizedMangoQuery as any).selector[field] = {
                         $eq: matcher
                     };
@@ -164,6 +181,8 @@ export function normalizeMangoQuery<RxDocType>(
         }
     }
 
+    console.dir({ normalizedMangoQuery });
+
     return normalizedMangoQuery;
 }
 
@@ -243,7 +262,7 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
         return Promise.all(
             docs.map(doc => fn(doc))
         ) as any;
-    }else if(docs instanceof Map){
+    } else if (docs instanceof Map) {
         return Promise.all(
             [...docs.values()].map((doc) => fn(doc))
         ) as any;

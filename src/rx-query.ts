@@ -323,12 +323,25 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
+
+
+        console.log(':: RxQuery.toString():');
+
         const stringObj = sortObject({
             op: this.op,
-            query: this.mangoQuery,
+            query: normalizeMangoQuery<RxDocType>(
+                this.collection.schema.jsonSchema,
+                this.mangoQuery
+            ),
             other: this.other
         }, true);
         const value = JSON.stringify(stringObj);
+        console.dir({
+            query: this.mangoQuery,
+            stringObj,
+            value,
+            prep: this.getPreparedQuery()
+        });
         this.toString = () => value;
         return value;
     }
@@ -347,6 +360,13 @@ export class RxQueryBase<
                 this.mangoQuery
             )
         };
+
+        console.log('----- getPreparedQuery()');
+        console.dir({ 
+            mango: this.mangoQuery,
+            magnoNorm: hookInput.mangoQuery
+         });
+
         (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
         if (hookInput.mangoQuery.index) {
             hookInput.mangoQuery.index.unshift('_deleted');
@@ -359,6 +379,7 @@ export class RxQueryBase<
         );
 
         this.getPreparedQuery = () => value;
+        console.dir({ value });
         return value;
     }
 

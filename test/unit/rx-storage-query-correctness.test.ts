@@ -29,7 +29,12 @@ import {
     SimpleHeroArrayDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import { HeroArrayDocumentType, NestedHumanDocumentType, SimpleHumanV3DocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
+import {
+    HeroArrayDocumentType,
+    NestedHumanDocumentType,
+    SimpleHumanV3DocumentType
+
+} from '../../src/plugins/test-utils/schema-objects.ts';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 describeParallel('rx-storage-query-correctness.test.ts', () => {
@@ -132,6 +137,9 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
+                console.log('----__________________----------- ' + queryData.info);
+                console.dir(queryData.query);
+
                 const queryForStorage = clone(queryData.query) as MangoQuery<RxDocType>;
                 if (!queryForStorage.selector) {
                     queryForStorage.selector = {};
@@ -210,7 +218,11 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        queryData,
+                        resultFromCollectionIds,
+                        preparedQuery: rxQuery.getPreparedQuery()
+                    });
                     throw err;
                 }
                 const byId = await collection.findByIds(resultFromCollectionIds).exec();
@@ -1749,6 +1761,72 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     'cc'
                 ]
             }
+        ],
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/6792
+     */
+    testCorrectQueries<SimpleHumanV3DocumentType>({
+        testTitle: 'Using undefined in a selector must have the same result in all storages',
+        data: [
+            {
+                passportId: 'there',
+                oneOptional: 'opt',
+                age: 10
+            },
+            {
+                passportId: 'not-there',
+                oneOptional: undefined,
+                age: 10
+            }
+        ],
+        schema: schemas.humanMinimal,
+        queries: [
+            {
+                info: 'oneOptional is undefined',
+                query: {
+                    'selector': {
+                        oneOptional: undefined
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'not-there'
+                ]
+            },
+            {
+                info: 'oneOptional is null',
+                query: {
+                    'selector': {
+                        oneOptional: null
+                    } as any,
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'not-there'
+                ]
+            },
+            {
+                info: 'oneOptional does not exist in selector',
+                query: {
+                    'selector': {},
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'not-there',
+                    'there'
+                ]
+            },
+            {
+                info: 'oneOptional is emtpy object',
+                query: {
+                    'selector': {
+                        oneOptional: {}
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
         ],
     });
 });

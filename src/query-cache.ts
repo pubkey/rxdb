@@ -23,12 +23,21 @@ export class QueryCache {
      * if false, save the given one and return it
      */
     getByQuery(rxQuery: RxQuery): RxQuery {
+        console.log('QueryCache.getByQuery():');
         const stringRep = rxQuery.toString();
-        return getFromMapOrCreate(
+        console.log('stringRep: ' + stringRep);
+        const ret = getFromMapOrCreate(
             this._map,
             stringRep,
-            () => rxQuery
+            () => {
+                console.log('use new query!!');
+                return rxQuery;
+            }
         );
+        console.log('ret string: ' + ret.toString());
+        console.dir(ret.getPreparedQuery());
+
+        return ret;
     }
 }
 
