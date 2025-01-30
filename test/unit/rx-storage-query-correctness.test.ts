@@ -204,6 +204,8 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
                     console.dir({
                         resultIds,
+                        expectedResultDocIds: queryData.expectedResultDocIds,
+                        resultFromStorage: resultFromStorage.documents,
                         queryData,
                         preparedQuery
                     });
@@ -1765,6 +1767,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
     });
     /**
      * @link https://github.com/pubkey/rxdb/issues/6792
+     * @link https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824
      */
     testCorrectQueries<SimpleHumanV3DocumentType>({
         testTitle: 'Using undefined in a selector must have the same result in all storages',
@@ -1782,18 +1785,6 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
         ],
         schema: schemas.humanMinimal,
         queries: [
-            {
-                info: 'oneOptional is undefined',
-                query: {
-                    'selector': {
-                        oneOptional: undefined
-                    },
-                    sort: [{ passportId: 'asc' }]
-                },
-                expectedResultDocIds: [
-                    'not-there'
-                ]
-            },
             {
                 info: 'oneOptional is null',
                 query: {

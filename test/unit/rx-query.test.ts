@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { assertThrows } from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 import clone from 'clone';
 
@@ -879,6 +879,36 @@ describe('rx-query.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824
+         */
+        it('#6792 queries must never contain an undefined property', async () => {
+            const c = await humansCollection.create(0);
+
+            await assertThrows(
+                () => c.find({
+                    selector: {
+                        firstName: undefined
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+
+            await assertThrows(
+                () => c.find({
+                    selector: {
+                        firstName: {
+                            $eq: undefined
+                        }
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+
+            c.database.close();
+        });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
             const c = await humansCollection.createPrimary(0);
 

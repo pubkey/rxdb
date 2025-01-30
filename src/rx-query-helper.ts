@@ -70,20 +70,7 @@ export function normalizeMangoQuery<RxDocType>(
         Object
             .entries(normalizedMangoQuery.selector)
             .forEach(([field, matcher]) => {
-
-                if (typeof matcher === 'undefined') {
-                    console.log('-- add $eq for undefined');
-                    (normalizedMangoQuery as any).selector[field] = {
-                        $type: 'undefined'
-                    };
-                    return;
-                }
-
                 if (typeof matcher !== 'object' || matcher === null) {
-                    console.dir({
-                        field,
-                        matcher
-                    });
                     (normalizedMangoQuery as any).selector[field] = {
                         $eq: matcher
                     };
