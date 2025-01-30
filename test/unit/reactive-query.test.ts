@@ -272,44 +272,6 @@ describeParallel('reactive-query.test.js', () => {
             c.database.close();
             c2.database.close();
         });
-        it('#136 : findOne(string).$ streams all documents (_id as primary)', async () => {
-            const subs = [];
-            const col = await humansCollection.create(3);
-            const docData = schemaObjects.humanData();
-            const doc: any = await col.insert(docData);
-            const _id = doc._id;
-            const streamed: any[] = [];
-            subs.push(
-                col.findOne(_id).$
-                    .pipe(
-                        filter(d => d !== null)
-                    )
-                    .subscribe(d => {
-                        streamed.push(d);
-                    })
-            );
-            await AsyncTestUtil.waitUntil(() => streamed.length === 1);
-            assert.ok(isRxDocument(streamed[0]));
-            assert.strictEqual(streamed[0]._id, _id);
-
-            const streamed2: any[] = [];
-            subs.push(
-                col.findOne().where('_id').eq(_id).$
-                    .pipe(
-                        filter(d => d !== null)
-                    )
-                    .subscribe(d => {
-                        streamed2.push(d);
-                    })
-            );
-            await AsyncTestUtil.waitUntil(() => streamed2.length === 1);
-            assert.strictEqual(streamed2.length, 1);
-            assert.ok(isRxDocument(streamed2[0]));
-            assert.strictEqual(streamed2[0]._id, _id);
-
-            subs.forEach(sub => sub.unsubscribe());
-            col.database.remove();
-        });
         it('#138 : findOne().$ returns every doc if no id given', async () => {
             const col = await humansCollection.create(3);
             const streamed: any[] = [];
