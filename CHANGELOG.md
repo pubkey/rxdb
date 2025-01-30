@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - REMOVE `console.log('exposeWorkerRxStorage()');` from the worker RxStorage.
+- ADD dev-mode check for `undefined` properties in queries. [#6792](https://github.com/pubkey/rxdb/issues/6792)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

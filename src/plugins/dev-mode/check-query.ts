@@ -11,7 +11,7 @@ import type {
     RxPluginPrePrepareRxQueryArgs
 } from '../../types/index.d.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
-import { deepEqual } from '../utils/index.ts';
+import { deepEqual, findUndefinedPath } from '../utils/index.ts';
 import { prepareQuery } from '../../rx-query-helper.ts';
 
 /**
@@ -73,6 +73,14 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
 
 export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
     const schema = args.rxQuery.collection.schema.jsonSchema;
+
+    const undefinedFieldPath = findUndefinedPath(args.mangoQuery);
+    if (undefinedFieldPath) {
+        throw newRxError('QU19', {
+            field: undefinedFieldPath,
+            query: args.mangoQuery,
+        });
+    }
 
     /**
      * Ensure that all top level fields are included in the schema.

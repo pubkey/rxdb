@@ -325,7 +325,10 @@ export class RxQueryBase<
     toString(): string {
         const stringObj = sortObject({
             op: this.op,
-            query: this.mangoQuery,
+            query: normalizeMangoQuery<RxDocType>(
+                this.collection.schema.jsonSchema,
+                this.mangoQuery
+            ),
             other: this.other
         }, true);
         const value = JSON.stringify(stringObj);

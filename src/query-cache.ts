@@ -24,11 +24,12 @@ export class QueryCache {
      */
     getByQuery(rxQuery: RxQuery): RxQuery {
         const stringRep = rxQuery.toString();
-        return getFromMapOrCreate(
+        const ret = getFromMapOrCreate(
             this._map,
             stringRep,
             () => rxQuery
         );
+        return ret;
     }
 }
 

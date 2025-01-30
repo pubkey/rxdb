@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { assertThrows } from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 import clone from 'clone';
 
@@ -22,6 +22,8 @@ import {
 } from '../../plugins/core/index.mjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 import { firstValueFrom } from 'rxjs';
 
@@ -63,14 +65,14 @@ describe('rx-query.test.ts', () => {
         it('should produce the correct selector-object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
             const queryObj = q.mangoQuery;
             assert.deepStrictEqual(queryObj, {
                 selector: {
-                    name: {
+                    firstName: {
                         '$ne': 'Alice'
                     },
                     age: {
@@ -90,12 +92,12 @@ describe('rx-query.test.ts', () => {
         it('should get a valid string-representation', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
             const str = q.toString();
-            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"name":{"$ne":"Alice"}},"sort":[{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{"queryBuilderPath":"age"},"query":{"limit":10,"selector":{"age":{"$gt":18,"$lt":67},"firstName":{"$ne":"Alice"}},"skip":0,"sort":[{"age":"desc"},{"passportId":"asc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -108,7 +110,7 @@ describe('rx-query.test.ts', () => {
                 passportId: 'desc', age: 'desc'
             });
             const str = q.toString();
-            const mustString = '{"op":"find","other":{},"query":{"selector":{},"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
+            const mustString = '{"op":"find","other":{},"query":{"selector":{},"skip":0,"sort":[{"passportId":"desc"},{"age":"desc"}]}}';
             assert.strictEqual(str, mustString);
             const str2 = q.toString();
             assert.strictEqual(str2, mustString);
@@ -118,7 +120,7 @@ describe('rx-query.test.ts', () => {
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
-            const queryWithRegex = queryWithoutRegex.where('color').regex('foobar');
+            const queryWithRegex = queryWithoutRegex.where('firstName').regex('foobar');
             const queryString = queryWithRegex.toString();
 
             assert.ok(queryString.includes('foobar'));
@@ -130,12 +132,12 @@ describe('rx-query.test.ts', () => {
 
             const query1 = col1.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId').toString();
 
             const query2 = col2.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId').toString();
 
             assert.strictEqual(query1, query2);
@@ -147,12 +149,12 @@ describe('rx-query.test.ts', () => {
 
             const query1 = col.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId').toString();
 
             const query2 = col.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId').toString();
 
             assert.strictEqual(query1, query2);
@@ -163,11 +165,11 @@ describe('rx-query.test.ts', () => {
         it('should not be the same object (sort)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
-            const q2 = q.sort('name');
+            const q2 = q.sort('firstName');
             assert.ok(isRxQuery(q2));
             assert.notStrictEqual(q, q2);
             col.database.close();
@@ -175,11 +177,11 @@ describe('rx-query.test.ts', () => {
         it('should not be the same object (where)', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
-            const q2 = q.where('name').eq('foobar');
+            const q2 = q.where('firstName').eq('foobar');
             assert.ok(isRxQuery(q2));
             assert.notStrictEqual(q, q2);
             assert.ok(q.id < q2.id);
@@ -190,12 +192,12 @@ describe('rx-query.test.ts', () => {
         it('return the same object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
             const q2 = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
@@ -218,13 +220,13 @@ describe('rx-query.test.ts', () => {
         it('should have the correct amount of cached queries', async () => {
             const col = await humansCollection.create(0);
             const q3 = col.find()
-                .where('name').ne('Bob');
+                .where('firstName').ne('Bob');
             assert.ok(q3);
             const q = col.find()
-                .where('name').ne('Alice');
+                .where('firstName').ne('Alice');
             assert.ok(q);
             const q2 = col.find()
-                .where('name').ne('Bob');
+                .where('firstName').ne('Bob');
             assert.ok(q2);
             assert.strictEqual(col._queryCache._map.size, 4);
             col.database.close();
@@ -232,12 +234,12 @@ describe('rx-query.test.ts', () => {
         it('return another object', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
             const q2 = col.find()
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age');
@@ -251,12 +253,12 @@ describe('rx-query.test.ts', () => {
 
             const query1 = col.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId');
 
             const query2 = col.find()
                 .where('age').gt(10)
-                .where('name').ne('foobar')
+                .where('firstName').ne('foobar')
                 .sort('passportId');
 
             assert.ok(query1 === query2);
@@ -266,16 +268,16 @@ describe('rx-query.test.ts', () => {
         it('should distinguish between different sort-orders', async () => {
             const col = await humansCollection.create(0);
             const q = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
                 .sort('-age')
-                .sort('name');
+                .sort('firstName');
             const q2 = col.find()
-                .where('name').ne('Alice')
+                .where('firstName').ne('Alice')
                 .where('age').gt(18).lt(67)
                 .limit(10)
-                .sort('name')
+                .sort('firstName')
                 .sort('-age');
 
             assert.notStrictEqual(q, q2);
@@ -877,6 +879,36 @@ describe('rx-query.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824
+         */
+        it('#6792 queries must never contain an undefined property', async () => {
+            const c = await humansCollection.create(0);
+
+            await assertThrows(
+                () => c.find({
+                    selector: {
+                        firstName: undefined
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+
+            await assertThrows(
+                () => c.find({
+                    selector: {
+                        firstName: {
+                            $eq: undefined
+                        }
+                    }
+                }).exec(),
+                'RxError',
+                'QU19'
+            );
+
+            c.database.close();
+        });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
             const c = await humansCollection.createPrimary(0);
 
@@ -1507,7 +1539,7 @@ describe('rx-query.test.ts', () => {
             const data = 'some-plugin-data';
             q.other[key] = data;
 
-            const newQ = q.where('name').ne('Alice');
+            const newQ = q.where('firstName').ne('Alice');
 
             assert.strictEqual(newQ.other[key], data);
 

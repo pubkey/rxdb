@@ -243,7 +243,7 @@ export async function runQueryUpdateFunction<RxDocType, RxQueryResult>(
         return Promise.all(
             docs.map(doc => fn(doc))
         ) as any;
-    }else if(docs instanceof Map){
+    } else if (docs instanceof Map) {
         return Promise.all(
             [...docs.values()].map((doc) => fn(doc))
         ) as any;
