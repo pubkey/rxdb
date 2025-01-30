@@ -137,9 +137,6 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                console.log('----__________________----------- ' + queryData.info);
-                console.dir(queryData.query);
-
                 const queryForStorage = clone(queryData.query) as MangoQuery<RxDocType>;
                 if (!queryForStorage.selector) {
                     queryForStorage.selector = {};
