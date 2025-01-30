@@ -23,9 +23,7 @@ export class QueryCache {
      * if false, save the given one and return it
      */
     getByQuery(rxQuery: RxQuery): RxQuery {
-        console.log('QueryCache.getByQuery():');
         const stringRep = rxQuery.toString();
-        console.log('stringRep: ' + stringRep);
         const ret = getFromMapOrCreate(
             this._map,
             stringRep,
@@ -34,9 +32,6 @@ export class QueryCache {
                 return rxQuery;
             }
         );
-        console.log('ret string: ' + ret.toString());
-        console.dir(ret.getPreparedQuery());
-
         return ret;
     }
 }

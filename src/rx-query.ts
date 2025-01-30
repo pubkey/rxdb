@@ -360,13 +360,6 @@ export class RxQueryBase<
                 this.mangoQuery
             )
         };
-
-        console.log('----- getPreparedQuery()');
-        console.dir({ 
-            mango: this.mangoQuery,
-            magnoNorm: hookInput.mangoQuery
-         });
-
         (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
         if (hookInput.mangoQuery.index) {
             hookInput.mangoQuery.index.unshift('_deleted');
