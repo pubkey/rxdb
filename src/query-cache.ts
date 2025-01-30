@@ -27,10 +27,7 @@ export class QueryCache {
         const ret = getFromMapOrCreate(
             this._map,
             stringRep,
-            () => {
-                console.log('use new query!!');
-                return rxQuery;
-            }
+            () => rxQuery
         );
         return ret;
     }

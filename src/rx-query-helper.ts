@@ -36,10 +36,6 @@ export function normalizeMangoQuery<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
-
-
-    console.log('normalizeMangoQuery()');
-    console.dir(mangoQuery);
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     mangoQuery = flatClone(mangoQuery);
 
@@ -167,8 +163,6 @@ export function normalizeMangoQuery<RxDocType>(
             normalizedMangoQuery.sort.push({ [primaryKey]: 'asc' } as any);
         }
     }
-
-    console.dir({ normalizedMangoQuery });
 
     return normalizedMangoQuery;
 }

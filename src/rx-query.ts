@@ -323,10 +323,6 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
-
-
-        console.log(':: RxQuery.toString():');
-
         const stringObj = sortObject({
             op: this.op,
             query: normalizeMangoQuery<RxDocType>(
@@ -336,12 +332,6 @@ export class RxQueryBase<
             other: this.other
         }, true);
         const value = JSON.stringify(stringObj);
-        console.dir({
-            query: this.mangoQuery,
-            stringObj,
-            value,
-            prep: this.getPreparedQuery()
-        });
         this.toString = () => value;
         return value;
     }
@@ -372,7 +362,6 @@ export class RxQueryBase<
         );
 
         this.getPreparedQuery = () => value;
-        console.dir({ value });
         return value;
     }
 
