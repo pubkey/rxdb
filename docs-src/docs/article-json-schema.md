@@ -145,7 +145,7 @@ One important consideration is that each validator has a unique format for its *
 
 Performance is a critical factor in deciding whether to validate documents at runtime, especially in production environments. The following tables illustrate a basic comparison of initialization time (time-to-first-insert) and bulk insertion speed for different validators on two RxDB storages
 
-The RxDB team ran performance benchmarks using two storage options on an ubuntu 24 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU so notice that your average users' device will be way slower.
+The RxDB team ran performance benchmarks using two storage options on an Ubuntu 24.04 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU.
 
 Dexie Storage (based on IndexedDB in the browser):
 
