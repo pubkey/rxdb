@@ -3,8 +3,13 @@
 This list contains things that have to be done but will create breaking changes.
 
 
+
+## Final fields should not be automatically required
+
+https://discord.com/channels/969553741705539624/1237000453791678487/threads/1327921349808885831
+
 ---------------------------------
-# Maybe later (not sure if should be done)
+## Maybe later (not sure if should be done)
 
 
 ## Suggestions from #6787
