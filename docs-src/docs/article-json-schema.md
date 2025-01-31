@@ -55,11 +55,11 @@ const mySchema = {
         }
     },
     additionalProperties: false,
+    required: ['firstName', 'lastName', 'id'],
     // RxDB specific fields:
     primaryKey: 'id',
     version: 0,
     keyCompression: true,
-    required: ['firstName', 'lastName', 'id'],
     indexes: [
         'firstName', // single-field index
         ['firstName', 'lastName'] // compound index
@@ -137,7 +137,7 @@ In order to validate whether a given document complies with the schema, RxDB use
 
 No single validator is perfect; each has its trade-offs in performance, build size, and correctness edge cases. Some libraries rely on `eval()` or `new Function`, which can break in strict Content-Security-Policy (CSP) environments. Others have issues with large integers. RxDB encourages you to pick a validator that matches your app's needs and environment constraints.
 
-Notice that RxDB itself does not define a specific JSON Schema draft. Instead it fully depends on the validation plugin is use, which parts of the JSON schema spec are accepted.
+Note that RxDB itself does not define a specific JSON Schema dialect. Instead, the range of supported dialects is determined by the JSON Schema validation plugin in use.
 
 One important consideration is that each validator has a unique format for its **error messages**. If your application inspects validation errors and makes decisions (e.g., showing descriptive warnings to the user), be aware that switching validators later can require extensive code changes. In theory this is solved by the JSON Schema specification by the use of the [Standard Output](https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting) format, but this is not implemented in the listed schema validators.
 
@@ -193,7 +193,7 @@ If you must keep validation enabled in production but you have to ensure that yo
 
 Over time, RxDB has evolved its usage of JSON Schema, learning from real production experiences and feedback from the community. Here are some key takeaways:
 
-- Avoid inlined `required` fields: Some validators let you write `"required": true` inside the property definition because that was part of JSON Schema Draft 3. But the newer JSON Schema drafts require you to declare an array of required fields at the parent object level. Following the standard from the start avoids confusion and ensures broader validator compatibility.
+- Avoid inlined `required` fields: In older JSON Schema dialects such as Draft 3, it was acceptable to define `"required": true` directly inside the property definition. However, more recent dialects expect required to be declared as an `array` at the parent object level. If you're using a validator based on newer specs, place your required fields in the parent-level array. If you intentionally stick to Draft 3, inlined required is still valid, but it may cause confusion if you switch to a newer validator or tool later on.
 
 - Keep Custom Fields at the Top Level: Originally, RxDB allowed custom definitions (`index`, `encrypted`, etc.) to appear deeply nested. This caused performance hits because the library had to traverse large schema objects to find them. By placing these fields at the top level, RxDB can parse and apply them much faster, improving startup times.
 
