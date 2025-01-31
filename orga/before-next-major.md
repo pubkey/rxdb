@@ -7,6 +7,11 @@ This list contains things that have to be done but will create breaking changes.
 # Maybe later (not sure if should be done)
 
 
+## Suggestions from #6787
+
+See https://github.com/pubkey/rxdb/pull/6787
+
+
 ## Do not allow type mixing
 
 In the RxJsonSchema, a property of a document can have multiple types like
