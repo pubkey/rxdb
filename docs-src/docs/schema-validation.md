@@ -81,9 +81,33 @@ const db = await createRxDatabase({
 });
 ```
 
+## Custom Formats
+
+The schema validators provide methods to add custom formats like a `email` format.
+You have to add these formats **before** you create your database.
+
+### Ajv Custom Format
+
+```ts
+import { getAjv } from 'rxdb/plugins/validate-ajv';
+const ajv = getAjv();
+ajv.addFormat('email', {
+    type: 'string',
+    validate: v => v.includes('@') // ensure email fields contain the @ symbol
+});
+```
+
+### Z-Schema Custom Format
+
+```ts
+import { ZSchemaClass } from 'rxdb/plugins/validate-z-schema';
+ZSchemaClass.registerFormat('email', function (v: string) {
+    return v.includes('@'); // ensure email fields contain the @ symbol
+});
+```
 
 
-### Performance comparison of the validators
+## Performance comparison of the validators
 
 The RxDB team ran performance benchmarks using two storage options on an Ubuntu 24.04 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU.
 
