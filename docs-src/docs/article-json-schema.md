@@ -139,7 +139,7 @@ No single validator is perfect; each has its trade-offs in performance, build si
 
 Notice that RxDB itself does not define a specific JSON Schema draft. Instead it fully depends on the validation plugin is use, which parts of the JSON schema spec are accepted.
 
-One important consideration is that each validator has a unique format for its **error messages**. If your application inspects validation errors and makes decisions (e.g., showing descriptive warnings to the user), be aware that switching validators later can require extensive code changes. In theory this is solved by the JSON schema specification with the [output formatting](https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting) but for now this is not implemented in the listed schema validators.
+One important consideration is that each validator has a unique format for its **error messages**. If your application inspects validation errors and makes decisions (e.g., showing descriptive warnings to the user), be aware that switching validators later can require extensive code changes. In theory this is solved by the JSON Schema specification by the use of the [Standard Output](https://json-schema.org/draft/2020-12/json-schema-core#name-output-formatting) format, but this is not implemented in the listed schema validators.
 
 ## Performance Comparison of Validators
 
