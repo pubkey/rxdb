@@ -417,6 +417,7 @@ describeParallel('key-compression.test.js', () => {
                         type: 'object',
                         patternProperties: {
                             '.*': {
+                                type: 'object',
                                 properties: {
                                     name: { type: 'string' },
                                 },
@@ -449,20 +450,20 @@ describeParallel('key-compression.test.js', () => {
             let myDocument = await collection.insert({
                 passportId: 'foobar',
                 tags: {
-                    example: 'example',
+                    example: { name: 'example' },
                 }
             });
 
-            assert.strictEqual((myDocument.tags as any).example, 'example');
+            assert.deepStrictEqual((myDocument.tags as any).example, { name: 'example' });
 
             await myDocument.incrementalModify((docData) => {
                 const newDocData = Object.assign({}, docData);
-                (newDocData.tags as any)['[example2]'] = '[example2]';
+                (newDocData.tags as any)['[example2]'] = { name: '[example2]' };
                 return newDocData;
             });
             const expectedTags = {
-                example: 'example',
-                '[example2]': '[example2]',
+                example: { name: 'example' },
+                '[example2]': { name: '[example2]' },
             };
 
             // check on plain storage

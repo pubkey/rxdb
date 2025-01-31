@@ -2,6 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD option to set custom formats in the [schema validators](https://rxdb.info/schema-validation.html)
+- CHANGE enable Ajv strict mode.
 - REMOVE `console.log('exposeWorkerRxStorage()');` from the worker RxStorage.
 - ADD dev-mode check for `undefined` properties in queries. [#6792](https://github.com/pubkey/rxdb/issues/6792)
 <!-- ADD new changes here! -->

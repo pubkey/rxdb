@@ -8,17 +8,29 @@ import type { RxJsonSchema } from '../../types/index.d.ts';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
 
+export const ZSchemaClass = ZSchema;
+
+let zSchema: ZSchema;
+
+export function getZSchema() {
+    if (!zSchema) {
+        zSchema = new ZSchema({
+            strictMode: false
+        });
+    }
+    return zSchema;
+}
+
 export function getValidator(
     schema: RxJsonSchema<any>
 ) {
-    const validatorInstance = new (ZSchema as any)();
     const validator = (obj: any) => {
-        validatorInstance.validate(obj, schema);
-        return validatorInstance;
+        getZSchema().validate(obj, schema);
+        return getZSchema();
     };
     return (docData: any) => {
         const useValidator = validator(docData);
-        if (useValidator === true) {
+        if ((useValidator as any) === true) {
             return;
         }
         const errors: ZSchema.SchemaErrorDetail[] = (useValidator as any).getLastErrors();

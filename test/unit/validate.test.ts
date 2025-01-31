@@ -25,9 +25,9 @@ import {
     RxStorage
 } from '../../plugins/core/index.mjs';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-
+import { wrappedValidateZSchemaStorage, ZSchemaClass } from '../../plugins/validate-z-schema/index.mjs';
+import { wrappedValidateAjvStorage, getAjv } from '../../plugins/validate-ajv/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 /**
  * The is-my-json-valid seems to be dead.
@@ -761,6 +761,7 @@ validationImplementations.forEach(
                         tags: {
                             type: 'object',
                             additionalProperties: {
+                                type: 'object',
                                 properties: {
                                     created: {
                                         type: 'integer',
@@ -825,6 +826,80 @@ validationImplementations.forEach(
 
 
 
+
+describeParallel('validate.test.js (custom formats) ', () => {
+    const schemaWithEmail = clone(schemas.human);
+    schemaWithEmail.properties.email = {
+        type: 'string',
+        format: 'email'
+    };
+    describe('ajv', () => {
+        it('should be able to register a custom format', async () => {
+            const ajv = getAjv();
+            ajv.addFormat('email', {
+                type: 'string',
+                validate: v => v.includes('@')
+            });
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: getRxStorageMemory()
+                })
+            });
+            const collections = await db.addCollections({
+                human: {
+                    schema: schemaWithEmail
+                }
+            });
+            const human: any = schemaObjects.humanData();
+            human.email = 'asdf@example.com';
+            await collections.human.insert(human);
+
+            await assertThrows(
+                async () => {
+                    const invalidEmail: any = schemaObjects.humanData();
+                    invalidEmail.email = 'foobar';
+                    await collections.human.insert(invalidEmail);
+                },
+                'RxError',
+                'must match format'
+            );
+            db.close();
+        });
+    });
+    describe('z-schema', () => {
+        it('should be able to register a custom format', async () => {
+            ZSchemaClass.registerFormat('email', function (v: string) {
+                return v.includes('@');
+            });
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: wrappedValidateZSchemaStorage({
+                    storage: getRxStorageMemory()
+                })
+            });
+            const collections = await db.addCollections({
+                human: {
+                    schema: schemaWithEmail
+                }
+            });
+            const human: any = schemaObjects.humanData();
+            human.email = 'asdf@example.com';
+            await collections.human.insert(human);
+
+            await assertThrows(
+                async () => {
+                    const invalidEmail: any = schemaObjects.humanData();
+                    invalidEmail.email = 'foobar';
+                    await collections.human.insert(invalidEmail);
+                },
+                'RxError',
+                'pass validation for format email'
+            );
+            db.close();
+        });
+    });
+});
 
 
 

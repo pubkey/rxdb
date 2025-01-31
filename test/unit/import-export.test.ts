@@ -49,8 +49,9 @@ describeParallel('import-export.test.js', () => {
                 const col = cols.enchuman;
 
                 const fns = [];
-                for (let i = 0; i < 10; i++)
+                for (let i = 0; i < 10; i++) {
                     fns.push(col.insert(schemaObjects.encryptedObjectHumanData()));
+                }
                 await Promise.all(fns);
 
                 const json = await col.exportJSON();
@@ -286,7 +287,6 @@ describeParallel('import-export.test.js', () => {
     describe('issues', () => {
         it('#319 collections must be created before importDump', async () => {
             const docSchema = {
-                name: 'demo',
                 version: 0,
                 primaryKey: 'firstName',
                 type: 'object',

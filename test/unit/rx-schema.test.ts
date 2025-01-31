@@ -82,7 +82,7 @@ describeParallel('rx-schema.test.ts', () => {
                             type: 'string',
                         },
                     },
-                    required: ['id', 'createTime', 'updateTime'],
+                    required: ['id', 'createTime'],
                 };
 
                 const db = await createRxDatabase({
