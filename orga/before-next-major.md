@@ -8,6 +8,12 @@ This list contains things that have to be done but will create breaking changes.
 
 https://discord.com/channels/969553741705539624/1237000453791678487/threads/1327921349808885831
 
+## Move `final` defitions to the top level
+
+This should be done similar to where indexes or `encryption` fields are defined. This would 
+then allow to have `final` be also set for nested properties.
+
+
 ---------------------------------
 ## Maybe later (not sure if should be done)
 
