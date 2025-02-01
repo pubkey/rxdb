@@ -4,7 +4,9 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ZSchemaClass = void 0;
 exports.getValidator = getValidator;
+exports.getZSchema = getZSchema;
 exports.wrappedValidateZSchemaStorage = void 0;
 var _zSchema = _interopRequireDefault(require("z-schema"));
 var _pluginHelpers = require("../../plugin-helpers.js");
@@ -14,11 +16,20 @@ var _pluginHelpers = require("../../plugin-helpers.js");
  * @link https://github.com/zaggino/z-schema
  */
 
+var ZSchemaClass = exports.ZSchemaClass = _zSchema.default;
+var zSchema;
+function getZSchema() {
+  if (!zSchema) {
+    zSchema = new _zSchema.default({
+      strictMode: false
+    });
+  }
+  return zSchema;
+}
 function getValidator(schema) {
-  var validatorInstance = new _zSchema.default();
   var validator = obj => {
-    validatorInstance.validate(obj, schema);
-    return validatorInstance;
+    getZSchema().validate(obj, schema);
+    return getZSchema();
   };
   return docData => {
     var useValidator = validator(docData);

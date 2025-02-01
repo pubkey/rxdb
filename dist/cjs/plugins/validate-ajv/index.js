@@ -4,6 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getAjv = getAjv;
 exports.getValidator = getValidator;
 exports.wrappedValidateAjvStorage = void 0;
 var _ajv = _interopRequireDefault(require("ajv"));
@@ -15,11 +16,28 @@ var _pluginHelpers = require("../../plugin-helpers.js");
  * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
 
-var ajv = new _ajv.default({
-  strict: false
-});
+var ajv;
+function getAjv() {
+  if (!ajv) {
+    ajv = new _ajv.default({
+      strict: true
+    });
+    ajv.addKeyword('version');
+    ajv.addKeyword('keyCompression');
+    ajv.addKeyword('primaryKey');
+    ajv.addKeyword('indexes');
+    ajv.addKeyword('encrypted');
+    ajv.addKeyword('final');
+    ajv.addKeyword('sharding');
+    ajv.addKeyword('internalIndexes');
+    ajv.addKeyword('attachments');
+    ajv.addKeyword('ref');
+    ajv.addKeyword('crdt');
+  }
+  return ajv;
+}
 function getValidator(schema) {
-  var validator = ajv.compile(schema);
+  var validator = getAjv().compile(schema);
   return docData => {
     var isValid = validator(docData);
     if (isValid) {

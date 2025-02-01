@@ -16,7 +16,8 @@ export var QueryCache = /*#__PURE__*/function () {
    */
   _proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
-    return getFromMapOrCreate(this._map, stringRep, () => rxQuery);
+    var ret = getFromMapOrCreate(this._map, stringRep, () => rxQuery);
+    return ret;
   };
   return QueryCache;
 }();

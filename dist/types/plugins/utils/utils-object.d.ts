@@ -52,4 +52,10 @@ export declare const clone: typeof deepClone;
  */
 export declare function overwriteGetterForCaching<ValueType = any>(obj: any, getterName: string, value: ValueType): ValueType;
 export declare function hasDeepProperty(obj: any, property: string): boolean;
+/**
+ * Deeply checks if an object contains any property
+ * with the value of undefined
+ * If yes, returns the path to it.
+ */
+export declare function findUndefinedPath(obj: unknown, parentPath?: string): string | false;
 export {};

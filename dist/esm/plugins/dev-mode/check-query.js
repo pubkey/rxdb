@@ -1,5 +1,5 @@
 import { newRxError, newRxTypeError } from "../../rx-error.js";
-import { deepEqual } from "../utils/index.js";
+import { deepEqual, findUndefinedPath } from "../utils/index.js";
 import { prepareQuery } from "../../rx-query-helper.js";
 
 /**
@@ -42,6 +42,13 @@ export function checkQuery(args) {
 }
 export function checkMangoQuery(args) {
   var schema = args.rxQuery.collection.schema.jsonSchema;
+  var undefinedFieldPath = findUndefinedPath(args.mangoQuery);
+  if (undefinedFieldPath) {
+    throw newRxError('QU19', {
+      field: undefinedFieldPath,
+      query: args.mangoQuery
+    });
+  }
 
   /**
    * Ensure that all top level fields are included in the schema.

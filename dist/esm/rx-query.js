@@ -161,7 +161,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   _proto.toString = function toString() {
     var stringObj = sortObject({
       op: this.op,
-      query: this.mangoQuery,
+      query: normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery),
       other: this.other
     }, true);
     var value = JSON.stringify(stringObj);

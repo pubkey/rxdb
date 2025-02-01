@@ -5,11 +5,20 @@
  */
 import ZSchema from 'z-schema';
 import { wrappedValidateStorageFactory } from "../../plugin-helpers.js";
+export var ZSchemaClass = ZSchema;
+var zSchema;
+export function getZSchema() {
+  if (!zSchema) {
+    zSchema = new ZSchema({
+      strictMode: false
+    });
+  }
+  return zSchema;
+}
 export function getValidator(schema) {
-  var validatorInstance = new ZSchema();
   var validator = obj => {
-    validatorInstance.validate(obj, schema);
-    return validatorInstance;
+    getZSchema().validate(obj, schema);
+    return getZSchema();
   };
   return docData => {
     var useValidator = validator(docData);

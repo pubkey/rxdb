@@ -51,6 +51,13 @@ function checkQuery(args) {
 }
 function checkMangoQuery(args) {
   var schema = args.rxQuery.collection.schema.jsonSchema;
+  var undefinedFieldPath = (0, _index.findUndefinedPath)(args.mangoQuery);
+  if (undefinedFieldPath) {
+    throw (0, _rxError.newRxError)('QU19', {
+      field: undefinedFieldPath,
+      query: args.mangoQuery
+    });
+  }
 
   /**
    * Ensure that all top level fields are included in the schema.

@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.clone = void 0;
 exports.deepFreeze = deepFreeze;
+exports.findUndefinedPath = findUndefinedPath;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
 exports.flatClone = flatClone;
@@ -200,6 +201,41 @@ function hasDeepProperty(obj, property) {
   }
 
   // Return false if 'foobar' is not found at any level
+  return false;
+}
+
+/**
+ * Deeply checks if an object contains any property
+ * with the value of undefined
+ * If yes, returns the path to it.
+ */
+function findUndefinedPath(obj, parentPath = '') {
+  // If `obj` is not an object or is null, we can't go deeper, so return false
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  for (var key of Object.keys(obj)) {
+    var value = obj[key];
+    // Build the full path. For the root level, it's just the key;
+    // for nested levels, prepend the parent path followed by a dot.
+    var currentPath = parentPath ? parentPath + "." + key : key;
+
+    // If the value is undefined, return the path
+    if (typeof value === 'undefined') {
+      return currentPath;
+    }
+
+    // If the value is an object, recurse to check deeper
+    if (typeof value === "object" && value !== null) {
+      var result = findUndefinedPath(value, currentPath);
+      // If a path was found in the nested object, return it
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+  // If no property with undefined was found
   return false;
 }
 //# sourceMappingURL=utils-object.js.map

@@ -6,11 +6,28 @@
  */
 import Ajv from 'ajv';
 import { wrappedValidateStorageFactory } from "../../plugin-helpers.js";
-var ajv = new Ajv({
-  strict: false
-});
+var ajv;
+export function getAjv() {
+  if (!ajv) {
+    ajv = new Ajv({
+      strict: true
+    });
+    ajv.addKeyword('version');
+    ajv.addKeyword('keyCompression');
+    ajv.addKeyword('primaryKey');
+    ajv.addKeyword('indexes');
+    ajv.addKeyword('encrypted');
+    ajv.addKeyword('final');
+    ajv.addKeyword('sharding');
+    ajv.addKeyword('internalIndexes');
+    ajv.addKeyword('attachments');
+    ajv.addKeyword('ref');
+    ajv.addKeyword('crdt');
+  }
+  return ajv;
+}
 export function getValidator(schema) {
-  var validator = ajv.compile(schema);
+  var validator = getAjv().compile(schema);
   return docData => {
     var isValid = validator(docData);
     if (isValid) {
