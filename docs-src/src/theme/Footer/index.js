@@ -5,7 +5,7 @@ export default function FooterWrapper() {
   const footerConfig = {
     navLinks: [
       {
-        label: 'Pricing',
+        label: 'Premium',
         href: '/premium/'
       },
       {

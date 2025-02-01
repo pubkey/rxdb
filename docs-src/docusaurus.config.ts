@@ -130,7 +130,7 @@ const config: Config = {
                 },
                 {
                     href: '/premium/',
-                    label: 'Pricing',
+                    label: 'Premium',
                     position: 'right',
                 },
                 // {
