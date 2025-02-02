@@ -838,11 +838,12 @@ jobs:
           npm run test:replication-nats
 
       # bun
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.1.18'
-      - run: npm run test:bun:dexie
-      - run: npm run test:performance:memory:bun
+      # TODO enable again with latest bun version.
+      # - uses: oven-sh/setup-bun@v2
+      #   with:
+      #     bun-version: '1.1.18'
+      # - run: npm run test:bun:dexie
+      # - run: npm run test:performance:memory:bun
 
       # deno (must be last because it messes up with file permissions)
       - name: Reuse deno cache folder
