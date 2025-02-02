@@ -21,7 +21,7 @@ To ensure there are not multiple people working on the same task, before you sta
 const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
-- Update [Bun.js to the latest version](https://github.com/pubkey/rxdb/blob/master/.github/workflows/main.yml#L843) while ensuring the tests still work
+- Update [Bun.js to the latest version](https://github.com/pubkey/rxdb/blob/master/.github/workflows/main.yml#L843) while ensuring the tests still work. Ensure we no longer need `--timeout 60000` in the `test:bun:dexie` script.
 - Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
 
 ## Tasks already in progress (do no work on these!)
