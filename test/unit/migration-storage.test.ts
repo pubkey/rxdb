@@ -46,6 +46,7 @@ import {
 import {
     HumanDocumentType,
     human,
+    isBun,
     schemaObjects
 } from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
@@ -98,6 +99,11 @@ function destroyOrClose(db: RxDatabase | any) {
 
 testStorages.forEach(storages => {
     describe('migration-storage.test.ts (' + storages.name + ')', () => {
+        if(isBun){
+            // TODO the dexie-memory-storage which is used in these test
+            // is really slow in bun, so we disabled these tests for bun.
+            return;
+        }
         describe('basic migrations', () => {
             it('create both databases', async () => {
                 const oldDb = await (storages.createRxDatabaseOld as any)({

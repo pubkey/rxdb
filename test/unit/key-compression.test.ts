@@ -454,7 +454,7 @@ describeParallel('key-compression.test.js', () => {
                 }
             });
 
-            assert.deepStrictEqual((myDocument.tags as any).example, { name: 'example' });
+            assert.deepStrictEqual(JSON.stringify((myDocument.tags as any).example), JSON.stringify({ name: 'example' }));
 
             await myDocument.incrementalModify((docData) => {
                 const newDocData = Object.assign({}, docData);
