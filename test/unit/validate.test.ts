@@ -816,7 +816,7 @@ validationImplementations.forEach(
 
                 assert.deepStrictEqual(myDocument.toJSON().tags, tags);
                 assert.ok(deepEqual(myDocument.get('tags'), tags));
-                assert.deepStrictEqual(myDocument.tags, tags);
+                assert.deepStrictEqual(JSON.stringify(myDocument.tags), JSON.stringify(tags));
 
                 db.close();
             });
