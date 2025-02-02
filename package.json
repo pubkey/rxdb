@@ -455,7 +455,7 @@
     "custom-idle-queue": "3.0.1",
     "dexie": "4.0.10",
     "event-reduce-js": "5.2.7",
-    "firebase": "11.1.0",
+    "firebase": "11.2.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.10.1",
     "graphql-ws": "5.16.2",
