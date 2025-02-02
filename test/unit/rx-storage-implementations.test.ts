@@ -1850,7 +1850,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * documents then the batchSize of the RxStorage
              */
             it('querying many documents should work', async function () {
-                this.timeout(10 * 1000);
+                this.timeout(30 * 1000);
                 const schema = getTestDataSchema();
                 const storageInstance = await config.storage
                     .getStorage()

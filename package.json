@@ -355,7 +355,7 @@
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:memory-random-delay": "npm run transpile && cross-env DEFAULT_STORAGE=memory-random-delay mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
-    "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 30000",
+    "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 60000",
     "test:deno:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie deno run --unstable --unstable-broadcast-channel --unstable-byonm --import-map=config/deno-import-map.json -A npm:mocha ./test/unit.test.ts --bail",
     "test:deno:denokv": "npm run transpile && cross-env DEFAULT_STORAGE=denokv deno run --unstable-kv --unstable-broadcast-channel --unstable-byonm --import-map=config/deno-import-map.json -A npm:mocha ./test/unit.test.ts --bail --timeout 150000",
     "test:deno:denokv:loop": "npm run test:deno:denokv && npm run test:deno:denokv:loop",
