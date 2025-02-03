@@ -1,45 +1,16 @@
 
-import assert from 'assert';
-import {
-    clone,
-    wait,
-    waitUntil
-} from 'async-test-util';
 
-import config, { describeParallel } from './config.ts';
 import {
     schemaObjects,
-    schemas,
     humansCollection,
-    isFastMode,
     ensureReplicationHasNoErrors,
     randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
 
-import {
-    wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     RxCollection,
-    ensureNotFalsy,
-    randomToken,
-    rxStorageInstanceToReplicationHandler,
-    normalizeMangoQuery,
-    RxError,
-    RxTypeError,
-    createRxDatabase,
-    RxReplicationPullStreamItem,
-    lastOfArray,
-    RxJsonSchema,
-    createBlob,
-    RxAttachmentCreator,
-    DeepReadonly,
-    requestIdlePromise,
-    prepareQuery,
-    addRxPlugin,
-    getLastCheckpointDoc,
-    defaultConflictHandler
+    randomToken
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -47,16 +18,7 @@ import {
     replicateRxCollection
 } from '../../plugins/replication/index.mjs';
 
-import type {
-    ReplicationPullHandler,
-    ReplicationPushHandler,
-    RxReplicationWriteToMasterRow,
-    RxStorage,
-    RxStorageDefaultCheckpoint
-} from '../../plugins/core/index.mjs';
-import { firstValueFrom, Observable, Subject } from 'rxjs';
-import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
-import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
+import type { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { REPLICATION_IDENTIFIER_TEST, ensureEqualState, getPullHandler, getPushHandler } from './replication.test.ts';
 
 type TestDocType = HumanWithTimestampDocumentType;
@@ -67,7 +29,7 @@ type CheckpointType = any;
  * like with multiple browser tabs, the replication should only
  * run at exactly one tab at once. This is normally ensured by the leader election.
  *
- * But there are many cases where the replication could run multiple times in parrallel
+ * But there are many cases where the replication could run multiple times in parallel
  * like when the leader-election goes wrong or when it is actively started again
  * to fix the hibernated tabs in a mobile browser.
  * Also see @link https://github.com/pubkey/rxdb/issues/6810
