@@ -54,6 +54,7 @@ import './unit/rx-pipeline.test.ts';
 import './unit/orm.test.ts';
 import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
+import './unit/replication-multiinstance.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
@@ -69,5 +70,4 @@ import './unit/backup.test.ts';
 import './unit/import-export.test.ts';
 import './unit/database-lifecycle.ts';
 import './unit/plugin.test.ts';
-
 import './unit/last.test.ts';

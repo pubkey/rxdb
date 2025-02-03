@@ -59,7 +59,8 @@ import {
     preventHibernateBrowserTab
 } from './replication-helper.ts';
 import {
-    addConnectedStorageToCollection, removeConnectedStorageFromCollection
+    addConnectedStorageToCollection,
+    removeConnectedStorageFromCollection
 } from '../../rx-database-internal-store.ts';
 import { addRxPlugin } from '../../plugin.ts';
 import { hasEncryption } from '../../rx-storage-helper.ts';
@@ -86,6 +87,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
+
+    wasStarted: boolean = false;
 
     readonly metaInfoPromise: Promise<{ collectionName: string, schema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>> }>;
 
@@ -152,9 +155,29 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
     public async start(): Promise<void> {
+        console.log('replicationState.start() 0');
         if (this.isStopped()) {
             return;
         }
+
+        console.log('replicationState.start() 1');
+        if (this.internalReplicationState) {
+            this.internalReplicationState.events.paused.next(false);
+        }
+        console.log('replicationState.start() 2');
+
+        /**
+         * If started after a pause,
+         * just re-sync once and continue.
+         */
+        if (this.wasStarted) {
+            console.log('replicationState.start() 3');
+            this.reSync();
+            return;
+        }
+        console.log('replicationState.start() 4');
+        this.wasStarted = true;
+
 
         preventHibernateBrowserTab(this);
 
@@ -164,7 +187,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-
         const metaInfo = await this.metaInfoPromise;
 
         const [metaInstance] = await Promise.all([
@@ -203,6 +225,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter(_v => !!this.pull),
                     mergeMap(async (ev) => {
+                        console.log('masterChangeStream$ emit:');
+                        console.dir(ev);
                         if (ev === 'RESYNC') {
                             return ev;
                         }
@@ -231,7 +255,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                      */
                     let done = false;
                     let result: ReplicationPullHandlerResult<RxDocType, CheckpointType> = {} as any;
-                    while (!done && !this.isStopped()) {
+                    while (!done && !this.isStoppedOrPaused()) {
                         try {
                             result = await this.pull.handler(
                                 checkpoint,
@@ -249,7 +273,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         }
                     }
 
-                    if (this.isStopped()) {
+                    if (this.isStoppedOrPaused()) {
                         return {
                             checkpoint: null,
                             documents: []
@@ -266,6 +290,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 masterWrite: async (
                     rows: RxReplicationWriteToMasterRow<RxDocType>[]
                 ) => {
+                    console.log('masterWrite()');
+
                     if (!this.push) {
                         return [];
                     }
@@ -304,7 +330,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         result = [];
                     }
 
-                    while (!done && !this.isStopped()) {
+                    while (!done && !this.isStoppedOrPaused()) {
                         try {
                             result = await this.push.handler(useRows);
                             /**
@@ -334,7 +360,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }
-                    if (this.isStopped()) {
+                    if (this.isStoppedOrPaused()) {
                         return [];
                     }
 
@@ -375,7 +401,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             this.subs.push(
                 this.pull.stream$.subscribe({
                     next: ev => {
-                        this.remoteEvents$.next(ev);
+                        if (!this.isStoppedOrPaused()) {
+                            this.remoteEvents$.next(ev);
+                        }
                     },
                     error: err => {
                         this.subjects.error.next(err);
@@ -396,11 +424,23 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.callOnStart();
     }
 
+    pause() {
+        ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+    }
+
+    isPaused(): boolean {
+        return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+    }
+
     isStopped(): boolean {
         if (this.subjects.canceled.getValue()) {
             return true;
         }
         return false;
+    }
+
+    isStoppedOrPaused() {
+        return this.isPaused() || this.isStopped();
     }
 
     async awaitInitialReplication(): Promise<void> {
@@ -451,6 +491,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     reSync() {
+        console.log('replicationState.reSync()');
         this.remoteEvents$.next('RESYNC');
     }
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) {
@@ -510,6 +551,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         retryTime = 1000 * 5,
         waitForLeadership = true,
         autoStart = true,
+        toggleOnDocumentVisible = false
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
@@ -538,6 +580,37 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         retryTime,
         autoStart
     );
+
+
+    if (
+        toggleOnDocumentVisible &&
+        typeof document !== 'undefined' &&
+        typeof document.addEventListener === 'function' &&
+        typeof document.visibilityState === 'string'
+    ) {
+        const handler = () => {
+            if (replicationState.isStopped()) {
+                return;
+            }
+            const isVisible = document.visibilityState;
+            if (isVisible) {
+                replicationState.start();
+            } else {
+                /**
+                 * Only pause if not the current leader.
+                 * If no tab is visible, the elected leader should still continue
+                 * the replication.
+                 */
+                if (!collection.database.isLeader()) {
+                    replicationState.pause();
+                }
+            }
+        }
+        document.addEventListener('visibilitychange', handler);
+        replicationState.onCancel.push(
+            () => document.removeEventListener('visibilitychange', handler)
+        );
+    }
 
 
     startReplicationOnLeaderShip(waitForLeadership, replicationState);

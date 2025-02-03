@@ -197,6 +197,11 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         canceled: BehaviorSubject<boolean>;
         /**
+         * Contains the pause state.
+         * Emit true here to pause the replication.
+         */
+        paused: BehaviorSubject<boolean>;
+        /**
          * Contains true if the replication is doing something
          * at this point in time.
          * If this is false, it means that the replication

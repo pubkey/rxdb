@@ -70,6 +70,7 @@ export function replicateRxStorageInstance<RxDocType>(
         downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),
         events: {
             canceled: new BehaviorSubject<boolean>(false),
+            paused: new BehaviorSubject<boolean>(false),
             active: {
                 down: new BehaviorSubject<boolean>(true),
                 up: new BehaviorSubject<boolean>(true)
@@ -202,7 +203,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                                     undefined
                                 );
                             }
-
                             return docData;
                         })
                     )

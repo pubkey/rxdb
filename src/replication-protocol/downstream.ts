@@ -81,6 +81,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
 
     function addNewTask(task: Task): void {
+        console.log('downstream addNewTask():');
+        console.dir(task);
         state.stats.down.addNewTask = state.stats.down.addNewTask + 1;
         const taskWithTime = {
             time: timer++,
@@ -144,6 +146,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             .masterChangeStream$
             .pipe(
                 mergeMap(async (ev) => {
+                    console.log('downstream: masterChangeStream$ emitted 1');
+                    console.dir(ev);
                     /**
                      * While a push is running, we have to delay all incoming
                      * events from the server to not mix up the replication state.
@@ -151,6 +155,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     await firstValueFrom(
                         state.events.active.up.pipe(filter(s => !s))
                     );
+                    console.log('downstream: masterChangeStream$ emitted 2');
                     return ev;
                 })
             )
@@ -158,6 +163,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
                 addNewTask(task);
             });
+        // unsubscribe when replication is canceled
         firstValueFrom(
             state.events.canceled.pipe(
                 filter(canceled => !!canceled)

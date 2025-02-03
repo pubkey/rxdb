@@ -115,7 +115,7 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * Like 'my-rest-replication-to-https://example.com/api/sync'
      */
     replicationIdentifier: string;
-    collection: RxCollection<RxDocType, any, any, any>;
+    collection: RxCollection<RxDocType>;
     /**
      * Define a custom property that is used
      * to flag a document as being deleted.
@@ -147,6 +147,9 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * @default true
      */
     waitForLeadership?: boolean;
+
+    toggleOnDocumentVisible?: boolean;
+
     /**
      * If this is set to `false`,
      * the replication will not start automatically
