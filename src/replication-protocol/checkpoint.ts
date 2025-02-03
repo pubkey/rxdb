@@ -52,8 +52,6 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     direction: RxStorageReplicationDirection,
     checkpoint: CheckpointType
 ) {
-    console.log('..................... setCheckpoint(' + direction + '):');
-    console.dir(checkpoint);
     state.checkpointQueue = state.checkpointQueue.then(async () => {
         let previousCheckpointDoc = state.lastCheckpointDoc[direction];
         if (
@@ -125,8 +123,6 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 )[0];
                 if (successDoc) {
                     state.lastCheckpointDoc[direction] = successDoc;
-                    console.log('..................... setCheckpoint(' + direction + ') DONE:');
-                    console.dir(successDoc);
                     return;
                 } else {
                     const error = result.error[0];

@@ -1051,13 +1051,10 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInitialReplication();
             await replicationState.awaitInSync();
 
-            console.log('------------------- before pause 0');
             await replicationState.pause();
-            console.log('------------------- after pause 0');
 
             const insertAfterPauseId = 'insert after pause';
             await localCollection.insert(schemaObjects.humanWithTimestampData({ id: insertAfterPauseId + '-local' }));
-            console.log('------------------- after insert ' + replicationState.isPaused());
 
             // should not have been synced
             await wait(isFastMode() ? 10 : 50);
@@ -1065,36 +1062,21 @@ describe('replication.test.ts', () => {
             assert.deepEqual(remoteDocs.length, startDocsAmount * 2);
 
             // restart after local write
-            console.log('------------ before restart');
             await replicationState.start();
-            console.log('------------ after restart 0');
             await replicationState.awaitInSync();
-            console.log('------------ after restart 1');
-            await wait(200);
-            console.log('------------ after restart 2');
             remoteDocs = await remoteCollection.find().exec();
             assert.deepEqual(remoteDocs.length, (startDocsAmount * 2) + 1);
 
             // restart after remote write
-            console.log('######### RESTART AFTER REMOTE WRITE!');
             await replicationState.pause();
-            console.log('######### RESTART AFTER REMOTE WRITE after pause');
             await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: insertAfterPauseId + '-remote' }));
-            console.log('######### RESTART AFTER REMOTE WRITE after insert');
             await wait(isFastMode() ? 10 : 50);
-            console.log('######### RESTART AFTER REMOTE WRITE after wait');
             let localDocs = await localCollection.find().exec();
             assert.deepEqual(localDocs.length, (startDocsAmount * 2) + 1);
             await replicationState.start();
-            console.log('######### RESTART AFTER REMOTE WRITE after restart');
             await replicationState.awaitInSync();
             localDocs = await localCollection.find().exec();
             assert.deepEqual(localDocs.length, (startDocsAmount * 2) + 2);
-
-
-
-            console.log('WORKS !!');
-            process.exit();
 
             localCollection.database.close();
             remoteCollection.database.close();

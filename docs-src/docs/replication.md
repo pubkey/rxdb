@@ -591,7 +591,7 @@ const replicationState = replicateRxCollection({
 
 `(experimental)`
 
-Set this to true to ensure the replication also runs if the tab is currently `visbile`. This fixes problem in browsers where the replicating leader-elected tab becomes stale or hibernated by the browser to save battery life. If the tab is loosing visibility, the replication will be paused automatically and then restarted if either the tab becomes leader or the tab becomes visible again.
+Set this to true to ensure the replication also runs if the tab is currently `visbile`. This fixes problem in browsers where the replicating leader-elected tab becomes stale or hibernated by the browser to save battery life. If the tab is losing visibility, the replication will be paused automatically and then restarted if either the tab becomes leader or the tab becomes visible again.
 
 ```ts
 const replicationState = replicateRxCollection({

@@ -155,29 +155,23 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
     public async start(): Promise<void> {
-        console.log('replicationState.start() 0');
         if (this.isStopped()) {
             return;
         }
 
-        console.log('replicationState.start() 1');
         if (this.internalReplicationState) {
             this.internalReplicationState.events.paused.next(false);
         }
-        console.log('replicationState.start() 2');
 
         /**
          * If started after a pause,
          * just re-sync once and continue.
          */
         if (this.wasStarted) {
-            console.log('replicationState.start() 3');
             this.reSync();
             return;
         }
-        console.log('replicationState.start() 4');
         this.wasStarted = true;
-
 
         preventHibernateBrowserTab(this);
 
@@ -225,8 +219,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter(_v => !!this.pull),
                     mergeMap(async (ev) => {
-                        console.log('masterChangeStream$ emit:');
-                        console.dir(ev);
                         if (ev === 'RESYNC') {
                             return ev;
                         }
@@ -290,8 +282,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 masterWrite: async (
                     rows: RxReplicationWriteToMasterRow<RxDocType>[]
                 ) => {
-                    console.log('masterWrite()');
-
                     if (!this.push) {
                         return [];
                     }
@@ -491,7 +481,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     reSync() {
-        console.log('replicationState.reSync()');
         this.remoteEvents$.next('RESYNC');
     }
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) {
