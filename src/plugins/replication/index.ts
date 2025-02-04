@@ -109,6 +109,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         public readonly live?: boolean,
         public retryTime?: number,
         public autoStart?: boolean,
+        public toggleOnDocumentVisible?: boolean
     ) {
         this.metaInfoPromise = (async () => {
             const metaInstanceCollectionName = 'rx-replication-meta-' + await collection.database.hashFunction([
@@ -173,8 +174,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
         this.wasStarted = true;
 
-        preventHibernateBrowserTab(this);
 
+        if (!this.toggleOnDocumentVisible) {
+            preventHibernateBrowserTab(this);
+        }
 
         // fill in defaults for pull & push
         const pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
@@ -567,7 +570,8 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         push,
         live,
         retryTime,
-        autoStart
+        autoStart,
+        toggleOnDocumentVisible
     );
 
 
