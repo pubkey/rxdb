@@ -19,10 +19,14 @@ import {
 } from '../../plugins/replication/index.mjs';
 
 import type { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
-import { REPLICATION_IDENTIFIER_TEST, ensureEqualState, getPullHandler, getPushHandler } from './replication.test.ts';
+import {
+    REPLICATION_IDENTIFIER_TEST,
+    ensureEqualState,
+    getPullHandler,
+    getPushHandler
+} from './replication.test.ts';
 
 type TestDocType = HumanWithTimestampDocumentType;
-type CheckpointType = any;
 
 /**
  * Normally when used in a multiInstance environment,
@@ -87,7 +91,7 @@ describe('replication-multiinstance.test.ts', () => {
         const pullHandler = getPullHandler(remoteCollection);
         const pushHandler = getPushHandler(remoteCollection);
 
-        let replicationStates: RxReplicationState<HumanWithTimestampDocumentType, any>[] = [];
+        const replicationStates: RxReplicationState<HumanWithTimestampDocumentType, any>[] = [];
         await Promise.all(
             localCollections.map(async (localCollection) => {
                 const replicationState = replicateRxCollection({

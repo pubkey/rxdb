@@ -1,4 +1,4 @@
-import { firstValueFrom, filter, mergeMap } from 'rxjs';
+import { firstValueFrom, filter } from 'rxjs';
 import {
     getChangedDocumentsSince,
     getWrittenDocumentsFromBulkWriteResponse,
@@ -120,7 +120,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         .pipe(
             filter(ev => ev === 'RESYNC')
         )
-        .subscribe(ev => {
+        .subscribe(() => {
             openTasks.push({
                 task: 'RESYNC',
                 time: timer++
@@ -134,7 +134,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             filter(canceled => !!canceled)
         )
     ).then(() => {
-        sub.unsubscribe()
+        sub.unsubscribe();
         subResync.unsubscribe();
     });
 
