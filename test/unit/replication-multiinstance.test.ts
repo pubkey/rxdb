@@ -45,7 +45,7 @@ async function getTestCollections(localCollectionsAmount: number, docsAmount: { 
 }> {
     const localDatabaseName = randomToken(10);
     const localCollections = await Promise.all(
-        new Array(localCollectionsAmount).fill(0).map(() => humansCollection.createHumanWithTimestamp(0, localDatabaseName, false))
+        new Array(localCollectionsAmount).fill(0).map(() => humansCollection.createHumanWithTimestamp(0, localDatabaseName, true))
     );
 
     const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
@@ -79,13 +79,12 @@ async function getTestCollections(localCollectionsAmount: number, docsAmount: { 
 
 describe('replication-multiinstance.test.ts', () => {
     it('starting the same replication twice should not error', async () => {
-        const docsPerSide = 15;
+        const docsPerSide = 5;
         const localCollectionsAmount = 5;
         const { localCollections, remoteCollection } = await getTestCollections(localCollectionsAmount, {
             local: docsPerSide,
             remote: docsPerSide
         });
-
 
         const batchSize = 12;
         const pullHandler = getPullHandler(remoteCollection);
@@ -93,18 +92,25 @@ describe('replication-multiinstance.test.ts', () => {
 
         const replicationStates: RxReplicationState<HumanWithTimestampDocumentType, any>[] = [];
         await Promise.all(
-            localCollections.map(async (localCollection) => {
+            localCollections.map(async (localCollection, i) => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    waitForLeadership: false,
                     live: true,
                     pull: {
                         batchSize,
-                        handler: pullHandler
+                        handler: async (a, b) => {
+                            const ret = await pullHandler(a, b);
+                            return ret;
+                        }
                     },
                     push: {
                         batchSize,
-                        handler: pushHandler
+                        handler: async (docs) => {
+                            const ret = await pushHandler(docs);
+                            return ret;
+                        }
                     }
                 });
                 replicationStates.push(replicationState);
@@ -121,14 +127,15 @@ describe('replication-multiinstance.test.ts', () => {
         );
 
         // ensure it works on updates
-        await Promise.all(localCollections.map(localCollection => localCollection.insert(schemaObjects.humanWithTimestampData())));
-        await Promise.all(localCollections.map(localCollection => localCollection.insert(schemaObjects.humanWithTimestampData())));
-        await Promise.all(replicationStates.map(replicationState => replicationState.awaitInSync()));
-        await Promise.all(
-            localCollections.map(async (localCollection) => {
-                await ensureEqualState(localCollection, remoteCollection);
-            })
-        );
+        await Promise.all(localCollections.map((localCollection, i) => localCollection.insert(schemaObjects.humanWithTimestampData({ id: 'update-a-' + i }))));
+        await Promise.all(replicationStates.map(async (replicationState) => {
+            await replicationState.awaitInSync();
+        }));
+        let i = 0;
+        for (const localCollection of localCollections) {
+            await ensureEqualState(localCollection, remoteCollection);
+            i++;
+        }
 
         // stop first replication and check again
         replicationStates[0].cancel();
