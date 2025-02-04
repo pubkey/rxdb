@@ -6,7 +6,7 @@ import {
     ensureReplicationHasNoErrors,
     randomStringWithSpecialChars
 } from '../../plugins/test-utils/index.mjs';
-
+import config from './config.ts';
 
 import {
     RxCollection,
@@ -78,6 +78,9 @@ async function getTestCollections(localCollectionsAmount: number, docsAmount: { 
 }
 
 describe('replication-multiinstance.test.ts', () => {
+    if (!config.storage.hasMultiInstance) {
+        return;
+    }
     it('starting the same replication twice should not error', async () => {
         const docsPerSide = 5;
         const localCollectionsAmount = 5;
@@ -92,7 +95,7 @@ describe('replication-multiinstance.test.ts', () => {
 
         const replicationStates: RxReplicationState<HumanWithTimestampDocumentType, any>[] = [];
         await Promise.all(
-            localCollections.map(async (localCollection, i) => {
+            localCollections.map(async (localCollection) => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -131,10 +134,8 @@ describe('replication-multiinstance.test.ts', () => {
         await Promise.all(replicationStates.map(async (replicationState) => {
             await replicationState.awaitInSync();
         }));
-        let i = 0;
         for (const localCollection of localCollections) {
             await ensureEqualState(localCollection, remoteCollection);
-            i++;
         }
 
         // stop first replication and check again
