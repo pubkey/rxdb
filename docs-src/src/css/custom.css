@@ -322,6 +322,7 @@ h1 .underline {
     border-color: white;
     background-color: unset;
 }
+
 .button.button-empty:hover {
     color: white;
     text-decoration: underline;
@@ -2386,6 +2387,8 @@ footer a:visited {
     text-align: center;
     padding: 20px;
     z-index: 20;
+
+    box-shadow: 2px 2px 6px var(--color-top), -2px -1px 10px var(--color-top);
 }
 
 @media (max-width: 700px) {
@@ -2398,6 +2401,17 @@ footer a:visited {
 .call-to-action-popup.active {
     transition: 0.5s;
     transform: translateY(0) translateX(-50%);
+}
+
+.call-to-action-popup.active.top {
+    bottom: unset;
+    top: 80px;
+}
+
+.call-to-action-popup.active.mid {
+    bottom: unset;
+    top: 50%;
+    margin-top: -100px;
 }
 
 .call-to-action-popup h3 {

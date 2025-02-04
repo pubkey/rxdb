@@ -32,6 +32,8 @@ X- "react-native encryption"
 - "ionic storage"
 
 - "vue database"
+- "supabase offline"
+- "offline database"
 
 - "store array in localstorage", "localStorage array of objects"
 
