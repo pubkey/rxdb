@@ -79,7 +79,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     let timer = 0;
     let initialSyncStartTime = -1;
 
-    type Task = EventBulk<RxStorageChangeEvent<RxDocType>, any>;
+    type Task = EventBulk<RxStorageChangeEvent<RxDocType>, any> | 'RESYNC';
     type TaskWithTime = {
         task: Task;
         time: number;
@@ -95,6 +95,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
     const sub = state.input.forkInstance.changeStream()
         .subscribe((eventBulk) => {
+            if (state.events.paused.getValue()) {
+                return;
+            }
+
+
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
@@ -110,11 +115,28 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 return processTasks();
             }
         });
+    const subResync = replicationHandler
+        .masterChangeStream$
+        .pipe(
+            filter(ev => ev === 'RESYNC')
+        )
+        .subscribe(() => {
+            openTasks.push({
+                task: 'RESYNC',
+                time: timer++
+            });
+            processTasks();
+        });
+
+    // unsubscribe when replication is canceled
     firstValueFrom(
         state.events.canceled.pipe(
             filter(canceled => !!canceled)
         )
-    ).then(() => sub.unsubscribe());
+    ).then(() => {
+        sub.unsubscribe();
+        subResync.unsubscribe();
+    });
 
 
     async function upstreamInitialSync() {
@@ -141,7 +163,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             if (promises.size > 3) {
                 await Promise.race(Array.from(promises));
             }
-
             const upResult = await getChangedDocumentsSince(
                 state.input.forkInstance,
                 state.input.pushBatchSize,
@@ -207,6 +228,12 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                  */
                 if (taskWithTime.time < initialSyncStartTime) {
                     continue;
+                }
+
+                if (taskWithTime.task === 'RESYNC') {
+                    state.events.active.up.next(false);
+                    await upstreamInitialSync();
+                    return;
                 }
 
                 /**
@@ -276,7 +303,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * we continue at the correct position and do not have to load
              * these documents from the storage again when the replication is restarted.
              */
-
             function rememberCheckpointBeforeReturn() {
                 return setCheckpoint(
                     state,

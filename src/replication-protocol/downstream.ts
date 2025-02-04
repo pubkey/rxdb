@@ -158,6 +158,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
                 addNewTask(task);
             });
+        // unsubscribe when replication is canceled
         firstValueFrom(
             state.events.canceled.pipe(
                 filter(canceled => !!canceled)

@@ -114,14 +114,48 @@ export function getPushHandler<RxDocType>(
     return handler;
 }
 
+export async function ensureEqualState<RxDocType>(
+    collectionA: RxCollection<RxDocType>,
+    collectionB: RxCollection<RxDocType>,
+    context?: string
+) {
+    const [
+        docsA,
+        docsB
+    ] = await Promise.all([
+        collectionA.find().exec().then(docs => docs.map(d => d.toJSON(true))),
+        collectionB.find().exec().then(docs => docs.map(d => d.toJSON(true)))
+    ]);
 
+    docsA.forEach((docA, idx) => {
+        const docB = docsB[idx];
+        const cleanDocToCompare = (doc: DeepReadonly<RxDocType>) => {
+            return Object.assign({}, doc, {
+                _meta: undefined,
+                _rev: undefined
+            });
+        };
+        try {
+            assert.deepStrictEqual(
+                cleanDocToCompare(docA),
+                cleanDocToCompare(docB)
+            );
+        } catch (err) {
+            console.log('## ERROR: State not equal (context: "' + context + '")');
+            console.log(JSON.stringify(docA, null, 4));
+            console.log(JSON.stringify(docB, null, 4));
+            throw new Error('STATE not equal (context: "' + context + '")');
+        }
+    });
+}
+
+export const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
 describe('replication.test.ts', () => {
     addRxPlugin(RxDBAttachmentsPlugin);
 
     if (!config.storage.hasReplication) {
         return;
     }
-    const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
@@ -152,40 +186,6 @@ describe('replication.test.ts', () => {
             localCollection,
             remoteCollection
         };
-    }
-    async function ensureEqualState<RxDocType>(
-        collectionA: RxCollection<RxDocType>,
-        collectionB: RxCollection<RxDocType>,
-        context?: string
-    ) {
-        const [
-            docsA,
-            docsB
-        ] = await Promise.all([
-            collectionA.find().exec().then(docs => docs.map(d => d.toJSON(true))),
-            collectionB.find().exec().then(docs => docs.map(d => d.toJSON(true)))
-        ]);
-
-        docsA.forEach((docA, idx) => {
-            const docB = docsB[idx];
-            const cleanDocToCompare = (doc: DeepReadonly<RxDocType>) => {
-                return Object.assign({}, doc, {
-                    _meta: undefined,
-                    _rev: undefined
-                });
-            };
-            try {
-                assert.deepStrictEqual(
-                    cleanDocToCompare(docA),
-                    cleanDocToCompare(docB)
-                );
-            } catch (err) {
-                console.log('## ERROR: State not equal (context: "' + context + '")');
-                console.log(JSON.stringify(docA, null, 4));
-                console.log(JSON.stringify(docB, null, 4));
-                throw new Error('STATE not equal (context: "' + context + '")');
-            }
-        });
     }
 
     let storageWithValidation: RxStorage<any, any>;
@@ -1030,6 +1030,56 @@ describe('replication.test.ts', () => {
 
             await localCollection.database.close();
             await remoteCollection.database.close();
+        });
+    });
+    describeParallel('start/pause/restart', () => {
+        it('should sync again after pause->restart', async () => {
+            const startDocsAmount = 2;
+            const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            await replicationState.pause();
+
+            const insertAfterPauseId = 'insert after pause';
+            await localCollection.insert(schemaObjects.humanWithTimestampData({ id: insertAfterPauseId + '-local' }));
+
+            // should not have been synced
+            await wait(isFastMode() ? 10 : 50);
+            let remoteDocs = await remoteCollection.find().exec();
+            assert.deepEqual(remoteDocs.length, startDocsAmount * 2);
+
+            // restart after local write
+            await replicationState.start();
+            await replicationState.awaitInSync();
+            remoteDocs = await remoteCollection.find().exec();
+            assert.deepEqual(remoteDocs.length, (startDocsAmount * 2) + 1);
+
+            // restart after remote write
+            await replicationState.pause();
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: insertAfterPauseId + '-remote' }));
+            await wait(isFastMode() ? 10 : 50);
+            let localDocs = await localCollection.find().exec();
+            assert.deepEqual(localDocs.length, (startDocsAmount * 2) + 1);
+            await replicationState.start();
+            await replicationState.awaitInSync();
+            localDocs = await localCollection.find().exec();
+            assert.deepEqual(localDocs.length, (startDocsAmount * 2) + 2);
+
+            localCollection.database.close();
+            remoteCollection.database.close();
         });
     });
     describeParallel('issues', () => {

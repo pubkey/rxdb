@@ -138,6 +138,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 }
             }
         }
+
     });
     await state.checkpointQueue;
 }
