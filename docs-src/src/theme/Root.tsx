@@ -124,7 +124,7 @@ export default function Root({ children }) {
         callToAction: CallToActionItem;
         callToActionId: number;
         titleId: number;
-        direction: 'top' | 'bottom' | 'mid'
+        direction: 'top' | 'bottom' | 'mid';
     }>();
     const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
