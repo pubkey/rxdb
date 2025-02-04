@@ -23,7 +23,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
    * The identifier, used to flag revisions
    * and to identify which documents state came from the remote.
    */
-  replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart) {
+  replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart, toggleOnDocumentVisible) {
     this.subs = [];
     this.subjects = {
       received: new Subject(),
@@ -41,6 +41,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.error$ = this.subjects.error.asObservable();
     this.canceled$ = this.subjects.canceled.asObservable();
     this.active$ = this.subjects.active.asObservable();
+    this.wasStarted = false;
     this.onCancel = [];
     this.callOnStart = undefined;
     this.remoteEvents$ = new Subject();
@@ -52,6 +53,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.live = live;
     this.retryTime = retryTime;
     this.autoStart = autoStart;
+    this.toggleOnDocumentVisible = toggleOnDocumentVisible;
     this.metaInfoPromise = (async () => {
       var metaInstanceCollectionName = 'rx-replication-meta-' + (await collection.database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
       var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema, hasEncryption(this.collection.schema.jsonSchema));
@@ -84,7 +86,22 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (this.isStopped()) {
       return;
     }
-    preventHibernateBrowserTab(this);
+    if (this.internalReplicationState) {
+      this.internalReplicationState.events.paused.next(false);
+    }
+
+    /**
+     * If started after a pause,
+     * just re-sync once and continue.
+     */
+    if (this.wasStarted) {
+      this.reSync();
+      return;
+    }
+    this.wasStarted = true;
+    if (!this.toggleOnDocumentVisible) {
+      preventHibernateBrowserTab(this);
+    }
 
     // fill in defaults for pull & push
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
@@ -138,7 +155,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
            */
           var done = false;
           var result = {};
-          while (!done && !this.isStopped()) {
+          while (!done && !this.isStoppedOrPaused()) {
             try {
               result = await this.pull.handler(checkpoint, batchSize);
               done = true;
@@ -152,7 +169,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
               await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
             }
           }
-          if (this.isStopped()) {
+          if (this.isStoppedOrPaused()) {
             return {
               checkpoint: null,
               documents: []
@@ -196,7 +213,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
             done = true;
             result = [];
           }
-          while (!done && !this.isStopped()) {
+          while (!done && !this.isStoppedOrPaused()) {
             try {
               result = await this.push.handler(useRows);
               /**
@@ -225,7 +242,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
               await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
             }
           }
-          if (this.isStopped()) {
+          if (this.isStoppedOrPaused()) {
             return [];
           }
           await runAsyncPluginHooks('preReplicationMasterWriteDocumentsHandle', {
@@ -248,7 +265,9 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (this.pull && this.pull.stream$ && this.live) {
       this.subs.push(this.pull.stream$.subscribe({
         next: ev => {
-          this.remoteEvents$.next(ev);
+          if (!this.isStoppedOrPaused()) {
+            this.remoteEvents$.next(ev);
+          }
         },
         error: err => {
           this.subjects.error.next(err);
@@ -267,11 +286,20 @@ export var RxReplicationState = /*#__PURE__*/function () {
     }
     this.callOnStart();
   };
+  _proto.pause = function pause() {
+    ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+  };
+  _proto.isPaused = function isPaused() {
+    return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+  };
   _proto.isStopped = function isStopped() {
     if (this.subjects.canceled.getValue()) {
       return true;
     }
     return false;
+  };
+  _proto.isStoppedOrPaused = function isStoppedOrPaused() {
+    return this.isPaused() || this.isStopped();
   };
   _proto.awaitInitialReplication = async function awaitInitialReplication() {
     await this.startPromise;
@@ -359,7 +387,8 @@ export function replicateRxCollection({
   live = true,
   retryTime = 1000 * 5,
   waitForLeadership = true,
-  autoStart = true
+  autoStart = true,
+  toggleOnDocumentVisible = false
 }) {
   addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -376,7 +405,29 @@ export function replicateRxCollection({
       }
     });
   }
-  var replicationState = new RxReplicationState(replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart);
+  var replicationState = new RxReplicationState(replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart, toggleOnDocumentVisible);
+  if (toggleOnDocumentVisible && typeof document !== 'undefined' && typeof document.addEventListener === 'function' && typeof document.visibilityState === 'string') {
+    var handler = () => {
+      if (replicationState.isStopped()) {
+        return;
+      }
+      var isVisible = document.visibilityState;
+      if (isVisible) {
+        replicationState.start();
+      } else {
+        /**
+         * Only pause if not the current leader.
+         * If no tab is visible, the elected leader should still continue
+         * the replication.
+         */
+        if (!collection.database.isLeader()) {
+          replicationState.pause();
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    replicationState.onCancel.push(() => document.removeEventListener('visibilitychange', handler));
+  }
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
   return replicationState;
 }

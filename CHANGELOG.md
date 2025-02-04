@@ -2,16 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD option `toggleOnDocumentVisible` to `replicateRxCollection()`. [See](https://github.com/pubkey/rxdb/issues/6810)
-- ADD `RxReplicationState.pause()`
-- ADD `RxReplicationState.isPaused()`
-- ADD tests to replication to ensure running the same replication in multiple tabs at once does not fail.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.5.0 (4 February 2025)
+
+- ADD option `toggleOnDocumentVisible` to `replicateRxCollection()`. [See](https://github.com/pubkey/rxdb/issues/6810)
+- ADD `RxReplicationState.pause()`
+- ADD `RxReplicationState.isPaused()`
+- ADD tests to replication to ensure running the same replication in multiple tabs at once does not fail.
 
 ### 16.4.0 (1 February 2025)
 

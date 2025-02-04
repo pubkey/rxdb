@@ -96,6 +96,7 @@ async function startReplicationDownstream(state) {
       state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
       addNewTask(task);
     });
+    // unsubscribe when replication is canceled
     (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(canceled => !!canceled))).then(() => sub.unsubscribe());
   }
 
