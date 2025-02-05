@@ -126,6 +126,7 @@ function replicateRxStorageInstance(input) {
     downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),
     events: {
       canceled: new _rxjs.BehaviorSubject(false),
+      paused: new _rxjs.BehaviorSubject(false),
       active: {
         down: new _rxjs.BehaviorSubject(true),
         up: new _rxjs.BehaviorSubject(true)

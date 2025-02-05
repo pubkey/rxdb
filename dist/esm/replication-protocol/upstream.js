@@ -39,6 +39,9 @@ export async function startReplicationUpstream(state) {
     docs: {}
   };
   var sub = state.input.forkInstance.changeStream().subscribe(eventBulk => {
+    if (state.events.paused.getValue()) {
+      return;
+    }
     state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
     openTasks.push({
       task: eventBulk,
@@ -53,7 +56,19 @@ export async function startReplicationUpstream(state) {
       return processTasks();
     }
   });
-  firstValueFrom(state.events.canceled.pipe(filter(canceled => !!canceled))).then(() => sub.unsubscribe());
+  var subResync = replicationHandler.masterChangeStream$.pipe(filter(ev => ev === 'RESYNC')).subscribe(() => {
+    openTasks.push({
+      task: 'RESYNC',
+      time: timer++
+    });
+    processTasks();
+  });
+
+  // unsubscribe when replication is canceled
+  firstValueFrom(state.events.canceled.pipe(filter(canceled => !!canceled))).then(() => {
+    sub.unsubscribe();
+    subResync.unsubscribe();
+  });
   async function upstreamInitialSync() {
     state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
     if (state.events.canceled.getValue()) {
@@ -128,6 +143,11 @@ export async function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
+        if (taskWithTime.task === 'RESYNC') {
+          state.events.active.up.next(false);
+          await upstreamInitialSync();
+          return;
+        }
 
         /**
          * If the task came from the downstream, we can ignore these documents
@@ -184,7 +204,6 @@ export async function startReplicationUpstream(state) {
        * we continue at the correct position and do not have to load
        * these documents from the storage again when the replication is restarted.
        */
-
       function rememberCheckpointBeforeReturn() {
         return setCheckpoint(state, 'up', useCheckpoint);
       }

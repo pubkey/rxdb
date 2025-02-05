@@ -34,6 +34,7 @@ export function replicateRxStorageInstance(input) {
     downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),
     events: {
       canceled: new BehaviorSubject(false),
+      paused: new BehaviorSubject(false),
       active: {
         down: new BehaviorSubject(true),
         up: new BehaviorSubject(true)

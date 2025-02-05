@@ -147,6 +147,9 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * @default true
      */
     waitForLeadership?: boolean;
+
+    toggleOnDocumentVisible?: boolean;
+
     /**
      * If this is set to `false`,
      * the replication will not start automatically
