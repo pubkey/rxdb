@@ -2,6 +2,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, { useEffect } from 'react';
 import { FORM_VALUE_DOCUMENT_ID, FormValueDocData } from './premium';
 import { triggerTrackingEvent } from '../components/trigger-event';
+import { calculatePriceFromFormValueDoc } from '../components/price-calculator';
 
 export default function PremiumSubmitted() {
     const isBrowser = useIsBrowser();
@@ -16,14 +17,16 @@ export default function PremiumSubmitted() {
          */
         (async () => {
             const dbModule = await import('../components/database.module');
-            console.log('aaaaaa dbmodule:');
+            console.log('aaaaaa-iframe dbmodule:');
             console.dir(dbModule);
             const database = await dbModule.getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
+            console.log('form value docs:');
             console.dir(formValueDoc);
+            const price = await calculatePriceFromFormValueDoc(formValueDoc);
             triggerTrackingEvent(
                 'premium_lead',
-                Math.floor(formValueDoc._data.data.price / 3), // assume lead-to-sale-rate is 33%.
+                Math.floor(price.totalPrice / 3), // assume lead-to-sale-rate is 33%.
                 true
             );
         })();

@@ -1,3 +1,5 @@
+import type { RxLocalDocument } from '../../../plugins/core';
+import { FormValueDocData } from '../pages/premium';
 
 
 
@@ -107,3 +109,19 @@ export function calculatePrice(input: PriceCalculationInput) {
         totalPrice
     };
 }
+
+
+export function calculatePriceFromFormValueDoc(formValueDoc: RxLocalDocument<any, FormValueDocData>): ReturnType<typeof calculatePrice> {
+    const formData = formValueDoc.getLatest()._data.data;
+
+    const priceCalculationInput: PriceCalculationInput = {
+        teamSize: formData.developers,
+        // projectAmount: '1', // formData['project-amount'] as any,
+        // licensePeriod: 1, // parseInt(formData['license-period'] as any, 10) as any,
+        // homeCountryCode: homeCountryObject.code,
+        packages: formData.packages
+    };
+    const priceResult = calculatePrice(priceCalculationInput);
+    return priceResult;
+}
+
