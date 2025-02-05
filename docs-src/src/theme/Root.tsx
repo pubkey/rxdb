@@ -140,6 +140,9 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
+            if (location.pathname.includes('premium')) {
+                return;
+            }
             setShowPopup(prevValue => {
 
                 if (prevValue) {
