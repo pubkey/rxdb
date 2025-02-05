@@ -7,14 +7,12 @@ import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNo
 import { Modal } from 'antd';
 import {
     PackageName,
-    PriceCalculationInput,
-    calculatePrice,
     calculatePriceFromFormValueDoc
 } from '../components/price-calculator';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import {
-    Select
-} from 'antd';
+// import {
+//     Select
+// } from 'antd';
 import { distinctUntilChanged, map } from 'rxjs';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
