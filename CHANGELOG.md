@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX FilesystemNode storage imported stuff from the IndexedDB storage which could break builds.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
