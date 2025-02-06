@@ -489,6 +489,7 @@ const sidebars = {
         'articles/local-database',
         'articles/react-native-encryption',
         'articles/vue-database',
+        'articles/jquery-database',
       ],
     },
     'contribute',
