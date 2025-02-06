@@ -13,13 +13,13 @@ X- "optimistic ui"
 X- "local database"
 X- "react-native encryption"
 X- "vue database"
+X- "jquery database"
 
 - "firebase alternative"
 - "firestore alternative" 
 - "supabase alternative"
 - "reactjs storage"
 
-- "jquery database"
 
 - "store local storage"
 
