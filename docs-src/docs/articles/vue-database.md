@@ -6,9 +6,9 @@ description: Level up your Vue projects with RxDB. Build real-time, resilient, a
 
 # RxDB as a Database in a Vue Application
 
-In the modern web ecosystem, [Vue](https://vuejs.org/) has become a leading choice for building highly performant, reactive single-page applications (SPAs). However, while Vue excels at managing and updating the user interface, robust and efficient data handling also plays a pivotal role in delivering a great user experience. Enter [RxDB](https://rxdb.info/), a reactive JavaScript database that runs in the browser (and beyond), offering significant capabilities such as offline-first data handling, real-time synchronization, and straightforward integration with Vue’s reactivity system.
+In the modern web ecosystem, [Vue](https://vuejs.org/) has become a leading choice for building highly performant, reactive single-page applications (SPAs). However, while Vue excels at managing and updating the user interface, robust and efficient data handling also plays a pivotal role in delivering a great user experience. Enter [RxDB](https://rxdb.info/), a reactive JavaScript database that runs in the browser (and beyond), offering significant capabilities such as offline-first data handling, real-time synchronization, and straightforward integration with Vue's reactivity system.
 
-This article explores how RxDB works, why it’s a perfect match for Vue, and how you can leverage it to build more engaging, performant, and data-resilient Vue applications.
+This article explores how RxDB works, why it's a perfect match for Vue, and how you can leverage it to build more engaging, performant, and data-resilient Vue applications.
 
 <center>
     <a href="https://rxdb.info/">
@@ -24,22 +24,22 @@ Vue is renowned for its lightweight core and flexible architecture centered arou
 - **Improved Performance:** Reducing server round trips and leveraging local storage for faster data operations.  
 - **Scalable Data Handling:** Managing increasingly large datasets or complex queries right in the browser.
 
-While you can store data in Vuex/Pinia stores or via direct AJAX calls, these solutions may not suffice when your application demands a full-featured offline-first database or complex synchronization with a server. RxDB addresses these needs with a dedicated, reactive, browser-based database that pairs seamlessly with Vue’s reactivity system.
+While you can store data in Vuex/Pinia stores or via direct AJAX calls, these solutions may not suffice when your application demands a full-featured offline-first database or complex synchronization with a server. RxDB addresses these needs with a dedicated, reactive, browser-based database that pairs seamlessly with Vue's reactivity system.
 
 ## Introducing RxDB as a Database Solution
-RxDB—short for Reactive Database—is built on the principle of combining [NoSQL database](./in-memory-nosql-database.md) capabilities with reactive programming. It runs inside your client-side environment (browser, [Node.js](../nodejs-database.md), or [mobile devices](./mobile-database.md)) and provides:
+RxDB - short for Reactive Database - is built on the principle of combining [NoSQL database](./in-memory-nosql-database.md) capabilities with reactive programming. It runs inside your client-side environment (browser, [Node.js](../nodejs-database.md), or [mobile devices](./mobile-database.md)) and provides:
 
 1. **Real-Time Reactivity**: Automatically updates subscribed components whenever data changes.  
 2. **Offline-First Approach**: Stores data locally and syncs with the server when online connectivity is restored.  
 3. **Data Replication**: Effortlessly keeps data synchronized across multiple tabs, devices, or server instances.  
-4. **Multi-Tab Support**: Seamlessly propagates changes to all open tabs in the user’s [browser](./browser-database.md).  
+4. **Multi-Tab Support**: Seamlessly propagates changes to all open tabs in the user's [browser](./browser-database.md).  
 5. **Observable Queries**: Automatically refresh the result set when documents in your queried collection change.
 
 ### RxDB vs. Other Vue Database Options
-Compared to traditional approaches—like raw IndexedDB or local storage—RxDB adds a powerful, reactive layer that simplifies your data flow. While tools like Vuex or Pinia are great for state management, they are not fully fledged databases with features like replication, conflict resolution, and offline persistence. RxDB bridges the gap by providing an integrated data handling solution tailor-made for modern, data-intensive Vue applications.
+Compared to traditional approaches - like raw IndexedDB or local storage - RxDB adds a powerful, reactive layer that simplifies your data flow. While tools like Vuex or Pinia are great for state management, they are not fully fledged databases with features like replication, conflict resolution, and offline persistence. RxDB bridges the gap by providing an integrated data handling solution tailor-made for modern, data-intensive Vue applications.
 
 ## Getting Started with RxDB
-Let’s break down the essentials for using RxDB within a Vue application.
+Let's break down the essentials for using RxDB within a Vue application.
 
 ### Installation
 You can install RxDB (and RxJS, which it depends on) via npm or yarn:
@@ -91,7 +91,7 @@ After creating the RxDB instance, you can share it across your application (for 
 
 ## Vue Reactivity and RxDB Observables
 
-RxDB queries return RxJS observables (.$). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB’s [custom reactivity for Vue](../reactivity.md).
+RxDB queries return RxJS observables (`.$`). Vue can automatically update components when data changes if you manually subscribe and store results in Vue refs/reactive objects, or if you use RxDB's [custom reactivity for Vue](../reactivity.md).
 
 **Example with Vue 3 Composition API:**
 
@@ -133,7 +133,7 @@ onMounted(async () => {
 
 ## Different RxStorage Layers for RxDB
 
-RxDB supports multiple storage backends—called “RxStorage layers”—giving you flexibility in how data is persisted:
+RxDB supports multiple storage backends - called "RxStorage layers" - giving you flexibility in how data is persisted:
 
 - [Dexie.js RxStorage](../rx-storage-dexie.md): A popular IndexedDB wrapper, often the default choice.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Direct usage of native IndexedDB.
@@ -141,7 +141,7 @@ RxDB supports multiple storage backends—called “RxStorage layers”—giving
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, ideal for tests or ephemeral data.
 - [SQLite RxStorage](../rx-storage-sqlite.md): Runs SQLite, which can be compiled to WebAssembly for the browser. While possible, it typically carries a larger bundle size compared to native browser APIs like [IndexedDB or OPFS](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md).
 
-Choose the storage option that best aligns with your Vue application’s requirements for performance, persistence, and platform compatibility.
+Choose the storage option that best aligns with your Vue application's requirements for performance, persistence, and platform compatibility.
 
 ## Synchronizing Data with RxDB between Clients and Servers
 
@@ -150,14 +150,14 @@ RxDB champions an offline-first approach: data is kept locally so that your Vue 
 <p align="center"><img src="../files/database-replication.png" alt="database replication" width="200" /></p>
 
 
-- [Real-Time Synchronization](./realtime-database.md): With RxDB’s replication plugins, any local change can be instantly pushed to a remote endpoint while pulling down remote changes to ensure consistency.
+- [Real-Time Synchronization](./realtime-database.md): With RxDB's replication plugins, any local change can be instantly pushed to a remote endpoint while pulling down remote changes to ensure consistency.
 - **Conflict Resolution**: In multi-user scenarios, conflicts may arise if two clients update the same document simultaneously. RxDB provides hooks to handle and resolve these gracefully.
 - **Scalable Architecture**: By reducing reliance on continuous server requests, you can lighten server load and deliver a more responsive user experience.
 
 ## Advanced RxDB Features and Techniques
 
 ### Offline-First Approach
-Vue applications can seamlessly function offline by leveraging RxDB’s local database storage. The moment the network is restored, all unsynced data is pushed to the server. This capability is particularly beneficial for Progressive Web Apps (PWAs) and scenarios with spotty connectivity.
+Vue applications can seamlessly function offline by leveraging RxDB's local database storage. The moment the network is restored, all unsynced data is pushed to the server. This capability is particularly beneficial for Progressive Web Apps (PWAs) and scenarios with spotty connectivity.
 
 ### Observable Queries and Change Streams
 Beyond simply returning data, RxDB queries emit observables that respond to any change in the underlying documents. This real-time approach can drastically simplify state management, since updates flow directly into your Vue components without additional manual wiring.
@@ -183,8 +183,8 @@ If your users open multiple tabs of your Vue application, RxDB ensures data is s
 Here are some recommendations to get the most out of RxDB in your Vue projects:
 
 - Centralize Database Creation: Initialize and configure RxDB in a dedicated file or plugin, ensuring only one database instance is created.
-- Leverage Vue’s Composition API or a Global Store: Use watchers, refs, or a store like Pinia to neatly manage data subscriptions and updates, preventing scattered subscription logic.
-- Async Subscriptions: Prefer using Vue’s lifecycle hooks and the Composition API to manage subscriptions. Clean up subscriptions when components unmount or no longer need the data.
+- Leverage Vue's Composition API or a Global Store: Use watchers, refs, or a store like Pinia to neatly manage data subscriptions and updates, preventing scattered subscription logic.
+- Async Subscriptions: Prefer using Vue's lifecycle hooks and the Composition API to manage subscriptions. Clean up subscriptions when components unmount or no longer need the data.
 - Optimize Queries and Indexes: Only query the data you need, and define indexes to speed up lookups.
 - Test [Offline Scenarios](../offline-first.md): Make sure your offline logic works as expected by simulating network disconnections and reconnections.
 - [Plan Conflict Resolution](../transactions-conflicts-revisions.md): For multi-user apps, decide how to merge concurrent changes to prevent data inconsistencies.
