@@ -67,7 +67,7 @@ The biggest difference to RxDB is that firebase products are only able to be use
 </p>
 
 Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication protocol.
-Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like [angular](https://github.com/urigo/angular-meteor), vue.js or svelte.
+Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like [angular](https://github.com/urigo/angular-meteor), [vue.js](./articles//vue-database.md) or svelte.
 
 Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
 While testing, it has proven to be impossible to make a meteor app **offline first** capable. There are [some projects](https://github.com/frozeman/meteor-persistent-minimongo2) that might do this, but all are unmaintained.

@@ -12,6 +12,7 @@
 X- "optimistic ui"
 X- "local database"
 X- "react-native encryption"
+X- "vue database"
 
 - "firebase alternative"
 - "firestore alternative" 
@@ -31,7 +32,6 @@ X- "react-native encryption"
 
 - "ionic storage"
 
-- "vue database"
 - "supabase offline"
 - "offline database"
 

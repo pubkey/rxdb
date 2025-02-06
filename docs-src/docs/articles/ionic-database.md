@@ -95,7 +95,7 @@ Getting started with RxDB is a straightforward process. By including the RxDB li
 For a full instruction, follow the [RxDB Quickstart](https://rxdb.info/quickstart.html).
 
 ### Using RxDB in Frameworks (React, Angular, Vue.js)
-RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatibility with your preferred development environment. Whether you're building your ionic hybrid app with [React](./react-database.md), [Angular](./angular-database.md), or [Vue.js](https://github.com/pubkey/rxdb/tree/master/examples/vue), RxDB offers bindings and tools that enable you to leverage its features effortlessly. This compatibility allows you to stay within the comfort zone of your chosen framework while benefiting from RxDB's powerful data management capabilities.
+RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatibility with your preferred development environment. Whether you're building your ionic hybrid app with [React](./react-database.md), [Angular](./angular-database.md), or [Vue.js](./vue-database.md), RxDB offers bindings and tools that enable you to leverage its features effortlessly. This compatibility allows you to stay within the comfort zone of your chosen framework while benefiting from RxDB's powerful data management capabilities.
 
 ### Different RxStorage Layers for RxDB
 RxDB doesn't limit you to a single storage solution. Instead, it provides a range of RxStorage layers to accommodate diverse use cases. These storage layers offer flexibility and customization, enabling you to tailor your data management strategy to match your app's requirements. Let's explore some of the available RxStorage options:
