@@ -674,7 +674,7 @@ export default function Premium() {
                                 </a>{' '}
                                 options and all core plugins that are required for replication, schema
                                 validation, encryption and so on, are totally free. As soon as your
-                                application is more then a side project you can consider using the premium plugins as an easy way
+                                application is more than a side project you can consider using the premium plugins as an easy way
                                 to improve your applications performance and reduce the build size.
                                 <br />
                                 The main benefit of the Premium Plugins is <b>performance</b>. The

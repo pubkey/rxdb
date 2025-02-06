@@ -29,7 +29,7 @@ Since beginning of 2023, all modern browsers ship the **File System Access API**
 :::
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.
-But as soon as your app gets bigger, more complex or just handles more data, you might notice something. **IndexedDB is slow**. Not slow like a database on a cheap server, **even slower**! Inserting a few hundred documents can take up several seconds. Time which can be critical for a fast page load. Even sending data over the internet to the backend can be faster then storing it inside of an IndexedDB database.
+But as soon as your app gets bigger, more complex or just handles more data, you might notice something. **IndexedDB is slow**. Not slow like a database on a cheap server, **even slower**! Inserting a few hundred documents can take up several seconds. Time which can be critical for a fast page load. Even sending data over the internet to the backend can be faster than storing it inside of an IndexedDB database.
 
 > Transactions vs Throughput
 

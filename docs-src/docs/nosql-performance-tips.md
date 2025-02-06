@@ -179,7 +179,7 @@ const attachment = await myDocument.putAttachment(
 ## Process queries in a worker process
 
 Moving database storage into a WebWorker can significantly improve performance in web applications that use RxDB or similar NoSQL databases. When database operations are executed in the main JavaScript thread, they can block or slow down the User Interface, especially during heavy or complex data operations. By offloading these operations to a WebWorker, you effectively separate the data processing workload from the UI thread. This means the main thread remains free to handle user interactions and render updates without delay, leading to a smoother and more responsive user experience. Additionally, WebWorkers allow for parallel data processing, which can expedite tasks like querying and indexing. This approach not only enhances UI responsiveness but also optimizes overall application performance by leveraging the multi-threading capabilities of modern browsers.
-With RxDB you can use the [Worker](./rx-storage-worker.md) and [SharedWorker](./rx-storage-shared-worker.md) plugin to to move the query processing away from the main thread.
+With RxDB you can use the [Worker](./rx-storage-worker.md) and [SharedWorker](./rx-storage-shared-worker.md) plugin to move the query processing away from the main thread.
 
 ## Use less plugins and hooks
 

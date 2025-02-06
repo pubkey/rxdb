@@ -7,7 +7,7 @@ description: Discover vertical and horizontal techniques to boost RxServer. Lear
 
 # Scaling the RxServer
 
-The [RxDB Server](./rx-server.md) run in JavaScript and JavaScript runs on a single process on the operating system. This can make the CPU performance limit to be the main bottleneck when serving requests to your users. To migitate that problem, there are a wide range of methods to scale up the server so that it can serve more requests at the same time faster.
+The [RxDB Server](./rx-server.md) run in JavaScript and JavaScript runs on a single process on the operating system. This can make the CPU performance limit to be the main bottleneck when serving requests to your users. To mitigate that problem, there are a wide range of methods to scale up the server so that it can serve more requests at the same time faster.
 
 
 ## Vertical Scaling

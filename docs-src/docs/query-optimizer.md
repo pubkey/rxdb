@@ -71,7 +71,7 @@ const bestIndexes = await findBestIndex({
 
 - It makes no sense to run time optimization with a different `RxStorage` (+settings) that what you use in production. The result of the query optimizer is heavily dependent on the RxStorage and JavaScript runtime. For example it makes no sense to run the optimization in Node.js and then use the optimized indexes in the browser.
 
-- It is very important the you use **production like** `testData`. Finding the best index heavily depends on data distribution and amount of stored/queried documents. For example if you store and query users with an `age` field, it makes no sense to just use a random number for the age because in production the `age` of your users is not equally distributed.
+- It is very important that you use **production like** `testData`. Finding the best index heavily depends on data distribution and amount of stored/queried documents. For example if you store and query users with an `age` field, it makes no sense to just use a random number for the age because in production the `age` of your users is not equally distributed.
 
 - The higher you set `runs`, the more test cycles will be performed and the more **significant** will be the time measurements which leads to a better index selection.
 

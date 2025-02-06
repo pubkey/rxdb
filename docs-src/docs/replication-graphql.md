@@ -482,7 +482,7 @@ The underlying fetch framework uses a `same-origin` policy for credentials per d
 replicationState.setCredentials('include');
 ```
 
-or directly pass it in the the `syncGraphQL`:
+or directly pass it in the `replicateGraphQL` function:
 
 ```js
 replicateGraphQL(
