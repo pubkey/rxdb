@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX FilesystemNode storage imported stuff from the IndexedDB storage which could break builds.
+- FIX [broken cjs import on the flexsearch plugin](https://discord.com/channels/969553741705539624/1333530507215900692)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
