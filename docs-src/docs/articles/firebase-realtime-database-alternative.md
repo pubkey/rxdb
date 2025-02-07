@@ -17,7 +17,7 @@ Are you on the lookout for a **Firebase Realtime Database alternative** that giv
 ## Why RxDB Is an Excellent Firebase Realtime Database Alternative
 
 ### 1. Complete Offline-First Experience
-Unlike Firebase Realtime Database, which relies on central infrastructure to process data, RxDB is fully embedded within your client application (including [browsers](./browser-database.md), [Node.js](../nodejs-database.md), [Electron](./electron-database.md), and [React Native](./react-native-database.md)). This design means your app stays completely functional offline, since all data reads and writes happen locally. When connectivity is restored, RxDB's syncing framework automatically reconciles local changes with your remote backend.
+Unlike Firebase Realtime Database, which relies on central infrastructure to process data, RxDB is fully embedded within your client application (including [browsers](./browser-database.md), [Node.js](../nodejs-database.md), [Electron](../electron-database.md), and [React Native](../react-native-database.md)). This design means your app stays completely functional offline, since all data reads and writes happen locally. When connectivity is restored, RxDB's syncing framework automatically reconciles local changes with your remote backend.
 
 ### 2. Freedom to Use Any Server or Cloud
 While Firebase Realtime Database ties you into Google's ecosystem, RxDB allows you to choose any hosting environment. You can:

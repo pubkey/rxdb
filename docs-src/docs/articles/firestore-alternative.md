@@ -26,7 +26,7 @@ Enter **RxDB** (Reactive Database) - a local-first, NoSQL database for JavaScrip
 Firestore is convenient for many projects, but it does lock you into Google's ecosystem. Below are some of the key advantages you gain by choosing RxDB:
 
 ### 1. Fully Offline-First
-RxDB runs directly in your client application ([browser](./browser-database.md), [Node.js](../nodejs-database.md), [Electron](../electron-database.md), [React Native](./react-native-database.md), etc.). Data is stored locally, so your application **remains fully functional even when offline**. When the device returns online, RxDB's flexible replication protocol synchronizes your local changes with any remote endpoint.
+RxDB runs directly in your client application ([browser](./browser-database.md), [Node.js](../nodejs-database.md), [Electron](../electron-database.md), [React Native](../react-native-database.md), etc.). Data is stored locally, so your application **remains fully functional even when offline**. When the device returns online, RxDB's flexible replication protocol synchronizes your local changes with any remote endpoint.
 
 ### 2. Freedom to Use Any Backend
 Unlike Firestore, RxDB doesn't require a proprietary hosting service. You can:
@@ -57,7 +57,7 @@ Firestore's query engine is limited by certain constraints (e.g., no advanced jo
 While Firestore does have offline caching, it often requires an online check at app initialization for authentication. RxDB is [truly offline-first](../offline-first.md); you can launch the app and write data even if the device never goes online initially. It's ready whenever the user is.
 
 ### 7. Cross-Platform: Any JavaScript Runtime
-RxDB is designed to run in **any environment** that can execute JavaScript. Whether you’re building a web app in the browser, an [Electron](./electron-database.md) desktop application, a [React Native](./react-native-database.md) mobile app, or a command-line tool with [Node.js](../nodejs-database.md), RxDB’s storage layer is swappable to fit your runtime’s capabilities.
+RxDB is designed to run in **any environment** that can execute JavaScript. Whether you’re building a web app in the browser, an [Electron](../electron-database.md) desktop application, a [React Native](./react-native-database.md) mobile app, or a command-line tool with [Node.js](../nodejs-database.md), RxDB’s storage layer is swappable to fit your runtime’s capabilities.
 - In the **browser**, store data in [IndexedDB](../rx-storage-indexeddb.md) or [OPFS](../rx-storage-opfs.md).
 - In [Node.js](../nodejs-database.md), use LevelDB or other supported storages.
 - In [React Native](../react-native-database.md), pick from a range of adapters suited for mobile devices.
