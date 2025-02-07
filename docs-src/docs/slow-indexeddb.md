@@ -164,7 +164,7 @@ Instead of doing this, you can use a `custom index` which can improve the perfor
 
 ```ts
 // On document insert add the ageIdCustomIndex field.
-const idMaxLength = 20; // must be known to craft a custom index  
+const idMaxLength = 20; // must be known to craft a custom index
 docData.ageIdCustomIndex = docData.age + docData.id.padStart(idMaxLength, ' ');
 store.put(docData);
 // ...

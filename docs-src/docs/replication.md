@@ -55,12 +55,12 @@ The server **must** implement the following methods to be compatible with the re
 
 
 ```
-        +--------+                             +--------+   
+        +--------+                             +--------+ 
         |        | pullHandler()               |        |
-        |        |--------------------->       |        |   
+        |        |--------------------->       |        | 
         |        |                             |        | 
-        |        |                             |        |  
-        | Client | pushHandler()               | Server |  
+        |        |                             |        |
+        | Client | pushHandler()               | Server |
         |        |--------------------->       |        | 
         |        |                             |        |
         |        |   pullStream$               |        | 
@@ -79,7 +79,7 @@ A checkpoint is a subset of the fields of the last pulled document. When the che
 For example if your documents contain an `id` and an `updatedAt` field, these two can be used as checkpoint.
 
 When the checkpoint iteration reaches the last checkpoint, where the backend returns an empty array because there are no newer documents, the replication will automatically switch to the `event observation` mode.
-  
+
 ### Event observation
 
 While the client is connected to the backend, the events from the backend are observed via `pullStream$` and persisted to the client.

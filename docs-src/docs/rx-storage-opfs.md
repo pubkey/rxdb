@@ -38,7 +38,7 @@ const root = await navigator.storage.getDirectory();
 // Create a subdirectory.
 const diaryDirectory = await root.getDirectoryHandle('subfolder', {
   create: true,
-});  
+});
 
 // Create a new file named 'example.txt'.
 const fileHandle = await diaryDirectory.getFileHandle('example.txt', {
@@ -54,7 +54,7 @@ const writeSize = accessHandle.write(writeBuffer);
 
 // Read file and transform data to string.
 const readBuffer = new Uint8Array(writeSize);
-const readSize = accessHandle.read(readBuffer, { at: 0 });  
+const readSize = accessHandle.read(readBuffer, { at: 0 });
 const contentAsString = new TextDecoder().decode(readBuffer);
 
 // Write an exclamation mark to the end of the file.

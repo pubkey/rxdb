@@ -79,7 +79,7 @@ const replicationState = await replicateRxCollection({
                 checkpoint: data.checkpoint
             };
         }
-        
+
     }
     /* ... */
 });

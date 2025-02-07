@@ -32,11 +32,11 @@ RxDB (short for Reactive Database) is built on top of [IndexedDB](./browser-data
 
 ### Key Features
 
-- **Reactive Data Handling**: RxDB emits real-time updates whenever your data changes, allowing you to instantly reflect these changes in the DOM with jQuery.  
-- **Offline-First Approach**: Keep your application usable even when the user's network is unavailable. Data is automatically synchronized once connectivity is restored.  
-- **Data Replication**: Enable multi-device or multi-tab synchronization with minimal effort.  
-- **Observable Queries**: Reduce code complexity by subscribing to queries instead of constantly polling for changes.  
-- **Multi-Tab Support**: If a user opens your jQuery application in multiple tabs, RxDB keeps data in sync across all sessions.  
+- **Reactive Data Handling**: RxDB emits real-time updates whenever your data changes, allowing you to instantly reflect these changes in the DOM with jQuery.
+- **Offline-First Approach**: Keep your application usable even when the user's network is unavailable. Data is automatically synchronized once connectivity is restored.
+- **Data Replication**: Enable multi-device or multi-tab synchronization with minimal effort.
+- **Observable Queries**: Reduce code complexity by subscribing to queries instead of constantly polling for changes.
+- **Multi-Tab Support**: If a user opens your jQuery application in multiple tabs, RxDB keeps data in sync across all sessions.
 
 <center>
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/qHWrooWyCYg" title="RxDB jQuery Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
@@ -213,6 +213,6 @@ If your data model has large or repetitive field names, [JSON key compression](.
 ## Follow Up
 To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:
 
-- [RxDB GitHub Repository](/code/): Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.  
-- [RxDB Quickstart](../quickstart.md): Get started quickly with RxDB by following the provided quickstart guide, which offers step-by-step instructions for setting up and using RxDB in your projects.  
+- [RxDB GitHub Repository](/code/): Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.
+- [RxDB Quickstart](../quickstart.md): Get started quickly with RxDB by following the provided quickstart guide, which offers step-by-step instructions for setting up and using RxDB in your projects.
 - [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples): Browse official examples to see RxDB in action and learn best practices you can apply to your own project - even if jQuery isn't explicitly featured, the patterns are similar.

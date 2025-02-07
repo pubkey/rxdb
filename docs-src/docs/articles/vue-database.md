@@ -19,9 +19,9 @@ This article explores how RxDB works, why it's a perfect match for Vue, and how 
 ## Why Vue Applications Need a Database
 Vue is renowned for its lightweight core and flexible architecture centered around reactive state management and reusable components. However, modern Vue applications often require:
 
-- **Offline Capabilities:** Allowing users to continue working even without internet access.  
-- **Real-Time Updates:** Keeping UI data in sync with changes as they occur, whether locally or from other connected clients.  
-- **Improved Performance:** Reducing server round trips and leveraging local storage for faster data operations.  
+- **Offline Capabilities:** Allowing users to continue working even without internet access.
+- **Real-Time Updates:** Keeping UI data in sync with changes as they occur, whether locally or from other connected clients.
+- **Improved Performance:** Reducing server round trips and leveraging local storage for faster data operations.
 - **Scalable Data Handling:** Managing increasingly large datasets or complex queries right in the browser.
 
 While you can store data in Vuex/Pinia stores or via direct AJAX calls, these solutions may not suffice when your application demands a full-featured offline-first database or complex synchronization with a server. RxDB addresses these needs with a dedicated, reactive, browser-based database that pairs seamlessly with Vue's reactivity system.
@@ -29,10 +29,10 @@ While you can store data in Vuex/Pinia stores or via direct AJAX calls, these so
 ## Introducing RxDB as a Database Solution
 RxDB - short for Reactive Database - is built on the principle of combining [NoSQL database](./in-memory-nosql-database.md) capabilities with reactive programming. It runs inside your client-side environment (browser, [Node.js](../nodejs-database.md), or [mobile devices](./mobile-database.md)) and provides:
 
-1. **Real-Time Reactivity**: Automatically updates subscribed components whenever data changes.  
-2. **Offline-First Approach**: Stores data locally and syncs with the server when online connectivity is restored.  
-3. **Data Replication**: Effortlessly keeps data synchronized across multiple tabs, devices, or server instances.  
-4. **Multi-Tab Support**: Seamlessly propagates changes to all open tabs in the user's [browser](./browser-database.md).  
+1. **Real-Time Reactivity**: Automatically updates subscribed components whenever data changes.
+2. **Offline-First Approach**: Stores data locally and syncs with the server when online connectivity is restored.
+3. **Data Replication**: Effortlessly keeps data synchronized across multiple tabs, devices, or server instances.
+4. **Multi-Tab Support**: Seamlessly propagates changes to all open tabs in the user's [browser](./browser-database.md).
 5. **Observable Queries**: Automatically refresh the result set when documents in your queried collection change.
 
 ### RxDB vs. Other Vue Database Options
@@ -193,8 +193,8 @@ Here are some recommendations to get the most out of RxDB in your Vue projects:
 
 To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:
 
-- [RxDB GitHub Repository](/code/): Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.  
-- [RxDB Quickstart](../quickstart.md): Get started quickly with RxDB by following the provided quickstart guide, which offers step-by-step instructions for setting up and using RxDB in your projects.  
-- [RxDB Reactivity for Vue](../reactivity.md): Discover how RxDB observables can directly produce Vue refs, simplifying integration with your Vue components.  
-- [RxDB Vue Example at GitHub](https://github.com/pubkey/rxdb/tree/master/examples/vue): Explore an official Vue example to see RxDB in action within a Vue application.  
+- [RxDB GitHub Repository](/code/): Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.
+- [RxDB Quickstart](../quickstart.md): Get started quickly with RxDB by following the provided quickstart guide, which offers step-by-step instructions for setting up and using RxDB in your projects.
+- [RxDB Reactivity for Vue](../reactivity.md): Discover how RxDB observables can directly produce Vue refs, simplifying integration with your Vue components.
+- [RxDB Vue Example at GitHub](https://github.com/pubkey/rxdb/tree/master/examples/vue): Explore an official Vue example to see RxDB in action within a Vue application.
 - [RxDB Examples](https://github.com/pubkey/rxdb/tree/master/examples): Browse even more official examples to learn best practices you can apply to your own projects.

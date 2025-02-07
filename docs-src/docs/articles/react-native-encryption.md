@@ -21,13 +21,13 @@ Encryption ensures that, even if an unauthorized party obtains physical access t
 
 React Native supports multiple ways to secure local data:
 
-1. **Encrypted Databases**  
-   Use databases with built-in encryption capabilities, such as SQLite with encryption layers or RxDB with its [encryption plugin](../encryption.md).  
+1. **Encrypted Databases**
+   Use databases with built-in encryption capabilities, such as SQLite with encryption layers or RxDB with its [encryption plugin](../encryption.md).
 
-2. **Secure Storage Libraries**  
-   For key-value data (like tokens or secrets), you can use libraries like [react-native-keychain](https://github.com/oblador/react-native-keychain) or [react-native-encrypted-storage](https://github.com/emeraldsanto/react-native-encrypted-storage).  
+2. **Secure Storage Libraries**
+   For key-value data (like tokens or secrets), you can use libraries like [react-native-keychain](https://github.com/oblador/react-native-keychain) or [react-native-encrypted-storage](https://github.com/emeraldsanto/react-native-encrypted-storage).
 
-3. **Custom Encryption**  
+3. **Custom Encryption**
    If you need more fine-grained control, you can integrate libraries like [`crypto-js`](https://github.com/brix/crypto-js) or the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) to encrypt data before storing it in a database or file.
 
 

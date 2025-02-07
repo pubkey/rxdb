@@ -330,7 +330,7 @@ const replicationState = replicateGraphQL(
             queryBuilder: pullQueryBuilder,
             streamQueryBuilder: pullStreamQueryBuilder,
             includeWsHeaders: false, // Includes headers as connection parameter to Websocket.
-            
+
             // Websocket options that can be passed as a parameter to initialize the subscription
             // Can be applied anything from the graphql-ws ClientOptions - https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions
             // Except these parameters: 'url', 'shouldRetry', 'webSocketImpl' - locked for internal usage

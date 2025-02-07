@@ -441,7 +441,7 @@ async function vectorSearchIndexSimilarity(searchEmbedding: number[]) {
     return {
         result: sorted.slice(0, 10),
         docReads
-    };    
+    };
 }
 ```
 

@@ -52,7 +52,7 @@ const db = await createRxDatabase({
        * After the initial cleanup is done,
        * a new cleanup is started after [runEach] milliseconds 
        * [default=5 minutes]
-       */      
+       */
       runEach: 1000 * 60 * 5, // 5 minutes
       /**
        * If set to true,

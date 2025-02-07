@@ -220,7 +220,7 @@ const schemaWithIndexes = {
                         type: 'number'
                     }
               }
-          }       
+          } 
       }
   },
   required: [

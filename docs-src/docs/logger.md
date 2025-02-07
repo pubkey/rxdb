@@ -80,7 +80,7 @@ const loggingStorage = wrappedLoggerStorage({
         getChangedDocumentsSince: true,
         cleanup: true,
         close: true,
-        remove: true        
+        remove: true
     }
 });
 ```

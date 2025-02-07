@@ -491,6 +491,8 @@ const sidebars = {
         'articles/vue-database',
         'articles/vue-indexeddb',
         'articles/jquery-database',
+        'articles/firestore-alternative',
+        'articles/firebase-realtime-database-alternative',
       ],
     },
     'contribute',

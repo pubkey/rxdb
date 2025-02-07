@@ -53,8 +53,8 @@ A local database is the heart of an Optimistic UI. With RxDB, **all application 
 
 RxDB's core is built around observables that react to any state changes - whether from local writes or incoming replication from the server.
 
-- **Automatic UI refresh**: Any query or document subscription in RxDB automatically notifies your UI layer when data changes. There's no need to manually poll or refetch.  
-- **Cross-tab updates**: If you have the same RxDB database open in multiple [browser](./browser-database.md) tabs, changes in one tab instantly propagate to the others.  
+- **Automatic UI refresh**: Any query or document subscription in RxDB automatically notifies your UI layer when data changes. There's no need to manually poll or refetch.
+- **Cross-tab updates**: If you have the same RxDB database open in multiple [browser](./browser-database.md) tabs, changes in one tab instantly propagate to the others.
 
 <p align="center">
   <img src="/files/multiwindow.gif" alt="RxDB multi tab" width="450" />
@@ -65,9 +65,9 @@ RxDB's core is built around observables that react to any state changes - whethe
 
 ### Replication with a Server
 
-While local storage is key to an Optimistic UI, most applications ultimately need to sync with a remote back end. RxDB offers a [powerful replication system](../replication.md) that can sync your local data with virtually any server/database in the background:  
-- **Incremental and real-time**: RxDB continuously pushes local changes to the server when a network is available and fetches server updates as they happen.  
-- **Conflict resolution**: If changes happen offline or multiple clients update the same data, RxDB detects conflicts and makes it straightforward to resolve them.  
+While local storage is key to an Optimistic UI, most applications ultimately need to sync with a remote back end. RxDB offers a [powerful replication system](../replication.md) that can sync your local data with virtually any server/database in the background:
+- **Incremental and real-time**: RxDB continuously pushes local changes to the server when a network is available and fetches server updates as they happen.
+- **Conflict resolution**: If changes happen offline or multiple clients update the same data, RxDB detects conflicts and makes it straightforward to resolve them.
 - **Flexible transport**: Beyond simple HTTP polling, you can incorporate WebSockets, Server-Sent Events (SSE), or other protocols for instant, server-confirmed changes broadcast to all connected clients. See [this guide](./websockets-sse-polling-webrtc-webtransport.md) to learn more.
 
 By combining local-first data handling with real-time synchronization, RxDB delivers most of what an Optimistic UI needs - right out of the box. The result is a seamless user experience where interactions never feel blocked by slow networks, and any conflicts or final validations are quietly handled in the background.
@@ -189,13 +189,13 @@ Situations where high success rates of operations are expected (most writes don'
 
 Ready to start building your own Optimistic UI with RxDB? Here are some next steps:
 
-1. **Do the [RxDB Quickstart](https://rxdb.info/quickstart.html)**  
+1. **Do the [RxDB Quickstart](https://rxdb.info/quickstart.html)**
    If you're brand new to RxDB, the quickstart guide will walk you through installation and setting up your first project.
 
-2. **Check Out the Demo App**  
+2. **Check Out the Demo App**
    A live [RxDB Quickstart Demo](https://pubkey.github.io/rxdb-quickstart/) showcases optimistic updates and real-time syncing. Explore the code to see how it works.
 
-3. **Star the GitHub Repo**  
+3. **Star the GitHub Repo**
    Show your support for RxDB by starring the [RxDB GitHub Repository](https://github.com/pubkey/rxdb).
 
 By combining RxDB's powerful offline-first capabilities with the principles of an Optimistic UI, you can deliver snappy, near-instant user interactions that keep your users engaged - no matter the network conditions. Get started today and give your users the experience they deserve!

@@ -16,7 +16,7 @@ Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-tim
 
 ### 1. Installation
 Install the RxDB library and the RxJS dependency:
-   
+ 
 ```bash
 npm install rxdb rxjs
 ```
@@ -84,7 +84,7 @@ await myDatabase.addCollections({
                     format: 'date-time'
                 }
             },
-            required: ['id', 'name', 'done', 'timestamp']        
+            required: ['id', 'name', 'done', 'timestamp']
         }
     }
 });

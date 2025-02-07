@@ -22,9 +22,9 @@ Building robust, [offline-capable](../offline-first.md) Vue applications often i
 
 When building Vue applications, IndexedDB can play a crucial role in enhancing both performance and user experience. Here are some reasons to consider using IndexedDB:
 
-- **Offline-First / Local-First**: By storing data locally, your application remains functional even without an internet connection.  
-- **Performance**: Using local data means zero latency and no loading spinners, as data doesn't need to be fetched over a network.  
-- **Easier Implementation**: Replicating all data to the client once is often simpler than implementing multiple endpoints for each user interaction.  
+- **Offline-First / Local-First**: By storing data locally, your application remains functional even without an internet connection.
+- **Performance**: Using local data means zero latency and no loading spinners, as data doesn't need to be fetched over a network.
+- **Easier Implementation**: Replicating all data to the client once is often simpler than implementing multiple endpoints for each user interaction.
 - **Scalability**: Local data reduces server load because queries run on the client side, decreasing server bandwidth and processing requirements.
 
 
@@ -32,13 +32,13 @@ When building Vue applications, IndexedDB can play a crucial role in enhancing b
 
 While IndexedDB itself is powerful, its native API comes with several drawbacks for everyday application developers:
 
-- **Callback-Based API**: IndexedDB was originally designed around callbacks rather than modern Promises, making asynchronous code more cumbersome.  
-- **Complexity**: IndexedDB is low-level, intended for library developers rather than for app developers who just want to store and query data easily.  
-- **Basic Query API**: Its rudimentary query capabilities limit how you can efficiently perform complex queries. Libraries like RxDB offer more advanced querying and indexing.  
-- **TypeScript Support**: Ensuring good [TypeScript support](../tutorials/typescript.md) with IndexedDB is challenging, especially when trying to maintain schema consistency.  
-- **Lack of Observable API**: IndexedDB doesn't provide an observable API out of the box, making it hard to automatically update your Vue app in real time. RxDB solves this by enabling you to [observe queries](../rx-query.md#observe) or specific documents.  
-- **Cross-Tab Communication**: Managing cross-tab updates in plain IndexedDB is difficult. RxDB handles this seamlessly - changes in one tab automatically affect observed data in others.  
-- **Missing Advanced Features**: Features like [encryption](../encryption.md) or [compression](../key-compression.md) aren't built into IndexedDB, but they are available via RxDB.  
+- **Callback-Based API**: IndexedDB was originally designed around callbacks rather than modern Promises, making asynchronous code more cumbersome.
+- **Complexity**: IndexedDB is low-level, intended for library developers rather than for app developers who just want to store and query data easily.
+- **Basic Query API**: Its rudimentary query capabilities limit how you can efficiently perform complex queries. Libraries like RxDB offer more advanced querying and indexing.
+- **TypeScript Support**: Ensuring good [TypeScript support](../tutorials/typescript.md) with IndexedDB is challenging, especially when trying to maintain schema consistency.
+- **Lack of Observable API**: IndexedDB doesn't provide an observable API out of the box, making it hard to automatically update your Vue app in real time. RxDB solves this by enabling you to [observe queries](../rx-query.md#observe) or specific documents.
+- **Cross-Tab Communication**: Managing cross-tab updates in plain IndexedDB is difficult. RxDB handles this seamlessly - changes in one tab automatically affect observed data in others.
+- **Missing Advanced Features**: Features like [encryption](../encryption.md) or [compression](../key-compression.md) aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB is browser-only. RxDB offers [swappable storages](../rx-storage.md) so you can reuse the same data layer code in mobile or desktop environments.
 
 
@@ -67,7 +67,7 @@ RxDB provides two main storage options:
 
 - The free [Dexie.js-based storage](../rx-storage-dexie.md)
 - The premium plain [IndexedDB-based storage](../rx-storage-indexeddb.md), offering faster [performance](../rx-storage-performance.md)
-  
+
 Below is an example of setting up a simple RxDB database using the Dexie.js-based storage in a Vue app:
 
 ```ts
@@ -241,7 +241,7 @@ Depending on your application's requirements, there are [alternative storage sol
 
 - **Origin Private File System (OPFS)**: A newer API that can offer better performance. RxDB supports OPFS as well. More info: [RxDB OPFS Storage](../rx-storage-opfs.md)
 - **SQLite**: Ideal for hybrid frameworks or Capacitor, offering native performance. Explore: [RxDB SQLite Storage](../rx-storage-sqlite.md)
-  
+
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 

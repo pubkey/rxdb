@@ -47,7 +47,7 @@ Here are the alternatives to RxDB:
   height="60" />
 </p>
 
-Firebase is a **platform** developed by Google for creating mobile and web applications. Firebase has many features and products, two of which are client side databases. The `Realtime Database` and the `Cloud Firestore`.
+Firebase is a **platform** developed by Google for creating mobile and web applications. Firebase has many features and products, two of which are client side databases. The [Realtime Database](./articles/firebase-realtime-database-alternative.md) and the [Cloud Firestore](./articles/firestore-alternative.md).
 
 #### Firebase - Realtime Database
 

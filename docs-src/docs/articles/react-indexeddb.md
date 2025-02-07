@@ -256,5 +256,5 @@ Here is a [performance overview](../rx-storage-performance.md) of the various br
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.
 - Check out the [RxDB GitHub repository](https://github.com/pubkey/rxdb) and leave a star ⭐ if you find it useful.
-  
+
 By leveraging RxDB on top of IndexedDB, you can create highly responsive, offline-capable React applications without dealing with the low-level complexities of IndexedDB directly. With reactive queries, seamless cross-tab communication, and powerful advanced features, RxDB becomes an invaluable tool in modern web development.
