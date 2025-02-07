@@ -1,7 +1,7 @@
 ---
 title: Capacitor Database Guide - SQLite, RxDB & More
 slug: capacitor-database.html
-description: Explore Capacitor's top data storage solutions - from key–value to real-time databases. Compare SQLite, RxDB, and more in this in-depth guide.
+description: Explore Capacitor's top data storage solutions - from key-value to real-time databases. Compare SQLite, RxDB, and more in this in-depth guide.
 ---
 
 

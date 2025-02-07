@@ -143,7 +143,7 @@ $(document).ready(async function () {
       heroes.forEach((hero) => {
         $('#heroList').append(`
           <li>
-            <strong>${hero.name}</strong> – Points: ${hero.points}
+            <strong>${hero.name}</strong> - Points: ${hero.points}
           </li>
         `);
       });
