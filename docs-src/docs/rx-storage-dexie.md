@@ -6,23 +6,18 @@ description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie
 
 # RxStorage Dexie.js
 
-To store the data inside of IndexedDB in the browser, you can use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to store RxDB data in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default. For professional projects that care about performance and stability, use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) instead.
+To store the data inside of IndexedDB in the browser, you can use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to store RxDB data in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default.
 
-## Pros 
-  - Can use [Dexie.js addons](https://dexie.org/docs/Tutorial/Building-Addons).
 
-## Limitations
-- Does not allow to use non-required fields as index, because that is [not possible](https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082) with dexie.js. Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you need that.
-- Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
-- Does not support the [Storage Buckets API](./rx-storage-indexeddb.md#storage-buckets)
-
-## Performance comparison with other RxStorage plugins
-
-The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
-
-<p align="center">
-  <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser Dexie.js" width="700" />
-</p>
+:::note
+While Dexie.js RxStorage can be used for free, most professional projects should switch to our **premium [IndexedDB RxStorage](./rx-storage-indexeddb.md) 👑** in production:
+- It is faster and reduces build size by up to **36%**.
+- It has a way [better performance](./rx-storage-performance.md) on reads and writes.
+- It does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
+- It supports **non-required indexes** which is [not possible](https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082) with Dexie.js.
+- It runs in a **WAL-like mode** (similar to SQLite) for faster writes and improved responsiveness.
+- It support the [Storage Buckets API](./rx-storage-indexeddb.md#storage-buckets)
+:::
 
 ## Usage
 
@@ -84,3 +79,12 @@ If you already have premium access and want to use the Dexie.js [RxStorage](./rx
 import { setPremiumFlag } from 'rxdb-premium/plugins/shared';
 setPremiumFlag();
 ```
+
+
+## Performance comparison with other RxStorage plugins
+
+The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
+
+<p align="center">
+  <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser Dexie.js" width="700" />
+</p>

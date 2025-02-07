@@ -24,7 +24,7 @@ The RxStorage layer of RxDB is very flexible. Here are some examples on how to c
 
 Lets say you build a browser app that needs to store a big amount of data as secure as possible. Here we can use a combination of the storages (encryption, IndexedDB, compression, schema-checks) that increase security and reduce the stored data size.
 
-We use the schema-validation on the top level to ensure schema-errors are clearly readable and do not contain encrypted/compressed data. The encryption is used inside of the compression because encryption of compressed data is more efficient.
+We use the schema-validation on the top level to ensure schema-errors are clearly readable and do not contain [encrypted](./encryption.md)/[compressed](./key-compression.md) data. The encryption is used inside of the compression because encryption of compressed data is more efficient.
 
 ```ts
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
