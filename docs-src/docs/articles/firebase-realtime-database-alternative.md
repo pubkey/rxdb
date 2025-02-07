@@ -45,7 +45,7 @@ Because these operations happen locally, your [UI updates](./optimistic-ui.md) i
 While Firebase offers some offline caching, it often requires an initial connection for authentication or to seed local data. RxDB, however, is built to handle an **offline-start** scenario. Users can begin working with the application immediately, regardless of connectivity, and any modifications they make will sync once the network is available again.
 
 ### 7. Works Everywhere JavaScript Runs
-One of RxDB's core strengths is its ability to run in **any JavaScript environment**. Whether you're building a web app that uses IndexedDB in the browser, an [Electron](./electron-database.md) desktop program, or a [React Native](./react-native-database.md) mobile application, RxDB's **swappable storage** adapts to your runtime of choice. This consistency makes code-sharing and cross-platform development far simpler than being tied to a single backend system.
+One of RxDB's core strengths is its ability to run in **any JavaScript environment**. Whether you're building a web app that uses IndexedDB in the browser, an [Electron](../electron-database.md) desktop program, or a [React Native](../react-native-database.md) mobile application, RxDB's **swappable storage** adapts to your runtime of choice. This consistency makes code-sharing and cross-platform development far simpler than being tied to a single backend system.
 
 ---
 
