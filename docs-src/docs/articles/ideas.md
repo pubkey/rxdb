@@ -14,6 +14,7 @@ X- "local database"
 X- "react-native encryption"
 X- "vue database"
 X- "jquery database"
+X- "vue indexeddb"
 
 - "firebase alternative"
 - "firestore alternative" 
