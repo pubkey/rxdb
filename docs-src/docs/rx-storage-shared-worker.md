@@ -115,7 +115,7 @@ When you know that you only ever create your RxDatabase inside of the shared wor
 
 ## Replication with SharedWorker
 
-When a SharedWorker RxStorage is used, it is recommended to run the replication **inside** of the worker. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there.
+When a SharedWorker RxStorage is used, it is recommended to run the replication **inside** of the worker. This is the best option for performance. You can do that by opening another [RxDatabase](./rx-database.md) inside of it and starting the replication there. If you are not concerned about performance, you can still start replication on the main thread instead. But you should never run replication on both the main thread **and** the worker.
 
 ```ts
 // shared-worker.ts
