@@ -213,3 +213,7 @@ Also the `migrationState.$` events are emitted between browser tabs.
 If you use any of the [RxReplication](./replication.md) plugins, the migration will also run on the internal replication-state storage. It will migrate all `assumedMasterState` documents
 so that after the migration is done, you do not have to re-run the replication from scratch.
 RxDB assumes that you run the exact same migration on the servers and the clients. Notice that the replication `pull-checkpoint` will not be migrated. Your backend must be compatible with pull-checkpoints of older versions.
+
+## Migration should be run on all database instances
+
+If you have multiple database instances (for example, if you are running replication inside of a [Worker](./rx-storage-worker.md) or [SharedWorker](./rx-storage-shared-worker.md) and have created a database instance inside of the worker), schema migration should be started on all database instances. All instances must know about all migration strategies and any updated schema versions.
