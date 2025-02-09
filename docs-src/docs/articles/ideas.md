@@ -15,30 +15,18 @@ X- "react-native encryption"
 X- "vue database"
 X- "jquery database"
 X- "vue indexeddb"
+X- "firebase alternative"
+X- "firestore alternative" 
 
-- "firebase alternative"
-- "firestore alternative" 
 - "supabase alternative"
 - "reactjs storage"
-
-
 - "store local storage"
-
 - "react localstorage"
-
 - "react-native storage"
-
-
 - "local database"
-
 - "ionic storage"
-
 - "supabase offline"
 - "offline database"
-
 - "store array in localstorage", "localStorage array of objects"
-
-
 - "real time web apps"
-
 - "reactive database"

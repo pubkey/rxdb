@@ -474,6 +474,7 @@ const sidebars = {
         'articles/frontend-database',
         'articles/in-memory-nosql-database',
         'articles/ionic-database',
+        'articles/ionic-storage',
         'articles/json-database',
         'articles/websockets-sse-polling-webrtc-webtransport',
         'articles/localstorage',

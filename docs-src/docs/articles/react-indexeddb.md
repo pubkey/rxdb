@@ -242,7 +242,7 @@ While IndexedDB is powerful, it has some inherent limitations:
 Depending on your application's requirements, there are [alternative storage solutions](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md) to consider:
 
 - **Origin Private File System (OPFS)**: A newer API that can offer better performance. RxDB supports OPFS as well. More info: [RxDB OPFS Storage](../rx-storage-opfs.md)
-- **SQLite**: Ideal for React applications on Capacitor or [Ionic](./ionic-database.md), offering native performance. Explore: [RxDB SQLite Storage](../rx-storage-sqlite.md)
+- **SQLite**: Ideal for React applications on Capacitor or [Ionic](./ionic-storage.md), offering native performance. Explore: [RxDB SQLite Storage](../rx-storage-sqlite.md)
 
 
 ## Performance comparison with other browser storages
