@@ -30,7 +30,7 @@ When building **Ionic** apps, developers face the challenge of choosing a robust
 [Offline functionality](../offline-first.md) is crucial for modern mobile applications, particularly when devices encounter unreliable or slow networks. RxDB stores all data **locally** so your Ionic app can run seamlessly without needing a continuous internet connection. When a network is available again, RxDB automatically synchronizes changes with your backend - no extra code required.
 
 ### 2. Powerful Encryption
-Securing on-device data is paramount when handling sensitive information. RxDB includes [encryption plugins](./encryption.html) that let you:
+Securing on-device data is paramount when handling sensitive information. RxDB includes [encryption plugins](../encryption.html) that let you:
 - **Encrypt** data fields at rest with AES  
 - Invalidate data access by simply withholding the password  
 - Keep your users' data confidential, even if the device is stolen  
@@ -38,7 +38,7 @@ Securing on-device data is paramount when handling sensitive information. RxDB i
 This built-in encryption sets RxDB apart from many other Ionic storage options that lack integrated security.
 
 ### 3. Built-In Data Compression
-Large or repetitive data can significantly slow down devices with minimal memory. RxDB's [key-compression](./key-compression.md) feature decreases document size stored on the device, improving overall performance by:
+Large or repetitive data can significantly slow down devices with minimal memory. RxDB's [key-compression](../key-compression.md) feature decreases document size stored on the device, improving overall performance by:
 - Reducing disk usage  
 - Accelerating queries  
 - Minimizing network overhead when syncing  
