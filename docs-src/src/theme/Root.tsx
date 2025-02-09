@@ -112,11 +112,11 @@ const callToActions: CallToActionItem[] = [
 
 const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 60 * 10; // 10 minutes
 // const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 10; // 10 seconds
-function getPopupPeriod() {
-    const now = new Date().getTime();
-    const period = now - (now % POPUP_DISABLED_IF_CLOSED_TIME);
-    return 'notification_popup_closed_at_period_' + period;
-}
+// function getPopupPeriod() {
+//     const now = new Date().getTime();
+//     const period = now - (now % POPUP_DISABLED_IF_CLOSED_TIME);
+//     return 'notification_popup_closed_at_period_' + period;
+// }
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
@@ -154,8 +154,8 @@ export default function Root({ children }) {
                  * we do not show it again for the POPUP_DISABLED_IF_CLOSED_TIME
                  * to ensure it does not annoy people.
                  */
-                const alreadyClosedThisPeriod = localStorage.getItem(getPopupPeriod());
-                if (alreadyClosedThisPeriod) {
+                const closedAt = localStorage.getItem('notification_popup_closed_at');
+                if (closedAt && Date.now() - Number(closedAt) < POPUP_DISABLED_IF_CLOSED_TIME) {
                     return null;
                 }
 
@@ -191,7 +191,7 @@ export default function Root({ children }) {
     function closePopup() {
         setShowPopup(undefined);
         document.title = document.title.replace(DOC_TITLE_PREFIX, '');
-        localStorage.setItem(getPopupPeriod(), '1');
+        localStorage.setItem('notification_popup_closed_at', Date.now().toString());
     }
     return <>
         {children}
