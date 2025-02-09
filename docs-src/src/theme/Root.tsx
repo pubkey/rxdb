@@ -111,12 +111,6 @@ const callToActions: CallToActionItem[] = [
 
 
 const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 60 * 10; // 10 minutes
-// const POPUP_DISABLED_IF_CLOSED_TIME = 1000 * 10; // 10 seconds
-// function getPopupPeriod() {
-//     const now = new Date().getTime();
-//     const period = now - (now % POPUP_DISABLED_IF_CLOSED_TIME);
-//     return 'notification_popup_closed_at_period_' + period;
-// }
 
 // Default implementation, that you can customize
 export default function Root({ children }) {
