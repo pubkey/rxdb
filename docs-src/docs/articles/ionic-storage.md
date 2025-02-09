@@ -23,6 +23,7 @@ When building **Ionic** apps, developers face the challenge of choosing a robust
     </a>
 </center>
 <br />
+
 ## Why RxDB for Ionic Storage?
 
 ### 1. Offline-Ready NoSQL Storage
