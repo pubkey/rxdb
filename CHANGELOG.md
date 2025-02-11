@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 16.6.1 (9 February 2025)
+
 ### 16.6.0 (7 February 2025)
 
 - FIX FilesystemNode storage imported stuff from the IndexedDB storage which could break builds.
