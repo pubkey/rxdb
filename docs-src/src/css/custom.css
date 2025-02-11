@@ -887,10 +887,14 @@ body {
 }
 
 .block.first.hero .hero-action {
-    display: inline-block;
+    display: inline-grid;
     margin-right: 10px;
+    text-align: center;
 }
 
+.block.first.hero .hero-action .buy-option-action:hover {
+    text-decoration: underline;
+}
 @media (max-width: 900px) {
     .block.first.hero .hero-action {
         width: 98%;

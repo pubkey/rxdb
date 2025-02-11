@@ -10,13 +10,13 @@
 ## Seo keywords:
 
 X- "optimistic ui"
-X- "local database"
+X- "local database" (rddt done)
 X- "react-native encryption"
-X- "vue database"
+X- "vue database" (rddt done)
 X- "jquery database"
 X- "vue indexeddb"
-X- "firebase alternative"
-X- "firestore alternative" 
+X- "firebase realtime database alternative"
+X- "firestore alternative" (rddt done)
 X- "ionic storage"
 
 - "supabase alternative"

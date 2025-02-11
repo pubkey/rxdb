@@ -24,7 +24,7 @@ export type FormValueDocData = {
     price?: number;
     formSubmitted: boolean;
 };
-export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
+export const FORM_VALUE_DOCUMENT_ID = 'premium-price-form';
 
 
 export const TEAM_SIZES = [
@@ -243,15 +243,18 @@ export default function Premium() {
                                 RxDB <b className="underline">Premium</b>
                             </h2>
 
-
                             <p style={{ width: '80%' }}>
+                                RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
+                                They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, a smaller build size, flexible storage engines, secure encryption and other features.
+                            </p>
+                            {/* <p style={{ width: '80%' }}>
                                 While most of RxDB is <b>open source</b>, RxDB's Premium plugins offer advanced features and performance improvements designed for businesses and professionals.
                                 They are ideal for commercial or critical projects, providing <a href="/rx-storage-performance.html" target="_blank">better performance</a>, flexible storage engines,
                                 {' '}<a href="https://rxdb.info/encryption.html" target="_blank">secure encryption</a> and other features.
                             </p>
                             <p style={{ width: '80%' }}>
                                 By purchasing these plugins, you get powerful tools while supporting RxDB's long-term development.
-                            </p>
+                            </p> */}
                         </div>
                     </div>
 
@@ -710,27 +713,22 @@ export default function Premium() {
                                 that RxDB is a <b>future proof</b> tech stack to build on which lets
                                 RxDB stand out compared to similar technologies.
                             </details> */}
-                            {/* <details>
-                                <summary>Why is there no free trial period?</summary>
+                            <details>
+                                <summary>Can I get a free trial period?</summary>
                                 <ul>
                                     <li>
-                                        RxDB is written in JavaScript and the code of the Premium Plugins
-                                        does not contain any tracking or measurement code that would send
-                                        information from your application to our servers in production mode.
-                                        As soon as someone has the code on his computer, the maintainer has
-                                        no chance to really ensure that after a free trial period the code
-                                        is no longer used and deleted.
+                                        We do not currently offer a free trial. Instead, we encourage you to
+                                        explore RxDB's open-source core to evaluate the technology before
+                                        purchasing the Premium Plugins.
                                     </li>
                                     <li>
-                                        Before you can use the Premium Plugins you have to debate and sign a
-                                        license agreement with the maintainer. This is a sophisticated
-                                        process that creates overhead which distracts the maintainer from
-                                        writing RxDB code. So handling trial period users is just not
-                                        manageable. For this reason there is also no monthly subscriptions.
-                                        Premium access must be paid <b>per year</b>.
+                                        Access to the Premium Plugins requires a signed licensing agreement,
+                                        which safeguards both parties but also adds administrative overhead.
+                                        For this reason, we cannot offer free trials or monthly subscriptions;
+                                        Premium licenses are provided on an <b>annual basis</b>.
                                     </li>
                                 </ul>
-                            </details> */}
+                            </details>
                             {/* <details>
                                 <summary>Why is it not cheaper?</summary>
                                 The price of the Premium Plugins is chosen in way that ensures that

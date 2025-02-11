@@ -399,6 +399,15 @@ export default function Home(props: {
                     >
                       Get Started For Free &#x27A4;<br />
                     </a>
+                    <a
+                      href="/premium/"
+                      onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4, false)}
+                    >
+                      <div className="buy-option-action">
+                        (Get Premium)
+                      </div>
+                    </a>
+
                   </div>
 
                   {/* <div className="hero-action">
