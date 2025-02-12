@@ -214,7 +214,8 @@ export function replicateFirestore<RxDocType>(
             },
             batchSize: ensureNotFalsy(options.pull).batchSize,
             modifier: ensureNotFalsy(options.pull).modifier,
-            stream$: pullStream$.asObservable()
+            stream$: pullStream$.asObservable(),
+            initialCheckpoint: options.pull.initialCheckpoint
         };
     }
 
