@@ -15,9 +15,9 @@ X- "react-native encryption"
 X- "vue database" (rddt done)
 X- "jquery database"
 X- "vue indexeddb"
-X- "firebase realtime database alternative"
+X- "firebase realtime database alternative" (rddt done)
 X- "firestore alternative" (rddt done)
-X- "ionic storage"
+X- "ionic storage" (rddt done)
 
 - "supabase alternative"
 - "reactjs storage"
