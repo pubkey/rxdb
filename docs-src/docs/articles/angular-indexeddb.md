@@ -19,7 +19,7 @@ In modern web applications, offline capabilities and fast interactions are cruci
 
 - [Offline-First / Local-First](../offline-first.md): If your app needs to function with limited or no internet connectivity, IndexedDB provides a reliable local storage layer. Users can continue using the application offline, and data can sync when the connection is restored.
 
-- **Performance**: Local data access comes with near-zero latency, removing the need for constant server requests and eliminating most loading spinners.
+- **Performance**: Local data access comes with [near-zero latency](./zero-latency-local-first.md), removing the need for constant server requests and eliminating most loading spinners.
 
 - **Easier to Implement**: By replicating all necessary data to the client once, you avoid implementing numerous backend endpoints for each user interaction.
 

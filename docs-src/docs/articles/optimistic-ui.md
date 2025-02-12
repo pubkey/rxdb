@@ -14,7 +14,7 @@ An **Optimistic User Interface (UI)** is a design pattern that provides instant 
 Optimistic UIs offer a host of advantages, from improving the user experience to streamlining the underlying infrastructure. Below are some key reasons why an optimistic approach can revolutionize your application's performance and scalability.
 
 ### Better User Experience with Optimistic UI
-- **No loading spinners, near-zero latency**: Users perceive their actions as instant. Any actual network delays or slow server operations can be handled behind the scenes.
+- **No loading spinners, [near-zero latency](./zero-latency-local-first.md)**: Users perceive their actions as instant. Any actual network delays or slow server operations can be handled behind the scenes.
 - **Offline capability**: Optimistic UI pairs perfectly with offline-first apps. Users can continue to interact with the application even when offline, and changes will be synced automatically once the network is available again.
 
 <p align="center">

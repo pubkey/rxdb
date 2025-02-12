@@ -37,7 +37,7 @@ The FlexSearch-based plugin allows for [sophisticated search queries](https://gi
 
 6. Offline-First Support and Privacy
 
-As RxDB is designed with [offline-first applications](./offline-first.md) in mind, the fulltext search plugin supports this paradigm by ensuring that all search operations can be performed offline. This is crucial for applications that need to function in environments with intermittent or no internet connectivity, offering users a consistent and reliable search experience with zero latency.
+As RxDB is designed with [offline-first applications](./offline-first.md) in mind, the fulltext search plugin supports this paradigm by ensuring that all search operations can be performed offline. This is crucial for applications that need to function in environments with intermittent or no internet connectivity, offering users a consistent and reliable search experience with [zero latency](./articles/zero-latency-local-first.md).
 
 ## Using the RxDB Fulltext Search
 

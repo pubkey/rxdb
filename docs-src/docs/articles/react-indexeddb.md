@@ -24,7 +24,7 @@ Building robust, [offline-capable](../offline-first.md) React applications often
 When building React applications, IndexedDB can play a crucial role in enhancing both performance and user experience. Here are some reasons to consider using IndexedDB:
 
 - **Offline-First / Local-First**: By storing data locally, your application remains functional even without an internet connection.
-- **Performance**: Using local data means zero latency and no loading spinners, as data doesn't need to be fetched over a network.
+- **Performance**: Using local data means [zero latency](./zero-latency-local-first.md) and no loading spinners, as data doesn't need to be fetched over a network.
 - **Easier Implementation**: Replicating all data to the client once is often simpler than implementing multiple endpoints for each user interaction.
 - **Scalability**: Local data reduces server load because queries run on the client side, decreasing server bandwidth and processing requirements.
 

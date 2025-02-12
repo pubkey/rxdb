@@ -494,6 +494,8 @@ const sidebars = {
         'articles/jquery-database',
         'articles/firestore-alternative',
         'articles/firebase-realtime-database-alternative',
+        'articles/offline-database',
+        'articles/zero-latency-local-first',
       ],
     },
     'contribute',
