@@ -9,9 +9,9 @@ description: Discover how RxDB serves as a powerful offline database, offering r
 When building modern applications, a reliable **offline database** can make all the difference. Users need fast, uninterrupted access to data, even without an internet connection, and they need that data to stay secure. **RxDB** meets these requirements by providing a **local-first** architecture, **real-time sync** to any backend, and optional **encryption** for sensitive fields.
 
 In this article, we'll cover:
-- Why an **offline database** approach significantly improves user experience  
-- How RxDB’s **sync** and **encryption** features work  
-- Step-by-step guidance on getting started  
+- Why an **offline database** approach significantly improves user experience
+- How RxDB’s **sync** and **encryption** features work
+- Step-by-step guidance on getting started
 
 ---
 
@@ -53,16 +53,16 @@ Typical apps require numerous REST endpoints and possibly a client-side state ma
 
 **RxDB (Reactive Database)** is a **NoSQL** JavaScript database that lives entirely in your client environment. It’s optimized for:
 
-- **Offline-first usage**  
-- **Reactive queries** (your UI updates in real time)  
-- **Flexible replication** with various backends  
-- **Field-level encryption** to protect sensitive data  
+- **Offline-first usage**
+- **Reactive queries** (your UI updates in real time)
+- **Flexible replication** with various backends
+- **Field-level encryption** to protect sensitive data
 
 You can run RxDB in:
-- **Browsers** ([IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md))  
-- **Mobile hybrid apps** ([Ionic](./ionic-database.md), [Capacitor](../capacitor-database.md))  
-- **Native modules** ([React Native](../react-native-database.md))  
-- **Desktop environments** ([Electron](../electron-database.md))  
+- **Browsers** ([IndexedDB](../rx-storage-indexeddb.md), [OPFS](../rx-storage-opfs.md))
+- **Mobile hybrid apps** ([Ionic](./ionic-database.md), [Capacitor](../capacitor-database.md))
+- **Native modules** ([React Native](../react-native-database.md))
+- **Desktop environments** ([Electron](../electron-database.md))
 - **Node.js** [Servers](../rx-server.md) or Scripts 
 
 Wherever your JavaScript executes, RxDB can serve as a robust offline database.
@@ -121,11 +121,11 @@ Now the `tasks` collection is ready to store data offline. You could also [repli
 RxDB uses a [replication protocol](../replication.md) that pushes local changes to the server and pulls remote updates back down. This ensures local data is always fresh and that the server has the latest offline edits once the device reconnects.
 
 **Multiple Plugins** exist to handle various backends or replication methods:
-- [CouchDB](../replication-couchdb.md) or **PouchDB**  
-- [Google Firestore](./firestore-alternative.md)  
-- [GraphQL](../replication-graphql.md) endpoints  
-- REST / [HTTP](../replication-http.md)  
-- **WebSocket** or [WebRTC](../replication-webrtc.md) (for peer-to-peer sync)  
+- [CouchDB](../replication-couchdb.md) or **PouchDB**
+- [Google Firestore](./firestore-alternative.md)
+- [GraphQL](../replication-graphql.md) endpoints
+- REST / [HTTP](../replication-http.md)
+- **WebSocket** or [WebRTC](../replication-webrtc.md) (for peer-to-peer sync)
 
 You pick the plugin that fits your stack, and RxDB handles everything from conflict detection to event emission, allowing you to focus on building your user-facing features.
 
@@ -202,16 +202,16 @@ RxDB transforms how you build and scale apps—no more loading spinners, no more
 
 Continue your learning path:
 
-- **Explore the RxDB Ecosystem**  
+- **Explore the RxDB Ecosystem**
   Dive into additional features like [Compression](../key-compression.md) or advanced [Conflict Handling](../transactions-conflicts-revisions.md#custom-conflict-handler) to optimize your offline database.
 
-- **Learn More About Offline-First**  
+- **Learn More About Offline-First**
   Read our [Offline First documentation](../offline-first.md) for a deeper understanding of why local-first architectures improve user experience and reduce server load.
 
-- **Join the Community**  
+- **Join the Community**
   Have questions or feedback? Connect with us on the [RxDB Chat](/chat/) or open an issue on [GitHub](/code/).
 
-- **Upgrade to Premium**  
+- **Upgrade to Premium**
   If you need high-performance features—like [SQLite storage](../rx-storage-sqlite.md) for mobile or the [Web Crypto-based encryption plugin](/premium/)—consider our premium offerings.
 
 By adopting an offline database approach with RxDB, you unlock speed, reliability, and security for your applications—leading to a truly seamless user experience.

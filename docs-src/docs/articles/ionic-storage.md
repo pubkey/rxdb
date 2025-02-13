@@ -9,10 +9,10 @@ description: The best Ionic storage solution? RxDB empowers your hybrid apps wit
 
 
 When building **Ionic** apps, developers face the challenge of choosing a robust **Ionic storage** mechanism that supports:
-- **Offline-First** usage  
-- **Data Encryption** to protect sensitive content  
-- **Compression** to reduce storage usage and improve performance  
-- **Seamless Sync** with any backend for real-time updates  
+- **Offline-First** usage
+- **Data Encryption** to protect sensitive content
+- **Compression** to reduce storage usage and improve performance
+- **Seamless Sync** with any backend for real-time updates
 
 [RxDB](https://rxdb.info/) (Reactive Database) offers all these features in a single, local-first database solution tailored to **Ionic** and other hybrid frameworks. Keep reading to learn how RxDB solves the most common storage pitfalls in hybrid app development while providing unmatched flexibility.
 
@@ -31,17 +31,17 @@ When building **Ionic** apps, developers face the challenge of choosing a robust
 
 ### 2. Powerful Encryption
 Securing on-device data is paramount when handling sensitive information. RxDB includes [encryption plugins](../encryption.html) that let you:
-- **Encrypt** data fields at rest with AES  
-- Invalidate data access by simply withholding the password  
-- Keep your users' data confidential, even if the device is stolen  
+- **Encrypt** data fields at rest with AES
+- Invalidate data access by simply withholding the password
+- Keep your users' data confidential, even if the device is stolen
 
 This built-in encryption sets RxDB apart from many other Ionic storage options that lack integrated security.
 
 ### 3. Built-In Data Compression
 Large or repetitive data can significantly slow down devices with minimal memory. RxDB's [key-compression](../key-compression.md) feature decreases document size stored on the device, improving overall performance by:
-- Reducing disk usage  
-- Accelerating queries  
-- Minimizing network overhead when syncing  
+- Reducing disk usage
+- Accelerating queries
+- Minimizing network overhead when syncing
 
 ### 4. Real-Time Sync & Conflict Handling
 In addition to functioning fully offline, RxDB supports advanced [replication](../replication.md) options. Your Ionic app can instantly sync updates with any backend ([CouchDB](../replication-couchdb.md), [Firestore](../replication-firestore.md), [GraphQL](../replication-graphql.md), or [custom REST](../replication-http.md)), maintaining a [real-time](./realtime-database.md) user experience. Plus, RxDB handles [conflicts](../transactions-conflicts-revisions.md) gracefully - meaning less worry about clashing user edits.
