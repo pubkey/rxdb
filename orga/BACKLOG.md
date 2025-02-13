@@ -24,6 +24,10 @@ See [#494](https://github.com/pubkey/rxdb/issues/494)
 
 See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 
+## Use the `<Steps>` component for the docs
+
+See here: https://versedb.jedi-studio.com/docs/introduction
+
 ## refactor middleware to not be based on side effects
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
