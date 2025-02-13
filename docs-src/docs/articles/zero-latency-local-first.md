@@ -29,7 +29,7 @@ In a traditional architecture, each user action triggers requests to a server fo
 
 ## RxDB: Your Key to Zero-Latency Local First Apps
 
-**RxDB** is a JavaScript-based NoSQL database designed for offline-first and real-time replication scenarios. It supports a range of environments - browsers (IndexedDB or OPFS), mobile ([Ionic](./ionic-storage.mdoni), [React Native](../react-native-database.md)), [Electron](../electron-database.md), Node.js - and is built around:
+**RxDB** is a JavaScript-based NoSQL database designed for offline-first and real-time replication scenarios. It supports a range of environments - browsers (IndexedDB or OPFS), mobile ([Ionic](./ionic-storage.md), [React Native](../react-native-database.md)), [Electron](../electron-database.md), Node.js - and is built around:
 
 - **Reactive Queries** that trigger UI updates upon data changes
 - **Schema-based NoSQL Documents** for flexible but robust data models
@@ -127,7 +127,7 @@ This replication seamlessly merges server-side and client-side changes. Your app
 
 ### Optimistic UI on Local Data Changes
 
-A local first approach, especially with RxDB, naturally supports an [optimistic UI](./optimistic-ui.md) pattern. Because writes occur on the client, you can instantly reflect changes in the interface as soon as the user performs an action - no need to wait for server confirmation. For example, when a user updates a task document to done: true, the UI can re-render immediately with that new state. This even works accross multiple browser tabs.
+A local first approach, especially with RxDB, naturally supports an [optimistic UI](./optimistic-ui.md) pattern. Because writes occur on the client, you can instantly reflect changes in the interface as soon as the user performs an action - no need to wait for server confirmation. For example, when a user updates a task document to done: true, the UI can re-render immediately with that new state. This even works across multiple browser tabs.
 
 <p align="center">
   <img src="/files/multiwindow.gif" alt="RxDB multi tab" width="450" />
@@ -216,7 +216,7 @@ RxDB's storage layer is swappable, so you can pick the optimal adapter for each 
 - [SQLite](../rx-storage-sqlite.md) for mobile or desktop environments via the premium plugin, offering native-like speed on Android, iOS, or Electron.
 - [In-Memory](../rx-storage-memory.md) for tests or ephemeral data.
 
-By choosing a suitable storage layer, you can adapt your zero-latency local first design to any runtime - web, [mobile](./mobile-database.md), or server-like contexts in [Node.js](../nodejs-database.mdo).
+By choosing a suitable storage layer, you can adapt your zero-latency local first design to any runtime - web, [mobile](./mobile-database.md), or server-like contexts in [Node.js](../nodejs-database.md).
 
 
 ## Performance Considerations
