@@ -123,7 +123,9 @@ const replicationPool = await replicateWebRTC(
         collection: myRxCollection,
         // The topic is like a 'room-name'. All clients with the same topic
         // will replicate with each other. In most cases you want to use
-        // a different topic string per user.
+        // a different topic string per user. Also you should prefix the topic with
+        // a unique identifier for your app, to ensure you do not let your users connect
+        // with other apps that also use the RxDB P2P Replication.
         topic: 'my-users-pool',
         /**
          * You need a collection handler to be able to create WebRTC connections.
