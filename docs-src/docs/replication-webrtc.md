@@ -120,7 +120,9 @@ As options you have to provide a `topic` and a connection handler function that 
 ```ts
 const replicationPool = await replicateWebRTC(
     {
-        collection: myRxCollection,
+        // Start the replication for a single collection
+        collection: db.todos,
+
         // The topic is like a 'room-name'. All clients with the same topic
         // will replicate with each other. In most cases you want to use
         // a different topic string per user. Also you should prefix the topic with
