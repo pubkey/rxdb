@@ -115,7 +115,7 @@ import {
 
 To start the replication you have to call `replicateWebRTC` on the [collection](./rx-collection.md).
 
-As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library.
+As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library and comes shipped with RxDB.
 
 ```ts
 const replicationPool = await replicateWebRTC(
