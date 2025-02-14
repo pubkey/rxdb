@@ -142,6 +142,7 @@ const replicationPool = await replicateWebRTC(
             // only in Node.js, we need the wrtc library
             // because Node.js does not contain the WebRTC API.
             wrtc: require('node-datachannel/polyfill'),
+
             // only in Node.js, we need the WebSocket library
             // because Node.js does not contain the WebSocket API.
             webSocketConstructor: require('ws').WebSocket
