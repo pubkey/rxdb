@@ -10,11 +10,18 @@ import {Steps} from '@site/src/components/steps';
 
 WebRTC P2P data connections are revolutionizing real-time web and mobile development by **eliminating central servers** in scenarios where clients can communicate directly. With the **RxDB** [replication protocol](./replication.md), you can sync your local database state across multiple browsers or devices via **WebRTC P2P (Peer-to-Peer)** connections, ensuring scalable, secure, and **low-latency** data flows without traditional server bottlenecks.
 
+
 ## What is WebRTC?
 
 [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) stands for Web [Real-Time](./articles/realtime-database.md) Communication. It is an open standard that enables browsers and native apps to exchange audio, video, or **arbitrary data** directly between peers, bypassing a central server after the initial connection is established. WebRTC uses NAT traversal techniques like [ICE](https://developer.liveswitch.io/liveswitch-server/guides/what-are-stun-turn-and-ice.html) (Interactive Connectivity Establishment) to punch through firewalls and establish direct links. This peer-to-peer nature drastically reduces latency while maintaining **high security** and **end-to-end encryption** capabilities.
 
 For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, you can read our [comprehensive overview](./articles/websockets-sse-polling-webrtc-webtransport.md). While WebSockets or WebTransport often work in client-server contexts, WebRTC offers direct peer-to-peer connections ideal for fully decentralized data flows.
+
+<center>
+    <a href="https://webrtc.org/" target="_blank">
+        <img src="/files/icons/webrtc.svg" alt="WebRTC" width="80" />
+    </a>
+</center>
 
 ## Benefits of P2P Sync with WebRTC Compared to Client-Server Architecture
 

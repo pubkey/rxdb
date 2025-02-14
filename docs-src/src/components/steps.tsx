@@ -1,7 +1,7 @@
 /**
  * @link https://chatgpt.com/c/67af1c3a-4d98-8005-a86c-8f9b4192b519
  */
-export function Steps(props: { children: JSX.Element[] }) {
+export function Steps(props: { children: JSX.Element[]; }) {
     const steps = [];
     let currentStep = null;
 
