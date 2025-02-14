@@ -4,6 +4,8 @@ slug: quickstart.html
 description: Learn how to build a realtime app with RxDB. Follow this quickstart for setup, schema creation, data operations, and real-time syncing.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # RxDB Quickstart
 
 Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-time app with the RxDB database that is able to store and query data persistently in a browser and does realtime updates to the UI on changes.
@@ -14,14 +16,17 @@ Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-tim
     </a>
 </center>
 
-### 1. Installation
+
+<Steps>
+
+### Installation
 Install the RxDB library and the RxJS dependency:
  
 ```bash
 npm install rxdb rxjs
 ```
 
-### 2. Import 
+### Import 
 Import RxDB and the dev-mode plugin, the Dexie-based storage (IndexedDB) and a schema validator:
 
 ```ts
@@ -32,7 +37,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 ```
 
 
-### 3. Dev-Mode
+### Dev-Mode
 
 When you use RxDB in development, you should always enable the [dev-mode plugin](./dev-mode.md), which adds helpful checks and validations, and tells you if you do something wrong.
 
@@ -41,7 +46,7 @@ addRxPlugin(RxDBDevModePlugin);
 ```
 
 
-### 4. Create a Database
+### Create a Database
 
 For the database, here we use the [RxDB Dexie Storage](./rx-storage-dexie.md) that stores data inside of IndexedDB in a browser. For other JavaScript runtimes, you would not use the dexie storage but one of the other [RxDB Storages](./rx-storage.md).
 
@@ -54,7 +59,7 @@ const myDatabase = await createRxDatabase({
 });
 ```
 
-### 5. Add a Collection
+### Add a Collection
 
 An RxDatabase contains [RxCollection](./rx-collection.md)s for storing and querying data. A collection is similar to an SQL table, and individual records are stored in the collection as JSON documents. An [RxDatabase](./rx-database.md) can have as many collections as you need.
 Add a collection with a [schema](./rx-schema.md) to the database:
@@ -90,7 +95,7 @@ await myDatabase.addCollections({
 });
 ```
 
-### 6. Insert a document
+### Insert a document
 
 Now that we have an RxCollection we can store some [documents](./rx-document.md) in it.
 
@@ -103,7 +108,7 @@ const myDocument = await myDatabase.todos.insert({
 });
 ```
 
-### 7. Run a Query
+### Run a Query
 
 Execute a [query](./rx-query.md) that returns all found documents once:
 
@@ -118,7 +123,7 @@ const foundDocuments = await myDatabase.todos.find({
 ```
 
 
-### 8. Update a Document
+### Update a Document
 
 In the first found document, set `done` to `true`:
 
@@ -129,7 +134,7 @@ await firstDocument.patch({
 });
 ```
 
-### 9. Delete a document
+### Delete a document
 
 Delete the document so that it can no longer be found in queries:
 
@@ -137,7 +142,7 @@ Delete the document so that it can no longer be found in queries:
 await firstDocument.remove();
 ```
 
-### 10. Observe a Query
+### Observe a Query
 
 Subscribe to data changes so that your UI is always up-to-date with the data stored on disk. RxDB allows you to subscribe to data changes even when the change happens in another part of your application, another browser tab, or during database [replication/synchronization](./replication.md):
 
@@ -155,7 +160,7 @@ observable.subscribe(notDoneDocs => {
 });
 ```
 
-### 11. Observe a Document value
+### Observe a Document value
 
 You can also subscribe to the fields of a single RxDocument. Add the `$` sign to the desired field and then subscribe to the returned observable.
 
@@ -166,7 +171,7 @@ myDocument.done$.subscribe(isDone => {
 ```
 
 
-### 12. Start the Replication
+### Start the Replication
 
 RxDB has multiple [replication plugins](./replication.md) to replicate database state with a server.
 The easiest way to replicate data between your clients' devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything:
@@ -185,6 +190,7 @@ replicateWebRTC({
     push: {}
 })
 ```
+</Steps>
 
 
 ## Next steps

@@ -1,42 +1,107 @@
 ---
-title: P2P WebRTC Replication with RxDB
+title: WebRTC P2P Replication with RxDB - Sync Browsers and Devices
 slug: replication-webrtc.html
 description: Learn to set up peer-to-peer WebRTC replication with RxDB. Bypass central servers and enjoy secure, low-latency data sync across all clients.
 ---
 
-# Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
+import {Steps} from '@site/src/components/steps';
 
-In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
-Traditionally, the synchronization process relies on **centralized servers** to manage and distribute data. However, Peer-to-Peer (P2P) replication with [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) is changing the game by allowing data to flow **directly between clients**, eliminating the need for a central server.
+# P2P WebRTC Replication with RxDB - Sync Data between Browsers and Devices in JavaScript
 
-With the **RxDB WebRTC replication plugin** you can replicate the database state between your clients devices fully peer2peer over WebRTC.
-There is no need for a centralized server to store any of the users data like in a **master-slave** replication.
-Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
-The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simplicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
+WebRTC P2P data connections are revolutionizing real-time web and mobile development by **eliminating central servers** in scenarios where clients can communicate directly. With the **RxDB** [replication protocol](./replication.md), you can sync your local database state across multiple browsers or devices via **WebRTC P2P (Peer-to-Peer)** connections, ensuring scalable, secure, and **low-latency** data flows without traditional server bottlenecks.
 
-## Understanding P2P Replication
+## What is WebRTC?
 
-P2P replication is a paradigm shift in data synchronization. Instead of relying on a central server to manage data transfers between clients, it leverages the power of direct peer-to-peer connections. This approach offers several advantages:
+[WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) stands for Web [Real-Time](./articles/realtime-database.md) Communication. It is an open standard that enables browsers and native apps to exchange audio, video, or **arbitrary data** directly between peers, bypassing a central server after the initial connection is established. WebRTC uses NAT traversal techniques like [ICE](https://developer.liveswitch.io/liveswitch-server/guides/what-are-stun-turn-and-ice.html) (Interactive Connectivity Establishment) to punch through firewalls and establish direct links. This peer-to-peer nature drastically reduces latency while maintaining **high security** and **end-to-end encryption** capabilities.
 
-- **Reduced Latency:** With no intermediary server, data can move directly between clients, significantly reducing latency and improving real-time interactions.
-- **Improved Scalability:** P2P networks can easily scale as more clients join, without putting additional load on a central server.
-- **Enhanced Privacy:** Data remains within the client devices, reducing privacy concerns associated with centralized data storage.
+For a deeper look at comparing WebRTC with **WebSockets** and **WebTransport**, you can read our [comprehensive overview](./articles/websockets-sse-polling-webrtc-webtransport.md). While WebSockets or WebTransport often work in client-server contexts, WebRTC offers direct peer-to-peer connections ideal for fully decentralized data flows.
 
-## Using the RxDB WebRTC Replication Plugin
+## Benefits of P2P Sync with WebRTC Compared to Client-Server Architecture
 
-Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
+1. **Reduced Latency** - By skipping a central server hop, data travels directly from one client to another, minimizing round-trip times and improving responsiveness.
+2. **Scalability** - New peers can join without overloading a central infrastructure. The sync overhead increases linearly with the number of connections rather than requiring a massive server cluster.
+3. **Privacy & Ownership** - Data stays within the user’s devices, avoiding risks tied to storing data on third-party servers. This design aligns well with [local-first](./offline-first.md) or "[zero-latency](./articles/zero-latency-local-first.md)" apps.
+4. **Resilience** - In some scenarios, if the central server is unreachable, P2P connections remain operational (assuming a functioning signaling path). Apps can still replicate data among local networks like when they are in the same Wifi or LAN.
+5. **Cost Savings** - Reducing the reliance on a high-bandwidth server can cut hosting and bandwidth expenses, particularly in high-traffic or IoT-style use cases.
 
-First you have to add the plugin, then you can call `RxCollection.syncWebRTC()` to start the replication.
-As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library.
+<center>
+    <a href="https://rxdb.info/">
+        <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220" />
+    </a>
+</center>
 
-In difference to the other replication plugins, the WebRTC replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the P2P network.
+## Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
+
+Traditionally, real-time data synchronization depends on **centralized servers** to manage and distribute updates. In contrast, RxDB’s WebRTC P2P replication allows data to flow **directly** among clients, removing the server as a data store. This approach is **live** and **fully decentralized**, requiring only a [signaling server](#signaling-server) for initial discovery:
+
+- **No master-slave** concept - each peer hosts its own local RxDB.
+- Clients ([browsers](./articles/browser-database.md), devices) connect to each other via WebRTC data channels.
+- The [RxDB replication protocol](./replication.md) then handles pushing/pulling document changes across peers.
+
+Because RxDB is a NoSQL database and the replication protocol is straightforward, setting up robust P2P sync is far **easier** than orchestrating a complex client-server database architecture.
+
+## Using RxDB with the WebRTC Replication Plugin
+
+Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API). Then you can start with creating the [database](./rx-database.md) and configuring the replication:
+
+
+<Steps>
+
+### Create the Database and Collection
+
+Here we create a database with the [dexie](./rx-storage-dexie.md) based storage that stores data inside of IndexedDB in a browser. RxDB has a wide [range of storages](./rx-storage.md) for other JavaScript runtimes.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+const db = await createRxDatabase({
+  name: 'myTodoDB',
+  storage: getRxStorageDexie()
+});
+
+await db.addCollections({
+  todos: {
+    schema: {
+      title: 'todo schema',
+      version: 0,
+      type: 'object',
+      primaryKey: 'id',
+      properties: {
+        id:      { type: 'string', maxLength: 100 },
+        title:   { type: 'string' },
+        done:    { type: 'boolean', default: false },
+        created: { type: 'string', format: 'date-time' }
+      },
+      required: ['id', 'title', 'done']
+    }
+  }
+});
+
+// insert an example document
+await db.todos.insert({
+  id: 'todo-1',
+  title: 'P2P demo task',
+  done: false,
+  created: new Date().toISOString()
+});
+```
+
+### Import the WebRTC replication plugin
 
 ```ts
 import {
-    replicateWebRTC,
-    getConnectionHandlerSimplePeer
+  replicateWebRTC,
+  getConnectionHandlerSimplePeer
 } from 'rxdb/plugins/replication-webrtc';
+```
 
+### Start the P2P replication
+
+To start the replication you have to call `replicateWebRTC` on the [collection](./rx-collection.md).
+
+As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library.
+
+```ts
 const replicationPool = await replicateWebRTC(
     {
         collection: myRxCollection,
@@ -67,37 +132,29 @@ const replicationPool = await replicateWebRTC(
         push: {}
     }
 );
-replicationPool.error$.subscribe(err => { /* ... */ });
-replicationPool.cancel();
 ```
 
-### Polyfill the WebSocket and WebRTC API in Node.js
+Notice that in difference to the other [replication plugins](./replication.md), the WebRTC replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the P2P network.
 
-While all modern browsers support the WebRTC and WebSocket APIs, they is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC and WebSocket polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill) for WebRTC which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
-For the Websocket API use the `ws` package that is included into RxDB.
+### Observe Errors
+
+To ensure we log out potential errors, observe the `error$` observable of the pool.
 
 ```ts
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
-import { WebSocket } from 'ws';
-const replicationPool = await replicateWebRTC(
-    {
-        /* ... */
-        connectionHandlerCreator: getConnectionHandlerSimplePeer({
-            signalingServerUrl: 'wss://example.com:8080',
-            wrtc: nodeDatachannelPolyfill,
-            webSocketConstructor: WebSocket
-        }),
-        pull: {},
-        push: {}
-        /* ... */
-    }
-);
+replicationPool.error$.subscribe(err => console.error('WebRTC Error:', err));
 ```
+
+### Stop the Replication
+
+You can also dynamically stop the replication.
+```ts
+replicationPool.cancel();
+```
+</Steps>
 
 ## Live replications
 
 The WebRTC replication is **always live** because there can not be a one-time sync when it is always possible to have new Peers that join the connection pool. Therefore you cannot set the `live: false` option like in the other replication plugins.
-
 
 ## Signaling Server
 
@@ -148,7 +205,10 @@ const replicationPool = await replicateWebRTC(
 RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
 A **custom conflict handler** can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. [Find out more about RxDB conflict handling here](https://rxdb.info/transactions-conflicts-revisions.html)
 
-## SimplePeer requires to have `process.nextTick()`
+
+## Known problems
+
+### SimplePeer requires to have `process.nextTick()`
 
 In the browser you might not have a process variable or process.nextTick() method. But the [simple peer](https://github.com/feross/simple-peer) uses that so you have to polyfill it.
 
@@ -173,7 +233,39 @@ window.process = {
 
 ```
 
+### Polyfill the WebSocket and WebRTC API in Node.js
+
+While all modern browsers support the WebRTC and WebSocket APIs, they is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC and WebSocket polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill) for WebRTC which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
+For the Websocket API use the `ws` package that is included into RxDB.
+
+```ts
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import { WebSocket } from 'ws';
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        connectionHandlerCreator: getConnectionHandlerSimplePeer({
+            signalingServerUrl: 'wss://example.com:8080',
+            wrtc: nodeDatachannelPolyfill,
+            webSocketConstructor: WebSocket
+        }),
+        pull: {},
+        push: {}
+        /* ... */
+    }
+);
+```
+
+
 ## Storing replicated data encrypted on client device
 
 Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering **data security** and **user privacy**.
 The WebRTC replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).
+
+
+## Follow Up
+
+- **Check out the [RxDB Quickstart](./quickstart.md)** to see how to set up your first RxDB database.
+- **Explore advanced features** like [Custom Conflict Handling](./transactions-conflicts-revisions.md) or [Offline-First Performance](./rx-storage-performance.md).
+- **Try an example** at [RxDB Quickstart GitHub](https://github.com/pubkey/rxdb-quickstart) to see a working P2P Sync setup.
+- **Join the RxDB Community** on [GitHub](/code/) or [Discord](/chat/) if you have questions or want to share your P2P WebRTC experiences.

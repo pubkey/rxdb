@@ -211,7 +211,7 @@ const sidebars = {
         {
           type: 'doc',
           id: 'replication-webrtc',
-          label: 'WebRTC Replication'
+          label: 'WebRTC P2P Replication'
         },
         {
           type: 'doc',
@@ -495,7 +495,7 @@ const sidebars = {
         'articles/firestore-alternative',
         'articles/firebase-realtime-database-alternative',
         'articles/offline-database',
-        'articles/zero-latency-local-first',
+        'articles/zero-latency-local-first'
       ],
     },
     'contribute',

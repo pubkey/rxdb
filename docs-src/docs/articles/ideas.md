@@ -21,33 +21,33 @@ X- "ionic storage" (rddt done)
 X- "local database"
 X- "offline database"
 X- "zero local first"
+X- "webrtc p2p" - 390 http://localhost:3000/replication-webrtc.html
 
 - "supabase alternative"
 - "reactjs storage"
 - "store local storage"
 - "react localstorage"
 - "react-native storage"
-- "supabase offline"
+- "supabase offline" - 260
 - "store array in localstorage", "localStorage array of objects"
-- "real time web apps"
-- "reactive database"
+- "real time web apps" - 170
+- "reactive database" - 210
 - "electron sqlite"
-- "in browser database"
-- "offline first app"
+- "in browser database" - 90
+- "offline first app" - 260
 - "json based database"
-- "react native sql"
+- "react native sql" - 110
 - "sqlite electron"
 - "localstorage vs indexeddb"
-- "react native nosql database"
-- "indexeddb library"
-- "indexeddb encryption"
-- "client side database"
+- "react native nosql database" - 30
+- "indexeddb library" - 260
+- "indexeddb encryption" - 90
+- "client side database" - 140
 - "webtransport vs websocket"
-- "local first development"
+- "local first development" - 210
 - "local storage examples"
-- "local vector database"
-- "nosql json database"
-- "mobile app database"
+- "local vector database" - 590
+- "nosql json database" - 140
+- "mobile app database" - 590
 - "web based database"
-- "webrtc p2p"
 - "json vs database"
