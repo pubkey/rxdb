@@ -42,8 +42,17 @@ Because RxDB is a NoSQL database and the replication protocol is straightforward
 
 ## Using RxDB with the WebRTC Replication Plugin
 
-Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API). Then you can start with creating the [database](./rx-database.md) and configuring the replication:
+Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API). Here we build a todo-app that replicates todo-entries between clients:
 
+<center>
+    <a href="https://rxdb.info/">
+        <img src="https://github.com/pubkey/rxdb-quickstart/raw/master/files/p2p-todo-demo.gif" alt="JavaScript Embedded Database" width="500" />
+    </a>
+</center>
+
+You can find a fully build example of this at the [RxDB Quickstart Repository](https://github.com/pubkey/rxdb-quickstart) which you can also [try out online](https://pubkey.github.io/rxdb-quickstart/#room-lxyakhulzp).
+
+Four you create the [database](./rx-database.md) and then you can configure the replication:
 
 <Steps>
 
