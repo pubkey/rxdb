@@ -569,7 +569,7 @@
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
-    "terser": "5.38.2",
+    "terser": "5.39.0",
     "terser-webpack-plugin": "5.3.11",
     "ts-loader": "9.5.2",
     "typescript": "5.7.3",
