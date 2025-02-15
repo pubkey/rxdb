@@ -464,7 +464,7 @@
     "isomorphic-ws": "5.0.0",
     "js-base64": "3.7.7",
     "jsonschema-key-compression": "1.7.0",
-    "mingo": "6.4.15",
+    "mingo": "6.5.3",
     "mongodb": "6.13.0",
     "nats": "2.29.2",
     "oblivious-set": "1.4.0",
