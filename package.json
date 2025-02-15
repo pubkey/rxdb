@@ -466,7 +466,7 @@
     "jsonschema-key-compression": "1.7.0",
     "mingo": "6.4.15",
     "mongodb": "6.13.0",
-    "nats": "2.29.1",
+    "nats": "2.29.2",
     "oblivious-set": "1.4.0",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
