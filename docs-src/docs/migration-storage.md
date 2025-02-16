@@ -7,7 +7,7 @@ slug: migration-storage.html
 
 The storage migration plugin can be used to migrate all data from one existing RxStorage into another. This is useful when:
 
-- You want to migration from one [RxStorage](./rx-storage.md) to another one.
+- You want to migrate from one [RxStorage](./rx-storage.md) to another one.
 - You want to migrate to a new major RxDB version while keeping the previous saved data. This function only works from the previous major version upwards. Do not use it to migrate like rxdb v9 to v14.
 
 <!-- TODO this was inherited from PouchDB, we should remove this in the future and also migrate deleted documents. -->
@@ -15,7 +15,7 @@ The storage migration **drops deleted documents** and filters them out during th
 
 :::warning Do never change the schema while doing a storage migration
 
-When you migrate between storages, you might want to change the schema in the same process. You should never do that because it will lead to problems afterwards and might make your database in usable.
+When you migrate between storages, you might want to change the schema in the same process. You should never do that because it will lead to problems afterwards and might make your database unusable.
 
 When you also want to change your schema, first run the storage migration and afterwards run a normal [schema migration](./migration-schema.md).
 :::
@@ -32,7 +32,7 @@ import { getRxStorageDexie } from 'rxdb-old/plugins/storage-dexie';
 // create the new RxDatabase
 const db = await createRxDatabase({
     name: dbLocation,
-    storage: getRxStorageDexie(),
+    storage: getRxStorageIndexedDB(),
     multiInstance: false
 });
 
@@ -44,7 +44,7 @@ await migrateStorage({
      * new database has a different name.
      */
     oldDatabaseName: 'myOldDatabaseName',
-    oldStorage: getRxStorageIndexedDB(), // RxStorage of the old database
+    oldStorage: getRxStorageDexie(), // RxStorage of the old database
     batchSize: 500, // batch size
     parallel: false, // <- true if it should migrate all collections in parallel. False (default) if should migrate in serial
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
