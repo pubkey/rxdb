@@ -143,7 +143,8 @@ function replicateFirestore(options) {
       },
       batchSize: (0, _index.ensureNotFalsy)(options.pull).batchSize,
       modifier: (0, _index.ensureNotFalsy)(options.pull).modifier,
-      stream$: pullStream$.asObservable()
+      stream$: pullStream$.asObservable(),
+      initialCheckpoint: options.pull.initialCheckpoint
     };
   }
   var replicationPrimitivesPush;
