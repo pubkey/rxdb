@@ -14,7 +14,7 @@ export default function FooterWrapper() {
       },
       {
         label: 'Documentation',
-        href: '/quickstart.html',
+        href: '/overview.html',
       },
       {
         label: 'Discord',

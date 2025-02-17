@@ -36,7 +36,7 @@ export default function NotFoundContent({ className }) {
           <div className="ul-container">
             <ul>
               <li>
-                <a href="https://rxdb.info/quickstart.html">RxDB Documentation</a>
+                <a href="https://rxdb.info/overview.html">RxDB Documentation</a>
               </li>
               <li>
                 <a href="/chat/">RxDB Discord Channel</a>

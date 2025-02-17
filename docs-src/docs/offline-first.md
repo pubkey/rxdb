@@ -49,7 +49,7 @@ But while bandwidth has improved over the years, latency became the limiting fac
 You can always increase the bandwidth by setting up more cables or sending more Starlink satellites to space.
 But reducing the latency is not so easy. It is defined by the physical properties of the transfer medium, the speed of light and the distance to the server. All of these three are hard to optimize.
 
-Offline first application benefit from that because sending the initial state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server.
+Offline first application benefit from that because sending the initial state to the client can be done much faster with more bandwidth. And once the data is there, we do no longer have to care about the latency to the backend server because you can run near [zero](./articles/zero-latency-local-first.md) latency queries locally.
 
 <p align="center">
   <img src="./files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" />

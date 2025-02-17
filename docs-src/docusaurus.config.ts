@@ -141,7 +141,7 @@ const config: Config = {
                 //     className: 'navbar-icon-discord'
                 // },
                 {
-                    href: '/quickstart.html',
+                    href: '/overview.html',
                     label: 'Docs',
                     position: 'right',
                 },

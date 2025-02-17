@@ -23,6 +23,11 @@ const sidebars = {
       label: 'Getting Started with RxDB',
       collapsed: false,
       items: [
+        {
+          type: 'doc',
+          id: 'overview',
+          label: 'Overview'
+        },
         'quickstart',
         'install',
         'dev-mode',
