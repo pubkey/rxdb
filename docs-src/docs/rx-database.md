@@ -13,7 +13,7 @@ A RxDatabase-Object contains your collections and handles the synchronization of
 The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
 
 ```javascript
-import { createRxDatabase } from 'rxdb';
+import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const db = await createRxDatabase({

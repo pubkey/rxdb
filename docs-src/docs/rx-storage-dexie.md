@@ -4,6 +4,8 @@ slug: rx-storage-dexie.html
 description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie addons, and reliable storage for small apps or prototypes.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # RxStorage Dexie.js
 
 To store the data inside of IndexedDB in the browser, you can use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to store RxDB data in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default.
@@ -21,15 +23,22 @@ While Dexie.js RxStorage can be used for free, most professional projects should
 
 ## Usage
 
+<Steps>
+
+## Import the Dexie Storage
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+```
 
+## Create a Database
+```ts
 const db = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageDexie()
 });
 ```
+</Steps>
 
 
 ## Overwrite/Polyfill the native IndexedDB

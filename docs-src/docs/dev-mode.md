@@ -4,7 +4,7 @@ slug: dev-mode.html
 description: Enable checks & validations with RxDB Dev Mode. Ensure proper API use, readable errors, and schema validation during development. Avoid in production.
 ---
 
-
+import {Steps} from '@site/src/components/steps';
 
 # Dev Mode
 
@@ -21,11 +21,21 @@ using RxDB in development mode.
 The dev-mode plugin will increase your build size and decrease the performance. It must **always** be used in development. You should **never** use it in production.
 :::
 
+
+<Steps>
+
+### Import the dev-mode Plugin
 ```javascript
-import { addRxPlugin } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { addRxPlugin } from 'rxdb/plugins/core';
+```
+
+## Add the Plugin to RxDB
+
+```javascript
 addRxPlugin(RxDBDevModePlugin);
 ```
+</Steps>
 
 ## Usage with Node.js
 

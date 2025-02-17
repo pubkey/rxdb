@@ -4,7 +4,7 @@ slug: encryption.html
 description: Explore RxDB's 🔒 encryption plugin for enhanced data security in web and native apps, featuring password-based encryption and secure storage.
 ---
 
-
+import {Steps} from '@site/src/components/steps';
 
 # 🔒 Encrypted Local Storage with RxDB
 
@@ -59,31 +59,44 @@ RxDB currently has two plugins for encryption:
 
 An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
-- You first have to wrap your RxStorage with the encryption
-- Then use that as `RxStorage` when calling `createRxDatabase()`
-- Also you have to set a **password** when creating the database. The format of the password depends on which encryption plugin is used.
-- To define a field as being encrypted, you have to add it to the `encrypted` fields list in the schema.
+<Steps>
+
+### Wrap your RxStorage with the encryption
 
 ```ts
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-
 
 // wrap the normal storage with the encryption plugin
 const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
     storage: getRxStorageDexie()
 });
+```
 
+### Create a RxDatabase with the wrapped storage
+
+Also you have to set a **password** when creating the database. The format of the password depends on which encryption plugin is used.
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
 // create an encrypted database
 const db = await createRxDatabase({
     name: 'mydatabase',
     storage: encryptedDexieStorage,
     password: 'sudoLetMeIn'
 });
+```
+
+### Create an RxCollection with an encrypted property
+
+To define a field as being encrypted, you have to add it to the `encrypted` fields list in the schema.
 
 
+```ts
 const schema = {
-  version: 0,
+    version: 0,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -104,10 +117,12 @@ await db.addCollections({
         schema
     }
 })
-/* ... */
 ```
+</Steps>
 
-Or with the `web-crypto` [👑 premium](/premium/) plugin:
+## Using Web-Crypto API
+
+For professionals, we have the `web-crypto` [👑 premium](/premium/) plugin which is faster and more secure:
 
 ```ts
 import {

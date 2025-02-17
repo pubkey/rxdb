@@ -3,6 +3,8 @@ title: Key Compression
 slug: key-compression.html
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # Key Compression
 
 With the key compression plugin, documents will be stored in a compressed format which saves up to 40% disc space.
@@ -15,10 +17,9 @@ The compression and decompression happens internally, so when you work with a `R
 
 The key compression plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
-- You first have to wrap your RxStorage with the key compression plugin
-- Then use that as `RxStorage` when calling `createRxDatabase()`
-- Then you have to enable the key compression by adding `keyCompression: true` to your collection schema.
+<Steps>
 
+### Wrap your RxStorage with the key compression plugin
 
 ```ts
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
@@ -27,11 +28,21 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const storageWithKeyCompression = wrappedKeyCompressionStorage({
     storage: getRxStorageDexie()
 });
+```
 
+### Create an RxDatabase
+
+```ts
+import { createRxDatabase } from 'rxdb/plugins/core';
 const db = await createRxDatabase({
     name: 'mydatabase',
     storage: storageWithKeyCompression
 });
+```
+
+### Create a compressed RxCollection
+
+```ts
 
 const mySchema = {
   keyCompression: true, // set this to true, to enable the keyCompression
@@ -46,7 +57,15 @@ const mySchema = {
       /* ... */
   }
 };
-
-/* ... */
+await db.addCollections({
+    docs: {
+        schema: mySchema
+    }
+});
 ```
+
+
+
+
+</Steps>
 

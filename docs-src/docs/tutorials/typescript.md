@@ -4,6 +4,8 @@ slug: typescript.html
 description: Use RxDB with TypeScript to define typed schemas, create typed collections, and build fully typed ORM methods. A quick step-by-step guide.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # Using RxDB with TypeScript
 
 <!-- IMPORTANT: When you edit this file, apply the same changes to test/tutorials/src/typescript.ts -->
@@ -18,6 +20,8 @@ Our way to go is
 - Then define what the collections look like
 - Then define what the database looks like
 
+<Steps>
+
 ## Declare the types
 
 First you import the types from RxDB.
@@ -29,7 +33,7 @@ import {
     RxCollection,
     RxJsonSchema,
     RxDocument,
-} from 'rxdb';
+} from 'rxdb/plugins/core';
 ```
 
 
@@ -37,7 +41,7 @@ import {
 
 First we have to define the TypeScript type of the documents of a collection:
 
-### Option A: Create the document type from the schema
+**Option A**: Create the document type from the schema
 
 ```typescript
 import {
@@ -79,7 +83,7 @@ export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schema
 export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
 ```
 
-### Option B: Manually type the document type
+**Option B**: Manually type the document type
 
 ```typescript
 export type HeroDocType = {
@@ -90,7 +94,7 @@ export type HeroDocType = {
 };
 ```
 
-### Option C: Generate the document type from schema during build time
+**Option C**: Generate the document type from schema during build time
 
 If your schema is in a `.json` file or generated from somewhere else, you might generate the typings with the [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) module.
 
@@ -105,11 +109,15 @@ export type HeroDocMethods = {
 };
 ```
 
+## Create RxDocument Type
+
 We can merge these into our HeroDocument.
 
 ```typescript
 export type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
 ```
+
+## Create RxCollection Type
 
 Now we can define type for the collection which contains the documents.
 
@@ -121,9 +129,14 @@ export type HeroCollectionMethods = {
 }
 
 // and then merge all our types
-export type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
+export type HeroCollection = RxCollection<
+    HeroDocType,
+    HeroDocMethods,
+    HeroCollectionMethods
+>;
 ```
 
+## Create RxDatabase Type
 
 Before we can define the database, we make a helper-type which contains all collections of it.
 
@@ -138,6 +151,9 @@ Now the database.
 ```typescript
 export type MyDatabase = RxDatabase<MyDatabaseCollections>;
 ```
+
+</Steps>
+
 
 ## Using the types
 
