@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Fix Firestore replication ignoring initialCheckpoint [#6850](https://github.com/pubkey/rxdb/pull/6850)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

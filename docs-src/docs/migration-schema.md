@@ -131,11 +131,11 @@ messageCol.startMigration(10); // 10 is the batch-size, how many docs will run a
 const migrationState = messageCol.getMigrationState();
 
 // 'start' the observable
-migrationState.$.subscribe(
-  state => console.dir(state),
-  error => console.error(error),
-  done => console.log('done')
-);
+migrationState.$.subscribe({
+    next: state => console.dir(state),
+    error: error => console.error(error),
+    complete: () => console.log('done')
+});
 
 // the emitted states look like this:
 {
