@@ -150,7 +150,7 @@ export function getStorage(storageKey: string): RxTestStorage {
             };
             break;
         case 'foundationdb':
-            const foundationDBAPIVersion = 630;
+            const foundationDBAPIVersion = 720;
 
 
             let getStorageFnFoundation: any;
