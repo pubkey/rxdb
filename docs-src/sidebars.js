@@ -500,7 +500,8 @@ const sidebars = {
         'articles/firestore-alternative',
         'articles/firebase-realtime-database-alternative',
         'articles/offline-database',
-        'articles/zero-latency-local-first'
+        'articles/zero-latency-local-first',
+        'articles/indexeddb-max-storage-limit'
       ],
     },
     'contribute',

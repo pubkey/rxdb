@@ -156,7 +156,7 @@ Users may see changes that haven't yet been confirmed by the server. If a subseq
 The server must be capable of storing and returning revision metadata (for instance, a timestamp or versioning system). Check out RxDB's [replication docs](../replication.md) for details on how to structure your back end.
 
 - **Storage Limits**:
-Storing data in the client has practical size limits. [IndexedDB](../rx-storage-indexeddb.md) or other client-side storages have constraints (though usually quite large). See [storage comparisons](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md).
+Storing data in the client has practical [size limits](./indexeddb-max-storage-limit.md). [IndexedDB](../rx-storage-indexeddb.md) or other client-side storages have constraints (though usually quite large). See [storage comparisons](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md).
 
 
 ## Conflict Resolution Strategies

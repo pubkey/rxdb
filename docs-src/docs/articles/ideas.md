@@ -51,3 +51,9 @@ X- "webrtc p2p" - 390 http://localhost:3000/replication-webrtc.html
 - "mobile app database" - 590
 - "web based database"
 - "json vs database"
+- "livequery" - 210
+  
+- "indexeddb storage limit" - 590
+- "indexeddb size limit" - 260
+- "indexeddb max size" - 590
+- "indexeddb limits" - 170

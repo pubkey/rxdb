@@ -196,9 +196,10 @@ The fast version of OPFS with the `createSyncAccessHandle` method can **only** [
   - Firefox: 10 MB per domain
   - Safari: 4-5 MB per domain (varies slightly between versions)
 
-- **IndexedDB** does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disc space on the user's device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling `await navigator.storage.estimate()`. Typically you can store gigabytes of data which can be tried out [here](https://demo.agektmr.com/storage/).
+- **IndexedDB** does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disc space on the user's device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling `await navigator.storage.estimate()`. Typically you can store gigabytes of data which can be tried out [here](https://demo.agektmr.com/storage/). Notice that we have a full article about [storage max size limits of IndexedDB](./indexeddb-max-storage-limit.md) that covers this topic.
 
 - **OPFS** has the same storage size limitation as IndexedDB. Its limit depends on the available disc space. This can also be tested [here](https://demo.agektmr.com/storage/).
+
 
 -------------
 

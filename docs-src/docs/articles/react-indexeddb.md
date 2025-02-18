@@ -235,7 +235,7 @@ RxDB offers many advanced features that extend beyond basic data storage:
 While IndexedDB is powerful, it has some inherent limitations:
 
 - **Performance**: IndexedDB can be slow under certain conditions. Read more: [Slow IndexedDB](https://rxdb.info/slow-indexeddb.html)
-- **Storage Limits**: Browsers impose limits on how much data can be stored. See: [Browser storage limits](https://rxdb.info/articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm.html)
+- **Storage Limits**: Browsers [impose limits](./indexeddb-max-storage-limit.md) on how much data can be stored. See: [Browser storage limits](https://rxdb.info/articles/localstorage-indexeddb-cookies-opfs-sqlite-wasm.html)
 
 
 ## Alternatives to IndexedDB

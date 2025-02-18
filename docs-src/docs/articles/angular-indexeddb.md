@@ -258,7 +258,7 @@ While IndexedDB works well for many use cases, it does have a few constraints:
 
 - **Potentially Slow**: While adequate for most use cases, IndexedDB performance can degrade for very large datasets. More details at RxDB [Slow IndexedDB](../slow-indexeddb.md).
 
-- **Storage Limits**: Browsers may cap the amount of data you can store in IndexedDB. For more info, see [Local Storage Limits](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md#storage-size-limits).
+- **Storage Limits**: Browsers may cap the amount of data you can store in IndexedDB. For more info, see [Local Storage Limits of IndexedDB](./indexeddb-max-storage-limit.md).
 
 
 

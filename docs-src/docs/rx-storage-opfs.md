@@ -21,7 +21,7 @@ It is important to know that the most performant synchronous methods like [`read
 They cannot be used in the main thread, an iFrame or even a [SharedWorker](./rx-storage-shared-worker.md).
 The OPFS [`createSyncAccessHandle()`](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createSyncAccessHandle) method that gives you access to the synchronous methods is not exposed in the main thread, only in a Worker.
 
-While there is no concrete **data size limit** defined by the API, browsers will refuse to store more data at some point.
+While there is no concrete **data size limit** defined by the API, browsers will refuse to store more [data at some point](./articles/indexeddb-max-storage-limit.md).
 If no more data can be written, a `QuotaExceededError` is thrown which should be handled by the application, like showing an error message to the user.
 
 ## How the OPFS API works

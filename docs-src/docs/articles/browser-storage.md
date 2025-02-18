@@ -55,7 +55,7 @@ While browser storage, such as Localstorage and IndexedDB, offers many advantage
 
 - **Slower Performance Compared to Native Databases**: Browser-based storage solutions can't match the [performance](../rx-storage-performance.md) of native server-side databases. They may experience slower data retrieval and processing, especially for large datasets or complex operations.
 
-- **Storage Space Limitations**: Browsers impose restrictions on the amount of data that can be stored locally. This limitation can be problematic for applications with extensive data storage requirements, potentially necessitating creative solutions to manage data effectively.
+- **Storage Space Limitations**: Browsers [impose restrictions on the amount of data that can be stored locally](./indexeddb-max-storage-limit.md). This limitation can be problematic for applications with extensive data storage requirements, potentially necessitating creative solutions to manage data effectively.
 
 ## Why SQL Databases Like SQLite Aren't a Good Fit for the Browser
 SQL databases like SQLite, while powerful in server environments, may not be the best choice for browser-based applications due to various reasons:
