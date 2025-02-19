@@ -14,7 +14,6 @@ To ensure there are not multiple people working on the same task, before you sta
 
 ## Open Tasks (pick one and work on it)
 
-- Write and publish a short entry about RxDB on wikipedia.
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - Update the [foundationdb package](https://github.com/search?q=repo%3Apubkey%2Frxdb+%22npm%20install%20foundationdb%22+path%3A.github%2Fworkflows%2Fmain.yml&type=code) to the newest version while ensuring the tests still work.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
