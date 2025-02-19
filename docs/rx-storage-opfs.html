@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.bc483400.css">
-<script src="/assets/js/runtime~main.786a92ff.js" defer="defer"></script>
-<script src="/assets/js/main.64c0682a.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.68ae4ffa.js" defer="defer"></script>
+<script src="/assets/js/main.90e814da.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -27,7 +27,7 @@ OPFS is ideal for applications requiring <strong>high-performance</strong> file 
 <p>It is important to know that the most performant synchronous methods like <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileSystemSyncAccessHandle/read" target="_blank" rel="noopener noreferrer"><code>read()</code></a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileSystemSyncAccessHandle/write" target="_blank" rel="noopener noreferrer"><code>write()</code></a> of the OPFS API are <strong>only available inside of a <a href="/rx-storage-worker.html">WebWorker</a></strong>.
 They cannot be used in the main thread, an iFrame or even a <a href="/rx-storage-shared-worker.html">SharedWorker</a>.
 The OPFS <a href="https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createSyncAccessHandle" target="_blank" rel="noopener noreferrer"><code>createSyncAccessHandle()</code></a> method that gives you access to the synchronous methods is not exposed in the main thread, only in a Worker.</p>
-<p>While there is no concrete <strong>data size limit</strong> defined by the API, browsers will refuse to store more data at some point.
+<p>While there is no concrete <strong>data size limit</strong> defined by the API, browsers will refuse to store more <a href="/articles/indexeddb-max-storage-limit.html">data at some point</a>.
 If no more data can be written, a <code>QuotaExceededError</code> is thrown which should be handled by the application, like showing an error message to the user.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-the-opfs-api-works">How the OPFS API works<a href="#how-the-opfs-api-works" class="hash-link" aria-label="Direct link to How the OPFS API works" title="Direct link to How the OPFS API works">​</a></h2>
 <p>The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directories on that. Notice that whenever you <em>synchronously</em> write to, or read from a file, an <code>ArrayBuffer</code> must be used that contains the data. It is not possible to synchronously write plain strings or objects into the file. Therefore the <code>TextEncoder</code> and <code>TextDecoder</code> API must be used.</p>

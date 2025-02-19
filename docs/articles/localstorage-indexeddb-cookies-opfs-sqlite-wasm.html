@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.bc483400.css">
-<script src="/assets/js/runtime~main.786a92ff.js" defer="defer"></script>
-<script src="/assets/js/main.64c0682a.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.68ae4ffa.js" defer="defer"></script>
+<script src="/assets/js/main.90e814da.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -115,7 +115,7 @@ The fast version of OPFS with the <code>createSyncAccessHandle</code> method can
 </ul>
 </li>
 <li>
-<p><strong>IndexedDB</strong> does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disc space on the user&#x27;s device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling <code>await navigator.storage.estimate()</code>. Typically you can store gigabytes of data which can be tried out <a href="https://demo.agektmr.com/storage/" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<p><strong>IndexedDB</strong> does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disc space on the user&#x27;s device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling <code>await navigator.storage.estimate()</code>. Typically you can store gigabytes of data which can be tried out <a href="https://demo.agektmr.com/storage/" target="_blank" rel="noopener noreferrer">here</a>. Notice that we have a full article about <a href="/articles/indexeddb-max-storage-limit.html">storage max size limits of IndexedDB</a> that covers this topic.</p>
 </li>
 <li>
 <p><strong>OPFS</strong> has the same storage size limitation as IndexedDB. Its limit depends on the available disc space. This can also be tested <a href="https://demo.agektmr.com/storage/" target="_blank" rel="noopener noreferrer">here</a>.</p>
