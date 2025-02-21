@@ -25,7 +25,8 @@ Using RxDB on top of FoundationDB, gives you many benefits compare to using the 
 ## Installation
 
 - Install the [FoundationDB client cli](https://apple.github.io/foundationdb/getting-started-linux.html) which is used to communicate with the FoundationDB cluster.
-- Install the [FoundationDB node bindings npm module](https://www.npmjs.com/package/foundationdb) via `npm install foundationdb --save`. If the latest version does not work for you, you should use the same version as stated in the `storage-foundationdb` job of the RxDB CI `main.yml`.
+- Install the [FoundationDB node bindings npm module](https://www.npmjs.com/package/foundationdb) via `npm install foundationdb`. This will install `v2.x.x`, which is only compatible with FoundationDB server and client `v7.3.x` (which is the only version currently maintained by the FoundationDB team). If you need to use an older version (e.g. `7.1.x` or `6.3.x`), you should run `npm install foundationdb@1.1.4` (though this might only work with `v6.3.x`).
+- Due to an outstanding bug in node foundationdb, you will need to specify an `apiVersion` of `720` even though you are using `730`. When [this PR](https://github.com/josephg/node-foundationdb/pull/86) is merged, you will be able to use `730`.
 
 
 ## Usage
@@ -45,9 +46,9 @@ const db = await createRxDatabase({
          * Version of the API of the FoundationDB cluster..
          * FoundationDB is backwards compatible across a wide range of versions,
          * so you have to specify the api version.
-         * If in doubt, set it to 620.
+         * If in doubt, set it to 720.
          */
-        apiVersion: 620,
+        apiVersion: 720,
         /**
          * Path to the FoundationDB cluster file.
          * (optional)

@@ -245,7 +245,7 @@ jobs:
       - name: pre-pull foundationdb docker images
         # ensure it has downloaded the image
         run: |
-          docker pull foundationdb/foundationdb:7.3.23
+          docker pull foundationdb/foundationdb:7.3.59
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -254,7 +254,7 @@ jobs:
       - name: install npm dependencies
         run: npm install
 
-      - run: npm install foundationdb@1.1.4
+      - run: npm install foundationdb@2.0.1
 
       - name: build
         run: npm run build
