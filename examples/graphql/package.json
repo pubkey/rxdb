@@ -33,7 +33,7 @@
     "local-web-server": "5.4.0",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "9.0.0",
-    "rxjs": "7.8.1",
+    "rxjs": "7.8.2",
     "ws": "8.16.0"
   },
   "devDependencies": {

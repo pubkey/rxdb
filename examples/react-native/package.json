@@ -30,7 +30,7 @@
     "react-native-quick-base64": "2.1.2",
     "react-test-renderer": "18.3.1",
     "rimraf": "5.0.10",
-    "rxjs": "7.8.1",
+    "rxjs": "7.8.2",
     "schedule": "0.5.0",
     "stream": "0.0.3"
   },
