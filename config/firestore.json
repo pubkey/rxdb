@@ -1,0 +1,19 @@
+{
+    "firestore": {
+        "database": "(default)",
+        "rules": "firestore.rules"
+    },
+    "auth": {
+    },
+    "emulators": {
+        "singleProjectMode": true,
+        "firestore": {
+            "host": "localhost",
+            "port": 8080
+        },
+        "auth": {
+            "host": "localhost",
+            "port": 9099
+        }
+    }
+}

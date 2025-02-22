@@ -15,6 +15,7 @@ import {
     orderBy,
     limit,
     getDocs,
+    getDoc,
     onSnapshot,
     runTransaction,
     writeBatch,
@@ -257,7 +258,18 @@ export function replicateFirestore<RxDocType>(
                                 options.firestore.collection,
                                 where(documentId(), 'in', ids)
                             )
-                        );
+                        )
+                        .then(result => result.docs)
+                        .catch(() => {
+                            // Query may fail due to rules using 'resource' with non existing ids
+                            // So try to get the docs one by one
+                            return Promise.all(
+                                ids.map(
+                                    id => getDoc(doc(options.firestore.collection, id))
+                                )
+                            )
+                            .then(docs => docs.filter(doc => doc.exists()));
+                        });
                     };
 
                     const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);

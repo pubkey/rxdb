@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+    match /databases/{database}/documents {
+        match /public/{document=**} {
+            allow read, write: if true;
+        }
+        match /ownership/{document=**} {
+            allow read, delete: if request.auth != null && (resource == null || request.auth.uid == resource.data.owner);
+            allow create: if request.auth != null && request.auth.uid == request.resource.data.owner;
+            allow update: if request.auth != null && request.auth.uid == request.resource.data.owner && request.auth.uid == resource.data.owner;
+        }
+    }
+}
