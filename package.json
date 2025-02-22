@@ -565,7 +565,7 @@
     "rimraf": "5.0.10",
     "rollup": "4.34.8",
     "rxdb-old": "npm:rxdb@15.39.0",
-    "rxjs": "7.8.1",
+    "rxjs": "7.8.2",
     "shelljs": "0.8.5",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
