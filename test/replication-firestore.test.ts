@@ -69,8 +69,8 @@ describe('replication-firestore.test.ts', function () {
      */
     const batchSize = 5;
     type TestDocType = HumanWithTimestampDocumentType;
-    async function getAllDocsOfFirestore<DT = TestDocType>(firestore: FirestoreOptions<DT>, ...criterias: QueryConstraint[]): Promise<DT[]> {
-        const result = await getDocs(query(firestore.collection, ...criterias));
+    async function getAllDocsOfFirestore<DT = TestDocType>(firestore: FirestoreOptions<DT>, ...criteria: QueryConstraint[]): Promise<DT[]> {
+        const result = await getDocs(query(firestore.collection, ...criteria));
         return result.docs.map(d => {
             const docData = d.data();
             (docData as any).id = d.id;

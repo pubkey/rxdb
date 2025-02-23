@@ -22,7 +22,8 @@ import {
     serverTimestamp,
     QueryDocumentSnapshot,
     waitForPendingWrites,
-    documentId
+    documentId,
+    FirestoreError
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -260,15 +261,18 @@ export function replicateFirestore<RxDocType>(
                             )
                         )
                         .then(result => result.docs)
-                        .catch(() => {
-                            // Query may fail due to rules using 'resource' with non existing ids
-                            // So try to get the docs one by one
-                            return Promise.all(
-                                ids.map(
-                                    id => getDoc(doc(options.firestore.collection, id))
+                        .catch(error => {
+                            if (error?.code && (error as FirestoreError).code === 'permission-denied') {
+                                // Query may fail due to rules using 'resource' with non existing ids
+                                // So try to get the docs one by one
+                                return Promise.all(
+                                    ids.map(
+                                        id => getDoc(doc(options.firestore.collection, id))
+                                    )
                                 )
-                            )
-                            .then(docs => docs.filter(doc => doc.exists()));
+                                .then(docs => docs.filter(doc => doc.exists()));
+                            }
+                            throw error;
                         });
                     };
 
