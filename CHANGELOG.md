@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - Fix Firestore replication ignoring initialCheckpoint [#6850](https://github.com/pubkey/rxdb/pull/6850)
 - UPDATE foundation-db to the latest version [#6876](https://github.com/pubkey/rxdb/pull/6876)
+- ADD Allow to use firestore rules on attributes [#6896](https://github.com/pubkey/rxdb/pull/6896)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
