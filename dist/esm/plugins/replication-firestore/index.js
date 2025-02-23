@@ -1,6 +1,6 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import { appendToArray, asyncFilter, ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray, toArray } from "../../plugins/utils/index.js";
-import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
+import { doc, query, where, orderBy, limit, getDocs, getDoc, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { RxReplicationState, startReplicationOnLeaderShip } from "../replication/index.js";
 import { addRxPlugin, getSchemaByObjectPath, newRxError } from "../../index.js";
@@ -144,7 +144,14 @@ export function replicateFirestore(options) {
            */
 
           var getQuery = ids => {
-            return getDocs(query(options.firestore.collection, where(documentId(), 'in', ids)));
+            return getDocs(query(options.firestore.collection, where(documentId(), 'in', ids))).then(result => result.docs).catch(error => {
+              if (error?.code && error.code === 'permission-denied') {
+                // Query may fail due to rules using 'resource' with non existing ids
+                // So try to get the docs one by one
+                return Promise.all(ids.map(id => getDoc(doc(options.firestore.collection, id)))).then(docs => docs.filter(doc => doc.exists()));
+              }
+              throw error;
+            });
           };
           var docsInDbResult = await getContentByIds(docIds, getQuery);
           var docsInDbById = {};

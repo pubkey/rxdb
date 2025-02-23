@@ -1200,6 +1200,41 @@ export var humanIdAndAgeIndex = overwritable.deepFreezeWhenDevMode({
   required: ['id', 'name', 'age'],
   indexes: [['age', 'id']]
 });
+export var humanWithOwnership = overwritable.deepFreezeWhenDevMode({
+  title: 'human schema',
+  version: 0,
+  description: 'describes a human being',
+  keyCompression: false,
+  primaryKey: 'passportId',
+  type: 'object',
+  properties: {
+    passportId: {
+      type: 'string',
+      maxLength: 100
+    },
+    firstName: {
+      type: 'string',
+      maxLength: 100
+    },
+    lastName: {
+      type: 'string',
+      maxLength: 100
+    },
+    age: {
+      description: 'age in years',
+      type: 'integer',
+      minimum: 0,
+      maximum: 150,
+      default: 20
+    },
+    owner: {
+      type: 'string',
+      maxLength: 128
+    }
+  },
+  indexes: [],
+  required: ['passportId']
+});
 export function enableKeyCompression(schema) {
   var ret = flatClone(schema);
   ret.keyCompression = true;

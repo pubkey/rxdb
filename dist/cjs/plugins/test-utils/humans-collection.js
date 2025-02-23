@@ -9,6 +9,7 @@ exports.createAgeIndex = createAgeIndex;
 exports.createAttachments = createAttachments;
 exports.createBySchema = createBySchema;
 exports.createDeepNested = createDeepNested;
+exports.createHumanWithOwnership = createHumanWithOwnership;
 exports.createHumanWithTimestamp = createHumanWithTimestamp;
 exports.createIdAndAgeIndex = createIdAndAgeIndex;
 exports.createMigrationCollection = createMigrationCollection;
@@ -393,5 +394,28 @@ async function createIdAndAgeIndex(amount = 20) {
     await collections.humana.bulkInsert(docsData);
   }
   return collections.humana;
+}
+async function createHumanWithOwnership(amount = 20, databaseName = (0, _index.randomToken)(10), multiInstance = true, owner = "alice", storage = (0, _config.getConfig)().storage.getStorage(), conflictHandler) {
+  var db = await (0, _index.createRxDatabase)({
+    name: databaseName,
+    storage,
+    multiInstance,
+    eventReduce: true,
+    ignoreDuplicate: true
+  });
+  // setTimeout(() => db.close(), dbLifetime);
+  var collections = await db.addCollections({
+    humans: {
+      conflictHandler,
+      schema: schemas.humanWithOwnership
+    }
+  });
+
+  // insert data
+  if (amount > 0) {
+    var docsData = new Array(amount).fill(0).map(() => schemaObjects.humanWithOwnershipData({}, owner));
+    await collections.humans.bulkInsert(docsData);
+  }
+  return collections.humans;
 }
 //# sourceMappingURL=humans-collection.js.map

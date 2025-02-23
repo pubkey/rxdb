@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Fix Firestore replication ignoring initialCheckpoint [#6850](https://github.com/pubkey/rxdb/pull/6850)
-- UPDATE foundation-db to the latest version [#6876](https://github.com/pubkey/rxdb/pull/6876)
-- ADD Allow to use firestore rules on attributes [#6896](https://github.com/pubkey/rxdb/pull/6896)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.7.0 (23 February 2025)
+
+- Fix Firestore replication ignoring initialCheckpoint [#6850](https://github.com/pubkey/rxdb/pull/6850)
+- UPDATE foundation-db to the latest version [#6876](https://github.com/pubkey/rxdb/pull/6876)
+- ADD Allow to use firestore rules on attributes [#6896](https://github.com/pubkey/rxdb/pull/6896)
 
 ### 16.6.1 (9 February 2025)
 

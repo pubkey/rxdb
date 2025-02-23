@@ -270,4 +270,14 @@ export function humanWithCompositePrimary(partial = {}) {
   };
   return Object.assign(defaultObj, partial);
 }
+export function humanWithOwnershipData(partial = {}, owner) {
+  var defaultObj = {
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12),
+    age: randomNumber(10, 50),
+    owner
+  };
+  return Object.assign(defaultObj, partial);
+}
 //# sourceMappingURL=schema-objects.js.map

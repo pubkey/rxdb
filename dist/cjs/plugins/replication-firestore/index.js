@@ -177,7 +177,14 @@ function replicateFirestore(options) {
            */
 
           var getQuery = ids => {
-            return (0, _firestore.getDocs)((0, _firestore.query)(options.firestore.collection, (0, _firestore.where)((0, _firestore.documentId)(), 'in', ids)));
+            return (0, _firestore.getDocs)((0, _firestore.query)(options.firestore.collection, (0, _firestore.where)((0, _firestore.documentId)(), 'in', ids))).then(result => result.docs).catch(error => {
+              if (error?.code && error.code === 'permission-denied') {
+                // Query may fail due to rules using 'resource' with non existing ids
+                // So try to get the docs one by one
+                return Promise.all(ids.map(id => (0, _firestore.getDoc)((0, _firestore.doc)(options.firestore.collection, id)))).then(docs => docs.filter(doc => doc.exists()));
+              }
+              throw error;
+            });
           };
           var docsInDbResult = await (0, _firestoreHelper.getContentByIds)(docIds, getQuery);
           var docsInDbById = {};

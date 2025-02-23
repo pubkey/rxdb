@@ -351,5 +351,6 @@ export declare const humanIdAndAgeIndex: RxJsonSchema<{
     name: string;
     age: number;
 }>;
+export declare const humanWithOwnership: RxJsonSchema<HumanDocumentType>;
 export declare function enableKeyCompression<RxDocType>(schema: RxJsonSchema<RxDocType>): RxJsonSchema<RxDocType>;
 export {};

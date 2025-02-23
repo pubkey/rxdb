@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.averageSchema = averageSchema;
 exports.empty = exports.deepNestedHuman = exports.compoundIndexNoString = exports.compoundIndex = exports.bigHuman = void 0;
 exports.enableKeyCompression = enableKeyCompression;
-exports.simpleHumanV3 = exports.simpleHuman = exports.simpleArrayHero = exports.refHumanNested = exports.refHuman = exports.primaryHumanLiteral = exports.primaryHuman = exports.point = exports.notExistingIndex = exports.noStringIndex = exports.noIndexHuman = exports.nestedHuman = exports.humanWithTimestampNested = exports.humanWithTimestampAllIndex = exports.humanWithTimestamp = exports.humanWithSimpleAndCompoundIndexes = exports.humanWithDeepNestedIndexes = exports.humanWithAllIndex = exports.humanSubIndex = exports.humanSchemaLiteral = exports.humanNormalizeSchema2 = exports.humanNormalizeSchema1Literal = exports.humanNormalizeSchema1 = exports.humanMinimalBroken = exports.humanMinimal = exports.humanIdAndAgeIndex = exports.humanFinal = exports.humanDefault = exports.humanCompositePrimarySchemaLiteral = exports.humanCompositePrimary = exports.humanAgeIndex = exports.human = exports.heroArray = exports.encryptedObjectHuman = exports.encryptedHuman = exports.encryptedDeepHuman = void 0;
+exports.simpleHumanV3 = exports.simpleHuman = exports.simpleArrayHero = exports.refHumanNested = exports.refHuman = exports.primaryHumanLiteral = exports.primaryHuman = exports.point = exports.notExistingIndex = exports.noStringIndex = exports.noIndexHuman = exports.nestedHuman = exports.humanWithTimestampNested = exports.humanWithTimestampAllIndex = exports.humanWithTimestamp = exports.humanWithSimpleAndCompoundIndexes = exports.humanWithOwnership = exports.humanWithDeepNestedIndexes = exports.humanWithAllIndex = exports.humanSubIndex = exports.humanSchemaLiteral = exports.humanNormalizeSchema2 = exports.humanNormalizeSchema1Literal = exports.humanNormalizeSchema1 = exports.humanMinimalBroken = exports.humanMinimal = exports.humanIdAndAgeIndex = exports.humanFinal = exports.humanDefault = exports.humanCompositePrimarySchemaLiteral = exports.humanCompositePrimary = exports.humanAgeIndex = exports.human = exports.heroArray = exports.encryptedObjectHuman = exports.encryptedHuman = exports.encryptedDeepHuman = void 0;
 var _asyncTestUtil = _interopRequireDefault(require("async-test-util"));
 var _overwritable = require("../../overwritable.js");
 var _rxSchema = require("../../rx-schema.js");
@@ -1209,6 +1209,41 @@ var humanIdAndAgeIndex = exports.humanIdAndAgeIndex = _overwritable.overwritable
   },
   required: ['id', 'name', 'age'],
   indexes: [['age', 'id']]
+});
+var humanWithOwnership = exports.humanWithOwnership = _overwritable.overwritable.deepFreezeWhenDevMode({
+  title: 'human schema',
+  version: 0,
+  description: 'describes a human being',
+  keyCompression: false,
+  primaryKey: 'passportId',
+  type: 'object',
+  properties: {
+    passportId: {
+      type: 'string',
+      maxLength: 100
+    },
+    firstName: {
+      type: 'string',
+      maxLength: 100
+    },
+    lastName: {
+      type: 'string',
+      maxLength: 100
+    },
+    age: {
+      description: 'age in years',
+      type: 'integer',
+      minimum: 0,
+      maximum: 150,
+      default: 20
+    },
+    owner: {
+      type: 'string',
+      maxLength: 128
+    }
+  },
+  indexes: [],
+  required: ['passportId']
 });
 function enableKeyCompression(schema) {
   var ret = (0, _index.flatClone)(schema);

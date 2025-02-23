@@ -17,6 +17,7 @@ exports.heroArrayData = heroArrayData;
 exports.humanData = humanData;
 exports.humanWithCompositePrimary = humanWithCompositePrimary;
 exports.humanWithIdAndAgeIndexDocumentType = humanWithIdAndAgeIndexDocumentType;
+exports.humanWithOwnershipData = humanWithOwnershipData;
 exports.humanWithSubOther = humanWithSubOther;
 exports.humanWithTimestampData = humanWithTimestampData;
 exports.nestedHumanData = nestedHumanData;
@@ -299,6 +300,16 @@ function humanWithCompositePrimary(partial = {}) {
     info: {
       age: (0, _index.randomNumber)(10, 50)
     }
+  };
+  return Object.assign(defaultObj, partial);
+}
+function humanWithOwnershipData(partial = {}, owner) {
+  var defaultObj = {
+    passportId: randomStringWithSpecialChars(8, 12),
+    firstName: randomStringWithSpecialChars(8, 12),
+    lastName: randomStringWithSpecialChars(8, 12),
+    age: (0, _index.randomNumber)(10, 50),
+    owner
   };
   return Object.assign(defaultObj, partial);
 }

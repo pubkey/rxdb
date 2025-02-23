@@ -56,6 +56,6 @@ function getContentByIds(ids, getQuery) {
   }
 
   // after all of the data is fetched, return it
-  return Promise.all(batches).then(content => content.map(i => i.docs).flat());
+  return Promise.all(batches).then(content => content.flat());
 }
 //# sourceMappingURL=firestore-helper.js.map

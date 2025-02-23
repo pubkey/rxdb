@@ -23,3 +23,4 @@ export declare function createMigrationCollection(amount?: number, addMigrationS
 export declare function createRelated(name?: string): Promise<RxCollection<schemaObjects.RefHumanDocumentType>>;
 export declare function createRelatedNested(name?: string): Promise<RxCollection<schemaObjects.RefHumanNestedDocumentType>>;
 export declare function createIdAndAgeIndex(amount?: number): Promise<RxCollection<schemaObjects.HumanWithIdAndAgeIndexDocumentType>>;
+export declare function createHumanWithOwnership(amount?: number, databaseName?: string, multiInstance?: boolean, owner?: string, storage?: RxStorage<any, any>, conflictHandler?: RxConflictHandler<any>): Promise<RxCollection<schemaObjects.HumanWithOwnershipDocumentType>>;

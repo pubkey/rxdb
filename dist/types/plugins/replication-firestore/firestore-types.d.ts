@@ -1,5 +1,5 @@
 import type { MaybePromise, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, WithDeleted } from '../../types/index.d.ts';
-import type { CollectionReference, Firestore, QueryFieldFilterConstraint, QuerySnapshot } from 'firebase/firestore';
+import type { CollectionReference, Firestore, QueryDocumentSnapshot, QueryFieldFilterConstraint } from 'firebase/firestore';
 export type FirestoreCheckpointType = {
     id: string;
     /**
@@ -43,4 +43,4 @@ export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType,
     pull?: FirestoreSyncPullOptions<RxDocType>;
     push?: FirestoreSyncPushOptions<RxDocType>;
 };
-export type GetQuery<RxDocType> = (ids: string[]) => Promise<QuerySnapshot<RxDocType>>;
+export type GetQuery<RxDocType> = (ids: string[]) => Promise<QueryDocumentSnapshot<RxDocType>[]>;

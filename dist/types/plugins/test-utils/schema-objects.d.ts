@@ -209,3 +209,11 @@ export type HumanWithCompositePrimary = {
     };
 };
 export declare function humanWithCompositePrimary(partial?: Partial<HumanWithCompositePrimary>): HumanWithCompositePrimary;
+export type HumanWithOwnershipDocumentType = {
+    passportId: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+    owner?: string;
+};
+export declare function humanWithOwnershipData(partial: Partial<HumanWithOwnershipDocumentType> | undefined, owner: string): HumanWithOwnershipDocumentType;
