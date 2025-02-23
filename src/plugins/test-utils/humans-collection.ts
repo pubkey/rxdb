@@ -518,3 +518,39 @@ export async function createIdAndAgeIndex(
 
     return collections.humana;
 }
+
+export async function createHumanWithOwnership(
+    amount = 20,
+    databaseName = randomToken(10),
+    multiInstance = true,
+    owner = "alice",
+    storage = getConfig().storage.getStorage(),
+    conflictHandler?: RxConflictHandler<any>,
+
+): Promise<RxCollection<schemaObjects.HumanWithOwnershipDocumentType>> {
+
+    const db = await createRxDatabase<{ humans: RxCollection<schemaObjects.HumanWithOwnershipDocumentType>; }>({
+        name: databaseName,
+        storage,
+        multiInstance,
+        eventReduce: true,
+        ignoreDuplicate: true
+    });
+    // setTimeout(() => db.close(), dbLifetime);
+    const collections = await db.addCollections({
+        humans: {
+            conflictHandler,
+            schema: schemas.humanWithOwnership
+        }
+    });
+
+    // insert data
+    if (amount > 0) {
+        const docsData = new Array(amount)
+            .fill(0)
+            .map(() => schemaObjects.humanWithOwnershipData({}, owner));
+        await collections.humans.bulkInsert(docsData);
+    }
+
+    return collections.humans;
+}

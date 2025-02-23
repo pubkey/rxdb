@@ -9,6 +9,7 @@ import type {
 import type {
     CollectionReference,
     Firestore,
+    QueryDocumentSnapshot,
     QueryFieldFilterConstraint,
     QuerySnapshot
 } from 'firebase/firestore';
@@ -67,4 +68,4 @@ export type SyncOptionsFirestore<RxDocType> = Omit<
     push?: FirestoreSyncPushOptions<RxDocType>;
 };
 
-export type GetQuery<RxDocType> = (ids: string[]) => Promise<QuerySnapshot<RxDocType>>;
+export type GetQuery<RxDocType> = (ids: string[]) => Promise<QueryDocumentSnapshot<RxDocType>[]>;

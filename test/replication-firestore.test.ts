@@ -41,7 +41,8 @@ import {
     where,
     orderBy,
     limit,
-    getDoc
+    getDoc,
+    QueryConstraint
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
@@ -68,8 +69,8 @@ describe('replication-firestore.test.ts', function () {
      */
     const batchSize = 5;
     type TestDocType = HumanWithTimestampDocumentType;
-    async function getAllDocsOfFirestore(firestore: FirestoreOptions<TestDocType>): Promise<TestDocType[]> {
-        const result = await getDocs(query(firestore.collection));
+    async function getAllDocsOfFirestore<DT = TestDocType>(firestore: FirestoreOptions<DT>, ...criteria: QueryConstraint[]): Promise<DT[]> {
+        const result = await getDocs(query(firestore.collection, ...criteria));
         return result.docs.map(d => {
             const docData = d.data();
             (docData as any).id = d.id;
@@ -77,15 +78,18 @@ describe('replication-firestore.test.ts', function () {
         }) as any;
     }
     const projectId = randomToken(10);
+    const ownerUid = 'owner1';
+
+    config.storage.init?.();
     const app = firebase.initializeApp({
         projectId,
         databaseURL: 'http://localhost:8080?ns=' + projectId
     });
     const database = getFirestore(app);
-    connectFirestoreEmulator(database, 'localhost', 8080);
+    connectFirestoreEmulator(database, 'localhost', 8080, { mockUserToken: { user_id: ownerUid }});
 
-    function getFirestoreState(): FirestoreOptions<TestDocType> {
-        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, randomToken(10)) as any;
+    function getFirestoreState(rootCollection = 'public'): FirestoreOptions<TestDocType> {
+        const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, rootCollection, randomToken(10), randomToken(10)) as any;
         return {
             projectId,
             collection: useCollection,
@@ -458,6 +462,28 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(allLocalDocs.length, 2);
 
             collection.database.close();
+        });
+        it('#6707 firestore replication this owner rules', async () => {
+            const collection1 = await humansCollection.createHumanWithOwnership(2, undefined, false, ownerUid);
+            const firestoreState = getFirestoreState('ownership');
+            const replicationState = replicateFirestore({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: collection1,
+                pull: {
+                    filter: [
+                      where('owner', '==', ownerUid),
+                    ],
+                },
+                push: {},
+                live: true,
+                autoStart: true
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            const docsOnServer = await getAllDocsOfFirestore(firestoreState, where('owner', '==', ownerUid));
+            assert.strictEqual(docsOnServer.length, 2);
         });
 
     });

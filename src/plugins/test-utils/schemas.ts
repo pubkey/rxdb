@@ -1344,6 +1344,42 @@ export const humanIdAndAgeIndex: RxJsonSchema<{ id: string; name: string; age: n
     ]
 });
 
+export const humanWithOwnership: RxJsonSchema<HumanDocumentType> = overwritable.deepFreezeWhenDevMode({
+    title: 'human schema',
+    version: 0,
+    description: 'describes a human being',
+    keyCompression: false,
+    primaryKey: 'passportId',
+    type: 'object',
+    properties: {
+        passportId: {
+            type: 'string',
+            maxLength: 100
+        },
+        firstName: {
+            type: 'string',
+            maxLength: 100
+        },
+        lastName: {
+            type: 'string',
+            maxLength: 100
+        },
+        age: {
+            description: 'age in years',
+            type: 'integer',
+            minimum: 0,
+            maximum: 150,
+            default: 20
+        },
+        owner: {
+            type: 'string',
+            maxLength: 128
+        }
+    },
+    indexes: [],
+    required: ['passportId']
+});
+
 
 export function enableKeyCompression<RxDocType>(
     schema: RxJsonSchema<RxDocType>
