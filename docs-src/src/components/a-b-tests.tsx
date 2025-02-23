@@ -31,6 +31,14 @@ export function getTestGroup(semPageId?: string): TestGroup {
         return testGroup;
     }
 
+    if (typeof localStorage === 'undefined') {
+        return {
+            variation: Object.keys(CURRENT_TEST_RUN.variations)[0],
+            deviceType: 'd',
+            semPageId: semPageId ? semPageId : ''
+        };
+    }
+
     const groupFromStorage = localStorage.getItem(TEST_GROUP_STORAGE_ID);
     if (groupFromStorage) {
         testGroup = JSON.parse(groupFromStorage);
@@ -56,12 +64,12 @@ export function ABTestContent(props: {
 
 
 export function getTestGroupEventPrefix() {
-    const testGroup = getTestGroup();
+    const tg = getTestGroup();
     return [
         'abt',
         CURRENT_TEST_RUN.id,
-        'E:' + testGroup.semPageId,
-        'V:' + testGroup.variation,
-        'D:' + testGroup.deviceType
+        'E:' + tg.semPageId,
+        'V:' + tg.variation,
+        'D:' + tg.deviceType
     ].join('_');
 }

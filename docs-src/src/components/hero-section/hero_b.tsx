@@ -1,4 +1,4 @@
-import { ScrollToSection, SemPage, getAppName } from '@site/src/pages';
+import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
 import { BrowserWindow } from '../browser-window';
 
