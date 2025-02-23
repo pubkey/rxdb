@@ -60,6 +60,7 @@ export function getTestGroupEventPrefix() {
     return [
         'abt',
         CURRENT_TEST_RUN.id,
+        'E:' + testGroup.semPageId,
         'V:' + testGroup.variation,
         'D:' + testGroup.deviceType
     ].join('_');
