@@ -19,6 +19,10 @@ import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { HeroSection_A } from '../components/hero-section/hero_a';
+import { HeroSection_B } from '../components/hero-section/hero_b';
+import { HeroSection_C } from '../components/hero-section/hero_c';
+import { ABTestContent, getTestGroup } from '../components/a-b-tests';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -174,11 +178,22 @@ export type AppName = |
   'Svelte' |
   'Vue.js';
 
+export function getAppName(props: {
+  sem?: SemPage;
+}) {
+  return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
+}
+
+
+export type Section = 'reviews' | 'replication' | 'realtime' | 'runtimes' | 'offline';
+export type ScrollToSection = (section: Section) => void;
+
 /**
  * For custom pages for search engine marketing,
  * we can swap out titles texts and icons.
  */
 export type SemPage = {
+  id: string;
   metaTitle: string;
   iconUrl?: string;
   title: any;
@@ -193,6 +208,7 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
+  getTestGroup(props.sem ? props.sem.id : '');
   const { siteConfig } = useDocusaurusContext();
 
   const [tags] = useState([
@@ -302,12 +318,43 @@ export default function Home(props: {
     };
   });
 
-  function getAppName() {
-    return props.sem && props.sem.appName ? props.sem.appName + ' ' : '';
-  }
-
   // const [starterPackOpen, setStarterPackOpen] = useState(false);
   const reviewsRef = useRef<HTMLDivElement>(null);
+  const realtimeRef = useRef<HTMLDivElement>(null);
+  const replicationRef = useRef<HTMLDivElement>(null);
+  const offlineRef = useRef<HTMLDivElement>(null);
+  const runtimesRef = useRef<HTMLDivElement>(null);
+
+  function scrollToSection(section: Section) {
+    switch (section) {
+      case 'reviews':
+        reviewsRef.current?.scrollIntoView({
+          behavior: 'smooth'
+        });
+        break;
+      case 'realtime':
+        realtimeRef.current?.scrollIntoView({
+          behavior: 'smooth'
+        });
+        break;
+      case 'replication':
+        replicationRef.current?.scrollIntoView({
+          behavior: 'smooth'
+        });
+        break;
+      case 'runtimes':
+        runtimesRef.current?.scrollIntoView({
+          behavior: 'smooth'
+        });
+        break;
+      case 'offline':
+        offlineRef.current?.scrollIntoView({
+          behavior: 'smooth'
+        });
+        break;
+    }
+
+  }
 
   return (
     <>
@@ -319,226 +366,11 @@ export default function Home(props: {
         title={props.sem ? props.sem.metaTitle : siteConfig.title}
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
-          <div className="block first hero centered dark">
-            <div className="content">
-              <div className="inner">
-                <div className="half left">
-                  {
-                    props.sem && props.sem.iconUrl ? (
-                      <div style={{ width: '100%', textAlign: 'left' }}>
-                        <img src={props.sem.iconUrl} style={{
-                          marginLeft: '40%',
-                          height: 51
-                        }} alt={props.sem.metaTitle}></img>
-                      </div>
-                    ) : <></>
-                  }
-                  <h1 style={{
-                  }}>
-                    {
-                      props.sem ? props.sem.title : <>The local <b className="underline">Database</b> for{' '}
-                        <b className="underline">JavaScript</b> Applications</>
-                    }
-                  </h1>
-                  {/* <ul className="checked">
-                    <li>
-                      <b>Offline Support</b>:
-                      Store data locally on your users device to build applications that work even when
-                      there is <u>no internet access</u>.
-                    </li>
-                    <li>
-                      <b>Supports all JavaScript runtimes</b>:
-                      With the flexible RxDB storage layer you can run the
-                      same code in <u>Browsers</u>, <u>Node.js</u>, <u>Electron</u>,{' '}
-                      <u>React-Native</u>, <u>Capacitor</u>, <u>Bun</u> and <u>Deno</u>.
-                    </li>
-                    <li>
-                      <b>Realtime Queries</b>:
-                      With RxDB you can
-                      observe query results and even single document fields everything which makes building <u>realtime applications</u> effortless.
-                    </li>
-                    <li>
-                      <b>Realtime Replication</b>:
-                      Run a two-way realtime replication with one of the many replication plugins.
-                      Also making your <u>custom backend compatible</u> is pretty simple.
-                    </li>
-                    <li>
-                      <b>Great Performance</b>:
-                      Years of performance optimization made RxDB one of the <u>fastest</u> ways
-                      to store and query data inside of JavaScript.
-                    </li>
-                  </ul> */}
-                  <div className="text">
-                    {
-                      props.sem && props.sem.text ? props.sem.text : <>Store data locally to build high performance realtime {getAppName()} applications that sync data with the backend and even work when offline.</>
-                    }
-                  </div>
 
-                  <br />
-                  <br />
-
-
-                  <div className="hero-action">
-                    <div
-                      className="button button-empty"
-                      onClick={() => {
-                        triggerTrackingEvent('hero_section_how_others', 0.4, false);
-                        reviewsRef.current?.scrollIntoView({
-                          behavior: 'smooth'
-                        });
-                      }}
-                    >
-                      How others use it
-                    </div>
-                  </div>
-                  <div className="hero-action">
-                    <a
-                      className="button"
-                      href="/quickstart.html"
-                      onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
-                    >
-                      Get Started For Free &#x27A4;<br />
-                    </a>
-                    <a
-                      href="/premium/"
-                      onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4, false)}
-                    >
-                      <div className="buy-option-action">
-                        (Get Premium)
-                      </div>
-                    </a>
-
-                  </div>
-
-                  {/* <div className="hero-action">
-
-                    <div style={{
-                      position: 'relative',
-                      right: 0,
-                      float: 'right',
-                      marginTop: -37,
-                      top: 16,
-                      left: 33,
-                      transform: 'rotate(-20deg)'
-                    }}>
-                      <PriceTag price={STARTER_PACK_PRICE + ''} />
-                    </div>
-                    <div
-                      className="button"
-                      onClick={() => {
-                        triggerTrackingEvent('hero_section_buy_starter_pack', 0.4, false);
-                        setStarterPackOpen(true);
-                      }}
-                    >
-                      RxDB Starter Pack &#x27A4;<br />
-                      <span>(get expert guidance)</span>
-                    </div>
-                    <Modal
-                      className="modal-consulting-page"
-                      open={starterPackOpen}
-                      width={1000}
-                      onCancel={() => setStarterPackOpen(false)}
-                      closeIcon={null}
-                      footer={null}
-                    >
-                      <div style={{
-                        backgroundColor: 'var(--bg-color)',
-                        padding: 20,
-                        borderRadius: 10,
-                        color: 'white'
-                      }}>
-                        <div style={{
-                          position: 'relative',
-                          right: 0,
-                          float: 'right',
-                          marginTop: -37,
-                          top: 16,
-                          left: 33,
-                          transform: 'rotate(-20deg)'
-                        }}>
-                          <PriceTag price={STARTER_PACK_PRICE + ''} />
-                        </div>
-                        <h2>RxDB Starter Pack</h2>
-                        <p>Unlock the full potential of RxDB for your project with our Starter Pack! Whether you're just getting started or looking for expert guidance, this pack is designed to help you use RxDB efficiently and effectively. Here's what you'll get:</p>
-                        <ul>
-                          <li>
-                            <b>30-Minute Consulting Session:</b>
-                            <p>Speak directly with the RxDB maintainer to discuss your specific use case, challenges, and goals. Receive personalized advice on how to implement RxDB to solve your problems efficiently.</p>
-                          </li>
-                          <li>
-                            <b>Expert Email Support:</b>
-                            <p>Get up to 5 follow-up emails with detailed answers to your additional questions, ensuring you have ongoing support as you work through your project.</p>
-                          </li>
-                        </ul>
-                        <a href="https://buy.stripe.com/3cs4jr9wK1CkgQEbIL" target='_blank' className='button' style={{
-                          width: 200,
-                          display: 'block',
-                          marginLeft: 'auto',
-                          marginRight: 'auto',
-                          marginTop: 30,
-                          marginBottom: 30,
-                          color: 'white'
-                        }}>Book Now</a>
-                      </div>
-
-                    </Modal>
-                  </div> */}
-
-                  {/* <a
-                    href="/premium/#price-calculator-block"
-                    onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
-                    className='buy-premium-hero'
-                  >
-                    Buy Premium
-                  </a> */}
-                  {/* <a
-                    className="button light"
-                    href="/code/"
-                    target="_blank"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      className="star-icon"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
-                    >
-                      <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
-                    </svg>
-                    Star (20,172)
-                  </a> */}
-
-                  <div className="clear" />
-                  <br />
-                </div>
-                <div
-                  className="half right"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingLeft: '6%',
-                    paddingRight: '2%'
-                  }}
-                >
-                  <img src="/img/hero.svg" className="hero-img" alt="rxdb-image" />
-                </div>
-                {/* <BrowserWindow opacity={0.3} iconUrl={props.sem ? props.sem.iconUrl : undefined} iconAlt={props.sem ? props.sem.metaTitle : undefined}>
-                    </BrowserWindow> */}
-                {/* <img
-              src="/files/logo/logo_text.svg"
-              id="heartbeat-logo"
-              alt="RxDB"
-          /> */}
-                <div className='clear'></div>
-              </div>
-            </div>
-            <br />
-            <br />
-            <br />
-            <br />
-          </div >
+          <ABTestContent sem={props.sem} scrollToSection={scrollToSection} />
+          {/* <HeroSection_C sem={props.sem} scrollToSection={scrollToSection} />
+          <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
+          <HeroSection_A sem={props.sem} scrollToSection={scrollToSection} /> */}
 
           {
             props.sem && props.sem.blocks ?
@@ -556,7 +388,7 @@ export default function Home(props: {
             valueTitle='stars'
           />
 
-          <div className="block second dark">
+          <div className="block second dark" id="realtime" ref={realtimeRef}>
             <div className="content">
               <h2>
                 Realtime Applications <b className="underline">made easy</b>
@@ -597,7 +429,7 @@ export default function Home(props: {
             imgUrl="/files/icons/twitter-blue.svg"
             valueTitle='followers'
           />
-          <div className="block replication">
+          <div className="block replication" id="replication" ref={replicationRef}>
             <div className="content">
               <div className="half left">
                 <br />
@@ -609,7 +441,7 @@ export default function Home(props: {
                   Sync with <b className="underline">any Backend</b>
                 </h2>
                 <p>
-                  RxDB's high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName()} clients and servers.
+                  RxDB's high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName(props)} clients and servers.
                   While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
                   , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
                   it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
@@ -694,7 +526,7 @@ export default function Home(props: {
             valueTitle='members'
           />
 
-          <div className="block offline-first dark">
+          <div className="block offline-first dark" id="offline" ref={offlineRef}>
             <div className="offline-image-wrapper">
               <img
                 src="/files/icons/wifi/wifi_1a202c.svg"
@@ -711,13 +543,13 @@ export default function Home(props: {
                 <div className="half left">
                   <p>
                     RxDB adopts an <a href="/offline-first.html" target="_blank">offline-first</a> approach, keeping your app fully functional even without a connection.
-                    Data is stored locally on the {getAppName()} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
+                    Data is stored locally on the {getAppName(props)} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
                   </p>
                 </div>
                 <div className="half right">
                   <ul className="checked">
                     <li>
-                      Keep your {getAppName()} app running <b>offline</b>
+                      Keep your {getAppName(props)} app running <b>offline</b>
                     </li>
                     <li>
                       Boost perceived <b>performance</b>
@@ -733,7 +565,7 @@ export default function Home(props: {
               </div>
             </div>
           </div>
-          <div className="block frameworks">
+          <div className="block frameworks" id="runtimes" ref={runtimesRef}>
             <div className="content">
               <a
                 href="https://github.com/pubkey/rxdb/tree/master/examples/angular"
@@ -826,7 +658,7 @@ export default function Home(props: {
                   href="/electron.html"
                   target="_blank"
                 >Electron</a>, and beyond.
-                Simply switch the storage plugin to reuse the same database and replication logic across all your {getAppName()} apps, saving time and ensuring consistency.
+                Simply switch the storage plugin to reuse the same database and replication logic across all your {getAppName(props)} apps, saving time and ensuring consistency.
               </p>
               <div className="below-text">
                 <a
@@ -918,7 +750,7 @@ export default function Home(props: {
               <p>
                 Since its creation in 2018,
                 RxDB has evolved into a powerhouse of features and plugins, offering an all-inclusive,
-                future-proof solution for any type of {getAppName()} application. Whatever you need now or might need down the road, is already built in.
+                future-proof solution for any type of {getAppName(props)} application. Whatever you need now or might need down the road, is already built in.
                 Giving you the confidence to create robust, scalable apps with ease.
               </p>
               <div style={{
@@ -964,7 +796,7 @@ export default function Home(props: {
                 </h2>
                 <p>
                   RxDB is a proven, battle-tested solution used by countless developers across the globe.
-                  With its flexibility, RxDB is used in a vast spectrum of {getAppName()} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
+                  With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
                 </p>
                 <br /><br />
               </div>
@@ -1081,7 +913,7 @@ export default function Home(props: {
                           that's freely accessible to everyone.
                           <br />
                           This core includes all the essential features you need to develop efficient,
-                          real-time {getAppName()} applications like storages, replication and other plugins.
+                          real-time {getAppName(props)} applications like storages, replication and other plugins.
                           <br />
                           <br />
                           Our open-core approach encourages a vibrant community of developers,

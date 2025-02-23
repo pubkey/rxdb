@@ -419,6 +419,11 @@ p a:hover {
     text-decoration: underline;
 }
 
+
+.hero ul.checked li b {
+    cursor: pointer;
+}
+
 /* Checkbox Styling (Pricing Page) */
 ul.checked {
     padding-left: 0px;
@@ -842,7 +847,7 @@ body {
     }
 
     .block.first.hero .inner {
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
 }
 
@@ -895,6 +900,7 @@ body {
 .block.first.hero .hero-action .buy-option-action:hover {
     text-decoration: underline;
 }
+
 @media (max-width: 900px) {
     .block.first.hero .hero-action {
         width: 98%;

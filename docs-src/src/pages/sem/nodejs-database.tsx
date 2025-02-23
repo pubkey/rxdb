@@ -3,6 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
+            id: 'nodejs-database',
             metaTitle: 'The local Database for Node.js',
             appName: 'Node.js',
             title: <>The local <b className="underline">Database</b> for{' '}

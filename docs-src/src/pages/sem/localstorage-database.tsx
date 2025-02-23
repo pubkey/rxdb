@@ -3,6 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
+            id: 'localstorage-database',
             metaTitle: 'The best Database on top of localstorage',
             appName: 'Browser',
             title: <>The best <b className="underline">Database</b> on top of{' '}
