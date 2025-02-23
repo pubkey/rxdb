@@ -3,6 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
+            id: 'ionic-database',
             metaTitle: 'The local Database for Ionic Apps',
             appName: 'Ionic',
             title: <>The local <b className="underline">Database</b> for{' '}

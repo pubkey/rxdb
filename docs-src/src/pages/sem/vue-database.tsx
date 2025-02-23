@@ -3,6 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
+            id: 'vue-database',
             metaTitle: 'The local Database for Vue.js Apps',
             appName: 'Vue.js',
             title: <>The local <b className="underline">Database</b> for{' '}

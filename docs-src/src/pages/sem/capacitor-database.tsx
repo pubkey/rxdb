@@ -3,6 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
+            id: 'capacitor-database',
             title: <>The local <b className="underline">Database</b> for{' '}
                 <b className="underline">Capacitor</b> Apps</>,
             appName: 'Capacitor',

@@ -1,3 +1,5 @@
+import { getTestGroupEventPrefix } from './a-b-tests';
+
 export function triggerTrackingEvent(type: string, value: number, onlyTrackOnce: boolean) {
 
     const prefix = 'tracking_event_';
@@ -36,6 +38,18 @@ export function triggerTrackingEvent(type: string, value: number, onlyTrackOnce:
                     currency: 'EUR'
                 }
             );
+
+            // trigger also an event for the A/B Testing
+            const testGroupPrefix = getTestGroupEventPrefix();
+            (window as any).gtag(
+                'event',
+                testGroupPrefix + '_' + type,
+                {
+                    value: 0,
+                    currency: 'EUR'
+                }
+            );
+
         } catch (err) {
             console.log('# Error on google trigger:');
             console.dir(err);

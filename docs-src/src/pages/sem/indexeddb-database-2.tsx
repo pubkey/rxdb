@@ -12,6 +12,7 @@ const styles = {
 export default function Page() {
     return Home({
         sem: {
+            id: 'indexeddb-database-2',
             /**
              * @link https://chatgpt.com/c/67950d3a-2558-8005-9c08-27999c51318e
              * @link https://chatgpt.com/c/6794f6c2-052c-8005-9a18-4a049bf97cc1
