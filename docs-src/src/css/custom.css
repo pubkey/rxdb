@@ -1287,13 +1287,12 @@ ul.checked li:before {
 
 .block.sixth .buy-option {
     border-radius: 6px;
-
     padding: 3px;
 }
 
 .block.sixth .buy-option-inner {
     box-sizing: content-box;
-    background-color: var(--bg-color-dark);
+    background-color: var(--bg-color);
     padding: 10px;
     border-radius: 4px;
     position: relative;

@@ -892,7 +892,7 @@ export default function Home(props: {
             </div>
           </div> */}
 
-          {/* <div className="block sixth">
+          <div className="block dark sixth">
             <div className="content">
               <h2>Free <b className='underline'>Open Core</b> Model</h2>
               <br />
@@ -998,9 +998,9 @@ export default function Home(props: {
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
 
-          <div className="block dark last">
+          <div className="block last">
             <div className="content">
               <h2>
                 Start using <b className="underline">RxDB</b> today
