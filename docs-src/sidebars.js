@@ -501,7 +501,8 @@ const sidebars = {
         'articles/firebase-realtime-database-alternative',
         'articles/offline-database',
         'articles/zero-latency-local-first',
-        'articles/indexeddb-max-storage-limit'
+        'articles/indexeddb-max-storage-limit',
+        'articles/json-based-database'
       ],
     },
     'contribute',

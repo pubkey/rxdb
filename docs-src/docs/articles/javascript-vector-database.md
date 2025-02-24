@@ -1,11 +1,11 @@
 ---
-title: JavaScript Vector Database that runs locally and works offline
+title: Local JavaScript Vector Database that works offline
 slug: javascript-vector-database.html
 description: Create a blazing-fast vector database in JavaScript. Leverage RxDB and transformers.js for instant, offline semantic search - no servers required!
 ---
 
 
-# Local Vector Database with RxDB and transformers.js
+# Local Vector Database with RxDB and transformers.js in JavaScript
 
 The [local-first](../offline-first.md) revolution is here, changing the way we build apps! Imagine a world where your app's data lives right on the user's device, always available, even when there's no internet. That's the magic of local-first apps. Not only do they bring faster performance and limitless scalability, but they also empower users to work offline without missing a beat. And leading the charge in this space are local database solutions, like [RxDB](https://rxdb.info/).
 

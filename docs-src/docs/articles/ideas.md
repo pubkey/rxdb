@@ -57,4 +57,10 @@ X- "indexeddb limits" - 170 https://rxdb.info/articles/indexeddb-max-storage-lim
 - "web based database"
 - "json vs database"
 - "livequery" - 210
-
+- "expo database" - 390
+- "database sync" - 8100
+- "p2p database" - 170
+- "reactive app" - 260
+- "offline web app" - 320
+- "offline sync" - 320
+- "react native encrypted storage" - 1000
