@@ -659,7 +659,7 @@ export default function Home(props: {
               </p>
               <div className="below-text">
                 <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/electron"
+                  href="/electron-database.html#rxdb"
                   target="_blank"
                 >
                   <div
@@ -671,7 +671,7 @@ export default function Home(props: {
                   </div>
                 </a>
                 <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/vue"
+                  href="/articles/vue-database.html"
                   target="_blank"
                 >
                   <div
@@ -683,7 +683,7 @@ export default function Home(props: {
                   </div>
                 </a>
                 <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/ionic2"
+                  href="/articles/ionic-storage.html"
                   target="_blank"
                 >
                   <div
@@ -707,7 +707,7 @@ export default function Home(props: {
                   </div>
                 </a>
                 <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/react-native"
+                  href="/react-native-database.html#rxdb"
                   target="_blank"
                 >
                   <div

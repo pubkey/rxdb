@@ -109,7 +109,7 @@ try {
 
 Even if you plan well, your app might need more storage than a single origin typically allows. There are a few advanced tactics you can use:
 
-If you store binary data such as images or videos, consider compressing them via the Compression Streams API. For textual or JSON data, a library like [RxDB](/) supports built-in [key-compression](../key-compression.md) to shorten field names or entire documents. This can be extremely helpful when storing large sets of objects:
+If you store binary data such as images or videos, consider compressing them via the Compression Streams API. For textual or [JSON data](./json-based-database.md), a library like [RxDB](/) supports built-in [key-compression](../key-compression.md) to shorten field names or entire documents. This can be extremely helpful when storing large sets of objects:
 
 ```ts
 // Example: How key-compression can transform your documents internally

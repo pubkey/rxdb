@@ -84,7 +84,7 @@ OPFS can be used in two modes:
 - Either asynchronous on the [main thread](../rx-storage-opfs.md#using-opfs-in-the-main-thread-instead-of-a-worker) 
 - Or in a WebWorker with the faster, asynchronous access with the `createSyncAccessHandle()` method.
 
-Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently. I have build a [OPFS based storage](../rx-storage-opfs.md) for RxDB with proper indexing and querying and it took me several months.
+Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a "normal" application because it is too complex. That would only make sense for storing plain files like images, not to store and query [JSON data](./json-based-database.md) efficiently. I have build a [OPFS based storage](../rx-storage-opfs.md) for RxDB with proper indexing and querying and it took me several months.
 
 ### What is WASM SQLite
 
