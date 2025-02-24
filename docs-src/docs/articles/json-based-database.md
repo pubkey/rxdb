@@ -79,7 +79,7 @@ Although this approach merges the best of both worlds (SQL queries + flexible JS
 ## Storing JSON in SQLite
 SQLite also allows storing JSON data, typically as text columns, but with some additional features since **SQLite 3.9** (2015) including the [JSON1 extension](https://www.sqlite.org/json1.html). This extension can parse JSON text, perform queries on JSON fields, and do partial updates. However, storing JSON in SQLite does require you to ensure you’ve compiled SQLite with JSON1 support or to rely on a library that bundles it. While possible, you still won't get quite the same schema-agnostic ease as a full document store, but it’s a pragmatic solution for smaller or embedded needs on the server side—or occasionally in the browser if you run SQLite via WebAssembly. RxDB uses this in its [SQLite storage](../rx-storage-sqlite.md).
 
-## Why a Plain JSON Text File is a Problem
+## JSON vs. Database - Why a Plain JSON Text File is a Problem
 
 Some developers consider storing everything in a single JSON file, typically read and written directly from disk or local storage. This approach, while seemingly simple, usually does not scale. Key issues include:
 

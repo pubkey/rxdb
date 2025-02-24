@@ -28,6 +28,10 @@ X- "indexeddb size limit" - 260 https://rxdb.info/articles/indexeddb-max-storage
 X- "indexeddb max size" - 590 https://rxdb.info/articles/indexeddb-max-storage-limit.html
 X- "indexeddb limits" - 170 https://rxdb.info/articles/indexeddb-max-storage-limit.html
 
+X- "json based database"
+X- "json vs database"
+
+
 - "supabase alternative"
 - "reactjs storage"
 - "store local storage"
@@ -40,7 +44,6 @@ X- "indexeddb limits" - 170 https://rxdb.info/articles/indexeddb-max-storage-lim
 - "electron sqlite"
 - "in browser database" - 90
 - "offline first app" - 260
-- "json based database"
 - "react native sql" - 110
 - "sqlite electron"
 - "localstorage vs indexeddb"
@@ -52,10 +55,8 @@ X- "indexeddb limits" - 170 https://rxdb.info/articles/indexeddb-max-storage-lim
 - "local first development" - 210
 - "local storage examples"
 - "local vector database" - 590
-- "nosql json database" - 140
 - "mobile app database" - 590
 - "web based database"
-- "json vs database"
 - "livequery" - 210
 - "expo database" - 390
 - "database sync" - 8100

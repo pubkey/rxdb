@@ -149,7 +149,15 @@ export default function Root({ children }) {
                  * to ensure it does not annoy people.
                  */
                 const closedAt = localStorage.getItem('notification_popup_closed_at');
-                if (closedAt && Date.now() - Number(closedAt) < POPUP_DISABLED_IF_CLOSED_TIME) {
+                const closedToday = localStorage.getItem('notification_popup_closed_today');
+                if (
+                    (closedAt && (Date.now() - Number(closedAt)) < POPUP_DISABLED_IF_CLOSED_TIME) ||
+                    /**
+                     * If it was closed today, only show it when the browser tab is not active.
+                     * This makes it less annoying and does not disturb the visitor.
+                     */
+                    (new Date().getDay() + '' === closedToday && !document.hidden)
+                ) {
                     return null;
                 }
 
@@ -157,16 +165,18 @@ export default function Root({ children }) {
                 const callToAction = callToActions[callToActionId];
                 const titleId = randomNumber(0, callToAction.title.length - 1);
 
-                /**
-                 * Also prepend (1) to the browser tab title
-                 * so people reopen the tab and see the notification.
-                 * (only once per hour)
-                 */
                 const dayKey = new Date().toISOString().split('T')[0] + '_' + new Date().getHours();
                 const localStorageItemId = 'notification_popup_title_ping_' + dayKey;
                 const pinged = localStorage.getItem(localStorageItemId);
                 if (!pinged) {
-                    document.title = DOC_TITLE_PREFIX + document.title;
+                    /**
+                     * Also prepend (1) to the browser tab title
+                     * so people reopen the tab and see the notification.
+                     * (only once per hour)
+                     */
+                    if (!document.title.includes(DOC_TITLE_PREFIX)) {
+                        document.title = DOC_TITLE_PREFIX + document.title;
+                    }
                     localStorage.setItem(localStorageItemId, '1');
                 }
                 return {
@@ -186,6 +196,7 @@ export default function Root({ children }) {
         setShowPopup(undefined);
         document.title = document.title.replace(DOC_TITLE_PREFIX, '');
         localStorage.setItem('notification_popup_closed_at', Date.now().toString());
+        localStorage.setItem('notification_popup_closed_today', new Date().getDay() + '');
     }
     return <>
         {children}
