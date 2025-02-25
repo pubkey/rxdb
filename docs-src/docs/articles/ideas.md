@@ -30,10 +30,10 @@ X- "indexeddb limits" - 170 https://rxdb.info/articles/indexeddb-max-storage-lim
 
 X- "json based database"
 X- "json vs database"
+X- "reactjs storage"
 
 
 - "supabase alternative"
-- "reactjs storage"
 - "store local storage"
 - "react localstorage"
 - "react-native storage"
