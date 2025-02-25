@@ -4,10 +4,10 @@
  * different storages.
  */
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
-import { getRxStorageSQLiteTrial, getSQLiteBasicsQuickSQLite } from 'rxdb/plugins/storage-sqlite';
-import { open } from 'react-native-quick-sqlite';
+import { getRxStorageSQLiteTrial, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb/plugins/storage-sqlite';
+import * as SQLite from 'expo-sqlite';
 export const STORAGE = wrappedValidateAjvStorage({
     storage: getRxStorageSQLiteTrial({
-        sqliteBasics: getSQLiteBasicsQuickSQLite(open)
+        sqliteBasics: getSQLiteBasicsExpoSQLiteAsync(SQLite.openDatabaseAsync)
     })
 });
