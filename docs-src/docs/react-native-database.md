@@ -4,6 +4,8 @@ slug: react-native-database.html
 description: Discover top React Native local database solutions - AsyncStorage, SQLite, RxDB, and more. Build offline-ready apps for iOS, Android, and Windows with easy sync.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # React Native Database
 
 React Native provides a cross-platform JavaScript runtime that runs on different operating systems like Android, iOS, Windows and others. Mostly it is used to create hybrid Apps that run on mobile devices at Android (Google) and iOS (Apple).
@@ -158,6 +160,10 @@ It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because 
 First you have to install all dependencies via `npm install rxdb rxjs rxdb-premium react-native-quick-sqlite`.
 Then you can assemble the RxStorage and create a database with it:
 
+
+<Steps>
+
+### Import RxDB and SQLite
 ```ts
 import {
     createRxDatabase
@@ -167,8 +173,10 @@ import {
     getSQLiteBasicsQuickSQLite
 } from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
+```
 
-// create database
+### Create a database
+```ts
 const myRxDatabase = await createRxDatabase({
     // Instead of a simple name,
     // you can use a folder path to determine the database location 
@@ -179,30 +187,43 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 
-// create collections
+```
+
+### Add a Collection
+```ts
 const collections = await myRxDatabase.addCollections({
     humans: {
         /* ... */
     }
 });
 
-// insert document
+```
+
+### Insert a Document
+```ts
 await collections.humans.insert({id: 'foo', name: 'bar'});
 
-// run a query
+```
+
+### Run a Query
+```ts
 const result = await collections.humans.find({
     selector: {
         name: 'bar'
     }
 }).exec();
 
-// observe a query
+```
+
+### Observe a Query
+```ts
 await collections.humans.find({
     selector: {
         name: 'bar'
     }
 }).$.subscribe(result => {/* ... */});
 ```
+</Steps>
 
 Using the SQLite RxStorage is pretty fast, which is shown in the [performance comparison](./rx-storage.md#performance-comparison).
 To learn more about using RxDB with React Native, you might want to check out [this example project](https://github.com/pubkey/rxdb/tree/master/examples/react-native).
@@ -242,6 +263,18 @@ Also using firestore creates a vendor lock-in because it is not possible to repl
 
 To get started with Firestore in React Native, it is recommended to use the [React Native Firebase](https://github.com/invertase/react-native-firebase) open-source project.
 
+
+### Summary
+
+| **Characteristic**      | **AsyncStorage**                     | **SQLite**                              | **PouchDB**                               | **RxDB**                                                   | **Realm**                                     | **Firestore**                                             |
+| ----------------------- | ------------------------------------ | --------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
+| **Database Type**       | Key-value store, no advanced queries | Embedded SQL engine in a local file     | NoSQL doc store, revision-based           | NoSQL doc-based (JSON)                                     | Object-based (MongoDB-owned)                  | NoSQL doc-based, cloud by Google                          |
+| **Query Model**         | getItem/setItem only                 | Standard SQL statements                 | Map/reduce or basic Mango queries         | JSON-based query language, optional indexes                | Object-level queries, sync with MongoDB Realm | Document queries, limited advanced ops                    |
+| **Observability**       | None built-in                        | No direct reactivity                    | Changes feed from Couch-style backend     | Built-in reactive queries, UI auto-updates                 | Local reactivity, or realm sync (cloud)       | Real-time snapshots, partial offline                      |
+| **Offline Replication** | None                                 | None by default                         | CouchDB-compatible sync                   | Built-in sync (HTTP, GraphQL, CouchDB, etc.)               | Realm Cloud sync only                         | Basic offline caching, re-auth needed                     |
+| **Performance**         | Fine for small keys/values           | Generally good; bridging overhead       | OK for mid data sets; can bloat over time | Varies by storage; Dexie/SQLite w/ compression can be fast | Typically fast on mobile                      | Good read-heavy perf; can be rate-limited, costy          |
+| **Schema Handling**     | None                                 | SQL schema, migrations needed           | No formal schema, doc-based               | Optional JSON-Schema, typed checks, compression            | Declarative schema, migration needed          | No strict schema; rules in console mostly                 |
+| **Usage Cases**         | Store small user settings            | Local structured data, moderate queries | Basic doc store, synergy with CouchDB     | Reactive offline-first for large or dynamic data           | Local object DB, locked to MongoDB realm sync | Real-time Google backend, partial offline, vendor lock-in |
 
 <!-- TODO
 ## Realm
