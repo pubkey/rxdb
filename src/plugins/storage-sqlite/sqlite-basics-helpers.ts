@@ -148,7 +148,7 @@ export function execSqlSQLiteNode(
             queryWithParams.params,
             ((err: any, result: any) => {
                 if (resolved) {
-                    throw new Error('callback called mutliple times ' + queryWithParams.query);
+                    throw new Error('callback called multiple times ' + queryWithParams.query);
                 }
                 resolved = true;
                 if (err) {
@@ -185,7 +185,7 @@ export function closeSQLiteDatabaseNode(
         let resolved = false;
         database.close((err: any) => {
             if (resolved) {
-                throw new Error('close() callback called mutliple times');
+                throw new Error('close() callback called multiple times');
             }
             resolved = true;
             if (
