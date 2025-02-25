@@ -29,7 +29,7 @@
     "react-native-get-random-values": "1.11.0",
     "react-native-quick-base64": "2.1.2",
     "react-test-renderer": "18.3.1",
-    "react-native-quick-sqlite": "8.2.7",
+    "react-native-nitro-sqlite": "9.1.4",
     "rimraf": "5.0.10",
     "rxjs": "7.8.2",
     "schedule": "0.5.0",
