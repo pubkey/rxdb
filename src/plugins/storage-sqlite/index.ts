@@ -5,7 +5,7 @@ import {
 } from '../../index.ts';
 import { RX_STORAGE_NAME_SQLITE } from './sqlite-helpers.ts';
 import {
-    createSQLiteStorageInstance,
+    createSQLiteTrialStorageInstance,
     RxStorageInstanceSQLite
 } from './sqlite-storage-instance.ts';
 import type {
@@ -32,7 +32,7 @@ export class RxStorageSQLiteTrial implements RxStorage<SQLiteInternals, SQLiteIn
         params: RxStorageInstanceCreationParams<RxDocType, SQLiteInstanceCreationOptions>
     ): Promise<RxStorageInstanceSQLite<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
-        return createSQLiteStorageInstance(this, params, this.settings);
+        return createSQLiteTrialStorageInstance(this, params, this.settings);
     }
 }
 

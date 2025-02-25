@@ -21,7 +21,7 @@ import {
     PreparedQuery
 } from '../../index.ts';
 import { BehaviorSubject, Observable, Subject, filter, firstValueFrom } from 'rxjs';
-import type { RxStorageSQLite } from './index.ts';
+import type { RxStorageSQLiteTrial } from './index.ts';
 import {
     closeDatabaseConnection,
     ensureParamsCountIsCorrect,
@@ -62,7 +62,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
     private opCount = 0;
 
     constructor(
-        public readonly storage: RxStorageSQLite,
+        public readonly storage: RxStorageSQLiteTrial,
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
@@ -403,8 +403,8 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
     }
 }
 
-export async function createSQLiteStorageInstance<RxDocType>(
-    storage: RxStorageSQLite,
+export async function createSQLiteTrialStorageInstance<RxDocType>(
+    storage: RxStorageSQLiteTrial,
     params: RxStorageInstanceCreationParams<RxDocType, SQLiteInstanceCreationOptions>,
     settings: SQLiteStorageSettings
 ): Promise<RxStorageInstanceSQLite<RxDocType>> {
