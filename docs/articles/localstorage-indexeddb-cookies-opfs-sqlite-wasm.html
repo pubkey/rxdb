@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.07af5d8b.css">
-<script src="/assets/js/runtime~main.b5fab2df.js" defer="defer"></script>
-<script src="/assets/js/main.12ec60eb.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.053ce509.js" defer="defer"></script>
+<script src="/assets/js/main.8cbf3095.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -49,7 +49,7 @@ The API is not asynchronous which means if fully blocks your JavaScript process 
 <li>Either asynchronous on the <a href="/rx-storage-opfs.html#using-opfs-in-the-main-thread-instead-of-a-worker">main thread</a></li>
 <li>Or in a WebWorker with the faster, asynchronous access with the <code>createSyncAccessHandle()</code> method.</li>
 </ul>
-<p>Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a &quot;normal&quot; application because it is too complex. That would only make sense for storing plain files like images, not to store and query JSON data efficiently. I have build a <a href="/rx-storage-opfs.html">OPFS based storage</a> for RxDB with proper indexing and querying and it took me several months.</p>
+<p>Because only binary data can be processed, OPFS is made to be a base filesystem for library developers. You will unlikely directly want to use the OPFS in your code when you build a &quot;normal&quot; application because it is too complex. That would only make sense for storing plain files like images, not to store and query <a href="/articles/json-based-database.html">JSON data</a> efficiently. I have build a <a href="/rx-storage-opfs.html">OPFS based storage</a> for RxDB with proper indexing and querying and it took me several months.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="what-is-wasm-sqlite">What is WASM SQLite<a href="#what-is-wasm-sqlite" class="hash-link" aria-label="Direct link to What is WASM SQLite" title="Direct link to What is WASM SQLite">​</a></h3>
 <center><img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" class="img-padding"></center>
 <p><a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a> (Wasm) is a binary format that allows high-performance code execution on the web.

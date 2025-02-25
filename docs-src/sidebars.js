@@ -503,7 +503,8 @@ const sidebars = {
         'articles/zero-latency-local-first',
         'articles/indexeddb-max-storage-limit',
         'articles/json-based-database',
-        'articles/reactjs-storage'
+        'articles/reactjs-storage',
+        'articles/json-based-database'
       ],
     },
     'contribute',
