@@ -26,7 +26,7 @@ The SQLite storage is a bit slower compared to other Node.js based storages like
 
 There are two versions of the SQLite storage available for RxDB:
 
-- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, no attachment support and is limited to store 300 documents:
+- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no attachment support, is limited to store 300 documents and fetches the whole storage state to run queries in memory. Use it for evaluation and prototypes only:
 
 <Steps>
 
