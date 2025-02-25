@@ -185,7 +185,7 @@ export function sqliteTransaction(
 
 /**
  * TODO instead of doing a while loop, we should find a way to listen when the
- * other transaction is comitted.
+ * other transaction is committed.
  */
 export async function openSqliteTransaction(
     database: SQLiteDatabaseClass,
