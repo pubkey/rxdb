@@ -1,0 +1,9 @@
+- no attachments
+- in-memory querying only
+- limit total docs amount
+- Show warning log
+- count by fetch-all
+- write with one doc per sqlite access
+- no pragma support
+- no indexes
+- limit amount of operations

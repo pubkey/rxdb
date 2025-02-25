@@ -1,10 +1,10 @@
 const electron = require('electron');
 const path = require('path');
-const { addRxPlugin } = require('rxdb');
 
-const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
+const { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } = require('rxdb/plugins/storage-sqlite');
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
 const { wrappedValidateAjvStorage } = require('rxdb/plugins/validate-ajv');
+const { DatabaseSync } = require('node:sqlite');
 const { getDatabase } = require('./shared');
 
 /**
@@ -47,8 +47,11 @@ app.on('ready', async function () {
 
     electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
 
-
-    const storage = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
+    const storage = wrappedValidateAjvStorage({
+        storage: getRxStorageSQLiteTrial({
+            sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
+        })
+    });
 
     exposeIpcMainRxStorage({
         key: 'main-storage',

@@ -6,6 +6,7 @@ import {
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
+import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../plugins/storage-sqlite/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { randomNumber } from 'async-test-util';
@@ -13,6 +14,7 @@ import * as path from 'node:path';
 import url from 'node:url';
 import {
     RxTestStorage,
+    ensureNotFalsy,
     randomDelayStorage
 } from '../../plugins/core/index.mjs';
 
@@ -257,6 +259,45 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasReplication: true
             };
             break;
+
+            case 'sqlite-trial':
+                let initDone = false;
+                let sqliteStorage: any;
+                let sqliteBasics;
+                return {
+                    name: storageKey,
+                    async init() {
+                        if (initDone) {
+                            return;
+                        }
+                        initDone = true;
+                        const nativeSqlitePromise = await import('node:sqlite').then(module => module.DatabaseSync);
+                        sqliteBasics = getSQLiteBasicsNodeNative(nativeSqlitePromise);
+                        sqliteStorage = getRxStorageSQLiteTrial({
+                            sqliteBasics: ensureNotFalsy(sqliteBasics),
+                            databaseNamePrefix: './test_tmp/'
+                        });
+                    },
+                    getStorage() {
+                        return wrappedValidateAjvStorage({
+                            storage: ensureNotFalsy(sqliteStorage)
+                        });
+                    },
+                    getPerformanceStorage() {
+                        return {
+                            description: 'sqlite-native',
+                            storage: wrappedValidateAjvStorage({
+                                storage: ensureNotFalsy(sqliteStorage)
+                            })
+                        };
+                    },
+                    hasPersistence: true,
+                    hasMultiInstance: true,
+                    hasAttachments: false,
+                    hasReplication: true
+                };
+                break;
+                break;
         default:
             throw new Error('no DEFAULT_STORAGE set');
     }

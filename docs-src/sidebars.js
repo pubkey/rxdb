@@ -98,7 +98,7 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-sqlite',
-          label: 'SQLite 👑'
+          label: 'SQLite'
         },
         {
           type: 'doc',
