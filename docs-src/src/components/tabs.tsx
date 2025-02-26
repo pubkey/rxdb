@@ -2,11 +2,9 @@ import React from 'react';
 import { Tabs as AntdTabs } from 'antd';
 
 /**
- * A Tabs component that interprets each child with an `id`
- * (e.g., an MDX heading) as a tab heading,
- * collecting subsequent elements as that tab's content.
+ * @link https://chatgpt.com/c/67bf0330-4d30-8005-91fe-f5d666de859b
  */
-export function Tabs(props: { children: React.ReactNode }) {
+export function Tabs(props: { children: React.ReactNode; }) {
     // We'll build an array of { label, key, content } objects for AntdTabs.
     const tabItems: Array<{
         label: React.ReactNode;
