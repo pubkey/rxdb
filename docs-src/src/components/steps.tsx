@@ -81,6 +81,7 @@ const styles = {
         height: '32px',
         borderRadius: '50%',
         backgroundColor: 'var(--color-middle)',
+        border: '3px solid #391a3b',
         color: '#fff',
         display: 'flex',
         alignItems: 'center',
