@@ -215,7 +215,17 @@ const myRxDatabase = await createRxDatabase({
 // create collections
 const collections = await myRxDatabase.addCollections({
     humans: {
-        /* ... */
+        schema: {
+            version: 0,
+            type: 'object',
+            primaryKey: 'id',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                age: { type: 'number' }
+              },
+            required: ['id', 'name']
+        }
     }
 });
 ```
