@@ -337,10 +337,12 @@ export function getSQLiteBasicsQuickSQLite(
  */
 export function getSQLiteBasicsExpoSQLite(
     openDB: any,
+    options?: any,
+    directory?: any
 ): SQLiteBasics<any> {
     return {
-        open: async (name: string) => {
-            return await openDB(name);
+        open: async (name: string,) => {
+            return await openDB(name, options, directory);
         },
         all: (db: any, queryWithParams: SQLiteQueryWithParams) => {
             const result = new Promise<any>((resolve, reject) => {
@@ -405,10 +407,12 @@ export function getSQLiteBasicsExpoSQLite(
  */
 export function getSQLiteBasicsExpoSQLiteAsync(
     openDB: any,
+    options?: any,
+    directory?: any
 ): SQLiteBasics<any> {
     return {
         open: async (name: string) => {
-            return await openDB(name);
+            return await openDB(name, options, directory);
         },
         all: async (db: any, queryWithParams: SQLiteQueryWithParams) => {
             const result = await db.getAllAsync(

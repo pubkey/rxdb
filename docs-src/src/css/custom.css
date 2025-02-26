@@ -1820,11 +1820,15 @@ samp .cm-comment {
     color: white;
 }
 
-.observe-code-example-tabs .ant-tabs-tab-btn[aria-selected="true"] {
+.ant-tabs-tab-btn {
+    color: white !important;
+}
+
+.ant-tabs-tab-btn[aria-selected="true"] {
     color: var(--color-top) !important;
 }
 
-.observe-code-example-tabs .ant-tabs-ink-bar {
+.ant-tabs-ink-bar {
     background: var(--color-top) !important;
 }
 

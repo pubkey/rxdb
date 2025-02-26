@@ -5,6 +5,7 @@ description: Discover top React Native local database solutions - AsyncStorage, 
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Tabs} from '@site/src/components/tabs';
 
 # React Native Database
 
@@ -166,14 +167,32 @@ Then you can assemble the RxStorage and create a database with it:
 ### Import RxDB and SQLite
 ```ts
 import {
-    createRxDatabase
+  createRxDatabase
 } from 'rxdb';
-import {
-    getRxStorageSQLite,
-    getSQLiteBasicsQuickSQLite
-} from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 ```
+
+<Tabs>
+
+#### RxDB Core
+
+```ts
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsCapacitor
+} from 'rxdb/plugins/storage-sqlite';
+```
+
+#### RxDB Premium 👑
+
+```ts
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsCapacitor
+} from 'rxdb-premium/plugins/storage-sqlite';
+```
+
+</Tabs>
 
 ### Create a database
 ```ts
@@ -196,7 +215,6 @@ const collections = await myRxDatabase.addCollections({
         /* ... */
     }
 });
-
 ```
 
 ### Insert a Document
@@ -266,7 +284,7 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 
 ### Summary
 
-| **Characteristic**      | **AsyncStorage**                     | **SQLite**                              | **PouchDB**                               | **RxDB**                                                   | **Realm**                                     | **Firestore**                                             |
+| **Characteristic**      | **AsyncStorage**                     | **SQLite**                              | **PouchDB**                               | <img src="../files/logo/logo.svg" alt="RxDB" width="20" /> **RxDB**                                                   | **Realm**                                     | **Firestore**                                             |
 | ----------------------- | ------------------------------------ | --------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
 | **Database Type**       | Key-value store, no advanced queries | Embedded SQL engine in a local file     | NoSQL doc store, revision-based           | NoSQL doc-based (JSON)                                     | Object-based (MongoDB-owned)                  | NoSQL doc-based, cloud by Google                          |
 | **Query Model**         | getItem/setItem only                 | Standard SQL statements                 | Map/reduce or basic Mango queries         | JSON-based query language, optional indexes                | Object-level queries, sync with MongoDB Realm | Document queries, limited advanced ops                    |
