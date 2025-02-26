@@ -5,6 +5,7 @@ description: Unlock seamless persistence with SQLite RxStorage. Explore usage in
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Tabs} from '@site/src/components/tabs';
 
 # SQLite RxStorage
 
@@ -26,70 +27,57 @@ The SQLite storage is a bit slower compared to other Node.js based storages like
 
 There are two versions of the SQLite storage available for RxDB:
 
-- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no attachment support, is limited to store 300 documents and fetches the whole storage state to run queries in memory. Use it for evaluation and prototypes only:
+- The **trial version** which comes directly shipped with RxDB Core. It contains an SQLite storage that allows you to try out RxDB on devices that support SQLite, like React Native or Electron. While the trial version does pass the full RxDB storage test-suite, it is not made for production. It is not using indexes, has no attachment support, is limited to store 300 documents and fetches the whole storage state to run queries in memory. **Use it for evaluation and prototypes only!**
 
-<Steps>
+- The **[RxDB Premium 👑](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
 
-### Import the Trial SQLite Storage
+
+<Tabs>
+
+## Trial Version
 ```ts
+// Import the Trial SQLite Storage
 import {
     getRxStorageSQLiteTrial,
     getSQLiteBasicsNodeNative
 } from 'rxdb/plugins/storage-sqlite';
-```
 
-### Create a storage for it
-
-```ts
+// Create a Storage for it
 const storage = getRxStorageSQLiteTrial({
     sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
 });
-```
 
-### Create a Database with the Storage
-
-```ts
+// Create a Database with the Storage
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: storage
 });
 ```
 
+## RxDB Premium 👑
 
-</Steps>
-
-
-- The **[RxDB Premium 👑](/premium/) version** which contains the full production-ready SQLite storage. It contains a full load of performance optimizations and full query support. To use the SQLite storage you have to import `getRxStorageSQLite` from the [RxDB Premium 👑](/premium/) package and then add the correct `sqliteBasics` adapter depending on which sqlite module you want to use. This can then be used as storage when creating the [RxDatabase](./rx-database.md). In the following you can see some examples for some of the most common SQLite packages.
-
-<Steps>
-
-### Import the SQLite Storage
-Import the SQLite storage from the premium plugins.
 ```ts
+// Import the SQLite Storage from the premium plugins.
 import {
     getRxStorageSQLite,
     getSQLiteBasicsNodeNative
 } from 'rxdb-premium/plugins/storage-sqlite';
-```
 
-### Create a storage for it
-
-```ts
+// Create a Storage for it
 const storage = getRxStorageSQLite({
     sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
 });
-```
 
-### Create a Database with the Storage
-
-```ts
+// Create a Database with the Storage
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: storage
 });
 ```
 
-</Steps>
+
+</Tabs>
+
 
 In the following, all examples are shown with the premium SQLite storage. Still they work the same with the trial version.
 
