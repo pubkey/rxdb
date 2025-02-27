@@ -504,7 +504,8 @@ const sidebars = {
         'articles/indexeddb-max-storage-limit',
         'articles/json-based-database',
         'articles/reactjs-storage',
-        'articles/json-based-database'
+        'articles/json-based-database',
+        'articles/local-first-future'
       ],
     },
     'contribute',
