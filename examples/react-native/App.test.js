@@ -1,6 +1,7 @@
 import React from 'react';
 import { isRxDatabase } from 'rxdb';
 import initializeDb, { HeroesCollectionName } from "./initializeDb";
+import { STORAGE_MEMORY } from './storage';
 
 const testDocument = {
     name: 'test',
@@ -10,7 +11,7 @@ const testDocument = {
 let db;
 
 it('Database initialization', async () => {
-    db = await initializeDb();
+    db = await initializeDb(undefined, STORAGE_MEMORY);
     expect(isRxDatabase(db)).toBeTruthy();
 });
 

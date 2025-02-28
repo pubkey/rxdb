@@ -25,6 +25,10 @@ if (typeof localStorage !== 'undefined') {
   localStorage.debug = isDev ? '*' : ''
 }
 
+if (!global.setImmediate) {
+  global.setImmediate = setTimeout
+}
+
 // @ts-ignore
 // Avoid using node dependent modules
 // process.browser = true
