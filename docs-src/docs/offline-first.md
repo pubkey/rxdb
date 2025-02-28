@@ -12,6 +12,11 @@ This can be either done with complex caching strategies, or by using an local-fi
 
 > **Offline first is not about having no internet connection**
 
+
+:::note
+I wrote a follow-up version of offline/first local first about [Why Local-First Is the Future and what are Its Limitations](./articles/local-first-future.md)
+:::
+
 While in the past, internet connection was an unstable, things are changing especially for mobile devices.
 Mobile networks become better and having no internet becomes less common even in remote locations.
 So if we did not care about offline first applications in the past, why should we even care now?
@@ -114,3 +119,4 @@ You do not have to care whether this data came from the UI, another tab, the bac
 
 - Learn how to store and query data with RxDB in the [RxDB Quickstart](./quickstart.md)
 - [Downsides of Offline First](./downsides-of-offline-first.md)
+- I wrote a follow-up version of offline/first local first about [Why Local-First Is the Future and what are Its Limitations](./articles/local-first-future.md)
