@@ -512,7 +512,7 @@
     "@typescript-eslint/parser": "8.25.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
-    "babel-loader": "9.2.1",
+    "babel-loader": "10.0.0",
     "babel-plugin-transform-class-properties": "6.24.1",
     "brfs": "2.0.2",
     "child-process-promise": "2.2.1",
