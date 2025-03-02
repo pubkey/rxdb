@@ -168,14 +168,34 @@ Critics of local-first approaches often point out these challenges. Here's a com
 
 That’s a long list of challenges! In summary, local-first approaches introduce distributed data issues on the client side that web developers usually didn't have to deal with. Despite these challenges, the local-first movement is steadily growing because the **benefits to user experience and data control are very compelling** and modern tools are emerging to mitigate a lot of these difficulties. All of these are solved or solveable for your specific use-case, just keep them in mind before you start architecting your local-first app.
 
+## Local-First vs. Traditional Online-First Approaches
+
+So no you know the pros and cons about Local-First. Lets directly compare it to your previous "online-first" stack:
+
+### Connectivity and Offline Usage
+- **Local-first**: Apps like WhatsApp store messages locally on your device, letting you read past messages and even compose new ones without a stable network connection. Once online, the messages sync with the server and other participants.
+- **Online-first**: Purely cloud-based apps typically stop functioning (beyond simple caching) when the network or server goes down. They rely on a constant connection to fetch or store user data.
+
+### Latency and Performance
+- **Local-first**: Because data operations happen on the device, you see near-instant interactions (e.g., typing and reading chats feels very responsive, as the messages are on your phone). Syncing occurs in the background without delaying the user.
+- **Online-first**: Most interactions involve a round-trip to the server, adding network latency and potentially requiring loading states or fallback UIs. If the network is slow or unreliable, users can experience delays when sending or receiving updates.
+
+### Complexity and Conflict Resolution
+- **Local-first**: Much of the complexity—storing data, handling conflicts—shifts to the client. WhatsApp, for instance, caches all messages locally and queues unsent messages offline. Once reconnected, it must reconcile with the server and other devices, especially if the same account is used on multiple platforms.
+- **Online-first**: A single central server manages data and concurrency, so clients remain thinner. However, the app becomes unusable if connectivity is lost, and any server downtime directly impacts all users.
+
+### Data Ownership and Storage Limits
+- **Local-first**: Users hold a complete copy of data on their own device, retaining control and quick access. This can raise challenges when data sets are very large; phone storage might be insufficient, or backups may be harder to guarantee.
+- **Online-first**: Storing all data in the cloud scales more easily, and providers often manage backups automatically. On the downside, users depend on the service and must trust it to protect their data.
+
+### When to Choose Which
+- **Local-first**: Particularly helpful for scenarios where offline operation and immediate responsiveness matter—such as chat apps (like WhatsApp), field tools in low-connectivity environments, or any use case where users can’t rely on being online 24/7.
+- **Online-first**: Well-suited for systems that demand real-time central control or massive data aggregation with minimal offline needs, such as large-scale analytics platforms or services where guaranteed immediate global consistency is essential.
+- **Hybrid**: In reality, most modern apps often blend these approaches, giving users partial offline capabilities (caching, queued updates) alongside a robust central service. This hybrid method offers the benefits of local speed and resilience, while still leveraging cloud infrastructure for collaboration and global reach.
+
+---
+
 Next, let's look at how local-first is implemented in practice with an example, and what tools/frameworks are available to help.
-
-
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
 
 
 ## Local-First in Practice with RxDB
@@ -186,6 +206,13 @@ To concretely understand how local-first development works, let's walk through a
 :::note
 Because you read this on the RxDB website, in the following a local-first setup with RxDB is shown. If you only care about Local-First in general, you can [skip](#partial-sync) this part.
 :::
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
+    </a>
+</center>
+
 
 ### Setting up a Local Database
 
@@ -476,63 +503,78 @@ function onPlayerMove(neighboringChunkIds) {
 ### Diffy-Sync when Revisiting a Chunk
 An added benefit of this multi-replication-state design is checkpointing. Each replication state has a unique “replication identifier,” so the next time the player returns to `chunk-123`, the local database knows what it already has and only fetches the differences—no need to re-download the entire chunk.
 
-### Partial Sync in a Business Application
+### Partial Sync in a Local-First Business Application
 
 Though a voxel world is an intuitive example, the same technique applies in enterprise scenarios where data sets are large but each user only needs a specific subset. You could spin up a new replication for each “permission group” or “region,” so users only sync the records they’re allowed to see. Or in a CRM, the replication might be filtered by the specific accounts or projects a user is currently handling. As soon as they switch to a different project, you stop the old replication and start one for the new scope.
 
 This **chunk-based** or **scope-based** replication pattern keeps your local storage lean, reduces network overhead, and still gives users the offline, instant-feedback experience that local-first apps are known for. By dynamically creating (and canceling) replication states, you retain tight control over bandwidth usage and make the infinite (or very large) feasible. In a production app you would also "flag" the entities (with a `pull.modifier`) by which replication state they came from, so that you can clean up the parts that you no longer need.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Offline-First vs. Local-First
+
+In the early days of offline-capable web apps (around 2014), the common phrase was **"Offline-First"**. Tools like **PouchDB** popularized the notion that developers should assume devices are often offline or have flaky connections, so apps must continue to work seamlessly without a network. The guiding principle was *“apps should treat being online as optional.”* If a user has no internet access, the application’s core features still function, saving or queuing data locally, and automatically synchronizing once connectivity is restored.
+
+Over time, this focus on offline support evolved into the broader concept of **"Local-First Software,"** emphasizing not just offline operation but also the technical underpinnings of **storing data locally** in the client application. While offline-first is primarily about resilience to network loss, local-first highlights ownership, privacy, and performance benefits of keeping the primary data on the user’s device. Most tools these days extended the original offline-first concepts, adding real-time reactivity, custom sync, and more nuances like conflict resolution or encryption.
+
+<center>
+<h4>This is one of the "early" offline-first videos:</h4>
+<iframe class="img-radius" width="560" height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</center>
+
+<br />
+<br />
+<div style={{textAlign: 'justify'}}>
+  <img src="/files/no-map-tag.png" alt="no map t ag" width="100" class="img-in-text-right" />
+However, the term **"local-first"** can be **confusing** to non-technical audiences because many people (especially in the US) associate “local first” with *community-oriented movements* that encourage buying from nearby businesses or supporting local initiatives. To reduce ambiguity, it may be clearer to use **“local first development”** or **“local first software”** in your documentation and marketing materials. When creating branding or logos around local-first software, **avoid using the “Google Maps Pin”** as a symbol. This icon typically implies geolocation or physical locality—further mixing up the notion of “location-based services” with “on-device data storage.”
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .. offline-first started with pouchdb in sth like 2014..
 .. RxDB started in 2018..
