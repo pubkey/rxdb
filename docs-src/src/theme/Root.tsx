@@ -403,14 +403,7 @@ function startAnalytics() {
             return;
         }
         const version = hasCookie.split('=')[1];
-        const storageKey = DEV_MODE_EVENT_ID + '=' + version;
-        if (localStorage.getItem(storageKey)) {
-            console.log(DEV_MODE_EVENT_ID + ': tracked already');
-            return;
-        }
-
         console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
-        localStorage.setItem(storageKey, '1');
         triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, true);
         triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, true);
     }

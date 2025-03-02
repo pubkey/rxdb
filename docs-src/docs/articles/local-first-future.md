@@ -1,11 +1,13 @@
 ---
-title: Why Local-First Is the Future and whare are Its Limitations
+title: Why Local-First Is the Future and what are its Limitations
 slug: local-first-future.html
 description:  asdf
 ---
 
+import {Tabs} from '@site/src/components/tabs';
+import {Steps} from '@site/src/components/steps';
 
-# Why Local-First Is the Future and what are Its Limitations
+# Why Local-First Is the Future and what are its Limitations
 
 Imagine a web app that behaves seamlessly even with zero internet access, provides sub-millisecond response times, and keeps most of the user's data on their device. This is the **local-first** or [offline-first](../offline-first.md) approach. Although it has been around for a while, local-first has recently become more practical because of **maturing browser storage APIs** and new frameworks that simplify **data synchronization**. By allowing data to live on the client and only syncing with a server or other peers when needed, local-first apps can deliver a user experience that is **fast, resilient**, and **privacy-friendly**.
 
@@ -31,16 +33,12 @@ The push for local-first is driven by a few key new technological capabilities t
 
 
 <p align="center">
-  <img src="/files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" />
+  <img src="/files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" class="img-radius" />
 </p>
 
-- **Improvements in Local-First Tooling**: TODO (how rxdb is faster and better and can do 1mio mail search in 100 ms)
+- **Improvements in Local-First Tooling**: A major factor fueling the rise of local-first architectures is the **dramatic leap in client-side tooling and performance**. For instance, consider a local-first **email client** that stores **one million messages**. In 2014, searching through that many documents—especially with something like early PouchDB—could take **minutes** in a browser. Today, with advanced offline databases like **RxDB**, you can [shard](../rx-storage-sharding.md) the [OPFS storage](../rx-storage-opfs.md) across multiple [web workers](../rx-storage-worker.md) (one per CPU) and use [memory-mapped](../rx-storage-memory-mapped.md) techniques. The result is a **regex search** of one million documents in around **120 milliseconds**—all in JavaScript, running inside a standard web browser.
 
-<center>
-    <a href="https://rxdb.info/">
-        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
-    </a>
-</center>
+  Better yet, this performance ceiling is likely to keep rising. Newer browser features and **WebAssembly** optimizations could enable even faster indexing and query operations, closing the gap with native desktop clients. These transformations highlight why local-first has become truly practical: not only can you sync and work offline, but you can handle **serious data loads** with performance that would have been unthinkable just a few years ago.
 
 ## What you can expect from a Local First App
 
@@ -48,11 +46,10 @@ The push for local-first is driven by a few key new technological capabilities t
 
 ### User Experience Benefits
 
+<div style={{textAlign: 'justify'}}>
+  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" class="img-in-text-right" />
 - **Performance & UX:** Running from local storage means **low latency** and instantaneous interactions. There's no round-trip delay for most operations. Local-first apps aim to provide **near-zero latency** responses by querying a local database instead of waiting for a server response​. This results in a snappy UX (often no need for loading spinners) because data reads/writes happen immediately on-device. Modern users expect real-time feedback, and local-first delivers that by default.
-
-<p align="center">
-  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />
-</p>
+</div>
 
 - **Offline Resilience:** Obviously, being able to work offline is a major benefit. Users can continue using the app with no internet (or flaky connectivity), and their changes sync up once online. This is increasingly important not just for remote areas, but for any app that needs to be available 24/7. Even though mobile networks have improved, connectivity can still drop; local-first ensures the app doesn't grind to a halt. The app _“stores data locally at the client so that it can still access it when the internet goes away.”_
 
@@ -60,9 +57,9 @@ The push for local-first is driven by a few key new technological capabilities t
 
 - **Realtime Apps**: Today’s users expect data to stay in sync across browser tabs and devices without constant page reloads. In a typical cloud app, if you want real-time updates (say to show that a friend edited a document), you'd need to implement a [websocket or polling](./websockets-sse-polling-webrtc-webtransport.md) system for the server to push changes to clients, which is complex. Local-first architectures naturally lend themselves to realtime-by-default updates because the application state lives in a local database that can be observed for changes. Any edits (local or incoming from the server) immediately trigger [UI updates](./optimistic-ui.md). Similarly, background sync mechanisms ensure that new server-side data flows into the local store and into the user interface right away—no need to hit F5 to fetch the latest changes like on a traditional webpage.
 
-<p align="center">
-  <img src="/files/animations/realtime.gif" alt="realtime ui updates" width="700" />
-</p>
+  <p align="center">
+    <img src="/files/animations/realtime.gif" alt="realtime ui updates" width="700" class="img-radius" />
+  </p>
 
 
 ### Developer Experience Benefits
@@ -142,30 +139,388 @@ Critics of local-first approaches often point out these challenges. Here's a com
 
 - **Initial Data Load and Data Size Limits:** Local-first requires pulling data **down to the client**. If your dataset is huge (gigabytes), it's simply not feasible to download everything to every client. For example, syncing every tweet on Twitter to every user's phone is impossible. Local-first works best when the data set per user is reasonably sized (up to 2 Gigabytes). In practice, you often **limit the data** to just that user's own data or a subset relevant to them. Even then, on first use the app might need to download a significant chunk of data to initialize the local database. There is a **upper bound on dataset size** beyond which the initial sync or storage needs become impractical. You cannot assume unlimited local storage. If your data is too large, local-first will either fail or you'll need to only sync partial data (and then handle what happens if the needed data isn't present locally). In short, **local-first is unsuitable for massive datasets** or data that cannot be partitioned per user.
 
+<div style={{textAlign: 'justify'}}>
+  <img src="/files/safari-database.png" alt="safari database" width="200" class="img-in-text-right" />
 - **Storage Persistence (Browser Limitations):** Storing data in the browser (via IndexedDB or similar) is not as durable as on a server disk. Browsers may **evict data** to save space (especially on mobile devices). For instance, Safari notoriously wipes out IndexedDB data if the user hasn't used the site in ~7 days, treating it as cache. Other browsers have their own eviction policies for offline data. Also, users can at any time clear their browser storage (intentionally or via something like "Clear site data"). This means the local data **cannot be 100% trusted to stay forever**. A well-behaved local-first app needs to be able to recover if local data is lost – usually by pulling from the server again​. Essentially, the server still often serves as a backup. But if your app had any purely local data (not intended to sync), that's at risk. **Mobile apps** (with SQLite or filesystem storage) are a bit more stable than web browsers, but even there, uninstalls or certain OS actions can remove local data. This is a challenge: how to cache data offline for speed while ensuring if it's wiped, the user doesn’t lose everything important. Cloud-only apps by contrast keep data in the cloud so it's typically safe unless the server fails (and servers are easier to backup reliably).
+</div>
 
-<p align="center">
-  <img src="/files/safari-database.png" alt="safari database" width="200" />
-</p>
 
 
 - **Complex Client-Side Logic & Increased App Size**: A local-first app tends to be more complex on the client side. You're essentially putting what used to be server responsibilities (storage, query engine, sync logic) into the frontend. This can increase the size of your frontend bundle (including a database library, possibly CRDT or sync code, etc.). It also increases memory and CPU usage on the client, as the browser/phone is doing more work. Low-end devices or older phones might struggle if the app is not optimized. Developers need to consider performance tuning for the local database (indexing, query efficiency) just like they would on a server. So while the user gains benefits, the app developer has to manage this complexity.
 
-- **Performance Constraints in JavaScript:** Even though devices are fast, a local JS database is generally **slower than a server DB** on robust hardware. There are many layers (JS -> IndexedDB -> possibly SQLite under the hood) that add overhead​. For example, inserting a record might go through the DB library, the storage engine, the browser's implementation, down to disk. For most UI uses this is fine (you don't need 10k writes/sec in a to-do app, you need maybe a few writes per second at most). But if your app does heavy data processing, the browser might become a bottleneck. The key question is _“Is it fast enough?”_. Often the answer is yes for typical usage, but developers must be mindful of not doing something on the client that truly requires big iron servers. For instance, full-text indexing of a million documents might be too slow in a client-side DB. **Unpredictable performance** is also a factor: different users have different devices. A query that takes 50ms on a high-end desktop might take 500ms on a low-end phone. So performance tuning and testing across devices is needed, and some heavy tasks might still belong on the server side​. For example if you build a [local vector database](./javascript-vector-database.md) you might want to create the embedding on the server and sync them instead of creating them on the client.
+- **Performance Constraints in JavaScript:** Even though devices are fast, a local JS database is generally **slower than a server DB** on robust hardware. There are many layers (JS -> IndexedDB -> possibly SQLite under the hood) that add overhead​. For example, inserting a record might go through the DB library, the storage engine, the browser's implementation, down to disk. For most UI uses this is fine (you don't need 10k writes/sec in a to-do app, you need maybe a few writes per second at most). But if your app does heavy data processing, the browser might become a bottleneck. The key question is _“Is it fast enough?”_. Often the answer is yes for typical usage, but developers must be mindful of not doing something on the client that truly requires big iron servers. For instance, full-text indexing of a million documents might be too slow in a client-side DB. **Unpredictable performance** is also a factor: different users have different devices. A query that takes 50ms on a high-end desktop might take 500ms on a low-end phone in battery saving mode. So performance tuning and testing across devices is needed, and some heavy tasks might still belong on the server side​. For example if you build a [local vector database](./javascript-vector-database.md) you might want to create the embedding on the server and sync them instead of creating them on the client.
 
 - **Client Database Migrations:** As your app evolves, you'll change data models or add new fields. In a cloud-first app, you'd typically run a migration on the server database. In a local-first app, you have not only the server DB (if any) but also every client’s local database to consider. Upgrading the schema means you need to write migration logic that runs on each client, perhaps the next time they launch the app after an update. Clients may be offline or not upgrade the app immediately, so you could have different versions of the schema in the wild. This complicates data handling (the sync protocol might need to handle multiple schema versions until everyone is updated). Providing a smooth migration path for local data is doable (many libraries like RxDB or Realm provide [migration facilities](../migration-schema.md)), but it requires careful testing. In a worst case, a failed migration on a client could brick the app for that user or force a full resync. This is a **much bigger headache** than just migrating a centralized DB at midnight while your service is in maintenance mode. 🌃
 
 - **Security and Access Control:** In cloud-based apps, enforcing data security (who can see what) is done on the server – the client only gets the data it's authorized to get. In a local-first scenario, you often need to **partition data per user** on the backend as well, to ensure users only sync down their own data (or data they have permission for). One simple strategy is to give each user their own database or dataset on the server and only replicate that. For example, CouchDB allows creating one database per user and replication can be scoped to that DB – making permission easy. But if you ever need to query across users (say an admin view or aggregate analytics), having data split into many small DBs becomes a pain. The alternative is a single backend database with a **fine-grained access control**, and the client asks to sync only certain documents/fields. That usually means writing a custom sync server or using something like GraphQL with resolvers that respect permissions. In short, **implementing auth and permissions in sync** adds complexity. Also, any data stored on the client is theoretically vulnerable to extraction (if someone compromises the device or uses dev tools). You can [encrypt local databases](../encryption.md) to prevent extraction after the server "revokes" the decryption password to migitate the data extraction risk.
 
+<div style={{textAlign: 'justify'}}>
+  <img src="/files/no-sql.png" alt="NoSQL Document" width="100" class="img-in-text-right" />
 - **Relational Data and Complex Queries:** Most client-side/offline databases (like RxDB, IndexedDB, PouchDB, etc.) are [NoSQL/document](../why-nosql.md) oriented for flexibility in syncing and easy conflict handling. They may not support complex join queries or ACID transactions across multiple tables like a full SQL database would. This is partly because replicating a full relational model is much harder (maintaining referential integrity, etc., when data is partial on a client) or not even logically possible. For example if you have two offline clients running a complex `UPDATE X WHERE Y FROM Z INNER JOIN Alice INNER JOIN Bob` query and then they go online, you have no easy way of handling these conflicts.
   
   If your app has heavy relational data requirements or relies on complex server-side queries (aggregations, multi-join reports), you might find the local database either cannot do it or is too slow to do it client-side. The lack of robust relational querying is something to plan for – you might need to adjust your data model to be more document-oriented or use client-side libraries to run [joins in memory](../why-nosql.md#relational-queries-in-nosql). Most tools use NoSQL because it makes replication easy and implementing true relational sync would require extremely sophisticated solutions and even needing an atomic clock for full consistency across nodes (like google spanner). So, **if your app truly needs SQL power on the client**, local-first might complicate things.
 
   > In Local-First, most tools use NoSQL because it makes replication and conflict handling easy.
 
+  Additionally, because many offline databases rely on document-based NoSQL structures, they can leverage specialized caching or incremental-update algorithms like RxDB does with [event-reduce](https://github.com/pubkey/event-reduce). By tracking and applying only the delta of changes, event-reduce can optimize observed query performance significantly by not having to re-run database queries on changes and instead "calculating" the new results on the fly.
+</div>
 
 
-That’s a long list of challenges! In summary, local-first approaches introduce distributed data issues on the client side that web developers usually didn't have to deal with. But most of them are solved or solveable for your specific use-case, just keep them in mind before you start building local-first stuff.
+That’s a long list of challenges! In summary, local-first approaches introduce distributed data issues on the client side that web developers usually didn't have to deal with. Despite these challenges, the local-first movement is steadily growing because the **benefits to user experience and data control are very compelling** and modern tools are emerging to mitigate a lot of these difficulties. All of these are solved or solveable for your specific use-case, just keep them in mind before you start architecting your local-first app.
+
+Next, let's look at how local-first is implemented in practice with an example, and what tools/frameworks are available to help.
+
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220" />
+    </a>
+</center>
+
+
+## Local-First in Practice with RxDB
+
+To concretely understand how local-first development works, let's walk through an example using RxDB, a database for building local-first [realtime app](./realtime-database.md) in JavaScript. RxDB runs inside your app, storing data in IndexedDB (or SQLite, etc.) and supports real-time sync with a backend.
+
+
+:::note
+Because you read this on the RxDB website, in the following a local-first setup with RxDB is shown. If you only care about Local-First in general, you can [skip](#partial-sync) this part.
+:::
+
+### Setting up a Local Database
+
+With RxDB, you first create a database and define a schema for your collections. For example, suppose we're building a simple to-do list app that we want to work offline. We can define a "todos" collection with fields like `id`, `title`, `done`, `timestamp`, etc. In code, it looks like:
+
+
+<Steps>
+
+#### Imports
+
+```ts
+import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+// Enable dev mode (for helpful warnings in development)
+addRxPlugin(RxDBDevModePlugin);
+```
+
+#### Create a Database
+
+Here we use the [Dexie.js](../rx-storage-dexie.md) based storage for RxDB which stores data inside of IndexedDB in a **browser**. There is a wide range of other [storages](../rx-storage.md) for example in **React Native** you would use the [SQLite storage](../rx-storage-sqlite.md) instead.
+
+```ts
+const db = await createRxDatabase({
+    name: 'myappdb',
+    storage: wrappedValidateAjvStorage({           
+        storage: getRxStorageDexie()
+    })
+});
+```
+
+#### Add a Collection
+
+```ts
+await db.addCollections({
+  todos: {
+    schema: {
+      version: 0,
+      primaryKey: 'id',
+      type: 'object',
+      properties: {
+        id:        { type: 'string', maxLength: 100 },
+        title:     { type: 'string' },
+        done:      { type: 'boolean' },
+        timestamp: { type: 'string' }
+      },
+      required: ['id', 'title', 'done', 'timestamp']
+    }
+  }
+});
+```
+</Steps>
+
+Here, we've created a local database and a todos collection with a JSON schema. 
+
+
+### Run local CRUD operations
+
+Now, our frontend app can use this local collection just like a normal database: insert todos, query them, etc., **without any network calls**. For example:
+
+<Steps>
+
+#### Insert a new todo (this happens locally, instantly)
+```ts
+await db.todos.insert({
+  id: 'todo1',
+  title: 'Learn RxDB local-first',
+  done: false,
+  timestamp: new Date().toISOString()
+});
+```
+
+#### Query todos that are not done yet
+```ts
+const remaining = await db.todos.find({
+  selector: { done: { $eq: false } }
+}).exec();
+console.log(`Remaining todos: ${remaining.length}`);
+```
+
+#### Update a document
+```ts
+const firstTodo = remaining[0];
+await firstTodo.patch({ done: true });  // mark as done
+```
+
+#### Remove a document
+
+```ts
+await firstTodo.remove();
+```
+</Steps>
+
+All these operations are interacting with the **IndexedDB in the browser**. They will succeed and modify the local persistent state even if the app is completely offline. From the user's perspective, the app just works – adding or checking off a todo is instantaneous. The local database writes are [very fast](../rx-storage-performance.md) (usually on the order of milliseconds) and don't depend on any server.
+
+### Reactive UI Updates
+
+One powerful feature of RxDB is that queries are **observables**. You can subscribe to a query to get real-time updates whenever the underlying data changes (including changes coming from other tabs or from sync). For instance, with RxJS-based subscriptions:
+
+```ts
+// Set up a real-time subscription to all todos that are not done
+db.todos.find({ selector: { done: false } }).$.subscribe(todoList => {
+    console.log('Currently have ' + todoList.length + ' todos left');
+    // Here you would update your UI to display the latest todos
+});
+```
+
+The `.$` on a query gives an RxJS observable. This subscription will trigger every time the result set changes. If, for instance, in another part of the app (or another browser tab) a todo is marked done or added, this callback will fire with the updated list. This is incredibly useful for building UIs that automatically reflect the current state of the local DB. RxDB allows you to subscribe to changes even if they happen in "another part of your application, another browser tab, or during database replication/synchronization"​. This is incredibly useful for building UIs that update automatically without manual refreshes or polling.
+
+<details>
+    <summary>Learn also: Using **Signals** instead of **RxJS** for Reactivity</summary>
+<div>
+While RxJS observables are a well-established approach in the RxDB ecosystem, RxDB 14 introduced an alternative reactivity API [based on signals](../reactivity.md). Signals are a simpler reactive primitive, commonly seen in frameworks like _Vue (reactive refs)_ or _SolidJS (signals)_ or _Angular (signals)_. Signals are more intuitive alternative to RxJS and do not require developers to learn about all these RxJS operators. Here’s a quick look at how you might use signals with RxDB with react:
+
+<Steps>
+
+#### Create a Query
+```ts
+const todosQuery = db.todos.find({ selector: { done: false } });
+```
+
+#### Get a Signal from the Query
+```ts
+const todosSignal = todosQuery.$$;
+```
+
+#### Use the Signal in a React Component
+```tsx
+function TodosComponent() {
+  const todoList = todosSignal();
+  return (
+    <ul>
+      {todoList.map(todo => (
+        <li key={todo.id}>{todo.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+</Steps>
+
+([Learn more about using Signals](../reactivity.md))
+
+</div>
+</details>
+
+At this stage, we've achieved a functional offline app: the user can do all CRUD operations on todos, even offline, and the data is saved locally (persistently in [IndexedDB](../rx-storage-indexeddb.md)). But right now, if they open the app on another device or in another browser, they wouldn't see the same data because we haven't implemented sync yet. The next step is enabling synchronization with a backend, so that multiple clients and a server can share data.
+
+
+:::note
+You can find a full implementation of this example at the [Quickstart Repository](https://github.com/pubkey/rxdb-quickstart).
+
+<center>
+    <a href="https://pubkey.github.io/rxdb-quickstart/">
+        <img src="https://github.com/pubkey/rxdb-quickstart/raw/master/files/p2p-todo-demo.gif" width="500" class="img-radius" />
+    </a>
+</center>
+:::
+
+### Syncing with a Backend
+
+RxDB provides plugins for syncing with various backends: you can sync to [CouchDB](../replication-couchdb.md), use a [GraphQL endpoint](../replication-graphql.md), use your [firebase backend](../replication-firestore.md), or even do [P2P sync via WebRTC](../replication-webrtc.md) and more. But most people do not use these plugins. Instead they use the replication-primtives and build their own [compatible HTTP Endpoints](../replication-http.md) on their existing infrastructur.
+
+For our example, lets assume you already have a backend server with the **three endpoints** for synchronizing “to-do” data. One endpoint (GET `/api/todos/pull?checkpoint=X&limit=Y`) returns an array of documents changed since a particular checkpoint value. The other endpoint (POST `/api/todos/push`) accepts an array of changed documents and writes them to the server, then returns any that are detected as being conflicts. Also we have a [Server-Send-Events](./websockets-sse-polling-webrtc-webtransport.md#what-are-server-sent-events) (GET `/api/todos/pull-stream`) endpoint that pings the client whenever something on the server changes.
+
+Using RxDB’s HTTP replication functionality, you can sync the to-do application with these routes:
+
+<Steps>
+
+#### Import the Replication Plugin
+```ts
+import { replicateRxCollection } from 'rxdb/plugins/replication-http';
+```
+
+#### Start the Replication
+```ts
+const replicationState = await replicateRxCollection({
+  collection: db.todos,
+  replicationIdentifier: 'my-todos-replication',
+  live: true,
+  push: {
+    async handler(changedDocs) {
+      const response = await fetch('/api/todos/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(changedDocs)
+      });
+      const { errorDocuments } = await response.json();
+      return errorDocuments; 
+    }
+  },
+  pull: {
+    async handler(lastCheckpoint, batchSize) {
+      const url = '/api/todos/pull?checkpoint=' +
+        encodeURIComponent(JSON.stringify(lastCheckpoint)) +
+        '&limit=' + batchSize;
+      const response = await fetch(url);
+      const { documents, checkpoint } = await response.json();
+      return {
+        documents,
+        checkpoint
+      };
+    },
+    stream$: async function () {
+      const eventSource = new EventSource('/api/todos/pull-stream');
+      return new Observable(subscriber => {
+        eventSource.onmessage = (msg) => {
+          const data = JSON.parse(msg.data);
+          subscriber.next({
+            documents: data.documents,
+            checkpoint: data.checkpoint
+          });
+        };
+        return () => eventSource.close();
+      });
+    }
+  },
+});
+```
+
+</Steps>
+
+
+With just this configuration, RxDB will begin to **pull** any new or changed documents from the Server and apply them to the local store, and **push** any local changes up to the server. Because `live: true` and our `pullStream$`, it will keep doing this continuously (it's not a one-time sync). Under the hood, it uses an iterating checkpoint so it doesn't fetch everything every time – it will fetch in batches of changes (you can set `batchSize`) and use the `pull.stream$` to get new updates. Conflict handling is also integrated: if a conflict is detected during replication, by default RxDB will use a `first-on-server-wins` strategy. But any other conflict handler can be used instead.
+
+
+## Partial Sync
+
+Suppose you’re building a Minecraft-like voxel game where the world can expand in every direction. Storing the entire map locally for offline use is impossible because the dataset could be massive. Yet you still want a local-first design so players can edit the game world offline and sync back to the server later.
+
+### Idea: One Collection, Multiple Replications
+
+You might define a single RxDB collection called `db.voxels`, where each document represents a block or “voxel” (with fields like id, chunkId, coordinates, and type). With RxDB you can, instead of setting up _one_ replication that tries to fetch _all_ voxels, you create **separate replication states** for each _chunk_ of the world the player is currently near.
+
+When the player enters a particular chunk (say `chunk-123`), you **start a replication** dedicated to that chunk. On the server side, you have endpoints to **pull** only that chunk’s voxels (e.g., GET `/api/voxels/pull?chunkId=123`) and **push** local changes back (e.g., POST `/api/voxels/push?chunkId=123`). RxDB handles them similarly to any other offline-first setup, but each replication is filtered to only that chunk’s data.
+
+When the player leaves `chunk-123` and no longer needs it, you **stop** that replication. If the player moves to `chunk-124`, you start a new replication for chunk 124. This ensures the game only downloads and syncs data relevant to the player’s immediate location. Meanwhile, all edits made offline remain safely stored in the local database until a network connection is available.
+
+```ts
+const activeReplications = {}; // chunkId -> replicationState
+
+function startChunkReplication(chunkId) {
+  if (activeReplications[chunkId]) return;
+  const replicationId = 'voxels-chunk-' + chunkId;
+
+  const replicationState = replicateRxCollection({
+    collection: db.voxels,
+    replicationIdentifier: replicationId,
+    pull: {
+      async handler(checkpoint, limit) {
+        const res = await fetch(
+          `/api/voxels/pull?chunkId=${chunkId}&cp=${checkpoint}&limit=${limit}`
+        );
+        /* ... */
+      }
+    },
+    push: {
+      async handler(changedDocs) {
+        const res = await fetch(`/api/voxels/push?chunkId=${chunkId}`);
+        /* ... */
+      }
+    }
+  });
+  activeReplications[chunkId] = replicationState;
+}
+
+function stopChunkReplication(chunkId) {
+  const rep = await activeReplications[chunkId];
+  if (rep) {
+    rep.cancel();
+    delete activeReplications[chunkId];
+  }
+}
+
+// Called whenever the player’s location changes; 
+// dynamically start/stop replication for nearby chunks.
+function onPlayerMove(neighboringChunkIds) {
+  neighboringChunkIds.forEach(startChunkReplication);
+  Object.keys(activeReplications).forEach(cid => {
+    if (!neighboringChunkIds.includes(cid)) {
+      stopChunkReplication(cid);
+    }
+  });
+}
+```
+
+### Diffy-Sync when Revisiting a Chunk
+An added benefit of this multi-replication-state design is checkpointing. Each replication state has a unique “replication identifier,” so the next time the player returns to `chunk-123`, the local database knows what it already has and only fetches the differences—no need to re-download the entire chunk.
+
+### Partial Sync in a Business Application
+
+Though a voxel world is an intuitive example, the same technique applies in enterprise scenarios where data sets are large but each user only needs a specific subset. You could spin up a new replication for each “permission group” or “region,” so users only sync the records they’re allowed to see. Or in a CRM, the replication might be filtered by the specific accounts or projects a user is currently handling. As soon as they switch to a different project, you stop the old replication and start one for the new scope.
+
+This **chunk-based** or **scope-based** replication pattern keeps your local storage lean, reduces network overhead, and still gives users the offline, instant-feedback experience that local-first apps are known for. By dynamically creating (and canceling) replication states, you retain tight control over bandwidth usage and make the infinite (or very large) feasible. In a production app you would also "flag" the entities (with a `pull.modifier`) by which replication state they came from, so that you can clean up the parts that you no longer need.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -188,3 +543,12 @@ That’s a long list of challenges! In summary, local-first approaches introduce
 
 ..npm download counts low compared to other javascript tooling..
 ..show how RxDB premium users use it..
+
+-- insights about how rxdb premium users use it:
+- 50% care about offline-capabliities: farmesr quipment, minging companies, construction companies, a shrimp farm
+- other 50% care about realtimeness/faster uis: space launch planning, todo/readers apps etc..
+
+## Is local-first the future?
+
+- when most websites became realtime, everything else felt "broken" because we no longer wanted to reload pages
+- When most websites become local first, everything else will feel broken because we are no longer used to see loading spinners on user interaction.

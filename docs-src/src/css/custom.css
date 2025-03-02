@@ -159,6 +159,21 @@ article .img-padding {
     border-radius: 4px;
 }
 
+article .img-in-text-right {
+    background-color: white;
+    padding: 5px;
+    border-radius: 4px;
+    margin: 8px;
+    margin-left: 30px;
+    margin-bottom: 15px;
+    float: right;
+}
+
+article .img-radius {
+    background-color: white;
+    border-radius: 10px;
+}
+
 /* change the scrollbar to better match the dark layout */
 /* ::-webkit-scrollbar {
     height: 12px;

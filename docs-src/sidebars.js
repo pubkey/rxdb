@@ -464,11 +464,12 @@ const sidebars = {
       type: 'category',
       label: 'Articles',
       items: [
-        'offline-first',
+        'articles/local-first-future',
         'downsides-of-offline-first',
         'why-nosql',
         'nodejs-database',
         'alternatives',
+        'offline-first',
         'react-native-database',
         'articles/angular-database',
         'articles/browser-database',
@@ -505,7 +506,6 @@ const sidebars = {
         'articles/json-based-database',
         'articles/reactjs-storage',
         'articles/json-based-database',
-        'articles/local-first-future'
       ],
     },
     'contribute',
