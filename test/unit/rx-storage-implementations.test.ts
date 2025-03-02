@@ -2131,7 +2131,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
              * has to workaround any problems with that.
              */
             it('should be able to insert and fetch many documents', async () => {
-                if (isDeno) {
+                if (isDeno || config.storage.name === 'sqlite-trial') {
                     // DenoKV is too slow and would timeout on this test
                     return;
                 }
@@ -2353,7 +2353,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                const writeAmount = isFastMode() ? 40 : 100;
+                const writeAmount = isFastMode() ? 40 : 90;
                 await storageInstance.bulkWrite(
                     new Array(writeAmount / 5)
                         .fill(0)

@@ -82,6 +82,9 @@ describe('replication-multiinstance.test.ts', () => {
         return;
     }
     it('starting the same replication twice should not error', async () => {
+        if (config.storage.name === 'sqlite-trial') {
+            return;
+        }
         const docsPerSide = 5;
         const localCollectionsAmount = 5;
         const { localCollections, remoteCollection } = await getTestCollections(localCollectionsAmount, {

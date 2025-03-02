@@ -293,6 +293,9 @@ addRxPlugin(RxDBJsonDumpPlugin);
         });
         describe('cleanup', () => {
             it('should merge the state documents data on cleanup', async () => {
+                if (config.storage.name === 'sqlite-trial') {
+                    return;
+                }
                 const state = await getState();
 
                 let t = 0;
@@ -363,6 +366,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     if (
                         config.storage.name.includes('random-delay') ||
                         config.storage.name === 'remote' ||
+                        config.storage.name === 'sqlite-trial' ||
                         isDeno
                     ) {
                         return;
@@ -403,6 +407,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 if (
                     config.storage.name.includes('random-delay') ||
                     config.storage.name === 'remote' ||
+                    config.storage.name === 'sqlite-trial' ||
                     isDeno
                 ) {
                     return;

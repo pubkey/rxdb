@@ -12,8 +12,10 @@ To ensure there are not multiple people working on the same task, before you sta
 - The CI must still be green afterwards. Commenting out broken tests is not allowed.
 - Your PR must be complete or it will not be merged. Do not expect to have the maintainer finish your work or asking you each week about the progress.
 
+
 ## Open Tasks (pick one and work on it)
 
+- Add a tauri [hero-example](https://github.com/pubkey/rxdb/tree/master/examples) that uses the [trial SQLite storage](https://rxdb.info/rx-storage-sqlite.html).
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - Update the [foundationdb package](https://github.com/search?q=repo%3Apubkey%2Frxdb+%22npm%20install%20foundationdb%22+path%3A.github%2Fworkflows%2Fmain.yml&type=code) to the newest version while ensuring the tests still work.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:

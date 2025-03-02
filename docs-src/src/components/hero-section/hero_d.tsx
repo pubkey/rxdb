@@ -71,12 +71,14 @@ export function HeroSection_D(props: {
                         <a
                             className="button"
                             href="/quickstart.html"
+                            target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
                         >
                             Get Started For Free &#x27A4;<br />
                         </a>
                         <a
                             href="/premium/"
+                            target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4, false)}
                         >
                             <div className="buy-option-action">

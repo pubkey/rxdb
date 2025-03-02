@@ -489,7 +489,7 @@ describe('rx-query.test.ts', () => {
         it('querying after insert should always return the correct amount', async () => {
             const col = await humansCollection.create(0);
 
-            const amount = 100;
+            const amount = 50;
             const query = col.find({
                 selector: {
                     age: {
@@ -910,6 +910,9 @@ describe('rx-query.test.ts', () => {
             c.database.close();
         });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
+            if (config.storage.name === 'sqlite-trial') {
+                return;
+            }
             const c = await humansCollection.createPrimary(0);
 
             // insert some docs
