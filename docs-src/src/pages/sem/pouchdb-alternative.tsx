@@ -3,7 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'pouchdb-alternative',
+            id: 'gads',
             metaTitle: 'The NoSQL alternative for PouchDB',
             title: <>The <b className="underline">modern</b> alternative for{' '}
                 <b className="underline">PouchDB</b></>,

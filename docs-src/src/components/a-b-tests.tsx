@@ -6,7 +6,7 @@ import { HeroSection_C } from './hero-section/hero_c';
 import { HeroSection_D } from './hero-section/hero_d';
 
 const CURRENT_TEST_RUN = {
-    id: 'T1', // test hero page content type
+    id: 'T2', // test hero page content type
     variations: {
         A: HeroSection_A,
         B: HeroSection_B,
@@ -18,15 +18,13 @@ const CURRENT_TEST_RUN = {
 export type TestGroup = {
     variation: string;
     deviceType: 'm' | 'd'; // mobile/desktop
-    semPageId?: string;
+    originId?: string;
 };
 let testGroup: TestGroup;
 
 const TEST_GROUP_STORAGE_ID = 'test-group-' + CURRENT_TEST_RUN.id;
 
-export function getTestGroup(semPageId?: string): TestGroup {
-    console.log('setTestGroup: ' + semPageId);
-
+export function getTestGroup(originId: string = 'main'): TestGroup {
     if (testGroup) {
         return testGroup;
     }
@@ -35,18 +33,20 @@ export function getTestGroup(semPageId?: string): TestGroup {
         return {
             variation: Object.keys(CURRENT_TEST_RUN.variations)[0],
             deviceType: 'd',
-            semPageId: semPageId ? semPageId : ''
+            originId: originId ? originId : ''
         };
     }
 
     const groupFromStorage = localStorage.getItem(TEST_GROUP_STORAGE_ID);
     if (groupFromStorage) {
         testGroup = JSON.parse(groupFromStorage);
+        console.log('currentTestGroup:');
+        console.dir(testGroup);
     } else {
         testGroup = {
             variation: randomOfArray(Object.keys(CURRENT_TEST_RUN.variations)),
             deviceType: window.screen.width <= 900 ? 'm' : 'd',
-            semPageId: semPageId ? semPageId : ''
+            originId: originId ? originId : ''
         };
         localStorage.setItem(TEST_GROUP_STORAGE_ID, JSON.stringify(testGroup));
     }
@@ -64,12 +64,17 @@ export function ABTestContent(props: {
 
 
 export function getTestGroupEventPrefix() {
-    const tg = getTestGroup();
-    return [
-        'abt',
-        CURRENT_TEST_RUN.id,
-        'E:' + tg.semPageId,
-        'V:' + tg.variation,
-        'D:' + tg.deviceType
-    ].join('_');
+    const has = localStorage.getItem(TEST_GROUP_STORAGE_ID);
+    if (!has) {
+        return false;
+    } else {
+        const tg = getTestGroup();
+        return [
+            'abt',
+            CURRENT_TEST_RUN.id,
+            'O:' + tg.originId,
+            'V:' + tg.variation,
+            'D:' + tg.deviceType
+        ].join('_');
+    }
 }

@@ -41,14 +41,16 @@ export function triggerTrackingEvent(type: string, value: number, onlyTrackOnce:
 
             // trigger also an event for the A/B Testing
             const testGroupPrefix = getTestGroupEventPrefix();
-            (window as any).gtag(
-                'event',
-                testGroupPrefix + '_' + type,
-                {
-                    value: 0,
-                    currency: 'EUR'
-                }
-            );
+            if (testGroupPrefix) {
+                (window as any).gtag(
+                    'event',
+                    testGroupPrefix + '_' + type,
+                    {
+                        value: 0,
+                        currency: 'EUR'
+                    }
+                );
+            }
 
         } catch (err) {
             console.log('# Error on google trigger:');

@@ -3,7 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'expo-database',
+            id: 'gads',
             metaTitle: 'The local Database for Expo',
             appName: 'Expo',
             title: <>The local <b className="underline">Database</b> for{' '}

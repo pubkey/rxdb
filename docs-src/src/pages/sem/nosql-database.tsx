@@ -3,7 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'nosql-database',
+            id: 'gads',
             metaTitle: 'The NoSQL Database for JavaScript Applications',
             title: <>The NoSQL <b className="underline">Database</b> for{' '}
                 <b className="underline">JavaScript</b> Applications</>,

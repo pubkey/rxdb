@@ -183,7 +183,7 @@ export default function Root({ children }) {
                     callToAction,
                     callToActionId,
                     titleId,
-                    direction: Math.random() < 0.5 ? 'bottom' : 'mid'
+                    direction: 'bottom' // Math.random() < 0.5 ? 'bottom' : 'mid'
                 };
             });
         }, showTime * 1000);

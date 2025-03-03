@@ -3,7 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'svelte-database',
+            id: 'gads',
             metaTitle: 'The local Database for Svelte Apps',
             appName: 'Svelte',
             title: <>The local <b className="underline">Database</b> for{' '}

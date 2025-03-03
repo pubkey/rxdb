@@ -3,7 +3,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'react-native-database',
+            id: 'gads',
             metaTitle: 'The local Database for React Native',
             appName: 'React Native',
             title: <>The local <b className="underline">Database</b> for{' '}
