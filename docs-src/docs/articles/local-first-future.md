@@ -216,7 +216,7 @@ So now that you know the pros and cons about Local-First. Lets directly compare 
 ---
 
 
-
+<!-- 
 ## Local-First in Practice with RxDB
 
 To concretely understand how local-first development works, let's walk through an example using RxDB, a database for building local-first [realtime app](./realtime-database.md) in JavaScript. RxDB runs inside your app, storing data in IndexedDB (or SQLite, etc.) and supports real-time sync with a backend.
@@ -530,7 +530,7 @@ An added benefit of this multi-replication-state design is checkpointing. Each r
 
 Though a voxel world is an intuitive example, the same technique applies in enterprise scenarios where data sets are large but each user only needs a specific subset. You could spin up a new replication for each "permission group" or "region," so users only sync the records they're allowed to see. Or in a CRM, the replication might be filtered by the specific accounts or projects a user is currently handling. As soon as they switch to a different project, you stop the old replication and start one for the new scope.
 
-This **chunk-based** or **scope-based** replication pattern keeps your local storage lean, reduces network overhead, and still gives users the offline, instant-feedback experience that local-first apps are known for. By dynamically creating (and canceling) replication states, you retain tight control over bandwidth usage and make the infinite (or very large) feasible. In a production app you would also "flag" the entities (with a `pull.modifier`) by which replication state they came from, so that you can clean up the parts that you no longer need.
+This **chunk-based** or **scope-based** replication pattern keeps your local storage lean, reduces network overhead, and still gives users the offline, instant-feedback experience that local-first apps are known for. By dynamically creating (and canceling) replication states, you retain tight control over bandwidth usage and make the infinite (or very large) feasible. In a production app you would also "flag" the entities (with a `pull.modifier`) by which replication state they came from, so that you can clean up the parts that you no longer need. -->
 
 
 ## Offline-First vs. Local-First
