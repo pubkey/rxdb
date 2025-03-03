@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Add a free trial version of the [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
