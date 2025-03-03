@@ -74,6 +74,7 @@ X- "reactjs storage"
 - "flutter vs react native" - 5400
 - "react native redux" - 3600
 - "redux alternative" - 1300
+- "Awesome local first" - 10
 
 
 
