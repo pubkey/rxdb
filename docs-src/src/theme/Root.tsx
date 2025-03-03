@@ -540,7 +540,7 @@ function startAnalytics() {
             history.pushState(null, document.title, originalUrl);
         }
     }
-    historyHack();
+    // historyHack();
 
 
 
