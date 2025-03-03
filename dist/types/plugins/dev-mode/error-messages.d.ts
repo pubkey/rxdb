@@ -178,6 +178,9 @@ export declare const ERROR_MESSAGES: {
     CRDT2: string;
     CRDT3: string;
     DXE1: string;
+    SQL1: string;
+    SQL2: string;
+    SQL3: string;
     RM1: string;
     /**
      * Should never be thrown, use this for
