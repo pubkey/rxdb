@@ -12,7 +12,7 @@ If you're seeking a **Firestore alternative**, you're likely looking for a way t
 - **Customize** how you store, query, and secure your data.
 - **Implement advanced conflict resolution** strategies beyond Firestore's last-write-wins approach.
 
-Enter **RxDB** (Reactive Database) - a local-first, NoSQL database for JavaScript applications that can sync in real time with **any** backend of your choice. Whether you're tired of the limitations and fees associated with Firebase Cloud Firestore or simply need more flexibility, RxDB might be the Firestore alternative you've been searching for.
+Enter **RxDB** (Reactive Database) - a [local-first](./local-first-future.md), NoSQL database for JavaScript applications that can sync in real time with **any** backend of your choice. Whether you're tired of the limitations and fees associated with Firebase Cloud Firestore or simply need more flexibility, RxDB might be the Firestore alternative you've been searching for.
 
 <center>
     <a href="https://rxdb.info/">

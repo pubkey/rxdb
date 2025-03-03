@@ -4,10 +4,10 @@
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 16 release](https://github.com/pubkey/rxdb/issues/6650) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 -->
 
-| Announcement                                                        |
+<!-- | Announcement                                                        |
 | :--: |
 | &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **16.0.0** is now released, read the [CHANGELOG](https://rxdb.info/releases/16.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
-
+ -->
 
 <!--
 |                                                                                  Announcement                                                                                  |

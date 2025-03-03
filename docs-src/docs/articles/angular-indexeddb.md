@@ -17,7 +17,7 @@ In modern web applications, offline capabilities and fast interactions are cruci
 
 ## Why Use IndexedDB in Angular
 
-- [Offline-First / Local-First](../offline-first.md): If your app needs to function with limited or no internet connectivity, IndexedDB provides a reliable local storage layer. Users can continue using the application offline, and data can sync when the connection is restored.
+- [Offline-First](../offline-first.md)/[Local-First](./local-first-future.md): If your app needs to function with limited or no internet connectivity, IndexedDB provides a reliable local storage layer. Users can continue using the application offline, and data can sync when the connection is restored.
 
 - **Performance**: Local data access comes with [near-zero latency](./zero-latency-local-first.md), removing the need for constant server requests and eliminating most loading spinners.
 

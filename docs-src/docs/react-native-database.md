@@ -141,7 +141,7 @@ const db = new PouchDB('mydb.db', {
     </a>
 </center>
 
-[RxDB](https://rxdb.info/) is an [local-first](./offline-first.md), NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a [query](./rx-query.md) or even a single field of a [document](./rx-document.md). This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
+[RxDB](https://rxdb.info/) is an [local-first](./articles/local-first-future.md), NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a [query](./rx-query.md) or even a single field of a [document](./rx-document.md). This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
 
 **Key benefits of RxDB include:**
 
