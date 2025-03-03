@@ -9,7 +9,6 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
@@ -48,7 +47,8 @@ describe('bug-report.test.js', () => {
                     maxLength: 100
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 50
                 },
                 lastName: {
                     type: 'string'
@@ -58,7 +58,8 @@ describe('bug-report.test.js', () => {
                     minimum: 0,
                     maximum: 150
                 }
-            }
+            },
+            indexes: ['firstName']
         };
 
         /**
@@ -93,49 +94,18 @@ describe('bug-report.test.js', () => {
             age: 56
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const myDocumentQuery = await collections.mycollection.find();
+        const preparedQuery = await myDocumentQuery.getPreparedQuery();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(preparedQuery.queryPlan.sortSatisfiedByIndex, true);
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.close();
-        dbInOtherTab.close();
     });
 });
