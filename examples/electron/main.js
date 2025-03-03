@@ -1,15 +1,17 @@
 const electron = require('electron');
 const path = require('path');
-const { addRxPlugin } = require('rxdb');
 
-const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
 const { wrappedValidateAjvStorage } = require('rxdb/plugins/validate-ajv');
-const { getDatabase } = require('./shared');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
+
+// TODO use SQLite instead of memory
+// const { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } = require('rxdb/plugins/storage-sqlite');
+// const { DatabaseSync } = require('node:sqlite');
 
 /**
  * @link https://github.com/electron/electron/issues/19775#issuecomment-834649057
- */
+*/
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 const app = electron.app;
@@ -47,8 +49,12 @@ app.on('ready', async function () {
 
     electron.ipcMain.handle('getDBSuffix', () => dbSuffix);
 
-
     const storage = wrappedValidateAjvStorage({ storage: getRxStorageMemory() });
+    // const storage = wrappedValidateAjvStorage({
+    //     storage: getRxStorageSQLiteTrial({
+    //         sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
+    //     })
+    // });
 
     exposeIpcMainRxStorage({
         key: 'main-storage',
@@ -56,6 +62,7 @@ app.on('ready', async function () {
         ipcMain: electron.ipcMain
     });
 
+    // const { getDatabase } = require('./shared');
     // const db = await getDatabase(
     //     'heroesdb' + dbSuffix,
     //     storage

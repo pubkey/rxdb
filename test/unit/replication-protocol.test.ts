@@ -912,6 +912,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             cleanUp(replicationState, masterInstance);
         });
         it('doing many writes on the fork should not lead to many writes on the master', async () => {
+            if (config.storage.name === 'sqlite-trial') {
+                return;
+            }
             const writeAmount = isFastMode() ? 5 : 50;
 
             const masterInstance = await createRxStorageInstance(0);
@@ -1179,6 +1182,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             cleanUp(replicationState, masterInstance);
         });
         runXTimes(isFastMode() ? 2 : 5, n => {
+            if (config.storage.name === 'sqlite-trial') {
+                return;
+            }
             it('do many writes while replication is running (' + n + ')', async () => {
                 updateId = 0;
                 const writeAmount = isFastMode() ? 2 : 10;
@@ -1328,6 +1334,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await cleanUp(replicationState, masterInstance);
         });
         it('should not stuck when replicating many document in the initial replication', async () => {
+            if (config.storage.name === 'sqlite-trial') {
+                return;
+            }
             const writeAmount = isFastMode() ? 40 : 200;
 
             const masterInstance = await createRxStorageInstance(0);

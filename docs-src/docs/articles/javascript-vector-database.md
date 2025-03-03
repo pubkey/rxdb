@@ -15,7 +15,7 @@ The [local-first](../offline-first.md) revolution is here, changing the way we b
     </a>
 </center>
 
-But here's where things get even more exciting: when building local-first apps, traditional databases often fall short. They're great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
+But here's where things get even more exciting: when building [local-first](./local-first-future.md) apps, traditional databases often fall short. They're great at searching for exact matches, like `numbers` or `strings`, but what if you want to search by **meaning**, like sifting through emails to find a specific topic? Sure, you could use **RegExp**, but to truly unlock the power of semantic search and similarity-based queries, you need something more cutting-edge. Something that really understands the content of the data.
 
 
 

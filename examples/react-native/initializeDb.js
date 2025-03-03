@@ -13,7 +13,7 @@ addRxPlugin(RxDBQueryBuilderPlugin)
 import schema from './src/Schema';
 
 import {
-    STORAGE
+    STORAGE_SQLITE
 } from './storage';
 
 const syncURL = 'http://admin:mysecret1@localhost:5984'; // Replace with your couchdb instance
@@ -22,7 +22,7 @@ export const HeroesCollectionName = 'heroes';
 
 const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG_PROD === 'true';
 
-async function initialize(withReplication) {
+async function initialize(withReplication, storage = STORAGE_SQLITE) {
     if (isDevelopment) {
         await addRxPlugin(RxDBDevModePlugin);
     }
@@ -33,7 +33,7 @@ async function initialize(withReplication) {
         console.log('Initializing database...');
         db = await createRxDatabase({
             name: dbName,
-            storage: STORAGE,
+            storage,
             multiInstance: false,
             ignoreDuplicate: true,
         });

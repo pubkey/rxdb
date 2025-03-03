@@ -5,7 +5,8 @@ description: Explore Capacitor's top data storage solutions - from key-value to 
 ---
 
 
-
+import {Tabs} from '@site/src/components/tabs';
+import {Steps} from '@site/src/components/steps';
 
 # Capacitor Database - SQLite, RxDB and others
 
@@ -13,10 +14,6 @@ description: Explore Capacitor's top data storage solutions - from key-value to 
 It is developed by the Ionic Team and provides a great alternative to create hybrid apps. Compared to [React Native](./react-native-database.md), Capacitor is more Web-Like because the JavaScript runtime supports most Web APIs like IndexedDB, fetch,  and so on.
 
 To read and write persistent data in Capacitor, there are multiple solutions which are shown in the following.
-
-:::note
-You are reading this inside of the [RxDB](https://rxdb.info/) documentation, so everything might be opinionated.
-:::
 
 <p align="center">
   <img src="./files/icons/capacitor.svg" alt="Capacitor" width="50" />
@@ -94,7 +91,13 @@ import {
 } from '@capacitor-community/sqlite';
 
 const sqlite = new SQLiteConnection(CapacitorSQLite);
-const database: SQLiteDBConnection = await this.sqlite.createConnection(databaseName, encrypted, mode, version, readOnly);
+const database: SQLiteDBConnection = await this.sqlite.createConnection(
+    databaseName,
+    encrypted,
+    mode,
+    version,
+    readOnly
+);
 let { rows } = database.query('SELECT somevalue FROM sometable');
 ```
 
@@ -133,21 +136,67 @@ For iOS apps you should add a database location in your Capacitor settings:
 
 Then you can assemble the RxStorage and create a database with it:
 
+
+<Steps>
+
+
+### Import RxDB and SQLite
+
 ```ts
 import {
     createRxDatabase
-} from 'rxdb';
-import {
-    getRxStorageSQLite,
-    getSQLiteBasicsCapacitor
-} from 'rxdb-premium/plugins/storage-sqlite';
+} from 'rxdb/plugins/core';
 import {
     CapacitorSQLite,
     SQLiteConnection
 } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
 const sqlite = new SQLiteConnection(CapacitorSQLite);
+```
 
+### Import the RxDB SQLite Storage
+
+<Tabs>
+
+#### RxDB Core
+
+```ts
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsCapacitor
+} from 'rxdb/plugins/storage-sqlite';
+```
+
+#### RxDB Premium 👑
+
+```ts
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsCapacitor
+} from 'rxdb-premium/plugins/storage-sqlite';
+```
+
+</Tabs>
+
+### Create a Database with the Storage
+
+<Tabs>
+
+#### RxDB Core
+
+```ts
+// create database
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLiteTrial({
+        sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
+    })
+});
+```
+
+#### RxDB Premium 👑
+
+```ts
 // create database
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
@@ -155,31 +204,60 @@ const myRxDatabase = await createRxDatabase({
         sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor)
     })
 });
+```
 
+</Tabs>
+
+
+### Add a Collection
+
+```ts
 // create collections
 const collections = await myRxDatabase.addCollections({
     humans: {
-        /* ... */
+        schema: {
+            version: 0,
+            type: 'object',
+            primaryKey: 'id',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                age: { type: 'number' }
+              },
+            required: ['id', 'name']
+        }
     }
 });
+```
 
-// insert document
+### Insert a Document
+
+```ts
 await collections.humans.insert({id: 'foo', name: 'bar'});
+```
 
-// run a query
+### Run a Query
+
+```ts
 const result = await collections.humans.find({
     selector: {
         name: 'bar'
     }
 }).exec();
+```
 
-// observe a query
+### Observe a Query
+
+```ts
 await collections.humans.find({
     selector: {
         name: 'bar'
     }
 }).$.subscribe(result => {/* ... */});
 ```
+
+
+</Steps>
 
 
 ## Follow up

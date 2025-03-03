@@ -158,7 +158,7 @@ JSON-based databases naturally align with NoSQL because they accommodate evolvin
 
 SQL can still store JSON—whether in PostgreSQL’s JSONB columns, MySQL’s JSON fields, or SQLite’s JSON1 extension. For some teams, a hybrid approach pairing SQL for relational data with JSON columns for more flexible fields works well. However, storing everything in a single monolithic JSON text file is rarely advisable for anything beyond trivial tasks—databases excel at concurrency, indexing, and partial writes.
 
-Tools like RxDB provide an even simpler, local-first take on JSON documents—particularly for JavaScript projects. With offline [replication](../replication.md), reactive queries, optional JSON-Schema, and advanced optimizations such as key-compression, RxDB streamlines building dynamic, user-facing features while preserving the core benefits of a robust document database.
+Tools like RxDB provide an even simpler, [local-first](./local-first-future.md) take on JSON documents—particularly for JavaScript projects. With offline [replication](../replication.md), reactive queries, optional JSON-Schema, and advanced optimizations such as key-compression, RxDB streamlines building dynamic, user-facing features while preserving the core benefits of a robust document database.
 
 To explore more about RxDB and its capabilities for browser database development, check out the following resources:
 

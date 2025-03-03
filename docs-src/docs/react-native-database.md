@@ -5,6 +5,7 @@ description: Discover top React Native local database solutions - AsyncStorage, 
 ---
 
 import {Steps} from '@site/src/components/steps';
+import {Tabs} from '@site/src/components/tabs';
 
 # React Native Database
 
@@ -140,7 +141,7 @@ const db = new PouchDB('mydb.db', {
     </a>
 </center>
 
-[RxDB](https://rxdb.info/) is an [local-first](./offline-first.md), NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a [query](./rx-query.md) or even a single field of a [document](./rx-document.md). This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
+[RxDB](https://rxdb.info/) is an [local-first](./articles/local-first-future.md), NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a [query](./rx-query.md) or even a single field of a [document](./rx-document.md). This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
 
 **Key benefits of RxDB include:**
 
@@ -166,14 +167,32 @@ Then you can assemble the RxStorage and create a database with it:
 ### Import RxDB and SQLite
 ```ts
 import {
-    createRxDatabase
+  createRxDatabase
 } from 'rxdb';
-import {
-    getRxStorageSQLite,
-    getSQLiteBasicsQuickSQLite
-} from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 ```
+
+<Tabs>
+
+#### RxDB Core
+
+```ts
+import {
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsCapacitor
+} from 'rxdb/plugins/storage-sqlite';
+```
+
+#### RxDB Premium 👑
+
+```ts
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsCapacitor
+} from 'rxdb-premium/plugins/storage-sqlite';
+```
+
+</Tabs>
 
 ### Create a database
 ```ts
@@ -193,10 +212,19 @@ const myRxDatabase = await createRxDatabase({
 ```ts
 const collections = await myRxDatabase.addCollections({
     humans: {
-        /* ... */
+        schema: {
+            version: 0,
+            type: 'object',
+            primaryKey: 'id',
+            properties: {
+                id: { type: 'string', maxLength: 100 },
+                name: { type: 'string' },
+                age: { type: 'number' }
+              },
+            required: ['id', 'name']
+        }
     }
 });
-
 ```
 
 ### Insert a Document
@@ -266,7 +294,7 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 
 ### Summary
 
-| **Characteristic**      | **AsyncStorage**                     | **SQLite**                              | **PouchDB**                               | **RxDB**                                                   | **Realm**                                     | **Firestore**                                             |
+| **Characteristic**      | **AsyncStorage**                     | **SQLite**                              | **PouchDB**                               | <img src="../files/logo/logo.svg" alt="RxDB" width="20" /> **RxDB**                                                   | **Realm**                                     | **Firestore**                                             |
 | ----------------------- | ------------------------------------ | --------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
 | **Database Type**       | Key-value store, no advanced queries | Embedded SQL engine in a local file     | NoSQL doc store, revision-based           | NoSQL doc-based (JSON)                                     | Object-based (MongoDB-owned)                  | NoSQL doc-based, cloud by Google                          |
 | **Query Model**         | getItem/setItem only                 | Standard SQL statements                 | Map/reduce or basic Mango queries         | JSON-based query language, optional indexes                | Object-level queries, sync with MongoDB Realm | Document queries, limited advanced ops                    |

@@ -119,7 +119,7 @@ pre code {
 /* Don't use main-wrapper class, affects home page */
 body:not(.homepage) .main-wrapper {
     width: 100%;
-    max-width: 88rem;
+    max-width: 90rem;
     /* equivalent to 1408px */
     margin: 0 auto;
 }
@@ -157,6 +157,20 @@ article .img-padding {
     background-color: white;
     padding: 5px;
     border-radius: 4px;
+}
+
+article .img-in-text-right {
+    background-color: white;
+    border-radius: 4px;
+    margin: 8px;
+    margin-left: 30px;
+    margin-bottom: 15px;
+    float: right;
+}
+
+article .img-radius {
+    background-color: white;
+    border-radius: 10px;
 }
 
 /* change the scrollbar to better match the dark layout */
@@ -1820,11 +1834,15 @@ samp .cm-comment {
     color: white;
 }
 
-.observe-code-example-tabs .ant-tabs-tab-btn[aria-selected="true"] {
+.ant-tabs-tab-btn {
+    color: white !important;
+}
+
+.ant-tabs-tab-btn[aria-selected="true"] {
     color: var(--color-top) !important;
 }
 
-.observe-code-example-tabs .ant-tabs-ink-bar {
+.ant-tabs-ink-bar {
     background: var(--color-top) !important;
 }
 
@@ -3457,7 +3475,7 @@ footer a:visited {
 
 .block.footer .footer-block {
     display: flex;
-    max-width: 88rem;
+    max-width: 90rem;
     width: 100%;
     flex-direction: column;
     gap: 2rem;

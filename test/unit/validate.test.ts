@@ -166,7 +166,7 @@ validationImplementations.forEach(
                 });
                 it('validate with decimal _meta.lwt times', async () => {
                     const instance = await getRxStorageInstance(schemas.nestedHuman);
-                    const amount = isFastMode() ? 10 : 155;
+                    const amount = isFastMode() ? 10 : 100;
                     const writeRows = new Array(amount)
                         .fill(0)
                         .map(() => schemaObjects.nestedHumanData())

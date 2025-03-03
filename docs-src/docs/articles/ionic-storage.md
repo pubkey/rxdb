@@ -14,7 +14,7 @@ When building **Ionic** apps, developers face the challenge of choosing a robust
 - **Compression** to reduce storage usage and improve performance
 - **Seamless Sync** with any backend for real-time updates
 
-[RxDB](https://rxdb.info/) (Reactive Database) offers all these features in a single, local-first database solution tailored to **Ionic** and other hybrid frameworks. Keep reading to learn how RxDB solves the most common storage pitfalls in hybrid app development while providing unmatched flexibility.
+[RxDB](https://rxdb.info/) (Reactive Database) offers all these features in a single, [local-first](./local-first-future.md) database solution tailored to **Ionic** and other hybrid frameworks. Keep reading to learn how RxDB solves the most common storage pitfalls in hybrid app development while providing unmatched flexibility.
 
 <br />
 <center>
