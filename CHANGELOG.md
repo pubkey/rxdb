@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - Add a free trial version of the [SQLite RxStorage](https://rxdb.info/rx-storage-sqlite.html)
+- Add article about [Why Local-First Software Is the Future and its Limitations](https://rxdb.info/articles/local-first-future.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
