@@ -573,5 +573,5 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 
 ## Follow up
 
-- Learn how to store and query data with RxDB in the [RxDB Quickstart](./quickstart.md)
+- Learn how to store and query data with RxDB in the [RxDB Quickstart](../quickstart.md)
 - Join our [Discord](/chat/) to talk with people and share ideas.
