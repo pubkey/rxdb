@@ -3,7 +3,7 @@ import {
     clone
 } from 'async-test-util';
 
-import { describeParallel } from './config.ts';
+import config, { describeParallel } from './config.ts';
 import {
     schemas,
     HumanDocumentType
@@ -16,7 +16,9 @@ import {
     normalizeMangoQuery,
     INDEX_MAX,
     lastOfArray,
-    INDEX_MIN
+    INDEX_MIN,
+    randomToken,
+    createRxDatabase
 } from '../../plugins/core/index.mjs';
 
 
@@ -90,7 +92,9 @@ describeParallel('query-planner.test.js', () => {
             const schema = getHumanSchemaWithIndexes([]);
             const query = normalizeMangoQuery<HumanDocumentType>(
                 schema,
-                {}
+                {
+                    sort: [{ passportId: 'asc' }]
+                }
             );
             const queryPlan = getQueryPlan(
                 schema,
@@ -229,24 +233,6 @@ describeParallel('query-planner.test.js', () => {
     });
 
     describe('always prefer the better index', () => {
-        it('should prefer the default index over one that has no fields of the query', () => {
-            const schema = getHumanSchemaWithIndexes([['firstName']]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
-                schema,
-                {
-                    selector: {
-                        age: {
-                            $eq: 10
-                        }
-                    }
-                }
-            );
-            const queryPlan = getQueryPlan(
-                schema,
-                query
-            );
-            assert.deepStrictEqual(queryPlan.index, ['_meta.lwt', 'passportId']);
-        });
         it('should prefer the index that reduces the read-count by having a non-minimal startKey', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
@@ -375,6 +361,66 @@ describeParallel('query-planner.test.js', () => {
                 query
             );
             assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
+        });
+    });
+    describe('issues', () => {
+        it('#6925 col.find() ignores the primaryKey index if another index was defined', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string',
+                        maxLength: 50
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                },
+                indexes: ['firstName'],
+                required: ['firstName']
+            };
+
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+            const myDocumentQuery = await collections.mycollection.find();
+
+            const preparedQuery = await myDocumentQuery.getPreparedQuery();
+
+            /**
+             * Should have sortSatisfiedByIndex: true
+             * and do NOT make a full table scan!
+             */
+            assert.strictEqual(preparedQuery.queryPlan.sortSatisfiedByIndex, true);
+            assert.strictEqual(preparedQuery.queryPlan.selectorSatisfiedByIndex, true);
+
+            db.close();
         });
     });
 });

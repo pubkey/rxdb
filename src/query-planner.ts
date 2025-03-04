@@ -36,7 +36,6 @@ export function getQueryPlan<RxDocType>(
     query: FilledMangoQuery<RxDocType>
 ): RxQueryPlan {
     const selector = query.selector;
-
     let indexes: string[][] = schema.indexes ? schema.indexes.slice(0) as any : [];
     if (query.index) {
         indexes = [query.index];

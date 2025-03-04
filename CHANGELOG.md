@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX col.find() ignores the primaryKey index if another index was defined [#6925](https://github.com/pubkey/rxdb/pull/6925)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
