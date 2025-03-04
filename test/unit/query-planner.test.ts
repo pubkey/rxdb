@@ -387,7 +387,8 @@ describeParallel('query-planner.test.js', () => {
                         maximum: 150
                     }
                 },
-                indexes: ['firstName']
+                indexes: ['firstName'],
+                required: ['firstName']
             };
 
             const name = randomToken(10);
