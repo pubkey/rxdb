@@ -1601,7 +1601,10 @@ describe('rx-collection.test.ts', () => {
                 ];
                 const result = await c.bulkUpsert(writeData);
                 assert.deepStrictEqual(result.error, []);
-                allDocs = await c.find().exec();
+
+                allDocs = await c.find({
+                    sort: [{ passportId: 'asc' }]
+                }).exec();
                 assert.strictEqual(allDocs.length, 2);
                 assert.strictEqual(allDocs[0].age, 100);
 
