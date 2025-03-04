@@ -108,6 +108,10 @@ pre code {
     font-size: var(--fontSizes-s);
 }
 
+.container .col article {
+    padding: 1rem 1rem 1rem 2rem;
+}
+
 /* Breakpoint for mobile */
 @media (max-width: 500px) {
     .navbar__search #search_input_react {
@@ -119,7 +123,7 @@ pre code {
 /* Don't use main-wrapper class, affects home page */
 body:not(.homepage) .main-wrapper {
     width: 100%;
-    max-width: 90rem;
+    max-width: 92rem;
     /* equivalent to 1408px */
     margin: 0 auto;
 }

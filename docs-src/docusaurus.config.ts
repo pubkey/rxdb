@@ -42,7 +42,6 @@ const config: Config = {
             },
         ],
     ],
-
     scripts: [
         // {
         //   id: 'CookieDeclaration',
@@ -91,6 +90,7 @@ const config: Config = {
                     sidebarPath: './sidebars.js',
                     routeBasePath: '',
                     path: './docs',
+                    breadcrumbs: false,
                     // I disabled the editUrl because it just confuses users and does not look professional
                     // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
                 },
