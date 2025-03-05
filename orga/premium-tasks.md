@@ -24,6 +24,7 @@ const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
 - Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
+- Add a tauri [example](https://github.com/pubkey/rxdb/tree/master/examples) that uses the [SQLite-trial storage](https://rxdb.info/rx-storage-sqlite.html) with [tauri:sql](https://v2.tauri.app/plugin/sql/)
 
 ## Tasks already in progress (do no work on these!)
 
