@@ -472,7 +472,7 @@
     "js-base64": "3.7.7",
     "jsonschema-key-compression": "1.7.0",
     "mingo": "6.5.3",
-    "mongodb": "6.14.1",
+    "mongodb": "6.14.2",
     "nats": "2.29.2",
     "oblivious-set": "1.4.0",
     "reconnecting-websocket": "4.4.0",
