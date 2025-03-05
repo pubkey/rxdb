@@ -58,7 +58,7 @@ export function DocsFooter(props: Props) {
 
 
     let showTitle: string = props.children.type.frontMatter.title;
-    if (props.children.type.contentTitle.length < showTitle.length) {
+    if (props.children.type.contentTitle && props.children.type.contentTitle.length < showTitle.length) {
         showTitle = props.children.type.contentTitle;
     }
     const maxTitleLength = 23;
