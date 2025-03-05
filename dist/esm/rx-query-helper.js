@@ -116,13 +116,23 @@ export function normalizeMangoQuery(schema, mangoQuery) {
       }
 
       /**
-       * Fall back to the primary key as sort order
-       * if no better one has been found
+       * If no good index was found as default sort-order,
+       * just use the first index of the schema.
+       * If no index is in the schema, use the default-index which
+       * is created by RxDB ONLY if there is no other index defined.
        */
       if (!normalizedMangoQuery.sort) {
-        normalizedMangoQuery.sort = [{
-          [primaryKey]: 'asc'
-        }];
+        if (schema.indexes && schema.indexes.length > 0) {
+          var firstIndex = schema.indexes[0];
+          var useIndex = isMaybeReadonlyArray(firstIndex) ? firstIndex : [firstIndex];
+          normalizedMangoQuery.sort = useIndex.map(field => ({
+            [field]: 'asc'
+          }));
+        } else {
+          normalizedMangoQuery.sort = [{
+            [primaryKey]: 'asc'
+          }];
+        }
       }
     }
   } else {
