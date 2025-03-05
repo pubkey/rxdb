@@ -6,13 +6,7 @@ import { lastOfArray } from '../../../plugins/core';
 type Props = WrapperProps<typeof LayoutType>;
 
 export function DocsFooter(props: Props) {
-
-
     const [voted, setVoted] = useState(false);
-
-    console.log('proooooops:');
-    console.dir(props);
-
     const styles = {
         ul: {
             marginTop: 25,
@@ -57,7 +51,7 @@ export function DocsFooter(props: Props) {
     } as const;
 
 
-    let showTitle: string = props.children.type.frontMatter.title;
+    let showTitle: string = props.children.type.frontMatter.title ? props.children.type.frontMatter.title : '';
     if (props.children.type.contentTitle && props.children.type.contentTitle.length < showTitle.length) {
         showTitle = props.children.type.contentTitle;
     }
