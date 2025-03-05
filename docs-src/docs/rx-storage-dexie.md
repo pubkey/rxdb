@@ -8,7 +8,7 @@ import {Steps} from '@site/src/components/steps';
 
 # RxStorage Dexie.js
 
-To store the data inside of and RxDB Database in IndexedDB in the [browser](./articles/browser-database.md), you can use the [Dexie.js](https://github.com/dexie/Dexie.js) [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to use it for an RxDB database in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default.
+To store the data inside of and RxDB Database in IndexedDB in the [browser](./articles/browser-database.md), you can use the [Dexie.js](https://github.com/dexie/Dexie.js) based [RxStorage](./rx-storage.md). Dexie.js is a minimal wrapper around IndexedDB and the Dexie.js RxStorage wraps that again to use it for an RxDB database in the browser. For side projects and prototypes that run in a browser, you should use the dexie RxStorage as a default.
 
 ## Dexie.js vs IndexedDB Storage
 
