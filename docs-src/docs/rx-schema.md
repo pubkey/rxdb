@@ -6,7 +6,7 @@ description: Learn how to define, secure, and validate your data in RxDB. Master
 
 # RxSchema
 
-Schemas define the structure of the documents of a collection. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](http://json-schema.org/)-standard which you might know from other projects.
+Schemas define the structure of the documents of a collection. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](https://json-schema.org/blog/posts/rxdb-case-study)-standard which you might know from other projects.
 
 ## Example
 

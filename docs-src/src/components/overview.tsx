@@ -4,14 +4,10 @@ import { Block } from '../components/block';
 
 
 export function Overview() {
-    console.log('sidebars:');
-    console.dir(sidebars);
     return <>
         {
             (sidebars.tutorialSidebar as any[]).map(
                 item => {
-                    console.log('item: ' + item.label);
-                    console.dir(item);
                     if (item.type === 'category' && item.label.toLowerCase() !== 'articles') {
                         return <>
                             <h2 style={{ width: '100%' }}>{item.label}</h2>

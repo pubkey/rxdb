@@ -245,14 +245,10 @@ function addCallToActionButton() {
     }
     const callToActionButtonId = 'rxdb-call-to-action-button';
     function setCallToActionOnce() {
-        console.log('set call to action button');
-
         const tenMinutes = 1000 * 60 * 10;
         const now = Date.now();
         const timeSlot = (now - (now % tenMinutes)) / tenMinutes;
-        console.log('timeslot ' + timeSlot);
         const randId = timeSlot % callToActions.length;
-        console.log('randid: ' + randId);
         const callToAction = callToActions[randId];
         const alreadyThere = document.querySelector('.call-to-action');
         if (alreadyThere) {
