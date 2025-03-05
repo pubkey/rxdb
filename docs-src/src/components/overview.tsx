@@ -4,8 +4,6 @@ import { Block } from '../components/block';
 
 
 export function Overview() {
-    console.log('sidebars:');
-    console.dir(sidebars);
     return <>
         {
             (sidebars.tutorialSidebar as any[]).map(
