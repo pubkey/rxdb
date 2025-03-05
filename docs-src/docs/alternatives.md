@@ -210,7 +210,7 @@ Dexie.js is a minimalistic wrapper for IndexedDB. While providing a better API t
 Compared to RxDB, Dexie.js does not support complex (MongoDB-like) queries and requires a lot of fiddling when a document range of a specific index must be fetched.
 Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
-RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md) which enhances IndexedDB with RxDB features like MongoDB-like queries etc.
+RxDB supports using [Dexie.js as Database storage](./rx-storage-dexie.md) which enhances IndexedDB via dexie with RxDB features like MongoDB-like queries etc.
 
 ### LowDB
 
