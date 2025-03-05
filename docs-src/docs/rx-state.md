@@ -1,10 +1,10 @@
 ---
-title: Effortless Reactive State with RxDB's RxState
+title: RxState - Reactive Persistend State with RxDB
 slug: rx-state.html
 description: Get real-time, persistent state without the hassle. RxState integrates easily with signals and hooks, ensuring smooth updates across tabs and devices.
 ---
 
-# RxState
+# RxState - Reactive Persistend State with RxDB
 
 RxState is a flexible state library build on top of the [RxDB Database](https://rxdb.info/). While RxDB stores similar documents inside of collections, RxState can store any complex JSON data without having a predefined schema.
 
