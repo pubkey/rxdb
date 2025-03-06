@@ -33,13 +33,10 @@ export function HeroSection_B(props: {
                             Build apps that work <b className="underline" onClick={() => props.scrollToSection('offline')}>Offline</b>
                         </li>
                         <li>
-                            Observable <b className="underline" onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </li>
-                        <li>
                             Sync with <b className="underline" onClick={() => props.scrollToSection('replication')}>any Backend</b>
                         </li>
                         <li>
-                            Great Performance
+                            Observable <b className="underline" onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
                         </li>
                         <li>
                             All JavaScript <b className="underline" onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported

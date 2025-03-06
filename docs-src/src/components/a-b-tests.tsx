@@ -6,7 +6,7 @@ import { HeroSection_C } from './hero-section/hero_c';
 import { HeroSection_D } from './hero-section/hero_d';
 
 const CURRENT_TEST_RUN = {
-    id: 'T2', // test hero page content type
+    id: 'T3', // test hero page content type
     variations: {
         A: HeroSection_A,
         B: HeroSection_B,

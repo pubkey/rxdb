@@ -33,7 +33,7 @@ The push for local-first is driven by a few key new technological capabilities t
 - **New Storage APIs (OPFS)**: The new Browser API [Origin Private File System](../rx-storage-opfs.md) (OPFS), part of the File System Access API, enables near-native file I/O from within a browser. It allows web apps to manage file handles securely and perform fast, synchronous reads/writes in Web Workers. This is a huge deal for local-first computing because it makes it feasible to embed robust database engines directly in the browser, persisting data to real files on a virtual filesystem. With OPFS, you can avoid some of the performance overhead that comes with [IndexedDB-based workarounds](../slow-indexeddb.md), providing a near-native [speed experience](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md#big-bulk-writes) for file-structured data.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" class="img-in-text-right" />
+  <img src="/files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300" className="img-in-text-right" />
   - **Bandwidth Has Grown, But Latency Is Capped**: Internet infrastructure has rapidly expanded to provide higher throughput making it possible to transfer large amounts of data more quickly. However, latency (i.e., round-trip delay) is constrained by the **speed of light** and other physical limitations in fiber, satellite links, and routing. We can always build out bigger "pipes" to stream or send bulk data, but we can't significantly reduce the base round-trip time for each request. This is a physical limit, not a technological one. Local-first strategies mitigate this fundamental latency limit by avoiding excessive client-server calls in interactive workflows, once data is on the client, it's instantly available for reads and writes without waiting on a network round-trip. Imagine, transferring **around 100,000** "average" JSON documents might only consume **about the same bandwidth as two frames of a 4K YouTube video** which can be transferred in milliseconds. This shows just how far raw data throughput has come. Yet each request still has a 100-200ms latency or more, which becomes noticeable in user interactions. Local-first mitigates this by minimizing round-trip calls during active use and using the available bandwidth to directly transfer most of the data on the first app start.
 </div>
 
@@ -51,14 +51,14 @@ The push for local-first is driven by a few key new technological capabilities t
 ### User Experience Benefits
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="160" class="img-in-text-right" />
+  <img src="/files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="160" className="img-in-text-right" />
 - **Performance & UX:** Running from local storage means **low latency** and instantaneous interactions. There's no round-trip delay for most operations. Local-first apps aim to provide **near-zero latency** responses by querying a local database instead of waiting for a server response​. This results in a snappy UX (often no need for loading spinners) because data reads/writes happen immediately on-device. Modern users expect real-time feedback, and local-first delivers that by default.
 </div>
 
 - **User Control & Privacy:** Storing data locally can limit how much sensitive information is sent off to remote servers. End users have greater control over their data, and the app can implement [client-side encryption](../encryption.md), thereby reducing the risk of mass data breaches. Its even possible to only replicated encrypted data with a server so that the backend does not know about the data at all and just acts as a backup/replication endpoint.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/offline-ready.png" alt="offline ready" width="110" class="img-in-text-right" />
+  <img src="/files/offline-ready.png" alt="offline ready" width="110" className="img-in-text-right" />
   - **Offline Resilience:** Obviously, being able to work offline is a major benefit. Users can continue using the app with no internet (or flaky connectivity), and their changes sync up once online. This is increasingly important not just for remote areas, but for any app that needs to be available 24/7. Even though mobile networks have improved, connectivity can still drop; local-first ensures the app doesn't grind to a halt. The app _"stores data locally at the client so that it can still access it when the internet goes away."_
 </div>
 
@@ -66,7 +66,7 @@ The push for local-first is driven by a few key new technological capabilities t
 - **Realtime Apps**: Today's users expect data to stay in sync across browser tabs and devices without constant page reloads. In a typical cloud app, if you want real-time updates (say to show that a friend edited a document), you'd need to implement a [websocket or polling](./websockets-sse-polling-webrtc-webtransport.md) system for the server to push changes to clients, which is complex. Local-first architectures naturally lend themselves to realtime-by-default updates because the application state lives in a local database that can be observed for changes. Any edits (local or incoming from the server) immediately trigger [UI updates](./optimistic-ui.md). Similarly, background sync mechanisms ensure that new server-side data flows into the local store and into the user interface right away, no need to hit F5 to fetch the latest changes like on a traditional webpage.
 
   <p align="center">
-    <img src="/files/animations/realtime.gif" alt="realtime ui updates" width="700" class="img-radius" />
+    <img src="/files/animations/realtime.gif" alt="realtime ui updates" width="700" className="img-radius" />
   </p>
 
 
@@ -109,7 +109,7 @@ Critics of local-first approaches often point out these challenges. Here's a com
     Tools which support "any backend" are of course harder to monetize because they cannot sell SaaS services or a Cloud Subscription which is why most tools use a fixed backend instead of an replication protocol.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/document-replication-conflict.svg" alt="Conflict Handling" width="170" class="img-in-text-right" />
+  <img src="/files/document-replication-conflict.svg" alt="Conflict Handling" width="170" className="img-in-text-right" />
 - **Conflict Resolution**: When multiple offline edits happen on the same data, you inevitably get **merge conflicts**. For example, if two users (or the same user on two devices) both edit the same document offline, when both sync, whose changes win? Local-first systems need a conflict resolution strategy. Some systems use **last-write-wins** (firestore) or deterministic revision hashing to pick a "winner" (as in CouchDB/PouchDB)​. This is simple but may drop one user's changes. Other approaches keep both versions and merge them either via an implement ["merge-function"](../transactions-conflicts-revisions.md#custom-conflict-handler) or require a **manual merge** step (e.g., like git conflicts or showing the user a diff UI). More advanced solutions involve **CRDTs (Conflict-free Replicated Data Types)** which mathematically merge changes (used for rich text collaboration, for instance). Libraries like Automerge or Yjs implement CRDTs to "magically solve conflicts". But in practice, using CRDTs is also complex and has its own trade-offs and sometimes not even possible like when you need additional data from another instance for a "correct" merge. No matter which route, handling conflicts adds complexity to your app logic or infrastructure. In cloud-based (online-first) apps, you avoid this because everyone is always editing the single up-to-date copy on the server. Local-first shifts that burden to the client side. 
   
   Here is an example on how a client-side merge functions works in RxDB:
@@ -159,7 +159,7 @@ Critics of local-first approaches often point out these challenges. Here's a com
 - **Initial Data Load and Data Size Limits:** Local-first requires pulling data **down to the client**. If your dataset is huge (gigabytes), it's simply not feasible to download everything to every client. For example, syncing every tweet on Twitter to every user's phone is impossible. Local-first works best when the data set per user is reasonably sized (up to 2 Gigabytes). In practice, you often **limit the data** to just that user's own data or a subset relevant to them. Even then, on first use the app might need to download a significant chunk of data to initialize the local database. There is a **upper bound on dataset size** beyond which the initial sync or storage needs become impractical. You cannot assume unlimited local storage. If your data is too large, local-first will either fail or you'll need to only sync partial data (and then handle what happens if the needed data isn't present locally). In short, **local-first is unsuitable for massive datasets** or data that cannot be partitioned per user.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/safari-database.png" alt="safari database" width="160" class="img-in-text-right" />
+  <img src="/files/safari-database.png" alt="safari database" width="160" className="img-in-text-right" />
 - **Storage Persistence (Browser Limitations):** Storing data in the browser (via IndexedDB or similar) is not as durable as on a server disk. Browsers may **evict data** to save space (especially on mobile devices). For instance, Safari notoriously wipes out IndexedDB data if the user hasn't used the site in ~7 days. Other browsers have their own eviction policies for offline data. Also, users can at any time clear their browser storage (intentionally or via something like "Clear site data"). This means the local data **cannot be 100% trusted to stay forever**. A well-behaved local-first app needs to be able to recover if local data is lost, usually by pulling from the server again​. Essentially, the server still often serves as a backup. But if your app had any purely local data (not intended to sync), that's at risk. **Mobile apps** (with SQLite or filesystem storage) are a bit more stable than web browsers, but even there, uninstalls or certain OS actions can remove local data. This is a challenge: How to cache data offline for speed while ensuring if it's wiped, the user doesn't lose everything important. Cloud-only apps by contrast keep data in the cloud so it's typically safe unless the server fails (and servers are easier to backup reliably).
 </div>
 
@@ -176,7 +176,7 @@ Critics of local-first approaches often point out these challenges. Here's a com
 - **Security and Access Control:** In cloud-based apps, enforcing data security (who can see what) is done on the server. The client only gets the data it's authorized to get. In a local-first scenario, you often need to **partition data per user** on the backend as well, to ensure users only sync down their own data (or data they have permission for). One simple strategy is to give each user their own database or dataset on the server and only replicate that. For example, CouchDB allows creating one database per user and replication can be scoped to that DB which which makes permission handling easy. But if you ever need to query across users (say an admin view or aggregate analytics), having data split into many small DBs becomes a pain. The alternative is a single backend database with a **fine-grained access control**, and the client asks to sync only certain documents/fields. That usually means writing a custom sync server or using something like GraphQL with resolvers that respect permissions. In short, **implementing auth and permissions in sync** adds complexity. Also, any data stored on the client is theoretically vulnerable to extraction (if someone compromises the device or uses dev tools). You can [encrypt local databases](../encryption.md) to prevent extraction after the server "revokes" the decryption password to migitate the data extraction risk.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/no-sql.png" alt="NoSQL Document" width="100" class="img-in-text-right" />
+  <img src="/files/no-sql.png" alt="NoSQL Document" width="100" className="img-in-text-right" />
 - **Relational Data and Complex Queries:** Most client-side/offline databases are [NoSQL/document oriented](../why-nosql.md) for flexibility in syncing and easy conflict handling. They may not support complex join queries or ACID transactions across multiple tables like a full SQL database would. This is partly because replicating a full relational model is much harder (maintaining referential integrity, etc., when data is partial on a client) or not even logically possible. For example if you have two offline clients running a complex `UPDATE X WHERE Y FROM Z INNER JOIN Alice INNER JOIN Bob` query and then they go online, you have no easy way of handling these conflicts.
   
   If your app has heavy relational data requirements or relies on complex server-side queries (aggregations, multi-join reports), you might find the local database either cannot do it or is too slow to do it client-side. The lack of robust relational querying is something to plan for and you might need to adjust your data model to be more document-oriented or use client-side libraries to run [joins in memory](../why-nosql.md#relational-queries-in-nosql). Most tools use NoSQL because it makes replication easy and implementing true relational sync would require extremely sophisticated solutions and even needing an atomic clock for full consistency across nodes (like google spanner). So, **if your app truly needs SQL power on the client**, local-first might complicate things.
@@ -386,7 +386,7 @@ You can find a full implementation of this example at the [Quickstart Repository
 
 <center>
     <a href="https://pubkey.github.io/rxdb-quickstart/">
-        <img src="https://github.com/pubkey/rxdb-quickstart/raw/master/files/p2p-todo-demo.gif" width="500" class="img-radius" />
+        <img src="https://github.com/pubkey/rxdb-quickstart/raw/master/files/p2p-todo-demo.gif" width="500" className="img-radius" />
     </a>
 </center>
 :::
@@ -396,7 +396,7 @@ You can find a full implementation of this example at the [Quickstart Repository
 RxDB provides plugins for syncing with various backends: you can sync to [CouchDB](../replication-couchdb.md), use a [GraphQL endpoint](../replication-graphql.md), use your [firebase backend](../replication-firestore.md), or even do [P2P sync via WebRTC](../replication-webrtc.md) and more. But most people do not use these plugins. Instead they use the replication-primtives and build their own [compatible HTTP Endpoints](../replication-http.md) on their existing infrastructure.
 
 <center>
-  <img src="/files/database-replication.png" width="100" class="img-radius" alt="Backend Sync" />
+  <img src="/files/database-replication.png" width="100" className="img-radius" alt="Backend Sync" />
 </center>
 <br />
 For our example, lets assume you already have a backend server with the **three endpoints** for synchronizing "to-do" data. One endpoint (GET `/api/todos/pull?checkpoint=X&limit=Y`) returns an array of documents changed since a particular checkpoint value. The other endpoint (POST `/api/todos/push`) accepts an array of changed documents and writes them to the server, then returns any that are detected as being conflicts. Also we have a [Server-Send-Events](./websockets-sse-polling-webrtc-webtransport.md#what-are-server-sent-events) (GET `/api/todos/pull-stream`) endpoint that pings the client whenever something on the server changes.
@@ -538,7 +538,7 @@ In the early days of offline-capable web apps (around 2014), the common phrase w
 
 <center>
 <h4>This is one of the "early" offline-first videos:</h4>
-<iframe class="img-radius" width="560" height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe className="img-radius" width="560" height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </center>
 
 <br />
@@ -547,7 +547,7 @@ In the early days of offline-capable web apps (around 2014), the common phrase w
 Over time, this focus on offline support evolved into the broader concept of **"Local-First Software,"** (see [Ink&Switch](https://martin.kleppmann.com/papers/local-first.pdf)) emphasizing not just offline operation but also the technical underpinnings of **storing data locally** in the client application. While offline-first is primarily about resilience to network loss, local-first highlights ownership, privacy, and performance benefits of keeping the primary data on the user's device. Most tools these days extended the original offline-first concepts, adding real-time reactivity, custom sync, and more nuances like conflict resolution or encryption.
 
 <div style={{textAlign: 'justify'}}>
-  <img src="/files/no-map-tag.png" alt="no map t ag" width="100" class="img-in-text-right" />
+  <img src="/files/no-map-tag.png" alt="no map t ag" width="100" className="img-in-text-right" />
 However, the term **"local-first"** can be **confusing** to non-technical audiences because many people (especially in the US) associate "local first" with *community-oriented movements* that encourage buying from nearby businesses or supporting local initiatives. To reduce ambiguity, it may be clearer to use **"local first software"** or **"local first development"** in your documentation and marketing materials. When creating branding or logos around local-first software, **avoid using the "Google Maps Pin"** as a symbol. This icon typically implies geolocation or physical locality further mixing up the notion of "location-based services" with "on-device data storage."
 </div>
 

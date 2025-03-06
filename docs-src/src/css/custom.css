@@ -1161,7 +1161,8 @@ body {
 ul.checked li {
     font-size: 26px;
     text-align: left;
-    line-height: 200%;
+    line-height: 116%;
+    padding-top: 20px;
 }
 
 ul.checked li b {
