@@ -364,7 +364,7 @@ function startAnalytics() {
      * but only run trigger these once per page load
      */
     let trackScrollPercentages = new Set([25, 50, 75, 90]);
-    (window as any).navigation.addEventListener("navigate", (event) => {
+    (window as any).navigation.addEventListener('navigate', () => {
         // reset if url changes
         trackScrollPercentages = new Set([25, 50, 75, 90]);
     });

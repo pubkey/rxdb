@@ -9,8 +9,8 @@ export function Overview() {
             (sidebars.tutorialSidebar as any[]).map(
                 item => {
                     if (item.type === 'category' && item.label.toLowerCase() !== 'articles') {
-                        const key = item.type + '--' + item.label;
-                        return <div key={key}>
+                        const keyTop = item.type + '--' + item.label;
+                        return <div key={keyTop}>
                             <br />
                             <br />
                             <h2 style={{ width: '100%' }}>{item.label}</h2>
