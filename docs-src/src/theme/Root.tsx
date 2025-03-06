@@ -389,7 +389,7 @@ function startAnalytics() {
             const documentHeight = document.body.scrollHeight;
 
             const scrollPercentage = (window.scrollY / (documentHeight - window.innerHeight)) * 100;
-            console.log(`Scroll position: ${scrollPercentage.toFixed(2)}% of the page height`);
+            // console.log(`Scroll position: ${scrollPercentage.toFixed(2)}% of the page height`);
 
             trackScrollPercentages.forEach(percent => {
                 if (scrollPercentage > percent) {

@@ -14,7 +14,7 @@ export function triggerTrackingEvent(
     const prefix = 'event_count_';
     const stored = localStorage.getItem(prefix + type);
     const triggeredBefore = stored ? parseInt(stored, 10) : 0;
-    console.log('triggeredBefore: ' + triggeredBefore);
+    // console.log('triggeredBefore: ' + triggeredBefore);
     if (triggeredBefore >= maxPerUser) {
         return;
     }
