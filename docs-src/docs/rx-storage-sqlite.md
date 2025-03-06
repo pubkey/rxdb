@@ -313,6 +313,30 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
+### Usage with Tauri SQLite
+
+1. Add the [Tauri SQL plugin](https://tauri.app/plugin/sql/#setup) to your Tauri project.
+2. Make sure to add `sqlite` as your database engine by running `cargo add tauri-plugin-sql --features sqlite` inside `src-tauri`.
+3. Use the `getSQLiteBasicsTauri` function to get the Tauri SQLite wrapper.
+
+```ts
+import {
+    createRxDatabase
+} from 'rxdb';
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsTauri
+} from 'rxdb/plugins/storage-sqlite';
+import sqlite3 from '@tauri-apps/plugin-sql';
+
+const myRxDatabase = await createRxDatabase({
+    name: 'exampledb',
+    storage: getRxStorageSQLite({
+        sqliteBasics: getSQLiteBasicsTauri(sqlite3)
+    })
+});
+```
+
 ## Database Connection
 
 If you need to access the database connection for any reason you can use `getDatabaseConnection` to do so:
