@@ -175,7 +175,7 @@ console.log(docAfterEdit === latestDoc); // > true
 
 
 ### Observe $
-Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which the current newest state of the RxDocument.
+Calling this will return an [RxJS-Observable](https://rxjs.dev/guide/observable) which the current newest state of the RxDocument.
 
 ```js
 // get all changeEvents

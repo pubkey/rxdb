@@ -5,7 +5,7 @@ export function triggerTrackingEvent(
     value: number,
     /**
      * Only track the same event X amount of times per users.
-     * This helps to prevent poluting the stats when a singler user
+     * This helps to prevent polluting the stats when a singler user
      * does something many many times.
      */
     maxPerUser: number = 5

@@ -17,7 +17,7 @@ While RxDB has a range of backend-specific replication plugins (like [GraphQL](.
 
 Using **HTTP** as a transport protocol makes it simple to create a compatible backend on top of your existing infrastructure. For events that must be send from the server to the client, we can use [Server Send Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 
-In this tutorial we will implement a HTTP replication between an RxDB client and a MongoDB express server. You can adapt this for any other backend database technologie like PostgreSQL or even a non-Node.js server like go or java.
+In this tutorial we will implement a HTTP replication between an RxDB client and a MongoDB express server. You can adapt this for any other backend database technology like PostgreSQL or even a non-Node.js server like go or java.
 
 To create a compatible server for replication, we will start a server and implement the correct HTTP routes and replication handlers. We need a push-handler, a pull-handler and for the ongoing changes `pull.stream` we use **Server Send Events**.
 

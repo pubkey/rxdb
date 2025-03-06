@@ -49,7 +49,7 @@ const result = await db.users.find({
 
 ```
 
-Another alternative storage is the [SQLite RxStorage](./rx-storage-sqlite.md) that stores the data inside of a SQLite filebased database. The SQLite storage is faster then FoundationDB and does not require to set up a cluster or anything because SQLite directly stores and reads the data inside of the filesystem. The downside of that is that it only scales vertically.
+Another alternative storage is the [SQLite RxStorage](./rx-storage-sqlite.md) that stores the data inside of a SQLite filebased database. The SQLite storage is faster than FoundationDB and does not require to set up a cluster or anything because SQLite directly stores and reads the data inside of the filesystem. The downside of that is that it only scales vertically.
 
 ```ts
 import { createRxDatabase } from 'rxdb';

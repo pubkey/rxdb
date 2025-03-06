@@ -324,7 +324,7 @@ Here we can notice a few things:
   - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
-- SQLite WASM can be fast but the you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
+- SQLite WASM can be fast but you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
 
 
 -------------
