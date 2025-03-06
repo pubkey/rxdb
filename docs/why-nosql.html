@@ -9,9 +9,9 @@
 <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
-<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.92122e1b.css">
-<script src="/assets/js/runtime~main.2491b431.js" defer="defer"></script>
-<script src="/assets/js/main.69c3e8fb.js" defer="defer"></script>
+<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.be5fcc91.css">
+<script src="/assets/js/runtime~main.acb9f317.js" defer="defer"></script>
+<script src="/assets/js/main.6d2412f2.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -33,7 +33,7 @@ the rows with complex subqueries over different tables or collections and then m
 <p align="center"><img src="./files/no-sql.png" alt="NoSQL" width="100"></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="transactions-do-not-work-with-humans-involved">Transactions do not work with humans involved<a href="#transactions-do-not-work-with-humans-involved" class="hash-link" aria-label="Direct link to Transactions do not work with humans involved" title="Direct link to Transactions do not work with humans involved">​</a></h2>
 <p>On the server side, transactions are used to run steps of logic inside of a self contained <code>unit of work</code>. The database system ensures that multiple transactions do not run in parallel or interfere with each other.
-This works well because on the server side you can predict how longer everything takes. It can be ensured that one transactions does not block everything else for too long which would make the system not responding anymore to other requests.</p>
+This works well because on the server side you can predict how longer everything takes. It can be ensured that one transaction does not block everything else for too long which would make the system not responding anymore to other requests.</p>
 <p>When you build a UI based application that is used by a real human, you can no longer predict how long anything takes.
 The user clicks the edit button and expects to not have anyone else change the document while the user is in edit mode.
 Using a transaction to ensure nothing is changed in between, is not an option because the transaction could be open for a long

@@ -9,9 +9,9 @@
 <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
-<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.92122e1b.css">
-<script src="/assets/js/runtime~main.2491b431.js" defer="defer"></script>
-<script src="/assets/js/main.69c3e8fb.js" defer="defer"></script>
+<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.be5fcc91.css">
+<script src="/assets/js/runtime~main.acb9f317.js" defer="defer"></script>
+<script src="/assets/js/main.6d2412f2.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -62,7 +62,7 @@ So instead of having class method on the RxCollection, the replications are now 
 <p>In the past, the <a href="/rx-storage-worker.html">worker plugin</a> was based on the <a href="https://www.npmjs.com/package/threads" target="_blank" rel="noopener noreferrer">threads</a> library. It was completely rewritten and uses the plain JavaScript API together with the <a href="/rx-storage-remote.html">remote storage plugin</a>. <strong>BUT</strong> notice that the worker plugin has moved into the <a href="/premium/">RxDB Premium 👑</a> package.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="performance-improvements">Performance improvements<a href="#performance-improvements" class="hash-link" aria-label="Direct link to Performance improvements" title="Direct link to Performance improvements">​</a></h2>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="do-not-use-hash-for-revisions">Do not use hash for revisions<a href="#do-not-use-hash-for-revisions" class="hash-link" aria-label="Direct link to Do not use hash for revisions" title="Direct link to Do not use hash for revisions">​</a></h3>
-<p>In the past, the <code>_rev</code> field of a RxDocument dat was filled with a hash of the documents data. This was not the best solution because:</p>
+<p>In the past, the <code>_rev</code> field of a RxDocument data was filled with a hash of the documents data. This was not the best solution because:</p>
 <ul>
 <li>Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%</li>
 <li>When 2 clients do the exact same write to the document, it is not clear from comparing the document states because they will have the exact same hash which makes some conflict resolution strategies impossible to implement.</li>

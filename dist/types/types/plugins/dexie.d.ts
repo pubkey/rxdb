@@ -3,8 +3,11 @@ import type {
     DexieOptions,
     Table as DexieTable
 } from 'dexie';
+import type { MaybePromise } from '../util';
 
-export type DexieSettings = DexieOptions;
+export type DexieSettings = DexieOptions & {
+    onCreate?: (db: Dexie, dbName: string) => MaybePromise<void>;
+};
 
 /**
  * The internals is a Promise that resolves

@@ -9,9 +9,9 @@
 <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
-<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.92122e1b.css">
-<script src="/assets/js/runtime~main.2491b431.js" defer="defer"></script>
-<script src="/assets/js/main.69c3e8fb.js" defer="defer"></script>
+<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.be5fcc91.css">
+<script src="/assets/js/runtime~main.acb9f317.js" defer="defer"></script>
+<script src="/assets/js/main.6d2412f2.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -104,7 +104,7 @@ The fast version of OPFS with the <code>createSyncAccessHandle</code> method can
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="storage-size-limits">Storage Size Limits<a href="#storage-size-limits" class="hash-link" aria-label="Direct link to Storage Size Limits" title="Direct link to Storage Size Limits">​</a></h2>
 <ul>
 <li>
-<p><strong>Cookies</strong> are limited to about <code>4 KB</code> of data in <a href="https://datatracker.ietf.org/doc/html/rfc6265#section-6.1" target="_blank" rel="noopener noreferrer">RFC-6265</a>. Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits <a href="http://www.ruslog.com/tools/cookies.html" target="_blank" rel="noopener noreferrer">here</a>. Notice that you should never fill up the full <code>4 KB</code> of your cookies because your websserver will not accept too long headers and reject the requests with <code>HTTP ERROR 431 - Request header fields too large</code>. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.</p>
+<p><strong>Cookies</strong> are limited to about <code>4 KB</code> of data in <a href="https://datatracker.ietf.org/doc/html/rfc6265#section-6.1" target="_blank" rel="noopener noreferrer">RFC-6265</a>. Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits <a href="http://www.ruslog.com/tools/cookies.html" target="_blank" rel="noopener noreferrer">here</a>. Notice that you should never fill up the full <code>4 KB</code> of your cookies because your web server will not accept too long headers and reject the requests with <code>HTTP ERROR 431 - Request header fields too large</code>. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.</p>
 </li>
 <li>
 <p><strong>LocalStorage</strong> has a storage size limitation that varies depending on the browser, but generally ranges from 4 MB to 10 MB per origin. You can test your localStorage size limit <a href="https://arty.name/localstorage.html" target="_blank" rel="noopener noreferrer">here</a>.</p>
@@ -180,7 +180,7 @@ If we would not create on OPFS file per document but instead append everything t
 </ul>
 </li>
 <li>OPFS is way faster when used in the WebWorker with the <code>createSyncAccessHandle()</code> method compare to using it directly in the main thread.</li>
-<li>SQLite WASM can be fast but the you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.</li>
+<li>SQLite WASM can be fast but you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.</li>
 </ul>
 <hr>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="possible-improvements">Possible Improvements<a href="#possible-improvements" class="hash-link" aria-label="Direct link to Possible Improvements" title="Direct link to Possible Improvements">​</a></h2>
