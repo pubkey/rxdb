@@ -355,7 +355,7 @@ function startAnalytics() {
     [10, 20, 60].forEach(time => {
         setTimeout(function () {
             const value = 0.002 * time;
-            triggerTrackingEvent(time + '_sec_on_page', value, 5);
+            triggerTrackingEvent(time + '_sec_on_page', value);
         }, time * 1000);
     });
 
@@ -395,7 +395,7 @@ function startAnalytics() {
                 if (scrollPercentage > percent) {
                     trackScrollPercentages.delete(percent);
                     const value = parseFloat((0.10 * (percent / 100)).toFixed(2));
-                    triggerTrackingEvent('scroll_to_' + percent, value, 5);
+                    triggerTrackingEvent('scroll_to_' + percent, value);
                 }
             });
         });
