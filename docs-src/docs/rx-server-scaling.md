@@ -26,8 +26,8 @@ Another way to increases the server capacity is to put the storage into a [Worke
 
 ### Use an in-memory storage at the user facing level
 
-Another way to serve more requests to your end users, is to use an [in-memory](./rx-storage-memory.md) storage that has the [best](./rx-storage-performance.md) read- and write performance. It outperformans persistend storages by a factor of 10x.
-So instead of directly serving requests from the persistence layer, you add an in-memory layer on top of that. You could either do a [replication](./replication.md) from your memory database to the persistend one, or you use the [memory mapped](./rx-storage-memory-mapped.md) storage which has this build in.
+Another way to serve more requests to your end users, is to use an [in-memory](./rx-storage-memory.md) storage that has the [best](./rx-storage-performance.md) read- and write performance. It outperformans persistent storages by a factor of 10x.
+So instead of directly serving requests from the persistence layer, you add an in-memory layer on top of that. You could either do a [replication](./replication.md) from your memory database to the persistent one, or you use the [memory mapped](./rx-storage-memory-mapped.md) storage which has this build in.
 
 ```ts
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
@@ -57,7 +57,7 @@ But notice that you have to check your persistence requirements. When a write ha
 To scale the RxDB Server above a single physical hardware unit, there are different solutions where the decision depends on the exact use case.
 
 ### Single Datastore with multiple branches
-Thke most common way to use multiple servers with RxDB is to split up the server into a tree with a root "datastore" and multiple "branches". The datastore contains the persisted data and only servers as a replication endpoint for the branches. The branches themself will replicate data to and from the datastore and server requests to the end users.
+The most common way to use multiple servers with RxDB is to split up the server into a tree with a root "datastore" and multiple "branches". The datastore contains the persisted data and only servers as a replication endpoint for the branches. The branches themself will replicate data to and from the datastore and server requests to the end users.
 This is mostly useful on read-heavy applications because reads will directly run on the branches without ever reaching the main datastore and you can always add more branches to **scale up**. Even adding additional layers of "datastores" is possible so the tree can grow (or shrink) with the demand.
 
 <p align="center">

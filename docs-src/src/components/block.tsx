@@ -9,12 +9,12 @@ export function Block(props: {
     const ret =
         <div className="premium-block hover-shadow-middle bg-gradient-right-top">
             <div className="premium-block-inner">
-                <h4 style={{textDecoration: 'none'}}>{ucfirst(props.title)}</h4>
+                <h4 style={{ textDecoration: 'none' }}>{ucfirst(props.title)}</h4>
                 <p>{props.text}</p>
             </div>
         </div>;
     if (props.href) {
-        return <a href={props.href} target={props.target} style={{textDecoration: 'none'}}>
+        return <a href={props.href} target={props.target} style={{ textDecoration: 'none' }}>
             {ret}
         </a>;
     }

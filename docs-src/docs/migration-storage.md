@@ -66,7 +66,7 @@ To migrate from a previous RxDB major version, you have to install the 'old' RxD
 }
 ```
 
-The you can run the migration by providing the old storage:
+Then you can run the migration by providing the old storage:
 
 ```ts
 /* ... */

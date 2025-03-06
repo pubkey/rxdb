@@ -163,7 +163,7 @@ Most modern browsers allow six connections per domain () which limits the usabil
 
 While that policy makes sense to prevent website owners from using their visitors to D-DOS other websites, it can be a big problem when multiple connections are required to handle server-client communication for legitimate use cases. To workaround the limitation you have to use HTTP/2 or HTTP/3 with which the browser will only open a single connection per domain and then use multiplexing to run all data through a single connection. While this gives you a virtually infinity amount of parallel connections, there is a [SETTINGS_MAX_CONCURRENT_STREAMS](https://www.rfc-editor.org/rfc/rfc7540#section-6.5.2) setting which limits the actually connections amount. The default is 100 concurrent streams for most configurations.
 
-In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have beem marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
+In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have been marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
 
 :::note Lower the amount of connections in Browser Apps
 When you build a browser application, you have to assume that your users will use the app not only once, but in multiple browser tabs in parallel.
@@ -177,7 +177,7 @@ In the context of mobile applications running on operating systems like Android 
 
 ### Proxies and Firewalls
 
-From consutling many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
+From consulting many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
 
 <center>
     <a href="https://rxdb.info/">
@@ -198,7 +198,7 @@ First lets look at the raw numbers. A good performance comparison can be found i
 </center>
 
 :::note
-Remember that WebTransport is a pretty new technologie based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
+Remember that WebTransport is a pretty new technology based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
 :::
 
 Lets also compare the Latency, the throughput and the scalability:

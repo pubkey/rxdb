@@ -30,7 +30,7 @@ There must be a reason for that. In fact, there are multiple of them and in the 
 ## Transactions do not work with humans involved
 
 On the server side, transactions are used to run steps of logic inside of a self contained `unit of work`. The database system ensures that multiple transactions do not run in parallel or interfere with each other.
-This works well because on the server side you can predict how longer everything takes. It can be ensured that one transactions does not block everything else for too long which would make the system not responding anymore to other requests.
+This works well because on the server side you can predict how longer everything takes. It can be ensured that one transaction does not block everything else for too long which would make the system not responding anymore to other requests.
 
 When you build a UI based application that is used by a real human, you can no longer predict how long anything takes.
 The user clicks the edit button and expects to not have anyone else change the document while the user is in edit mode.
