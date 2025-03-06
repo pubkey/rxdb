@@ -10,7 +10,7 @@ export default function Newsletter() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
         if (isBrowser) {
-            triggerTrackingEvent('get_newsletter', 0.40, false);
+            triggerTrackingEvent('get_newsletter', 0.40);
         }
     });
 

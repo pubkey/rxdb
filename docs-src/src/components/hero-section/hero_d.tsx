@@ -60,7 +60,7 @@ export function HeroSection_D(props: {
                         <div
                             className="button button-empty"
                             onClick={() => {
-                                triggerTrackingEvent('hero_section_how_others', 0.4, false);
+                                triggerTrackingEvent('hero_section_how_others', 0.4);
                                 props.scrollToSection('reviews');
                             }}
                         >
@@ -72,14 +72,14 @@ export function HeroSection_D(props: {
                             className="button"
                             href="/quickstart.html"
                             target="_blank"
-                            onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4, false)}
+                            onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >
                             Get Started For Free &#x27A4;<br />
                         </a>
                         <a
                             href="/premium/"
                             target="_blank"
-                            onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4, false)}
+                            onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4)}
                         >
                             <div className="buy-option-action">
                                 (Get Premium)

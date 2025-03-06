@@ -923,7 +923,7 @@ export default function Home(props: {
                         href="/code/"
                         target="_blank"
                         rel="noopener"
-                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8, false)}
+                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8)}
                       >
                         <div className="buy-option-action bg-top hover-shadow-top">
                           Get the Code
@@ -960,7 +960,7 @@ export default function Home(props: {
                       </div>
                       <a
                         href="/premium/"
-                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
+                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
                           Get Premium
@@ -987,7 +987,7 @@ export default function Home(props: {
                       </div>
                       <a
                         href="/consulting/"
-                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4, false)}
+                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
                           Get in Contact
@@ -1010,7 +1010,7 @@ export default function Home(props: {
                   href="/quickstart.html"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40)}
                 >
                   <div
                     className="button get-premium"
@@ -1023,7 +1023,7 @@ export default function Home(props: {
                   href="/newsletter"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
                   <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     Get the Newsletter
@@ -1033,7 +1033,7 @@ export default function Home(props: {
                   href="/chat/"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1042,7 +1042,7 @@ export default function Home(props: {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40, false)}>
+                <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1054,7 +1054,7 @@ export default function Home(props: {
                   href="https://twitter.com/intent/user?screen_name=rxdbjs"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1067,7 +1067,7 @@ export default function Home(props: {
                   href="/code/"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40)}
                 >
                   <div
                     className="button"

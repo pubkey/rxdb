@@ -80,7 +80,7 @@ function PackageCheckbox(props: {
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
         readOnly
         onClick={() => {
-            triggerTrackingEvent('calculate_premium_price', 3, true);
+            triggerTrackingEvent('calculate_premium_price', 3, 1);
             props.onToggle();
         }}
     />;
@@ -110,7 +110,7 @@ export default function Premium() {
         }
         setInitDone(true);
         if (isBrowser) {
-            triggerTrackingEvent('open_pricing_page', 1, false);
+            triggerTrackingEvent('open_pricing_page', 1);
         }
 
         (async () => {
@@ -153,7 +153,7 @@ export default function Premium() {
     // for dialog
     const [open, setOpen] = React.useState(false);
     const handleOpenDialog = () => {
-        triggerTrackingEvent('open_premium_submit_popup', 20, true);
+        triggerTrackingEvent('open_premium_submit_popup', 20, 1);
         setOpen(true);
     };
     const handleClose = () => {

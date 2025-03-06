@@ -28,7 +28,7 @@ export default function LicensePreview() {
             try {
                 const myParamValue = new URLSearchParams(window.location.search).get('v');
                 const value = myParamValue ? parseInt(myParamValue, 10) : 300;
-                triggerTrackingEvent(FILE_EVENT_ID, value, true);
+                triggerTrackingEvent(FILE_EVENT_ID, value, 1);
             } catch (err) {
                 console.log(err);
             }

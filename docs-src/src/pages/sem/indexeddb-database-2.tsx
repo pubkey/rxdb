@@ -118,7 +118,7 @@ export default function Page() {
                                 href="/quickstart.html"
                                 rel="noopener"
                                 target="_blank"
-                                onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40, false)}
+                                onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40)}
                             >
                                 <div
                                     className="button get-premium"

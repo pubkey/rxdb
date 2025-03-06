@@ -18,7 +18,7 @@ export function Trophy(props: {
 
     return <a
         href={props.href}
-        onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20, false)}
+        onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
         target="_blank"
     >
         <div className={'trophy ' + props.title.toLowerCase()}>
