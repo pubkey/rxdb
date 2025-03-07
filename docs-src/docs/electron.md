@@ -17,10 +17,6 @@ To use RxDB in [electron](./electron-database.md), it is recommended to run the 
 To do this in a convenient way, the RxDB electron plugin provides the helper functions `exposeIpcMainRxStorage` and `getRxStorageIpcRenderer`.
 Similar to the [Worker RxStorage](./rx-storage-worker.md), these wrap any other [RxStorage](./rx-storage.md) once in the main process and once in each renderer process. In the renderer you can then use the storage to create a [RxDatabase](./rx-database.md) which communicates with the storage of the main process to store and query data.
 
-:::note
-`nodeIntegration` must be enabled in [Electron](https://www.electronjs.org/docs/latest/api/browser-window#new-browserwindowoptions).
-:::
-
 ```ts
 //  main.js
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
