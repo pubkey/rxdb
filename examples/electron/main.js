@@ -24,8 +24,8 @@ function createWindow() {
         width,
         height,
         webPreferences: {
-            contextIsolation: false,
-            nodeIntegration: true,
+            contextIsolation: true,
+            nodeIntegration: false,
             preload: path.join(__dirname, 'preload.js')
         }
     });
