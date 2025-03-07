@@ -572,7 +572,7 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 
 ## See also
 
-- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Sofware was first used and described.
+- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides RxDB) that support offline-first or local-first use cases.
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
 - [localfirst.fm](https://www.youtube.com/@localfirstfm/videos): A podcast about Local-First Software.
