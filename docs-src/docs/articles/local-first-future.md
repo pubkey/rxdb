@@ -572,9 +572,18 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 
 ## See also
 
-- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
-- [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides RxDB) that support offline-first or local-first use cases.
+<!-- <center>
+    <a href="https://rxdb.info/">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Angular Database" width="220" />
+    </a>
+</center>
+<br />
+<br /> -->
+
+- Discuss [this topic on HackerNews](https://news.ycombinator.com/item?id=43289885)
+- Help us by [liking this article on LinkedIn](https://www.linkedin.com/posts/rxdb_localfirst-offlinefirst-webdevelopment-activity-7303769366343397378-DaO6).
+- [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides [RxDB](/)) that support offline-first or local-first use cases.
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
+- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
 - [localfirst.fm](https://www.youtube.com/@localfirstfm/videos): A podcast about Local-First Software.
-- Help us by [sharing this article on LinkedIn](https://www.linkedin.com/posts/rxdb_localfirst-offlinefirst-webdevelopment-activity-7303769366343397378-DaO6)
-- [Learn how to build a local-first Application with RxDB](../quickstart.md)
+- [Learn how to build a local-first Application with RxDB](../quickstart.md).
