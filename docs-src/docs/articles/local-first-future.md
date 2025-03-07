@@ -581,7 +581,6 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 <br /> -->
 
 - Discuss [this topic on HackerNews](https://news.ycombinator.com/item?id=43289885)
-- Help us by [liking this article on LinkedIn](https://www.linkedin.com/posts/rxdb_localfirst-offlinefirst-webdevelopment-activity-7303769366343397378-DaO6).
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides [RxDB](/)) that support offline-first or local-first use cases.
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
 - [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
