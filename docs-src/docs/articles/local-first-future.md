@@ -576,4 +576,5 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides RxDB) that support offline-first or local-first use cases.
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
 - [localfirst.fm](https://www.youtube.com/@localfirstfm/videos): A podcast about Local-First Software.
-- [local-first Conference](https://www.localfirstconf.com/): A conference about Local-First, happening in Berlin.
+- Help us by [sharing this article on LinkedIn](https://www.linkedin.com/posts/rxdb_localfirst-offlinefirst-webdevelopment-activity-7303769366343397378-DaO6)
+- [Learn how to build a local-first Application with RxDB](../quickstart.md)
