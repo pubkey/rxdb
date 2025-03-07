@@ -570,8 +570,10 @@ Then, as more sites added **real-time** features - auto-updating feeds, live not
 
 The same pattern is happening with **local-first** apps. Right now, most sites are still built around network availability. We see loading spinners whenever data is fetched, and we simply wait for the server response. As local-first experiences become **commonplace** - removing spinners, letting users keep working when offline, and syncing in the background - everything else will start to feel **frustratingly behind**. Users won't tolerate slow or blocked interactions if they've seen apps that respond instantly and remain usable offline. They'll expect that as the default and we'll likely see growing pressure on developers to eliminate those extra loading steps. For many users, the experience of **immediate local writes will become not just a perk, but an expectation!**
 
-## Follow up
+## See also
 
-- Read the [original paper](https://martin.kleppmann.com/papers/local-first.pdf) about Local-First by Inc&Switch
-- Join our [Discord](/chat/) to talk with people and share ideas about this topic.
-- Beside [RxDB](/) learn about many other [technologies for realtime local-first applications](../alternatives.md)
+- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Sofware was first used and described.
+- [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides RxDB) that support offline-first or local-first use cases.
+- [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
+- [localfirst.fm](https://www.youtube.com/@localfirstfm/videos): A podcast about Local-First Software.
+- [local-first Conference](https://www.localfirstconf.com/): A conference about Local-First, happening in Berlin.
