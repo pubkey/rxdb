@@ -538,7 +538,7 @@ In the early days of offline-capable web apps (around 2014), the common phrase w
 
 <center>
 <h4>This is one of the "early" offline-first videos:</h4>
-<iframe className="img-radius" width="560" height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+<iframe className="img-radius" style={{width: '100%'}} height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </center>
 
 <br />
