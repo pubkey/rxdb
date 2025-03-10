@@ -7,17 +7,21 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
     {
         videoId: 'tDWmfenF2AM',
         title: 'The Easiest Way to Store Data',
-        duration: '4:28'
+        duration: '4:28',
+        startAt: 8
+
     },
     {
         videoId: 'qHWrooWyCYg',
         title: 'This solved a problem I\'ve had in Angular for years',
-        duration: '3:45'
+        duration: '3:45',
+        startAt: 2
     },
     {
         videoId: '6t6IansQ7xo',
         title: 'Say goodbye to REST APIs with RxDB',
-        duration: '14:23'
+        duration: '14:23',
+        startAt: 21
     },
     {
         videoId: 'm3T0gMuitbI',
@@ -32,7 +36,8 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
     {
         videoId: 'qRKWD1T5CD4',
         title: 'Nuxt Nation 2024: Ben Hong - Embracing Local-First Apps with Nuxt',
-        duration: '34:17'
+        duration: '34:17',
+        startAt: 769
     }
 ];
 
@@ -72,7 +77,7 @@ export function VideoSection(_props: {
                             float: 'left',
                             margin: 20
                         }}>
-                            <YouTubeVideoBox videoId={item.videoId} duration={item.duration} title={item.title} />
+                            <YouTubeVideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
                         </div>
                     ))}
                 </Slider>

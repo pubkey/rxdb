@@ -6,6 +6,8 @@ export type YoutubeVideoData = {
   videoId: string;
   title: string;
   duration: string;
+  // in seconds
+  startAt?: number;
 };
 
 const PlayCircle = ({ isHovered }: { isHovered: boolean; }) => (
@@ -22,7 +24,7 @@ const PlayCircle = ({ isHovered }: { isHovered: boolean; }) => (
   </svg>
 );
 
-export const YouTubeVideoBox = ({ videoId, title, duration }: YoutubeVideoData) => {
+export const YouTubeVideoBox = ({ videoId, title, duration, startAt }: YoutubeVideoData) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -143,7 +145,7 @@ export const YouTubeVideoBox = ({ videoId, title, duration }: YoutubeVideoData) 
           <br />
           <center>
             <iframe className="img-radius" style={{ width: '100%', borderRadius: '15px' }}
-              height="515" src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1'}
+              height="515" src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1&start=' + (startAt ? startAt : 0)}
               title="YouTube video player" frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
