@@ -827,6 +827,7 @@ body {
     padding-bottom: 150px;
     background-color: var(--bg-color);
     position: relative;
+    overflow: hidden;
 }
 
 .block.first {
