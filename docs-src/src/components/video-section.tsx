@@ -31,7 +31,7 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
     // },
     {
         videoId: 'qRKWD1T5CD4',
-        title: 'Nuxt Nation 2024: Ben Hong - Get Your Head Out of the Cloud — Embracing Local-First Apps with Nuxt',
+        title: 'Nuxt Nation 2024: Ben Hong - Embracing Local-First Apps with Nuxt',
         duration: '34:17'
     }
 ];
