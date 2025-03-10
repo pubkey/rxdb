@@ -51,7 +51,7 @@ const sliderSettings = {
     slidesToScroll: 1,
     initialSlide: 0
 };
-export function VideoSection(props: {
+export function VideoSection(_props: {
     sem?: SemPage;
 }) {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding, paddingBottom: 0 }}>

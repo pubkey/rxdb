@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal } from 'antd';
+import { triggerTrackingEvent } from './trigger-event';
 
 export type YoutubeVideoData = {
   videoId: string;
@@ -7,7 +8,7 @@ export type YoutubeVideoData = {
   duration: string;
 };
 
-const PlayCircle = ({ isHovered }: { isHovered: boolean }) => (
+const PlayCircle = ({ isHovered }: { isHovered: boolean; }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="56"
@@ -42,6 +43,8 @@ export const YouTubeVideoBox = ({ videoId, title, duration }: YoutubeVideoData) 
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => {
         setIsOpen(true);
+        triggerTrackingEvent('open_video', 0.10);
+        triggerTrackingEvent('open_video_' + videoId, 0.05, 1);
       }}
     >
       <div
