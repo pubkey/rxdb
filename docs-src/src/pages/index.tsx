@@ -20,6 +20,7 @@ import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { ABTestContent, getTestGroup } from '../components/a-b-tests';
+import { VideoSection } from '../components/video-section';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -376,14 +377,8 @@ export default function Home(props: {
               </> : ''
           }
 
-          <Trophy
-            href="/code/"
-            title="GitHub"
-            subTitle='Open Source on'
-            value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
-            valueTitle='stars'
-          />
+
+          <VideoSection sem={props.sem} />
 
           <div className="block second dark" id="realtime" ref={realtimeRef}>
             <div className="content">
@@ -417,15 +412,15 @@ export default function Home(props: {
             </div>
           </div>
 
-
           <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
+            href="/code/"
+            title="GitHub"
+            subTitle='Open Source on'
+            value={SOCIAL_PROOF_VALUES.github}
+            imgUrl="/files/icons/github-star-with-logo.svg"
+            valueTitle='stars'
           />
+
           <div className="block replication" id="replication" ref={replicationRef}>
             <div className="content">
               <div className="half left">
@@ -562,6 +557,7 @@ export default function Home(props: {
               </div>
             </div>
           </div>
+
           <div className="block frameworks" id="runtimes" ref={runtimesRef}>
             <div className="content">
               <a
@@ -740,6 +736,15 @@ export default function Home(props: {
               </div>
             </div>
           </div>
+
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            imgUrl="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
+          />
 
           <div className="block features dark">
             <div className="content">

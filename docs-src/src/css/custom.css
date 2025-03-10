@@ -593,7 +593,7 @@ body {
 }
 
 .slick-slider {
-    padding-bottom: 150px;
+    padding-bottom: 50px;
 }
 
 .slick-slide {
@@ -3306,7 +3306,7 @@ footer a:visited {
     width: max-content !important;
     align-items: center !important;
     position: static !important;
-    margin: 80px auto 0 !important;
+    margin: 40px auto 0 !important;
 }
 
 .slick-dots li button {
