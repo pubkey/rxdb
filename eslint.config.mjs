@@ -41,6 +41,7 @@ export default [
             'examples/svelte',
             'examples/react/build',
             'examples/supabase/',
+            'examples/tauri',
             'examples/vite-vanilla-ts',
             '**/node_modules',
             '**/docs',
