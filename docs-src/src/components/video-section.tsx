@@ -17,7 +17,7 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
     {
         videoId: '6t6IansQ7xo',
         title: 'Say goodbye to REST APIs with RxDB',
-        duration: '15:22'
+        duration: '14:23'
     },
     {
         videoId: 'm3T0gMuitbI',
