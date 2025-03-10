@@ -99,78 +99,79 @@ export const REVIEW_ITEMS: {
     ];
 
 
+export const SLICK_SLIDER_SETTINGS = {
+    dots: true,
+    centerMode: true,
+    centerPadding: '180px',
+    infinite: true,
+    arrows: false,
+    adaptiveHeight: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    initialSlide: 0,
+    responsive: [
+        {
+            breakpoint: 1460,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                infinite: true,
+                dots: true,
+                centerPadding: '180px',
+            },
+        },
+        {
+            breakpoint: 1124,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                infinite: true,
+                dots: true,
+                centerPadding: '100px',
+            },
+        },
+        {
+            breakpoint: 900,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+                infinite: true,
+                dots: true,
+                centerPadding: '40px',
+            },
+        },
+        {
+            breakpoint: 690,
+            settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                infinite: true,
+                dots: true,
+                centerMode: false,
+                centerPadding: '0px',
+            },
+        },
+        {
+            breakpoint: 480,
+            settings: {
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                infinite: false,
+                dots: true,
+                swipeToSlide: true,
+                centerMode: false,
+                centerPadding: '0px',
+            },
+        },
+    ],
+};
+
 export function ReviewsBlock() {
-    const slickSettings = {
-        dots: true,
-        centerMode: true,
-        centerPadding: '180px',
-        infinite: true,
-        arrows: false,
-        adaptiveHeight: true,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        initialSlide: 0,
-        responsive: [
-            {
-                breakpoint: 1460,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: '180px',
-                },
-            },
-            {
-                breakpoint: 1124,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: '100px',
-                },
-            },
-            {
-                breakpoint: 900,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerPadding: '40px',
-                },
-            },
-            {
-                breakpoint: 690,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    infinite: true,
-                    dots: true,
-                    centerMode: false,
-                    centerPadding: '0px',
-                },
-            },
-            {
-                breakpoint: 480,
-                settings: {
-                    slidesToShow: 1,
-                    slidesToScroll: 1,
-                    infinite: false,
-                    dots: true,
-                    swipeToSlide: true,
-                    centerMode: false,
-                    centerPadding: '0px',
-                },
-            },
-        ],
-    };
 
     return (
         <>
-            <Slider {...slickSettings}>
+            <Slider {...SLICK_SLIDER_SETTINGS}>
                 {REVIEW_ITEMS.map((item) => (
                     <div className="slider-content" key={item.label}>
                         <img
