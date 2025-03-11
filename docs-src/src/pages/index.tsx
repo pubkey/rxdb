@@ -544,7 +544,7 @@ export default function Home(props: {
                       Keep your {getAppName(props)} app running <b>offline</b>
                     </li>
                     <li>
-                      Boost perceived <b>performance</b>
+                      Run local queries with <b>zero latency</b>
                     </li>
                     <li>
                       Simplify and <b>speed up development</b>
