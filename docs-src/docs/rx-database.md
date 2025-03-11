@@ -203,7 +203,7 @@ await myDatabase.remove();
 ```
 
 
-You can also clear a database without removing its instance by using `removeRxDatabase()`. This is usefull if you want to migrate data or reset the users state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
+You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the users state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
 stored data on the storage. It will not clear the cache of any [RxDatabase](./rx-database.md) instances.
 ```javascript
 import { removeRxDatabase } from 'rxdb';
