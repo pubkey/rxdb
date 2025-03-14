@@ -544,7 +544,7 @@ export default function Home(props: {
                       Keep your {getAppName(props)} app running <b>offline</b>
                     </li>
                     <li>
-                      Run local queries with <b>zero latency</b>
+                      Run local queries with <a href="https://rxdb.info/articles/zero-latency-local-first.html" target="_blank"><b>zero latency</b></a>
                     </li>
                     <li>
                       Simplify and <b>speed up development</b>
