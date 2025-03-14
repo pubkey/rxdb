@@ -18,6 +18,7 @@ The replication is made to support the [Local-First](./articles/local-first-futu
 
 In contrast to other (server-side) database replication protocols, the RxDB Sync Engine was designed with these goals in mind:
 
+- **Easy to Understand**: The sync engine works in a simple "git-like" way that is easy to understand for an average developer. You only have to understand how three simple endpoints work.
 - **Complex Parts are in RxDB, not in the Backend**: The complex parts of the Sync Engine, like [conflict handling](./transactions-conflicts-revisions.md) or offline-online switches, are implemented inside of RxDB itself. This makes creating a compatible backend very easy.
 - **Compatible with any Backend**: Because the complex parts are in RxDB, the backend can be "dump" which makes the protocol compatible to almost every backend. No mather if you use PostgreSQL, MongoDB or anything else.
 - **Performance is optimized for Client Devices and Browsers**: By grouping updates and fetches into batches, it is faster to transfer and easier to compress. Client devices and browsers can also process this data faster, for example running `JSON.parse()` on a chunk of data is faster then calling it once per row. Same goes for how client side storage like [IndexedDB](./rx-storage-indexeddb.md) or [OPFS](./rx-storage-opfs.md) works where writing data in bulks is faster.
