@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.564f139d.js" defer="defer"></script>
-<script src="/assets/js/main.12cd979d.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b0db9c51.js" defer="defer"></script>
+<script src="/assets/js/main.b63c220e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -38,7 +38,7 @@ This allowed to use alternatives from PouchDB, for example the <a href="/rx-stor
 or even the <a href="/rx-storage-foundationdb.html">FoundationDB RxStorage</a> on the server side.
 There where not many use cases left where it was a good choice to use the PouchDB RxStorage. Only replicating with a
 CouchDB server, was only possible with PouchDB. But this has also changed. RxDB has <a href="/replication-couchdb.html">a plugin</a> that allows
-to replicate clients with any CouchDB server by using the RxDB replication protocol. This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
+to replicate clients with any CouchDB server by using the <a href="/replication.html">RxDB Sync Engine</a>. This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
 Removing PouchDB allows RxDB to add many awaited features like filtered change streams for easier replication and permission handling. It will also free up development time.</p>
 <p>If you are currently using the PouchDB RxStorage, you have these options:</p>
 <ul>

@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.564f139d.js" defer="defer"></script>
-<script src="/assets/js/main.12cd979d.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b0db9c51.js" defer="defer"></script>
+<script src="/assets/js/main.b63c220e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -49,7 +49,7 @@
 <p>One of RxDB&#x27;s core strengths is its ability to run in <strong>any JavaScript environment</strong>. Whether you&#x27;re building a web app that uses IndexedDB in the browser, an <a href="/electron-database.html">Electron</a> desktop program, or a <a href="/react-native-database.html">React Native</a> mobile application, RxDB&#x27;s <strong>swappable storage</strong> adapts to your runtime of choice. This consistency makes code-sharing and cross-platform development far simpler than being tied to a single backend system.</p>
 <hr>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="how-rxdbs-syncing-mechanism-operates">How RxDB&#x27;s Syncing Mechanism Operates<a href="#how-rxdbs-syncing-mechanism-operates" class="hash-link" aria-label="Direct link to How RxDB&#x27;s Syncing Mechanism Operates" title="Direct link to How RxDB&#x27;s Syncing Mechanism Operates">​</a></h2>
-<p>RxDB employs its own <a href="/replication.html">Replication Protocol</a> to manage data flow between your client and remote <a href="/rx-server.html">servers</a>. Replication revolves around:</p>
+<p>RxDB employs its own <a href="/replication.html">Sync Engine</a> to manage data flow between your client and remote <a href="/rx-server.html">servers</a>. Replication revolves around:</p>
 <ol>
 <li><strong>Pull</strong>: Retrieving updated or newly created documents from the server.</li>
 <li><strong>Push</strong>: Sending local changes to the backend for persistence.</li>

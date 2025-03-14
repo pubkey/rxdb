@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.564f139d.js" defer="defer"></script>
-<script src="/assets/js/main.12cd979d.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b0db9c51.js" defer="defer"></script>
+<script src="/assets/js/main.b63c220e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -109,7 +109,7 @@ On a NoSQL database, validating a changed document is trivial. The client sends 
 Making software things compatible often means you have to find the <strong>lowest common denominator</strong>.
 When you have SQLite in the frontend and want to replicate it with the backend, the backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.</p>
 <p>With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by <strong>removing</strong> functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like <a href="/adapters.html#leveldown">levelDB</a> or <a href="/rx-storage-foundationdb.html">FoundationDB</a>.</p>
-<p>With that document layer you can build a <a href="/replication.html">replication API</a> that serves documents sorted by the last update time and there you have a realtime replication.</p>
+<p>With that document layer you can build a <a href="/replication.html">Sync Engine</a> that serves documents sorted by the last update time and there you have a realtime replication.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="caching-query-results">Caching query results<a href="#caching-query-results" class="hash-link" aria-label="Direct link to Caching query results" title="Direct link to Caching query results">​</a></h2>
 <p>Memory is limited and this is especially true for client side applications where you never know how much free RAM the device really has. You want to have a fast realtime UI, so your database must be able to cache query results.</p>
 <p>When you run a SQL query like <code>SELECT ..</code> the result of it can be anything. An <code>array</code>, a <code>number</code>, a <code>string</code>, a single row, it depends on how the query goes on. So the caching strategy can only be to keep the result in memory, once for each query.

@@ -3,12 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX col.find() ignores the primaryKey index if another index was defined [#6925](https://github.com/pubkey/rxdb/pull/6925)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.8.1 (14 March 2025)
+
+- FIX col.find() ignores the primaryKey index if another index was defined [#6925](https://github.com/pubkey/rxdb/pull/6925)
 
 ### 16.8.0 (3 March 2025)
 

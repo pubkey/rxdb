@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.564f139d.js" defer="defer"></script>
-<script src="/assets/js/main.12cd979d.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b0db9c51.js" defer="defer"></script>
+<script src="/assets/js/main.b63c220e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -37,7 +37,7 @@ While there are many options to store data in Electron, for complex realtime app
 <p>Another thing is performance. <a href="/slow-indexeddb.html">IndexedDB is slow</a>, mostly because it has to go through layers of browser security and abstractions. Storing and querying a lot of data might become your performance bottleneck. Localstorage and WebSQL are even slower, by the way. Using these Web Storage APIs is generally only recommended when you know for sure that there will be always only <strong>one rendering process</strong> and performance is not that relevant. The main reason for that is the security- and abstraction layers that write- and read operations have to go through when using the browsers IndexedDB API. So instead of using IndexedDB in Electron in the renderer process, you should use something that runs in the &quot;main&quot; process in Node.js like the <a href="/rx-storage-filesystem-node.html">Filesystem RxStorage</a> or the <a href="/rx-storage-memory.html">In Memory RxStorage</a>.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="rxdb">RxDB<a href="#rxdb" class="hash-link" aria-label="Direct link to RxDB" title="Direct link to RxDB">​</a></h3>
 <p align="center"><img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB" width="170"></p>
-<p><a href="https://rxdb.info/" target="_blank" rel="noopener noreferrer">RxDB</a> is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has encryption and compression features and most important it has a battle tested <a href="https://rxdb.info/replication.html" target="_blank" rel="noopener noreferrer">replication protocol</a> that can be used to do a realtime sync with your backend.</p>
+<p><a href="https://rxdb.info/" target="_blank" rel="noopener noreferrer">RxDB</a> is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has encryption and compression features and most important it has a battle tested <a href="/replication.html">Sync Engine</a> that can be used to do a realtime sync with your backend.</p>
 <p>Because of the <a href="https://rxdb.info/rx-storage.html" target="_blank" rel="noopener noreferrer">flexible storage</a> layer of RxDB, there are many options on how to use it with Electron:</p>
 <ul>
 <li>The <a href="/rx-storage-memory.html">memory RxStorage</a> that stores the data inside of the JavaScript memory without persistence</li>
