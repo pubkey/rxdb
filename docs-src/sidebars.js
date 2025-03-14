@@ -187,7 +187,11 @@ const sidebars = {
       type: 'category',
       label: '🔄 Replication',
       items: [
-        'replication',
+        {
+          type: 'doc',
+          id: 'replication',
+          label: '⚙️ Sync Engine'
+        },
         {
           type: 'doc',
           id: 'replication-http',
