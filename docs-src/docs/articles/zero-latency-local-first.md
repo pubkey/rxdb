@@ -33,7 +33,7 @@ In a traditional architecture, each user action triggers requests to a server fo
 
 - **Reactive Queries** that trigger UI updates upon data changes
 - **Schema-based NoSQL Documents** for flexible but robust data models
-- **Advanced Replication Protocol** to synchronize with diverse backends
+- [Advanced Sync Engine](../replication.md): to synchronize with diverse backends
 - **Encryption** for secure data at rest
 - **Compression** to reduce local and network overhead
 

@@ -51,7 +51,7 @@ One of RxDB's core strengths is its ability to run in **any JavaScript environme
 
 ## How RxDB's Syncing Mechanism Operates
 
-RxDB employs its own [Replication Protocol](../replication.md) to manage data flow between your client and remote [servers](../rx-server.md). Replication revolves around:
+RxDB employs its own [Sync Engine](../replication.md) to manage data flow between your client and remote [servers](../rx-server.md). Replication revolves around:
 1. **Pull**: Retrieving updated or newly created documents from the server.
 2. **Push**: Sending local changes to the backend for persistence.
 3. **Live Updates**: Continuously streaming changes to and from the backend for real-time synchronization.

@@ -90,7 +90,7 @@ Notice that it is **not required** that the server side schema version is equal 
 
 ## Replication Endpoint
 
-The replication endpoint allows clients that connect to it to replicate data with the server via the RxDB [replication protocol](./replication.md). There is also the [Replication Server](./replication-server.md) plugin that is used on the client side to connect to the endpoint.
+The replication endpoint allows clients that connect to it to replicate data with the server via the [RxDB Sync Engine](./replication.md). There is also the [Replication Server](./replication-server.md) plugin that is used on the client side to connect to the endpoint.
 
 The endpoint is added to the server with the `addReplicationEndpoint()` method. It requires a specific collection and the endpoint will only provided replication for documents inside of that collection.
 

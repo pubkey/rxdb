@@ -95,7 +95,7 @@ RxDB is a proven technology used by [thousands of developers](https://github.com
   <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
 </h2>
 
-RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
+RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html">Sync Engine</a> for <a href="https://rxdb.info/articles/realtime-database.html">realtime</a> replication with your existing infrastructure.<br />
 You do not have to use a specific cloud or backend database. The protocol works by implementing three simple HTTP endpoints.
 There are also production-ready plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC (P2P)</a>,<a href="https://github.com/marceljuenemann/rxdb-supabase">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
 

@@ -33,7 +33,7 @@ This allowed to use alternatives from PouchDB, for example the [Dexie RxStorage]
 or even the [FoundationDB RxStorage](./rx-storage-foundationdb.md) on the server side.
 There where not many use cases left where it was a good choice to use the PouchDB RxStorage. Only replicating with a
 CouchDB server, was only possible with PouchDB. But this has also changed. RxDB has [a plugin](./replication-couchdb.md) that allows
-to replicate clients with any CouchDB server by using the RxDB replication protocol. This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
+to replicate clients with any CouchDB server by using the [RxDB Sync Engine](./replication.md). This plugins work with any RxStorage so that it is not necessary to use the PouchDB storage.
 Removing PouchDB allows RxDB to add many awaited features like filtered change streams for easier replication and permission handling. It will also free up development time.
 
 If you are currently using the PouchDB RxStorage, you have these options:

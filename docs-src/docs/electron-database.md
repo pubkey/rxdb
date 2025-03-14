@@ -43,7 +43,7 @@ Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md), mostly b
 </p>
 
 
-[RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has encryption and compression features and most important it has a battle tested [replication protocol](https://rxdb.info/replication.html) that can be used to do a realtime sync with your backend.
+[RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has encryption and compression features and most important it has a battle tested [Sync Engine](./replication.md) that can be used to do a realtime sync with your backend.
 
 Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of RxDB, there are many options on how to use it with Electron:
 

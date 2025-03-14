@@ -59,7 +59,7 @@ A replication conflict appears when multiple clients write to the same documents
 
 When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
-When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication protocol [here](./replication.md#conflict-handling).
+When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication conflicts [here](./replication.md#conflict-handling).
 
 
 ## Custom conflict handler

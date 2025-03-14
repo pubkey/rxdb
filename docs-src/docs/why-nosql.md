@@ -183,7 +183,7 @@ When you have SQLite in the frontend and want to replicate it with the backend, 
 
 With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by **removing** functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like [levelDB](./adapters.md#leveldown) or [FoundationDB](./rx-storage-foundationdb.md).
 
-With that document layer you can build a [replication API](./replication.md) that serves documents sorted by the last update time and there you have a realtime replication.
+With that document layer you can build a [Sync Engine](./replication.md) that serves documents sorted by the last update time and there you have a realtime replication.
 
 ## Caching query results
 

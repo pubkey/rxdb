@@ -8,7 +8,7 @@ description: Replicate your RxDB collections with CouchDB the fast way. Enjoy fa
 
 A plugin to replicate between a RxCollection and a CouchDB server.
 
-This plugins uses the RxDB [replication protocol](./replication.md) to replicate with a CouchDB endpoint. This plugin **does NOT** use the official [CouchDB replication protocol](https://docs.couchdb.org/en/stable/replication/protocol.html) because the CouchDB protocol was optimized for server-to-server replication and is not suitable for fast client side applications, mostly because it has to run many HTTP-requests (at least one per document) and also it has to store the whole revision tree of the documents at the client. This makes initial replication and querying very slow.
+This plugins uses the RxDB [Sync Engine](./replication.md) to replicate with a CouchDB endpoint. This plugin **does NOT** use the official [CouchDB replication protocol](https://docs.couchdb.org/en/stable/replication/protocol.html) because the CouchDB protocol was optimized for server-to-server replication and is not suitable for fast client side applications, mostly because it has to run many HTTP-requests (at least one per document) and also it has to store the whole revision tree of the documents at the client. This makes initial replication and querying very slow.
 
 Because the way how RxDB handles revisions and documents is very similar to CouchDB, using the RxDB replication with a CouchDB endpoint is pretty straightforward.
 

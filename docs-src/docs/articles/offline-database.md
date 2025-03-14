@@ -118,7 +118,7 @@ Now the `tasks` collection is ready to store data offline. You could also [repli
 
 ## How Offline Sync Works in RxDB
 
-RxDB uses a [replication protocol](../replication.md) that pushes local changes to the server and pulls remote updates back down. This ensures local data is always fresh and that the server has the latest offline edits once the device reconnects.
+RxDB uses a [Sync Engine](../replication.md) that pushes local changes to the server and pulls remote updates back down. This ensures local data is always fresh and that the server has the latest offline edits once the device reconnects.
 
 **Multiple Plugins** exist to handle various backends or replication methods:
 - [CouchDB](../replication-couchdb.md) or **PouchDB**

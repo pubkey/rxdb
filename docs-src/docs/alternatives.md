@@ -66,7 +66,7 @@ The biggest difference to RxDB is that firebase products are only able to be use
   height="60" />
 </p>
 
-Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication protocol.
+Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication.
 Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like [angular](https://github.com/urigo/angular-meteor), [vue.js](./articles//vue-database.md) or svelte.
 
 Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
