@@ -68,7 +68,7 @@ RxDB is designed to run in **any environment** that can execute JavaScript. Whet
 
 ## How Does RxDB's Sync Work?
 
-RxDB replication is powered by its [Replication Protocol](../replication.md). This simple yet robust protocol enables:
+RxDB replication is powered by its own [Sync Engine](../replication.md). This simple yet robust protocol enables:
 1. **Pull**: Fetch new or updated documents from the server.
 2. **Push**: Send local changes back to the server.
 3. **Live Real-Time**: Once you're caught up, you can opt for event-based streaming instead of continuous polling.
@@ -228,7 +228,7 @@ If you've been searching for a Firestore alternative that gives you the freedom 
 Ready to dive in? Check out the RxDB Quickstart Guide, join our Discord community, and experience how RxDB can be the perfect local-first, real-time database solution for your next project.
 
 More resources:
-- [Replication Protocol](../replication.md)
+- [RxDB Sync Engine](../replication.md)
 - [Firestore Replication Plugin](../replication-firestore.md)
 - [Custom Conflict Resolution](../transactions-conflicts-revisions.md)
 - [RxDB GitHub Repository](/code/)

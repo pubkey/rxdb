@@ -80,7 +80,7 @@ function PackageCheckbox(props: {
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
         readOnly
         onClick={() => {
-            triggerTrackingEvent('calculate_premium_price', 3, true);
+            triggerTrackingEvent('calculate_premium_price', 3, 1);
             props.onToggle();
         }}
     />;
@@ -110,7 +110,7 @@ export default function Premium() {
         }
         setInitDone(true);
         if (isBrowser) {
-            triggerTrackingEvent('open_pricing_page', 1, false);
+            triggerTrackingEvent('open_pricing_page', 1);
         }
 
         (async () => {
@@ -153,7 +153,7 @@ export default function Premium() {
     // for dialog
     const [open, setOpen] = React.useState(false);
     const handleOpenDialog = () => {
-        triggerTrackingEvent('open_premium_submit_popup', 20, true);
+        triggerTrackingEvent('open_premium_submit_popup', 20, 1);
         setOpen(true);
     };
     const handleClose = () => {
@@ -636,7 +636,7 @@ export default function Premium() {
                                 There are multiple ways to get a discount:
                                 <ul>
                                     <li>
-                                        <h5>Contritube to the RxDB github repository</h5>
+                                        <h5>Contribute to the RxDB github repository</h5>
                                         <p>If you have made significant contributions to the RxDB github repository, you can apply for a discount depending on your contribution.</p>
                                     </li>
                                     <li>
@@ -829,7 +829,7 @@ export default function Premium() {
                                         <div className="premium-block-inner">
                                             <h4>RxStorage OPFS</h4>
                                             <p>
-                                                Currently the RxStorage with best data throughput that can be used in the browser.
+                                                Currently the RxStorage with the best data throughput that can be used in the browser.
                                                 Based on the <b>OPFS File System Access API</b>.
                                             </p>
                                         </div>

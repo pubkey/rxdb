@@ -132,7 +132,7 @@ export default function Root({ children }) {
         }, 0);
 
         const showTime = location.pathname.includes('.html') ? 30 : 60;
-        // const showTime = 10;
+        // const showTime = 1;
         const intervalId = setInterval(() => {
             if (location.pathname.includes('premium')) {
                 return;
@@ -210,12 +210,11 @@ export default function Root({ children }) {
                         id="rxdb-call-to-action-button"
                         target="_blank"
                         onClick={() => {
-                            triggerTrackingEvent('notification_call_to_action', 0.40, false);
+                            triggerTrackingEvent('notification_call_to_action', 0.40);
                             // track the ids also so we can delete the ones with a low clickrate.
                             triggerTrackingEvent(
                                 'notification_' + NOTIFICATION_SPLIT_TEST_VERSION + '_call_to_action_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
-                                0.01,
-                                false
+                                0.01
                             );
                             closePopup();
                         }}
@@ -267,7 +266,7 @@ function addCallToActionButton() {
 
         const newElement = document.createElement('a');
         newElement.onclick = () => {
-            triggerTrackingEvent('call-to-action', 0.35, false);
+            triggerTrackingEvent('call-to-action', 0.35);
         };
         newElement.classList.add('hover-shadow-top');
         newElement.id = callToActionButtonId;
@@ -301,7 +300,7 @@ function triggerClickEventWhenFromCode() {
     if (!urlParams.has('console')) {
         return;
     }
-    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10, false);
+    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -353,36 +352,52 @@ function addCommunityChatButton() {
 function startAnalytics() {
     console.log('load analytics code');
 
-    setTimeout(function () {
-        triggerTrackingEvent('spend_20_seconds_on_page', 0.01, false);
-    }, 20 * 1000);
-    setTimeout(function () {
-        triggerTrackingEvent('spend_60_seconds_on_page', 0.03, false);
-    }, 60 * 1000);
+    [10, 20, 60].forEach(time => {
+        setTimeout(function () {
+            const value = 0.002 * time;
+            triggerTrackingEvent(time + '_sec_on_page', value);
+        }, time * 1000);
+    });
 
-    // detect scroll to bottom of landingpage
-    let scrollTriggerDone = false;
+    /**
+     * detect scroll to bottom of landingpage
+     * but only run trigger these once per page load
+     */
+    let trackScrollPercentages = new Set([25, 50, 75, 90]);
+    (window as any).navigation.addEventListener('navigate', () => {
+        // reset if url changes
+        trackScrollPercentages = new Set([25, 50, 75, 90]);
+    });
     let nextScrollTimestamp = 0;
     if (location.pathname === '/' || location.pathname.includes('/sem/')) {
         window.addEventListener('scroll', (event) => {
+
+            /**
+             * Only do this each 250 milliseconds
+             * to not block the process too much.
+             */
             const newTimestamp = event.timeStamp;
-            if (!scrollTriggerDone && nextScrollTimestamp < newTimestamp) {
+            if (nextScrollTimestamp < newTimestamp) {
                 nextScrollTimestamp = newTimestamp + 250;
             } else {
                 return;
             }
+
             /**
              * @link https://fjolt.com/article/javascript-check-if-user-scrolled-to-bottom
              */
             const documentHeight = document.body.scrollHeight;
-            const currentScroll = window.scrollY + window.innerHeight;
-            // When the user is [modifier]px from the bottom, fire the event.
-            const modifier = 800;
-            if (currentScroll + modifier > documentHeight) {
-                console.log('You are at the bottom!');
-                scrollTriggerDone = true;
-                triggerTrackingEvent('scroll_to_bottom', 0.12, false);
-            }
+
+            const scrollPercentage = (window.scrollY / (documentHeight - window.innerHeight)) * 100;
+            // console.log(`Scroll position: ${scrollPercentage.toFixed(2)}% of the page height`);
+
+            trackScrollPercentages.forEach(percent => {
+                if (scrollPercentage > percent) {
+                    trackScrollPercentages.delete(percent);
+                    const value = parseFloat((0.10 * (percent / 100)).toFixed(2));
+                    triggerTrackingEvent('scroll_to_' + percent, value);
+                }
+            });
         });
     }
 
@@ -400,8 +415,8 @@ function startAnalytics() {
         }
         const version = hasCookie.split('=')[1];
         console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
-        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, true);
-        triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, true);
+        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1);
+        triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, 1);
     }
     checkDevModeEvent();
     // also listen for upcoming events

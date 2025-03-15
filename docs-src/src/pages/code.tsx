@@ -10,7 +10,7 @@ export default function Home() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
  if (isBrowser) {
-    triggerTrackingEvent('goto_code', 0.40, false);
+    triggerTrackingEvent('goto_code', 0.40);
 }
 });
 

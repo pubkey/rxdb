@@ -29,7 +29,7 @@ export default function Consulting() {
         }
 
         (() => {
-            triggerTrackingEvent(FILE_EVENT_ID, 2, false);
+            triggerTrackingEvent(FILE_EVENT_ID, 2);
         })();
     });
 

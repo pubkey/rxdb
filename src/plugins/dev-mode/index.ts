@@ -68,6 +68,7 @@ export const RxDBDevModePlugin: RxPlugin = {
     name: DEV_MODE_PLUGIN_NAME,
     rxdb: true,
     init: () => {
+        addDevModeTrackingIframe();
         if (showDevModeWarning) {
             console.warn(
                 [
@@ -123,7 +124,6 @@ Error code: ${code}`;
         },
         createRxDatabase: {
             after: async function (args) {
-                addDevModeTrackingIframe(args.database);
             }
         },
         preCreateRxCollection: {

@@ -19,6 +19,9 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
       var useSettings = flatClone(settings);
       useSettings.autoOpen = false;
       var dexieDb = new Dexie(dexieDbName, useSettings);
+      if (settings.onCreate) {
+        await settings.onCreate(dexieDb, dexieDbName);
+      }
       var dexieStoresSettings = {
         [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
         [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',

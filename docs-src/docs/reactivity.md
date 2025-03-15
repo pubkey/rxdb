@@ -15,7 +15,7 @@ RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-databas
 
 ## Adding a custom reactivity factory (in angular projects)
 
-If you have an angular project, to get custom reactivity objects out of RxDB, you have to pass a `RxReactivityFactory` during database creation. The `RxReactivityFactory` has the `fromObservable()` method that creates your custom reacitvity object based on an observable and an initial value.
+If you have an angular project, to get custom reactivity objects out of RxDB, you have to pass a `RxReactivityFactory` during database creation. The `RxReactivityFactory` has the `fromObservable()` method that creates your custom reactivity object based on an observable and an initial value.
 
 For example to use signals in angular, you can use the angular [toSignal](https://angular.io/api/core/rxjs-interop/toSignal) function:
 

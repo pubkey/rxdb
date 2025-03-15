@@ -139,7 +139,7 @@ await myDocument.updateCRDT({
 
 By default, all CRDTs operations will be run to build the current document state. But in many cases, more granular operations are required to better reflect the desired business logic. For these cases, conditional CRDTs can be used.
 
-For example if you have a field `points` with a `maximum` of `100`, you might want to only run an `$inc` operations, if the `points` value is less than `100`.
+For example if you have a field `points` with a `maximum` of `100`, you might want to only run the `$inc` operation, if the `points` value is less than `100`.
 In an conditional CRDT, you can specify a `selector` and the operation sets `ifMatch` and `ifNotMatch`. At each time the CRDT is applied to the document state, first the selector will run and evaluate which operations path must be used.
 
 ```ts

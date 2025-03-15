@@ -90,7 +90,7 @@ Notice that it is **not required** that the server side schema version is equal 
 
 ## Replication Endpoint
 
-The replication endpoint allows clients that connect to it to replicate data with the server via the RxDB [replication protocol](./replication.md). There is also the [Replication Server](./replication-server.md) plugin that is used on the client side to connect to the endpoint.
+The replication endpoint allows clients that connect to it to replicate data with the server via the [RxDB Sync Engine](./replication.md). There is also the [Replication Server](./replication-server.md) plugin that is used on the client side to connect to the endpoint.
 
 The endpoint is added to the server with the `addReplicationEndpoint()` method. It requires a specific collection and the endpoint will only provided replication for documents inside of that collection.
 
@@ -141,7 +141,7 @@ const request = await fetch('http://localhost:80/' + endpoint.urlPath + '/query'
 const response = await request.json();
 ```
 
-There is also the `client-rest` plugin that provides typesave interactions with the REST endpoint:
+There is also the `client-rest` plugin that provides type-save interactions with the REST endpoint:
 
 ```ts
 // using the client (optional)
@@ -332,7 +332,7 @@ To [detect and handle conflicts](./replication.md#conflict-handling), the confli
 </details>
 
 <details>
-    <summary>Why can't endpoits be added dynamically?</summary>
+    <summary>Why can't endpoints be added dynamically?</summary>
     <div>
     After `RxServer.start()` is called, you can no longer add endpoints. This is because many of the supported
     server libraries do <a href="https://github.com/fastify/fastify/issues/1771">not allow dynamic routing</a> for performance and security reasons. 

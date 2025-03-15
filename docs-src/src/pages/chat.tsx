@@ -10,7 +10,7 @@ export default function Chat() {
     const isBrowser = useIsBrowser();
     useEffect(() => {
         if (isBrowser) {
-            triggerTrackingEvent('join_chat', 0.40, false);
+            triggerTrackingEvent('join_chat', 0.40);
         }
     });
 

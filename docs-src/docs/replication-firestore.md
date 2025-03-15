@@ -7,7 +7,7 @@ description: Leverage RxDB to enable real-time, offline-first replication with F
 # Replication with Firestore from Firebase
 
 With the `replication-firestore` plugin you can do a two-way realtime replication
-between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform. It will use the [RxDB Replication Protocol](./replication.md) to manage the replication streams, error- and conflict handling.
+between your client side [RxDB](./) Database and a [Cloud Firestore](https://firebase.google.com/docs/firestore) database that is hosted on the Firebase platform. It will use the [RxDB Sync Engine](./replication.md) to manage the replication streams, error- and conflict handling.
 
 <p align="center">
   <img src="./files/alternatives/firebase.svg" alt="Firebase" height="40" />

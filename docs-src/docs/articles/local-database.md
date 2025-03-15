@@ -67,7 +67,7 @@ RxDB's primary design goal is to work seamlessly in offline environments. Even i
 
 A standout feature of RxDB is its [bi-directional replication](../replication.md). It supports synchronization with a variety of backends, such as:
 
-- [CouchDB](../replication-couchdb.md): Via the CouchDB replication protocol, facilitating easy integration with any Couch-compatible server.
+- [CouchDB](../replication-couchdb.md): Via the CouchDB replication, facilitating easy integration with any Couch-compatible server.
 - [GraphQL Endpoints](../replication-graphql.md): Through community plugins, developers can replicate JSON documents to and from GraphQL servers.
 - [Custom Backends](../replication-http.md): RxDB provides hooks to build custom replication strategies for proprietary or specialized server APIs.
 

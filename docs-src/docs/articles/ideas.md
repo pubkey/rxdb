@@ -75,8 +75,12 @@ X- "reactjs storage"
 - "react native redux" - 3600
 - "redux alternative" - 1300
 - "Awesome local first" - 10
-- "sqlite javascript" - 2900
+- "tauri database" - 170
 
+- "sqlite javascript" - 2900
+- "sqlite typescript" - 260
+
+- "sync engine" - 390
 
 
 ## Non Seo

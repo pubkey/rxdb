@@ -187,7 +187,11 @@ const sidebars = {
       type: 'category',
       label: '🔄 Replication',
       items: [
-        'replication',
+        {
+          type: 'doc',
+          id: 'replication',
+          label: '⚙️ Sync Engine'
+        },
         {
           type: 'doc',
           id: 'replication-http',
@@ -504,8 +508,7 @@ const sidebars = {
         'articles/zero-latency-local-first',
         'articles/indexeddb-max-storage-limit',
         'articles/json-based-database',
-        'articles/reactjs-storage',
-        'articles/json-based-database',
+        'articles/reactjs-storage'
       ],
     },
     'contribute',

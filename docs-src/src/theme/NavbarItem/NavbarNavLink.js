@@ -41,8 +41,8 @@ export default function NavbarNavLink({
     return (
       <Link
         onClick={() => {
-          triggerTrackingEvent('navbar_click', 0.1, false);
-          triggerTrackingEvent('navbar_click_' + label.toLowerCase(), 0.2, false);
+          triggerTrackingEvent('navbar_click', 0.1);
+          triggerTrackingEvent('navbar_click_' + label.toLowerCase(), 0.2);
         }}
         href={prependBaseUrlToHref ? normalizedHref : href}
         {...props}

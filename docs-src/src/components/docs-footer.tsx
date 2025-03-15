@@ -69,7 +69,7 @@ export function DocsFooter(props: Props) {
         const name = lastOfArray(slug.split('/'));
         const voteEventId = 'vote_' + name + '_' + dir;
         console.log('vote: ' + voteEventId);
-        triggerTrackingEvent(voteEventId, 0.1, true);
+        triggerTrackingEvent(voteEventId, 0.1, 1);
         setVoted(true);
     }
 

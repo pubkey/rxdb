@@ -9,9 +9,9 @@
 <script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
-<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.92122e1b.css">
-<script src="/assets/js/runtime~main.2491b431.js" defer="defer"></script>
-<script src="/assets/js/main.69c3e8fb.js" defer="defer"></script>
+<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
+<script src="/assets/js/runtime~main.b0db9c51.js" defer="defer"></script>
+<script src="/assets/js/main.b63c220e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -53,7 +53,7 @@ With an ACID transaction you can mutate data dependent on the current state of t
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="replication-conflicts">Replication conflicts<a href="#replication-conflicts" class="hash-link" aria-label="Direct link to Replication conflicts" title="Direct link to Replication conflicts">​</a></h2>
 <p>A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server.</p>
 <p>When you replicate with the <a href="/replication-graphql.html">Graphql replication</a> and the <a href="/replication.html">replication primitives</a>, RxDB assumes that conflicts are <strong>detected</strong> and <strong>resolved</strong> at the client side.</p>
-<p>When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication protocol <a href="/replication.html#conflict-handling">here</a>.</p>
+<p>When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication conflicts <a href="/replication.html#conflict-handling">here</a>.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="custom-conflict-handler">Custom conflict handler<a href="#custom-conflict-handler" class="hash-link" aria-label="Direct link to Custom conflict handler" title="Direct link to Custom conflict handler">​</a></h2>
 <p>A conflict handler is an object with two JavaScript functions:</p>
 <ul>

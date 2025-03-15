@@ -1,17 +1,26 @@
 import { getTestGroupEventPrefix } from './a-b-tests';
 
-export function triggerTrackingEvent(type: string, value: number, onlyTrackOnce: boolean) {
+export function triggerTrackingEvent(
+    type: string,
+    value: number,
+    /**
+     * Only track the same event X amount of times per users.
+     * This helps to prevent polluting the stats when a singler user
+     * does something many many times.
+     */
+    maxPerUser: number = 5
+) {
 
-    const prefix = 'tracking_event_';
-    if (onlyTrackOnce) {
-        const stored = localStorage.getItem(prefix + type);
-        if (stored) {
-            return;
-        }
-        localStorage.setItem(prefix + type, '1');
+    const prefix = 'event_count_';
+    const stored = localStorage.getItem(prefix + type);
+    const triggeredBefore = stored ? parseInt(stored, 10) : 0;
+    // console.log('triggeredBefore: ' + triggeredBefore);
+    if (triggeredBefore >= maxPerUser) {
+        return;
     }
+    localStorage.setItem(prefix + type, (triggeredBefore + 1) + '');
 
-    console.log('triggerTrackingEvent(' + type + ', ' + value + ', ' + onlyTrackOnce + ')');
+    console.log('triggerTrackingEvent(' + type + ', ' + value + ', ' + triggeredBefore + '/' + maxPerUser + ')');
 
     // reddit
     if (typeof (window as any).rdt === 'function') {

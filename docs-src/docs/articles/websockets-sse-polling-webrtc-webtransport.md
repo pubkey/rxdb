@@ -8,7 +8,7 @@ description: Learn the unique benefits and pitfalls of each real-time tech. Make
 
 For modern real-time web applications, the ability to send events from the server to the client is indispensable. This necessity has led to the development of several methods over the years, each with its own set of advantages and drawbacks. Initially, [long-polling](#what-is-long-polling) was the only option available. It was then succeeded by [WebSockets](#what-are-websockets), which offered a more robust solution for bidirectional communication. Following WebSockets, [Server-Sent Events (SSE)](#what-are-server-sent-events) provided a simpler method for one-way communication from server to client. Looking ahead, the [WebTransport](#what-is-the-webtransport-api) protocol promises to revolutionize this landscape even further by providing a more efficient, flexible, and scalable approach. For niche use cases, [WebRTC](#what-is-webrtc) might also be considered for server-client events.
 
-This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications. It is a condensed summary of my gathered experience when I implemented the [RxDB Replication Protocol](../replication.md) to be compatible with various backend technologies.
+This article aims to delve into these technologies, comparing their performance, highlighting their benefits and limitations, and offering recommendations for various use cases to help developers make informed decisions when building real-time web applications. It is a condensed summary of my gathered experience when I implemented the [RxDB Sync Engine](../replication.md) to be compatible with various backend technologies.
 
 <center>
     <a href="https://rxdb.info/">
@@ -163,7 +163,7 @@ Most modern browsers allow six connections per domain () which limits the usabil
 
 While that policy makes sense to prevent website owners from using their visitors to D-DOS other websites, it can be a big problem when multiple connections are required to handle server-client communication for legitimate use cases. To workaround the limitation you have to use HTTP/2 or HTTP/3 with which the browser will only open a single connection per domain and then use multiplexing to run all data through a single connection. While this gives you a virtually infinity amount of parallel connections, there is a [SETTINGS_MAX_CONCURRENT_STREAMS](https://www.rfc-editor.org/rfc/rfc7540#section-6.5.2) setting which limits the actually connections amount. The default is 100 concurrent streams for most configurations.
 
-In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have beem marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
+In theory the connection limit could also be increased by the browser, at least for specific APIs like EventSource, but the issues have been marked as "won't fix" by [chromium](https://issues.chromium.org/issues/40329530) and [firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=906896).
 
 :::note Lower the amount of connections in Browser Apps
 When you build a browser application, you have to assume that your users will use the app not only once, but in multiple browser tabs in parallel.
@@ -177,7 +177,7 @@ In the context of mobile applications running on operating systems like Android 
 
 ### Proxies and Firewalls
 
-From consutling many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
+From consulting many [RxDB](https://rxdb.info/) users, it was shown that in enterprise environments (aka "at work") it is often hard to implement a WebSocket server into the infrastructure because many proxies and firewalls block non-HTTP connections. Therefore using the Server-Sent-Events provides and easier way of enterprise integration. Also long-polling uses only plain HTTP-requests and might be an option.
 
 <center>
     <a href="https://rxdb.info/">
@@ -198,7 +198,7 @@ First lets look at the raw numbers. A good performance comparison can be found i
 </center>
 
 :::note
-Remember that WebTransport is a pretty new technologie based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
+Remember that WebTransport is a pretty new technology based on the also new HTTP/3 protocol. In the future (after March 2024) there might be more performance optimizations. Also WebTransport is optimized to use less power which metric is not tested.
 :::
 
 Lets also compare the Latency, the throughput and the scalability:
@@ -243,7 +243,7 @@ When a client is connecting, reconnecting or offline, it can miss out events tha
 This missed out events are not relevant when the server is streaming the full content each time anyway, like on a live updating stock ticker.
 But when the backend is made to stream partial results, you have to account for missed out events. Fixing that on the backend scales pretty bad because the backend would have to remember for each client which events have been successfully send already. Instead this should be implemented with client side logic.
 
-The [RxDB replication protocol](../replication.md) for example uses two modes of operation for that. One is the [checkpoint iteration mode](../replication.md#checkpoint-iteration) where normal http requests are used to iterate over backend data, until the client is in sync again. Then it can switch to [event observation mode](../replication.md#event-observation) where updates from the realtime-stream are used to keep the client in sync. Whenever a client disconnects or has any error, the replication shortly switches to [checkpoint iteration mode](../replication.md#checkpoint-iteration) until the client is in sync again. This method accounts for missed out events and ensures that clients can always sync to the exact equal state of the server.
+The [RxDB Sync Engine](../replication.md) for example uses two modes of operation for that. One is the [checkpoint iteration mode](../replication.md#checkpoint-iteration) where normal http requests are used to iterate over backend data, until the client is in sync again. Then it can switch to [event observation mode](../replication.md#event-observation) where updates from the realtime-stream are used to keep the client in sync. Whenever a client disconnects or has any error, the replication shortly switches to [checkpoint iteration mode](../replication.md#checkpoint-iteration) until the client is in sync again. This method accounts for missed out events and ensures that clients can always sync to the exact equal state of the server.
 
 ### Company firewalls can cause problems
 

@@ -266,7 +266,7 @@ This works in contrast to most other databases where a query without sorting wou
 
 ## Setting a specific index
 
-By default, the query will be send to the RxStorage, where a query planner will determine which one of the available indexes must be used.
+By default, the query will be sent to the RxStorage, where a query planner will determine which one of the available indexes must be used.
 But the query planner cannot know everything and sometimes will not pick the most optimal index.
 To improve query performance, you can specify which index must be used, when running the query.
 
@@ -351,7 +351,7 @@ const query = myCollection.count({
 });
 ```
 
-If you want to count these kind of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.
+If you want to count these kinds of queries, you should do a normal query instead and use the length of the result set as counter. This has the same performance as running a non-fully-indexed count which has to fetch all document data from the database and run a query matcher.
 
 ```ts
 // get count manually once
@@ -424,7 +424,7 @@ Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://gith
 
 - We use the JSON based Mango Query Syntax because:
   - Mango Queries work better with TypeScript compared to SQL strings.
-  - Mango Queries are composeable and easy to transform by code without joining SQL strings.
+  - Mango Queries are composable and easy to transform by code without joining SQL strings.
   - Queries can be run very fast and efficient with only a minimal query planer to plan the best indexes and operations.
   - NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm to improve performance of observed and cached queries.
 

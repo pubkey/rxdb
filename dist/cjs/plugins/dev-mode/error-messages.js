@@ -47,7 +47,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   QU15: 'For count queries it is not allowed to use skip or limit',
   QU16: '$regex queries must be defined by a string, not an RegExp instance. ' + 'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
   QU17: 'Chained queries cannot be used on findByIds() RxQuery instances',
-  QU18: 'Malformated query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
+  QU18: 'Malformed query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
   QU19: 'Queries must not contain fields or properties with the value `undefined`: https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824 ',
   // mquery.js
   MQ1: 'path must be a string or object',

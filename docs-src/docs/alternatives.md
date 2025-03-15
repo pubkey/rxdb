@@ -66,7 +66,7 @@ The biggest difference to RxDB is that firebase products are only able to be use
   height="60" />
 </p>
 
-Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication protocol.
+Meteor (since 2012) is one of the oldest technologies for JavaScript realtime applications. Meteor is not a library but a whole framework with its own package manager, database management and replication.
 Because of how it works, it has proven to be hard to integrate it with other modern JavaScript frameworks like [angular](https://github.com/urigo/angular-meteor), [vue.js](./articles//vue-database.md) or svelte.
 
 Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
@@ -237,11 +237,11 @@ While it is has different caching features for offline usage, compared to RxDB i
 ### Replicache 
 
 Replicache is a client-side sync framework for building realtime, collaborative, [local-first](./articles/local-first-future.md) web apps. It claims to work with most backend stacks. In contrast to other local first tools, replicache does not work like a local database. Instead it runs on so called `mutators` that unify behavior on the client and server side. So instead of implementing and calling REST routes on both sides of your stack, you will implement mutators that define a specific delta behavior based on the input data. To observe data in replicache, there are `subscriptions` that notify your frontend application about changes to the state.
-Replicache can be used in most frontend technologies like browsers, React/Remix, NextJS/Vercel and React Native. While Replicache can be installed and used from npm, the Replicache source code is not open source and the Replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding.  (2024: Replicache will be free and Rocicorp are working on a new Zerosync product to succeed Replicache and Reflect.)
+Replicache can be used in most frontend technologies like browsers, React/Remix, NextJS/Vercel and React Native. While Replicache can be installed and used from npm, the Replicache source code is not open source and the Replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding. (2024: Replicache will be free and Rocicorp are working on a new Zerosync product to succeed Replicache and Reflect.)
 
 ### InstantDB
 
-InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles//offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure.  InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
+InstantDB is designed for real-time data synchronization with built-in offline support, allowing changes to be queued locally and [synced](./replication.md) when the user reconnects. While it offers seamless [optimistic updates](./articles/optimistic-ui.md) and rollback capabilities, its offline-first design is not as mature or comprehensive as RxDB's - the [offline data](./articles//offline-database.md) is more of a cache, not a full-database sync. The query language used is Datalog, and the backend sync service is written in Clojure. InstantDB is focused more on simplicity and real-time collaboration, with fewer customization options for storage or conflict resolution compared to RxDB, which supports various storage adapters and advanced conflict handling via CRDTs.
 
 
 ### Yjs
@@ -250,7 +250,7 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 
 ### ElectricSQL
 
-2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes") of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
+2024: ElectricSQL is being rewritten in a new Electric-Next branch, which focuses on partial syncing of ("shapes", which makes is basically a NoSQL like document database) of data from a remote Postgres DB to a local clients written in TypeScript/JS or Elixir. The write path is not yet implemented, neither is client-side reactivity. The ElectricSQL backend is written in Elixir.
 
 ### SignalDB
 
@@ -258,7 +258,7 @@ SignalDB provides a reactive, in-memory local-lirst JavaScript database with rea
 
 ### PowerSync
 
-PowerSync is a flexible "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends.  Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 # Read further
 

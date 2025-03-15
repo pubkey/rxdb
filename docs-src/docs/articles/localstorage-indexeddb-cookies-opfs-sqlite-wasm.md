@@ -189,7 +189,7 @@ The fast version of OPFS with the `createSyncAccessHandle` method can **only** [
 
 
 
-- **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your websserver will not accept too long headers and reject the requests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
+- **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your web server will not accept too long headers and reject the requests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
 
 - **LocalStorage** has a storage size limitation that varies depending on the browser, but generally ranges from 4 MB to 10 MB per origin. You can test your localStorage size limit [here](https://arty.name/localstorage.html).
   - Chrome/Chromium/Edge: 5 MB per domain
@@ -324,7 +324,7 @@ Here we can notice a few things:
   - It blocks the main JavaScript process and therefore should not be used for big bulk operations.
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
-- SQLite WASM can be fast but the you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
+- SQLite WASM can be fast but you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
 
 
 -------------

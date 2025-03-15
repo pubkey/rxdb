@@ -6,7 +6,7 @@ description: Discover the lightning-fast LokiJS RxStorage for RxDB. Explore in-m
 
 # RxStorage LokiJS
 
-The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached. This makes it very fast but you have the possibility to lose semingly persisted writes when the JavaScript process ends before the persistence loop has been done.
+The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached. This makes it very fast but you have the possibility to lose seemingly persisted writes when the JavaScript process ends before the persistence loop has been done.
 
 
 :::warning LokiJS was removed in RxDB version 16

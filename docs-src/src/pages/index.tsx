@@ -20,6 +20,7 @@ import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { ABTestContent, getTestGroup } from '../components/a-b-tests';
+import { VideoSection } from '../components/video-section';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -376,14 +377,8 @@ export default function Home(props: {
               </> : ''
           }
 
-          <Trophy
-            href="/code/"
-            title="GitHub"
-            subTitle='Open Source on'
-            value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
-            valueTitle='stars'
-          />
+
+          <VideoSection sem={props.sem} />
 
           <div className="block second dark" id="realtime" ref={realtimeRef}>
             <div className="content">
@@ -417,15 +412,15 @@ export default function Home(props: {
             </div>
           </div>
 
-
           <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
+            href="/code/"
+            title="GitHub"
+            subTitle='Open Source on'
+            value={SOCIAL_PROOF_VALUES.github}
+            imgUrl="/files/icons/github-star-with-logo.svg"
+            valueTitle='stars'
           />
+
           <div className="block replication" id="replication" ref={replicationRef}>
             <div className="content">
               <div className="half left">
@@ -438,7 +433,7 @@ export default function Home(props: {
                   Sync with <b className="underline">any Backend</b>
                 </h2>
                 <p>
-                  RxDB's high-performance <a href="/replication.html" target="_blank">replication protocol</a> powers real-time synchronization between {getAppName(props)} clients and servers.
+                  RxDB's high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
                   While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
                   , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
                   it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
@@ -549,7 +544,7 @@ export default function Home(props: {
                       Keep your {getAppName(props)} app running <b>offline</b>
                     </li>
                     <li>
-                      Boost perceived <b>performance</b>
+                      Run local queries with <a href="https://rxdb.info/articles/zero-latency-local-first.html" target="_blank"><b>zero latency</b></a>
                     </li>
                     <li>
                       Simplify and <b>speed up development</b>
@@ -562,6 +557,7 @@ export default function Home(props: {
               </div>
             </div>
           </div>
+
           <div className="block frameworks" id="runtimes" ref={runtimesRef}>
             <div className="content">
               <a
@@ -740,6 +736,15 @@ export default function Home(props: {
               </div>
             </div>
           </div>
+
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            imgUrl="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
+          />
 
           <div className="block features dark">
             <div className="content">
@@ -923,7 +928,7 @@ export default function Home(props: {
                         href="/code/"
                         target="_blank"
                         rel="noopener"
-                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8, false)}
+                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8)}
                       >
                         <div className="buy-option-action bg-top hover-shadow-top">
                           Get the Code
@@ -960,7 +965,7 @@ export default function Home(props: {
                       </div>
                       <a
                         href="/premium/"
-                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3, false)}
+                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3)}
                       >
                         <div className="buy-option-action bg-middle hover-shadow-middle">
                           Get Premium
@@ -987,7 +992,7 @@ export default function Home(props: {
                       </div>
                       <a
                         href="/consulting/"
-                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4, false)}
+                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4)}
                       >
                         <div className="buy-option-action bg-bottom hover-shadow-bottom">
                           Get in Contact
@@ -1010,7 +1015,7 @@ export default function Home(props: {
                   href="/quickstart.html"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40)}
                 >
                   <div
                     className="button get-premium"
@@ -1023,7 +1028,7 @@ export default function Home(props: {
                   href="/newsletter"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
                   <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     Get the Newsletter
@@ -1033,7 +1038,7 @@ export default function Home(props: {
                   href="/chat/"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1042,7 +1047,7 @@ export default function Home(props: {
                     Join the Chat
                   </div>
                 </a>
-                <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40, false)}>
+                <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
                   <div
                     className="button"
                     style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1054,7 +1059,7 @@ export default function Home(props: {
                   href="https://twitter.com/intent/user?screen_name=rxdbjs"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
                   <div
                     className="button"
@@ -1067,7 +1072,7 @@ export default function Home(props: {
                   href="/code/"
                   rel="noopener"
                   target="_blank"
-                  onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40, false)}
+                  onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40)}
                 >
                   <div
                     className="button"

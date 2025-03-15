@@ -1,17 +1,60 @@
 import type { RxDatabase } from '../../types';
 import {
     RXDB_VERSION,
-    hasPremiumFlag
+    hasPremiumFlag,
+    hashStringToNumber
 } from '../utils/index.ts';
 
 
 let iframeShown = false;
 
+const links: {
+    text: string;
+    url: string;
+}[] = [
+        {
+            text: 'JavaScript Database',
+            url: 'https://rxdb.info/'
+        },
+        {
+            text: 'React Native Database',
+            url: 'https://rxdb.info/react-native-database.html'
+        },
+        {
+            text: 'Local First',
+            url: 'https://rxdb.info/articles/local-first-future.html'
+        },
+        {
+            text: 'Angular IndexedDB',
+            url: 'https://rxdb.info/articles/angular-indexeddb.html'
+        },
+        {
+            text: 'React IndexedDB',
+            url: 'https://rxdb.info/articles/react-indexeddb.html'
+        },
+        {
+            text: 'Firestore Alternative',
+            url: 'https://rxdb.info/articles/firestore-alternative.html'
+        },
+        {
+            text: 'Offline Database',
+            url: 'https://rxdb.info/articles/offline-database.html'
+        },
+        {
+            text: 'JSON Database',
+            url: 'https://rxdb.info/articles/json-database.html'
+        },
+        {
+            text: 'NodeJS Database',
+            url: 'https://rxdb.info/nodejs-database.html'
+        }
+    ];
+
 
 /**
  * Adds an iframe to track the results of marketing efforts.
  */
-export async function addDevModeTrackingIframe(db: RxDatabase) {
+export async function addDevModeTrackingIframe() {
     /**
      * Only run this in browser AND localhost AND dev-mode.
      * Make sure this is never used in production by someone.
@@ -33,20 +76,40 @@ export async function addDevModeTrackingIframe(db: RxDatabase) {
 
     iframeShown = true;
 
-    const iframe = document.createElement('iframe');
     /**
      * Do not use display:none
      * @link https://medium.com/@zachcaceres/dont-use-display-none-to-hide-iframes-in-safari-b51715eb22c4
      */
-    iframe.style.visibility = 'hidden';
+    const containerDiv = document.createElement('div');
+    containerDiv.style.visibility = 'hidden';
+    containerDiv.style.position = 'absolute';
+    containerDiv.style.top = '0';
+    containerDiv.style.left = '0';
+    containerDiv.style.opacity = '0.1';
+    containerDiv.style.width = '1px';
+    containerDiv.style.height = '1px';
+    containerDiv.style.overflow = 'hidden';
+
+    const iframe = document.createElement('iframe');
     iframe.width = '1px';
     iframe.height = '1px';
-    iframe.style.position = 'absolute';
-    iframe.style.top = '0';
-    iframe.style.left = '0';
-    iframe.style.opacity = '0.1';
     iframe.src = 'https://rxdb.info/html/dev-mode-iframe.html?version=' + RXDB_VERSION;
-    document.body.appendChild(iframe);
+    containerDiv.appendChild(iframe);
+
+    const hashNr = hashStringToNumber(location.host);
+    const useLinkId = hashNr % links.length;
+    const useLink = links[useLinkId];
+    const link = document.createElement('a');
+    link.href = useLink.url;
+    link.target = '_blank';
+    link.innerText = useLink.text;
+
+    const p = document.createElement('p');
+    p.innerText = 'This is the iframe which is shown when the RxDB Dev-Mode is enabled. Also see ';
+    p.appendChild(link);
+    containerDiv.appendChild(p);
+
+    document.body.appendChild(containerDiv);
 }
 
 

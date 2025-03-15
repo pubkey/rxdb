@@ -14,7 +14,7 @@ export default function Meeting() {
             return;
         }
         (() => {
-            triggerTrackingEvent(FILE_EVENT_ID, 100, true);
+            triggerTrackingEvent(FILE_EVENT_ID, 100, 1);
         })();
     });
 

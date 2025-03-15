@@ -8,7 +8,7 @@ description: Seamlessly sync your RxDB data with NATS for real-time, two-way rep
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
 
-The replication itself uses the [RxDB replication protocol](./replication.md) which handles conflicts, errors and retries.
+The replication itself uses the [RxDB Sync Engine](./replication.md) which handles conflicts, errors and retries.
 On the client side the official [NATS npm package](https://www.npmjs.com/package/nats) is used to connect to the NATS server.
 
 NATS is a messaging system that by itself does not have a validation or granulary access control build in.

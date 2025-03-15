@@ -63,7 +63,7 @@ console.log(collections.heroes === collection2); //> true
 ## Functions
 
 ### Observe $
-Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which streams every change to data of this collection.
+Calling this will return an [rxjs-Observable](https://rxjs.dev/guide/observable) which streams every change to data of this collection.
 
 ```js
 myCollection.$.subscribe(changeEvent => console.dir(changeEvent));
