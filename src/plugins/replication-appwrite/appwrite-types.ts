@@ -8,24 +8,21 @@ import type {
 import type { Client, Account } from 'appwrite';
 
 export type AppwriteCheckpointType = {
-    sequence: number;
+    updatedAt: string;
+    id: string;
 };
 
 export type FetchMethodType = typeof fetch;
 export type SyncOptionsAppwrite<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
-    'pull' | 'push'
+    'pull' | 'push' | 'deletedField'
 > & {
     databaseId: string;
     collectionId: string;
     client: Client;
+    deletedField: string;
 
     pull?: Omit<ReplicationPullOptions<RxDocType, AppwriteCheckpointType>, 'handler' | 'stream$'> & {
-        /**
-         * Heartbeat time in milliseconds
-         * for the long polling of the changestream.
-         */
-        heartbeat?: number;
     };
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };
