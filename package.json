@@ -574,7 +574,7 @@
     "rollup": "4.35.0",
     "rxdb-old": "npm:rxdb@15.39.0",
     "rxjs": "7.8.2",
-    "shelljs": "0.9.1",
+    "shelljs": "0.9.2",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
     "terser": "5.39.0",
