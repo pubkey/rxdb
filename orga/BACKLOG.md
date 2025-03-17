@@ -28,6 +28,10 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
 
+## Redis Sync
+
+Similar to the NATS replication plugin.
+
 ## query normalization and optimization
 
 Create a package that normalizes and optimizes mango queries.
