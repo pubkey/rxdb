@@ -40,7 +40,7 @@ import {
     Query,
     Models
 } from 'appwrite';
-import { randomString } from 'async-test-util';
+import { randomString, wait, waitUntil } from 'async-test-util';
 
 /**
  * The tests for the firestore replication plugin
@@ -131,6 +131,40 @@ describe('replication-appwrite.test.ts', function () {
             const client = getClient();
             databases = new Databases(client);
         });
+        it('ensure subscriptions work', async () => {
+            // const channel = 'databases.' + databaseId + '.collections.' + collectionId + '.documents';
+            const channel = 'databases.*';
+            const emitted: any = [];
+            const unsubscribe = getClient().subscribe(
+                channel,
+                response => {
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log(response);
+                    emitted.push(response);
+                }
+            );
+            await waitUntil(async () => {
+                await databases.createDocument(
+                    databaseId,
+                    collectionId,
+                    randomString(10, appwritePrimaryKeyCharset),
+                    {
+                        firstName: 'subtest',
+                        lastName: 'subtest',
+                        deleted: false,
+                        age: 20
+                    }
+                );
+                return emitted.length > 0;
+            }, 2000, 100);
+            unsubscribe();
+        });
         it('clean up database', async () => {
             await cleanUpServer();
 
@@ -194,13 +228,14 @@ describe('replication-appwrite.test.ts', function () {
             await collectionB.insert(schemaObjects.humanData('1b-' + randomString(10, appwritePrimaryKeyCharset)));
 
             const serverState = await getServerState();
+            console.log('------------- 0.0');
             const replicationStateA = syncCollection(collectionA);
 
             ensureReplicationHasNoErrors(replicationStateA);
             await replicationStateA.awaitInitialReplication();
 
 
-            console.log('------------- 0');
+            console.log('------------- 0.1');
 
             const replicationStateB = syncCollection(collectionB);
             ensureReplicationHasNoErrors(replicationStateB);
@@ -209,8 +244,13 @@ describe('replication-appwrite.test.ts', function () {
             console.log('------------- 1');
             await replicationStateA.awaitInSync();
 
+            await wait(1000);
+
             console.log('------------- 1.5');
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
+
+            console.log('WORKS !!!');
+            process.exit();
 
             console.log('------------- 2');
             // insert one

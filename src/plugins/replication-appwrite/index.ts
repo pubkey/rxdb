@@ -219,13 +219,19 @@ export function replicateAppwrite<RxDocType>(
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
 
-            console.log('-- start');
-            const channel = 'databases.test-db-1.collections.test-collection-1.documents.*';
-            // const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
+            // const channel = 'databases.test-db-1.collections.test-collection-1.documents.*';
+            const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
+            console.log('-- start: ' + channel);
             // const channel = 'databases.*';
             const unsubscribe = options.client.subscribe(
                 channel,
                 response => {
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
+                    console.log('############# GOT ONE EVENT!!!');
                     console.log('############# GOT ONE EVENT!!!');
                     console.log(response);
                     replicationState.reSync();
