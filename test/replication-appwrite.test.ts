@@ -68,7 +68,6 @@ describe('replication-appwrite.test.ts', function () {
     }
 
     async function getServerState() {
-        const client = getClient();
         const result = await databases.listDocuments(
             databaseId,
             collectionId,
@@ -144,7 +143,7 @@ describe('replication-appwrite.test.ts', function () {
 
     describe('basics', function () {
         this.timeout(100000);
-        it('init client', async () => {
+        it('init client', () => {
             const client = getClient();
             databases = new Databases(client);
         });

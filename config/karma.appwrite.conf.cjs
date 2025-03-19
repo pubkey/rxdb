@@ -24,7 +24,7 @@ module.exports = async function (config) {
         autoWatch: false,
         browserNoActivityTimeout: 1000 * 60 * 3,
 
-        browsers: ["Chrome"],
+        browsers: ['Chrome'],
         customLaunchers: {
             Chrome_DevTools_Saved_Prefs: {
                 base: 'Chrome',
