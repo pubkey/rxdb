@@ -536,7 +536,17 @@ const sidebars = {
         },
       ],
     },
-
+    {
+      type: 'category',
+      label: 'Pre-Alpha Features',
+      items: [
+        {
+          type: 'doc',
+          id: 'replication-appwrite',
+          label: 'Appwrite Replication'
+        }
+      ],
+    },
   ],
 };
 

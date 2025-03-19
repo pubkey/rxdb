@@ -57,10 +57,7 @@ export function replicateAppwrite<RxDocType>(
     addRxPlugin(RxDBLeaderElectionPlugin);
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-
     const databases = new Databases(options.client);
-
-
 
     const replicationPrimitivesPull: ReplicationPullOptions<RxDocType, AppwriteCheckpointType> | undefined = options.pull ? {
         batchSize: options.pull.batchSize,

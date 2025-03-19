@@ -8,8 +8,6 @@ import {
     randomToken,
     RxCollection,
     ensureNotFalsy,
-    WithDeleted,
-    createRxDatabase,
     addRxPlugin
 } from '../plugins/core/index.mjs';
 
@@ -17,10 +15,7 @@ import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    HumanDocumentType,
     ensureCollectionsHaveEqualState,
-    HumanWithTimestampDocumentType,
-    humanSchemaLiteral,
     SimpleHumanDocumentType
 } from '../plugins/test-utils/index.mjs';
 
@@ -28,19 +23,16 @@ import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 
 import {
-    SyncOptionsAppwrite,
     RxAppwriteReplicationState,
     replicateAppwrite
 } from '../plugins/replication-appwrite/index.mjs';
 import config from './unit/config.ts';
-import { wrappedValidateZSchemaStorage } from '../plugins/validate-z-schema/index.mjs';
 import {
     Client,
     Databases,
-    Query,
-    Models
+    Query
 } from 'appwrite';
-import { randomString, wait, waitUntil } from 'async-test-util';
+import { randomString, waitUntil } from 'async-test-util';
 
 /**
  * The tests for the firestore replication plugin
