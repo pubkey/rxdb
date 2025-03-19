@@ -8,8 +8,7 @@ module.exports = async function (config) {
         basePath: '',
         frameworks: [
             'mocha',
-            'webpack',
-            'detectBrowsers'
+            'webpack'
         ],
         webpack: webpackConfig.default,
         files: [
@@ -18,36 +17,32 @@ module.exports = async function (config) {
         // Source files that you wanna generate coverage for.
         // Do not include tests or libraries (these files will be instrumented by Istanbul)
         preprocessors: {
-            '../test_tmp/replication-appwrite.test.js': ['webpack']
+            '../test_tmp/replication-appwrite.test.js': ['webpack', 'sourcemap']
         },
         port: 9876,
         colors: true,
         autoWatch: false,
         browserNoActivityTimeout: 1000 * 60 * 3,
-        detectBrowsers: {
-            enabled: true,
-            usePhantomJS: false,
-            postDetection: function () {
-                /**
-                 * We run the performance tests only in chrome
-                 * because it has the same V8 JavaScript engine
-                 * as we have in Node.js
-                 */
-                return ['Chrome'];
+
+        browsers: ["Chrome"],
+        customLaunchers: {
+            Chrome_DevTools_Saved_Prefs: {
+                base: 'Chrome',
+                flags: [
+                    '--auto-open-devtools-for-tabs',
+                    '--no-sandbox'
+                ]
             }
         },
+
 
         // Karma plugins loaded
         plugins: [
             'karma-mocha',
             'karma-webpack',
             'karma-chrome-launcher',
-            'karma-safari-launcher',
-            'karma-firefox-launcher',
-            'karma-ie-launcher',
-            'karma-opera-launcher',
-            'karma-detect-browsers',
-            'karma-spec-reporter'
+            'karma-spec-reporter',
+            'karma-sourcemap-loader'
         ],
 
 
@@ -75,19 +70,6 @@ module.exports = async function (config) {
          */
         reporters: ['spec']
     };
-
-    if (process.env.CI) {
-        console.log('# Use CI settings.');
-        /**
-         * overwrite reporters-default
-         * So no big list will be shown at log
-         */
-        // configuration.reporters = [];
-
-        // how many browser should be started simultaneously
-        configuration.concurrency = 1;
-    }
-
 
     config.set(configuration);
 };

@@ -71,6 +71,7 @@ describe('replication-appwrite.test.ts', function () {
     function getClient() {
         const client = new Client();
         client.setProject(projectId);
+        client.setEndpointRealtime('https://cloud.appwrite.io/v1');
         return client;
     }
 
@@ -105,6 +106,27 @@ describe('replication-appwrite.test.ts', function () {
         return replicationState;
     }
 
+    async function syncCollectionOnce<RxDocType = TestDocType>(
+        collection: RxCollection<RxDocType>,
+    ) {
+        const replicationState = replicateAppwrite<RxDocType>({
+            client: getClient(),
+            collectionId,
+            databaseId,
+            deletedField: 'deleted',
+            replicationIdentifier: randomToken(10),
+            collection,
+            pull: {
+                batchSize
+            },
+            push: {
+                batchSize
+            }
+        });
+        ensureReplicationHasNoErrors(replicationState);
+        await replicationState.awaitInitialReplication();
+    }
+
     async function cleanUpServer() {
         const result = await databases.listDocuments(
             databaseId,
@@ -114,8 +136,6 @@ describe('replication-appwrite.test.ts', function () {
                 Query.orderAsc('$id')
             ]
         );
-        console.log('result:');
-        console.dir(result);
         for (const doc of result.documents) {
             await databases.deleteDocument(
                 databaseId,
@@ -125,27 +145,37 @@ describe('replication-appwrite.test.ts', function () {
         }
     }
 
+    function getRandomAppwriteDocId() {
+        return randomString(10, appwritePrimaryKeyCharset);
+    }
 
-    describe('basics', () => {
+
+    describe('basics', function () {
+        this.timeout(100000);
         it('init client', async () => {
             const client = getClient();
             databases = new Databases(client);
         });
+        it('clean up database', async () => {
+            await cleanUpServer();
+
+            // should not have documents afterwards
+            const resultAfter = await databases.listDocuments(
+                databaseId,
+                collectionId,
+                [
+                    Query.orderAsc('$updatedAt'),
+                    Query.orderAsc('$id')
+                ]
+            );
+            assert.strictEqual(resultAfter.documents.length, 0);
+        });
         it('ensure subscriptions work', async () => {
-            // const channel = 'databases.' + databaseId + '.collections.' + collectionId + '.documents';
-            const channel = 'databases.*';
+            const channel = 'databases.' + databaseId + '.collections.' + collectionId + '.documents';
             const emitted: any = [];
             const unsubscribe = getClient().subscribe(
-                channel,
+                [channel],
                 response => {
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log(response);
                     emitted.push(response);
                 }
             );
@@ -162,30 +192,17 @@ describe('replication-appwrite.test.ts', function () {
                     }
                 );
                 return emitted.length > 0;
-            }, 2000, 100);
+            }, 1000, 100);
             unsubscribe();
-        });
-        it('clean up database', async () => {
             await cleanUpServer();
-
-            // should not have documents afterwards
-            const resultAfter = await databases.listDocuments(
-                databaseId,
-                collectionId,
-                [
-                    Query.orderAsc('$updatedAt'),
-                    Query.orderAsc('$id')
-                ]
-            );
-            assert.strictEqual(resultAfter.documents.length, 0);
         });
     });
 
     describe('live replication', () => {
         it('push replication to client-server', async () => {
             const collection = await humansCollection.createPrimary(0, undefined, false);
-            await collection.insert(schemaObjects.humanData('a-' + randomString(10, appwritePrimaryKeyCharset)));
-            await collection.insert(schemaObjects.humanData('b-' + randomString(10, appwritePrimaryKeyCharset)));
+            await collection.insert(schemaObjects.humanData('a-' + getRandomAppwriteDocId()));
+            await collection.insert(schemaObjects.humanData('b-' + getRandomAppwriteDocId()));
 
             const replicationState = syncCollection(collection);
             ensureReplicationHasNoErrors(replicationState);
@@ -195,7 +212,7 @@ describe('replication-appwrite.test.ts', function () {
             assert.strictEqual(docsOnServer.length, 2);
 
             // insert another one
-            await collection.insert(schemaObjects.humanData('c-' + randomString(10, appwritePrimaryKeyCharset)));
+            await collection.insert(schemaObjects.humanData('c-' + getRandomAppwriteDocId()));
             await replicationState.awaitInSync();
 
             docsOnServer = await getServerState();
@@ -206,7 +223,6 @@ describe('replication-appwrite.test.ts', function () {
             await doc.incrementalPatch({ age: 100 });
             await replicationState.awaitInSync();
             docsOnServer = await getServerState();
-            console.dir({ docsOnServer });
             assert.strictEqual(docsOnServer.length, 3);
             const serverDoc = ensureNotFalsy(docsOnServer.find(d => d.$id === doc.primary), 'doc with id missing ' + doc.primary);
             assert.strictEqual(serverDoc.age, 100);
@@ -223,36 +239,23 @@ describe('replication-appwrite.test.ts', function () {
         });
         it('two collections', async () => {
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
-            await collectionA.insert(schemaObjects.humanData('1a-' + randomString(10, appwritePrimaryKeyCharset)));
+            await collectionA.insert(schemaObjects.humanData('1a-' + getRandomAppwriteDocId()));
             const collectionB = await humansCollection.createPrimary(0, undefined, false);
-            await collectionB.insert(schemaObjects.humanData('1b-' + randomString(10, appwritePrimaryKeyCharset)));
+            await collectionB.insert(schemaObjects.humanData('1b-' + getRandomAppwriteDocId()));
 
-            const serverState = await getServerState();
-            console.log('------------- 0.0');
             const replicationStateA = syncCollection(collectionA);
 
             ensureReplicationHasNoErrors(replicationStateA);
             await replicationStateA.awaitInitialReplication();
 
-
-            console.log('------------- 0.1');
-
             const replicationStateB = syncCollection(collectionB);
             ensureReplicationHasNoErrors(replicationStateB);
             await replicationStateB.awaitInitialReplication();
 
-            console.log('------------- 1');
             await replicationStateA.awaitInSync();
 
-            await wait(1000);
-
-            console.log('------------- 1.5');
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('WORKS !!!');
-            process.exit();
-
-            console.log('------------- 2');
             // insert one
             await collectionA.insert(schemaObjects.humanData('insert-a'));
             await replicationStateA.awaitInSync();
@@ -260,22 +263,19 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateB.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('------------- 3');
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('------------- 4');
             // insert many
             await collectionA.bulkInsert(
                 new Array(10)
                     .fill(0)
-                    .map(() => schemaObjects.humanData(undefined, undefined, 'bulk-insert-A'))
+                    .map(() => schemaObjects.humanData(getRandomAppwriteDocId(), undefined, 'bulk-insert-A'))
             );
             await replicationStateA.awaitInSync();
-            console.log('------------- 5');
 
             await replicationStateB.awaitInSync();
             await ensureCollectionsHaveEqualState(collectionA, collectionB);
@@ -293,6 +293,38 @@ describe('replication-appwrite.test.ts', function () {
 
             collectionA.database.close();
             collectionB.database.close();
+        });
+    });
+    describe('conflict handling', () => {
+        it('should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+            const c1 = await humansCollection.create(0);
+            await c1.insert(schemaObjects.humanData('1a-' + getRandomAppwriteDocId()));
+
+            const c2 = await humansCollection.create(0);
+
+            await syncCollectionOnce(c1);
+            await syncCollectionOnce(c2);
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+
+            // make update on both sides
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await doc2.incrementalPatch({ firstName: 'c2' });
+
+            await syncCollectionOnce(c2);
+
+            // cause conflict
+            await syncCollectionOnce(c1);
+
+            /**
+             * Must have kept the master state c2
+             */
+            assert.strictEqual(doc1.getLatest().firstName, 'c2');
+
+            c1.database.close();
+            c2.database.close();
         });
     });
 });

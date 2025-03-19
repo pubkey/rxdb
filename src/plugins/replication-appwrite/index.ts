@@ -141,8 +141,6 @@ export function replicateAppwrite<RxDocType>(
                 (docDataInDb as any)[primaryKey] = docId;
                 docsInDbById[docId] = docDataInDb;
             });
-            console.log('docsInDbById:');
-            console.dir(docsInDbById);
             const conflicts: WithDeleted<RxDocType>[] = [];
             await Promise.all(
                 rows.map(async (writeRow) => {
@@ -167,11 +165,6 @@ export function replicateAppwrite<RxDocType>(
                             delete writeDoc._deleted;
                         }
 
-                        console.log('push data:');
-                        console.dir({
-                            docId,
-                            writeDoc
-                        });
                         let result: Models.Document;
                         if (!docInDb) {
                             result = await databases.createDocument(
@@ -191,8 +184,6 @@ export function replicateAppwrite<RxDocType>(
                                 // ["read("any")"] // permissions (optional)
                             );
                         }
-                        console.log('write result:');
-                        console.dir(result);
                     }
                 })
             );
@@ -218,43 +209,17 @@ export function replicateAppwrite<RxDocType>(
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
-
-            // const channel = 'databases.test-db-1.collections.test-collection-1.documents.*';
             const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
-            console.log('-- start: ' + channel);
-            // const channel = 'databases.*';
             const unsubscribe = options.client.subscribe(
                 channel,
-                response => {
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log('############# GOT ONE EVENT!!!');
-                    console.log(response);
+                (_response) => {
+                    /**
+                     * There is no way to get the "previous" document data
+                     * out of the events, so we have to call .reSync() on each change.
+                     */
                     replicationState.reSync();
                 }
             );
-            console.log('-- done');
-
-            // const unsubscribe = onSnapshot(
-            //     lastChangeQuery,
-            //     (_querySnapshot) => {
-            //         /**
-            //          * There is no good way to observe the event stream in firestore.
-            //          * So instead we listen to any write to the collection
-            //          * and then emit a 'RESYNC' flag.
-            //          */
-            //         replicationState.reSync();
-            //     },
-            //     (error) => {
-            //         replicationState.subjects.error.next(
-            //             newRxError('RC_STREAM', { error: errorToPlainJson(error) })
-            //         );
-            //     }
-            // );
             replicationState.cancel = () => {
                 unsubscribe();
                 return cancelBefore();
