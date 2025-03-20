@@ -143,6 +143,7 @@ export const YouTubeVideoBox = ({ videoId, title, duration, startAt }: YoutubeVi
           <br />
           <br />
           <br />
+          <h3>{title}</h3>
           <center>
             <iframe className="img-radius" style={{ width: '100%', borderRadius: '15px' }}
               height="515" src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1&start=' + (startAt ? startAt : 0)}

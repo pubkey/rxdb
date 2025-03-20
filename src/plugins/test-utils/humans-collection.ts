@@ -16,7 +16,7 @@ import {
     RxConflictHandler
 } from '../../index.ts';
 
-import { HumanDocumentType } from './schemas.ts';
+import { HumanDocumentType, PrimaryHumanDocType } from './schemas.ts';
 
 export async function create(
     size: number = 20,
@@ -311,13 +311,14 @@ export async function createMultiInstance(
 
 export async function createPrimary(
     amount = 10,
-    name = randomToken(10)
-): Promise<RxCollection<schemaObjects.SimpleHumanDocumentType>> {
+    name = randomToken(10),
+    multiInstance = true
+): Promise<RxCollection<PrimaryHumanDocType>> {
 
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanDocumentType>; }>({
         name,
         storage: getConfig().storage.getStorage(),
-        multiInstance: true,
+        multiInstance,
         eventReduce: true,
         ignoreDuplicate: true
     });

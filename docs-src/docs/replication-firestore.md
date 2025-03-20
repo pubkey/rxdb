@@ -23,7 +23,6 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 - The initial load time of your application can be decreased because it will do an incremental replication on restarts.
 
 
-
 ## Usage
 
 
