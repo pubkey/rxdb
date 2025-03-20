@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const sdk = require('node-appwrite');
 const { randomString } = require('async-test-util');
 const appwritePrimaryKeyCharset = 'abcdefghijklmnopqrstuvwxyz';
