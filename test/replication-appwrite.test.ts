@@ -54,7 +54,7 @@ describe('replication-appwrite.test.ts', function () {
     const batchSize = 5;
 
     const projectId = 'rxdb-test-1';
-    const databaseId = '67d2ecc6001ba124ca74';
+    let databaseId: string; // set via karma config
     const collectionId = 'test-collection-1';
     const appwritePrimaryKeyCharset = 'abcdefghijklmnopqrstuvwxyz';
 
@@ -140,12 +140,30 @@ describe('replication-appwrite.test.ts', function () {
         return randomString(10, appwritePrimaryKeyCharset);
     }
 
-
     describe('basics', function () {
         this.timeout(100000);
-        it('init client', () => {
-            const client = getClient();
-            databases = new Databases(client);
+        it('check config', () => {
+            databaseId = (window as any).__karma__.config.args[0];
+            assert.ok(databaseId);
+            console.log('databaseId: ' + databaseId);
+        });
+        it('init client and wait until database exists', async () => {
+            await waitUntil(async () => {
+                const client = getClient();
+                databases = new Databases(client);
+                try {
+                    const docs = await databases.listDocuments(
+                        databaseId,
+                        collectionId,
+                        []
+                    );
+                    console.log('docs: ' + docs.total);
+                    return true;
+                } catch (err) {
+                    console.log('collection not exists ' + databaseId + ' ' + collectionId);
+                    return false;
+                }
+            }, undefined, 1000);
         });
         it('clean up database', async () => {
             await cleanUpServer();
@@ -222,6 +240,7 @@ describe('replication-appwrite.test.ts', function () {
             await doc.getLatest().remove();
             await replicationState.awaitInSync();
             docsOnServer = await getServerState();
+
             // must still have 3 because there are no hard deletes
             assert.strictEqual(docsOnServer.length, 3);
             assert.ok(docsOnServer.find(d => (d as any).deleted));

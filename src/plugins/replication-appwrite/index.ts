@@ -11,13 +11,13 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxCollection,
+    RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     WithDeleted
 } from '../../types';
 import { addRxPlugin } from '../../plugin.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
-    Client,
     Databases,
     Query,
     Models
@@ -25,6 +25,7 @@ import {
 import { lastOfArray } from '../utils/utils-array.ts';
 import { appwriteDocToRxDB } from './appwrite-helpers.ts';
 import { flatClone } from '../utils/utils-object.ts';
+import { Subject } from 'rxjs';
 
 export class RxAppwriteReplicationState<RxDocType> extends RxReplicationState<RxDocType, AppwriteCheckpointType> {
     constructor(
@@ -54,21 +55,24 @@ export function replicateAppwrite<RxDocType>(
 ): RxAppwriteReplicationState<RxDocType> {
     const collection: RxCollection<RxDocType> = options.collection;
     const primaryKey = collection.schema.primaryPath;
+    const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, AppwriteCheckpointType>> = new Subject();
+
     addRxPlugin(RxDBLeaderElectionPlugin);
     options.live = typeof options.live === 'undefined' ? true : options.live;
+    options.deletedField = options.deletedField ? options.deletedField : '_deleted';
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+
     const databases = new Databases(options.client);
 
     const replicationPrimitivesPull: ReplicationPullOptions<RxDocType, AppwriteCheckpointType> | undefined = options.pull ? {
         batchSize: options.pull.batchSize,
         modifier: options.pull.modifier,
-        // stream$: pullStream$.asObservable(), TODO
+        stream$: pullStream$.asObservable(),
         initialCheckpoint: options.pull.initialCheckpoint,
         handler: async (
             lastPulledCheckpoint: AppwriteCheckpointType | undefined,
             batchSize: number
         ) => {
-
             const queries: string[] = [];
             if (lastPulledCheckpoint) {
                 queries.push(
@@ -143,7 +147,6 @@ export function replicateAppwrite<RxDocType>(
                 rows.map(async (writeRow) => {
                     const docId = (writeRow.newDocumentState as any)[primaryKey];
                     const docInDb: RxDocType | undefined = docsInDbById[docId];
-
                     if (
                         docInDb &&
                         (
@@ -188,7 +191,6 @@ export function replicateAppwrite<RxDocType>(
         }
     } : undefined;
 
-
     const replicationState = new RxAppwriteReplicationState<RxDocType>(
         options.replicationIdentifier,
         collection,
@@ -209,12 +211,16 @@ export function replicateAppwrite<RxDocType>(
             const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
             const unsubscribe = options.client.subscribe(
                 channel,
-                (_response) => {
-                    /**
-                     * There is no way to get the "previous" document data
-                     * out of the events, so we have to call .reSync() on each change.
-                     */
-                    replicationState.reSync();
+                (response) => {
+                    const docData = appwriteDocToRxDB<RxDocType>(response.payload, primaryKey, options.deletedField);
+                    pullStream$.next({
+                        checkpoint: {
+                            id: (docData as any)[primaryKey],
+                            updatedAt: (response.payload as any).$updatedAt
+                        },
+                        documents: [docData]
+                    });
+
                 }
             );
             replicationState.cancel = () => {

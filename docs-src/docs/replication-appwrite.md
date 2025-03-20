@@ -186,7 +186,6 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
 - The Appwrite replication only works on browsers because the Appwrite SDK does not support subscriptions in Node.js.
-- The appwrite change stream does not provide "previous" document data, so it will call `RESYNC` on each change to switch into [iteration mode](./replication.md#checkpoint-iteration). This is not a problem (other replication plugins do the same), its just a bit slower than it could be.
 - Appwrite does not allow for bulk write operations so on push one HTTP request will be made per document. Reads run in bulk so this is mostly not a problem.
 - Appwrite does not allow for transactions or "update-if" calls which can lead to overwriting documents instead of properly handling [conflicts](./transactions-conflicts-revisions.md#conflicts) when multiple clients edit the same document in parallel.
 - It is not possible to define nested attributes in an Appwrite collection so you should also not have them in the corresponding RxDB [collection](./rx-collection.md).
