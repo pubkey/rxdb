@@ -452,7 +452,7 @@
     "@babel/runtime": "7.26.10",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.17",
-    "@types/express": "5.0.0",
+    "@types/express": "5.0.1",
     "@types/simple-peer": "9.11.8",
     "@types/ws": "8.5.10",
     "ajv": "8.17.1",
