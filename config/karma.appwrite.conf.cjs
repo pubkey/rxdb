@@ -5,16 +5,24 @@ const appwritePrimaryKeyCharset = 'abcdefghijklmnopqrstuvwxyz';
 
 function startAppwriteServer() {
     const databaseId = 'ci-db-' + randomString(10, appwritePrimaryKeyCharset);
+    const endpoint = 'http://localhost/v1';
     const client = new sdk.Client();
     client
-        .setEndpoint('http://localhost/v1')
+        .setEndpoint(endpoint)
         // .setEndpoint('https://cloud.appwrite.io/v1')
-        .setProject('rxdb-test-1')
-        .setKey('');
-        // .setKey('standard_6...');
-        const databases = new sdk.Databases(client);
+        .setKey('standard_fe4c7fdcda16def6c6038145459f9a9549c2e50f97695010d9be3ca7ce90c8581a91c1c936ec86fde4e116e05d3c4abd00ad80b50652c5efa3882475b15994ddd119e02e809b3b232bea23a631d6a38aba73bed7adc62d396796872b8454a8c4e230bece31a26129f61c18d40b247178c505671c4f10e30a118b885deec48a9e');
+    // .setKey('standard_6...');
+
+
+    let databases = new sdk.Databases(client);
+    const projectId = 'rxdb-test-1';
 
     (async () => {
+
+        // await projects.create('rxdb-test-1', 'rxdb-test-1');
+        await client.setProject(projectId);
+
+        // create/clear database
         const dbs = await databases.list();
         if (dbs.databases.length > 0) {
             console.log('# DELETING DATABASE START');
@@ -23,10 +31,14 @@ function startAppwriteServer() {
             );
             console.log('# DELETING DATABASE DONE');
         }
-        const database = await databases.create(
+        await databases.create(
             databaseId,
             databaseId
         );
+
+        console.log('await databases.list(): ' + databaseId);
+        console.dir(await databases.list());
+        databases = new sdk.Databases(client);
 
         const permissions = [
             sdk.Permission.read(sdk.Role.any()),
@@ -35,33 +47,33 @@ function startAppwriteServer() {
             sdk.Permission.delete(sdk.Role.any())
         ];
         const collection = await databases.createCollection(
-            database.$id,
+            databaseId,
             'test-collection-1',
             'test-collection-1',
             permissions
         );
         await databases.createStringAttribute(
-            database.$id,
+            databaseId,
             collection.$id,
             'firstName',
             255,
             true
         );
         await databases.createStringAttribute(
-            database.$id,
+            databaseId,
             collection.$id,
             'lastName',
             255,
             true
         );
         await databases.createBooleanAttribute(
-            database.$id,
+            databaseId,
             collection.$id,
             'deleted',
             true
         );
         await databases.createIntegerAttribute(
-            database.$id,
+            databaseId,
             collection.$id,
             'age',
             true,

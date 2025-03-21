@@ -187,6 +187,7 @@ export function replicateAppwrite<RxDocType>(
                     }
                 })
             );
+
             return conflicts;
         }
     } : undefined;

@@ -63,7 +63,8 @@ describe('replication-appwrite.test.ts', function () {
     function getClient() {
         const client = new Client();
         client.setProject(projectId);
-        client.setEndpointRealtime('https://cloud.appwrite.io/v1');
+        client.setEndpoint('http://localhost/v1');
+        client.setEndpointRealtime('http://localhost/v1');
         return client;
     }
 
@@ -105,8 +106,9 @@ describe('replication-appwrite.test.ts', function () {
             collectionId,
             databaseId,
             deletedField: 'deleted',
-            replicationIdentifier: randomToken(10),
+            replicationIdentifier: 'sync-once',
             collection,
+            live: false,
             pull: {
                 batchSize
             },
@@ -116,6 +118,8 @@ describe('replication-appwrite.test.ts', function () {
         });
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
+        await replicationState.awaitInSync();
+        await replicationState.cancel();
     }
 
     async function cleanUpServer() {
@@ -160,7 +164,9 @@ describe('replication-appwrite.test.ts', function () {
                     console.log('docs: ' + docs.total);
                     return true;
                 } catch (err) {
-                    console.log('collection not exists ' + databaseId + ' ' + collectionId);
+
+                    console.log('collection not exists ' + databaseId + ' ' + collectionId + ' ERROR:');
+                    console.dir(err);
                     return false;
                 }
             }, undefined, 1000);
@@ -309,7 +315,7 @@ describe('replication-appwrite.test.ts', function () {
         it('should keep the master state as default conflict handler', async () => {
             await cleanUpServer();
             const c1 = await humansCollection.create(0);
-            await c1.insert(schemaObjects.humanData('1a-' + getRandomAppwriteDocId()));
+            await c1.insert(schemaObjects.humanData('1-conflict-' + getRandomAppwriteDocId()));
 
             const c2 = await humansCollection.create(0);
 
@@ -318,20 +324,21 @@ describe('replication-appwrite.test.ts', function () {
 
             const doc1 = await c1.findOne().exec(true);
             const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc1.firstName, doc2.firstName, 'equal names');
 
             // make update on both sides
-            await doc1.incrementalPatch({ firstName: 'c1' });
             await doc2.incrementalPatch({ firstName: 'c2' });
-
             await syncCollectionOnce(c2);
 
             // cause conflict
+            await doc1.incrementalPatch({ firstName: 'c1' });
             await syncCollectionOnce(c1);
 
             /**
              * Must have kept the master state c2
              */
-            assert.strictEqual(doc1.getLatest().firstName, 'c2');
+            assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
+            assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
 
             c1.database.close();
             c2.database.close();
