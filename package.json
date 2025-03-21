@@ -510,7 +510,7 @@
     "@babel/preset-typescript": "7.26.0",
     "@babel/types": "7.26.10",
     "@eslint/compat": "1.2.7",
-    "@eslint/eslintrc": "3.3.0",
+    "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.22.0",
     "@firebase/rules-unit-testing": "4.0.1",
     "@rollup/plugin-commonjs": "28.0.3",
