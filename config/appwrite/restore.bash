@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "RESTORE START"
+
 docker compose exec -T mariadb sh -c 'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"' < ./backup/dump.sql
 
 appwrite_volumes=(uploads cache config certificates functions)
@@ -14,3 +16,5 @@ if [ ! -f "./backup/builds.tar" ]; then
     exit 0
 fi
 docker run --rm --volumes-from "$(docker compose ps -q appwrite-worker-deletes)" -v $PWD/backup:/restore ubuntu bash -c "cd /storage/builds && tar xvf /restore/builds.tar --strip 1"
+
+echo "RESTORE DONE"

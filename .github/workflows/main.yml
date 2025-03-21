@@ -865,7 +865,11 @@ jobs:
           docker compose up -d 
           echo "Waiting for containers to become healthy..."
           while [ "$(docker compose ps --format json | grep -c 'running')" -lt "$(docker compose ps -q | wc -l)" ]; do sleep 5; done
-          echo "Containers are now running. Starting backup..." && \
+          echo "Containers are now running."
+
+      - name: Restore Backup
+        working-directory: config/appwrite
+        run: |
           bash restore.bash
 
       - name: Run Appwrite Tests
