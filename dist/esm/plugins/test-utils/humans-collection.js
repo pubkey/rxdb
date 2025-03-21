@@ -212,11 +212,11 @@ export async function createMultiInstance(name, amount = 0, password = undefined
   }
   return collections.human;
 }
-export async function createPrimary(amount = 10, name = randomToken(10)) {
+export async function createPrimary(amount = 10, name = randomToken(10), multiInstance = true) {
   var db = await createRxDatabase({
     name,
     storage: getConfig().storage.getStorage(),
-    multiInstance: true,
+    multiInstance,
     eventReduce: true,
     ignoreDuplicate: true
   });
