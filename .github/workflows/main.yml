@@ -823,43 +823,53 @@ jobs:
           npm install
           npm test
 
-  # appwrite:
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Set node version
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version-file: ".nvmrc"
+  appwrite:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
 
-  #     - name: Reuse npm cache folder
-  #       uses: actions/cache@v4
-  #       env:
-  #         cache-name: cache-node-modules
-  #       with:
-  #         path: |
-  #           ~/.npm
-  #         key: ${{ runner.os }}-npm-appwrite-x3-${{ hashFiles('**/package.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-npm-appwrite-x3-
-  #     - name: Cache Docker layers
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: /tmp/.buildx-cache
-  #         key: ${{ runner.os }}-buildx-appwrite-${{ github.sha }}
+      - name: Reuse npm cache folder
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-npm-appwrite-x3-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-appwrite-x3-
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-appwrite-${{ github.sha }}
 
-  #     # We start the download while building RxDB to make the CI faster
-  #     - name: Start docker download
-  #       working-directory: ./config/appwrite/
-  #       run: docker compose pull &
+      # We start the download while building RxDB to make the CI faster
+      - name: Start docker download
+        working-directory: ./config/appwrite/
+        run: docker compose pull &
 
-  #     - name: prepare RxDB core
-  #       run: |
-  #         npm install
-  #         npm run build
+      - name: prepare RxDB core
+        run: |
+          npm install
+          npm run build
 
+      - name: compose up
+        working-directory: config/appwrite
+        run: |
+          docker compose up -d 
+          echo "Waiting for containers to become healthy..."
+          while [ "$(docker compose ps --format json | grep -c 'running')" -lt "$(docker compose ps -q | wc -l)" ]; do sleep 5; done
+          echo "Containers are now running. Starting backup..." && \
+          bash restore.sh
 
+      - name: Run Appwrite Tests
+        run: npm run test:replication-appwrite
 
   test-others:
     runs-on: ubuntu-22.04
