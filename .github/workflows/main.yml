@@ -523,6 +523,52 @@ jobs:
           working-directory: ./examples/electron
           run: npm run test
 
+  example-tauri:
+    # See https://tauri.app/develop/tests/webdriver/ci/ for more information
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      # install system dependencies that Tauri needs to compile on Linux.
+      # note the extra dependencies for `tauri-driver` to run which are: `webkit2gtk-driver` and `xvfb`
+      - name: Tauri dependencies
+        run: |
+          sudo apt update && sudo apt install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            webkit2gtk-driver
+      - name: Setup rust-toolchain stable
+        id: rust-toolchain
+        uses: dtolnay/rust-toolchain@stable
+      # install the latest version of `tauri-driver`.
+      # note: the tauri-driver version is independent of any other Tauri versions
+      - name: Install tauri-driver
+        run: cargo install tauri-driver --locked
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+      - name: tauri install
+        working-directory: ./examples/tauri
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps -D
+      - name: tauri test
+        uses: coactions/setup-xvfb@v1
+        with:
+          working-directory: ./examples/tauri
+          run: npm run test
   example-react:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
