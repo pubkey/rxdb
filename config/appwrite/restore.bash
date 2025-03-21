@@ -44,5 +44,3 @@ fi
 
 
 echo "RESTORE DONE"
-sleep 30
-echo "RESTORE SLEEP DONE"
