@@ -12,6 +12,10 @@ until docker compose exec -T mariadb mysqladmin ping -u"$MYSQL_USER" -p"$MYSQL_P
 done
 echo "MariaDB ready. Restoring now."
 
+echo "mysql creds"
+echo $MYSQL_USER
+echo $MYSQL_PASSWORD
+
 docker compose exec -T mariadb sh -c "exec mysql -u'$MYSQL_USER' -p'$MYSQL_PASSWORD'" < ./backup/dump.sql
 
 appwrite_volumes=(uploads cache config certificates functions)
