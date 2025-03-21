@@ -874,7 +874,9 @@ jobs:
           bash restore.bash
 
       - name: Run Appwrite Tests
-        run: npm run test:replication-appwrite
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:replication-appwrite
 
   test-others:
     runs-on: ubuntu-22.04
