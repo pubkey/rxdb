@@ -31,4 +31,16 @@ if [ ! -f "./backup/builds.tar" ]; then
 fi
 docker run --rm --volumes-from "$(docker compose ps -q appwrite-worker-deletes)" -v $PWD/backup:/restore ubuntu:22.04 bash -c "cd /storage/builds && tar xvf /restore/builds.tar --strip 1"
 
+
+# Verify if tables exist to confirm import success
+table_check=$(docker compose exec -T mariadb mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -Nse "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='appwrite'")
+
+if [[ "$table_check" -gt "0" ]]; then
+    echo "Verification successful: Tables have been restored."
+else
+    echo "Verification failed: No tables found in database 'appwrite'. Exiting restore."
+    exit 1
+fi
+
+
 echo "RESTORE DONE"
