@@ -2,6 +2,8 @@
 
 echo "RESTORE START"
 
+source .env
+
 docker compose exec -T mariadb sh -c 'exec mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"' < ./backup/dump.sql
 
 appwrite_volumes=(uploads cache config certificates functions)
