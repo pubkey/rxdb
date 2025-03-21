@@ -25,11 +25,12 @@ async function ensureCollectionsHaveEqualState(c1, c2) {
   try {
     _assert.default.deepStrictEqual(json1, json2);
   } catch (err) {
-    console.error('ensureCollectionsHaveEqualState() states not equal:');
+    console.error('ensureCollectionsHaveEqualState() states not equal (c1:' + c1.name + ', c2:' + c2.name + '):');
     console.dir({
-      [c1.name]: json1,
-      [c2.name]: json2
+      c1: json1,
+      c2: json2
     });
+    console.log('----------');
     throw err;
   }
 }
