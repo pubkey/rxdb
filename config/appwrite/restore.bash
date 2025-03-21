@@ -4,6 +4,14 @@ echo "RESTORE START"
 
 source .env
 
+
+echo "Waiting for MariaDB to be ready..."
+until docker compose exec -T mariadb mysqladmin ping -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --silent; do
+    echo "MariaDB is still initializing..."
+    sleep 3
+done
+echo "MariaDB ready. Restoring now."
+
 docker compose exec -T mariadb sh -c "exec mysql -u'$MYSQL_USER' -p'$MYSQL_PASSWORD'" < ./backup/dump.sql
 
 appwrite_volumes=(uploads cache config certificates functions)
