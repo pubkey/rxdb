@@ -873,6 +873,12 @@ jobs:
         run: |
           bash restore.bash
 
+      - name: restart cotainers
+        working-directory: config/appwrite
+        run: |
+          docker compose down
+          docker compose up -d
+
       - name: Run Appwrite Tests
         uses: coactions/setup-xvfb@v1
         with:
