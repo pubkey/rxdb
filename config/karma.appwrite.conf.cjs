@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const sdk = require('node-appwrite');
-const { randomString } = require('async-test-util');
+const { randomString, waitUntil } = require('async-test-util');
 const appwritePrimaryKeyCharset = 'abcdefghijklmnopqrstuvwxyz';
 
 function startAppwriteServer() {
@@ -21,6 +21,20 @@ function startAppwriteServer() {
 
         // await projects.create('rxdb-test-1', 'rxdb-test-1');
         await client.setProject(projectId);
+
+        /**
+         * Wait until the docker containers are up
+         * and everything is imported
+         */
+        await waitUntil(async () => {
+            try {
+                await databases.list();
+                return true;
+            } catch (err) {
+                console.log('couldn\'t reach project (' + projectId + '), trying again...');
+                return false;
+            }
+        }, 100 * 1000, 500);
 
         // create/clear database
         const dbs = await databases.list();
