@@ -270,20 +270,20 @@ describe('replication-appwrite.test.ts', function () {
 
             await replicationStateA.awaitInSync();
 
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
             // insert one
             await collectionA.insert(schemaObjects.humanData('insert-a'));
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
 
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
 
             // insert many
             await collectionA.bulkInsert(
@@ -294,7 +294,7 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
 
             // insert at both collections at the same time
             await Promise.all([
@@ -305,7 +305,7 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
 
             collectionA.database.close();
             collectionB.database.close();

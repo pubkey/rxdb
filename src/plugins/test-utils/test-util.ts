@@ -12,7 +12,8 @@ export function testMultipleTimes(times: number, title: string, test: Func) {
 
 export async function ensureCollectionsHaveEqualState<RxDocType>(
     c1: RxCollection<RxDocType>,
-    c2: RxCollection<RxDocType>
+    c2: RxCollection<RxDocType>,
+    logContext?: string
 ) {
     await requestIdlePromise();
     const getJson = async (collection: RxCollection<RxDocType>) => {
@@ -27,7 +28,7 @@ export async function ensureCollectionsHaveEqualState<RxDocType>(
             json2
         );
     } catch (err) {
-        console.error('ensureCollectionsHaveEqualState() states not equal (c1:' + c1.name + ', c2:' + c2.name + '):');
+        console.error('ensureCollectionsHaveEqualState(' + logContext + ') states not equal (c1:' + c1.name + ', c2:' + c2.name + '):');
         console.dir({
             c1: json1,
             c2: json2
