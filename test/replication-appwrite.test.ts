@@ -32,7 +32,7 @@ import {
     Databases,
     Query
 } from 'appwrite';
-import { randomString, waitUntil } from 'async-test-util';
+import { randomString, wait, waitUntil } from 'async-test-util';
 
 /**
  * The tests for the firestore replication plugin
@@ -268,6 +268,7 @@ describe('replication-appwrite.test.ts', function () {
             ensureReplicationHasNoErrors(replicationStateB);
             await replicationStateB.awaitInitialReplication();
 
+            await wait(100);
             await replicationStateA.awaitInSync();
 
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
@@ -277,12 +278,14 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
+            await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
 
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
+            await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
 
             // insert many
@@ -294,6 +297,7 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
+            await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
 
             // insert at both collections at the same time
@@ -305,6 +309,7 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
+            await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
 
             collectionA.database.close();
