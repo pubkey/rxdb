@@ -90,6 +90,7 @@ import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
  * so we can throw when the same database is created more then once.
  */
 const USED_DATABASE_NAMES: Set<string> = new Set();
+const DATABASE_CLOSED_PROMISE_MAP: Map<string, Set<Promise<void>>> = new Map();
 
 let DB_COUNT = 0;
 
@@ -130,7 +131,11 @@ export class RxDatabaseBase<
         public readonly hashFunction: HashFunction,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>,
         public readonly allowSlowCount?: boolean,
-        public readonly reactivity?: RxReactivityFactory<any>
+        public readonly reactivity?: RxReactivityFactory<any>,
+        /**
+         * Function invoked when the database instance is considered closed
+         */
+        public readonly onClosed?: () => void,
     ) {
         DB_COUNT++;
 
@@ -493,6 +498,9 @@ export class RxDatabaseBase<
          * we should generate the property list on build time.
          */
         if (this.name === 'pseudoInstance') {
+            if (this.onClosed) {
+                this.onClosed();
+            }
             return PROMISE_RESOLVE_FALSE;
         }
 
@@ -509,8 +517,7 @@ export class RxDatabaseBase<
             ))
             // close internal storage instances
             .then(() => this.internalStore.close())
-            // remove combination from USED_COMBINATIONS-map
-            .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name))
+            .then(() => this.onClosed && this.onClosed())
             .then(() => true);
     }
 
@@ -535,23 +542,26 @@ export class RxDatabaseBase<
 }
 
 /**
- * checks if an instance with same name and storage already exists
- * @throws {RxError} if used
+ * gets the name key for the passed database name and storage.
  */
-function throwIfDatabaseNameUsed(
+function getDatabaseNameKey(
     name: string,
     storage: RxStorage<any, any>
 ) {
-    const key = storage.name + '|' + name;
-    if (!USED_DATABASE_NAMES.has(key)) {
-        return;
-    } else {
-        throw newRxError('DB8', {
-            name,
-            storage: storage.name,
-            link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
-        });
-    }
+    return storage.name + '|' + name;
+}
+
+/**
+ * ponyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
+ */
+function createPromiseWithResolvers<T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    let reject!: (reason?: any) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
 }
 
 /**
@@ -616,31 +626,46 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-    // check if combination already used
-    if (!ignoreDuplicate) {
-        throwIfDatabaseNameUsed(name, storage);
-    } else {
+
+    if (ignoreDuplicate) {
         if (!overwritable.isDevMode()) {
             throw newRxError('DB9', {
                 database: name
             });
         }
     }
-    USED_DATABASE_NAMES.add(storage.name + '|' + name);
 
+    const closedPromiseWithResolvers = createPromiseWithResolvers<void>();
+    const databaseNameKey = getDatabaseNameKey(name, storage);
     const databaseInstanceToken = randomToken(10);
+    const databaseClosedPromiseMapEntry = DATABASE_CLOSED_PROMISE_MAP.get(databaseNameKey) || new Set<Promise<void>>();
+    const databaseClosedPromise = closedPromiseWithResolvers.promise.then(() => {
+        USED_DATABASE_NAMES.delete(databaseNameKey);
+        databaseClosedPromiseMapEntry.delete(databaseClosedPromise);
+    });
+    const databaseClosedPromisesToAwait = ignoreDuplicate ? [] : Array.from(databaseClosedPromiseMapEntry);
 
-    return createRxDatabaseStorageInstance<
-        Internals,
-        InstanceCreationOptions
-    >(
-        databaseInstanceToken,
-        storage,
-        name,
-        instanceCreationOptions as any,
-        multiInstance,
-        password
-    )
+    USED_DATABASE_NAMES.add(databaseNameKey);
+    DATABASE_CLOSED_PROMISE_MAP.set(databaseNameKey, databaseClosedPromiseMapEntry);
+    databaseClosedPromiseMapEntry.add(databaseClosedPromise);
+
+    return Promise.all(databaseClosedPromisesToAwait).then(() => {
+        /*
+        if (!ignoreDuplicate) {
+            throwIfDatabaseNameUsed(name, storage);
+        }
+        */
+        return createRxDatabaseStorageInstance<
+            Internals,
+            InstanceCreationOptions
+        >(
+            databaseInstanceToken,
+            storage,
+            name,
+            instanceCreationOptions as any,
+            multiInstance,
+            password
+        )
         /**
          * Creating the internal store might fail
          * if some RxStorage wrapper is used that does some checks
@@ -648,7 +673,7 @@ export function createRxDatabase<
          * In that case we have to properly clean up the database.
          */
         .catch(err => {
-            USED_DATABASE_NAMES.delete(storage.name + '|' + name);
+            closedPromiseWithResolvers.resolve();
             throw err;
         })
         .then(storageInstance => {
@@ -665,7 +690,8 @@ export function createRxDatabase<
                 hashFunction,
                 cleanupPolicy,
                 allowSlowCount,
-                reactivity
+                reactivity,
+                closedPromiseWithResolvers.resolve
             ) as any;
 
             return runAsyncPluginHooks('createRxDatabase', {
@@ -683,6 +709,7 @@ export function createRxDatabase<
                 }
             }).then(() => rxDatabase);
         });
+    });
 }
 
 /**
