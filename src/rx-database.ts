@@ -85,11 +85,6 @@ import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
 import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
-/**
- * stores the used database names+storage names
- * so we can throw when the same database is created more then once.
- */
-const USED_DATABASE_NAMES: Set<string> = new Set();
 const DATABASE_CLOSED_PROMISE_MAP: Map<string, Set<Promise<void>>> = new Map();
 
 let DB_COUNT = 0;
@@ -640,21 +635,14 @@ export function createRxDatabase<
     const databaseInstanceToken = randomToken(10);
     const databaseClosedPromiseMapEntry = DATABASE_CLOSED_PROMISE_MAP.get(databaseNameKey) || new Set<Promise<void>>();
     const databaseClosedPromise = closedPromiseWithResolvers.promise.then(() => {
-        USED_DATABASE_NAMES.delete(databaseNameKey);
         databaseClosedPromiseMapEntry.delete(databaseClosedPromise);
     });
     const databaseClosedPromisesToAwait = ignoreDuplicate ? [] : Array.from(databaseClosedPromiseMapEntry);
 
-    USED_DATABASE_NAMES.add(databaseNameKey);
     DATABASE_CLOSED_PROMISE_MAP.set(databaseNameKey, databaseClosedPromiseMapEntry);
     databaseClosedPromiseMapEntry.add(databaseClosedPromise);
 
     return Promise.all(databaseClosedPromisesToAwait).then(() => {
-        /*
-        if (!ignoreDuplicate) {
-            throwIfDatabaseNameUsed(name, storage);
-        }
-        */
         return createRxDatabaseStorageInstance<
             Internals,
             InstanceCreationOptions

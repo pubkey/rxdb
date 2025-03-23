@@ -43,7 +43,6 @@ export declare const ERROR_MESSAGES: {
     DB4: string;
     DB5: string;
     DB6: string;
-    DB8: string;
     DB9: string;
     DB11: string;
     DB12: string;

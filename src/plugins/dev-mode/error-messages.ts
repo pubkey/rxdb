@@ -70,9 +70,9 @@ export const ERROR_MESSAGES = {
     DB5: 'RxDatabase.addCollections(): collection-name not allowed',
     DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html?console=qa#cant-change-the-schema ',
     // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
-    DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' +
-        'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' +
-        'This often happens in react projects with hot reload that reloads the code without reloading the process.',
+    // removed in xxxx (new instances wait for old instances to close) DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' +
+    //    'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional-\n' +
+    //    'This often happens in react projects with hot reload that reloads the code without reloading the process.',
     DB9: 'ignoreDuplicate is only allowed in dev-mode and must never be used in production',
     // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
     // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
