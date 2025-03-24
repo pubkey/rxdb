@@ -39,7 +39,7 @@ export function exposeIpcMainRxStorage<T, D>(
     const addOpenRenderer = (renderer: any) => {
         if (openRenderers.has(renderer)) return;
         openRenderers.add(renderer);
-        renderer.on('closed', () => openRenderers.delete(renderer));
+        renderer.on('destroyed', () => openRenderers.delete(renderer));
     };
     const send: RxStorageRemoteExposeSettings['send'] = (msg) => {
         /**
