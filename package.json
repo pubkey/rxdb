@@ -476,7 +476,7 @@
     "firebase": "11.5.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.10.1",
-    "graphql-ws": "5.16.2",
+    "graphql-ws": "6.0.4",
     "is-my-json-valid": "2.20.6",
     "isomorphic-ws": "5.0.0",
     "js-base64": "3.7.7",

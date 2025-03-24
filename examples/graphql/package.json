@@ -29,7 +29,7 @@
     "express-graphql": "0.12.0",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "2.0.0",
-    "graphql-ws": "5.16.2",
+    "graphql-ws": "6.0.4",
     "local-web-server": "5.4.0",
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "9.0.0",
