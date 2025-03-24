@@ -164,7 +164,6 @@ describe('replication-appwrite.test.ts', function () {
                     console.log('docs: ' + docs.total);
                     return true;
                 } catch (err) {
-
                     console.log('collection not exists ' + databaseId + ' ' + collectionId + ' ERROR:');
                     console.dir(err);
                     return false;
