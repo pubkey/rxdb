@@ -53,6 +53,66 @@ You can either use the appwrite cloud or [self-host the Appwrite server](https:/
 
 <Steps>
 
+### Set up an Appwrite Endpoint and Project
+
+<Tabs>
+
+#### Self-Hosted Appwrite Instance
+
+<Steps>
+
+##### Docker
+
+Ensure docker and docker-compose is installed and your version are up to date:
+
+```bash
+docker-compose -v
+```
+
+##### Run the installation script
+
+The installation script runs inside of a docker container. It will create a docker-compose file and and `.env` file.
+
+```bash
+docker run -it --rm \
+    --volume /var/run/docker.sock:/var/run/docker.sock \
+    --volume "$(pwd)"/appwrite:/usr/src/code/appwrite:rw \
+    --entrypoint="install" \
+    appwrite/appwrite:1.6.1
+```
+
+##### Start/Stop
+
+After the installation is done, you can manually stop and start the appwrite instance with docker compose:
+
+```bash
+# stop
+docker-compose down
+
+# start
+docker-compose up
+```
+
+</Steps>
+
+
+#### Appwrite Cloud
+
+<Steps>
+
+##### Create a Cloud Account
+
+Got to the [Appwrite Console](https://cloud.appwrite.io/console/login), create an account and login.
+
+#### Create a Project
+
+At the [console](https://cloud.appwrite.io/console/) click the `+ Create Project` button to create a new project. Remember the `project-id` which will be used later.
+
+</Steps>
+
+
+</Tabs>
+
 ### Create an Appwrite Database and Collection
 
 After creating an Appwrite project you have to create an Appwrite Database and a collection, you can either do this in code with the [node-appwrite SDK](https://appwrite.io/docs/products/databases/databases) or in the [Appwrite Console](https://cloud.appwrite.io/console/) as shown in this video:
@@ -182,10 +242,10 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
 </Steps>
 
-## Limitations of the Appwrite Server
+## Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
-- The Appwrite replication only works on browsers because the Appwrite SDK does not support subscriptions in Node.js.
+- The Appwrite replication **only works on browsers**. This is because the Appwrite SDK does not support subscriptions in Node.js.
 - Appwrite does not allow for bulk write operations so on push one HTTP request will be made per document. Reads run in bulk so this is mostly not a problem.
-- Appwrite does not allow for transactions or "update-if" calls which can lead to overwriting documents instead of properly handling [conflicts](./transactions-conflicts-revisions.md#conflicts) when multiple clients edit the same document in parallel.
-- It is not possible to define nested attributes in an Appwrite collection so you should also not have them in the corresponding RxDB [collection](./rx-collection.md).
+- Appwrite does not allow for transactions or "update-if" calls which can lead to overwriting documents instead of properly handling [conflicts](./transactions-conflicts-revisions.md#conflicts) when multiple clients edit the same document in parallel. This is not a problem for inserts because "insert-if-not" calls are made.
+- Nested attributes in Appwrite collections are only possible via experimental [relationship attributes](https://appwrite.io/docs/products/databases/relationships), and compatibility with RxDB is not tested. Users opting to use these experimental relationship attributes with RxDB do so at their own risk.

@@ -823,6 +823,7 @@ jobs:
           npm install
           npm test
 
+  # TODO this fails randomly because it will not always know about the project after running the import
   # appwrite:
   #   runs-on: ubuntu-22.04
   #   timeout-minutes: 60
@@ -859,7 +860,35 @@ jobs:
   #         npm install
   #         npm run build
 
+  #     - name: compose up
+  #       working-directory: config/appwrite
+  #       run: |
+  #         docker compose up -d 
+  #         echo "Waiting for containers to become healthy..."
+  #         while [ "$(docker compose ps --format json | grep -c 'running')" -lt "$(docker compose ps -q | wc -l)" ]; do sleep 5; done
+  #         echo "Containers are now running."
+  #         docker ps -a
 
+  #     - name: Restore Backup
+  #       working-directory: config/appwrite
+  #       run: |
+  #         bash restore.bash
+  #         sleep 20
+
+  #     - name: restart cotainers
+  #       working-directory: config/appwrite
+  #       run: |
+  #         docker compose down
+  #         docker compose up -d
+  #         echo "Waiting for containers to become healthy..."
+  #         while [ "$(docker compose ps --format json | grep -c 'running')" -lt "$(docker compose ps -q | wc -l)" ]; do sleep 5; done
+  #         echo "Containers are now running."
+  #         docker ps -a
+
+  #     - name: Run Appwrite Tests
+  #       uses: coactions/setup-xvfb@v1
+  #       with:
+  #         run: npm run test:replication-appwrite
 
   test-others:
     runs-on: ubuntu-22.04
