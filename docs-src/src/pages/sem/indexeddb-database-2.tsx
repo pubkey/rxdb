@@ -1,14 +1,14 @@
-import { SOCIAL_PROOF_VALUES, Trophy } from '@site/src/components/trophy';
+// import { SOCIAL_PROOF_VALUES, Trophy } from '@site/src/components/trophy';
 import Home from '..';
-import { triggerTrackingEvent } from '@site/src/components/trigger-event';
+// import { triggerTrackingEvent } from '@site/src/components/trigger-event';
 import { ABTestContent } from '@site/src/components/a-b-tests';
 
 
-const styles = {
-    table: {
-        borderCollapse: 'collapse'
-    }
-} as any;
+// const styles = {
+//     table: {
+//         borderCollapse: 'collapse'
+//     }
+// } as any;
 
 export default function Page() {
     return Home({
