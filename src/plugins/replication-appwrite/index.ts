@@ -185,6 +185,12 @@ export function replicateAppwrite<RxDocType>(
                         }
                     } else {
                         // UPDATE
+                        /**
+                         * TODO appwrite does not have a update-if-equals-X method,
+                         * so we pre-fetch the documents and compare them locally.
+                         * This might cause problems when multiple users update the
+                         * same documents very fast.
+                         */
                         const docInDb: RxDocType = getFromMapOrThrow(updateDocsInDbById, docId);
                         if (
                             !writeRow.assumedMasterState ||
