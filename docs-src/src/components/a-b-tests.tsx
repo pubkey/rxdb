@@ -6,12 +6,13 @@ import { HeroSection_B } from './hero-section/T4_hero_b';
 // import { HeroSection_D } from './hero-section/T4_hero_d';
 
 const CURRENT_TEST_RUN = {
-    id: 'TX', // test hero page content type
+    id: 'T5', // test hero page content type
     variations: {
-        // A: HeroSection_A,
-        B: HeroSection_B,
-        // C: HeroSection_C,
-        // D: HeroSection_D
+        A: <>RxDB: Blazing-Fast <b className="underline">Browser Storage</b></>,
+        B: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in IndexedDB</>,
+        C: <>RxDB: The <b className="underline">Realtime</b> Layer for Your IndexedDB Data</>,
+        D: <>Upgrade <b className="underline">IndexedDB</b> with Real-Time Sync: Meet RxDB</>,
+        E: <>Sync, Scale, and Secure Your <b className="underline">IndexedDB</b> Data with RxDB</>
     }
 };
 
@@ -53,13 +54,16 @@ export function getTestGroup(originId: string = 'main'): TestGroup {
     return testGroup;
 }
 
-export function ABTestContent(props: {
-    sem?: SemPage;
-    scrollToSection: ScrollToSection;
-}) {
+export function ABTestContent(
+    // props: {
+    //     sem?: SemPage;
+    //     scrollToSection: ScrollToSection;
+    // }
+) {
     const variationId = getTestGroup().variation;
     const VariationElement = CURRENT_TEST_RUN.variations[variationId];
-    return <VariationElement sem={props.sem} scrollToSection={props.scrollToSection} />;
+    // return <VariationElement sem={props.sem} scrollToSection={props.scrollToSection} />;
+    return VariationElement;
 }
 
 
