@@ -242,7 +242,7 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
 </Steps>
 
-## Limitations of the Appwrite Server
+## Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
 - The Appwrite replication **only works on browsers**. This is because the Appwrite SDK does not support subscriptions in Node.js.
