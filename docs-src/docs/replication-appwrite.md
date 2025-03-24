@@ -204,12 +204,29 @@ const collection = db.humans;
 
 ### Configure the Appwrite Client
 
+<Tabs>
+
+#### Appwrite Cloud
+
 ```ts
 const client = new Client();
 client.setEndpoint('https://cloud.appwrite.io/v1');
 client.setEndpointRealtime('https://cloud.appwrite.io/v1');
 client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```
+
+#### Self-Hosted
+
+```ts
+const client = new Client();
+client.setEndpoint('http://localhost/v1');
+client.setEndpointRealtime('http://localhost/v1');
+client.setProject('YOUR_APPWRITE_PROJECT_ID');
+```
+
+
+</Tabs>
+
 
 ### Start the Replication
 
