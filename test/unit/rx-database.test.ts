@@ -212,51 +212,19 @@ describeParallel('rx-database.test.ts', () => {
             });
             it('do not allow 2 databases with same name and storage', async () => {
                 const name = randomToken(10);
-                const storage = config.storage.getStorage();
-
-                let db1: RxDatabase | undefined;
-                let db2: RxDatabase | undefined;
-
-                const db1Promise = createRxDatabase({
+                const db = await createRxDatabase({
                     name,
-                    storage,
-                }).then((db1PromiseValue) => {
-                    db1 = db1PromiseValue;
-                    assert.ok(db2 === undefined);
-
-                    setTimeout(() => {
-                        db1PromiseValue.close();
-                    }, 500);
-
-                    return db1PromiseValue;
+                    storage: config.storage.getStorage()
                 });
-                const db2Promise = createRxDatabase({
-                    name,
-                    storage,
-                }).then((db2PromiseValue) => {
-                    db2 = db2PromiseValue;
-                    assert.ok(db1?.closed);
-
-                    return db2PromiseValue;
-                });
-
-
-                const resolvedDb1 = await db1Promise;
-                const resolvedDb2 = await db2Promise;
-
-                assert.ok(resolvedDb1.closed);
-                assert.ok(!resolvedDb2.closed);
-
-                resolvedDb2.close();
-
-                const db3 = await createRxDatabase({
-                    name,
-                    storage,
-                });
-
-                assert.ok(!db3.closed);
-
-                db3.close();
+                await AsyncTestUtil.assertThrows(
+                    () => createRxDatabase({
+                        name,
+                        storage: config.storage.getStorage()
+                    }),
+                    'RxError',
+                    'ignoreDuplicate'
+                );
+                db.close();
             });
         });
     });
