@@ -878,6 +878,10 @@ jobs:
         run: |
           docker compose down
           docker compose up -d
+          echo "Waiting for containers to become healthy..."
+          while [ "$(docker compose ps --format json | grep -c 'running')" -lt "$(docker compose ps -q | wc -l)" ]; do sleep 5; done
+          echo "Containers are now running."
+          docker ps -a
 
       - name: Run Appwrite Tests
         uses: coactions/setup-xvfb@v1
