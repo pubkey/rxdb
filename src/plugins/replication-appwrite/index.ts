@@ -23,9 +23,10 @@ import {
     Models
 } from 'appwrite';
 import { lastOfArray } from '../utils/utils-array.ts';
-import { appwriteDocToRxDB } from './appwrite-helpers.ts';
+import { appwriteDocToRxDB, rxdbDocToAppwrite } from './appwrite-helpers.ts';
 import { flatClone } from '../utils/utils-object.ts';
 import { Subject } from 'rxjs';
+import { getFromMapOrThrow } from '../utils/index.ts';
 
 export class RxAppwriteReplicationState<RxDocType> extends RxReplicationState<RxDocType, AppwriteCheckpointType> {
     constructor(
@@ -119,64 +120,88 @@ export function replicateAppwrite<RxDocType>(
             rows: RxReplicationWriteToMasterRow<RxDocType>[]
         ) {
             let query: string;
-            if (rows.length > 1) {
-                query = Query.or(
-                    rows.map(row => {
-                        const id: string = (row.newDocumentState as any)[primaryKey];
-                        return Query.equal('$id', id);
-                    })
+
+            // inserts will conflict on write
+            const nonInsertRows = rows.filter(row => row.assumedMasterState);
+            const updateDocsInDbById = new Map<string, RxDocType>();
+            if (nonInsertRows.length > 0) {
+                if (nonInsertRows.length > 1) {
+                    query = Query.or(
+                        nonInsertRows.map(row => {
+                            const id: string = (row.newDocumentState as any)[primaryKey];
+                            return Query.equal('$id', id);
+                        })
+                    );
+                } else {
+                    const id: string = (nonInsertRows[0].newDocumentState as any)[primaryKey];
+                    query = Query.equal('$id', id);
+                }
+                const updateDocsOnServer = await databases.listDocuments(
+                    options.databaseId,
+                    options.collectionId,
+                    [query]
                 );
-            } else {
-                const id: string = (rows[0].newDocumentState as any)[primaryKey];
-                query = Query.equal('$id', id);
+                updateDocsOnServer.documents.forEach(doc => {
+                    const docDataInDb = appwriteDocToRxDB<RxDocType>(doc, primaryKey, options.deletedField);
+                    const docId: string = doc.$id;
+                    (docDataInDb as any)[primaryKey] = docId;
+                    updateDocsInDbById.set(docId, docDataInDb);
+                });
             }
-            const docsOnServer = await databases.listDocuments(
-                options.databaseId,
-                options.collectionId,
-                [query]
-            );
-            const docsInDbById: ById<RxDocType> = {};
-            docsOnServer.documents.forEach(doc => {
-                const docDataInDb = appwriteDocToRxDB<RxDocType>(doc, primaryKey, options.deletedField);
-                const docId: string = doc.$id;
-                (docDataInDb as any)[primaryKey] = docId;
-                docsInDbById[docId] = docDataInDb;
-            });
+
             const conflicts: WithDeleted<RxDocType>[] = [];
             await Promise.all(
                 rows.map(async (writeRow) => {
                     const docId = (writeRow.newDocumentState as any)[primaryKey];
-                    const docInDb: RxDocType | undefined = docsInDbById[docId];
-                    if (
-                        docInDb &&
-                        (
+
+                    if (!writeRow.assumedMasterState) {
+                        // INSERT
+                        const insertDoc = rxdbDocToAppwrite<RxDocType>(
+                            writeRow.newDocumentState,
+                            primaryKey,
+                            options.deletedField
+                        );
+                        try {
+                            await databases.createDocument(
+                                options.databaseId,
+                                options.collectionId,
+                                docId,
+                                insertDoc,
+                                // ["read("any")"] // permissions (optional)
+                            );
+                        } catch (err: any) {
+                            if (err.code == 409 && err.name === 'AppwriteException') {
+                                // document already exists -> conflict
+                                const docOnServer = await databases.getDocument(
+                                    options.databaseId,
+                                    options.collectionId,
+                                    docId
+                                );
+                                const docOnServerData = appwriteDocToRxDB<RxDocType>(docOnServer, primaryKey, options.deletedField);
+                                conflicts.push(docOnServerData);
+                            } else {
+                                throw err;
+                            }
+                        }
+                    } else {
+                        // UPDATE
+                        const docInDb: RxDocType = getFromMapOrThrow(updateDocsInDbById, docId);
+                        if (
                             !writeRow.assumedMasterState ||
                             collection.conflictHandler.isEqual(docInDb as any, writeRow.assumedMasterState, 'replication-appwrite-push') === false
-                        )
-                    ) {
-                        // conflict
-                        conflicts.push(docInDb as any);
-                    } else {
-                        // no conflict
-                        const writeDoc: any = flatClone(writeRow.newDocumentState);
-                        delete writeDoc[primaryKey];
-                        writeDoc[options.deletedField] = writeDoc._deleted;
-                        if (options.deletedField !== '_deleted') {
-                            delete writeDoc._deleted;
-                        }
-
-                        let result: Models.Document;
-                        if (!docInDb) {
-                            result = await databases.createDocument(
-                                options.databaseId,
-                                options.collectionId,
-                                docId,
-                                writeDoc,
-                                // ["read("any")"] // permissions (optional)
-                            );
-
+                        ) {
+                            // conflict
+                            conflicts.push(docInDb as any);
                         } else {
-                            result = await databases.updateDocument(
+                            // no conflict
+                            const writeDoc: any = flatClone(writeRow.newDocumentState);
+                            delete writeDoc[primaryKey];
+                            writeDoc[options.deletedField] = writeDoc._deleted;
+                            if (options.deletedField !== '_deleted') {
+                                delete writeDoc._deleted;
+                            }
+
+                            await databases.updateDocument(
                                 options.databaseId,
                                 options.collectionId,
                                 docId,
@@ -184,6 +209,7 @@ export function replicateAppwrite<RxDocType>(
                                 // ["read("any")"] // permissions (optional)
                             );
                         }
+
                     }
                 })
             );

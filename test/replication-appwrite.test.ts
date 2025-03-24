@@ -253,6 +253,7 @@ describe('replication-appwrite.test.ts', function () {
             collection.database.close();
         });
         it('two collections', async () => {
+            await cleanUpServer();
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
             await collectionA.insert(schemaObjects.humanData('1a-' + getRandomAppwriteDocId()));
             const collectionB = await humansCollection.createPrimary(0, undefined, false);
@@ -316,7 +317,35 @@ describe('replication-appwrite.test.ts', function () {
         });
     });
     describe('conflict handling', () => {
-        it('should keep the master state as default conflict handler', async () => {
+        it('INSERT: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+
+            // insert and sync
+            const c1 = await humansCollection.create(0);
+            const conflictDocId = '1-insert-conflict-' + getRandomAppwriteDocId();
+            await c1.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-first'));
+            await syncCollectionOnce(c1);
+
+
+            // insert same doc-id on other side
+            const c2 = await humansCollection.create(0);
+            await c2.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-conflict'));
+            await syncCollectionOnce(c2);
+
+            /**
+             * Must have kept the first-insert state
+             */
+            const serverState = await getServerState();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(serverState[0].firstName, 'insert-first');
+            assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
+            assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
+
+            c1.database.close();
+            c2.database.close();
+        });
+        it('UPDATE: should keep the master state as default conflict handler', async () => {
             await cleanUpServer();
             const c1 = await humansCollection.create(0);
             await c1.insert(schemaObjects.humanData('1-conflict-' + getRandomAppwriteDocId()));

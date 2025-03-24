@@ -1,4 +1,5 @@
-import type { WithDeleted } from '../../types';
+import type { RxDocumentData, WithDeleted, WithDeletedAndAttachments } from '../../types';
+import { flatClone } from '../utils/index.ts';
 
 export function appwriteDocToRxDB<RxDocType>(
     appwriteDoc: any,
@@ -18,4 +19,20 @@ export function appwriteDocToRxDB<RxDocType>(
         delete useDoc[deletedField];
     }
     return useDoc;
+}
+
+
+export function rxdbDocToAppwrite<RxDocType>(
+    rxdbDoc: WithDeletedAndAttachments<RxDocType>,
+    primaryKey: string,
+    deletedField: string
+) {
+    const writeDoc: any = flatClone(rxdbDoc);
+    delete (writeDoc as WithDeletedAndAttachments<RxDocType>)._attachments;
+    delete writeDoc[primaryKey];
+    writeDoc[deletedField] = writeDoc._deleted;
+    if (deletedField !== '_deleted') {
+        delete writeDoc._deleted;
+    }
+    return writeDoc;
 }
