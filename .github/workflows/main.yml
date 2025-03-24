@@ -872,6 +872,7 @@ jobs:
         working-directory: config/appwrite
         run: |
           bash restore.bash
+          sleep 20
 
       - name: restart cotainers
         working-directory: config/appwrite
