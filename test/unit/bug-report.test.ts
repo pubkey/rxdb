@@ -9,16 +9,18 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
+    addRxPlugin,
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
 
@@ -37,6 +39,9 @@ describe('bug-report.test.js', () => {
             return;
         }
 
+        // add the migration-plugin
+        addRxPlugin(RxDBMigrationSchemaPlugin);
+
         // create a schema
         const mySchema = {
             version: 0,
@@ -51,6 +56,27 @@ describe('bug-report.test.js', () => {
                     type: 'string'
                 },
                 lastName: {
+                    type: 'string'
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150
+                }
+            }
+        };
+
+        // create a schema to migrate to
+        const mySchema2 = {
+            version: 1,
+            primaryKey: 'passportId',
+            type: 'object',
+            properties: {
+                passportId: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                fullName: {
                     type: 'string'
                 },
                 age: {
@@ -85,6 +111,38 @@ describe('bug-report.test.js', () => {
             }
         });
 
+        // create a replication state - this adds a new connected storage
+        const replicationState = replicateRxCollection({
+            collection: collections.mycollection,
+            replicationIdentifier: 'replication-1',
+            push: { handler: () => {
+                return Promise.resolve([]);
+            } },
+            pull: { handler: () => {
+                return Promise.resolve({checkpoint: null, documents: []});
+            }
+            }
+        });
+
+        // create another replication state - this adds an additional connected storage
+        const replicationState2 = replicateRxCollection({
+            collection: collections.mycollection,
+            replicationIdentifier: 'replication-2',
+            push: { handler: () => {
+                return Promise.resolve([]);
+            } },
+            pull: { handler: () => {
+                return Promise.resolve({checkpoint: null, documents: []});
+            }
+            }
+        });
+
+        // wait until initial replication is done
+        await Promise.all([
+            replicationState.awaitInitialReplication(),
+            replicationState2.awaitInitialReplication()
+        ]);
+
         // insert a document
         await collections.mycollection.insert({
             passportId: 'foobar',
@@ -93,49 +151,33 @@ describe('bug-report.test.js', () => {
             age: 56
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
+        // create a database
+        const db2 = await createRxDatabase({
             name,
+            /**
+             * By calling config.storage.getStorage(),
+             * we can ensure that all variations of RxStorage are tested in the CI.
+             */
             storage: config.storage.getStorage(),
             eventReduce: true,
             ignoreDuplicate: true
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
+        // create a collection with the new schema
+        const collections2 = await db2.addCollections({
             mycollection: {
-                schema: mySchema
+                schema: mySchema2,
+                migrationStrategies: {
+                    1: (oldDoc: any) => {
+                        oldDoc.fullName = oldDoc.firstName + ' ' + oldDoc.lastName;
+                        delete oldDoc.lastName;
+                        delete oldDoc.firstName;
+                        return oldDoc;
+                    }
+                }
             }
         });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+        const docs = await collections2.mycollection.find().exec();
+        assert.strictEqual(docs.length, 1);
+        await db2.close();
     });
 });
