@@ -429,6 +429,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
+                console.log('xxxxxxxxxxxxxxxxxxxxxxx 0');
+
                 // make an insert
                 const insertData = {
                     key: 'foobar',
@@ -448,6 +450,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.deepStrictEqual(insertResponse.error, []);
 
+                console.log('xxxxxxxxxxxxxxxxxxxxxxx 1');
 
                 // make an update
                 const updateData = flatCloneDocWithMeta(insertData);
@@ -462,6 +465,8 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, []);
+
+                console.log('xxxxxxxxxxxxxxxxxxxxxxx 2');
 
                 // make the delete
                 const deleteData = flatCloneDocWithMeta(updateData);
@@ -3133,7 +3138,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                         _attachments: {}
                     }
                 }], testContext);
-                assert.deepStrictEqual(deleteResult.error, []);
+                assert.deepStrictEqual(deleteResult.error, [], 'must not have errors');
 
                 /**
                  * Running .cleanup() with a height minimumDeletedTime
@@ -3155,7 +3160,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     [id],
                     true
                 );
-                assert.deepStrictEqual(mustNotBeThere, []);
+                assert.deepStrictEqual(mustNotBeThere, [], 'must have no documents found because they are cleaned up');
 
                 /**
                  * Other docs must still be there

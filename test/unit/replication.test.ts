@@ -859,7 +859,7 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInitialReplication();
 
             const remoteDocs = await remoteCollection.find().exec();
-            assert.deepEqual(remoteDocs.length, 0);
+            assert.deepEqual(remoteDocs.length, 0, 'must not have remote docs');
 
             localCollection.database.close();
             remoteCollection.database.close();

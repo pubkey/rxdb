@@ -183,6 +183,12 @@
       "import": "./dist/esm/plugins/storage-denokv/index.js",
       "default": "./dist/esm/plugins/storage-denokv/index.js"
     },
+    "./plugins/storage-localstorage": {
+      "types": "./dist/types/plugins/storage-localstorage/index.d.ts",
+      "require": "./dist/cjs/plugins/storage-localstorage/index.js",
+      "import": "./dist/esm/plugins/storage-localstorage/index.js",
+      "default": "./dist/esm/plugins/storage-localstorage/index.js"
+    },
     "./plugins/migration-schema": {
       "types": "./dist/types/plugins/migration-schema/index.d.ts",
       "require": "./dist/cjs/plugins/migration-schema/index.js",
@@ -367,6 +373,7 @@
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:memory-random-delay": "npm run transpile && cross-env DEFAULT_STORAGE=memory-random-delay mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:sqlite-trial": "npm run transpile && cross-env DEFAULT_STORAGE=sqlite-trial mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:localstorage": "npm run transpile && cross-env DEFAULT_STORAGE=localstorage mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 60000",
     "test:bun:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 60000",
@@ -388,6 +395,7 @@
     "test:node:loop:memory-random-delay": "npm run test:node:memory-random-delay && npm run test:node:loop:memory-random-delay",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:localstorage": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=localstorage  karma start ./config/karma.conf.cjs --single-run",
     "test:browser:memory:loop": "npm run test:browser:memory && npm run test:browser:memory:loop",
     "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.cjs --single-run",
     "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.cjs --single-run",

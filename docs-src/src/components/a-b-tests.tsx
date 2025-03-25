@@ -41,8 +41,6 @@ export function getTestGroup(originId: string = 'main'): TestGroup {
     const groupFromStorage = localStorage.getItem(TEST_GROUP_STORAGE_ID);
     if (groupFromStorage) {
         testGroup = JSON.parse(groupFromStorage);
-        console.log('currentTestGroup:');
-        console.dir(testGroup);
     } else {
         testGroup = {
             variation: randomOfArray(Object.keys(CURRENT_TEST_RUN.variations)),
@@ -51,6 +49,8 @@ export function getTestGroup(originId: string = 'main'): TestGroup {
         };
         localStorage.setItem(TEST_GROUP_STORAGE_ID, JSON.stringify(testGroup));
     }
+    console.log('currentTestGroup:');
+    console.dir(testGroup);
     return testGroup;
 }
 
