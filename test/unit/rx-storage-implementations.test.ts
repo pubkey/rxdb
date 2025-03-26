@@ -429,8 +429,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     devMode: true
                 });
 
-                console.log('xxxxxxxxxxxxxxxxxxxxxxx 0');
-
                 // make an insert
                 const insertData = {
                     key: 'foobar',
@@ -450,8 +448,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                 );
                 assert.deepStrictEqual(insertResponse.error, []);
 
-                console.log('xxxxxxxxxxxxxxxxxxxxxxx 1');
-
                 // make an update
                 const updateData = flatCloneDocWithMeta(insertData);
                 updateData.value = 'barfoo2';
@@ -465,8 +461,6 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(updateResponse.error, []);
-
-                console.log('xxxxxxxxxxxxxxxxxxxxxxx 2');
 
                 // make the delete
                 const deleteData = flatCloneDocWithMeta(updateData);
@@ -2451,12 +2445,12 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                  * must have emitted all of its resulting events
                  * BEFORE the call to bulkWrite() returns.
                  */
-
-                assert.strictEqual(emitted.length, 1);
+                assert.strictEqual(emitted.length, 1, 'must have emitted exactly once');
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 // should contain the _meta data
                 assert.ok((emitted)[0].events[0].documentData._meta.lwt);
+                assert.ok((emitted)[0].checkpoint, 'must have checkpoint');
 
                 /**
                  * Using the checkpoint from the event must not return any newer documents.

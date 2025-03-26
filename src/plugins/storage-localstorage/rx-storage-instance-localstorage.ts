@@ -67,12 +67,13 @@ export type ChangeStreamStoredData<RxDocType> = {
  * This makes it hard to write unit tests
  * so we redistribute the events here instead.
  */
-const storageEventStream$: Subject<{
+export const storageEventStream$: Subject<{
     fromStorageEvent: boolean;
     key: string;
     newValue: string | null;
     databaseInstanceToken?: string;
 }> = new Subject();
+const storageEventStreamObservable = storageEventStream$.asObservable();
 let storageEventStreamSubscribed = false;
 export function getStorageEventStream() {
     if (!storageEventStreamSubscribed && typeof window !== 'undefined') {
@@ -88,10 +89,10 @@ export function getStorageEventStream() {
             });
         });
     }
-    return storageEventStream$.asObservable();
+    return storageEventStreamObservable;
 }
 
-
+let instanceId = 0;
 export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstance<
     RxDocType,
     LocalstorageStorageInternals,
@@ -114,6 +115,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     public closed?: Promise<void>;
     public readonly localStorage: typeof localStorage;
     public removed: boolean = false;
+    public readonly instanceId = instanceId++;
 
     constructor(
         public readonly storage: RxStorageLocalstorage,
@@ -132,7 +134,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         this.changestreamStorageKey = 'RxDB-ls-changes-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
         this.indexesKey = 'RxDB-ls-idx-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
 
-        this.changeStreamSub = getStorageEventStream().subscribe((ev: any) => {
+        this.changeStreamSub = getStorageEventStream().subscribe((ev) => {
             if (
                 ev.key !== this.changestreamStorageKey ||
                 !ev.newValue ||
@@ -143,6 +145,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             ) {
                 return;
             }
+
             const latestChanges: ChangeStreamStoredData<RxDocType> = JSON.parse(ev.newValue);
             if (
                 ev.fromStorageEvent &&
@@ -150,7 +153,6 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             ) {
                 return;
             }
-
             this.changes$.next(latestChanges.eventBulk);
         });
     }
@@ -282,6 +284,11 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         });
 
         if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+                id: lastState[this.primaryPath],
+                lwt: lastState._meta.lwt
+            };
             const storageItemData: ChangeStreamStoredData<RxDocType> = {
                 databaseInstanceToken: this.databaseInstanceToken,
                 eventBulk: categorized.eventBulk
@@ -291,12 +298,6 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                 this.changestreamStorageKey,
                 itemString
             );
-            storageEventStream$.next({
-                fromStorageEvent: false,
-                key: this.changestreamStorageKey,
-                newValue: itemString,
-                databaseInstanceToken: this.databaseInstanceToken
-            });
         }
         return Promise.resolve(ret);
     }
@@ -489,6 +490,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         this.removed = true;
 
         // delete changes
+        this.changeStreamSub.unsubscribe();
         this.localStorage.removeItem(this.changestreamStorageKey);
 
         // delete documents
@@ -508,6 +510,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
 
     close(): Promise<void> {
+        this.changeStreamSub.unsubscribe();
         this.removed = true;
 
         if (this.closed) {
@@ -515,7 +518,6 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         }
         this.closed = (async () => {
             this.changes$.complete();
-            this.changeStreamSub.unsubscribe();
             this.localStorage.removeItem(this.changestreamStorageKey);
         })();
         return this.closed;

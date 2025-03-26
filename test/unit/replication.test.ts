@@ -842,7 +842,7 @@ describe('replication.test.ts', () => {
             let lastLocalCheckpoint: any;
             localCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
             await localCollection.insert(schemaObjects.humanWithTimestampData());
-
+            assert.ok(lastLocalCheckpoint, 'must have last local checkpoint');
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -855,8 +855,13 @@ describe('replication.test.ts', () => {
                     initialCheckpoint: lastLocalCheckpoint
                 }
             });
+
+
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
+
+            const checkpoint = await getLastCheckpointDoc(ensureNotFalsy(replicationState.internalReplicationState), 'up');
+            assert.ok(checkpoint);
 
             const remoteDocs = await remoteCollection.find().exec();
             assert.deepEqual(remoteDocs.length, 0, 'must not have remote docs');

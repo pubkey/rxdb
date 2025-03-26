@@ -1,12 +1,19 @@
+import { storageEventStream$ } from './rx-storage-instance-localstorage.ts';
+
 /**
  * This mocks the localstorage API
  * so we can run tests in node.js
  */
+let storage: any = {};
 export function getLocalStorageMock(): typeof localStorage {
-    let storage: any = {};
     return {
         setItem: function (key: string, value: string) {
             storage[key] = value || '';
+            storageEventStream$.next({
+                fromStorageEvent: false,
+                key,
+                newValue: value
+            });
         },
         getItem: function (key: string) {
             return key in storage ? storage[key] : null;
