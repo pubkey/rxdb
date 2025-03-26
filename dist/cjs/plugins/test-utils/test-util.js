@@ -14,7 +14,7 @@ function testMultipleTimes(times, title, test) {
     it(title, test);
   });
 }
-async function ensureCollectionsHaveEqualState(c1, c2) {
+async function ensureCollectionsHaveEqualState(c1, c2, logContext) {
   await (0, _index.requestIdlePromise)();
   var getJson = async collection => {
     var docs = await collection.find().exec();
@@ -25,7 +25,7 @@ async function ensureCollectionsHaveEqualState(c1, c2) {
   try {
     _assert.default.deepStrictEqual(json1, json2);
   } catch (err) {
-    console.error('ensureCollectionsHaveEqualState() states not equal (c1:' + c1.name + ', c2:' + c2.name + '):');
+    console.error('ensureCollectionsHaveEqualState(' + logContext + ') states not equal (c1:' + c1.name + ', c2:' + c2.name + '):');
     console.dir({
       c1: json1,
       c2: json2

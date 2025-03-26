@@ -32,7 +32,7 @@ import {
     Databases,
     Query
 } from 'appwrite';
-import { randomString, waitUntil } from 'async-test-util';
+import { randomString, wait, waitUntil } from 'async-test-util';
 
 /**
  * The tests for the firestore replication plugin
@@ -164,7 +164,6 @@ describe('replication-appwrite.test.ts', function () {
                     console.log('docs: ' + docs.total);
                     return true;
                 } catch (err) {
-
                     console.log('collection not exists ' + databaseId + ' ' + collectionId + ' ERROR:');
                     console.dir(err);
                     return false;
@@ -254,6 +253,7 @@ describe('replication-appwrite.test.ts', function () {
             collection.database.close();
         });
         it('two collections', async () => {
+            await cleanUpServer();
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
             await collectionA.insert(schemaObjects.humanData('1a-' + getRandomAppwriteDocId()));
             const collectionB = await humansCollection.createPrimary(0, undefined, false);
@@ -268,22 +268,25 @@ describe('replication-appwrite.test.ts', function () {
             ensureReplicationHasNoErrors(replicationStateB);
             await replicationStateB.awaitInitialReplication();
 
+            await wait(300);
             await replicationStateA.awaitInSync();
 
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
             // insert one
             await collectionA.insert(schemaObjects.humanData('insert-a'));
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
 
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
 
             // insert many
             await collectionA.bulkInsert(
@@ -294,7 +297,8 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateA.awaitInSync();
 
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await wait(100);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
 
             // insert at both collections at the same time
             await Promise.all([
@@ -305,14 +309,43 @@ describe('replication-appwrite.test.ts', function () {
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
 
             collectionA.database.close();
             collectionB.database.close();
         });
     });
     describe('conflict handling', () => {
-        it('should keep the master state as default conflict handler', async () => {
+        it('INSERT: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+
+            // insert and sync
+            const c1 = await humansCollection.create(0);
+            const conflictDocId = '1-insert-conflict-' + getRandomAppwriteDocId();
+            await c1.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-first'));
+            await syncCollectionOnce(c1);
+
+
+            // insert same doc-id on other side
+            const c2 = await humansCollection.create(0);
+            await c2.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-conflict'));
+            await syncCollectionOnce(c2);
+
+            /**
+             * Must have kept the first-insert state
+             */
+            const serverState = await getServerState();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(serverState[0].firstName, 'insert-first');
+            assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
+            assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
+
+            c1.database.close();
+            c2.database.close();
+        });
+        it('UPDATE: should keep the master state as default conflict handler', async () => {
             await cleanUpServer();
             const c1 = await humansCollection.create(0);
             await c1.insert(schemaObjects.humanData('1-conflict-' + getRandomAppwriteDocId()));

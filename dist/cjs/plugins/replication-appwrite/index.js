@@ -15,6 +15,7 @@ var _utilsArray = require("../utils/utils-array.js");
 var _appwriteHelpers = require("./appwrite-helpers.js");
 var _utilsObject = require("../utils/utils-object.js");
 var _rxjs = require("rxjs");
+var _index3 = require("../utils/index.js");
 var RxAppwriteReplicationState = exports.RxAppwriteReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   function RxAppwriteReplicationState(replicationIdentifierHash, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
@@ -71,45 +72,69 @@ function replicateAppwrite(options) {
   var replicationPrimitivesPush = options.push ? {
     async handler(rows) {
       var query;
-      if (rows.length > 1) {
-        query = _appwrite.Query.or(rows.map(row => {
-          var id = row.newDocumentState[primaryKey];
-          return _appwrite.Query.equal('$id', id);
-        }));
-      } else {
-        var id = rows[0].newDocumentState[primaryKey];
-        query = _appwrite.Query.equal('$id', id);
+
+      // inserts will conflict on write
+      var nonInsertRows = rows.filter(row => row.assumedMasterState);
+      var updateDocsInDbById = new Map();
+      if (nonInsertRows.length > 0) {
+        if (nonInsertRows.length > 1) {
+          query = _appwrite.Query.or(nonInsertRows.map(row => {
+            var id = row.newDocumentState[primaryKey];
+            return _appwrite.Query.equal('$id', id);
+          }));
+        } else {
+          var id = nonInsertRows[0].newDocumentState[primaryKey];
+          query = _appwrite.Query.equal('$id', id);
+        }
+        var updateDocsOnServer = await databases.listDocuments(options.databaseId, options.collectionId, [query]);
+        updateDocsOnServer.documents.forEach(doc => {
+          var docDataInDb = (0, _appwriteHelpers.appwriteDocToRxDB)(doc, primaryKey, options.deletedField);
+          var docId = doc.$id;
+          docDataInDb[primaryKey] = docId;
+          updateDocsInDbById.set(docId, docDataInDb);
+        });
       }
-      var docsOnServer = await databases.listDocuments(options.databaseId, options.collectionId, [query]);
-      var docsInDbById = {};
-      docsOnServer.documents.forEach(doc => {
-        var docDataInDb = (0, _appwriteHelpers.appwriteDocToRxDB)(doc, primaryKey, options.deletedField);
-        var docId = doc.$id;
-        docDataInDb[primaryKey] = docId;
-        docsInDbById[docId] = docDataInDb;
-      });
       var conflicts = [];
       await Promise.all(rows.map(async writeRow => {
         var docId = writeRow.newDocumentState[primaryKey];
-        var docInDb = docsInDbById[docId];
-        if (docInDb && (!writeRow.assumedMasterState || collection.conflictHandler.isEqual(docInDb, writeRow.assumedMasterState, 'replication-appwrite-push') === false)) {
-          // conflict
-          conflicts.push(docInDb);
-        } else {
-          // no conflict
-          var writeDoc = (0, _utilsObject.flatClone)(writeRow.newDocumentState);
-          delete writeDoc[primaryKey];
-          writeDoc[options.deletedField] = writeDoc._deleted;
-          if (options.deletedField !== '_deleted') {
-            delete writeDoc._deleted;
-          }
-          var result;
-          if (!docInDb) {
-            result = await databases.createDocument(options.databaseId, options.collectionId, docId, writeDoc
+        if (!writeRow.assumedMasterState) {
+          // INSERT
+          var insertDoc = (0, _appwriteHelpers.rxdbDocToAppwrite)(writeRow.newDocumentState, primaryKey, options.deletedField);
+          try {
+            await databases.createDocument(options.databaseId, options.collectionId, docId, insertDoc
             // ["read("any")"] // permissions (optional)
             );
+          } catch (err) {
+            if (err.code == 409 && err.name === 'AppwriteException') {
+              // document already exists -> conflict
+              var docOnServer = await databases.getDocument(options.databaseId, options.collectionId, docId);
+              var docOnServerData = (0, _appwriteHelpers.appwriteDocToRxDB)(docOnServer, primaryKey, options.deletedField);
+              conflicts.push(docOnServerData);
+            } else {
+              throw err;
+            }
+          }
+        } else {
+          // UPDATE
+          /**
+           * TODO appwrite does not have a update-if-equals-X method,
+           * so we pre-fetch the documents and compare them locally.
+           * This might cause problems when multiple users update the
+           * same documents very fast.
+           */
+          var docInDb = (0, _index3.getFromMapOrThrow)(updateDocsInDbById, docId);
+          if (!writeRow.assumedMasterState || collection.conflictHandler.isEqual(docInDb, writeRow.assumedMasterState, 'replication-appwrite-push') === false) {
+            // conflict
+            conflicts.push(docInDb);
           } else {
-            result = await databases.updateDocument(options.databaseId, options.collectionId, docId, writeDoc
+            // no conflict
+            var writeDoc = (0, _utilsObject.flatClone)(writeRow.newDocumentState);
+            delete writeDoc[primaryKey];
+            writeDoc[options.deletedField] = writeDoc._deleted;
+            if (options.deletedField !== '_deleted') {
+              delete writeDoc._deleted;
+            }
+            await databases.updateDocument(options.databaseId, options.collectionId, docId, writeDoc
             // ["read("any")"] // permissions (optional)
             );
           }
