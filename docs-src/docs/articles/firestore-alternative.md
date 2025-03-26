@@ -77,13 +77,13 @@ Code Example: Sync RxDB with a Custom Backend
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 async function initDB() {
   const db = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     multiInstance: true,
     eventReduce: true
   });
@@ -148,11 +148,11 @@ npm install rxdb rxjs
 ### Create a Database:
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
   name: 'mydb',
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 ```
 

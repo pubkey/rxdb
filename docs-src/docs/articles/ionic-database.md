@@ -100,7 +100,7 @@ RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatib
 ### Different RxStorage Layers for RxDB
 RxDB doesn't limit you to a single storage solution. Instead, it provides a range of RxStorage layers to accommodate diverse use cases. These storage layers offer flexibility and customization, enabling you to tailor your data management strategy to match your app's requirements. Let's explore some of the available RxStorage options:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): Dexie.js is a popular JavaScript library for indexedDB, and RxDB offers a compatible RxStorage layer. This option leverages indexedDB's capabilities to provide efficient data storage and retrieval.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Based on the browsers [localStorage](./localstorage.md). Easy to set up and fast for small datasets.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Leveraging the native browser storage, IndexedDB RxStorage offers reliable data persistence. This storage option is suitable for a wide range of scenarios and is supported by most modern browsers.
 - [OPFS RxStorage](../rx-storage-opfs.md): Operating within the browser's file system, OPFS RxStorage is a unique choice that can handle larger data volumes efficiently. It's particularly useful for applications that require substantial data storage.
 - [Memory RxStorage](../rx-storage-memory.md): Memory RxStorage is perfect for temporary or cache-like data storage. It keeps data in memory, which can result in rapid data access but doesn't provide long-term persistence.

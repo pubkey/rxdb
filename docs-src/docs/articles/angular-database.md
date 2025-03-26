@@ -120,7 +120,7 @@ Angular provides the async pipe, which is a convenient way to subscribe to obser
 ### Different RxStorage layers for RxDB
 RxDB supports multiple storage layers for persisting data. Some of the available storage options include:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): Dexie.js is a minimalistic IndexedDB wrapper that provides a simple API for working with IndexedDB. RxDB leverages Dexie.js as its default storage layer.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Uses the [LocalStorage API](./localstorage.md) without any third party plugins.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): RxDB directly supports IndexedDB as a storage layer. IndexedDB is a low-level browser database that offers good performance and reliability.
 - [OPFS RxStorage](../rx-storage-opfs.md): The OPFS [RxStorage](../rx-storage.md) for RxDB is built on top of the [File System Access API](https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/) which is available in [all modern browsers](https://caniuse.com/native-filesystem-api). It provides an API to access a sandboxed private file system to persistently store and retrieve data.
 Compared to other persistend storage options in the browser (like [IndexedDB](../rx-storage-indexeddb.md)), the OPFS API has a **way better performance**.

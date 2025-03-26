@@ -77,11 +77,11 @@ import 'zone.js/plugins/zone-patch-rxjs';
 
 ### Create a Database and Collections
 
-RxDB supports multiple storage options. The free and simple approach is using the [Dexie.js-based](../rx-storage-dexie.md) storage. For higher performance, there's a premium plain [IndexedDB storage](../rx-storage-indexeddb.md).
+RxDB supports multiple storage options. The free and simple approach is using the [localstorage-based](../rx-storage-localstorage.md) storage. For higher performance, there's a premium plain [IndexedDB storage](../rx-storage-indexeddb.md).
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // Define your schema
 const heroSchema = {
@@ -109,7 +109,7 @@ export async function initDB() {
   // Create a database
   const db = await createRxDatabase({
     name: 'heroesdb', // the name of the database
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
   });
 
   // Add collections
@@ -210,12 +210,12 @@ Pass this factory when creating your [RxDatabase](../rx-database.md):
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { inject, Injector } from '@angular/core';
 
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: createReactivityFactory(inject(Injector))
 });
 ```

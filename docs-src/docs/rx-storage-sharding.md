@@ -21,7 +21,7 @@ import {
     getRxStorageSharding
 } from 'rxdb-premium/plugins/storage-sharding';
 
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 
 /**
@@ -30,10 +30,10 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const shardedRxStorage = getRxStorageSharding({
 
     /**
-     * Here we use the dexie.js RxStorage,
+     * Here we use the localStorage RxStorage,
      * it is also possible to use any other RxStorage instead.
      */
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 

@@ -15,7 +15,7 @@ While the IndexedDB API itself can be very slow, the IndexedDB storage uses many
 
 ## IndexedDB performance comparison
 
-Here is some performance comparison with other storages. Compared to the non-memory storages like [OPFS](./rx-storage-opfs.md) and [Dexie.js](./rx-storage-dexie.md), it has the smallest build size and fastest write speed. Only OPFS is faster on queries over big datasets. See [performance comparison](./rx-storage-performance.md) page for a comparison with all storages.
+Here is some performance comparison with other storages. Compared to the non-memory storages like [OPFS](./rx-storage-opfs.md) and [WASM SQLite](./rx-storage-sqlite.md). IndexedDB has the smallest build size and fastest write speed. Only OPFS is faster on queries over big datasets. See [performance comparison](./rx-storage-performance.md) page for a comparison with all storages.
 
 <p align="center">
   <img src="./files/rx-storage-performance-browser.png" alt="IndexedDB performance" width="700" />
@@ -52,7 +52,7 @@ const db = await createRxDatabase({
 ## Overwrite/Polyfill the native IndexedDB
 
 Node.js has no IndexedDB API. To still run the IndexedDB `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
-You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageDexie()` function.
+You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageIndexedDB()` function.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -99,6 +99,6 @@ const db = await createRxDatabase({
 
 ## Limitations of the IndexedDB RxStorage
 
-- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased. If you just need a storage that works in the browser and you do not have to care about performance, you can use the [Dexie.js storage](./rx-storage-dexie.md) instead.
+- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased. If you just need a storage that works in the browser and you do not have to care about performance, you can use the [LocalStorage storage](./rx-storage-localstorage.md) instead.
 - The IndexedDB storage requires support for [IndexedDB v2](https://caniuse.com/indexeddb2), it does not work on Internet Explorer. 
 

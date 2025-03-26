@@ -10,7 +10,7 @@ The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) wh
 
 
 :::warning LokiJS was removed in RxDB version 16
-The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [Dexie.js](./rx-storage-dexie.md) or [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Mapped](./rx-storage-memory-mapped.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
+The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Mapped](./rx-storage-memory-mapped.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
 :::
 
 ### Pros
@@ -127,7 +127,7 @@ await localState.databaseState.saveQueue.addWrite();
 
 We want to be transparent with our community, and you'll notice a console message when using the free Loki.js based RxStorage implementation. This message serves to inform you about the availability of faster storage solutions within our [👑 Premium Plugins](/premium/). We understand that this might be a minor inconvenience, and we sincerely apologize for that. However, maintaining and improving RxDB requires substantial resources, and our premium users help us ensure its sustainability. If you find value in RxDB and wish to remove this message, we encourage you to explore our premium storage options, which are optimized for professional use and production environments. Thank you for your understanding and support.
 
-If you already have premium access and want to use the Dexie.js [RxStorage](./rx-storage.md) without the log, you can call the `setPremiumFlag()` function to disable the log.
+If you already have premium access and want to use the LokiJS [RxStorage](./rx-storage.md) without the log, you can call the `setPremiumFlag()` function to disable the log.
 
 ```js
 import { setPremiumFlag } from 'rxdb-premium/plugins/shared';

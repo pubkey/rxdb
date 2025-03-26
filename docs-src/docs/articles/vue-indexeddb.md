@@ -65,20 +65,20 @@ npm install rxdb rxjs --save
 
 RxDB provides two main storage options:
 
-- The free [Dexie.js-based storage](../rx-storage-dexie.md)
+- The free [LocalStorage-based storage](../rx-storage-localstorage.md)
 - The premium plain [IndexedDB-based storage](../rx-storage-indexeddb.md), offering faster [performance](../rx-storage-performance.md)
 
-Below is an example of setting up a simple RxDB database using the Dexie.js-based storage in a Vue app:
+Below is an example of setting up a simple RxDB database using the localstorage-based storage in a Vue app:
 
 ```ts
 // db.ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 export async function initDB() {
   const db = await createRxDatabase({
     name: 'heroesdb',         // the name of the database
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
   });
 
   // Define your schema

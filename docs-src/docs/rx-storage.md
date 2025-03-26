@@ -6,14 +6,14 @@ description: Discover how RxDB's modular RxStorage lets you swap engines and unl
 
 # RxStorage
 
-RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the Dexie.js RxStorage to store data in IndexedDB in a browser based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
+RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
 
 
 ## Quick Recommendations
 
-- In the Browser: Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
+- In the Browser: Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/), otherwise use the [LocalStorage](./rx-storage-localstorage.md) storage.
 - In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts.
-- In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
+- In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
 
 ## Configuration Examples
@@ -88,10 +88,9 @@ const myDatabase = await createRxDatabase({
 
 ## All RxStorage Implementations List
 
-### Dexie.js
+### LocalStorage
 
-The Dexie.js based storage is based on the [Dexie.js](https://github.com/dexie/Dexie.js) IndexedDB wrapper.
-It stores the data inside of a browsers IndexedDB database and has a very small bundle size. **If you are new to RxDB, you should start with the Dexie.js RxStorage**. [Read more](./rx-storage-dexie.md)
+The localstroage based storage stores the data inside of a browsers [localStorage API](./articles/localstorage.md). It is the easiest to set up and has a small bundle size. **If you are new to RxDB, you should start with the LocalStorage RxStorage**. [Read more](./rx-storage-localstorage.md)
 
 
 ### Memory
@@ -100,21 +99,23 @@ A storage that stores the data in as plain data in the memory of the JavaScript 
 
 ### 👑 IndexedDB
 
-The IndexedDB `RxStorage` is based on plain IndexedDB. This has a better performance than the Dexie.js storage, but it is slower compared to the OPFS storage. [Read more](./rx-storage-indexeddb.md)
+The IndexedDB `RxStorage` is based on plain IndexedDB. For most use cases, this has the best performance together with the OPFS storage. [Read more](./rx-storage-indexeddb.md)
 
 ### 👑 OPFS
 
 The OPFS `RxStorage` is based on the File System Access API. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-opfs.md)
 
+### 👑 Filesystem Node
+
+The Filesystem Node storage is best suited when you use RxDB in a Node.js process or with [electron.js](./electron.md). [Read more](./rx-storage-filesystem-node.md)
 
 ### 👑 SQLite
 
 The SQLite storage has great performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
 
-### 👑 Filesystem Node
+### Dexie.js
 
-The Filesystem Node storage is best suited when you use RxDB in a Node.js process or with [electron.js](./electron.md). [Read more](./rx-storage-filesystem-node.md)
-
+The Dexie.js based storage is based on the Dexie.js IndexedDB wrapper library. [Read more](./rx-storage-dexie.md)
 
 ### MongoDB
 

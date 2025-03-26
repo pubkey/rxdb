@@ -76,7 +76,7 @@ const mySchema = {
 ## Store JSON with RxDB in Browser Applications
 RxDB offers versatile storage solutions for browser-based applications:
 
-- **Multiple Storage Plugins**: RxDB supports various storage backends, including [IndexedDB](../rx-storage-indexeddb.md), [Dexie.js](../rx-storage-dexie.md) and [In-Memory](../rx-storage-memory.md), catering to a range of browser environments.
+- **Multiple Storage Plugins**: RxDB supports various storage backends, including [IndexedDB](../rx-storage-indexeddb.md), [localstorage](../rx-storage-localstorage.md) and [In-Memory](../rx-storage-memory.md), catering to a range of browser environments.
 
 - **Observable Queries**: With RxDB, you can create observable [queries](../rx-query.md) that work seamlessly across multiple browser tabs, providing real-time updates and synchronization.
 

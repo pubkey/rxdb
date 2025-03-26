@@ -43,12 +43,12 @@ RxDB introduces the concept of observable queries, which are powerful tools for 
 RxDB offers multi-tab support, allowing applications to function seamlessly across multiple [browser](./browser-database.md) tabs. This feature ensures that data changes in one tab are immediately reflected in all other open tabs, enabling a consistent user experience across different browser windows.
 
 ### RxDB vs. Other data base Options
-When considering data base options for web applications, developers often encounter choices like Dexie.js, IndexedDB, OPFS, and Memory-based solutions. RxDB, while built on top of IndexedDB, stands out due to its reactive data handling capabilities and advanced synchronization features. Compared to other options, RxDB offers a more streamlined and powerful approach to managing data in web applications.
+When considering data base options for web applications, developers often encounter choices like IndexedDB, [OPFS](../rx-storage-opfs.md), and Memory-based solutions. RxDB, while built on top of IndexedDB, stands out due to its reactive data handling capabilities and advanced synchronization features. Compared to other options, RxDB offers a more streamlined and powerful approach to managing data in web applications.
 
 ### Different RxStorage layers for RxDB
 RxDB provides various [storage layers](../rx-storage.md), known as RxStorage, that serve as interfaces to different underlying [storage](./browser-storage.md) technologies. These layers include:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): Built on top of Dexie.js, this storage layer leverages IndexedDB as its backend.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Built on top of the browsers [localStorage API](./localstorage.md).
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): This layer directly utilizes IndexedDB as its backend, providing a robust and widely supported storage option.
 - [OPFS RxStorage](../rx-storage-opfs.md): OPFS (Operational Transformation File System) is a file system-like storage layer that allows for efficient conflict resolution and real-time collaboration.
 - Memory RxStorage: Primarily used for testing and development, this storage layer keeps data in memory without persisting it to disk.

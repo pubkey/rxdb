@@ -86,10 +86,10 @@ addRxPlugin(RxDBcrdtPlugin);
 
 // create a database
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const myDatabase = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 
 // create a schema with the CRDT options

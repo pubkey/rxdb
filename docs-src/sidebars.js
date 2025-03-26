@@ -77,8 +77,8 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'rx-storage-dexie',
-          label: 'Dexie.js'
+          id: 'rx-storage-localstorage',
+          label: 'LocalStorage'
         },
         {
           type: 'doc',
@@ -97,13 +97,18 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'rx-storage-filesystem-node',
+          label: 'Filesystem Node 👑'
+        },
+        {
+          type: 'doc',
           id: 'rx-storage-sqlite',
           label: 'SQLite'
         },
         {
           type: 'doc',
-          id: 'rx-storage-filesystem-node',
-          label: 'Filesystem Node 👑'
+          id: 'rx-storage-dexie',
+          label: 'Dexie.js'
         },
         {
           type: 'doc',

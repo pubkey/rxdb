@@ -27,12 +27,13 @@ npm install rxdb rxjs
 ```
 
 ### Import 
-Import RxDB and the dev-mode plugin, the Dexie-based storage (IndexedDB) and a schema validator:
+
+Import RxDB and the dev-mode plugin, the LocalStorage-based storage and a schema validator:
 
 ```ts
 import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 ```
 
@@ -48,13 +49,13 @@ addRxPlugin(RxDBDevModePlugin);
 
 ### Create a Database
 
-For the database, here we use the [RxDB Dexie Storage](./rx-storage-dexie.md) that stores data inside of IndexedDB in a browser. For other JavaScript runtimes, you would not use the dexie storage but one of the other [RxDB Storages](./rx-storage.md).
+For the database, here we use the [RxDB LocalStorage Storage](./rx-storage-localstorage.md) that stores data inside of the browsers [localStorage API](./articles/localstorage.md). For other JavaScript runtimes, you would not use the localstorage RxStorage but one of the other [RxDB Storages](./rx-storage.md).
 
 ```ts
 const myDatabase = await createRxDatabase({
   name: 'mydatabase',
   storage: wrappedValidateAjvStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
   })
 });
 ```
