@@ -90,6 +90,7 @@ import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
  * so we can throw when the same database is created more then once.
  */
 const USED_DATABASE_NAMES: Set<string> = new Set();
+const DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP = new Map<string, Set<Promise<RxDatabase>>>();
 
 let DB_COUNT = 0;
 
@@ -130,7 +131,8 @@ export class RxDatabaseBase<
         public readonly hashFunction: HashFunction,
         public readonly cleanupPolicy?: Partial<RxCleanupPolicy>,
         public readonly allowSlowCount?: boolean,
-        public readonly reactivity?: RxReactivityFactory<any>
+        public readonly reactivity?: RxReactivityFactory<any>,
+        public readonly onClosed?: () => void,
     ) {
         DB_COUNT++;
 
@@ -209,6 +211,8 @@ export class RxDatabaseBase<
      * the events which decreases performance.
      */
     public readonly eventBulks$: Subject<RxChangeEventBulk<any>> = new Subject();
+
+    private closePromise: Promise<boolean> | null = null;
 
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
@@ -468,50 +472,60 @@ export class RxDatabaseBase<
     /**
      * closes the database-instance and all collections
      */
-    public async close(): Promise<boolean> {
-        if (this.closed) {
-            return PROMISE_RESOLVE_FALSE;
+    public close(): Promise<boolean> {
+        if (this.closePromise) {
+            return this.closePromise;
         }
 
-        // settings closed = true must be the first thing to do.
-        this.closed = true;
+        const { promise, resolve } = createPromiseWithResolvers<boolean>();
+        const resolveClosePromise = (result: boolean) => {
+            if (this.onClosed) {
+                this.onClosed();
+            }
+            this.closed = true;
+            resolve(result);
+        };
+        this.closePromise = promise;
 
-        await runAsyncPluginHooks('preCloseRxDatabase', this);
-        /**
-         * Complete the event stream
-         * to stop all subscribers who forgot to unsubscribe.
-         */
-        this.eventBulks$.complete();
+        (async () => {
+            await runAsyncPluginHooks('preCloseRxDatabase', this);
+            /**
+             * Complete the event stream
+             * to stop all subscribers who forgot to unsubscribe.
+             */
+            this.eventBulks$.complete();
 
-        DB_COUNT--;
-        this._subs.map(sub => sub.unsubscribe());
+            DB_COUNT--;
+            this._subs.map(sub => sub.unsubscribe());
 
-        /**
-         * closing the pseudo instance will throw
-         * because stuff is missing
-         * TODO we should not need the pseudo instance on runtime.
-         * we should generate the property list on build time.
-         */
-        if (this.name === 'pseudoInstance') {
-            return PROMISE_RESOLVE_FALSE;
-        }
+            /**
+             * closing the pseudo instance will throw
+             * because stuff is missing
+             * TODO we should not need the pseudo instance on runtime.
+             * we should generate the property list on build time.
+             */
+            if (this.name === 'pseudoInstance') {
+                resolveClosePromise(false);
+                return;
+            }
 
-        /**
-         * First wait until the database is idle
-         */
-        return this.requestIdlePromise()
-            .then(() => Promise.all(this.onClose.map(fn => fn())))
-            // close all collections
-            .then(() => Promise.all(
-                Object.keys(this.collections as any)
-                    .map(key => (this.collections as any)[key])
-                    .map(col => col.close())
-            ))
-            // close internal storage instances
-            .then(() => this.internalStore.close())
-            // remove combination from USED_COMBINATIONS-map
-            .then(() => USED_DATABASE_NAMES.delete(this.storage.name + '|' + this.name))
-            .then(() => true);
+            /**
+             * First wait until the database is idle
+             */
+            return this.requestIdlePromise()
+                .then(() => Promise.all(this.onClose.map(fn => fn())))
+                // close all collections
+                .then(() => Promise.all(
+                    Object.keys(this.collections as any)
+                        .map(key => (this.collections as any)[key])
+                        .map(col => col.close())
+                ))
+                // close internal storage instances
+                .then(() => this.internalStore.close())
+                .then(() => resolveClosePromise(true));
+        })();
+
+        return promise;
     }
 
     /**
@@ -542,16 +556,33 @@ function throwIfDatabaseNameUsed(
     name: string,
     storage: RxStorage<any, any>
 ) {
-    const key = storage.name + '|' + name;
-    if (!USED_DATABASE_NAMES.has(key)) {
-        return;
-    } else {
+    if (USED_DATABASE_NAMES.has(getDatabaseNameKey(name, storage))) {
         throw newRxError('DB8', {
             name,
             storage: storage.name,
             link: 'https://rxdb.info/rx-database.html#ignoreduplicate'
         });
     }
+}
+
+/**
+ * ponyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
+ */
+function createPromiseWithResolvers<T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    let reject!: (reason?: any) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+}
+
+function getDatabaseNameKey(
+    name: string,
+    storage: RxStorage<any, any>
+) {
+    return storage.name + '|' + name;
 }
 
 /**
@@ -597,6 +628,7 @@ export function createRxDatabase<
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,
+        closeDuplicates = false,
         allowSlowCount = false,
         localDocuments = false,
         hashFunction = defaultHashSha256,
@@ -616,73 +648,98 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-    // check if combination already used
-    if (!ignoreDuplicate) {
-        throwIfDatabaseNameUsed(name, storage);
-    } else {
-        if (!overwritable.isDevMode()) {
-            throw newRxError('DB9', {
-                database: name
-            });
+
+    const databaseNameKey = getDatabaseNameKey(name, storage);
+    const databaseNameKeyUnclosedInstancesSet = DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP.get(databaseNameKey) || new Set();
+    const instancePromiseWithResolvers = createPromiseWithResolvers<RxDatabase<Collections, Internals, InstanceCreationOptions, Reactivity>>();
+    const closeDuplicatesPromises = Array.from(databaseNameKeyUnclosedInstancesSet);
+    const onInstanceClosed = () => {
+        databaseNameKeyUnclosedInstancesSet.delete(instancePromiseWithResolvers.promise as any as Promise<RxDatabase>);
+        USED_DATABASE_NAMES.delete(databaseNameKey);
+    };
+
+    databaseNameKeyUnclosedInstancesSet.add(instancePromiseWithResolvers.promise as any as Promise<RxDatabase>);
+    DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP.set(databaseNameKey, databaseNameKeyUnclosedInstancesSet);
+
+    (async () => {
+        if (closeDuplicates) {
+            await Promise.all(
+                closeDuplicatesPromises.map((unclosedInstancePromise) =>
+                    unclosedInstancePromise
+                        .catch(() => null)
+                        .then((instance) => instance && instance.close())
+                )
+            );
         }
-    }
-    USED_DATABASE_NAMES.add(storage.name + '|' + name);
 
-    const databaseInstanceToken = randomToken(10);
+        if (ignoreDuplicate) {
+            if (!overwritable.isDevMode()) {
+                throw newRxError('DB9', {
+                    database: name
+                });
+            }
+        } else {
+            // check if combination already used
+            throwIfDatabaseNameUsed(name, storage);
+        }
 
-    return createRxDatabaseStorageInstance<
-        Internals,
-        InstanceCreationOptions
-    >(
-        databaseInstanceToken,
-        storage,
-        name,
-        instanceCreationOptions as any,
-        multiInstance,
-        password
-    )
-        /**
-         * Creating the internal store might fail
-         * if some RxStorage wrapper is used that does some checks
-         * and then throw.
-         * In that case we have to properly clean up the database.
-         */
-        .catch(err => {
-            USED_DATABASE_NAMES.delete(storage.name + '|' + name);
-            throw err;
-        })
-        .then(storageInstance => {
-            const rxDatabase: RxDatabase<Collections> = new RxDatabaseBase(
-                name,
-                databaseInstanceToken,
+        USED_DATABASE_NAMES.add(databaseNameKey);
+
+        const databaseInstanceToken = randomToken(10);
+        const storageInstance = await createRxDatabaseStorageInstance<
+            Internals,
+            InstanceCreationOptions
+        >(
+            databaseInstanceToken,
+            storage,
+            name,
+            instanceCreationOptions as any,
+            multiInstance,
+            password
+        );
+        const rxDatabase = new RxDatabaseBase(
+            name,
+            databaseInstanceToken,
+            storage,
+            instanceCreationOptions,
+            password,
+            multiInstance,
+            eventReduce,
+            options,
+            storageInstance,
+            hashFunction,
+            cleanupPolicy,
+            allowSlowCount,
+            reactivity,
+            onInstanceClosed
+        ) as RxDatabase<Collections>;
+
+        await runAsyncPluginHooks('createRxDatabase', {
+            database: rxDatabase,
+            creator: {
                 storage,
                 instanceCreationOptions,
+                name,
                 password,
                 multiInstance,
                 eventReduce,
+                ignoreDuplicate,
                 options,
-                storageInstance,
-                hashFunction,
-                cleanupPolicy,
-                allowSlowCount,
-                reactivity
-            ) as any;
-
-            return runAsyncPluginHooks('createRxDatabase', {
-                database: rxDatabase,
-                creator: {
-                    storage,
-                    instanceCreationOptions,
-                    name,
-                    password,
-                    multiInstance,
-                    eventReduce,
-                    ignoreDuplicate,
-                    options,
-                    localDocuments
-                }
-            }).then(() => rxDatabase);
+                localDocuments
+            }
         });
+
+        return rxDatabase;
+    })()
+        .then((rxDatabase) => {
+            instancePromiseWithResolvers.resolve(rxDatabase);
+        })
+        .catch((err) => {
+            instancePromiseWithResolvers.reject(err);
+            onInstanceClosed();
+        });
+
+    return instancePromiseWithResolvers.promise;
 }
 
 /**
