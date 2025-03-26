@@ -10,7 +10,7 @@ export function getLocalStorageMock(): typeof localStorage {
         setItem: function (key: string, value: string) {
             storage[key] = value || '';
             storageEventStream$.next({
-                fromStorageEvent: false,
+                fromStorageEvent: true,
                 key,
                 newValue: value
             });

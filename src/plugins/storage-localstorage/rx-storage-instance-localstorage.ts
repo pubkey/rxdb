@@ -298,6 +298,12 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                 this.changestreamStorageKey,
                 itemString
             );
+            storageEventStream$.next({
+                fromStorageEvent: false,
+                key: this.changestreamStorageKey,
+                newValue: itemString,
+                databaseInstanceToken: this.databaseInstanceToken
+            });
         }
         return Promise.resolve(ret);
     }
