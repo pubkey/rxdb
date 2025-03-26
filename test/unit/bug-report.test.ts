@@ -151,6 +151,8 @@ describe('bug-report.test.js', () => {
             age: 56
         });
 
+        await db.close();
+
         // create a database
         const db2 = await createRxDatabase({
             name,
