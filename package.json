@@ -465,7 +465,7 @@
     "ajv": "8.17.1",
     "array-push-at-sort-position": "4.0.1",
     "as-typed": "1.3.2",
-    "broadcast-channel": "7.0.0",
+    "broadcast-channel": "7.1.0",
     "crypto-js": "4.2.0",
     "custom-idle-queue": "3.0.1",
     "dexie": "4.0.10",
