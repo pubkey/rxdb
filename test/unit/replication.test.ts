@@ -860,8 +860,8 @@ describe('replication.test.ts', () => {
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
 
-            const checkpoint = await getLastCheckpointDoc(ensureNotFalsy(replicationState.internalReplicationState), 'up');
-            assert.ok(checkpoint);
+            const lastCheckpoint = await getLastCheckpointDoc(ensureNotFalsy(replicationState.internalReplicationState), 'up');
+            assert.ok(lastCheckpoint);
 
             const remoteDocs = await remoteCollection.find().exec();
             assert.deepEqual(remoteDocs.length, 0, 'must not have remote docs');
