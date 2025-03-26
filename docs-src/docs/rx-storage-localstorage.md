@@ -8,7 +8,7 @@ import {Steps} from '@site/src/components/steps';
 
 # RxStorage LocalStorage
 
-RxDB can persist data in various ways. One of the simplest methods is using the browser’s built-in [LocalStorage](./articles/localstorage.md). This storage engine allows you to store and retrieve RxDB documents directly from the browser without needing additional plugins or libaries.
+RxDB can persist data in various ways. One of the simplest methods is using the browser’s built-in [LocalStorage](./articles/localstorage.md). This storage engine allows you to store and retrieve RxDB documents directly from the browser without needing additional plugins or libraries.
 
 > **Recommended Default for using RxDB in the Browser**
 >

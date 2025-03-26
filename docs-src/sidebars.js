@@ -101,29 +101,36 @@ const sidebars = {
           label: 'Filesystem Node 👑'
         },
         {
-          type: 'doc',
-          id: 'rx-storage-sqlite',
-          label: 'SQLite'
-        },
-        {
-          type: 'doc',
-          id: 'rx-storage-dexie',
-          label: 'Dexie.js'
-        },
-        {
-          type: 'doc',
-          id: 'rx-storage-mongodb',
-          label: 'MongoDB'
-        },
-        {
-          type: 'doc',
-          id: 'rx-storage-denokv',
-          label: 'DenoKV'
-        },
-        {
-          type: 'doc',
-          id: 'rx-storage-foundationdb',
-          label: 'FoundationDB'
+          type: 'category',
+          label: 'Third Party Storages',
+          items: [
+
+            {
+              type: 'doc',
+              id: 'rx-storage-sqlite',
+              label: 'SQLite'
+            },
+            {
+              type: 'doc',
+              id: 'rx-storage-dexie',
+              label: 'Dexie.js'
+            },
+            {
+              type: 'doc',
+              id: 'rx-storage-mongodb',
+              label: 'MongoDB'
+            },
+            {
+              type: 'doc',
+              id: 'rx-storage-denokv',
+              label: 'DenoKV'
+            },
+            {
+              type: 'doc',
+              id: 'rx-storage-foundationdb',
+              label: 'FoundationDB'
+            }
+          ]
         }
       ],
     },
