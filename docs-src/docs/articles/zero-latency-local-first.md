@@ -52,13 +52,13 @@ RxDB's flexible replication system lets you connect to different backends or eve
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 async function initZeroLocalDB() {
-  // Create a local RxDB instance using Dexie-based IndexedDB storage
+  // Create a local RxDB instance using localstorage-based storage
   const db = await createRxDatabase({
     name: 'myZeroLocalDB',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     // optional: password for encryption if needed
   });
 
@@ -153,7 +153,7 @@ When storing data locally, you may handle user-sensitive information like PII (P
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
 
 const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 
 const db = await createRxDatabase({
@@ -211,7 +211,7 @@ await db.addCollections({
 
 RxDB's storage layer is swappable, so you can pick the optimal adapter for each environment. Some common choices include:
 
-- [IndexedDB](../rx-storage-indexeddb.md) / [Dexie](../rx-storage-dexie.md) in modern browsers (default).
+- [IndexedDB](../rx-storage-indexeddb.md) in modern browsers (default).
 - [OPFS](../rx-storage-opfs.md) (Origin Private File System) in browsers that support it for potentially better performance.
 - [SQLite](../rx-storage-sqlite.md) for mobile or desktop environments via the premium plugin, offering native-like speed on Android, iOS, or Electron.
 - [In-Memory](../rx-storage-memory.md) for tests or ephemeral data.
@@ -221,7 +221,7 @@ By choosing a suitable storage layer, you can adapt your zero-latency local firs
 
 ## Performance Considerations
 
-Performant local data operations are crucial for a zero-latency experience. According to the RxDB [storage performance overview](../rx-storage-performance.md), differences in underlying storages can significantly impact throughput and latency. For instance, IndexedDB (via Dexie) typically performs well across modern browsers, [OPFS](../rx-storage-opfs.md) offers improved throughput in supporting browsers, and [SQLite storage](../rx-storage-sqlite.md) (a premium plugin) often delivers near-native speed for mobile or desktop.
+Performant local data operations are crucial for a zero-latency experience. According to the RxDB [storage performance overview](../rx-storage-performance.md), differences in underlying storages can significantly impact throughput and latency. For instance, IndexedDB typically performs well across modern browsers, [OPFS](../rx-storage-opfs.md) offers improved throughput in supporting browsers, and [SQLite storage](../rx-storage-sqlite.md) (a premium plugin) often delivers near-native speed for mobile or desktop.
 
 ### Offloading Work from the Main Thread
 

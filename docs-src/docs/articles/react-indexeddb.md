@@ -62,18 +62,18 @@ npm install rxdb rxjs --save```
 ### Create a Database and Collections
 
 RxDB provides two main storage options:
-- The free [Dexie.js-based storage](../rx-storage-dexie.md)
+- The free [localstorage-based storage](../rx-storage-localstorage.md)
 - The premium plain [IndexedDB-based storage](../rx-storage-indexeddb.md), offering faster performance
-Below is an example of setting up a simple RxDB [database](./react-database.md) using the Dexie.js-based storage in a React app:
+Below is an example of setting up a simple RxDB [database](./react-database.md) using the localstorage-based storage in a React app:
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // create a database
 const db = await createRxDatabase({
     name: 'heroesdb', // the name of the database
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 // Define your schema
@@ -190,11 +190,11 @@ Set up RxDB with Preact Signals reactivity:
 ```ts
 import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: PreactSignalsRxReactivityFactory
 });
 ```

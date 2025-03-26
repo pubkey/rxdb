@@ -6,6 +6,7 @@ import {
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
+import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/storage-localstorage/index.mjs';
 import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../plugins/storage-sqlite/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
@@ -51,6 +52,7 @@ export function getRootPath() {
 
 export const describeParallel: typeof describe = ENV_VARIABLES.NODE_ENV === 'fast' ? parallel : describe;
 
+const localStorageMock = getLocalStorageMock();
 
 export function getStorage(storageKey: string): RxTestStorage {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
@@ -110,6 +112,38 @@ export function getStorage(storageKey: string): RxTestStorage {
                 hasReplication: true
             };
             break;
+
+        case 'localstorage':
+            return {
+                name: storageKey,
+                getStorage: () => {
+                    if (
+                        isNode ||
+                        isDeno ||
+                        isFastMode()
+                    ) {
+                        return wrappedValidateAjvStorage({
+                            storage: getRxStorageLocalstorage({
+                                localStorage: localStorageMock
+                            })
+                        });
+                    } else {
+                        return wrappedValidateAjvStorage({ storage: getRxStorageLocalstorage() });
+                    }
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'localstorage',
+                        storage: getRxStorageLocalstorage()
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: isNode ? false : true,
+                hasAttachments: false,
+                hasReplication: true
+            };
+            break;
+
         case 'dexie':
             return {
                 name: storageKey,
@@ -260,44 +294,44 @@ export function getStorage(storageKey: string): RxTestStorage {
             };
             break;
 
-            case 'sqlite-trial':
-                let initDone = false;
-                let sqliteStorage: any;
-                let sqliteBasics;
-                return {
-                    name: storageKey,
-                    async init() {
-                        if (initDone) {
-                            return;
-                        }
-                        initDone = true;
-                        const nativeSqlitePromise = await import('node:sqlite').then(module => module.DatabaseSync);
-                        sqliteBasics = getSQLiteBasicsNodeNative(nativeSqlitePromise);
-                        sqliteStorage = getRxStorageSQLiteTrial({
-                            sqliteBasics: ensureNotFalsy(sqliteBasics),
-                            databaseNamePrefix: './test_tmp/'
-                        });
-                    },
-                    getStorage() {
-                        return wrappedValidateAjvStorage({
+        case 'sqlite-trial':
+            let initDone = false;
+            let sqliteStorage: any;
+            let sqliteBasics;
+            return {
+                name: storageKey,
+                async init() {
+                    if (initDone) {
+                        return;
+                    }
+                    initDone = true;
+                    const nativeSqlitePromise = await import('node:sqlite').then(module => module.DatabaseSync);
+                    sqliteBasics = getSQLiteBasicsNodeNative(nativeSqlitePromise);
+                    sqliteStorage = getRxStorageSQLiteTrial({
+                        sqliteBasics: ensureNotFalsy(sqliteBasics),
+                        databaseNamePrefix: './test_tmp/'
+                    });
+                },
+                getStorage() {
+                    return wrappedValidateAjvStorage({
+                        storage: ensureNotFalsy(sqliteStorage)
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'sqlite-native',
+                        storage: wrappedValidateAjvStorage({
                             storage: ensureNotFalsy(sqliteStorage)
-                        });
-                    },
-                    getPerformanceStorage() {
-                        return {
-                            description: 'sqlite-native',
-                            storage: wrappedValidateAjvStorage({
-                                storage: ensureNotFalsy(sqliteStorage)
-                            })
-                        };
-                    },
-                    hasPersistence: true,
-                    hasMultiInstance: true,
-                    hasAttachments: false,
-                    hasReplication: true
-                };
-                break;
-                break;
+                        })
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
+                hasReplication: true
+            };
+            break;
+            break;
         default:
             throw new Error('no DEFAULT_STORAGE set');
     }

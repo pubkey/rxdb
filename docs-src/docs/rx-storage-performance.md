@@ -38,7 +38,7 @@ Here the following metrics are measured:
 
 ## Browser based Storages Performance Comparison
 
-The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-mapped](./rx-storage-memory-mapped.md). If you do not want to purchase [RxDB Premium](/premium/), you could use the slower [Dexie.js based RxStorage](./rx-storage-dexie.md) instead.
+The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-mapped](./rx-storage-memory-mapped.md).
 
 <p align="center">
   <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />

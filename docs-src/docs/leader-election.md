@@ -35,12 +35,15 @@ addRxPlugin(RxDBLeaderElectionPlugin);
 To make it easy, here is an example where the temperature is pulled every ten seconds and saved to a collection. The pulling starts at the moment where the opened tab becomes the leader.
 
 ```javascript
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+
 const db = await createRxDatabase({
   name: 'weatherDB',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
   password: 'myPassword',
   multiInstance: true
 });
+
 await db.addCollections({
   temperature: {
     schema: mySchema

@@ -67,11 +67,11 @@ An RxDB encryption plugin is a wrapper around any other [RxStorage](./rx-storage
 import {
     wrappedKeyEncryptionCryptoJsStorage
 } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the normal storage with the encryption plugin
-const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
-    storage: getRxStorageDexie()
+const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
 });
 ```
 
@@ -84,7 +84,7 @@ import { createRxDatabase } from 'rxdb/plugins/core';
 // create an encrypted database
 const db = await createRxDatabase({
     name: 'mydatabase',
-    storage: encryptedDexieStorage,
+    storage: encryptedStorage,
     password: 'sudoLetMeIn'
 });
 ```

@@ -51,17 +51,17 @@ npm install rxdb rxjs
 
 ## Creating and Configuring Your Database
 
-Within your Vue project, you can set up an RxDB instance in a dedicated file or a Vue plugin. Below is an example using Dexie as the storage engine:
+Within your Vue project, you can set up an RxDB instance in a dedicated file or a Vue plugin. Below is an example using [Localstorage](./localstorage.md) as the storage engine:
 
 ```ts
 // db.js
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 export async function initDatabase() {
   const db = await createRxDatabase({
     name: 'heroesdb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     password: 'myPassword',    // optional encryption password
     multiInstance: true,       // multi-tab support
     eventReduce: true          // optimize event handling
@@ -135,7 +135,7 @@ onMounted(async () => {
 
 RxDB supports multiple storage backends - called "RxStorage layers" - giving you flexibility in how data is persisted:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): A popular IndexedDB wrapper, often the default choice.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Uses the browsers localstorage API.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Direct usage of native IndexedDB.
 - [OPFS RxStorage](../rx-storage-opfs.md): Uses the File System Access API for even faster storage in modern browsers.
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, ideal for tests or ephemeral data.

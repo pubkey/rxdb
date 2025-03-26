@@ -92,12 +92,12 @@ When data shapes get complex—large sets of nested documents, or you want offli
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 (async function setUpRxDB() {
   const db = await createRxDatabase({
     name: 'heroDB',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     multiInstance: false
   });
 
@@ -169,13 +169,13 @@ RxDB typically exposes reactivity via RxJS observables. However, some developers
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
 
 (async function setUpRxDBWithSignals() {
   const db = await createRxDatabase({
     name: 'heroDB_signals',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: PreactSignalsRxReactivityFactory
   });
 
@@ -195,17 +195,17 @@ For more advanced ReactJS storage needs—especially when sensitive user data is
 ```ts
 import { createRxDatabase } from 'rxdb';
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 (async function secureSetup() {
-  const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
-    storage: getRxStorageDexie()
+  const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
   });
 
   // Provide a password for encryption
   const db = await createRxDatabase({
     name: 'secureReactStorage',
-    storage: encryptedDexieStorage,
+    storage: encryptedStorage,
     password: 'MyStrongPassword123'
   });
 

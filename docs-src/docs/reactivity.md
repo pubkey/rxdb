@@ -43,9 +43,10 @@ Then you can pass this factory when you create the [RxDatabase](./rx-database.md
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: createReactivityFactory(inject(Injector))
 });
 ```
@@ -64,9 +65,10 @@ There are also some [👑 Premium Plugins](/premium/) that can be used with othe
 // npm install vue --save
 import { VueRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-vue';
 import { createRxDatabase } from 'rxdb/plugins/core';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: VueRxReactivityFactory
 });
 ```
@@ -79,7 +81,7 @@ import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivit
 import { createRxDatabase } from 'rxdb/plugins/core';
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: PreactSignalsRxReactivityFactory
 });
 ```

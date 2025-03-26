@@ -7,8 +7,8 @@ import {
 } from 'rxdb';
 
 import {
-    getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import {
     getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
@@ -78,7 +78,7 @@ function getStorageKey(): string {
     const url = new URL(url_string);
     let storageKey = url.searchParams.get('storage');
     if (!storageKey) {
-        storageKey = 'dexie';
+        storageKey = 'localstorage';
     }
     return storageKey;
 }
@@ -92,8 +92,8 @@ function getStorage(): RxStorage<any, any> {
 
     if (storageKey === 'memory') {
         return getRxStorageMemory();
-    } else if (storageKey === 'dexie') {
-        return getRxStorageDexie();
+    } else if (storageKey === 'localstorage') {
+        return getRxStorageLocalstorage();
     } else {
         throw new Error('storage key not defined ' + storageKey);
     }

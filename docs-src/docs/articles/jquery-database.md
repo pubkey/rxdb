@@ -90,12 +90,12 @@ Below is a minimal example of how to create an RxDB instance and collection. You
 
 ```js
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 async function initDatabase() {
   const db = await createRxDatabase({
     name: 'heroesdb',
-    storage: getRxStorageDexie(),   // Dexie-based IndexedDB
+    storage: getRxStorageLocalstorage(),
     password: 'myPassword',         // optional encryption password
     multiInstance: true,            // multi-tab support
     eventReduce: true               // optimizes event handling
@@ -168,11 +168,11 @@ With this approach, any time data in the `hero` collection changes - like when a
 
 RxDB supports multiple storage backends (RxStorage layers). Some popular ones:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): A friendly wrapper around IndexedDB, commonly used for improved dev experience.
+- [LocalStorage.js RxStorage](../rx-storage-localstorage.md): Uses the browsers [localstorage](./localstorage.md). Fast and easy to set up.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Direct IndexedDB usage, suitable for modern browsers.
 - [OPFS RxStorage](../rx-storage-opfs.md): Uses the File System Access API for better performance in supported browsers.
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, handy for tests or ephemeral data.
-- [SQLite RxStorage](../rx-storage-sqlite.md): Uses SQLite (potentially via WebAssembly). In typical browser-based scenarios, Dexie or IndexedDB storage is usually more straightforward.
+- [SQLite RxStorage](../rx-storage-sqlite.md): Uses SQLite (potentially via WebAssembly). In typical browser-based scenarios, localstorage or IndexedDB storage is usually more straightforward.
 
 
 ## Synchronizing Data with RxDB between Clients and Servers

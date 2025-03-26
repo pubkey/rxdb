@@ -23,10 +23,10 @@ The key compression plugin is a wrapper around any other [RxStorage](./rx-storag
 
 ```ts
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const storageWithKeyCompression = wrappedKeyCompressionStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 ```
 

@@ -29,10 +29,10 @@ You can set a specific cleanup policy when a `RxDatabase` is created. For most u
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const db = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
   cleanupPolicy: {
       /**
        * The minimum time in milliseconds for how long

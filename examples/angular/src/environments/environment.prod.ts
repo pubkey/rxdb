@@ -1,7 +1,7 @@
 import { EnvironmentParams } from './environment.d';
 import {
-  getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+  getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import {
   SYNC_PORT,
   DATABASE_NAME
@@ -20,6 +20,6 @@ export const environment: EnvironmentParams = {
     addRxPlugin(RxDBLeaderElectionPlugin);
   },
   getRxStorage() {
-    return getRxStorageDexie();
+    return getRxStorageLocalstorage();
   },
 };

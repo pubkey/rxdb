@@ -243,7 +243,7 @@ With RxDB, you first create a database and define a schema for your collections.
 
 ```ts
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 // Enable dev mode (for helpful warnings in development)
@@ -252,13 +252,13 @@ addRxPlugin(RxDBDevModePlugin);
 
 #### Create a Database
 
-Here we use the [Dexie.js](../rx-storage-dexie.md) based storage for RxDB which stores data inside of IndexedDB in a **browser**. There is a wide range of other [storages](../rx-storage.md) for example in **React Native** you would use the [SQLite storage](../rx-storage-sqlite.md) instead.
+Here we use the [localstoarge](../rx-storage-localstorage.md) based storage for RxDB which stores data inside of localstorage in a **browser**. There is a wide range of other [storages](../rx-storage.md) for example in **React Native** you would use the [SQLite storage](../rx-storage-sqlite.md) instead.
 
 ```ts
 const db = await createRxDatabase({
     name: 'myappdb',
     storage: wrappedValidateAjvStorage({           
-        storage: getRxStorageDexie()
+        storage: getRxStorageLocalstorage()
     })
 });
 ```

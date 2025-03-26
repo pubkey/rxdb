@@ -34,10 +34,10 @@ const myDb = await createRxDatabase({
 });
 
 // on the remote
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { exposeRxStorageRemote } from 'rxdb/plugins/storage-remote';
 exposeRxStorageRemote({
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     messages$: new Subject(),
     send(msg){
         // send to other side

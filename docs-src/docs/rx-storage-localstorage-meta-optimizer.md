@@ -23,7 +23,7 @@ import {
     getLocalstorageMetaOptimizerRxStorage
 } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
 
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 
 /**
@@ -32,10 +32,10 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const optimizedRxStorage = getLocalstorageMetaOptimizerRxStorage({
 
     /**
-     * Here we use the dexie.js RxStorage,
+     * Here we use the IndexedDB RxStorage,
      * it is also possible to use any other RxStorage instead.
      */
-    storage: getRxStorageDexie()
+    storage: getRxStorageIndexedDB()
 });
 
 /**

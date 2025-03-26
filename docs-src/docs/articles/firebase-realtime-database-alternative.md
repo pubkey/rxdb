@@ -60,13 +60,13 @@ RxDB employs its own [Sync Engine](../replication.md) to manage data flow betwee
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 
 async function initDB() {
   const db = await createRxDatabase({
     name: 'localdb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     multiInstance: true,
     eventReduce: true
   });
@@ -155,11 +155,11 @@ npm install rxdb rxjs
 2. Create a Local Database
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
   name: 'myLocalDB',
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 Add a Collection
 ts

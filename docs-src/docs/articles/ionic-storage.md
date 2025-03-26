@@ -62,13 +62,13 @@ RxDB runs with a **NoSQL** approach and integrates seamlessly into [Ionic Angula
 
 
 
-## Quick Start: Implementing RxDB with Dexie Storage
+## Quick Start: Implementing RxDB with LocalSTorage Storage
 
-For a simple proof-of-concept or testing environment in [Ionic](./ionic-database.md), you can use [Dexie.js](../rx-storage-dexie.md) as your underlying storage. Later, if you need better native performance, you can **switch to the SQLite storage** offered by the [RxDB Premium plugins](https://rxdb.info/premium/).
+For a simple proof-of-concept or testing environment in [Ionic](./ionic-database.md), you can use [localstorage](../rx-storage-localstorage.md) as your underlying storage. Later, if you need better native performance, you can **switch to the SQLite storage** offered by the [RxDB Premium plugins](https://rxdb.info/premium/).
 
-1. **Install RxDB and Dexie-based Storage**
+1. **Install RxDB**
 ```bash
-npm install rxdb rxjs dexie
+npm install rxdb rxjs
 ```
 
 
@@ -76,12 +76,12 @@ npm install rxdb rxjs dexie
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 async function initDB() {
   const db = await createRxDatabase({
     name: 'myionicdb',
-    storage: getRxStorageDexie(), // Using Dexie for local storage
+    storage: getRxStorageLocalstorage(),
     multiInstance: false // or true if you plan multi-tab usage
     // Note: If you need encryption, set `password` here
   });
@@ -109,7 +109,7 @@ async function initDB() {
 
 3. **Ready to Upgrade Later?**
 
-When you need the best performance on mobile devices, purchase the RxDB [Premium](/premium/) [SQLite Storage](../rx-storage-sqlite.md) and replace `getRxStorageDexie()` with `getRxStorageSQLite()` - your app logic remains largely the same. You only have to change the configuration.
+When you need the best performance on mobile devices, purchase the RxDB [Premium](/premium/) [SQLite Storage](../rx-storage-sqlite.md) and replace `getRxStorageLocalstorage()` with `getRxStorageSQLite()` - your app logic remains largely the same. You only have to change the configuration.
 
 
 ## Encryption Example
@@ -118,17 +118,17 @@ To secure local data, add the crypto-js [encryption plugin](../encryption.md) (f
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { createRxDatabase } from 'rxdb/plugins/core';
 
 async function initEncryptedDB() {
-  const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
-    storage: getRxStorageDexie()
+  const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
+    storage: getRxStorageLocalstorage()
   });
 
   const db = await createRxDatabase({
     name: 'secureIonicDB',
-    storage: encryptedDexieStorage,
+    storage: encryptedStorage,
     password: 'myS3cretP4ssw0rd'
   });
 
@@ -198,7 +198,7 @@ With `keyCompression: true`, RxDB shortens field names internally, significantly
 
 ## Follow Up
 
-For Ionic storage that supports offline-first operations, built-in encryption, optional data compression, and live syncing with any backend, RxDB provides a powerful solution. Start quickly with Dexie for local development and testing - then scale up to the premium SQLite storage for optimal performance on production mobile devices.
+For Ionic storage that supports offline-first operations, built-in encryption, optional data compression, and live syncing with any backend, RxDB provides a powerful solution. Start quickly with [localstorage](../rx-storage-localstorage.md) for local development and testing - then scale up to the premium SQLite storage for optimal performance on production mobile devices.
 
 Ready to learn more?
 
