@@ -662,7 +662,7 @@ jobs:
       #   uses: coactions/setup-xvfb@v1
       #   with:
       #     working-directory: ./examples/supabase
-      #     run: npm run test:dexie
+      #     run: npm run test:localstorage
 
   example-vue:
     runs-on: ubuntu-22.04
@@ -775,11 +775,11 @@ jobs:
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
-      - name: test test:dexie
+      - name: test test:localstorage
         uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/graphql
-          run: npm run test:dexie
+          run: npm run test:localstorage
 
   # example-flutter:
   #   runs-on: ubuntu-22.04

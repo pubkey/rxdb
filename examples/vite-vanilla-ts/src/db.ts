@@ -1,5 +1,5 @@
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -17,7 +17,7 @@ const _create = async () => {
     storage: wrappedValidateAjvStorage({
       storage: wrappedKeyEncryptionCryptoJsStorage({
         storage: wrappedKeyCompressionStorage({
-          storage: getRxStorageDexie(),
+          storage: getRxStorageLocalstorage(),
         }),
       })
     }),
