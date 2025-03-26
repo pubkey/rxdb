@@ -22,7 +22,8 @@
     "examples/supabase/package.json",
     "examples/flutter/pubspec.yaml",
     "src/plugins/flutter/dart/pubspec.yaml",
-    "config/appwrite/docker-compose.yml"
+    "config/appwrite/docker-compose.yml",
+    "config/appwrite/backup/docker-compose.yml"
   ],
   "rebaseStalePrs": true,
   "prConcurrentLimit": 8,

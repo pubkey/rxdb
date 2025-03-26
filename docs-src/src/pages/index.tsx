@@ -19,8 +19,9 @@ import { DevicesSync } from '../components/devices-sync';
 import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
-import { ABTestContent, getTestGroup } from '../components/a-b-tests';
 import { VideoSection } from '../components/video-section';
+import { HeroSection_B } from '../components/hero-section/T4_hero_b';
+import { getTestGroup } from '../components/a-b-tests';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -365,7 +366,7 @@ export default function Home(props: {
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
 
-          <ABTestContent sem={props.sem} scrollToSection={scrollToSection} />
+          <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
           {/* <HeroSection_C sem={props.sem} scrollToSection={scrollToSection} />
           <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
           <HeroSection_A sem={props.sem} scrollToSection={scrollToSection} /> */}
