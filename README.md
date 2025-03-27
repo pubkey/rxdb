@@ -106,7 +106,7 @@ There are also production-ready plugins to easily replicate with <a href="https:
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
 
-You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [OPFS](https://rxdb.info/rx-storage-opfs.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html) and [DenoKV](https://rxdb.info/rx-storage-denokv.html).
+You can use RxDB on top of [LocalStorage](https://rxdb.info/rx-storage-localstorage.html), [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [OPFS](https://rxdb.info/rx-storage-opfs.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html) and [DenoKV](https://rxdb.info/rx-storage-denokv.html).
 
 No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
@@ -207,17 +207,16 @@ import {
 } from 'rxdb/plugins/core';
 
 /**
- * For browsers, we use the dexie.js based storage
- * which stores data in IndexedDB in the browser.
+ * For browsers, we use the localstorage based storage.
  * In other JavaScript runtimes, we can use different storages:
  * @link https://rxdb.info/rx-storage.html
  */
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // create a database
 const db = await createRxDatabase({
     name: 'heroesdb', // the name of the database
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 // add collections
