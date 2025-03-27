@@ -1,7 +1,7 @@
 import { EnvironmentParams } from './environment.d';
 import {
-  getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+  getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
   SYNC_PORT,
@@ -26,7 +26,7 @@ export const environment: EnvironmentParams = {
   },
   getRxStorage() {
     return wrappedValidateAjvStorage({
-      storage: getRxStorageDexie()
+      storage: getRxStorageLocalstorage()
     });
   },
 };

@@ -1,7 +1,7 @@
 import { EnvironmentParams } from './environment.d';
 import {
-    getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import {
     SYNC_PORT,
     DATABASE_NAME
@@ -28,6 +28,6 @@ export const environment: EnvironmentParams = {
     rxdbSyncUrl: 'http://' + window.location.hostname + ':' + SYNC_PORT + '/' + DATABASE_NAME,
     addRxDBPlugins() { },
     getRxStorage() {
-        return getRxStorageDexie();
+        return getRxStorageLocalstorage();
     }
 };

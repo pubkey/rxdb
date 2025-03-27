@@ -14,11 +14,11 @@ The database is created by the asynchronous `.createRxDatabase()` function of th
 
 ```javascript
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
   name: 'heroesdb',                   // <- name
-  storage: getRxStorageDexie(),       // <- RxStorage
+  storage: getRxStorageLocalstorage(),       // <- RxStorage
 
   /* Optional parameters: */
   password: 'myPassword',             // <- password (optional)
@@ -39,18 +39,18 @@ Depending on the storage or adapter this can also be used to define the filesyst
 RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
 
 There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the [MongoDB RxStorage](./rx-storage-mongodb.md) in Node.js.
+For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.md) in the browser or use the [MongoDB RxStorage](./rx-storage-mongodb.md) in Node.js.
 
 - [List of RxStorage implementations](./rx-storage.md)
 
 ```javascript
 
-// use the Dexie.js RxStorage that stores data in IndexedDB.
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+// use the LocalStroage that stores data in the browser.
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
-const dbDexie = await createRxDatabase({
+const db = await createRxDatabase({
   name: 'mydatabase',
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 
 
@@ -94,12 +94,12 @@ In some rare cases like unit-tests, you want to do this intentional by setting `
 ```js
 const db1 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
   ignoreDuplicate: true
 });
 const db2 = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
   ignoreDuplicate: true // this create-call will not throw because you explicitly allow it
 });
 ```

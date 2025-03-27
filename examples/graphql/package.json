@@ -11,7 +11,7 @@
     "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": "testcafe chromium -e test/ --hostname localhost",
     "test:pouchdb": "STORAGE=pouchdb concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
-    "test:dexie": "STORAGE=dexie concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
+    "test:localstorage": "STORAGE=localstorage concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
   "browser": {
     "fs": false
@@ -52,6 +52,6 @@
     "testcafe-hammerhead": "31.7.5",
     "webpack": "5.98.0",
     "webpack-cli": "6.0.1",
-    "webpack-dev-server": "5.2.0"
+    "webpack-dev-server": "5.2.1"
   }
 }

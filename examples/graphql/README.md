@@ -16,4 +16,4 @@ It represents a simple hero-list which is two-way-replicated with the server.
 
 You can change the storage and disable sync via url parameter, e.g.: 
 
-- http://localhost:8888/?storage=dexie&sync=false
+- http://localhost:8888/?storage=localstorage&sync=false

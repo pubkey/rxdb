@@ -164,8 +164,8 @@ import {
     RxCollection
 } from 'rxdb/plugins/core';
 import {
-    getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 
 import { Client } from 'appwrite';
 ```
@@ -175,7 +175,7 @@ import { Client } from 'appwrite';
 ```ts
 const db = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 const mySchema = {
     title: 'my schema',

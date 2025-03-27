@@ -91,15 +91,15 @@ Vector embeddings from different machine learning models or versions are not com
 
 ## Storing the Embeddings in RxDB
 
-To store the embeddings, first we have to create our [RxDB Database](../rx-database.md) with the [Dexie.js storage](../rx-storage-dexie.md) that stores data in **IndexedDB**.
+To store the embeddings, first we have to create our [RxDB Database](../rx-database.md) with the [localstorage storage](../rx-storage-localstorage.md) that stores data in the browsers [localstorage](./localstorage.md). For more advanced projects, you can use any other [RxStorage](../rx-storage.md).
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
     name: 'mydatabase',
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 ```
 

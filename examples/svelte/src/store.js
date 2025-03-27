@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
@@ -20,7 +20,7 @@ const _create = async () => {
   const db = await createRxDatabase({
     name: 'rxdbdemo',
     storage: wrappedValidateAjvStorage({
-      storage: getRxStorageDexie(),
+      storage: getRxStorageLocalstorage(),
     })
   });
   await db.addCollections({ notes: { schema: noteSchema } });

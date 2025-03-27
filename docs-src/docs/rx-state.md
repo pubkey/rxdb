@@ -17,7 +17,7 @@ To create a state call the `addState()` method on the database instance. Calling
 
 ```javascript
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // first add the RxState plugin to RxDB
 import { RxDBStatePlugin } from 'rxdb/plugins/state';
@@ -25,7 +25,7 @@ addRxPlugin(RxDBStatePlugin);
 
 const database = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
 });
 
 // create a state instance
@@ -110,7 +110,7 @@ const reactivityFactory: RxReactivityFactory<ReactivityType> = {
 };
 const database = await createRxDatabase({
     name: 'mydb',
-    storage: getRxStorageDexie(),
+    storage: getRxStorageLocalstorage(),
     reactivity: reactivityFactory
 });
 const myState = await database.addState();
@@ -153,7 +153,7 @@ import {
 
 const database = await createRxDatabase({
   name: 'heroesdb',
-  storage: getRxStorageDexie(),
+  storage: getRxStorageLocalstorage(),
 });
 
 const myState = await database.addState();

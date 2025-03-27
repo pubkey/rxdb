@@ -18,7 +18,7 @@ This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the def
 // worker.ts
 
 import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 exposeWorkerRxStorage({
     /**

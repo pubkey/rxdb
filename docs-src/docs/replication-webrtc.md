@@ -65,14 +65,14 @@ Four you create the [database](./rx-database.md) and then you can configure the 
 
 ### Create the Database and Collection
 
-Here we create a database with the [dexie](./rx-storage-dexie.md) based storage that stores data inside of IndexedDB in a browser. RxDB has a wide [range of storages](./rx-storage.md) for other JavaScript runtimes.
+Here we create a database with the [localstorage](./rx-storage-localstorage.md) based storage that stores data inside of the [LocalStorage API](./articles/localstorage.md) in a browser. RxDB has a wide [range of storages](./rx-storage.md) for other JavaScript runtimes.
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const db = await createRxDatabase({
   name: 'myTodoDB',
-  storage: getRxStorageDexie()
+  storage: getRxStorageLocalstorage()
 });
 
 await db.addCollections({

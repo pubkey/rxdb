@@ -183,6 +183,12 @@
       "import": "./dist/esm/plugins/storage-denokv/index.js",
       "default": "./dist/esm/plugins/storage-denokv/index.js"
     },
+    "./plugins/storage-localstorage": {
+      "types": "./dist/types/plugins/storage-localstorage/index.d.ts",
+      "require": "./dist/cjs/plugins/storage-localstorage/index.js",
+      "import": "./dist/esm/plugins/storage-localstorage/index.js",
+      "default": "./dist/esm/plugins/storage-localstorage/index.js"
+    },
     "./plugins/migration-schema": {
       "types": "./dist/types/plugins/migration-schema/index.d.ts",
       "require": "./dist/cjs/plugins/migration-schema/index.js",
@@ -367,6 +373,7 @@
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:memory-random-delay": "npm run transpile && cross-env DEFAULT_STORAGE=memory-random-delay mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:sqlite-trial": "npm run transpile && cross-env DEFAULT_STORAGE=sqlite-trial mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:localstorage": "npm run transpile && cross-env DEFAULT_STORAGE=localstorage mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 60000",
     "test:bun:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail --timeout 60000",
@@ -388,6 +395,7 @@
     "test:node:loop:memory-random-delay": "npm run test:node:memory-random-delay && npm run test:node:loop:memory-random-delay",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:localstorage": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=localstorage  karma start ./config/karma.conf.cjs --single-run",
     "test:browser:memory:loop": "npm run test:browser:memory && npm run test:browser:memory:loop",
     "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.cjs --single-run",
     "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.cjs --single-run",
@@ -465,7 +473,7 @@
     "ajv": "8.17.1",
     "array-push-at-sort-position": "4.0.1",
     "as-typed": "1.3.2",
-    "broadcast-channel": "7.0.0",
+    "broadcast-channel": "7.1.0",
     "crypto-js": "4.2.0",
     "custom-idle-queue": "3.0.1",
     "dexie": "4.0.10",
@@ -595,11 +603,11 @@
     "webpack": "5.98.0",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "6.0.1",
-    "webpack-dev-server": "5.2.0"
+    "webpack-dev-server": "5.2.1"
   },
   "overrides": {
     "eslint": "9.23.0",
-    "webpack-dev-server": "5.2.0"
+    "webpack-dev-server": "5.2.1"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

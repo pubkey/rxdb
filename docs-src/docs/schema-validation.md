@@ -19,7 +19,7 @@ Schema validation can be **CPU expensive** and increases your build size. You sh
 When no validation is used, any document data can be saved but there might be **undefined behavior** when saving data that does not comply to the schema of a `RxCollection`.
 
 
-RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/tools). In this example we use the [Dexie.js RxStorage](./rx-storage-dexie.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
+RxDB has different implementations to validate data, each of them is based on a different [JSON Schema library](https://json-schema.org/tools). In this example we use the [LocalStorage RxStorage](./rx-storage-localstorage.md), but you can wrap the validation around **any other** [RxStorage](./rx-storage.md).
 
 ### validate-ajv
 
@@ -27,11 +27,11 @@ A validation-module that does the schema-validation. This one is using [ajv](htt
 
 ```javascript
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateAjvStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 const db = await createRxDatabase({
@@ -46,11 +46,11 @@ Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation wh
 
 ```javascript
 import { wrappedValidateZSchemaStorage } from 'rxdb/plugins/validate-z-schema';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateZSchemaStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 const db = await createRxDatabase({
@@ -68,11 +68,11 @@ The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs
 
 ```javascript
 import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateIsMyJsonValidStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
 });
 
 const db = await createRxDatabase({
@@ -111,9 +111,9 @@ ZSchemaClass.registerFormat('email', function (v: string) {
 
 The RxDB team ran performance benchmarks using two storage options on an Ubuntu 24.04 machine with Chrome version `131.0.6778.85`. The testing machine has 32 core `13th Gen Intel(R) Core(TM) i9-13900HX` CPU.
 
-Dexie Storage (based on IndexedDB in the browser):
+IndexedDB Storage (based on the IndexedDB API in the browser):
 
-| **Dexie Storage** | Time to First insert | Insert 3000 documents |
+| **IndexedDB Storage** | Time to First insert | Insert 3000 documents |
 | ----------------- | :------------------: | --------------------: |
 | no validator      |        68 ms         |                213 ms |
 | ajv               |        67 ms         |                216 ms |
@@ -130,7 +130,7 @@ Memory Storage: stores everything in memory for extremely fast reads and writes,
 
 Including a validator library also increases your JavaScript bundle size. Here's how it breaks down (minified + gzip):
 
-| **Build Size** (minified+gzip) | Build Size (dexie) | Build Size (memory) |
+| **Build Size** (minified+gzip) | Build Size (IndexedDB) | Build Size (memory) |
 | ------------------------------ | :----------------: | ------------------: |
 | no validator                   |      73103 B       |             39976 B |
 | ajv                            |      106135 B      |             72773 B |

@@ -65,7 +65,7 @@ While considering database options for React applications, RxDB stands out due t
 
 ### IndexedDB in React and the Advantage of RxDB
 
-Using IndexedDB directly in React can be challenging due to its low-level, callback-based API which doesn't align neatly with modern React's Promise and async/await patterns. This intricacy often leads to bulky and complex implementations for developers. Also, when used wrong, IndexedDB can have a worse [performance profile](../slow-indexeddb.md) then it could have. In contrast, RxDB, with the [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [Dexie.js RxStorage](../rx-storage-dexie.md), abstracts these complexities, integrating reactive programming and providing a more streamlined experience for data management in React applications. Thus, RxDB offers a more intuitive approach, eliminating much of the manual overhead required with IndexedDB.
+Using IndexedDB directly in React can be challenging due to its low-level, callback-based API which doesn't align neatly with modern React's Promise and async/await patterns. This intricacy often leads to bulky and complex implementations for developers. Also, when used wrong, IndexedDB can have a worse [performance profile](../slow-indexeddb.md) then it could have. In contrast, RxDB, with the [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [LocalStorage RxStorage](../rx-storage-localstorage.md), abstracts these complexities, integrating reactive programming and providing a more streamlined experience for data management in React applications. Thus, RxDB offers a more intuitive approach, eliminating much of the manual overhead required with IndexedDB.
 
 
 ### Using RxDB in a React Application
@@ -76,11 +76,11 @@ Once installed, RxDB can be imported and initialized within your React component
 
 ```javascript
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
   name: 'heroesdb',                   // <- name
-  storage: getRxStorageDexie(),       // <- RxStorage
+  storage: getRxStorageLocalstorage(),       // <- RxStorage
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true,                  // <- eventReduce (optional, default: false)
@@ -122,7 +122,7 @@ return (
 ### Different RxStorage Layers for RxDB
 RxDB offers multiple storage layers, each backed by a different underlying technology. Developers can choose the storage layer that best suits their application's requirements. Some available options include:
 
-- [Dexie.js RxStorage](../rx-storage-dexie.md): Built on top of Dexie.js, a popular IndexedDB wrapper.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Built on top of the browsers localstorage API.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): The default RxDB storage layer, providing efficient data storage in modern browsers.
 - [OPFS RxStorage](../rx-storage-opfs.md): Uses the Operational File System (OPFS) for storage, suitable for [Electron applications](../electron-database.md).
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, primarily intended for testing and development purposes.

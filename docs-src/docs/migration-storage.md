@@ -22,12 +22,12 @@ When you also want to change your schema, first run the storage migration and af
 
 ## Usage
 
-Lets say you want to migrate from [Dexie.js](./rx-storage-dexie.md) RxStorage to [IndexedDB](./rx-storage-indexeddb.md).
+Lets say you want to migrate from [LocalStorage RxStorage](./rx-storage-localstorage.md) to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
 ```ts
 import { migrateStorage } from 'rxdb/plugins/migration-storage';
 import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
-import { getRxStorageDexie } from 'rxdb-old/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb-old/plugins/storage-localstorage';
 
 // create the new RxDatabase
 const db = await createRxDatabase({
@@ -44,7 +44,7 @@ await migrateStorage({
      * new database has a different name.
      */
     oldDatabaseName: 'myOldDatabaseName',
-    oldStorage: getRxStorageDexie(), // RxStorage of the old database
+    oldStorage: getRxStorageLocalstorage(), // RxStorage of the old database
     batchSize: 500, // batch size
     parallel: false, // <- true if it should migrate all collections in parallel. False (default) if should migrate in serial
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
@@ -71,7 +71,7 @@ Then you can run the migration by providing the old storage:
 ```ts
 /* ... */
 import { migrateStorage } from 'rxdb/plugins/migration-storage';
-import { getRxStorageDexie } from 'rxdb-old/plugins/storage-dexie'; // <- import from the old RxDB version
+import { getRxStorageLocalstorage } from 'rxdb-old/plugins/storage-localstorage'; // <- import from the old RxDB version
 
 await migrateStorage({
     database: db as any,
@@ -81,7 +81,7 @@ await migrateStorage({
      * new database has a different name.
      */
     oldDatabaseName: 'myOldDatabaseName',
-    oldStorage: getRxStorageDexie(), // RxStorage of the old database
+    oldStorage: getRxStorageLocalstorage(), // RxStorage of the old database
     batchSize: 500, // batch size
     parallel: false,
     afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {

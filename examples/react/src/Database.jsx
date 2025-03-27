@@ -3,8 +3,8 @@ import {
     addRxPlugin
 } from 'rxdb';
 import {
-    getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 import {
     heroSchema
 } from './Schema';
@@ -26,7 +26,7 @@ const _create = async () => {
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase({
         name: 'heroesreactdb',
-        storage: wrappedValidateAjvStorage({ storage: getRxStorageDexie() })
+        storage: wrappedValidateAjvStorage({ storage: getRxStorageLocalstorage() })
     });
     console.log('DatabaseService: created database');
     window['db'] = db; // write to window for debugging

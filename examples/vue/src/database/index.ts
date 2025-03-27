@@ -13,7 +13,7 @@ import {
 
 import heroSchema from '../schemas/Hero.schema';
 
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
@@ -43,7 +43,7 @@ export async function createDatabase(): Promise<Plugin> {
   const db = await createRxDatabase<RxHeroesCollections>({
     name: 'heroes',
     storage: wrappedValidateAjvStorage({
-      storage: getRxStorageDexie()
+      storage: getRxStorageLocalstorage()
     })
     // password: 'myLongAndStupidPassword' // no password needed
   });

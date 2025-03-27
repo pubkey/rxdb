@@ -75,13 +75,13 @@ Below is a short demo of how to create an RxDB [database](../rx-database.md), ad
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 async function initDB() {
   // Create a local offline database
   const db = await createRxDatabase({
     name: 'myOfflineDB',
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
   });
 
   // Add collections
@@ -148,13 +148,13 @@ Local data can be a risk if it’s sensitive or personal. RxDB offers [encryptio
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
 
 async function initSecureDB() {
-  // Wrap the Dexie storage with crypto-js encryption
+  // Wrap the storage with crypto-js encryption
   const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageLocalstorage()
   });
 
   // Create database with a password

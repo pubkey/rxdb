@@ -29,7 +29,7 @@ and hard to debug.
 
 In version [10.0.0](./releases/10.0.0.md) RxDB introduced the [RxStorage](./rx-storage.md) layer which
 allows users to swap out the underlying storage engine where RxDB stores and queries documents from.
-This allowed to use alternatives from PouchDB, for example the [Dexie RxStorage](./rx-storage-dexie.md) in browsers
+This allowed to use alternatives from PouchDB, for example the [IndexedDB RxStorage](./rx-storage-indexeddb.md) in browsers
 or even the [FoundationDB RxStorage](./rx-storage-foundationdb.md) on the server side.
 There where not many use cases left where it was a good choice to use the PouchDB RxStorage. Only replicating with a
 CouchDB server, was only possible with PouchDB. But this has also changed. RxDB has [a plugin](./replication-couchdb.md) that allows
