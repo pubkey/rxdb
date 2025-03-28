@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD docs about [Partial Sync](https://rxdb.info/replication.html#partial-sync-with-rxdb)
 - FIX (electron) "Object has been destroyed" error was introduced again in RxDB version 16 [#5370](https://github.com/pubkey/rxdb/issues/5370#issuecomment-2748971414)
 - ADD [Localstorage RxStorage](https://rxdb.info/rx-storage-localstorage.html)
 <!-- ADD new changes here! -->
