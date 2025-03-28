@@ -486,7 +486,7 @@
     "isomorphic-ws": "5.0.0",
     "js-base64": "3.7.7",
     "jsonschema-key-compression": "1.7.0",
-    "mingo": "6.5.5",
+    "mingo": "6.5.6",
     "mongodb": "6.15.0",
     "nats": "2.29.3",
     "oblivious-set": "1.4.0",
