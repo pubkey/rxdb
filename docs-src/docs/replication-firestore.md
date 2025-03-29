@@ -57,6 +57,11 @@ const replicationState = replicateFirestore(
             database: firestoreDatabase,
             collection: firestoreCollection
         },
+        /**
+         * (required) Enable push and pull replication with firestore by
+         * providing an object with optional filter for each type of replication desired.
+         * [default=disabled]
+         */
         pull: {},
         push: {},
         /**
