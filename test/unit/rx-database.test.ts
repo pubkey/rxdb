@@ -188,6 +188,42 @@ describeParallel('rx-database.test.ts', () => {
                 db.close();
 
             });
+            it('closes duplicate databases if closeDuplicates flag is true', async () => {
+                const name = randomToken(10);
+                const storage = config.storage.getStorage();
+
+                // db can be created without `closeDuplicates: true`
+                const db1 = await createRxDatabase({
+                    name,
+                    storage,
+                });
+
+                assert.ok(!db1.closed);
+
+                // db2 closes db1 due to `closeDuplicates: true`
+                const db2 = await createRxDatabase({
+                    name,
+                    storage,
+                    closeDuplicates: true,
+                });
+                // close db2 manually without awaiting, db3 should be created without DB8 error
+                db2.close();
+
+                assert.ok(db1.closed);
+                assert.ok(!db2.closed);
+
+                // db3 closes db2 due to `closeDuplicates: true`, no DB8 error even though db2 was closed manually
+                const db3 = await createRxDatabase({
+                    name,
+                    storage,
+                    closeDuplicates: true,
+                });
+
+                assert.ok(db2.closed);
+                assert.ok(!db3.closed);
+
+                db3.close();
+            });
         });
         describe('negative', () => {
             it('should crash with invalid token', async () => {

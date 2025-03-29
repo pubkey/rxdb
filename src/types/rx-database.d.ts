@@ -23,6 +23,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     ignoreDuplicate?: boolean;
     options?: any;
     cleanupPolicy?: Partial<RxCleanupPolicy>;
+    closeDuplicates?: boolean;
     /**
      * Set this to true if you want to store local documents
      * in the RxDatabase instance.
