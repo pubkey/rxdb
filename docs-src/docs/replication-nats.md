@@ -16,7 +16,7 @@ Therefore it is not recommended to directly replicate the NATS server with an un
 
 ## Precondition
 
-For the replication endpoint the NATS cluster must have enabled [JetStream](https://docs.nats.io/nats-concepts/jetstream) and store all message data as [structured JSON](https://www.google.com/search?q=nats+jetstream+json&oq=nats+jetstream+json&aqs=chrome..69i57j69i60l2.2442j0j7&sourceid=chrome&ie=UTF-8).
+For the replication endpoint the NATS cluster must have enabled [JetStream](https://docs.nats.io/nats-concepts/jetstream) and store all message data as [structured JSON](https://docs.nats.io/using-nats/developer/sending/structure).
 
 The easiest way to start a compatible NATS server is to use the official docker image:
 
