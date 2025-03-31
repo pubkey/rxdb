@@ -104,6 +104,27 @@ const db2 = await createRxDatabase({
 });
 ```
 
+### closeDuplicates
+`(optional=false)`
+
+Closes all other RxDatabases instances that have the same storage+name combination.
+
+```js
+const db1 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true
+});
+const db2 = await createRxDatabase({
+  name: 'heroesdb',
+  storage: getRxStorageLocalstorage(),
+  closeDuplicates: true // this create-call will close db1
+});
+
+// db1 is now closed.
+```
+
+
 
 ### hashFunction
 
