@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="/src/style.css" />
+        <title>RxDB Heroes Tauri</title>
+        <script type="module" src="/src/main.js" defer></script>
+    </head>
+    <body>
+        <h1>RxDB Heroes Tauri</h1>
+        <div id="list-box" class="box">
+            <h3>Heroes</h3>
+            <ul id="heroes-list"></ul>
+        </div>
+        <div id="insert-box" class="box">
+            <h3>Add Hero</h3>
+            <input type="text" placeholder="Name" name="name" id="input-name" />
+            <input
+                type="text"
+                placeholder="Color"
+                name="color"
+                id="input-color"
+            />
+            <button onclick="addHero();" id="input-submit">Insert</button>
+        </div>
+    </body>
+</html>
