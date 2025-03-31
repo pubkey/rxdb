@@ -275,7 +275,6 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 - [Buy access to the premium plugins](https://rxdb.info/premium/)
 - [Join us at discord to get help](https://rxdb.info/chat)
 - [Follow us at LinkedIn](https://www.linkedin.com/company/rxdb/)
-- [Give Feedback (anonymous)](https://forms.gle/vGaZB7zrub1hgqDk8)
 
 <!-- 
   There are many websites that just exact-copy the readme of github projects.
