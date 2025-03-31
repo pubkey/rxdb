@@ -595,23 +595,62 @@ export function getSQLiteBasicsWasm(
                 //     console.log(JSON.stringify(runResult));
                 // });
             });
-            runQueueWasmSQLite = newQueue.catch(() => { });
+            runQueueWasmSQLite = newQueue.catch(() => {});
             return newQueue as any;
         },
         setPragma: (db, key, value) => {
             const newQueue = runQueueWasmSQLite.then(async () => {
                 await sqlite3.exec(db.nr, `pragma ${key} = ${value};`);
             });
-            runQueueWasmSQLite = newQueue.catch(() => { });
+            runQueueWasmSQLite = newQueue.catch(() => {});
             return newQueue as any;
         },
         close: (db) => {
             const newQueue = runQueueWasmSQLite.then(async () => {
                 await sqlite3.close(db.nr);
             });
-            runQueueWasmSQLite = newQueue.catch(() => { });
+            runQueueWasmSQLite = newQueue.catch(() => {});
             return newQueue as any;
         },
-        journalMode: 'WAL',
+        journalMode: "WAL",
     };
-};
+}
+
+export function getSQLiteBasicsTauri(sqlite3: Sqlite3Type): SQLiteBasics<any> {
+    let basics: SQLiteBasics<any> = BASICS_BY_SQLITE_LIB.get(sqlite3);
+    if (!basics) {
+        basics = {
+            async open(name: string) {
+                return await sqlite3.load(`sqlite:${name}.db`);
+            },
+            async run(
+                db: SQLiteDatabaseClass,
+                queryWithParams: SQLiteQueryWithParams,
+            ) {
+                await db.execute(queryWithParams.query, queryWithParams.params);
+            },
+            async all(
+                db: SQLiteDatabaseClass,
+                queryWithParams: SQLiteQueryWithParams,
+            ) {
+                return await db.select(
+                    queryWithParams.query,
+                    queryWithParams.params,
+                );
+            },
+            async setPragma(
+                db: SQLiteDatabaseClass,
+                key: string,
+                value: string,
+            ) {
+                await db.execute(`PRAGMA ${key} = ${value};`);
+            },
+            async close(db: SQLiteDatabaseClass) {
+                await db.close();
+            },
+            journalMode: 'WAL2',
+        };
+        BASICS_BY_SQLITE_LIB.set(sqlite3, basics);
+    }
+    return basics;
+}
