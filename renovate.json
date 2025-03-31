@@ -23,7 +23,8 @@
     "examples/flutter/pubspec.yaml",
     "src/plugins/flutter/dart/pubspec.yaml",
     "config/appwrite/docker-compose.yml",
-    "config/appwrite/backup/docker-compose.yml"
+    "config/appwrite/backup/docker-compose.yml",
+    "examples/tauri/src-tauri/"
   ],
   "rebaseStalePrs": true,
   "prConcurrentLimit": 8,
