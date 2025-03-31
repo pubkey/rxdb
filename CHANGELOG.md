@@ -7,6 +7,7 @@
 - FIX (electron) "Object has been destroyed" error was introduced again in RxDB version 16 [#5370](https://github.com/pubkey/rxdb/issues/5370#issuecomment-2748971414)
 - FIX Memory-mapped storage can have duplicate documents if a write happens during cleanup.
 - ADD [Localstorage RxStorage](https://rxdb.info/rx-storage-localstorage.html)
+- ADD SQLite Storage example with tauri [#6939](https://github.com/pubkey/rxdb/pull/6939)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
