@@ -6,8 +6,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'The local Database for Ionic Apps',
             appName: 'Ionic',
-            title: <>The local <b className="underline">Database</b> for{' '}
-                <b className="underline">Ionic</b> Apps</>,
+            title: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in Ionic</>,
             iconUrl: '/files/icons/ionic.svg'
         }
     });

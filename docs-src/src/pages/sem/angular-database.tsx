@@ -6,8 +6,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'The local Database for Angular Apps',
             appName: 'Angular',
-            title: <>The local <b className="underline">Database</b> for{' '}
-                <b className="underline">Angular</b> Apps</>,
+            title: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in Angular</>,
             iconUrl: '/files/icons/angular.svg'
         }
     });
