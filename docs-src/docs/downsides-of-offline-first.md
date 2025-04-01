@@ -89,7 +89,7 @@ Client side databases run on JavaScript and JavaScript runs on a single CPU that
 An offline first app does not have a single source of truth. There is a source on the backend, one on the own client, and also each other client has its own definition of truth. At the moment your user starts the app, the local state is hopefully already replicated with the backend and all other clients. But this does not have to be true, the states can have converged and you have to plan for that.
 The user could update a document based on wrong assumptions because it was not fully replicated at that point in time because the user is offline. A good way to handle this problem is to show the replication state in the UI and tell the user when the replication is running, stopped, paused or finished.
 
-And some data is just too important to be "eventual consistent". Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kind of things, or at least you have to display the replication state of each document in the UI.
+And some data is just too important to be "eventual consistent". Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kinds of things, or at least you have to display the replication state of each document in the UI.
 
 <p align="center">
   <img src="./files/cap-theorem.png" alt="CAP theorem" width="150" />

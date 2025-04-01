@@ -10,7 +10,7 @@ The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) wh
 
 
 :::warning LokiJS was removed in RxDB version 16
-The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistend in memory data (similar to how lokijs works) you can use the [Memory Mapped](./rx-storage-memory-mapped.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
+The LokiJS project itself is no longer in development or maintained and therefore the lokijs RxStorage is **removed**. There are known bugs like having wrong query results of losing data. LokiJS bugs that occur outside of the RxDB layer will not be fixed and the LokiJS RxStorage was removed in RxDB version 16. Using LokiJS as storage is no longer possible. In production it is recommended to use another [RxStorage](./rx-storage.md) instead. For browsers better use the [IndexedDB](./rx-storage-indexeddb.md) storage. For fast lazy persistence in memory data (similar to how lokijs works) you can use the [Memory Mapped](./rx-storage-memory-mapped.md) storage. If you really need the lokijs RxStorage, you can fork the open-source code from the previous RxDB version.
 :::
 
 ### Pros

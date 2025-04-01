@@ -62,9 +62,9 @@ To solve this, use the [SharedWorker Plugin](./rx-storage-shared-worker.md) so t
 If you have a single JavaScript process, like in a React Native app, you do not have to care about this and can just use the memory-mapped storage in the main process.
 
 
-## Encryption of the persistend data
+## Encryption of the persistent data
 
-Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the encryption storage wrapper around the persistend storage, **NOT** around the memory-mapped storage as a whole.
+Normally RxDB is not capable of running queries on encrypted fields. But when you use the memory-mapped RxStorage, you can store the document data encrypted on disc, while being able to run queries on the not encrypted in-memory state. Make sure you use the encryption storage wrapper around the persistent storage, **NOT** around the memory-mapped storage as a whole.
 
 ```ts
 

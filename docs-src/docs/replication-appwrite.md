@@ -71,7 +71,7 @@ docker-compose -v
 
 ##### Run the installation script
 
-The installation script runs inside of a docker container. It will create a docker-compose file and and `.env` file.
+The installation script runs inside of a docker container. It will create a docker-compose file and an `.env` file.
 
 ```bash
 docker run -it --rm \
@@ -255,7 +255,7 @@ const replicationState = replicateAppwrite({
 
 ### Do other things with the replication state
 
-The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionaliy of the normal [RxReplicationState](./replication.md).
+The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
 
 </Steps>
 

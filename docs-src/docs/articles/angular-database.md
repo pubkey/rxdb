@@ -123,7 +123,7 @@ RxDB supports multiple storage layers for persisting data. Some of the available
 - [LocalStorage RxStorage](../rx-storage-localstorage.md): Uses the [LocalStorage API](./localstorage.md) without any third party plugins.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): RxDB directly supports IndexedDB as a storage layer. IndexedDB is a low-level browser database that offers good performance and reliability.
 - [OPFS RxStorage](../rx-storage-opfs.md): The OPFS [RxStorage](../rx-storage.md) for RxDB is built on top of the [File System Access API](https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/) which is available in [all modern browsers](https://caniuse.com/native-filesystem-api). It provides an API to access a sandboxed private file system to persistently store and retrieve data.
-Compared to other persistend storage options in the browser (like [IndexedDB](../rx-storage-indexeddb.md)), the OPFS API has a **way better performance**.
+Compared to other persistent storage options in the browser (like [IndexedDB](../rx-storage-indexeddb.md)), the OPFS API has a **way better performance**.
 - [Memory RxStorage](../rx-storage-memory.md): In addition to persistent storage options, RxDB also provides a memory-based storage layer. This is useful for testing or scenarios where you don't need long-term data persistence.
 You can choose the storage layer that best suits your application's requirements and configure RxDB accordingly.
 
