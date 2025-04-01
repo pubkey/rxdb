@@ -26,7 +26,8 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
     {
         videoId: 'm3T0gMuitbI',
         title: 'Build REAL TIME Applications easily 👩‍💻',
-        duration: '0:52'
+        duration: '0:52',
+        startAt: 9
     },
     // {
     //     youtubeId: 'guP1Lz6JgaY',
