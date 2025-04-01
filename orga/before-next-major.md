@@ -3,6 +3,9 @@
 This list contains things that have to be done but will create breaking changes.
 
 
+## `toggleOnDocumentVisible` should default to `true`
+
+https://github.com/pubkey/rxdb/issues/6810
 
 ## Final fields should not be automatically required
 
