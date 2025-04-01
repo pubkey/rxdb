@@ -58,7 +58,7 @@
     "@capacitor/ios": "7.2.0",
     "@capacitor/preferences": "7.0.0",
     "assert": "2.1.0",
-    "express": "4.21.2",
+    "express": "5.1.0",
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
     "material-design-icons": "3.0.1",
