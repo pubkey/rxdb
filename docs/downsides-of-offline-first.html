@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.0aaceda6.js" defer="defer"></script>
-<script src="/assets/js/main.dd0c6416.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.3e9f80b2.js" defer="defer"></script>
+<script src="/assets/js/main.25335b49.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -75,7 +75,7 @@ Client side databases run on JavaScript and JavaScript runs on a single CPU that
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="eventual-consistency">Eventual consistency<a href="#eventual-consistency" class="hash-link" aria-label="Direct link to Eventual consistency" title="Direct link to Eventual consistency">​</a></h2>
 <p>An offline first app does not have a single source of truth. There is a source on the backend, one on the own client, and also each other client has its own definition of truth. At the moment your user starts the app, the local state is hopefully already replicated with the backend and all other clients. But this does not have to be true, the states can have converged and you have to plan for that.
 The user could update a document based on wrong assumptions because it was not fully replicated at that point in time because the user is offline. A good way to handle this problem is to show the replication state in the UI and tell the user when the replication is running, stopped, paused or finished.</p>
-<p>And some data is just too important to be &quot;eventual consistent&quot;. Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kind of things, or at least you have to display the replication state of each document in the UI.</p>
+<p>And some data is just too important to be &quot;eventual consistent&quot;. Create a wire transfer in your online banking app while you are offline. You keep the smartphone laying at your night desk and when you use again in the next morning, it goes online and replicates the transaction. No thank you, do not use offline first for these kinds of things, or at least you have to display the replication state of each document in the UI.</p>
 <p align="center"><img src="./files/cap-theorem.png" alt="CAP theorem" width="150"></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="permissions-and-authentication">Permissions and authentication<a href="#permissions-and-authentication" class="hash-link" aria-label="Direct link to Permissions and authentication" title="Direct link to Permissions and authentication">​</a></h2>
 <p>Every offline first app that goes beyond a prototype, does likely not have the same global state for all of its users. Each user has a different set of documents that are allowed to be replicated or seen by the user. So you need some kind of authentication and permission handling to divide the documents.

@@ -3,6 +3,14 @@
 
 <!-- CHANGELOG NEWEST -->
 
+<!-- ADD new changes here! -->
+
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+### 16.9.0 (1 April 2025)
+
 - ADD [Localstorage RxStorage](https://rxdb.info/rx-storage-localstorage.html).
 - ADD docs about [Partial Sync](https://rxdb.info/replication.html#partial-sync-with-rxdb).
 - ADD SQLite Storage example with tauri [#6939](https://github.com/pubkey/rxdb/pull/6939).
@@ -10,11 +18,6 @@
 - FIX (electron) "Object has been destroyed" error was introduced again in RxDB version 16 [#5370](https://github.com/pubkey/rxdb/issues/5370#issuecomment-2748971414).
 - FIX Memory-mapped storage can have duplicate documents if a write happens during cleanup.
 - FIX migrate schema with multiple connected storages causes error [#7008](https://github.com/pubkey/rxdb/pull/7008)
-<!-- ADD new changes here! -->
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 16.8.1 (14 March 2025)
 

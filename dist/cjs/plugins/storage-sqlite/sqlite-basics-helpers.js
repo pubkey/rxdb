@@ -12,6 +12,7 @@ exports.getSQLiteBasicsExpoSQLiteAsync = getSQLiteBasicsExpoSQLiteAsync;
 exports.getSQLiteBasicsNode = getSQLiteBasicsNode;
 exports.getSQLiteBasicsNodeNative = getSQLiteBasicsNodeNative;
 exports.getSQLiteBasicsQuickSQLite = getSQLiteBasicsQuickSQLite;
+exports.getSQLiteBasicsTauri = getSQLiteBasicsTauri;
 exports.getSQLiteBasicsWasm = getSQLiteBasicsWasm;
 exports.getSQLiteBasicsWebSQL = getSQLiteBasicsWebSQL;
 exports.mapNodeNativeParams = mapNodeNativeParams;
@@ -498,8 +499,32 @@ function getSQLiteBasicsWasm(sqlite3) {
       runQueueWasmSQLite = newQueue.catch(() => {});
       return newQueue;
     },
-    journalMode: 'WAL'
+    journalMode: "WAL"
   };
 }
-;
+function getSQLiteBasicsTauri(sqlite3) {
+  var basics = BASICS_BY_SQLITE_LIB.get(sqlite3);
+  if (!basics) {
+    basics = {
+      async open(name) {
+        return await sqlite3.load("sqlite:" + name + ".db");
+      },
+      async run(db, queryWithParams) {
+        await db.execute(queryWithParams.query, queryWithParams.params);
+      },
+      async all(db, queryWithParams) {
+        return await db.select(queryWithParams.query, queryWithParams.params);
+      },
+      async setPragma(db, key, value) {
+        await db.execute("PRAGMA " + key + " = " + value + ";");
+      },
+      async close(db) {
+        await db.close();
+      },
+      journalMode: 'WAL2'
+    };
+    BASICS_BY_SQLITE_LIB.set(sqlite3, basics);
+  }
+  return basics;
+}
 //# sourceMappingURL=sqlite-basics-helpers.js.map

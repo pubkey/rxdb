@@ -82,7 +82,7 @@ export function getSQLiteUpdateSQL(tableName, primaryPath, writeRow) {
   };
 }
 ;
-var TX_QUEUE_BY_DATABASE = new WeakMap();
+export var TX_QUEUE_BY_DATABASE = new WeakMap();
 export function sqliteTransaction(database, sqliteBasics, handler,
 /**
  * Context will be logged

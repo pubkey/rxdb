@@ -1,7 +1,7 @@
 import _readOnlyError from "@babel/runtime/helpers/readOnlyError";
 import { getPrimaryFieldOfPrimaryKey, categorizeBulkWriteRows, ensureNotFalsy, addRxStorageMultiInstanceSupport, promiseWait, getQueryMatcher } from "../../index.js";
 import { BehaviorSubject, Subject, filter, firstValueFrom } from 'rxjs';
-import { closeDatabaseConnection, ensureParamsCountIsCorrect, getDatabaseConnection, getSQLiteUpdateSQL, RX_STORAGE_NAME_SQLITE, sqliteTransaction, getDataFromResultRow, getSQLiteInsertSQL } from "./sqlite-helpers.js";
+import { closeDatabaseConnection, ensureParamsCountIsCorrect, getDatabaseConnection, getSQLiteUpdateSQL, RX_STORAGE_NAME_SQLITE, sqliteTransaction, getDataFromResultRow, getSQLiteInsertSQL, TX_QUEUE_BY_DATABASE } from "./sqlite-helpers.js";
 import { getSortComparator } from "../../rx-query-helper.js";
 import { newRxError } from "../../rx-error.js";
 var instanceId = 0;
@@ -55,7 +55,7 @@ export var RxStorageInstanceSQLite = /*#__PURE__*/function () {
     await sqliteTransaction(database, this.sqliteBasics, async () => {
       if (this.closed) {
         this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
-        throw new Error('SQLite.bulkWrite() already closed ' + this.tableName + ' context: ' + context);
+        throw new Error('SQLite.bulkWrite(' + context + ') already closed ' + this.tableName + ' context: ' + context);
       }
       var result = await this.all(database, {
         query: "SELECT data FROM \"" + this.tableName + "\"",
@@ -216,6 +216,10 @@ export var RxStorageInstanceSQLite = /*#__PURE__*/function () {
     return this.close();
   };
   _proto.close = async function close() {
+    var queue = TX_QUEUE_BY_DATABASE.get(await this.internals.databasePromise);
+    if (queue) {
+      await queue;
+    }
     if (this.closed) {
       return this.closed;
     }

@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.0aaceda6.js" defer="defer"></script>
-<script src="/assets/js/main.dd0c6416.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.3e9f80b2.js" defer="defer"></script>
+<script src="/assets/js/main.25335b49.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -39,7 +39,7 @@
 <p>When incorporating JSON documents into your application, you have several storage and access options to consider:</p>
 <ul>
 <li>
-<p><strong>Local In-App Database with In-Memory Storage</strong>: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persisted beyond the current application session, making it suitable for temporary data storage. With RxDB, the <a href="/rx-storage-memory.html">memory RxStorage</a> can be utilized to create an in-memory database.</p>
+<p><strong>Local In-App Database with In-Memory Storage</strong>: Ideal for lightweight applications or temporary data storage, this option keeps data in memory, ensuring fast read and write operations. However, data is not persistet beyond the current application session, making it suitable for temporary data storage. With RxDB, the <a href="/rx-storage-memory.html">memory RxStorage</a> can be utilized to create an in-memory database.</p>
 </li>
 <li>
 <p><strong>Local In-App Database with Persistent Storage</strong>: Suitable for applications requiring data retention across sessions. Data is stored on the user&#x27;s device or inside of the Node.js application, offering persistence between application sessions. It balances speed and data retention, making it versatile for various applications. With RxDB, a whole range of persistend storages is available. As example, for browser there is the <a href="/rx-storage-indexeddb.html">IndexedDB storage</a>. For server side applications, the <a href="/rx-storage-filesystem-node.html">Node.js Filesystem storage</a> can be used. There are <a href="/rx-storage.html">many more storages</a> for React-Native, Flutter, Capacitors.js and others.</p>
@@ -59,7 +59,7 @@ When your application&#x27;s schema evolves, RxDB provides <a href="/migration-s
 <p>RxDB offers versatile storage solutions for browser-based applications:</p>
 <ul>
 <li>
-<p><strong>Multiple Storage Plugins</strong>: RxDB supports various storage backends, including <a href="/rx-storage-indexeddb.html">IndexedDB</a>, <a href="/rx-storage-dexie.html">Dexie.js</a> and <a href="/rx-storage-memory.html">In-Memory</a>, catering to a range of browser environments.</p>
+<p><strong>Multiple Storage Plugins</strong>: RxDB supports various storage backends, including <a href="/rx-storage-indexeddb.html">IndexedDB</a>, <a href="/rx-storage-localstorage.html">localstorage</a> and <a href="/rx-storage-memory.html">In-Memory</a>, catering to a range of browser environments.</p>
 </li>
 <li>
 <p><strong>Observable Queries</strong>: With RxDB, you can create observable <a href="/rx-query.html">queries</a> that work seamlessly across multiple browser tabs, providing real-time updates and synchronization.</p>

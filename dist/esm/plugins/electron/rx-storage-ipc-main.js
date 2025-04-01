@@ -19,7 +19,7 @@ export function exposeIpcMainRxStorage(args) {
   var addOpenRenderer = renderer => {
     if (openRenderers.has(renderer)) return;
     openRenderers.add(renderer);
-    renderer.on('closed', () => openRenderers.delete(renderer));
+    renderer.on('destroyed', () => openRenderers.delete(renderer));
   };
   var send = msg => {
     /**

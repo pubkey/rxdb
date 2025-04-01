@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.0aaceda6.js" defer="defer"></script>
-<script src="/assets/js/main.dd0c6416.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.3e9f80b2.js" defer="defer"></script>
+<script src="/assets/js/main.25335b49.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -24,7 +24,7 @@ On the client side the official <a href="https://www.npmjs.com/package/nats" tar
 <p>NATS is a messaging system that by itself does not have a validation or granulary access control build in.
 Therefore it is not recommended to directly replicate the NATS server with an untrusted RxDB client application. Instead you should replicated from NATS to your Node.js server side RxDB database.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="precondition">Precondition<a href="#precondition" class="hash-link" aria-label="Direct link to Precondition" title="Direct link to Precondition">​</a></h2>
-<p>For the replication endpoint the NATS cluster must have enabled <a href="https://docs.nats.io/nats-concepts/jetstream" target="_blank" rel="noopener noreferrer">JetStream</a> and store all message data as <a href="https://www.google.com/search?q=nats+jetstream+json&amp;oq=nats+jetstream+json&amp;aqs=chrome..69i57j69i60l2.2442j0j7&amp;sourceid=chrome&amp;ie=UTF-8" target="_blank" rel="noopener noreferrer">structured JSON</a>.</p>
+<p>For the replication endpoint the NATS cluster must have enabled <a href="https://docs.nats.io/nats-concepts/jetstream" target="_blank" rel="noopener noreferrer">JetStream</a> and store all message data as <a href="https://docs.nats.io/using-nats/developer/sending/structure" target="_blank" rel="noopener noreferrer">structured JSON</a>.</p>
 <p>The easiest way to start a compatible NATS server is to use the official docker image:</p>
 <p><code>docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js</code></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="usage">Usage<a href="#usage" class="hash-link" aria-label="Direct link to Usage" title="Direct link to Usage">​</a></h2>

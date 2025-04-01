@@ -11,6 +11,7 @@ export declare function closeDatabaseConnection(databaseName: string, sqliteBasi
 export declare function getDataFromResultRow(row: SQLResultRow): string;
 export declare function getSQLiteInsertSQL<RxDocType>(collectionName: string, primaryPath: keyof RxDocType, docData: RxDocumentData<RxDocType>): SQLiteQueryWithParams;
 export declare function getSQLiteUpdateSQL<RxDocType>(tableName: string, primaryPath: keyof RxDocType, writeRow: BulkWriteRow<RxDocType>): SQLiteQueryWithParams;
+export declare const TX_QUEUE_BY_DATABASE: WeakMap<SQLiteDatabaseClass, Promise<void>>;
 export declare function sqliteTransaction(database: SQLiteDatabaseClass, sqliteBasics: SQLiteBasics<any>, handler: () => Promise<'COMMIT' | 'ROLLBACK'>, 
 /**
  * Context will be logged

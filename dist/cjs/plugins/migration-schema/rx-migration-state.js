@@ -194,7 +194,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
   _proto.migrateStorage = async function migrateStorage(oldStorage, newStorage, batchSize) {
     var replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
       databaseName: this.database.name,
-      collectionName: 'rx-migration-state-meta-' + this.collection.name + '-' + this.collection.schema.version,
+      collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
       databaseInstanceToken: this.database.token,
       multiInstance: this.database.multiInstance,
       options: {},
@@ -210,7 +210,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     _index2.defaultConflictHandler, this.database.token, true);
     var replicationState = (0, _index2.replicateRxStorageInstance)({
       keepMeta: true,
-      identifier: ['rx-migration-state', this.collection.name, oldStorage.schema.version, this.collection.schema.version].join('-'),
+      identifier: ['rx-migration-state', oldStorage.collectionName, oldStorage.schema.version, this.collection.schema.version].join('-'),
       replicationHandler: {
         masterChangesSince() {
           return Promise.resolve({
@@ -266,6 +266,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
       });
     });
     await (0, _index2.awaitRxStorageReplicationFirstInSync)(replicationState);
+    await (0, _index2.awaitRxStorageReplicationInSync)(replicationState);
     await (0, _index2.cancelRxStorageReplication)(replicationState);
     await this.updateStatusQueue;
     if (hasError) {

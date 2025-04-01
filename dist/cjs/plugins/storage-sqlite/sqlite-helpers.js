@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SQLITE_IN_MEMORY_DB_NAME = exports.RX_STORAGE_NAME_SQLITE = exports.PARAM_KEY = exports.NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = void 0;
+exports.TX_QUEUE_BY_DATABASE = exports.SQLITE_IN_MEMORY_DB_NAME = exports.RX_STORAGE_NAME_SQLITE = exports.PARAM_KEY = exports.NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = void 0;
 exports.boolParamsToInt = boolParamsToInt;
 exports.closeDatabaseConnection = closeDatabaseConnection;
 exports.ensureParamsCountIsCorrect = ensureParamsCountIsCorrect;
@@ -98,7 +98,7 @@ function getSQLiteUpdateSQL(tableName, primaryPath, writeRow) {
   };
 }
 ;
-var TX_QUEUE_BY_DATABASE = new WeakMap();
+var TX_QUEUE_BY_DATABASE = exports.TX_QUEUE_BY_DATABASE = new WeakMap();
 function sqliteTransaction(database, sqliteBasics, handler,
 /**
  * Context will be logged

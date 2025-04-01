@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://www.googletagmanager.com">
 <script>window.dataLayer=window.dataLayer||[]</script>
 <script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a);m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-PL63TR5",g.parentNode.insertBefore(m,g)}(window,document,"script","dataLayer")</script><link rel="stylesheet" href="/assets/css/styles.e5fcb770.css">
-<script src="/assets/js/runtime~main.0aaceda6.js" defer="defer"></script>
-<script src="/assets/js/main.dd0c6416.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.3e9f80b2.js" defer="defer"></script>
+<script src="/assets/js/main.25335b49.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -40,11 +40,11 @@
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="multi-tab-support">Multi-Tab support<a href="#multi-tab-support" class="hash-link" aria-label="Direct link to Multi-Tab support" title="Direct link to Multi-Tab support">​</a></h3>
 <p>RxDB offers multi-tab support, allowing applications to function seamlessly across multiple <a href="/articles/browser-database.html">browser</a> tabs. This feature ensures that data changes in one tab are immediately reflected in all other open tabs, enabling a consistent user experience across different browser windows.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="rxdb-vs-other-data-base-options">RxDB vs. Other data base Options<a href="#rxdb-vs-other-data-base-options" class="hash-link" aria-label="Direct link to RxDB vs. Other data base Options" title="Direct link to RxDB vs. Other data base Options">​</a></h3>
-<p>When considering data base options for web applications, developers often encounter choices like Dexie.js, IndexedDB, OPFS, and Memory-based solutions. RxDB, while built on top of IndexedDB, stands out due to its reactive data handling capabilities and advanced synchronization features. Compared to other options, RxDB offers a more streamlined and powerful approach to managing data in web applications.</p>
+<p>When considering data base options for web applications, developers often encounter choices like IndexedDB, <a href="/rx-storage-opfs.html">OPFS</a>, and Memory-based solutions. RxDB, while built on top of IndexedDB, stands out due to its reactive data handling capabilities and advanced synchronization features. Compared to other options, RxDB offers a more streamlined and powerful approach to managing data in web applications.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="different-rxstorage-layers-for-rxdb">Different RxStorage layers for RxDB<a href="#different-rxstorage-layers-for-rxdb" class="hash-link" aria-label="Direct link to Different RxStorage layers for RxDB" title="Direct link to Different RxStorage layers for RxDB">​</a></h3>
 <p>RxDB provides various <a href="/rx-storage.html">storage layers</a>, known as RxStorage, that serve as interfaces to different underlying <a href="/articles/browser-storage.html">storage</a> technologies. These layers include:</p>
 <ul>
-<li><a href="/rx-storage-dexie.html">Dexie.js RxStorage</a>: Built on top of Dexie.js, this storage layer leverages IndexedDB as its backend.</li>
+<li><a href="/rx-storage-localstorage.html">LocalStorage RxStorage</a>: Built on top of the browsers <a href="/articles/localstorage.html">localStorage API</a>.</li>
 <li><a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a>: This layer directly utilizes IndexedDB as its backend, providing a robust and widely supported storage option.</li>
 <li><a href="/rx-storage-opfs.html">OPFS RxStorage</a>: OPFS (Operational Transformation File System) is a file system-like storage layer that allows for efficient conflict resolution and real-time collaboration.</li>
 <li>Memory RxStorage: Primarily used for testing and development, this storage layer keeps data in memory without persisting it to disk.

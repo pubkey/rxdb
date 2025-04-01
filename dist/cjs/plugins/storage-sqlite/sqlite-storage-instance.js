@@ -63,7 +63,7 @@ var RxStorageInstanceSQLite = exports.RxStorageInstanceSQLite = /*#__PURE__*/fun
     await (0, _sqliteHelpers.sqliteTransaction)(database, this.sqliteBasics, async () => {
       if (this.closed) {
         this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
-        throw new Error('SQLite.bulkWrite() already closed ' + this.tableName + ' context: ' + context);
+        throw new Error('SQLite.bulkWrite(' + context + ') already closed ' + this.tableName + ' context: ' + context);
       }
       var result = await this.all(database, {
         query: "SELECT data FROM \"" + this.tableName + "\"",
@@ -224,6 +224,10 @@ var RxStorageInstanceSQLite = exports.RxStorageInstanceSQLite = /*#__PURE__*/fun
     return this.close();
   };
   _proto.close = async function close() {
+    var queue = _sqliteHelpers.TX_QUEUE_BY_DATABASE.get(await this.internals.databasePromise);
+    if (queue) {
+      await queue;
+    }
     if (this.closed) {
       return this.closed;
     }

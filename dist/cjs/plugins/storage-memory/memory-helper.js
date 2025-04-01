@@ -17,7 +17,7 @@ function getMemoryCollectionKey(databaseName, collectionName, schemaVersion) {
 }
 function ensureNotRemoved(instance) {
   if (instance.internals.removed) {
-    throw new Error('removed');
+    throw new Error('removed already ' + instance.databaseName + ' - ' + instance.collectionName + ' - ' + instance.schema.version);
   }
 }
 function attachmentMapKey(documentId, attachmentId) {

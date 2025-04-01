@@ -6,7 +6,7 @@ export function getMemoryCollectionKey(databaseName, collectionName, schemaVersi
 }
 export function ensureNotRemoved(instance) {
   if (instance.internals.removed) {
-    throw new Error('removed');
+    throw new Error('removed already ' + instance.databaseName + ' - ' + instance.collectionName + ' - ' + instance.schema.version);
   }
 }
 export function attachmentMapKey(documentId, attachmentId) {

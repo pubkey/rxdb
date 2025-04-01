@@ -4,7 +4,7 @@ import { MIGRATION_DEFAULT_BATCH_SIZE, addMigrationStateToDatabase, getOldCollec
 import { PROMISE_RESOLVE_TRUE, RXJS_SHARE_REPLAY_DEFAULTS, clone, deepEqual, ensureNotFalsy, errorToPlainJson, getDefaultRevision, getDefaultRxDocumentMeta } from "../utils/index.js";
 import { getSingleDocument, hasEncryption, observeSingle, writeSingle } from "../../rx-storage-helper.js";
 import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
-import { META_INSTANCE_SCHEMA_TITLE, awaitRxStorageReplicationFirstInSync, cancelRxStorageReplication, defaultConflictHandler, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance, rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
+import { META_INSTANCE_SCHEMA_TITLE, awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, defaultConflictHandler, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance, rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
 import { overwritable } from "../../overwritable.js";
 import { INTERNAL_CONTEXT_MIGRATION_STATUS, addConnectedStorageToCollection, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
 import { normalizeMangoQuery, prepareQuery } from "../../rx-query-helper.js";
@@ -188,7 +188,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
   _proto.migrateStorage = async function migrateStorage(oldStorage, newStorage, batchSize) {
     var replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
       databaseName: this.database.name,
-      collectionName: 'rx-migration-state-meta-' + this.collection.name + '-' + this.collection.schema.version,
+      collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
       databaseInstanceToken: this.database.token,
       multiInstance: this.database.multiInstance,
       options: {},
@@ -204,7 +204,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
     defaultConflictHandler, this.database.token, true);
     var replicationState = replicateRxStorageInstance({
       keepMeta: true,
-      identifier: ['rx-migration-state', this.collection.name, oldStorage.schema.version, this.collection.schema.version].join('-'),
+      identifier: ['rx-migration-state', oldStorage.collectionName, oldStorage.schema.version, this.collection.schema.version].join('-'),
       replicationHandler: {
         masterChangesSince() {
           return Promise.resolve({
@@ -260,6 +260,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
       });
     });
     await awaitRxStorageReplicationFirstInSync(replicationState);
+    await awaitRxStorageReplicationInSync(replicationState);
     await cancelRxStorageReplication(replicationState);
     await this.updateStatusQueue;
     if (hasError) {

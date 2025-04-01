@@ -49,4 +49,5 @@ export type WasmSqliteDb = {
     name: string;
 };
 export declare function getSQLiteBasicsWasm(sqlite3: any): SQLiteBasics<WasmSqliteDb>;
+export declare function getSQLiteBasicsTauri(sqlite3: Sqlite3Type): SQLiteBasics<any>;
 export {};
