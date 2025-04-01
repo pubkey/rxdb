@@ -9,7 +9,7 @@
 - ADD [Localstorage RxStorage](https://rxdb.info/rx-storage-localstorage.html).
 - ADD SQLite Storage example with tauri [#6939](https://github.com/pubkey/rxdb/pull/6939).
 - ADD `closeDuplicates` flag as alternative to `ignoreDuplicate` to `createRxDatabase` [#7013](https://github.com/pubkey/rxdb/pull/7013).
-
+- FIX migrate schema with multiple connected storages causes error [#7008](https://github.com/pubkey/rxdb/pull/7008)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

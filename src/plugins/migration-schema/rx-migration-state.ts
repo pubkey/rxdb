@@ -337,7 +337,7 @@ export class RxMigrationState {
     ) {
         const replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
             databaseName: this.database.name,
-            collectionName: 'rx-migration-state-meta-' + this.collection.name + '-' + this.collection.schema.version,
+            collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
             databaseInstanceToken: this.database.token,
             multiInstance: this.database.multiInstance,
             options: {},
@@ -361,7 +361,7 @@ export class RxMigrationState {
             keepMeta: true,
             identifier: [
                 'rx-migration-state',
-                this.collection.name,
+                oldStorage.collectionName,
                 oldStorage.schema.version,
                 this.collection.schema.version
             ].join('-'),

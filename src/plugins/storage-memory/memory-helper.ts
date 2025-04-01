@@ -33,7 +33,11 @@ export function ensureNotRemoved(
     instance: RxStorageInstanceMemory<any>
 ) {
     if (instance.internals.removed) {
-        throw new Error('removed');
+        throw new Error(
+            'removed already ' +
+            instance.databaseName + ' - ' + instance.collectionName +
+            ' - ' + instance.schema.version
+        );
     }
 }
 
