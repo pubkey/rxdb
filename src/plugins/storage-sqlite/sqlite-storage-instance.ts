@@ -30,7 +30,8 @@ import {
     RX_STORAGE_NAME_SQLITE,
     sqliteTransaction,
     getDataFromResultRow,
-    getSQLiteInsertSQL
+    getSQLiteInsertSQL,
+    TX_QUEUE_BY_DATABASE
 } from './sqlite-helpers.ts';
 import type {
     SQLiteBasics,
@@ -373,6 +374,11 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
     }
 
     async close(): Promise<void> {
+        const queue = TX_QUEUE_BY_DATABASE.get(await this.internals.databasePromise);
+        if (queue) {
+            await queue;
+        }
+
         if (this.closed) {
             return this.closed;
         }

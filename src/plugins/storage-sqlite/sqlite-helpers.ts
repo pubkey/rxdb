@@ -159,7 +159,7 @@ export function getSQLiteUpdateSQL<RxDocType>(
 };
 
 
-const TX_QUEUE_BY_DATABASE: WeakMap<SQLiteDatabaseClass, Promise<void>> = new WeakMap();
+export const TX_QUEUE_BY_DATABASE: WeakMap<SQLiteDatabaseClass, Promise<void>> = new WeakMap();
 export function sqliteTransaction(
     database: SQLiteDatabaseClass,
     sqliteBasics: SQLiteBasics<any>,
