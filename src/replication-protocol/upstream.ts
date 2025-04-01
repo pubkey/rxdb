@@ -85,7 +85,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         time: number;
     };
     const openTasks: TaskWithTime[] = [];
-    let persistenceQueue: Promise<any> = PROMISE_RESOLVE_FALSE;
+    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
