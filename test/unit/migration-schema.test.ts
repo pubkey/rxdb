@@ -778,6 +778,139 @@ describe('migration-schema.test.ts', function () {
         });
     });
     describeParallel('issues', () => {
+        it('#7008 migrate schema with multiple connected storages', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            // create a schema to migrate to
+            const mySchema2 = {
+                version: 1,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    fullName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            // create a replication state - this adds a new connected storage
+            const replicationState = replicateRxCollection({
+                collection: collections.mycollection,
+                replicationIdentifier: 'replication-1',
+                push: {
+                    handler: () => {
+                        return Promise.resolve([]);
+                    }
+                },
+                pull: {
+                    handler: () => {
+                        return Promise.resolve({ checkpoint: null, documents: [] });
+                    }
+                }
+            });
+
+            // create another replication state - this adds an additional connected storage
+            const replicationState2 = replicateRxCollection({
+                collection: collections.mycollection,
+                replicationIdentifier: 'replication-2',
+                push: {
+                    handler: () => {
+                        return Promise.resolve([]);
+                    }
+                },
+                pull: {
+                    handler: () => {
+                        return Promise.resolve({ checkpoint: null, documents: [] });
+                    }
+                }
+            });
+
+            // wait until initial replication is done
+            await Promise.all([
+                replicationState.awaitInitialReplication(),
+                replicationState2.awaitInitialReplication()
+            ]);
+
+            // insert a document
+            await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+
+            await db.close();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection with the new schema
+            const collections2 = await db2.addCollections({
+                mycollection: {
+                    schema: mySchema2,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.fullName = oldDoc.firstName + ' ' + oldDoc.lastName;
+                            delete oldDoc.lastName;
+                            delete oldDoc.firstName;
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+            const docs = await collections2.mycollection.find().exec();
+            assert.strictEqual(docs.length, 1);
+            await db2.close();
+        });
         it('#212 migration runs into infinity-loop', async () => {
             const dbName = randomToken(10);
             const schema0 = {
