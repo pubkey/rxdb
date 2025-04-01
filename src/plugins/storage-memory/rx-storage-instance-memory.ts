@@ -444,7 +444,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
-        console.log('remove: ' + this.collectionName + ' - ' + this.schema.version);
         if (this.closed) {
             throw new Error('closed');
         }
