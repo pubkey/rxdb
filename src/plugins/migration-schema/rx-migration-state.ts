@@ -34,7 +34,8 @@ import {
     ensureNotFalsy,
     errorToPlainJson,
     getDefaultRevision,
-    getDefaultRxDocumentMeta
+    getDefaultRxDocumentMeta,
+    promiseWait
 } from '../utils/index.ts';
 import type {
     MigrationStatusUpdate,
@@ -54,6 +55,7 @@ import {
 import {
     META_INSTANCE_SCHEMA_TITLE,
     awaitRxStorageReplicationFirstInSync,
+    awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
     defaultConflictHandler,
     getRxReplicationMetaInstanceSchema,
@@ -431,6 +433,7 @@ export class RxMigrationState {
         });
 
         await awaitRxStorageReplicationFirstInSync(replicationState);
+        await awaitRxStorageReplicationInSync(replicationState);
         await cancelRxStorageReplication(replicationState);
 
         await this.updateStatusQueue;

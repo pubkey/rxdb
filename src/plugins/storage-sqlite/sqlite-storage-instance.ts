@@ -123,7 +123,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             async () => {
                 if (this.closed) {
                     this.openWriteCount$.next(this.openWriteCount$.getValue() - 1);
-                    throw new Error('SQLite.bulkWrite() already closed ' + this.tableName + ' context: ' + context);
+                    throw new Error('SQLite.bulkWrite(' + context + ') already closed ' + this.tableName + ' context: ' + context);
                 }
                 const result = await this.all(
                     database,

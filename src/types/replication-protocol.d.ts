@@ -276,6 +276,13 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     checkpointQueue: Promise<any>;
 
     /**
+     * Writes-to-storage queue of the upstream.
+     * Used to await pending writes to finish before
+     * closing the replication meta storage.
+     */
+    persistenceQueue: Promise<any>;
+
+    /**
      * For better performance we store the last known checkpoint
      * document so that we can likely do checkpoint storing without
      * conflicts.

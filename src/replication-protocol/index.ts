@@ -108,6 +108,7 @@ export function replicateRxStorageInstance<RxDocType>(
             up: PROMISE_RESOLVE_VOID
         },
         checkpointQueue: PROMISE_RESOLVE_VOID,
+        persistenceQueue: PROMISE_RESOLVE_VOID,
         lastCheckpointDoc: {}
     };
 
@@ -329,4 +330,5 @@ export async function cancelRxStorageReplication(
     replicationState.events.resolvedConflicts.complete();
     replicationState.events.canceled.complete();
     await replicationState.checkpointQueue;
+    await replicationState.persistenceQueue;
 }

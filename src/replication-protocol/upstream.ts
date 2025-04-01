@@ -85,7 +85,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         time: number;
     };
     const openTasks: TaskWithTime[] = [];
-    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
     const nonPersistedFromMaster: {
         checkpoint?: CheckpointType;
         docs: ById<RxDocumentData<RxDocType>>;
@@ -286,7 +285,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
 
-        persistenceQueue = persistenceQueue.then(async () => {
+        state.persistenceQueue = state.persistenceQueue.then(async () => {
             if (state.events.canceled.getValue()) {
                 return false;
             }
@@ -559,6 +558,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             return false;
         });
 
-        return persistenceQueue;
+        return state.persistenceQueue;
     }
 }
