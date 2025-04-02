@@ -392,12 +392,12 @@ export default function Home(props: {
                 In RxDB, everything is observable. <b>Query Results</b>, <b>Documents</b>, <b>Document Fields</b>, <b>Events</b>.
               </p>
               <ul className="checked">
-                <li>Whenever your data changes, your UI reflects the new state.</li>
-                <li>Realtime updates across components, browser tabs and user devices</li>
+                <li>Whenever data changes, the UI updates.</li>
+                <li>Realtime events across components, browser tabs and user devices</li>
                 {
                   props.sem && props.sem.appName ?
                     <li>Supports {props.sem.appName} and all major frameworks:</li> :
-                    <li>All major frameworks Supported:</li>
+                    ''
                 }
               </ul>
               <div className="inner">

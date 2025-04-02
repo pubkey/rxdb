@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, Fragment } from 'react';
 import { HEARTBEAT_DURATION } from '../pages';
 
 /**
@@ -171,7 +171,7 @@ export function ReplicationDiagram() {
                     const lineStart = serverRadius + serverMargin;
 
                     return (
-                        <React.Fragment key={i}>
+                        <Fragment key={i}>
                             {/* The grey line (rotated div) */}
                             <div
                                 style={{
@@ -199,7 +199,7 @@ export function ReplicationDiagram() {
                                         // "2s linear 1 forwards" => 2s duration, no repeat, end state is retained
                                         animation:
                                             heartbeatCount > 0
-                                                ? `${animationName} ${HEARTBEAT_DURATION/2}ms linear 1 forwards`
+                                                ? `${animationName} ${HEARTBEAT_DURATION / 2}ms linear 1 forwards`
                                                 : 'none',
                                         opacity: 0, // hidden by default
                                     }}
@@ -221,7 +221,56 @@ export function ReplicationDiagram() {
                                     // border: '2px solid #222',
                                 }}
                             >
-                                <div
+                                {
+                                    i % 3 === 0 ? <div
+                                        className='device desktop'
+                                        style={{
+                                            width: '70%',
+                                            height: '60%',
+                                            top: '20%',
+                                            left: '15%',
+                                            marginLeft: 0
+                                        }}
+                                    >
+                                        <div className="beating-color" style={{
+                                            borderRadius: 2
+                                        }}>
+                                            <img
+                                                src="/files/logo/logo.svg"
+                                                className="beating logo animation"
+                                                alt="RxDB"
+                                                loading='lazy'
+                                                style={{
+                                                    width: '26%'
+                                                }}
+                                            />
+                                        </div>
+                                    </div> : <div
+                                        className='device tablet'
+                                        style={{
+                                            width: '46%',
+                                            height: '60%',
+                                            top: '20%',
+                                            left: '27%'
+                                        }}
+                                    >
+                                        <div className="beating-color" style={{
+                                            borderRadius: 2
+                                        }}>
+                                            <img
+                                                src="/files/logo/logo.svg"
+                                                className="beating logo animation"
+                                                alt="RxDB"
+                                                loading='lazy'
+                                                style={{
+                                                    width: '50%'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                }
+
+                                {/* <div
                                     className='device tablet'
                                     style={{
                                         width: '46%',
@@ -243,9 +292,9 @@ export function ReplicationDiagram() {
                                             }}
                                         />
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
-                        </React.Fragment>
+                        </Fragment>
                     );
                 })}
 

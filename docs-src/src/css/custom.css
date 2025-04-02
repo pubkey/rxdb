@@ -1670,7 +1670,7 @@ ul.checked li:before {
     left: 50%;
 }
 
-.trophy {
+.trophy:hover {
     box-shadow: 2px 2px 13px #eac54f, -2px -1px 14px #eac54f;
 }
 
@@ -1732,7 +1732,7 @@ ul.checked li:before {
     background-color: var(--bg-color-dark);
 }
 
-.trophy.twitter {
+.trophy.twitter:hover {
     box-shadow: 2px 2px 13px white, -2px -1px 14px white;
 }
 
@@ -1744,7 +1744,7 @@ ul.checked li:before {
     color: #5962ee;
 }
 
-.trophy.discord {
+.trophy.discord:hover {
     box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee;
 }
 

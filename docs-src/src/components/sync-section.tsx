@@ -3,6 +3,7 @@ import { SemPage, getAppName } from '../pages';
 
 import React from 'react';
 import { ReplicationDiagram } from './replication-diagram';
+import { Tag } from './tag';
 
 
 export function SyncSection(props: {
@@ -16,19 +17,51 @@ export function SyncSection(props: {
         <br />
         <br />
         <br />
-        <br />
-        <br />
-        <br />
         <h2>
           Sync with <b className="underline">any Backend</b>
         </h2>
         <p>
-          RxDB's high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
-          While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
-          , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
-          it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
+          RxDB's simple yet high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
+          Either use one of our prebuild replication plugins...
+        </p>
+        <p>
+          <a href="/replication-graphql.html" target="_blank">
+            <Tag img="/files/icons/graphql.svg">GraphQL</Tag>
+          </a>
+
+          <a href="/replication-firestore.html" target="_blank">
+            <Tag img="/files/icons/firebase.svg" >Firebase</Tag>
+          </a>
+
+          <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
+            <Tag img="/files/icons/supabase.svg" >Supabase</Tag>
+          </a>
+
+          <a href="/replication-nats.html" target="_blank">
+            <Tag img="/files/icons/nats.svg" >NATS</Tag>
+          </a>
+
+          <a href="/replication-http.html" target="_blank">
+            <Tag img="/files/icons/http.svg" >HTTP</Tag>
+          </a>
+
+          <a href="/replication-couchdb.html" target="_blank">
+            <Tag img="/files/icons/couchdb.svg" >CouchDB</Tag>
+          </a>
+
+          <a href="/replication-webrtc.html" target="_blank">
+            <Tag img="/files/icons/webrtc.svg" >WebRTC (P2P)</Tag>
+          </a>
+
+          <a href="/replication-appwrite.html" target="_blank">
+            <Tag img="/files/icons/appwrite-small.svg">appwrite (comming soon)</Tag>
+          </a>
 
         </p>
+        <p style={{
+          fontSize: '300%'
+        }}>OR...</p>
+        <p>...sync with your <b>custom server</b> by implementing <a href="/replication-http.html" target="_blank">three simple endpoints</a>.</p>
       </div>
       <div className="half right">
         <ReplicationDiagram></ReplicationDiagram>
