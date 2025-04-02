@@ -22,6 +22,7 @@ import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { getTestGroup } from '../components/a-b-tests';
+import { SyncSection } from '../components/sync-section';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -84,7 +85,7 @@ function startLandingpageAnimation() {
   getBeatCurrentBeatInfo();
 
   (async () => {
-    await promiseWait(heartbeatDuration * 1);
+    await promiseWait(HEARTBEAT_DURATION * 1);
     let lastPeriod = 0;
     while (animationStarted) {
       const beatInfo = getBeatCurrentBeatInfo();
@@ -98,6 +99,7 @@ function startLandingpageAnimation() {
       lastPeriod = period;
       if (period % 2 === 0) {
         const color = colors[period % 3];
+        window.dispatchEvent(new CustomEvent('heartbeat'));
         heartbeatListeners.forEach(function (listener) {
           listener(heartbeatIndex);
         });
@@ -122,19 +124,19 @@ function startLandingpageAnimation() {
    */
   heartbeatListeners.push(function () {
     Array.from($$beating).forEach(function (element) {
-      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.style.animationDuration = HEARTBEAT_DURATION + 'ms';
       element.classList.remove('animation');
       void element.offsetWidth;
       element.classList.add('animation');
     });
     Array.from($$beatingFirst).forEach(function (element) {
-      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.style.animationDuration = HEARTBEAT_DURATION + 'ms';
       element.classList.remove('animation');
       void element.offsetWidth;
       element.classList.add('animation');
     });
     Array.from($$beatingSecond).forEach(function (element) {
-      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.style.animationDuration = HEARTBEAT_DURATION + 'ms';
       element.classList.remove('animation');
       void element.offsetWidth;
       element.classList.add('animation');
@@ -390,12 +392,12 @@ export default function Home(props: {
                 In RxDB, everything is observable. <b>Query Results</b>, <b>Documents</b>, <b>Document Fields</b>, <b>Events</b>.
               </p>
               <ul className="checked">
-                <li>Whenever your data changes, your UI reflects the new state.</li>
-                <li>Realtime updates across components, browser tabs and user devices</li>
+                <li>Whenever data changes, the UI updates.</li>
+                <li>Realtime events across components, browser tabs and user devices</li>
                 {
                   props.sem && props.sem.appName ?
                     <li>Supports {props.sem.appName} and all major frameworks:</li> :
-                    <li>All major frameworks Supported:</li>
+                    ''
                 }
               </ul>
               <div className="inner">
@@ -422,92 +424,7 @@ export default function Home(props: {
             valueTitle='stars'
           />
 
-          <div className="block replication" id="replication" ref={replicationRef}>
-            <div className="content">
-              <div className="half left">
-                <br />
-                <br />
-                <br />
-                <br />
-                <br />
-                <h2>
-                  Sync with <b className="underline">any Backend</b>
-                </h2>
-                <p>
-                  RxDB's high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
-                  While specialized plugins exist for <a href="/replication-graphql.html" target="_blank">GraphQL</a>
-                  , <a href="/replication-couchdb.html" target="_blank">CouchDB</a>, <a href="/replication-webrtc.html">P2P</a>, <a href="/replication-firestore.html" target="_blank">Firestore</a>, and <a href="/replication-nats.html" target="_blank">NATS</a>,
-                  it remains <b>backend-agnostic</b> — seamlessly integrating with <a href="/replication-http.html" target="_blank">any infrastructure over HTTP</a> for unmatched flexibility and speed.
-                </p>
-              </div>
-              <div className="half left">
-                <div className="replication-icons">
-                  <img
-                    src="/files/logo/logo.svg"
-                    alt="RxDB"
-                    className="replicate-logo tilt-to-mouse"
-                    loading="lazy"
-                  />
-                  <a href="/replication-graphql.html" target="_blank">
-                    <div className="neumorphism-circle-xl centered replicate-graphql enlarge-on-mouse">
-                      <img
-                        src="/files/icons/graphql-text.svg"
-                        alt="GraphQL"
-                        className="protocol"
-                        loading="lazy"
-                      />
-                    </div>
-                  </a>
-                  <a href="/replication-firestore.html" target="_blank">
-                    <div className="neumorphism-circle-s centered replicate-firestore enlarge-on-mouse">
-                      <img
-                        src="/files/icons/firebase.svg"
-                        alt="Firebase"
-                        className="protocol"
-                        loading="lazy"
-                      />
-                    </div>
-                  </a>
-                  <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
-                    <div className="neumorphism-circle-s centered replicate-supabase enlarge-on-mouse">
-                      <img
-                        src="/files/icons/supabase.svg"
-                        alt="supabase"
-                        className="protocol"
-                        loading="lazy"
-                      />
-                    </div>
-                  </a>
-                  <a href="/replication-couchdb.html" target="_blank">
-                    <div className="neumorphism-circle-xl centered replicate-couchdb enlarge-on-mouse">
-                      <img
-                        src="/files/icons/couchdb-text.svg"
-                        alt="CouchDB"
-                        className="protocol"
-                        loading="lazy"
-                      />
-                    </div>
-                  </a>
-                  <a href="/replication-http.html" target="_blank">
-                    <div className="neumorphism-circle-xs centered replicate-rest enlarge-on-mouse">
-                      {'{'} HTTP {'}'}
-                    </div>
-                  </a>
-                  <a href="/replication-websocket.html" target="_blank">
-                    <div className="neumorphism-circle-xs centered replicate-websocket enlarge-on-mouse">
-                      WebSocket
-                    </div>
-                  </a>
-                  <a href="/replication-webrtc.html" target="_blank">
-                    <div className="neumorphism-circle-xs centered replicate-webrtc enlarge-on-mouse">
-                      WebRTC
-                    </div>
-                  </a>
-                </div>
-              </div>
-              <div className="clear" />
-            </div>
-          </div>
+          <SyncSection sem={props.sem} replicationRef={replicationRef} />
 
 
           <Trophy
@@ -1182,14 +1099,14 @@ function startEnlargeOnMousePos() {
   });
 }
 
-const heartbeatDuration = 851;
+export const HEARTBEAT_DURATION = 851;
 
 function getBeatCurrentBeatInfo() {
   // remove a big chunk so we do not have a large number for better precision.
   const time = new Date().getTime() - 1960000000;
-  const ratio = time / heartbeatDuration;
+  const ratio = time / HEARTBEAT_DURATION;
   const period = Math.floor(ratio);
-  const timeToNextPeriod = (ratio - period) * heartbeatDuration;
+  const timeToNextPeriod = (ratio - period) * HEARTBEAT_DURATION;
   return {
     ratio,
     period,
