@@ -21,7 +21,7 @@ export function SyncSection(props: {
           Sync with <b className="underline">any Backend</b>
         </h2>
         <p>
-          RxDB's simple yet high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
+          RxDB's simple and high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
           Either use one of our prebuild replication plugins...
         </p>
         <p>
