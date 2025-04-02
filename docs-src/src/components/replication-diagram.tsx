@@ -60,7 +60,7 @@ export function ReplicationDiagram() {
     const deviceCount = 5;
     const deviceDistance = 150 * scale;
     const deviceRadius = 50 * scale;
-    const serverMargin = 10 * scale;
+    const serverMargin = 0 * scale;
     const deviceMargin = 0 * scale;
 
     // Build our lines data
