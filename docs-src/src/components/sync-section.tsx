@@ -8,7 +8,7 @@ import { Tag } from './tag';
 
 export function SyncSection(props: {
   sem?: SemPage;
-  replicationRef: MutableRefObject<HTMLDivElement>
+  replicationRef: MutableRefObject<HTMLDivElement>;
 }) {
   return <div className="block replication" id="replication" ref={props.replicationRef}>
     <div className="content">
