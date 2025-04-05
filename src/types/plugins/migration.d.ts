@@ -9,6 +9,6 @@ export type MigrationStrategy<DocData = any> = (
     collection: RxCollection
 ) => MaybePromise<WithAttachments<DocData> | null>;
 
-export type MigrationStrategies = {
-    [toVersion: number]: MigrationStrategy<any>;
+export type MigrationStrategies<DocData = any> = {
+    [toVersion: number]: MigrationStrategy<DocData>;
 };
