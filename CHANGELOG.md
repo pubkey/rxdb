@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
