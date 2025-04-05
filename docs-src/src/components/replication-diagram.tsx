@@ -233,7 +233,8 @@ export function ReplicationDiagram() {
                                         }}
                                     >
                                         <div className="beating-color" style={{
-                                            borderRadius: 2
+                                            borderTopLeftRadius: 5,
+                                            borderTopRightRadius: 5
                                         }}>
                                             <img
                                                 src="/files/logo/logo.svg"
@@ -255,7 +256,7 @@ export function ReplicationDiagram() {
                                         }}
                                     >
                                         <div className="beating-color" style={{
-                                            borderRadius: 2
+                                            borderRadius: 5,
                                         }}>
                                             <img
                                                 src="/files/logo/logo.svg"

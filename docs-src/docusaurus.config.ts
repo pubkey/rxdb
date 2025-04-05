@@ -25,7 +25,7 @@ const config: Config = {
     projectName: 'rxdb', // Usually your repo name.
 
     onBrokenLinks: 'throw',
-    onBrokenMarkdownLinks: 'warn',
+    onBrokenMarkdownLinks: 'throw',
 
     // Even if you don't use internationalization, you can use this field to set
     // useful metadata like html lang. For example, if your site is Chinese, you
@@ -124,6 +124,20 @@ const config: Config = {
             },
             items: [
                 {
+                    to: '/chat',
+                    target: '_blank',
+                    label: ' ',
+                    position: 'right',
+                    className: 'navbar-icon navbar-icon-discord'
+                  },
+                  {
+                    to: '/chat',
+                    target: '_blank',
+                    label: ' ',
+                    position: 'right',
+                    className: 'navbar-icon navbar-icon-github'
+                  },
+                  {
                     href: '/consulting/',
                     label: 'Support',
                     position: 'right',
@@ -150,13 +164,6 @@ const config: Config = {
                 //   target: '_blank',
                 //   label: 'Code',
                 //   position: 'right',
-                // },
-                // {
-                //   to: '/chat',
-                //   target: '_blank',
-                //   label: ' ',
-                //   position: 'right',
-                //   className: 'navbar-icon-discord'
                 // },
             ],
         },

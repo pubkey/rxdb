@@ -111,6 +111,7 @@ pre code {
 .container .col article {
     padding: 1rem 1rem 1rem 2rem;
 }
+
 @media (max-width: 500px) {
     .container .col article {
         padding: 0;
@@ -556,6 +557,29 @@ body {
     letter-spacing: -0.04rem;
 }
 
+.navbar-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    margin-left: 12px;
+    opacity: 0.9;
+}
+
+.navbar-icon:hover {
+    transform: scale(1.1);
+}
+
+.navbar-icon-discord {
+    background: no-repeat center/contain url('/img/community-links/discord-logo.svg');
+}
+
+.navbar-icon-github {
+    background: no-repeat center/contain url('/img/community-links/github-logo.svg');
+}
+
+
+
 /* Breadcrumbs */
 .breadcrumbs__item--active .breadcrumbs__link {
     color: var(--fontColor-offwhite);
@@ -742,7 +766,7 @@ body {
 
 .device.tablet .beating-color {
     width: 92%;
-    height: 81%;
+    height: 82%;
     margin-top: 4%;
     margin-left: auto;
     margin-right: auto;

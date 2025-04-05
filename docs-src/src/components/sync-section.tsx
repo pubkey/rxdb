@@ -25,6 +25,10 @@ export function SyncSection(props: {
           Either use one of our prebuild replication plugins...
         </p>
         <p>
+        <a href="/replication-server.html" target="_blank">
+            <Tag img="/files/logo/logo.svg">RxServer</Tag>
+          </a>
+
           <a href="/replication-graphql.html" target="_blank">
             <Tag img="/files/icons/graphql.svg">GraphQL</Tag>
           </a>
