@@ -12,3 +12,7 @@ It is built with the [Tauri CLI](https://tauri.app/reference/cli/) and the [SQL 
 4. go to this folder `cd examples/tauri`
 5. run `npm run preinstall && npm install -D`
 6. run `npm run tauri dev`
+
+# Tests
+
+To run the tests, you must [install the Tauri Driver and other dependencies](https://v2.tauri.app/develop/tests/webdriver/#system-dependencies).
