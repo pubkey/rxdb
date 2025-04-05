@@ -10,7 +10,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "wdio run wdio.conf.cjs"
+    "test": "npm run tauri build -- --no-bundle && wdio run wdio.conf.cjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.4.1",
