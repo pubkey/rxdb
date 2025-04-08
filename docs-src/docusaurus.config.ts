@@ -131,7 +131,7 @@ const config: Config = {
                     className: 'navbar-icon navbar-icon-discord'
                   },
                   {
-                    to: '/chat',
+                    to: '/code',
                     target: '_blank',
                     label: ' ',
                     position: 'right',

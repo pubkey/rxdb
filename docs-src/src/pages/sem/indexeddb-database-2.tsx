@@ -12,7 +12,7 @@ import Home from '..';
 export default function Page() {
     return Home({
         sem: {
-            id: 'idb2',
+            id: 'gads',
             /**
              * @link https://chatgpt.com/c/67950d3a-2558-8005-9c08-27999c51318e
              * @link https://chatgpt.com/c/6794f6c2-052c-8005-9a18-4a049bf97cc1
