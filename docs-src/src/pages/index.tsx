@@ -23,6 +23,9 @@ import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { getTestGroup } from '../components/a-b-tests';
 import { SyncSection } from '../components/sync-section';
+import { RealtimeSection } from '../components/realtime-section';
+import { OfflineSection } from '../components/offline-section';
+import { RuntimesSection } from '../components/runtimes-section';
 // import PriceTag from '../components/price-tag';
 // import { Modal } from 'antd';
 
@@ -382,38 +385,8 @@ export default function Home(props: {
 
 
           <VideoSection sem={props.sem} />
+          <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={true} />
 
-          <div className="block second dark" id="realtime" ref={realtimeRef}>
-            <div className="content">
-              <h2>
-                Realtime Applications <b className="underline">made easy</b>
-              </h2>
-              <p>
-                In RxDB, everything is observable. <b>Query Results</b>, <b>Documents</b>, <b>Document Fields</b>, <b>Events</b>.
-              </p>
-              <ul className="checked">
-                <li>Whenever data changes, the UI updates.</li>
-                <li>Realtime events across components, browser tabs and user devices</li>
-                {
-                  props.sem && props.sem.appName ?
-                    <li>Supports {props.sem.appName} and all major frameworks:</li> :
-                    ''
-                }
-              </ul>
-              <div className="inner">
-                {/*
-          Use https://www.programiz.com/html/online-compiler/
-          to craft html from code. (inspect the element)
-      */}
-                <div className="code half">
-                  <ObserveCodeExample sem={props.sem} />
-                </div>
-                <div className="canvas half">
-                  <DevicesSync sem={props.sem} />
-                </div>
-              </div>
-            </div>
-          </div>
 
           <Trophy
             href="/code/"
@@ -424,7 +397,7 @@ export default function Home(props: {
             valueTitle='stars'
           />
 
-          <SyncSection sem={props.sem} replicationRef={replicationRef} />
+          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
 
 
           <Trophy
@@ -436,224 +409,9 @@ export default function Home(props: {
             valueTitle='members'
           />
 
-          <div className="block offline-first dark" id="offline" ref={offlineRef}>
-            <div className="offline-image-wrapper">
-              <img
-                src="/files/icons/wifi/wifi_1a202c.svg"
-                className="offline-image beating-second"
-                loading="lazy"
-                alt="offline"
-              />
-            </div>
-            <div className="content">
-              <h2>
-                Online <b className="underline">is Optional</b>
-              </h2>
-              <div className="full-width">
-                <div className="half left">
-                  <p>
-                    RxDB adopts an <a href="/offline-first.html" target="_blank">offline-first</a> approach, keeping your app fully functional even without a connection.
-                    Data is stored locally on the {getAppName(props)} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
-                  </p>
-                </div>
-                <div className="half right">
-                  <ul className="checked">
-                    <li>
-                      Keep your {getAppName(props)} app running <b>offline</b>
-                    </li>
-                    <li>
-                      Run local queries with <a href="https://rxdb.info/articles/zero-latency-local-first.html" target="_blank"><b>zero latency</b></a>
-                    </li>
-                    <li>
-                      Simplify and <b>speed up development</b>
-                    </li>
-                    <li>
-                      Reduces backend load and <b>scales better</b>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
+          <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={false} />
 
-          <div className="block frameworks" id="runtimes" ref={runtimesRef}>
-            <div className="content">
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/angular"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '-10%', left: '10%' }}
-                >
-                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular database" />
-                  Angular
-                </div>
-              </a>
-              <a
-                href="https://rxdb.info/capacitor-database.html#rxdb"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '10%', left: '58%' }}
-                >
-                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor database" />
-                  Capacitor
-                </div>
-              </a>
-              <a
-                href="https://rxdb.info/rx-storage-denokv.html"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                  style={{ top: '-4%', left: '44%' }}
-                >
-                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno database" />
-                  Deno
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/node"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '-5%', left: '85%' }}
-                >
-                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js database" />
-                  Node.js
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/react"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '4%', left: '26%' }}
-                >
-                  <img loading="lazy" src="/files/icons/react.svg" alt="React database" />
-                  React
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/svelte"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                  style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
-                >
-                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte database" />
-                  Svelte
-                </div>
-              </a>
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <h2>
-                Runs in <b className="underline">Any JavaScript Runtime</b>
-              </h2>
-
-
-              <p>
-                RxDB's modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
-                , <a
-                  href="/rx-storage-sqlite.html"
-                  target="_blank"
-                >React Native</a>, <a href="/rx-storage-filesystem-node.html" target="_blank">Node.js</a>, <a
-                  href="/electron.html"
-                  target="_blank"
-                >Electron</a>, and beyond.
-                Simply switch the storage plugin to reuse the same database and replication logic across all your {getAppName(props)} apps, saving time and ensuring consistency.
-              </p>
-              <div className="below-text">
-                <a
-                  href="/electron-database.html#rxdb"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '2%', left: '18%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron database" />
-                    Electron
-                  </div>
-                </a>
-                <a
-                  href="/articles/vue-database.html"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '3%', left: '45%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js database" />
-                    Vue.js
-                  </div>
-                </a>
-                <a
-                  href="/articles/ionic-storage.html"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '2%', left: '71%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic database" />
-                    Ionic
-                  </div>
-                </a>
-                <a
-                  href="https://github.com/herefishyfish/rxdb-nativescript"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                    style={{ top: '46%', left: '11%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript database" />
-                    NativeScript
-                  </div>
-                </a>
-                <a
-                  href="/react-native-database.html#rxdb"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                    style={{ top: '45%', left: '35%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native database" />
-                    React Native
-                  </div>
-                </a>
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '45%', left: '62%' }}
-                >
-                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js database" />
-                  Next.js
-                </div>
-                <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/flutter"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '40%', left: '86%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter database" />
-                    Flutter
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
 
           <Trophy
             href="https://twitter.com/intent/user?screen_name=rxdbjs"

@@ -3,11 +3,14 @@ import { SemPage } from '../pages';
 import { Tabs } from 'antd';
 
 
-function ObserveCodeExampleParent({ children, name }) {
+function ObserveCodeExampleParent(props: {
+    dark: boolean;
+    children, name
+}) {
     return <>
         <fieldset
             className="samp-wrapper"
-            style={{ backgroundColor: 'var(--bg-color)' }}
+            style={{ backgroundColor: props.dark ? 'var(--bg-color)' : 'var(--bg-color-dark)' }}
         >
             <legend>Write</legend>
             <samp>
@@ -31,17 +34,18 @@ function ObserveCodeExampleParent({ children, name }) {
         <br />
         <fieldset
             className="samp-wrapper"
-            style={{ backgroundColor: 'var(--bg-color)' }}
+            style={{ backgroundColor: props.dark ? 'var(--bg-color)' : 'var(--bg-color-dark)' }}
         >
-            <legend>Observe with {name}</legend>
-            <samp style={{ backgroundColor: 'var(--bg-color)' }}>
-                {children}
+            <legend>Observe with {props.name}</legend>
+            <samp style={{ backgroundColor: props.dark ? 'var(--bg-color)' : 'var(--bg-color-dark)' }}>
+                {props.children}
             </samp>
         </fieldset>
     </>;
 }
 
 export function ObserveCodeExample(props: {
+    dark: boolean;
     sem?: SemPage;
 }) {
 
@@ -51,7 +55,7 @@ export function ObserveCodeExample(props: {
             key: 'RxJS',
             label: 'RxJS',
             icon: <img src="/files/icons/rxjs.svg" loading='lazy' alt="rxjs observable" />,
-            children: <ObserveCodeExampleParent name="RxJS Observable">
+            children: <ObserveCodeExampleParent dark={props.dark} name="RxJS Observable">
                 <span className="cm-keyword">await </span>
                 <span className="cm-variable">collection</span>.
                 <span className="cm-method">
@@ -77,7 +81,7 @@ export function ObserveCodeExample(props: {
             key: 'Angular',
             label: 'Angular',
             icon: <img src="/files/icons/angular.svg" loading='lazy' alt="Angular async pipe" />,
-            children: <ObserveCodeExampleParent name="Angular Async Pipe">
+            children: <ObserveCodeExampleParent dark={props.dark} name="Angular Async Pipe">
                 <span className="cm-html">&lt;body</span><br />
                 <span className="cm-html">&emsp;[style.backgroundColor]=</span>&quot;(<br />
                 &emsp;&emsp;<span className="cm-variable">collection</span><br />
@@ -93,7 +97,7 @@ export function ObserveCodeExample(props: {
             key: 'React',
             label: 'React',
             icon: <img src="/files/icons/react.svg" loading='lazy' alt="React signals" />,
-            children: <ObserveCodeExampleParent name="React Signal">
+            children: <ObserveCodeExampleParent dark={props.dark} name="React Signal">
                 <span className="cm-keyword">export default function</span> <span className="cm-method">Component</span>() &#123;<br />
                 &emsp;<span className="cm-keyword">const</span> [<span className="cm-variable">doc</span>, <span className="cm-variable">setDoc</span>] = <span className="cm-method">useState</span>();<br />
                 &emsp;<span className="cm-method">useEffect</span>(<span className="cm-keyword">async</span> () =&gt; <span className="cm-method">setDoc</span>(<br />
@@ -111,7 +115,7 @@ export function ObserveCodeExample(props: {
             key: 'Vue.js',
             label: 'Vue.js',
             icon: <img src="/files/icons/vuejs.svg" loading='lazy' alt="Vue Refs" />,
-            children: <ObserveCodeExampleParent name="Vue Refs">
+            children: <ObserveCodeExampleParent dark={props.dark} name="Vue Refs">
                 <span className="cm-html">&lt;template&gt;</span><br />
                 &emsp;<span className="cm-html">&lt;body</span> v-if=&quot;<span className="cm-variable">doc</span>&quot; :style=&quot;&#123;<br />
                 &emsp;&emsp;<span className="cm-property">backgroundColor</span>: <span className="cm-variable">doc</span>.<span className="cm-property">color$$</span>.<span className="cm-property beating-color">value</span><br />
@@ -129,7 +133,7 @@ export function ObserveCodeExample(props: {
             key: 'Svelte',
             label: 'Svelte',
             icon: <img src="/files/icons/svelte.svg" loading='lazy' alt="Svelte Store" />,
-            children: <ObserveCodeExampleParent name="Svelte">
+            children: <ObserveCodeExampleParent dark={props.dark} name="Svelte">
                 <span className="cm-html">&lt;script&gt;</span><br />
                 &emsp;<span className="cm-keyword">let</span> <span className="cm-variable">doc</span>;<br />
                 &emsp;<span className="cm-method">onMount</span>(<br />

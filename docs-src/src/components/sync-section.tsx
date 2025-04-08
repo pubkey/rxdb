@@ -7,10 +7,11 @@ import { Tag } from './tag';
 
 
 export function SyncSection(props: {
+  dark: boolean;
   sem?: SemPage;
   replicationRef: MutableRefObject<HTMLDivElement>;
 }) {
-  return <div className="block replication" id="replication" ref={props.replicationRef}>
+  return <div className={'block replication' + (props.dark ? 'dark' : '')} id="replication" ref={props.replicationRef}>
     <div className="content">
       <div className="half left">
         <br />
@@ -25,7 +26,7 @@ export function SyncSection(props: {
           Either use one of our prebuild replication plugins...
         </p>
         <p>
-        <a href="/replication-server.html" target="_blank">
+          <a href="/replication-server.html" target="_blank">
             <Tag img="/files/logo/logo.svg">RxServer</Tag>
           </a>
 
