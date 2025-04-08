@@ -124,14 +124,14 @@ const config: Config = {
             },
             items: [
                 {
-                    to: '/chat',
+                    to: '/chat/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
                     className: 'navbar-icon navbar-icon-discord'
                   },
                   {
-                    to: '/code',
+                    to: '/code/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
