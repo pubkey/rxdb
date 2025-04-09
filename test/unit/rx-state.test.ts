@@ -361,16 +361,17 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state2.collection.database.close();
             });
             it('write with ten states at once', async () => {
+                const listSize = 16;
                 const databaseName = randomToken(10);
 
                 const list: RxState<TestState, ReactivityType>[] = [];
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < listSize; i++) {
                     const state = await getState(databaseName);
                     list.push(state);
                 }
                 await list[0].set('a',()=>0);
                 await Promise.all(list.map(state=> state.set('a', plusOne )));
-                await waitUntil(() => list.every(state => state.a === 1));
+                await waitUntil(() => list.every(state => state.a === 10));
 
                 list.forEach(state => state.collection.database.close());
             });
