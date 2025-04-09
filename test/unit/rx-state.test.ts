@@ -360,7 +360,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
-            it('write with ten states at once', async () => {
+            it('write with 16 states at once', async () => {
                 const listSize = 16;
                 const databaseName = randomToken(10);
 
