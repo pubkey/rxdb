@@ -557,22 +557,19 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
 
     let ret = false;
     let mustReExec = false; // if this becomes true, a whole execution over the database is made
+    let changePoint = rxQuery._latestChangeEvent + 1;
     if (rxQuery._latestChangeEvent === -1) {
         // have not executed yet -> must run
         mustReExec = true;
+        changePoint = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter() + 1;
     }
 
-    /**
-     * try to use EventReduce to calculate the new results
-     */
-    if (!mustReExec) {
-        const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+    function caluateChanges(){
+        const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(changePoint);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
         } else {
-            rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
-
             const runChangeEvents: RxStorageChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
@@ -612,6 +609,15 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 }
             }
         }
+
+    }
+
+    /**
+     * try to use EventReduce to calculate the new results
+     */
+    if (!mustReExec) {
+        rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
+        caluateChanges();
     }
 
     // oh no we have to re-execute the whole query over the database
@@ -634,6 +640,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     ) {
                         ret = true;
                         rxQuery._setResultData(newResultData as any);
+                        caluateChanges();
                     }
                     return ret;
                 }
@@ -647,6 +654,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 ) {
                     ret = true; // true because results changed
                     rxQuery._setResultData(newResultData as any);
+                    caluateChanges();
                 }
                 return ret;
             });
