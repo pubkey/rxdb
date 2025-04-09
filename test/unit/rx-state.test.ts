@@ -360,6 +360,20 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('write with ten states at once', async () => {
+                const databaseName = randomToken(10);
+
+                const list: RxState<TestState, ReactivityType>[] = [];
+                for (let i = 0; i < 10; i++) {
+                    const state = await getState(databaseName);
+                    list.push(state);
+                }
+                await list[0].set('a',()=>0);
+                await Promise.all(list.map(state=> state.set('a', plusOne )));
+                await waitUntil(() => list.every(state => state.a === 1));
+
+                list.forEach(state => state.collection.database.close());
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?
