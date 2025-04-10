@@ -371,7 +371,7 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 }
                 await list[0].set('a',()=>0);
                 await Promise.all(list.map(state=> state.set('a', plusOne )));
-                await waitUntil(() => list.every(state => state.a === 10));
+                await waitUntil(() => list.every(state => state.a === listSize));
 
                 list.forEach(state => state.collection.database.close());
             });
