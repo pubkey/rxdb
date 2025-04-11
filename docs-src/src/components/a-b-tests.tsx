@@ -83,7 +83,9 @@ export function getABTestOrder(key: string): number {
     const group = getTestGroup();
     const variation = CURRENT_TEST_RUN.variations[group.variation];
     const order = variation[key];
-    if (!order) { return 0; }
+    if (!order) {
+        return 0;
+    }
     return order;
 }
 export function getABTestDark(key: string): boolean {

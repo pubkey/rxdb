@@ -5,7 +5,8 @@ import { Tabs } from 'antd';
 
 function ObserveCodeExampleParent(props: {
     dark: boolean;
-    children, name
+    children;
+    name: string;
 }) {
     return <>
         <fieldset
