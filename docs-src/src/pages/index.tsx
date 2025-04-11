@@ -19,7 +19,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
-import { getABTestDark, getABTestOrder, getTestGroup } from '../components/a-b-tests';
+import { ABTestContent, getABTestDark, getABTestOrder, getTestGroup } from '../components/a-b-tests';
 import { SyncSection } from '../components/sync-section';
 import { RealtimeSection } from '../components/realtime-section';
 import { OfflineSection } from '../components/offline-section';
@@ -326,6 +326,13 @@ export default function Home(props: {
   const replicationRef = useRef<HTMLDivElement>(null);
   const offlineRef = useRef<HTMLDivElement>(null);
   const runtimesRef = useRef<HTMLDivElement>(null);
+  const refs = {
+    reviewsRef,
+    realtimeRef,
+    replicationRef,
+    offlineRef,
+    runtimesRef
+  };
 
   function scrollToSection(section: Section) {
     switch (section) {
@@ -384,7 +391,9 @@ export default function Home(props: {
 
           <VideoSection sem={props.sem} />
 
-          <div className="" style={{
+          <ABTestContent sem={props.sem} refs={refs} scrollToSection={scrollToSection} />
+
+          {/* <div className="" style={{
             display: 'flex',
             flexDirection: 'column'
           }}>
@@ -394,7 +403,6 @@ export default function Home(props: {
             <SyncSection sem={props.sem} replicationRef={replicationRef} dark={getABTestDark('sync')} order={getABTestOrder('sync')} />
             <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={getABTestDark('offline')} order={getABTestOrder('offline')} />
             <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={getABTestDark('runtimes')} order={getABTestOrder('runtimes')} />
-
 
             <Trophy
               href="/code/"
@@ -429,7 +437,7 @@ export default function Home(props: {
               valueTitle='followers'
               order={3}
             />
-          </div>
+          </div> */}
 
           <div className="block features dark">
             <div className="content">
