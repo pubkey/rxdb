@@ -6,7 +6,7 @@ import { randomOfArray } from '../../../plugins/utils';
 // import { HeroSection_D } from './hero-section/T4_hero_d';
 
 const CURRENT_TEST_RUN = {
-    id: 'T5', // test hero page content type
+    id: 'T6', // test hero page content type
     variations: {
         A: {
             realtime: 1,
@@ -38,7 +38,6 @@ const CURRENT_TEST_RUN = {
             offline: 2,
             runtimes: 3
         }
-
     }
 };
 
