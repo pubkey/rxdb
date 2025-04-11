@@ -6,9 +6,10 @@ import { ObserveCodeExample } from './observe-code-example';
 export function RealtimeSection(props: {
     dark: boolean;
     sem?: SemPage;
+    order?: number;
     realtimeRef: MutableRefObject<HTMLDivElement>;
 }) {
-    return <div className={'block second ' + (props.dark ? 'dark' : '')} id="realtime" ref={props.realtimeRef}>
+    return <div className={'block second ' + (props.dark ? 'dark' : '')} id="realtime" ref={props.realtimeRef} style={{ order: props.order }}>
         <div className="content">
             <h2>
                 Realtime Applications <b className="underline">made easy</b>

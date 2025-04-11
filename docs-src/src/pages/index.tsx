@@ -15,13 +15,11 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import { TagCloud } from 'react-tagcloud';
-import { DevicesSync } from '../components/devices-sync';
-import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
-import { getTestGroup } from '../components/a-b-tests';
+import { getABTestDark, getABTestOrder, getTestGroup } from '../components/a-b-tests';
 import { SyncSection } from '../components/sync-section';
 import { RealtimeSection } from '../components/realtime-section';
 import { OfflineSection } from '../components/offline-section';
@@ -385,42 +383,53 @@ export default function Home(props: {
 
 
           <VideoSection sem={props.sem} />
-          <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={true} />
+
+          <div className="" style={{
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
 
 
-          <Trophy
-            href="/code/"
-            title="GitHub"
-            subTitle='Open Source on'
-            value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
-            valueTitle='stars'
-          />
-
-          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
+            <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={getABTestDark('realtime')} order={getABTestOrder('realtime')} />
+            <SyncSection sem={props.sem} replicationRef={replicationRef} dark={getABTestDark('sync')} order={getABTestOrder('sync')} />
+            <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={getABTestDark('offline')} order={getABTestOrder('offline')} />
+            <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={getABTestDark('runtimes')} order={getABTestOrder('runtimes')} />
 
 
-          <Trophy
-            href="/chat/"
-            title="Discord"
-            subTitle='Chat on'
-            value={SOCIAL_PROOF_VALUES.discord}
-            imgUrl="/files/icons/discord.svg"
-            valueTitle='members'
-          />
-
-          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
-          <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={false} />
+            <Trophy
+              href="/code/"
+              title="GitHub"
+              subTitle='Open Source on'
+              value={SOCIAL_PROOF_VALUES.github}
+              imgUrl="/files/icons/github-star-with-logo.svg"
+              valueTitle='stars'
+              order={1}
+            />
 
 
-          <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
-          />
+
+            <Trophy
+              href="/chat/"
+              title="Discord"
+              subTitle='Chat on'
+              value={SOCIAL_PROOF_VALUES.discord}
+              imgUrl="/files/icons/discord.svg"
+              valueTitle='members'
+              order={2}
+            />
+
+
+
+            <Trophy
+              href="https://twitter.com/intent/user?screen_name=rxdbjs"
+              title="Twitter"
+              subTitle='Follow on'
+              value={SOCIAL_PROOF_VALUES.twitter}
+              imgUrl="/files/icons/twitter-blue.svg"
+              valueTitle='followers'
+              order={3}
+            />
+          </div>
 
           <div className="block features dark">
             <div className="content">

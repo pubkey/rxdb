@@ -8,11 +8,37 @@ import { randomOfArray } from '../../../plugins/utils';
 const CURRENT_TEST_RUN = {
     id: 'T5', // test hero page content type
     variations: {
-        A: <>RxDB: Blazing-Fast <b className="underline">Browser Storage</b></>,
-        B: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in IndexedDB</>,
-        C: <>RxDB: The <b className="underline">Realtime</b> Layer for Your IndexedDB Data</>,
-        D: <>Upgrade <b className="underline">IndexedDB</b> with Real-Time Sync: Meet RxDB</>,
-        E: <>Sync, Scale, and Secure Your <b className="underline">IndexedDB</b> Data with RxDB</>
+        A: {
+            realtime: 1,
+            sync: 2,
+            offline: 3,
+            runtimes: 4
+        },
+        B: {
+            realtime: 2,
+            sync: 1,
+            offline: 3,
+            runtimes: 4
+        },
+        C: {
+            realtime: 3,
+            sync: 2,
+            offline: 1,
+            runtimes: 4
+        },
+        D: {
+            realtime: 4,
+            sync: 2,
+            offline: 3,
+            runtimes: 1
+        },
+        E: {
+            realtime: 4,
+            sync: 1,
+            offline: 2,
+            runtimes: 3
+        }
+
     }
 };
 
@@ -54,6 +80,17 @@ export function getTestGroup(originId: string = 'main'): TestGroup {
     return testGroup;
 }
 
+export function getABTestOrder(key: string): number {
+    const group = getTestGroup();
+    const variation = CURRENT_TEST_RUN.variations[group.variation];
+    const order = variation[key];
+    if (!order) { return 0; }
+    return order;
+}
+export function getABTestDark(key: string): boolean {
+    const order = getABTestOrder(key);
+    return order % 2 !== 0;
+}
 export function ABTestContent(
     // props: {
     //     sem?: SemPage;

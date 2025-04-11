@@ -9,9 +9,10 @@ import { Tag } from './tag';
 export function SyncSection(props: {
   dark: boolean;
   sem?: SemPage;
+  order?: number;
   replicationRef: MutableRefObject<HTMLDivElement>;
 }) {
-  return <div className={'block replication' + (props.dark ? 'dark' : '')} id="replication" ref={props.replicationRef}>
+  return <div className={'block replication ' + (props.dark ? 'dark' : '')} id="replication" ref={props.replicationRef} style={{ order: props.order }}>
     <div className="content">
       <div className="half left">
         <br />

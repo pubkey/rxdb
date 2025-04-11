@@ -4,9 +4,10 @@ import { SemPage, getAppName } from '../pages';
 export function OfflineSection(props: {
     dark: boolean;
     sem?: SemPage;
+    order?: number;
     offlineRef: MutableRefObject<HTMLDivElement>;
 }) {
-    return <div className={'block offline-first ' + (props.dark ? 'dark' : '')} id="offline" ref={props.offlineRef}>
+    return <div className={'block offline-first ' + (props.dark ? 'dark' : '')} id="offline" ref={props.offlineRef} style={{ order: props.order }}>
         <div className="offline-image-wrapper">
             <img
                 src={props.dark ? '/files/icons/wifi/wifi_1a202c.svg' : '/files/icons/wifi/wifi_171923.svg'}

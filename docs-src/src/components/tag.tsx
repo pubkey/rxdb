@@ -3,7 +3,7 @@ export function Tag(props: {
     children?: React.ReactNode;
 }) {
     return (
-        <div
+        <span
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -31,6 +31,6 @@ export function Tag(props: {
                 />
             )}
             {props.children}
-        </div>
+        </span>
     );
 }

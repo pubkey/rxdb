@@ -4,9 +4,10 @@ import { SemPage, getAppName } from '../pages';
 export function RuntimesSection(props: {
     dark: boolean;
     sem?: SemPage;
+    order?: number;
     runtimesRef: MutableRefObject<HTMLDivElement>;
 }) {
-    return <div className={'block frameworks ' + (props.dark ? 'dark' : '')} id="runtimes" ref={props.runtimesRef}>
+    return <div className={'block frameworks ' + (props.dark ? 'dark' : '')} id="runtimes" ref={props.runtimesRef} style={{ order: props.order }}>
         <div className="content">
             <a
                 href="https://github.com/pubkey/rxdb/tree/master/examples/angular"
