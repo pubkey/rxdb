@@ -48,7 +48,7 @@
     "@angular/platform-browser": "17.3.12",
     "@angular/platform-browser-dynamic": "17.3.12",
     "@angular/platform-server": "17.3.12",
-    "@angular/pwa": "17.3.15",
+    "@angular/pwa": "17.3.16",
     "@angular/router": "17.3.12",
     "@angular/service-worker": "17.3.12",
     "@angular/ssr": "^17.3.2",
@@ -71,8 +71,8 @@
     "zone.js": "0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "17.3.15",
-    "@angular/cli": "17.3.15",
+    "@angular-devkit/build-angular": "17.3.16",
+    "@angular/cli": "17.3.16",
     "@angular/compiler-cli": "17.3.12",
     "@angular/language-service": "17.3.12",
     "@capacitor/cli": "latest",
