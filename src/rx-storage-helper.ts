@@ -909,6 +909,7 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
         storage: RxStorage<Internals, InstanceCreationOptions>;
         delayTimeBefore: () => number;
         delayTimeAfter: () => number;
+        longQueryTime?: number;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
     /**
@@ -948,8 +949,13 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     return ret;
                 },
                 async query(a) {
-                    await promiseWait(input.delayTimeBefore());
+                    if (!input.longQueryTime) {
+                        await promiseWait(input.delayTimeBefore());
+                    }
                     const ret = await storageInstance.query(a);
+                    if (input.longQueryTime) {
+                        await promiseWait(input.delayTimeBefore() + input.longQueryTime);
+                    }
                     return ret;
                 },
                 async count(a) {

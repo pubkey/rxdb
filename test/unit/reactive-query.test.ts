@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config, { describeParallel } from './config.ts';
+import config, { describeParallel, getStorage } from './config.ts';
 
 
 import {
@@ -156,19 +156,29 @@ describeParallel('reactive-query.test.js', () => {
                 return;
             }
 
-            const c = await humansCollection.create(1);
+            const c = await humansCollection.create(1,
+                'human',
+                true,
+                true,
+                getStorage('memory-long-query-delay').getStorage()
+            );
+
             let result = [];
-            c.insert(schemaObjects.humanData()); // do not await here!
+
             c.find().$.subscribe(r => {
                 result = r;
             });
 
-            await c.insert(schemaObjects.humanData());
-            await waitUntil(() => result.length === 3);
+            const insertLen = 150;
+            for (let i = 0; i < insertLen; i++) {
+                c.insert(schemaObjects.humanData());
+            }
+
+            await waitUntil(() => result.length === insertLen + 1);
 
             // should still have correct results after some time
             await wait(50);
-            assert.strictEqual(result.length, 3);
+            assert.strictEqual(result.length, insertLen + 1);
 
             c.database.close();
         });
