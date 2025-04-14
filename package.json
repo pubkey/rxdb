@@ -578,7 +578,7 @@
     "mini-css-extract-plugin": "2.9.2",
     "mocha": "11.1.0",
     "mocha.parallel": "0.15.6",
-    "nconf": "0.12.1",
+    "nconf": "0.13.0",
     "node-appwrite": "15.0.1",
     "node-datachannel": "0.25.0",
     "node-pre-gyp": "0.17.0",
