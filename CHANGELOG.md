@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
+- FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
