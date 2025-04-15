@@ -30,7 +30,6 @@ import {
     map,
     first
 } from 'rxjs/operators';
-import { randomUUID } from 'crypto';
 
 describeParallel('reactive-query.test.js', () => {
     describeParallel('positive', () => {
@@ -159,12 +158,22 @@ describeParallel('reactive-query.test.js', () => {
 
             const c = await humansCollection.create(0);
             let docSize = 0;
+            const genId = () => {
+                // 优先使用标准 API
+                if (typeof crypto === 'object' && 'randomUUID' in crypto) {
+                    return crypto.randomUUID();
+                }
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (cc) => {
+                    const r = Math.random() * 16 | 0;
+                    return (cc === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+            };
 
             for (let i = 0; i < 1; i++) {
                 const len = 3000;
                 docSize += len;
                 const docs = Array.from({ length: len }, () => {
-                    const id = randomUUID();
+                    const id = genId();
                     return schemaObjects.humanData(id);
                 });
                 await c.bulkInsert(docs);
@@ -189,7 +198,7 @@ describeParallel('reactive-query.test.js', () => {
             (async () => {
                 while (!done) {
                     await wait(10);
-                    const id = randomUUID();
+                    const id = genId();
                     c.insert(schemaObjects.humanData(id));
                     insertLen++;
                 }
