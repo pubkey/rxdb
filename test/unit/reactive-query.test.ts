@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config, { describeParallel, getStorage } from './config.ts';
+import config, { describeParallel } from './config.ts';
 
 
 import {
@@ -30,6 +30,7 @@ import {
     map,
     first
 } from 'rxjs/operators';
+import { randomUUID } from 'crypto';
 
 describeParallel('reactive-query.test.js', () => {
     describeParallel('positive', () => {
@@ -156,31 +157,52 @@ describeParallel('reactive-query.test.js', () => {
                 return;
             }
 
-            const c = await humansCollection.create(1,
-                'human',
-                true,
-                true,
-                getStorage('memory-long-query-delay').getStorage()
-            );
+            const c = await humansCollection.create(0);
+            let docSize = 0;
 
-            let result = [];
+            for (let i = 0; i < 1; i++) {
+                const len = 3000;
+                docSize += len;
+                const docs = Array.from({ length: len }, () => {
+                    const id = randomUUID();
+                    return schemaObjects.humanData(id);
+                });
+                await c.bulkInsert(docs);
+            }
 
-            c.find().$.subscribe(r => {
+            let result: RxDocument<{
+                firstName: string;
+                lastName: string;
+                passportId: string;
+                age?: number | undefined;
+            }, {}>[] = [];
+
+            let done = false;
+            let insertLen = 0;
+
+            c.find({ sort: [{ age: 'asc', passportId: 'asc', lastName: 'desc', firstName: 'asc' }] }).$.subscribe(r => {
+                done = true;
                 result = r;
             });
 
-            const insertLen = 150;
-            for (let i = 0; i < insertLen; i++) {
-                c.insert(schemaObjects.humanData());
-            }
 
-            await waitUntil(() => result.length === insertLen + 1);
+            (async () => {
+                while (!done) {
+                    await wait(10);
+                    const id = randomUUID();
+                    c.insert(schemaObjects.humanData(id));
+                    insertLen++;
+                }
+            })();
 
-            // should still have correct results after some time
+
+            await waitUntil(() => done);
+            await waitUntil(() => result.length === insertLen + docSize);
             await wait(50);
-            assert.strictEqual(result.length, insertLen + 1);
+            assert.strictEqual(result.length, insertLen + docSize);
 
             c.database.close();
+
         });
     });
     describe('negative', () => {
