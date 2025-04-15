@@ -156,10 +156,13 @@ describeParallel('reactive-query.test.js', () => {
                 return;
             }
 
+            if (config.storage.name === 'sqlite-trial') {
+                // sqlite cannot insert too many rows
+                return;
+            }
             const c = await humansCollection.create(0);
             let docSize = 0;
             const genId = () => {
-                // 优先使用标准 API
                 if (typeof crypto === 'object' && 'randomUUID' in crypto) {
                     return crypto.randomUUID();
                 }
