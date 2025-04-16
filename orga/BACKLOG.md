@@ -28,6 +28,8 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
 
+## tool to generate sync enpoints in swagger
+
 ## Redis Sync
 
 Similar to the NATS replication plugin.
