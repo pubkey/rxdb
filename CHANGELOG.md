@@ -3,6 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
+- FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
+- Full text search with encryption issue [#5](https://github.com/pubkey/rxdb-premium-issues/pull/5)
+- UPDATE the `ws` package to the latest version.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

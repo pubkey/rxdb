@@ -14,12 +14,14 @@ export function Trophy(props: {
     valueTitle: string;
     imgUrl: string;
     value: number;
+    order?: number;
 }) {
 
     return <a
         href={props.href}
         onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
         target="_blank"
+        style={{ order: props.order }}
     >
         <div className={'trophy ' + props.title.toLowerCase()}>
             <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />

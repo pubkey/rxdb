@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.26.10",
-    "@expo/cli": "0.22.24",
+    "@expo/cli": "0.22.26",
     "babel-preset-expo": "12.0.9",
     "buffer": "6.0.3",
     "cross-fetch": "4.1.0",
