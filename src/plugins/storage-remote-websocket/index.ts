@@ -27,6 +27,8 @@ import type {
 export function startRxStorageRemoteWebsocketServer(
     options: RxStorageRemoteWebsocketServerOptions
 ): RxStorageRemoteWebsocketServerState {
+
+    (options as any).perMessageDeflate = true;
     const serverState = startSocketServer(options);
 
     const websocketByConnectionId = new Map<string, WebSocket>();
