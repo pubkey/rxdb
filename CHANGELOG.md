@@ -2,16 +2,20 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
-- FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
-- Full text search with encryption issue [#5](https://github.com/pubkey/rxdb-premium-issues/pull/5)
-- Published the [Appwrite Replication Plugin](https://rxdb.info/replication-appwrite.html) in beta mode
-- UPDATE the `ws` package to the latest version.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.11.0 (16 April 2025)
+
+- FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
+- FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
+- Full text search with encryption issue [#5](https://github.com/pubkey/rxdb-premium-issues/pull/5)
+- Published the [Appwrite Replication Plugin](https://rxdb.info/replication-appwrite.html) in beta mode
+- UPDATE the `ws` package to the latest version.
 
 ### 16.9.0 (1 April 2025)
 
