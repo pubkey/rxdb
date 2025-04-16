@@ -200,7 +200,7 @@ describeParallel('reactive-query.test.js', () => {
 
             (async () => {
                 while (!done) {
-                    await wait(10);
+                    await wait(2);
                     const id = genId();
                     c.insert(schemaObjects.humanData(id));
                     insertLen++;
