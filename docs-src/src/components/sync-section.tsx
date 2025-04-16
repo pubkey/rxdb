@@ -60,7 +60,7 @@ export function SyncSection(props: {
           </a>
 
           <a href="/replication-appwrite.html" target="_blank">
-            <Tag img="/files/icons/appwrite-small.svg">appwrite (coming soon)</Tag>
+            <Tag img="/files/icons/appwrite-small.svg">appwrite</Tag>
           </a>
 
         </p>

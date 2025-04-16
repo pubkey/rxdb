@@ -11,7 +11,7 @@ import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
 
 
 
-# RxDB Appwrite Replication (Pre Alpha)
+# RxDB Appwrite Replication (beta)
 
 This replication plugin allows you to synchronize documents between RxDB and an [Appwrite](https://appwrite.io/) server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
 

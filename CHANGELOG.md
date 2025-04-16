@@ -5,6 +5,7 @@
 - FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
 - FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
 - Full text search with encryption issue [#5](https://github.com/pubkey/rxdb-premium-issues/pull/5)
+- Published the [Appwrite Replication Plugin](https://rxdb.info/replication-appwrite.html) in beta mode
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
