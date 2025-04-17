@@ -564,7 +564,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
         changePoint = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter() + 1;
     }
 
-    function caluateChanges(){
+    function caluateChanges(trust: boolean = true) {
         const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(changePoint);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
@@ -597,7 +597,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 // 'find' or 'findOne' query
                 const eventReduceResult = calculateNewResults(
                     rxQuery as any,
-                    runChangeEvents
+                    runChangeEvents, { trustData: trust }
                 );
                 if (eventReduceResult.runFullQueryAgain) {
                     // could not calculate the new results, execute must be done
@@ -640,7 +640,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     ) {
                         ret = true;
                         rxQuery._setResultData(newResultData as any);
-                        caluateChanges();
+                        caluateChanges(false);
                     }
                     return ret;
                 }
@@ -654,7 +654,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 ) {
                     ret = true; // true because results changed
                     rxQuery._setResultData(newResultData as any);
-                    caluateChanges();
+                    caluateChanges(false);
                 }
                 return ret;
             });
