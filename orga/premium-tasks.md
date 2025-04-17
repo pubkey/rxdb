@@ -28,10 +28,3 @@ const signal = collection.find().$$; // <- This has the type Signal<any[]> but s
 ## Tasks already in progress (do no work on these!)
 
 - [#3935](https://github.com/pubkey/rxdb/pull/3935) Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
-
-## Solved Tasks (do no work on these!)
-
-- Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage https://github.com/pubkey/rxdb/pull/5429https://github.com/pubkey/rxdb/pull/5429
-- Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version. https://github.com/pubkey/rxdb/pull/5469
-- UPDATE node.js in the `.nvmrc` file to version 22 and fix all CI issues that come with that. [#6231](https://github.com/pubkey/rxdb/pull/6231)
-- Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115) solved at [#6353](https://github.com/pubkey/rxdb/pull/6353)
