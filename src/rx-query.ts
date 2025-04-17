@@ -597,7 +597,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 // 'find' or 'findOne' query
                 const eventReduceResult = calculateNewResults(
                     rxQuery as any,
-                    runChangeEvents, { trustData: trust }
+                    runChangeEvents, { idempotentCheck: trust }
                 );
                 if (eventReduceResult.runFullQueryAgain) {
                     // could not calculate the new results, execute must be done

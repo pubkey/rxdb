@@ -112,13 +112,13 @@ export function getQueryParams<RxDocType>(
 }
 
 type calculateNewResultsOption = {
-    trustData?: boolean;
+    idempotentCheck?: boolean;
 };
 export function calculateNewResults<RxDocumentType>(
     rxQuery: RxQuery<RxDocumentType>,
     rxChangeEvents: RxStorageChangeEvent<RxDocumentType>[],
     options: calculateNewResultsOption = {
-        trustData: true
+        idempotentCheck: true
     }
 ): EventReduceResult<RxDocumentType> {
     if (!rxQuery.collection.database.eventReduce) {
@@ -155,7 +155,7 @@ export function calculateNewResults<RxDocumentType>(
         } else if (actionName !== 'doNothing') {
             // Don't trust rxChangeEvents, as there might be previous change data being passed in, so idempotency checks are needed
             // Updates and deletions are overwrite operations on documents, they do not depend on the current state of the document, which are inherently idempotent and require no special consideration.
-            if (!options.trustData && eventReduceEvent.operation === 'INSERT' && previousResultsMap.has(eventReduceEvent.id)) {
+            if (!options.idempotentCheck && eventReduceEvent.operation === 'INSERT' && previousResultsMap.has(eventReduceEvent.id)) {
                 return false;
             }
             changed = true;
