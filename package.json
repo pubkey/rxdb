@@ -579,7 +579,7 @@
     "mocha": "11.1.0",
     "mocha.parallel": "0.15.6",
     "nconf": "0.13.0",
-    "node-appwrite": "15.0.1",
+    "node-appwrite": "16.0.0",
     "node-datachannel": "0.25.0",
     "node-pre-gyp": "0.17.0",
     "pre-commit": "1.2.2",
