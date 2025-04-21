@@ -130,25 +130,6 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state.get('a'), 10);
                 state.collection.database.remove();
             });
-            it('get changes from other state', async () => {
-                const databaseName = randomToken(10);
-                const state1 = await getState(databaseName);
-                const state2 = await getState(databaseName);
-                await state1.set('nes', () => {
-                    return { ted: 'foo' };
-                });
-
-                await waitUntil(() => state1.nes?.ted === 'foo');
-                await waitUntil(() => state2.nes?.ted === 'foo');
-
-                await state2.set('nes.ted', () => 'foo2');
-
-                await waitUntil(() => state1.nes?.ted === 'foo2');
-                await waitUntil(() => state2.nes?.ted === 'foo2');
-
-                state1.collection.database.close();
-                state2.collection.database.close();
-            });
             it('update nested', async () => {
                 const state = await getState();
                 await state.set('nes', () => {
@@ -372,6 +353,25 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     state1.set('nes.ted', () => 'foo2'),
                     state2.set('nes.ted', () => 'foo2')
                 ]);
+
+                await waitUntil(() => state1.nes?.ted === 'foo2');
+                await waitUntil(() => state2.nes?.ted === 'foo2');
+
+                state1.collection.database.close();
+                state2.collection.database.close();
+            });
+            it('get changes from other state', async () => {
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state1.set('nes', () => {
+                    return { ted: 'foo' };
+                });
+
+                await waitUntil(() => state1.nes?.ted === 'foo');
+                await waitUntil(() => state2.nes?.ted === 'foo');
+
+                await state2.set('nes.ted', () => 'foo2');
 
                 await waitUntil(() => state1.nes?.ted === 'foo2');
                 await waitUntil(() => state2.nes?.ted === 'foo2');
