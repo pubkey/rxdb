@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX toggleOnDocumentVisible isVisible not always truthy [#7095](https://github.com/pubkey/rxdb/pull/7095)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
