@@ -422,14 +422,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     isPaused(): boolean {
-        return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+        return !!(this.internalReplicationState && this.internalReplicationState.events.paused.getValue());
     }
 
     isStopped(): boolean {
-        if (this.subjects.canceled.getValue()) {
-            return true;
-        }
-        return false;
+        return !!this.subjects.canceled.getValue();
     }
 
     isStoppedOrPaused() {
@@ -585,7 +582,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
             if (replicationState.isStopped()) {
                 return;
             }
-            const isVisible = document.visibilityState;
+            const isVisible = document.visibilityState === 'visible';
             if (isVisible) {
                 replicationState.start();
             } else {
