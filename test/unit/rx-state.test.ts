@@ -181,6 +181,26 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 assert.strictEqual(state.get('foo'), 'bar2');
                 state.collection.database.remove();
             });
+            it('should get nested values after change from other state', async () => {
+                const token = randomToken(10);
+                const state = await getState(token);
+                const state2 = await getState(token);
+
+                await state.set('nes', () => {
+                    return { ted: 'foo' };
+                });
+                assert.deepStrictEqual(state.nes, { ted: 'foo' });
+                assert.deepStrictEqual(state.get('nes'), { ted: 'foo' });
+                assert.deepStrictEqual(state.get('nes.ted'), 'foo');
+
+                await state2.set('nes.ted', () => 'foo2');
+                assert.deepStrictEqual(state.nes, { ted: 'foo2' });
+                assert.deepStrictEqual(state.get('nes'), { ted: 'foo2' });
+                assert.deepStrictEqual(state.get('nes.ted'), 'foo2');
+
+                state.collection.database.remove();
+                state2.collection.database.remove();
+            });
             it('should get nested values', async () => {
                 const state = await getState();
                 await state.set('nes', () => {
