@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX state get changes from other state will get error [#7097](https://github.com/pubkey/rxdb/pull/7097)
 - FIX toggleOnDocumentVisible isVisible not always truthy [#7095](https://github.com/pubkey/rxdb/pull/7095)
 <!-- ADD new changes here! -->
 
