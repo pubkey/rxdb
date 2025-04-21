@@ -96,7 +96,8 @@ export class RxStateBase<T, Reactivity = unknown> {
                             event.operation === 'INSERT' &&
                             event.documentData.sId !== this._instanceId
                         ) {
-                            mergeOperationsIntoState(this._state, event.documentData.ops);
+                            const new_state = mergeOperationsIntoState(this._state, event.documentData.ops);
+                            this._state = new_state;
                         }
                     }
                 })
@@ -314,7 +315,8 @@ export async function createRxState<T>(
         } else {
             for (let index = 0; index < documents.length; index++) {
                 const document = documents[index];
-                mergeOperationsIntoState(rxState._state, document.ops);
+                const newState = mergeOperationsIntoState(rxState._state, document.ops);
+                rxState._state = newState;
             }
         }
     }
@@ -364,9 +366,17 @@ export async function createRxState<T>(
 export function mergeOperationsIntoState<T>(
     state: T,
     operations: RxStateOperation[]
-) {
+): T {
+    let newState = clone(state);
     for (let index = 0; index < operations.length; index++) {
         const operation = operations[index];
-        setProperty(state, operation.k, clone(operation.v));
+        const path = operation.k;
+        const newValue = operation.v;
+        if (path === '') {
+            newState = clone(newValue);
+        } else {
+            setProperty(newState, path, newValue);
+        }
     }
+    return newState;
 }
