@@ -360,6 +360,25 @@ addRxPlugin(RxDBJsonDumpPlugin);
                 state1.collection.database.close();
                 state2.collection.database.close();
             });
+            it('get changes from other state', async () => {
+                const databaseName = randomToken(10);
+                const state1 = await getState(databaseName);
+                const state2 = await getState(databaseName);
+                await state1.set('nes', () => {
+                    return { ted: 'foo' };
+                });
+
+                await waitUntil(() => state1.nes?.ted === 'foo');
+                await waitUntil(() => state2.nes?.ted === 'foo');
+
+                await state2.set('nes.ted', () => 'foo2');
+
+                await waitUntil(() => state1.nes?.ted === 'foo2');
+                await waitUntil(() => state2.nes?.ted === 'foo2');
+
+                state1.collection.database.close();
+                state2.collection.database.close();
+            });
             runXTimes(1, () => {
                 it('should have a deterministic output when 2 instances write at the same time', async () => {
                     // TODO shouldn't we fix this test for these storages?
