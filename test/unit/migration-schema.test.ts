@@ -788,10 +788,7 @@ describe('migration-schema.test.ts', function () {
                 return;
             }
             async function slowMigration(doc: any) {
-                console.log(`rxDb: migrating collection heroes for doc ${doc.id}`);
                 await wait(100);
-                console.log(`rxDb: finished migrating collection heroes for doc ${doc.id}`);
-
                 return doc;
             }
 
