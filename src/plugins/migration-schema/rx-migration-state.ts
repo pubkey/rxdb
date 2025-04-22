@@ -259,6 +259,9 @@ export class RxMigrationState {
             s.status = 'DONE';
             return s;
         });
+        if (this.broadcastChannel) {
+            await this.broadcastChannel.close();
+        }
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
