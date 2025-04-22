@@ -887,7 +887,6 @@ describe('migration-schema.test.ts', function () {
             console.log('close 2 DONE');
 
             console.log('WORKS !');
-            process.exit();
         });
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
