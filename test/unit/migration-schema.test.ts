@@ -821,9 +821,8 @@ describe('migration-schema.test.ts', function () {
                 };
             }
 
-            console.log('--------------------------------------------');
             const name = randomToken(10);
-            let db = await createRxDatabase({
+            const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
                 ignoreDuplicate: true
@@ -833,7 +832,6 @@ describe('migration-schema.test.ts', function () {
                     schema: getSchema(0)
                 }
             });
-            console.log('instance 1: ' + db.token);
             await collections.mycollection.bulkInsert([
                 humanData(),
                 humanData(),
@@ -847,7 +845,6 @@ describe('migration-schema.test.ts', function () {
                 storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
-            console.log('instance 2: ' + db2.token);
             await db2.addCollections({
                 mycollection: {
                     schema: getSchema(1),
@@ -867,7 +864,6 @@ describe('migration-schema.test.ts', function () {
                 storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
-            console.log('instance 3: ' + db3.token);
             collections = await db3.addCollections({
                 mycollection: {
                     schema: getSchema(2),
@@ -881,12 +877,7 @@ describe('migration-schema.test.ts', function () {
             const docsAfter = await collections.mycollection.find().exec();
             assert.strictEqual(docsAfter.length, 3);
             await db3.close();
-
-            console.log('close 2 START');
             await db2.close();
-            console.log('close 2 DONE');
-
-            console.log('WORKS !');
         });
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema

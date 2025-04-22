@@ -188,8 +188,6 @@ export class RxMigrationState {
         const totalCount = await this.countAllDocuments(
             [oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage))
         );
-
-        console.log('closed? ' + this.database.token + ' ' + !!this.collection.closed);
         await this.updateStatus(s => {
             s.count.total = totalCount;
             return s;
@@ -230,8 +228,6 @@ export class RxMigrationState {
             );
         } catch (err) {
             await oldStorageInstance.close();
-            console.log('update ERROR STATUS: ' + this.database.token);
-            console.dir(err);
             await this.updateStatus(s => {
                 s.status = 'ERROR';
                 s.error = errorToPlainJson(err as Error);
@@ -241,7 +237,6 @@ export class RxMigrationState {
         }
 
         // remove old collection meta doc
-        console.log('remove -- 0 ' + this.database.token + ' - ' + this.database.name + ' - ' + oldCollectionMeta?.id + ' closed: ' + this.collection.closed);
         try {
             await writeSingle(
                 this.database.internalStore,
@@ -259,20 +254,16 @@ export class RxMigrationState {
             );
         } catch (error) {
             const isConflict = isBulkWriteConflictError<InternalStoreCollectionDocType>(error);
-            console.log('isConflict: ' + isConflict);
             if (isConflict && !!isConflict.documentInDb._deleted) {
-                console.log('ok, already deleted');
             } else {
                 throw error;
             }
         }
-        console.log('remove -- 1');
 
         await this.updateStatus(s => {
             s.status = 'DONE';
             return s;
         });
-        console.log('remove -- 2');
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
@@ -289,12 +280,10 @@ export class RxMigrationState {
             const useHandlers = this.updateStatusHandlers;
             this.updateStatusHandlers = [];
             while (true) {
-                console.log('get migration status: ' + this.database.token);
                 const previous = await getSingleDocument<RxMigrationStatusDocument>(
                     this.database.internalStore,
                     this.statusDocId
                 );
-                console.log('get migration status DONE: ' + this.database.token);
                 let newDoc = clone(previous);
                 if (!previous) {
                     newDoc = {
