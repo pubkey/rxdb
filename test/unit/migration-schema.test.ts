@@ -1,8 +1,8 @@
 import assert from 'assert';
 import config, { describeParallel } from './config.ts';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import { humansCollection, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import { humanData, humansCollection, isFastMode, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -33,9 +33,11 @@ import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 
 
 describe('migration-schema.test.ts', function () {
+    addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(1000 * 20);
     if (
         !config.storage.hasPersistence ||
@@ -778,6 +780,102 @@ describe('migration-schema.test.ts', function () {
         });
     });
     describeParallel('issues', () => {
+        /**
+         * @link https://discord.com/channels/@me/1228248291196670114/1310584400710209556
+         */
+        it('duplicate meta states found if migration is canceled in between and restarted with a new version', async () => {
+            if (isFastMode()) {
+                return;
+            }
+            async function slowMigration(doc: any) {
+                await wait(100);
+                return doc;
+            }
+
+            // create a schema
+            function getSchema(version: number) {
+                return {
+                    version,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        firstName: {
+                            type: 'string'
+                        },
+                        lastName: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150
+                        }
+                    }
+                };
+            }
+
+            const name = randomToken(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            let collections = await db.addCollections({
+                mycollection: {
+                    schema: getSchema(0)
+                }
+            });
+            await collections.mycollection.bulkInsert([
+                humanData(),
+                humanData(),
+                humanData(),
+            ]);
+            await db.close();
+
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db2.addCollections({
+                mycollection: {
+                    schema: getSchema(1),
+                    migrationStrategies: {
+                        1: slowMigration
+                    },
+                    autoMigrate: false
+                }
+            });
+            const migrationState = db2.collections.mycollection.getMigrationState();
+            await wait(100);
+            await migrationState.cancel();
+
+
+            const db3 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            collections = await db3.addCollections({
+                mycollection: {
+                    schema: getSchema(2),
+                    migrationStrategies: {
+                        1: slowMigration,
+                        2: slowMigration
+                    }
+                }
+            });
+
+            const docsAfter = await collections.mycollection.find().exec();
+            assert.strictEqual(docsAfter.length, 3);
+            await db3.close();
+            await db2.close();
+        });
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
             const mySchema = {
