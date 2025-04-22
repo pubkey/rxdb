@@ -5,7 +5,9 @@ import {
 } from '../../rx-database-internal-store.ts';
 import { getPreviousVersions } from '../../rx-schema.ts';
 import type {
+    ById,
     InternalStoreCollectionDocType,
+    InternalStoreDocType,
     RxCollection,
     RxDatabase,
     RxDocumentData
@@ -22,8 +24,7 @@ import { RxMigrationState } from './rx-migration-state.ts';
 
 export async function getOldCollectionMeta(
     migrationState: RxMigrationState
-): Promise<RxDocumentData<InternalStoreCollectionDocType>> {
-
+): Promise<RxDocumentData<InternalStoreCollectionDocType> | undefined> {
     const collectionDocKeys = getPreviousVersions(migrationState.collection.schema.jsonSchema)
         .map(version => migrationState.collection.name + '-' + version);
 
@@ -34,10 +35,19 @@ export async function getOldCollectionMeta(
         )),
         false
     );
-    if (found.length > 1) {
-        throw new Error('more than one old collection meta found');
-    }
-    return found[0];
+
+
+    /**
+     * It can happen that a previous migration was canceled or the browser was reloaded
+     * and on the next startup a new migration was added.
+     * So we can have multiple collection states with different versions.
+     * In this case, use the one with the lowest version number and start
+     * migrating from this one upwards.
+     */
+    const foundById: ById<RxDocumentData<InternalStoreDocType>> = {};
+    found.forEach(f => foundById[f.key] = f);
+    const oldest = collectionDocKeys.find(key => foundById[key]);
+    return oldest ? foundById[oldest] : undefined;
 }
 
 
