@@ -33,7 +33,6 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    promiseWait,
     randomToken,
     requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';

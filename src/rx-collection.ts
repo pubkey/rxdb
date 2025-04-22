@@ -937,7 +937,6 @@ export class RxCollectionBase<
     }
 
     async close(): Promise<boolean> {
-        console.log('close collection: ' + this.database.token);
         if (this.closed) {
             return PROMISE_RESOLVE_FALSE;
         }

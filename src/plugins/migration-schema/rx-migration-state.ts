@@ -151,11 +151,6 @@ export class RxMigrationState {
                 this.database.name,
                 this.collection.name,
                 this.collection.schema.version
-                /**
-                 * IMPORTANT: Do not add the version number to the channel name
-                 * because when multiple browser tabs with different versions of the app are
-                 * open, we still only want to migrate in a single one of the tabs.
-                 */
             ].join('|'));
             const leaderElector = createLeaderElection(this.broadcastChannel);
             await leaderElector.awaitLeadership();
