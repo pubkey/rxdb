@@ -78,17 +78,17 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-localstorage',
-          label: 'LocalStorage'
+          label: 'LocalStorage (Browser)'
         },
         {
           type: 'doc',
           id: 'rx-storage-indexeddb',
-          label: 'IndexedDB 👑'
+          label: 'IndexedDB 👑 (Browser, Capacitor)'
         },
         {
           type: 'doc',
           id: 'rx-storage-opfs',
-          label: 'OPFS 👑'
+          label: 'OPFS 👑 (Browser)'
         },
         {
           type: 'doc',
@@ -98,18 +98,17 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-filesystem-node',
-          label: 'Filesystem Node 👑'
+          label: 'Filesystem Node 👑 (Node.js)'
+        },
+        {
+          type: 'doc',
+          id: 'rx-storage-sqlite',
+          label: 'SQLite (Capacitor, React-Native, Expo, Tauri, Electron, Node.js)'
         },
         {
           type: 'category',
           label: 'Third Party Storages',
           items: [
-
-            {
-              type: 'doc',
-              id: 'rx-storage-sqlite',
-              label: 'SQLite'
-            },
             {
               type: 'doc',
               id: 'rx-storage-dexie',
