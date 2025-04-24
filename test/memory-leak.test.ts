@@ -1,18 +1,14 @@
 import {
     createRxDatabase,
     randomToken,
-    overwritable,
     requestIdlePromise,
     RxCollection,
     uncacheRxQuery,
     addRxPlugin
 } from '../plugins/core/index.mjs';
-import * as assert from 'assert';
 import {
     schemaObjects,
     schemas,
-    isFastMode,
-    isDeno,
     AverageSchemaDocumentType
 } from '../plugins/test-utils/index.mjs';
 import config from './unit/config.ts';
@@ -41,8 +37,6 @@ describe('memory-leak.test.ts', () => {
     // });
     it('run the memory leak test', async function () {
         this.timeout(100000 * 1000);
-        const runs = isFastMode() ? 1 : 40;
-        const perfStorage = config.storage.getStorage();
 
 
 
