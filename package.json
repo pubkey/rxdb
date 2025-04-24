@@ -423,6 +423,7 @@
     "test:performance": "npm run build && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node",
     "test:query-correctness-fuzzing:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/query-correctness-fuzzing.test.js --unhandled-rejections=strict --expose-gc",
     "test:query-correctness-fuzzing:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.cjs ./test_tmp/query-correctness-fuzzing.test.js --unhandled-rejections=strict --expose-gc",
+    "test:memory-leak:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/memory-leak.test.js --inspect --unhandled-rejections=strict --expose-gc --max-old-space-size=256",
     "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.3",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4",

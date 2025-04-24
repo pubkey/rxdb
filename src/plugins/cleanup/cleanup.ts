@@ -52,7 +52,7 @@ export async function initialCleanupWait(collection: RxCollection, cleanupPolicy
         return;
     }
 
-    if (cleanupPolicy.waitForLeadership) {
+    if (collection.database.multiInstance && cleanupPolicy.waitForLeadership) {
         await collection.database.waitForLeadership();
     }
 }
