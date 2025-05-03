@@ -4,6 +4,10 @@ This list contains things that have to be done but will create breaking changes.
 
 ## Add databaseNamePrefix to premium sqlite storage
 
+## Merge memory-mapped fix BREAKING: deleted docs must be purged
+
+https://github.com/pubkey/rxdb-premium-dev/pull/480
+
 ## Merge OPFS fix BREAKING: FIX memory and cleanup leak
 
 https://github.com/pubkey/rxdb-premium-dev/pull/477
