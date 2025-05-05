@@ -30,6 +30,7 @@ import type {
     RxJsonSchema
 } from '../../types/rx-schema';
 import { flatClone } from '../utils/index.ts';
+import { META_LWT_UNIX_TIME_MAX } from '../../rx-schema-helper.ts';
 
 
 export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
@@ -1108,7 +1109,7 @@ export const humanWithTimestamp: RxJsonSchema<HumanWithTimestampDocumentType> = 
         updatedAt: {
             type: 'number',
             minimum: 0,
-            maximum: 10000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 1
 
         },
@@ -1139,7 +1140,7 @@ export const humanWithTimestampNested: RxJsonSchema<HumanWithTimestampNestedDocu
         updatedAt: {
             type: 'number',
             minimum: 0,
-            maximum: 10000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 1
 
         },
@@ -1206,7 +1207,7 @@ export const humanWithTimestampAllIndex: RxJsonSchema<HumanWithTimestampDocument
         updatedAt: {
             type: 'number',
             minimum: 0,
-            maximum: 10000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 1
         },
         deletedAt: {
@@ -1245,13 +1246,13 @@ export const humanWithSimpleAndCompoundIndexes: RxJsonSchema<{
         createdAt: {
             type: 'number',
             minimum: 0,
-            maximum: 10000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 1
         },
         updatedAt: {
             type: 'number',
             minimum: 0,
-            maximum: 10000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 1
         }
     },

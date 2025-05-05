@@ -285,7 +285,7 @@ export function fillWithDefaultSettings<T = any>(
     return schemaObj as any;
 }
 
-
+export const META_LWT_UNIX_TIME_MAX = 1000000000000000;
 export const RX_META_SCHEMA: JsonSchema = {
     type: 'object',
     properties: {
@@ -299,7 +299,7 @@ export const RX_META_SCHEMA: JsonSchema = {
              * We use 1 as minimum so that the value is never falsy.
              */
             minimum: RX_META_LWT_MINIMUM,
-            maximum: 1000000000000000,
+            maximum: META_LWT_UNIX_TIME_MAX,
             multipleOf: 0.01
         }
     },
