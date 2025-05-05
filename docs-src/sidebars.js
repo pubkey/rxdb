@@ -242,7 +242,13 @@ const sidebars = {
           type: 'doc',
           id: 'replication-nats',
           label: 'NATS Replication'
-        }
+        },
+        {
+          type: 'doc',
+          id: 'replication-appwrite',
+          label: 'Appwrite Replication'
+        },
+
       ],
     },
     {
@@ -549,17 +555,6 @@ const sidebars = {
           label: 'LinkedIn',
           href: 'https://www.linkedin.com/company/rxdb/'
         },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Pre-Alpha Features',
-      items: [
-        {
-          type: 'doc',
-          id: 'replication-appwrite',
-          label: 'Appwrite Replication'
-        }
       ],
     },
   ],
