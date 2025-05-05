@@ -4,6 +4,9 @@ slug: angular-indexeddb.html
 description: Discover how to harness IndexedDB in Angular with RxDB for robust offline apps. Learn reactive queries, advanced features, and more.
 ---
 
+import {Tabs} from '@site/src/components/tabs';
+import {Steps} from '@site/src/components/steps';
+
 # Build Smarter Offline-First Angular Apps: How RxDB Beats IndexedDB Alone
 
 In modern web applications, offline capabilities and fast interactions are crucial. IndexedDB, the [browser](./browser-database.md)'s built-in database, allows you to store data locally, making your Angular application more robust and responsive. However, IndexedDB can be cumbersome to work with directly. That's where RxDB (Reactive Database) shines. In this article, we'll walk you through how to utilize IndexedDB in your Angular project using [RxDB](https://rxdb.info/) as a convenient abstraction layer.
@@ -77,11 +80,11 @@ import 'zone.js/plugins/zone-patch-rxjs';
 
 ### Create a Database and Collections
 
+
 RxDB supports multiple storage options. The free and simple approach is using the [localstorage-based](../rx-storage-localstorage.md) storage. For higher performance, there's a premium plain [IndexedDB storage](../rx-storage-indexeddb.md).
 
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 // Define your schema
 const heroSchema = {
@@ -104,7 +107,15 @@ const heroSchema = {
   },
   required: ['id', 'name']
 };
+```
 
+
+<Tabs>
+
+### Localstorage
+
+```ts
+import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 export async function initDB() {
   // Create a database
   const db = await createRxDatabase({
@@ -122,6 +133,32 @@ export async function initDB() {
   return db;
 }
 ```
+
+### IndexedDB
+
+```ts
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+export async function initDB() {
+  // Create a database
+  const db = await createRxDatabase({
+    name: 'heroesdb', // the name of the database
+    storage: getRxStorageIndexedDB()
+  });
+
+  // Add collections
+  await db.addCollections({
+    heroes: {
+      schema: heroSchema
+    }
+  });
+
+  return db;
+}
+```
+
+
+</Tabs>
+
 
 It's recommended to encapsulate database creation logic in an Angular service, such as in a DatabaseService. A full example is available in [RxDB's Angular example](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/app/services/database.service.ts).
 
