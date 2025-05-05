@@ -245,7 +245,7 @@ export default function Home(props: {
       url: '/rx-state.html'
     },
     {
-      value: 'local Documents',
+      value: 'local documents',
       count: 38,
       url: '/rx-local-document.html'
     },
