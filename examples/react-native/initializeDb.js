@@ -38,7 +38,7 @@ import {
 } from './storage';
 
 const syncURL = 'http://admin:mysecret1@localhost:5984'; // Replace with your couchdb instance
-const dbName = 'heroesreactdatabase2';
+const dbName = 'heroesreactdatabase3';
 export const HeroesCollectionName = 'heroes';
 
 const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.DEBUG_PROD === 'true';
