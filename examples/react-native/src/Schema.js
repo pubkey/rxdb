@@ -13,6 +13,7 @@ const heroSchema = {
             type: 'string',
         },
     },
+    attachments: {},
     required: ['color'],
 };
 

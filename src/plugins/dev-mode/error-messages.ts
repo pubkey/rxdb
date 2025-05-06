@@ -18,6 +18,7 @@ export const ERROR_MESSAGES = {
     UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
     UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
     UT7: 'attachments.compression is enabled but no attachment-compression plugin is used',
+    UT8: 'crypto.subtle.digest is not available in your runtime. For expo/react-native see https://discord.com/channels/969553741705539624/1341392686267109458/1343639513850843217 ',
 
     // plugins
     PL1: 'Given plugin is not RxDB plugin.',

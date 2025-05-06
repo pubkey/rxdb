@@ -121,7 +121,7 @@ Using OPFS from the main thread can have benefits because not having to cross th
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageOPFSMainThread } from 'rxdb-premium/plugins/storage-opfs';
 
 const database = await createRxDatabase({
     name: 'mydatabase',
