@@ -34,7 +34,7 @@
     "normalize.css": "8.0.1",
     "pouchdb-adapter-idb": "9.0.0",
     "rxjs": "7.8.2",
-    "ws": "8.16.0"
+    "ws": "8.18.2"
   },
   "devDependencies": {
     "async-test-util": "2.5.0",
