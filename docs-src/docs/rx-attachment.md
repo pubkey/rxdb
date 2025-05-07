@@ -17,6 +17,10 @@ Using attachments instead of adding the data to the normal document, ensures tha
 Internally, attachments in RxDB are stored and handled similar to how [CouchDB, PouchDB](https://pouchdb.com/guides/attachments.html#how-attachments-are-stored) does it.
 
 
+:::warning
+Expo/React-Native does not support the `Blob` API natively. Make sure you use your own polyfill that properly supports `blob.arrayBuffer()` when using RxAttachments.
+:::
+
 ## Add the attachments plugin
 
 To enable the attachments, you have to add the `attachments` plugin.
