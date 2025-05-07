@@ -331,13 +331,13 @@ export default function Home(props: {
   const replicationRef = useRef<HTMLDivElement>(null);
   const offlineRef = useRef<HTMLDivElement>(null);
   const runtimesRef = useRef<HTMLDivElement>(null);
-  const refs = {
-    reviewsRef,
-    realtimeRef,
-    replicationRef,
-    offlineRef,
-    runtimesRef
-  };
+  // const refs = {
+  //   reviewsRef,
+  //   realtimeRef,
+  //   replicationRef,
+  //   offlineRef,
+  //   runtimesRef
+  // };
 
   function scrollToSection(section: Section) {
     switch (section) {
