@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.27.1",
-    "@expo/cli": "0.24.11",
+    "@expo/cli": "0.24.12",
     "babel-preset-expo": "13.1.11",
     "buffer": "6.0.3",
     "cross-fetch": "4.1.0",
@@ -38,7 +38,7 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "expo-crypto": "14.1.4",
-    "expo-sqlite": "15.2.0",
+    "expo-sqlite": "15.2.9",
     "rxdb": "file:rxdb-local.tgz"
   }
 }
