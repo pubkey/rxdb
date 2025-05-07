@@ -81,46 +81,12 @@ export function ABTestContent(
 ) {
     const variationId = getTestGroup().variation;
 
-    if (variationId === 'A') {
-        return <>
-            <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={true} />
-            <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
-            <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-            <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={false} />
-        </>;
-    }
-    if (variationId === 'B') {
-        return <>
-            <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={true} />
-            <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
-            <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-            <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={false} />
-        </>;
-    }
-    if (variationId === 'C') {
-        return <>
-            <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-            <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
-            <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={true} />
-            <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={false} />
-        </>;
-    }
-    if (variationId === 'D') {
         return <>
             <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
             <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
             <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
             <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
         </>;
-    }
-    if (variationId === 'E') {
-        return <>
-            <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={true} />
-            <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={false} />
-            <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
-            <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
-        </>;
-    }
     return <></>;
     // const VariationElement = CURRENT_TEST_RUN.variations[variationId];
     // // return <VariationElement sem={props.sem} scrollToSection={props.scrollToSection} />;

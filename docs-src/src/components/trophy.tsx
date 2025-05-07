@@ -1,9 +1,12 @@
 import { triggerTrackingEvent } from './trigger-event';
 
 export const SOCIAL_PROOF_VALUES = {
-    github: 21699,
-    twitter: 2987,
-    discord: 1070
+    // @link https://www.star-history.com/#pubkey/rxdb&Date
+    github: 22299,
+    // @link https://x.com/rxdbjs
+    twitter: 3003,
+    // @link https://discord.com/invite/tqt9ZttJfD
+    discord: 1251
 };
 
 

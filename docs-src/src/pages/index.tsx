@@ -20,6 +20,11 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { ABTestContent, getTestGroup } from '../components/a-b-tests';
+import { RuntimesSection } from '../components/runtimes-section';
+import { SyncSection } from '../components/sync-section';
+import { OfflineSection } from '../components/offline-section';
+import { RealtimeSection } from '../components/realtime-section';
+import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 // import { SyncSection } from '../components/sync-section';
 // import { RealtimeSection } from '../components/realtime-section';
 // import { OfflineSection } from '../components/offline-section';
@@ -391,7 +396,37 @@ export default function Home(props: {
 
           <VideoSection sem={props.sem} />
 
-          <ABTestContent sem={props.sem} refs={refs} scrollToSection={scrollToSection} />
+          <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={true} />
+          <Trophy
+            href="/code/"
+            title="GitHub"
+            subTitle='Open Source on'
+            value={SOCIAL_PROOF_VALUES.github}
+            imgUrl="/files/icons/github-star-with-logo.svg"
+            valueTitle='stars'
+          />
+          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
+          <Trophy
+            href="/chat/"
+            title="Discord"
+            subTitle='Chat on'
+            value={SOCIAL_PROOF_VALUES.discord}
+            imgUrl="/files/icons/discord.svg"
+            valueTitle='members'
+            order={2}
+          />
+          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
+          <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={false} />
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            imgUrl="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
+            order={3}
+          />
+
 
           {/* <div className="" style={{
             display: 'flex',
@@ -399,44 +434,13 @@ export default function Home(props: {
           }}>
 
 
-            <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={getABTestDark('realtime')} order={getABTestOrder('realtime')} />
-            <SyncSection sem={props.sem} replicationRef={replicationRef} dark={getABTestDark('sync')} order={getABTestOrder('sync')} />
-            <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={getABTestDark('offline')} order={getABTestOrder('offline')} />
-            <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={getABTestDark('runtimes')} order={getABTestOrder('runtimes')} />
-
-            <Trophy
-              href="/code/"
-              title="GitHub"
-              subTitle='Open Source on'
-              value={SOCIAL_PROOF_VALUES.github}
-              imgUrl="/files/icons/github-star-with-logo.svg"
-              valueTitle='stars'
-              order={1}
-            />
 
 
 
-            <Trophy
-              href="/chat/"
-              title="Discord"
-              subTitle='Chat on'
-              value={SOCIAL_PROOF_VALUES.discord}
-              imgUrl="/files/icons/discord.svg"
-              valueTitle='members'
-              order={2}
-            />
 
 
 
-            <Trophy
-              href="https://twitter.com/intent/user?screen_name=rxdbjs"
-              title="Twitter"
-              subTitle='Follow on'
-              value={SOCIAL_PROOF_VALUES.twitter}
-              imgUrl="/files/icons/twitter-blue.svg"
-              valueTitle='followers'
-              order={3}
-            />
+
           </div> */}
 
           <div className="block features dark">
