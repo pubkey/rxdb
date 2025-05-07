@@ -11,7 +11,7 @@ import { SyncSection } from './sync-section';
 // import { HeroSection_D } from './hero-section/T4_hero_d';
 
 const CURRENT_TEST_RUN = {
-    id: 'T7', // test hero page content type
+    id: 'TX', // test hero page content type
     variations: {
         A: {},
         B: {},
@@ -79,14 +79,13 @@ export function ABTestContent(
         scrollToSection: ScrollToSection;
     }
 ) {
-    const variationId = getTestGroup().variation;
-
-        return <>
-            <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
-            <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
-            <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
-            <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
-        </>;
+    // const variationId = getTestGroup().variation;
+    //     return <>
+    //         <RuntimesSection sem={props.sem} runtimesRef={props.refs.runtimesRef} dark={true} />
+    //         <SyncSection sem={props.sem} replicationRef={props.refs.replicationRef} dark={false} />
+    //         <OfflineSection sem={props.sem} offlineRef={props.refs.offlineRef} dark={true} />
+    //         <RealtimeSection sem={props.sem} realtimeRef={props.refs.realtimeRef} dark={false} />
+    //     </>;
     return <></>;
     // const VariationElement = CURRENT_TEST_RUN.variations[variationId];
     // // return <VariationElement sem={props.sem} scrollToSection={props.scrollToSection} />;

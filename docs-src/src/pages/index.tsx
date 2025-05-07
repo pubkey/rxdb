@@ -19,7 +19,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 // import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
-import { ABTestContent, getTestGroup } from '../components/a-b-tests';
+// import { ABTestContent, getTestGroup } from '../components/a-b-tests';
 import { RuntimesSection } from '../components/runtimes-section';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
@@ -215,7 +215,7 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
-  getTestGroup(props.sem ? props.sem.id : '');
+  // getTestGroup(props.sem ? props.sem.id : '');
   const { siteConfig } = useDocusaurusContext();
 
   const [tags] = useState([
