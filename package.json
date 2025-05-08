@@ -467,7 +467,7 @@
   "dependencies": {
     "@babel/runtime": "7.27.1",
     "@types/clone": "2.1.4",
-    "@types/cors": "2.8.17",
+    "@types/cors": "2.8.18",
     "@types/express": "5.0.1",
     "@types/simple-peer": "9.11.8",
     "@types/ws": "8.18.1",
@@ -524,7 +524,7 @@
     "@stylistic/eslint-plugin": "4.2.0",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
-    "@types/cors": "2.8.17",
+    "@types/cors": "2.8.18",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
     "@types/node": "22.15.17",
