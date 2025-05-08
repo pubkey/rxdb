@@ -557,7 +557,7 @@
     "fake-indexeddb": "6.0.0",
     "firebase-tools": "14.3.0",
     "get-port": "5.1.1",
-    "globals": "16.0.0",
+    "globals": "16.1.0",
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
     "html-webpack-plugin": "5.6.3",
