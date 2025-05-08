@@ -78,7 +78,7 @@
     "@capacitor/cli": "latest",
     "@types/express": "5.0.1",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.15.15",
+    "@types/node": "22.15.17",
     "async-test-util": "2.5.0",
     "browser-sync": "^3.0.0",
     "concurrently": "9.1.2",
