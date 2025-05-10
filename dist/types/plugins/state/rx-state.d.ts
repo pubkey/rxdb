@@ -31,6 +31,7 @@ export declare class RxStateBase<T, Reactivity = unknown> {
      * that would throw conflict errors and trigger a retry.
      */
     _triggerWrite(): Promise<void>;
+    mergeOperationsIntoState(operations: RxStateOperation[]): void;
     get(path?: Paths<T>): any;
     get$(path?: Paths<T>): Observable<any>;
     get$$(path?: Paths<T>): Reactivity;

@@ -17,6 +17,7 @@ var _rxQueryHelper = require("../../rx-query-helper.js");
 var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
   function RxMigrationState(collection, migrationStrategies, statusDocKey = [collection.name, 'v', collection.schema.version].join('-')) {
     this.started = false;
+    this.canceled = false;
     this.updateStatusHandlers = [];
     this.updateStatusQueue = _index.PROMISE_RESOLVE_TRUE;
     this.collection = collection;
@@ -51,7 +52,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
       throw (0, _rxError.newRxError)('DM1');
     }
     this.started = true;
-    var broadcastChannel = undefined;
+
     /**
      * To ensure that multiple tabs do not migrate the same collection,
      * we use a new broadcastChannel/leaderElector for each collection.
@@ -59,8 +60,8 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
      * not all tabs might know about this collection.
      */
     if (this.database.multiInstance) {
-      broadcastChannel = new _broadcastChannel.BroadcastChannel(['rx-migration-state', this.database.name, this.collection.name, this.collection.schema.version].join('|'));
-      var leaderElector = (0, _broadcastChannel.createLeaderElection)(broadcastChannel);
+      this.broadcastChannel = new _broadcastChannel.BroadcastChannel(['rx-migration-state', this.database.name, this.collection.name, this.collection.schema.version].join('|'));
+      var leaderElector = (0, _broadcastChannel.createLeaderElection)(this.broadcastChannel);
       await leaderElector.awaitLeadership();
     }
 
@@ -76,7 +77,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
       databaseInstanceToken: this.database.token,
       multiInstance: this.database.multiInstance,
       options: {},
-      schema: oldCollectionMeta.data.schema,
+      schema: (0, _index.ensureNotFalsy)(oldCollectionMeta).data.schema,
       password: this.database.password,
       devMode: _overwritable.overwritable.isDevMode()
     });
@@ -85,7 +86,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     /**
      * Initially write the migration status into a meta document.
      */
-    var totalCount = await this.countAllDoucments([oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage)));
+    var totalCount = await this.countAllDocuments([oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage)));
     await this.updateStatus(s => {
       s.count.total = totalCount;
       return s;
@@ -94,7 +95,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
       /**
        * First migrate the connected storages,
        * afterwards migrate the normal collection.
-       */
+      */
       await Promise.all(connectedInstances.map(async connectedInstance => {
         await (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, connectedInstance.newStorage.collectionName, connectedInstance.newStorage.schema);
         await this.migrateStorage(connectedInstance.oldStorage, connectedInstance.newStorage, batchSize);
@@ -106,7 +107,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
        * so that the _meta.lwt time keeps the same
        * and our replication checkpoints still point to the
        * correct checkpoint.
-       */
+      */
       this.collection.storageInstance.originalStorageInstance, batchSize);
     } catch (err) {
       await oldStorageInstance.close();
@@ -119,18 +120,25 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     }
 
     // remove old collection meta doc
-    await (0, _rxStorageHelper.writeSingle)(this.database.internalStore, {
-      previous: oldCollectionMeta,
-      document: Object.assign({}, oldCollectionMeta, {
-        _deleted: true
-      })
-    }, 'rx-migration-remove-collection-meta');
+    try {
+      await (0, _rxStorageHelper.writeSingle)(this.database.internalStore, {
+        previous: oldCollectionMeta,
+        document: Object.assign({}, oldCollectionMeta, {
+          _deleted: true
+        })
+      }, 'rx-migration-remove-collection-meta');
+    } catch (error) {
+      var isConflict = (0, _rxError.isBulkWriteConflictError)(error);
+      if (isConflict && !!isConflict.documentInDb._deleted) {} else {
+        throw error;
+      }
+    }
     await this.updateStatus(s => {
       s.status = 'DONE';
       return s;
     });
-    if (broadcastChannel) {
-      await broadcastChannel.close();
+    if (this.broadcastChannel) {
+      await this.broadcastChannel.close();
     }
   };
   _proto.updateStatus = function updateStatus(handler) {
@@ -192,6 +200,8 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     return this.updateStatusQueue;
   };
   _proto.migrateStorage = async function migrateStorage(oldStorage, newStorage, batchSize) {
+    this.collection.onClose.push(() => this.cancel());
+    this.database.onClose.push(() => this.cancel());
     var replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
       databaseName: this.database.name,
       collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
@@ -267,7 +277,6 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     });
     await (0, _index2.awaitRxStorageReplicationFirstInSync)(replicationState);
     await (0, _index2.awaitRxStorageReplicationInSync)(replicationState);
-    await (0, _index2.cancelRxStorageReplication)(replicationState);
     await this.updateStatusQueue;
     if (hasError) {
       await replicationMetaStorageInstance.close();
@@ -276,8 +285,24 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
 
     // cleanup old storages
     await Promise.all([oldStorage.remove(), replicationMetaStorageInstance.remove()]);
+    await this.cancel();
+  }
+
+  /**
+   * Stops the migration.
+   * Mostly used in tests to simulate what happens
+   * when the user reloads the page during a migration.
+   */;
+  _proto.cancel = async function cancel() {
+    this.canceled = true;
+    if (this.replicationState) {
+      await (0, _index2.cancelRxStorageReplication)(this.replicationState);
+    }
+    if (this.broadcastChannel) {
+      await this.broadcastChannel.close();
+    }
   };
-  _proto.countAllDoucments = async function countAllDoucments(storageInstances) {
+  _proto.countAllDocuments = async function countAllDocuments(storageInstances) {
     var ret = 0;
     await Promise.all(storageInstances.map(async instance => {
       var preparedQuery = (0, _rxQueryHelper.prepareQuery)(instance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(instance.schema, {
@@ -289,7 +314,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     return ret;
   };
   _proto.getConnectedStorageInstances = async function getConnectedStorageInstances() {
-    var oldCollectionMeta = await this.oldCollectionMeta;
+    var oldCollectionMeta = (0, _index.ensureNotFalsy)(await this.oldCollectionMeta);
     var ret = [];
     await Promise.all(await Promise.all(oldCollectionMeta.data.connectedStorages.map(async connectedStorage => {
       // atm we can only migrate replication states.

@@ -11,6 +11,7 @@ export declare const ERROR_MESSAGES: {
     UT5: string;
     UT6: string;
     UT7: string;
+    UT8: string;
     PL1: string;
     PL3: string;
     P2: string;

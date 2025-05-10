@@ -6,14 +6,33 @@ Object.defineProperty(exports, "__esModule", {
 exports.defaultHashSha256 = void 0;
 exports.hashStringToNumber = hashStringToNumber;
 exports.nativeSha256 = nativeSha256;
+var _rxError = require("../../rx-error.js");
+/**
+ * Cache this here so we do not have to run the try-catch
+ * each time for better performance.
+ * If your JavaScript runtime does not support crypto.subtle.digest,
+ * provide your own hash function when calling createRxDatabase().
+ */
+var hashFn;
+function getHashFn() {
+  if (hashFn) {
+    return hashFn;
+  }
+  if (typeof crypto === 'undefined' || typeof crypto.subtle === 'undefined' || typeof crypto.subtle.digest !== 'function') {
+    throw (0, _rxError.newRxError)('UT8', {
+      args: {
+        typeof_crypto: typeof crypto,
+        typeof_crypto_subtle: typeof crypto?.subtle,
+        typeof_crypto_subtle_digest: typeof crypto?.subtle?.digest
+      }
+    });
+  }
+  hashFn = crypto.subtle.digest.bind(crypto.subtle);
+  return hashFn;
+}
 async function nativeSha256(input) {
   var data = new TextEncoder().encode(input);
-  /**
-   * If your JavaScript runtime does not support crypto.subtle.digest,
-   * provide your own hash function when calling createRxDatabase().
-   */
-
-  var hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  var hashBuffer = await getHashFn()('SHA-256', data);
   /**
    * @link https://jameshfisher.com/2017/10/30/web-cryptography-api-hello-world/
    */

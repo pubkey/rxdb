@@ -2,15 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX migration-schema error: "more then one meta info found".
-- FIX state get changes from other state will get error [#7097](https://github.com/pubkey/rxdb/pull/7097)
-- FIX toggleOnDocumentVisible isVisible not always truthy [#7095](https://github.com/pubkey/rxdb/pull/7095)
-- IMPROVE error message when `crypto.subtle.digest` is not defined.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.12.0 (10 May 2025)
+
+- FIX migration-schema error: "more then one meta info found".
+- FIX state get changes from other state will get error [#7097](https://github.com/pubkey/rxdb/pull/7097)
+- FIX toggleOnDocumentVisible isVisible not always truthy [#7095](https://github.com/pubkey/rxdb/pull/7095)
+- IMPROVE error message when `crypto.subtle.digest` is not defined.
 
 ### 16.11.0 (16 April 2025)
 

@@ -290,13 +290,10 @@ export var RxReplicationState = /*#__PURE__*/function () {
     ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
   };
   _proto.isPaused = function isPaused() {
-    return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+    return !!(this.internalReplicationState && this.internalReplicationState.events.paused.getValue());
   };
   _proto.isStopped = function isStopped() {
-    if (this.subjects.canceled.getValue()) {
-      return true;
-    }
-    return false;
+    return !!this.subjects.canceled.getValue();
   };
   _proto.isStoppedOrPaused = function isStoppedOrPaused() {
     return this.isPaused() || this.isStopped();
@@ -411,7 +408,7 @@ export function replicateRxCollection({
       if (replicationState.isStopped()) {
         return;
       }
-      var isVisible = document.visibilityState;
+      var isVisible = document.visibilityState === 'visible';
       if (isVisible) {
         replicationState.start();
       } else {

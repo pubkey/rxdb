@@ -222,6 +222,7 @@ export function fillWithDefaultSettings(schemaObj) {
   schemaObj.indexes = useIndexes;
   return schemaObj;
 }
+export var META_LWT_UNIX_TIME_MAX = 1000000000000000;
 export var RX_META_SCHEMA = {
   type: 'object',
   properties: {
@@ -235,7 +236,7 @@ export var RX_META_SCHEMA = {
        * We use 1 as minimum so that the value is never falsy.
        */
       minimum: RX_META_LWT_MINIMUM,
-      maximum: 1000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 0.01
     }
   },

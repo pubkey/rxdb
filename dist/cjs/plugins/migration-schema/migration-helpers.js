@@ -18,10 +18,18 @@ var _index = require("../utils/index.js");
 async function getOldCollectionMeta(migrationState) {
   var collectionDocKeys = (0, _rxSchema.getPreviousVersions)(migrationState.collection.schema.jsonSchema).map(version => migrationState.collection.name + '-' + version);
   var found = await migrationState.database.internalStore.findDocumentsById(collectionDocKeys.map(key => (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(key, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION)), false);
-  if (found.length > 1) {
-    throw new Error('more than one old collection meta found');
-  }
-  return found[0];
+
+  /**
+   * It can happen that a previous migration was canceled or the browser was reloaded
+   * and on the next startup a new migration was added.
+   * So we can have multiple collection states with different versions.
+   * In this case, use the one with the lowest version number and start
+   * migrating from this one upwards.
+   */
+  var foundById = {};
+  found.forEach(f => foundById[f.key] = f);
+  var oldest = collectionDocKeys.find(key => foundById[key]);
+  return oldest ? foundById[oldest] : undefined;
 }
 
 /**

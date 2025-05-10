@@ -1,4 +1,4 @@
-import { useOperators, OperatorType } from 'mingo/core';
+import { useOperators } from 'mingo/core';
 import { Query } from 'mingo/query';
 import { $project, $sort } from 'mingo/operators/pipeline';
 import { $and, $not, $or, $nor } from 'mingo/operators/query/logical';
@@ -17,11 +17,11 @@ var mingoInitDone = false;
  */
 export function getMingoQuery(selector) {
   if (!mingoInitDone) {
-    useOperators(OperatorType.PIPELINE, {
+    useOperators('pipeline', {
       $sort,
       $project
     });
-    useOperators(OperatorType.QUERY, {
+    useOperators('query', {
       $and,
       $eq,
       $elemMatch,

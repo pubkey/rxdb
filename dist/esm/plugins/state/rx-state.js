@@ -43,7 +43,7 @@ export var RxStateBase = /*#__PURE__*/function () {
       for (var index = 0; index < events.length; index++) {
         var event = events[index];
         if (event.operation === 'INSERT' && event.documentData.sId !== this._instanceId) {
-          mergeOperationsIntoState(this._state, event.documentData.ops);
+          this.mergeOperationsIntoState(event.documentData.ops);
         }
       }
     }))).pipe(shareReplay(RXJS_SHARE_REPLAY_DEFAULTS), map(() => this._state));
@@ -130,6 +130,18 @@ export var RxStateBase = /*#__PURE__*/function () {
       });
     });
     return this._writeQueue;
+  };
+  _proto.mergeOperationsIntoState = function mergeOperationsIntoState(operations) {
+    var state = clone(this._state);
+    for (var index = 0; index < operations.length; index++) {
+      var operation = operations[index];
+      if (operation.k === '') {
+        state = clone(operation.v);
+      } else {
+        setProperty(state, operation.k, clone(operation.v));
+      }
+    }
+    this._state = state;
   };
   _proto.get = function get(path) {
     var ret;

@@ -1,6 +1,6 @@
 import { newRxError } from "../../rx-error.js";
 import { clone, deepEqual, ensureNotFalsy, getProperty, now, objectPathMonad, setProperty, toArray } from "../../plugins/utils/index.js";
-import { getQueryMatcher, overwritable } from "../../index.js";
+import { getQueryMatcher, META_LWT_UNIX_TIME_MAX, overwritable } from "../../index.js";
 import { mingoUpdater } from "../update/mingo-updater.js";
 export async function updateCRDT(entry) {
   entry = overwritable.deepFreezeWhenDevMode(entry);
@@ -136,7 +136,7 @@ export function getCRDTSchemaPart() {
       time: {
         type: 'number',
         minimum: 1,
-        maximum: 1000000000000000,
+        maximum: META_LWT_UNIX_TIME_MAX,
         multipleOf: 0.01
       }
     },

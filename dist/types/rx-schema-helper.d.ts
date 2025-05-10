@@ -40,6 +40,7 @@ export declare function getDefaultIndex(primaryPath: string): string[];
  * @return cloned schemaObj
  */
 export declare function fillWithDefaultSettings<T = any>(schemaObj: RxJsonSchema<T>): RxJsonSchema<RxDocumentData<T>>;
+export declare const META_LWT_UNIX_TIME_MAX = 1000000000000000;
 export declare const RX_META_SCHEMA: JsonSchema;
 /**
  * returns the final-fields of the schema

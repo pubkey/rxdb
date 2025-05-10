@@ -47,7 +47,7 @@ async function initialCleanupWait(collection, cleanupPolicy) {
   if (collection.closed) {
     return;
   }
-  if (cleanupPolicy.waitForLeadership) {
+  if (collection.database.multiInstance && cleanupPolicy.waitForLeadership) {
     await collection.database.waitForLeadership();
   }
 }

@@ -2,6 +2,7 @@ import AsyncTestUtil from 'async-test-util';
 import { overwritable } from "../../overwritable.js";
 import { toTypedRxJsonSchema } from "../../rx-schema.js";
 import { flatClone } from "../utils/index.js";
+import { META_LWT_UNIX_TIME_MAX } from "../../rx-schema-helper.js";
 export var humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
   title: 'human schema',
   description: 'describes a human being',
@@ -990,7 +991,7 @@ export var humanWithTimestamp = overwritable.deepFreezeWhenDevMode({
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1019,7 +1020,7 @@ export var humanWithTimestampNested = overwritable.deepFreezeWhenDevMode({
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1084,7 +1085,7 @@ export var humanWithTimestampAllIndex = overwritable.deepFreezeWhenDevMode({
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1116,13 +1117,13 @@ export var humanWithSimpleAndCompoundIndexes = overwritable.deepFreezeWhenDevMod
     createdAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     }
   },
