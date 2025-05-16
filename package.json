@@ -517,7 +517,7 @@
     "@babel/types": "7.27.1",
     "@eslint/compat": "1.2.9",
     "@eslint/eslintrc": "3.3.1",
-    "@eslint/js": "9.26.0",
+    "@eslint/js": "9.27.0",
     "@firebase/rules-unit-testing": "4.0.1",
     "@rollup/plugin-commonjs": "28.0.3",
     "@rollup/plugin-node-resolve": "16.0.1",
@@ -548,7 +548,7 @@
     "delete": "1.1.0",
     "dependency-check": "4.1.0",
     "disc": "1.3.3",
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jsdoc": "50.6.17",
     "exists-file": "3.0.2",
@@ -607,7 +607,7 @@
     "webpack-dev-server": "5.2.1"
   },
   "overrides": {
-    "eslint": "9.26.0",
+    "eslint": "9.27.0",
     "webpack-dev-server": "5.2.1"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
