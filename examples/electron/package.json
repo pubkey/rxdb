@@ -17,7 +17,7 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "mocha": "11.2.2",
+    "mocha": "11.3.0",
     "playwright-core": "1.52.0"
   }
 }
