@@ -41,5 +41,6 @@ export declare class RxAttachment<RxDocumentType, OrmMethods = {}, Reactivity = 
 
     remove(): Promise<void>;
     getData(): Promise<Blob>;
+    getDataBase64(): Promise<string>;
     getStringData(): Promise<string>;
 }
