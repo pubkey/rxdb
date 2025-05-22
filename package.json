@@ -243,6 +243,12 @@
       "import": "./dist/esm/plugins/replication-websocket/index.js",
       "default": "./dist/esm/plugins/replication-websocket/index.js"
     },
+    "./plugins/replication-mongodb": {
+      "types": "./dist/types/plugins/replication-mongodb/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-mongodb/index.js",
+      "import": "./dist/esm/plugins/replication-mongodb/index.js",
+      "default": "./dist/esm/plugins/replication-mongodb/index.js"
+    },
     "./plugins/storage-remote": {
       "types": "./dist/types/plugins/storage-remote/index.d.ts",
       "require": "./dist/cjs/plugins/storage-remote/index.js",
