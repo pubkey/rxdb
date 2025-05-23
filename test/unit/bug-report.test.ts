@@ -13,14 +13,30 @@ import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
+    addRxPlugin,
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
+    replicateRxCollection,
+    RxReplicationState
+} from '../../plugins/replication/index.mjs';
+import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
+import { Subject } from 'rxjs';
+
+addRxPlugin(RxDBCleanupPlugin);
+
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async function () {
+    it('should replicate, remove replication and start again correctly', async function () {
+        const batches = [
+            [
+                { id: 'foobar', firstName: 'John', group: 'group1' },
+                { id: 'foobar2', firstName: 'Jane', group: 'group1' }
+            ]
+        ];
 
         /**
          * If your test should only run in nodejs or only run in the browser,
@@ -40,23 +56,18 @@ describe('bug-report.test.js', () => {
         // create a schema
         const mySchema = {
             version: 0,
-            primaryKey: 'passportId',
+            primaryKey: 'id',
             type: 'object',
             properties: {
-                passportId: {
+                id: {
                     type: 'string',
                     maxLength: 100
                 },
                 firstName: {
                     type: 'string'
                 },
-                lastName: {
+                group: {
                     type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
                 }
             }
         };
@@ -68,74 +79,143 @@ describe('bug-report.test.js', () => {
         const name = randomToken(10);
 
         // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        let db = await createDatabase();
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        console.log('------- database created');
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
+        const replicationDoneSubject = new Subject<boolean>();
+
+        // Start replication, wait until it's done
+        await startReplication();
+
+        console.log('------- initial replication done');
+
+        // Close the database and recreate it
+        await db.close();
+        db = await createDatabase();
+        console.log('------- database recreated');
+
+        // Re-create replication, and remove it
+        await db.mycollection.find({ selector: { group: { $in: ['group1'] } } }).remove();
+        await db.mycollection.cleanup(0); // If we comment out this line, the test will pass
+        const { remove: removeReplication1 } = await startReplication(false);
+        await removeReplication1();
+
+        console.log('------- replication removed');
+
+        // Re-create replication and wait until it's done
+        let items: any[] = [];
+        const itemsQuery = await db.mycollection.find({ selector: { group: 'group1' } }).$;
+        itemsQuery.subscribe(docs => {
+            const mutableDocs = docs.map(doc => doc.toMutableJSON());
+            console.log(`itemsQuery ${docs.length} ${JSON.stringify(mutableDocs)}`);
+            items = mutableDocs;
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const { state: replicationState2 } = await startReplication();
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+        console.log('------- replication recreated');
 
+        // Add a new batch that represents a document update in the database
+        batches.push([
+            { id: 'foobar', firstName: 'MODIFIED', group: 'group1' },
+        ]);
 
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        // Resync and wait until it's done
+        let resyncDone = false;
+        replicationDoneSubject.subscribe(() => {
+            resyncDone = true;
+        });
+        await replicationState2.reSync();
+        await AsyncTestUtil.waitUntil(() => resyncDone);
+
+        console.log('------- resync done');
+
+        // Check if the document was updated
+        console.log(`------- find done ${items.length}`);
+
+        assert.strictEqual(items.find(item => item.id === 'foobar').firstName, 'MODIFIED');
+        assert.strictEqual(items.length, 2);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.close();
-        dbInOtherTab.close();
+
+        async function startReplication(waitUntilDone = true) {
+            let initialPullDone = false;
+            let replicationState: RxReplicationState<any, { index: number; }> | null = await createReplication();
+            await replicationState.start();
+
+            if (waitUntilDone) {
+                replicationDoneSubject.subscribe(() => {
+                    initialPullDone = true;
+                });
+                await AsyncTestUtil.waitUntil(() => initialPullDone);
+            }
+
+            const cancel = async () => {
+                await replicationState?.cancel();
+                replicationState = null;
+            };
+
+            const remove = async () => {
+                await replicationState?.remove();
+                replicationState = null;
+            };
+
+            return { state: replicationState, cancel, remove };
+        }
+
+        function createReplication() {
+            return replicateRxCollection<any, { index: number; }>({
+                replicationIdentifier: name + 'test-replication',
+                collection: db.mycollection,
+                autoStart: false,
+                pull: {
+                    batchSize: 3,
+                    handler: async (checkpoint, batchSize) => {
+                        await AsyncTestUtil.wait(1000);
+
+                        const index = checkpoint?.index ?? 0;
+                        const batchDocs = batches[index];
+
+                        console.log(`batchDocs ${index} ${batchDocs?.length}`);
+
+                        if (!batchDocs || batchDocs.length < batchSize) {
+                            console.log('finished pull');
+                            replicationDoneSubject.next(true);
+                        }
+
+                        return {
+                            documents: batchDocs || [],
+                            checkpoint: batchDocs ? { index: index + 1 } : checkpoint,
+                        };
+                    }
+                },
+            });
+        }
+
+        async function createDatabase() {
+            const database = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                cleanupPolicy: {
+                    minimumDeletedTime: 0,
+                },
+                localDocuments: true,
+            });
+
+            // create a collection
+            await database.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });;
+
+            return database;
+        }
     });
 });
