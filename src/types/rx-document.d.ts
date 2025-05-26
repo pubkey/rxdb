@@ -7,7 +7,8 @@ import type {
 } from './rx-collection.d.ts';
 import type {
     RxAttachment,
-    RxAttachmentCreator
+    RxAttachmentCreator,
+    RxAttachmentCreatorBase64
 } from './rx-attachment.d.ts';
 import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
 import type { RxChangeEvent } from './rx-change-event.d.ts';
@@ -126,6 +127,9 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     // attachments
     putAttachment(
         creator: RxAttachmentCreator
+    ): Promise<RxAttachment<RxDocType, OrmMethods, Reactivity>>;
+    putAttachmentBase64(
+        creator: RxAttachmentCreatorBase64
     ): Promise<RxAttachment<RxDocType, OrmMethods, Reactivity>>;
     getAttachment(id: string): RxAttachment<RxDocType, OrmMethods, Reactivity> | null;
     allAttachments(): RxAttachment<RxDocType, OrmMethods, Reactivity>[];

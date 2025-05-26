@@ -62,13 +62,13 @@
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
     "material-design-icons": "3.0.1",
-    "mocha": "11.4.0",
+    "mocha": "11.5.0",
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
     "rxjs": "7.8.2",
     "stream": "0.0.3",
     "tslib": "2.8.1",
-    "zone.js": "0.15.0"
+    "zone.js": "0.15.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "17.3.17",
