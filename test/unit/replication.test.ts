@@ -459,7 +459,7 @@ describe('replication.test.ts', () => {
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
+                live: true,
                 pull: {
                     handler: async () => {
                         await wait(0);
@@ -483,8 +483,8 @@ describe('replication.test.ts', () => {
             await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
-            localCollection.database.close();
-            remoteCollection.database.close();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on canceled replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
@@ -707,7 +707,7 @@ describe('replication.test.ts', () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                    live: false,
+                    live: true,
                     pull: {
                         handler: getPullHandler(remoteCollection)
                     },
@@ -726,7 +726,7 @@ describe('replication.test.ts', () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                    live: false,
+                    live: true,
                     pull: {
                         handler: async () => {
                             await wait(100);
