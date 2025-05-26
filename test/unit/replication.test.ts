@@ -933,7 +933,7 @@ describe('replication.test.ts', () => {
         it('should not crash when calling remove directly after start (without await)', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
             const calledCheckpoints: any[] = [];
-            const startReplication = async () => {
+            const startReplication = () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -952,7 +952,7 @@ describe('replication.test.ts', () => {
                 return replicationState;
             };
 
-            let currentReplicationState = await startReplication();
+            const currentReplicationState = await startReplication();
             currentReplicationState.start();
             await currentReplicationState.remove();
 
@@ -962,7 +962,7 @@ describe('replication.test.ts', () => {
         it('should not crash when calling remove directly after start (with await)', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
             const calledCheckpoints: any[] = [];
-            const startReplication = async () => {
+            const startReplication = () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -980,7 +980,7 @@ describe('replication.test.ts', () => {
                 });
                 return replicationState;
             };
-            let currentReplicationState = await startReplication();
+            const currentReplicationState = await startReplication();
             await currentReplicationState.start();
             await currentReplicationState.remove();
 
