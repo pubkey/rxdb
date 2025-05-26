@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX queue start/stop/cancel operations in the replication state to ensure operations do not intersect and cause errors.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
