@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX queue start/stop/cancel operations in the replication state to ensure operations do not intersect and cause errors.
 - ADD `putAttachmentBase64()` and `getDataBase64()` to the attachments API so that attachments can be stored and read in runtimes that do not support `Blob`.
 
 <!-- ADD new changes here! -->

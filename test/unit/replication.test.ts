@@ -459,7 +459,7 @@ describe('replication.test.ts', () => {
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
+                live: true,
                 pull: {
                     handler: async () => {
                         await wait(0);
@@ -483,15 +483,15 @@ describe('replication.test.ts', () => {
             await wait(isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
-            localCollection.database.close();
-            remoteCollection.database.close();
+            await localCollection.database.close();
+            await remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on canceled replication', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: false,
+                live: true,
                 retryTime: 100,
                 autoStart: true,
                 pull: {
@@ -707,7 +707,7 @@ describe('replication.test.ts', () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                    live: false,
+                    live: true,
                     pull: {
                         handler: getPullHandler(remoteCollection)
                     },
@@ -726,7 +726,7 @@ describe('replication.test.ts', () => {
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                    live: false,
+                    live: true,
                     pull: {
                         handler: async () => {
                             await wait(100);
@@ -926,6 +926,63 @@ describe('replication.test.ts', () => {
             currentReplicationState = await startReplication();
 
             assert.deepStrictEqual(calledCheckpoints, [undefined, undefined]);
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should not crash when calling remove directly after start (without await)', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
+            const calledCheckpoints: any[] = [];
+            const startReplication = () => {
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    autoStart: false,
+                    live: true,
+                    pull: {
+                        handler: (checkpoint, batchSize) => {
+                            calledCheckpoints.push(checkpoint);
+                            return getPullHandler(remoteCollection)(checkpoint, batchSize);
+                        },
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection),
+                    }
+                });
+                return replicationState;
+            };
+
+            const currentReplicationState = await startReplication();
+            currentReplicationState.start();
+            await currentReplicationState.remove();
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+        it('should not crash when calling remove directly after start (with await)', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 1, remote: 1 });
+            const calledCheckpoints: any[] = [];
+            const startReplication = () => {
+                const replicationState = replicateRxCollection({
+                    collection: localCollection,
+                    replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                    autoStart: false,
+                    live: true,
+                    pull: {
+                        handler: (checkpoint, batchSize) => {
+                            calledCheckpoints.push(checkpoint);
+                            return getPullHandler(remoteCollection)(checkpoint, batchSize);
+                        },
+                    },
+                    push: {
+                        handler: getPushHandler(remoteCollection),
+                    }
+                });
+                return replicationState;
+            };
+            const currentReplicationState = await startReplication();
+            await currentReplicationState.start();
+            await currentReplicationState.remove();
 
             localCollection.database.close();
             remoteCollection.database.close();
