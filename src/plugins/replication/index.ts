@@ -506,14 +506,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
 
-    cancel() {
-        this.startQueue = this.startQueue.then(async () => {
+    async cancel() {
+        this.startQueue = this.startQueue.catch(() => { }).then(async () => {
             await this._cancel();
         });
-        return this.startQueue;
+        await this.startQueue;
     }
 
-    async _cancel(): Promise<any> {
+    async _cancel(doNotClose = false): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -523,7 +523,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         if (this.internalReplicationState) {
             await cancelRxStorageReplication(this.internalReplicationState);
         }
-        if (this.metaInstance) {
+        if (this.metaInstance && !doNotClose) {
             promises.push(
                 ensureNotFalsy(this.internalReplicationState).checkpointQueue
                     .then(() => ensureNotFalsy(this.metaInstance).close())
@@ -544,10 +544,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     async remove() {
         this.startQueue = this.startQueue.then(async () => {
+            const metaInfo = await this.metaInfoPromise;
+            await this._cancel(true);
             await ensureNotFalsy(this.internalReplicationState).checkpointQueue
                 .then(() => ensureNotFalsy(this.metaInstance).remove());
-            const metaInfo = await this.metaInfoPromise;
-            await this._cancel();
             await removeConnectedStorageFromCollection(
                 this.collection,
                 metaInfo.collectionName,
