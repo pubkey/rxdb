@@ -1212,6 +1212,7 @@ describe('replication.test.ts', () => {
             // Resync and wait until it's done
             await thirdRep.reSync();
             await thirdRep.awaitInSync();
+            await wait(50);
 
             const newQueryResult = await db.mycollection.find({ selector: { id: { $ne: randomToken(10) } } }).exec();
             assert.deepStrictEqual(
