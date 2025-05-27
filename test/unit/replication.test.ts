@@ -1249,7 +1249,7 @@ describe('replication.test.ts', () => {
                             const batchDocs = batches[index];
                             return {
                                 documents: batchDocs || [],
-                                checkpoint: batchDocs ? { index: index + 1 } : checkpoint,
+                                checkpoint: batchDocs ? { index: index + 1 } : checkpoint as any,
                             };
                         }
                     },
