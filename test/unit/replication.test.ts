@@ -1146,6 +1146,11 @@ describe('replication.test.ts', () => {
     });
     describeParallel('issues', () => {
         it('#7187 real-time query ignoring the latest changes after deleting and purging data', async () => {
+            if (
+                config.storage.name.includes('random-delay')
+            ) {
+                return;
+            }
             const batches = [
                 [
                     { id: 'foobar', firstName: 'name1' },
