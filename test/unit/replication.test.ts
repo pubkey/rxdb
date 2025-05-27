@@ -1218,12 +1218,12 @@ describe('replication.test.ts', () => {
                 newQueryResult.map(d => d.toJSON()),
                 [
                     {
-                        "id": "foobar",
-                        "firstName": "MODIFIED"
+                        id: 'foobar',
+                        firstName: 'MODIFIED'
                     },
                     {
-                        "id": "foobar2",
-                        "firstName": "name2"
+                        id: 'foobar2',
+                        firstName: 'name2'
                     }
                 ],
                 'uncached query result must know about MODIFIED'
