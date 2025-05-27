@@ -9,16 +9,20 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
+    addRxPlugin,
     createRxDatabase,
     randomToken
 } from '../../plugins/core/index.mjs';
 import {
     isNode
 } from '../../plugins/test-utils/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
+import { RxDocument } from '../../src/index.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
 
@@ -36,6 +40,8 @@ describe('bug-report.test.js', () => {
         if (!config.storage.hasMultiInstance) {
             return;
         }
+
+        addRxPlugin(RxDBMigrationSchemaPlugin);
 
         // create a schema
         const mySchema = {
@@ -85,57 +91,73 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+        // replicate the collection
+        const replicationState = await replicateRxCollection<
+            RxDocument,
+            { index: number; }
+        >({
+            replicationIdentifier: 'mycollection',
+            collection: collections.mycollection,
+            pull: {
+                initialCheckpoint: { index: 0 },
+                handler: async (checkpointOrNull) => {
+                    await new Promise((resolve) => setTimeout(resolve, 100));
+
+                    let docs: any[] = [];
+                    const index = checkpointOrNull?.index ?? 0;
+
+                    if (index === 0) {
+                        docs = [
+                            {
+                                passportId: 'foobar',
+                                firstName: 'Bob',
+                                lastName: 'Kelso',
+                                age: 56,
+                            },
+                        ];
+                    }
+
+                    return {
+                        checkpoint: { index: index + 1 },
+                        documents: docs,
+                    };
+                },
+            },
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
+        await replicationState.awaitInitialReplication();
+
+        // clean up afterwards
+        await db.close();
+
+        mySchema.version = 1;
+
+        // @ts-expect-error - add a new field to the schema
+        mySchema.properties.newField = {
+            type: 'string',
+        };
+
+        const db2 = await createRxDatabase({
             name,
             storage: config.storage.getStorage(),
             eventReduce: true,
             ignoreDuplicate: true
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
+
+        const collections2 = await db2.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                autoMigrate: true,
+                schema: mySchema,
+                migrationStrategies: {
+                    1: () => null,
+                },
+            },
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const items = await collections2.mycollection.find().exec();
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(items.length, 0);
 
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.close();
-        dbInOtherTab.close();
+        await db2.close();
     });
 });
