@@ -23,11 +23,15 @@ import { Observable } from 'rxjs';
 declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
-     * based on their revision height (rev height = array index).
+     * based on their [revisionHeight+_meta.lwt] .
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
+     * 
+     * Notice that we can not only rely on the revisionHeight
+     * because when cleanup is used, two document states can end up with
+     * the same revision but different _meta.lwt.
      */
-    Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
+    Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
 
     /**
      * Store the latest known document state.
@@ -52,6 +56,7 @@ declare type CacheItem<RxDocType, OrmMethods> = [
 declare type FinalizationRegistryValue = {
     docId: string;
     revisionHeight: number;
+    lwt: number;
 };
 
 /**
@@ -84,7 +89,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
             const docId = docMeta.docId;
             const cacheItem = this.cacheItemByDocId.get(docId);
             if (cacheItem) {
-                cacheItem[0].delete(docMeta.revisionHeight);
+                cacheItem[0].delete(docMeta.revisionHeight + docMeta.lwt + '');
                 if (cacheItem[0].size === 0) {
                     /**
                      * No state of the document is cached anymore,
@@ -181,7 +186,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
 
 /**
  * This function is called very very often.
- * This is likely the most important function for RxDB overall performance
  * @hotPath This is one of the most important methods for performance.
  * It is used in many places to transform the raw document data into RxDocuments.
  */
@@ -202,7 +206,7 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
 
             const revisionHeight = getHeightOfRevision(docData._rev);
 
-            let byRev: Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
+            let byRev: Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>;
             let cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined;
             let cacheItem = cacheItemByDocId.get(docId);
             if (!cacheItem) {
@@ -214,13 +218,13 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                 cacheItemByDocId.set(docId, cacheItem);
             } else {
                 byRev = cacheItem[0];
-                cachedRxDocumentWeakRef = byRev.get(revisionHeight);
+                cachedRxDocumentWeakRef = byRev.get(revisionHeight + docData._meta.lwt + '');
             }
             let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
             if (!cachedRxDocument) {
                 docData = deepFreezeWhenDevMode(docData) as any;
                 cachedRxDocument = documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-                byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
+                byRev.set(revisionHeight + docData._meta.lwt + '', createWeakRefWithFallback(cachedRxDocument));
                 if (registry) {
                     registryTasks.push(cachedRxDocument);
                 }
@@ -238,7 +242,8 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
                     const doc = registryTasks[index];
                     registry.register(doc, {
                         docId: doc.primary,
-                        revisionHeight: getHeightOfRevision(doc.revision)
+                        revisionHeight: getHeightOfRevision(doc.revision),
+                        lwt: doc._data._meta.lwt
                     });
                 }
             });

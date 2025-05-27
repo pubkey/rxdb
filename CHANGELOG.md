@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX queue start/stop/cancel operations in the replication state to ensure operations do not intersect and cause errors.
+- FIX real-time query ignoring the latest changes after deleting and purging data [#7187](https://github.com/pubkey/rxdb/pull/7187)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
