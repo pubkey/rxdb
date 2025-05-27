@@ -26,7 +26,7 @@ declare type CacheItem<RxDocType, OrmMethods> = [
      * based on their [revisionHeight+_meta.lwt] .
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
-     * 
+     *
      * Notice that we can not only rely on the revisionHeight
      * because when cleanup is used, two document states can end up with
      * the same revision but different _meta.lwt.

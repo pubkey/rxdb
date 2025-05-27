@@ -1243,7 +1243,8 @@ describe('replication.test.ts', () => {
                     autoStart,
                     pull: {
                         batchSize: 3,
-                        handler: async (checkpoint, batchSize) => {
+                        handler: async (checkpoint) => {
+                            await wait(10);
                             const index = checkpoint?.index ?? 0;
                             const batchDocs = batches[index];
                             return {
