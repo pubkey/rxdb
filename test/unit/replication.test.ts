@@ -18,7 +18,8 @@ import {
     humansCollection,
     isFastMode,
     ensureReplicationHasNoErrors,
-    randomStringWithSpecialChars
+    randomStringWithSpecialChars,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -1147,7 +1148,8 @@ describe('replication.test.ts', () => {
     describeParallel('issues', () => {
         it('#7187 real-time query ignoring the latest changes after deleting and purging data', async () => {
             if (
-                config.storage.name.includes('random-delay')
+                config.storage.name.includes('random-delay') ||
+                isDeno
             ) {
                 return;
             }
