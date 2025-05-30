@@ -841,6 +841,7 @@ describe('migration-schema.test.ts', function () {
                 pull: {
                     initialCheckpoint: { index: 0 },
                     handler: async (checkpointOrNull) => {
+                        await wait(0);
 
                         let docs: any[] = [];
                         const index = checkpointOrNull?.index ?? 0;
