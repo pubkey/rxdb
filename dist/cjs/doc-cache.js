@@ -52,7 +52,7 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
       var docId = docMeta.docId;
       var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
-        cacheItem[0].delete(docMeta.revisionHeight);
+        cacheItem[0].delete(docMeta.revisionHeight + docMeta.lwt + '');
         if (cacheItem[0].size === 0) {
           /**
            * No state of the document is cached anymore,
@@ -135,7 +135,6 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
 }();
 /**
  * This function is called very very often.
- * This is likely the most important function for RxDB overall performance
  * @hotPath This is one of the most important methods for performance.
  * It is used in many places to transform the raw document data into RxDocuments.
  */
@@ -161,13 +160,13 @@ function getCachedRxDocumentMonad(docCache) {
         cacheItemByDocId.set(docId, cacheItem);
       } else {
         byRev = cacheItem[0];
-        cachedRxDocumentWeakRef = byRev.get(revisionHeight);
+        cachedRxDocumentWeakRef = byRev.get(revisionHeight + docData._meta.lwt + '');
       }
       var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
       if (!cachedRxDocument) {
         docData = deepFreezeWhenDevMode(docData);
         cachedRxDocument = documentCreator(docData);
-        byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
+        byRev.set(revisionHeight + docData._meta.lwt + '', createWeakRefWithFallback(cachedRxDocument));
         if (registry) {
           registryTasks.push(cachedRxDocument);
         }
@@ -185,7 +184,8 @@ function getCachedRxDocumentMonad(docCache) {
           var doc = registryTasks[_index];
           registry.register(doc, {
             docId: doc.primary,
-            revisionHeight: (0, _index2.getHeightOfRevision)(doc.revision)
+            revisionHeight: (0, _index2.getHeightOfRevision)(doc.revision),
+            lwt: doc._data._meta.lwt
           });
         }
       });

@@ -33,7 +33,7 @@ export var RxAttachment = /*#__PURE__*/function () {
    * returns the data for the attachment
    */;
   _proto.getData = async function getData() {
-    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id, this.digest);
+    var plainDataBase64 = await this.getDataBase64();
     var ret = await createBlobFromBase64(plainDataBase64, this.type);
     return ret;
   };
@@ -41,6 +41,10 @@ export var RxAttachment = /*#__PURE__*/function () {
     var data = await this.getData();
     var asString = await blobToString(data);
     return asString;
+  };
+  _proto.getDataBase64 = async function getDataBase64() {
+    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id, this.digest);
+    return plainDataBase64;
   };
   return RxAttachment;
 }();
@@ -57,15 +61,24 @@ export async function putAttachment(attachmentData) {
   ensureSchemaSupportsAttachments(this);
   var dataSize = getBlobSize(attachmentData.data);
   var dataString = await blobToBase64String(attachmentData.data);
-  var digest = await this.collection.database.hashFunction(dataString);
+  return this.putAttachmentBase64({
+    id: attachmentData.id,
+    length: dataSize,
+    type: attachmentData.type,
+    data: dataString
+  });
+}
+export async function putAttachmentBase64(attachmentData) {
+  ensureSchemaSupportsAttachments(this);
+  var digest = await this.collection.database.hashFunction(attachmentData.data);
   var id = attachmentData.id;
   var type = attachmentData.type;
-  var data = dataString;
+  var data = attachmentData.data;
   return this.collection.incrementalWriteQueue.addWrite(this._data, docWriteData => {
     docWriteData = flatClone(docWriteData);
     docWriteData._attachments = flatClone(docWriteData._attachments);
     docWriteData._attachments[id] = {
-      length: dataSize,
+      length: attachmentData.length,
       type,
       data,
       digest
@@ -143,6 +156,7 @@ export var RxDBAttachmentsPlugin = {
   prototypes: {
     RxDocument: proto => {
       proto.putAttachment = putAttachment;
+      proto.putAttachmentBase64 = putAttachmentBase64;
       proto.getAttachment = getAttachment;
       proto.allAttachments = allAttachments;
       Object.defineProperty(proto, 'allAttachments$', {

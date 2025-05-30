@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TX_QUEUE_BY_DATABASE = exports.SQLITE_IN_MEMORY_DB_NAME = exports.RX_STORAGE_NAME_SQLITE = exports.PARAM_KEY = exports.NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = void 0;
+exports.TX_QUEUE_BY_DATABASE = exports.SQLITE_IN_MEMORY_DB_NAME = exports.RX_STORAGE_NAME_SQLITE = exports.PARAM_KEY = exports.NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = exports.DATABASE_STATE_BY_NAME = void 0;
 exports.boolParamsToInt = boolParamsToInt;
 exports.closeDatabaseConnection = closeDatabaseConnection;
 exports.ensureParamsCountIsCorrect = ensureParamsCountIsCorrect;
@@ -16,7 +16,7 @@ exports.openSqliteTransaction = openSqliteTransaction;
 exports.sqliteTransaction = sqliteTransaction;
 var _index = require("../../index.js");
 var NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = exports.NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = 50;
-var DATABASE_STATE_BY_NAME = new Map();
+var DATABASE_STATE_BY_NAME = exports.DATABASE_STATE_BY_NAME = new Map();
 var RX_STORAGE_NAME_SQLITE = exports.RX_STORAGE_NAME_SQLITE = 'sqlite';
 
 /**

@@ -7,7 +7,7 @@
 
 import { BehaviorSubject, combineLatest, filter, mergeMap, Subject } from 'rxjs';
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
-import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray, toPromise } from "../../plugins/utils/index.js";
+import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, toArray, toPromise } from "../../plugins/utils/index.js";
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from "../../replication-protocol/index.js";
 import { newRxError } from "../../rx-error.js";
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments, preventHibernateBrowserTab } from "./replication-helper.js";
@@ -18,6 +18,11 @@ import { overwritable } from "../../overwritable.js";
 import { runAsyncPluginHooks } from "../../hooks.js";
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
+  /**
+   * start/pause/cancel/remove must never run
+   * in parallel to avoid a wide range of bugs.
+   */
+
   function RxReplicationState(
   /**
    * The identifier, used to flag revisions
@@ -42,6 +47,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.canceled$ = this.subjects.canceled.asObservable();
     this.active$ = this.subjects.active.asObservable();
     this.wasStarted = false;
+    this.startQueue = PROMISE_RESOLVE_VOID;
     this.onCancel = [];
     this.callOnStart = undefined;
     this.remoteEvents$ = new Subject();
@@ -82,7 +88,13 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.startPromise = startPromise;
   }
   var _proto = RxReplicationState.prototype;
-  _proto.start = async function start() {
+  _proto.start = function start() {
+    this.startQueue = this.startQueue.then(() => {
+      return this._start();
+    });
+    return this.startQueue;
+  };
+  _proto._start = async function _start() {
     if (this.isStopped()) {
       return;
     }
@@ -282,12 +294,15 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (!this.live) {
       await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
       await awaitRxStorageReplicationInSync(this.internalReplicationState);
-      await this.cancel();
+      await this._cancel();
     }
     this.callOnStart();
   };
   _proto.pause = function pause() {
-    ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+    this.startQueue = this.startQueue.then(() => {
+      ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+    });
+    return this.startQueue;
   };
   _proto.isPaused = function isPaused() {
     return !!(this.internalReplicationState && this.internalReplicationState.events.paused.getValue());
@@ -348,6 +363,12 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.remoteEvents$.next(ev);
   };
   _proto.cancel = async function cancel() {
+    this.startQueue = this.startQueue.catch(() => {}).then(async () => {
+      await this._cancel();
+    });
+    await this.startQueue;
+  };
+  _proto._cancel = async function _cancel(doNotClose = false) {
     if (this.isStopped()) {
       return PROMISE_RESOLVE_FALSE;
     }
@@ -355,7 +376,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     if (this.internalReplicationState) {
       await cancelRxStorageReplication(this.internalReplicationState);
     }
-    if (this.metaInstance) {
+    if (this.metaInstance && !doNotClose) {
       promises.push(ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(() => ensureNotFalsy(this.metaInstance).close()));
     }
     this.subs.forEach(sub => sub.unsubscribe());
@@ -368,10 +389,13 @@ export var RxReplicationState = /*#__PURE__*/function () {
     return Promise.all(promises);
   };
   _proto.remove = async function remove() {
-    await ensureNotFalsy(this.metaInstance).remove();
-    var metaInfo = await this.metaInfoPromise;
-    await this.cancel();
-    await removeConnectedStorageFromCollection(this.collection, metaInfo.collectionName, metaInfo.schema);
+    this.startQueue = this.startQueue.then(async () => {
+      var metaInfo = await this.metaInfoPromise;
+      await this._cancel(true);
+      await ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(() => ensureNotFalsy(this.metaInstance).remove());
+      await removeConnectedStorageFromCollection(this.collection, metaInfo.collectionName, metaInfo.schema);
+    });
+    return this.startQueue;
   };
   return RxReplicationState;
 }();

@@ -4,7 +4,7 @@ import { RxStorageInstanceDenoKV } from "./rx-storage-instance-denokv.ts";
 export declare class RxStorageDenoKV implements RxStorage<DenoKVStorageInternals<any>, DenoKVSettings> {
     settings: DenoKVSettings;
     name: string;
-    readonly rxdbVersion = "16.12.0";
+    readonly rxdbVersion = "16.13.0";
     constructor(settings: DenoKVSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>): Promise<RxStorageInstanceDenoKV<RxDocType>>;
 }

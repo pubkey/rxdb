@@ -40,6 +40,11 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
         schema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>>;
     }>;
     startPromise: Promise<void>;
+    /**
+     * start/pause/cancel/remove must never run
+     * in parallel to avoid a wide range of bugs.
+     */
+    startQueue: Promise<any>;
     onCancel: (() => void)[];
     constructor(
     /**
@@ -52,7 +57,8 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
     start(): Promise<void>;
-    pause(): void;
+    _start(): Promise<void>;
+    pause(): Promise<any>;
     isPaused(): boolean;
     isStopped(): boolean;
     isStoppedOrPaused(): boolean;
@@ -70,8 +76,9 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     awaitInSync(): Promise<true>;
     reSync(): void;
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>): void;
-    cancel(): Promise<any>;
-    remove(): Promise<void>;
+    cancel(): Promise<void>;
+    _cancel(doNotClose?: boolean): Promise<any>;
+    remove(): Promise<any>;
 }
 export declare function replicateRxCollection<RxDocType, CheckpointType>({ replicationIdentifier, collection, deletedField, pull, push, live, retryTime, waitForLeadership, autoStart, toggleOnDocumentVisible }: ReplicationOptions<RxDocType, CheckpointType>): RxReplicationState<RxDocType, CheckpointType>;
 export declare function startReplicationOnLeaderShip(waitForLeadership: boolean, replicationState: RxReplicationState<any, any>): Promise<void>;
