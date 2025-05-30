@@ -388,7 +388,7 @@ export class RxMigrationState {
                     });
                 },
                 masterWrite: async (rows) => {
-                    rows = await Promise.all(
+                    let migratedRows = await Promise.all(
                         rows
                             .map(async (row) => {
                                 let newDocData = row.newDocumentState;
@@ -406,6 +406,15 @@ export class RxMigrationState {
                                     oldStorage.schema.version,
                                     newDocData
                                 );
+
+                                /**
+                                 * The migration strategy can return null
+                                 * which means the document must be deleted during migration.
+                                 */
+                                if (migratedDocData === null) {
+                                    return null;
+                                }
+
                                 const newRow: RxReplicationWriteToMasterRow<any> = {
                                     // drop the assumed master state, we do not have to care about conflicts here.
                                     assumedMasterState: undefined,
@@ -413,14 +422,15 @@ export class RxMigrationState {
                                         ? Object.assign({}, row.newDocumentState, { docData: migratedDocData })
                                         : migratedDocData
                                 };
+
                                 return newRow;
                             })
                     );
 
                     // filter out the documents where the migration strategy returned null
-                    rows = rows.filter(row => !!row.newDocumentState);
+                    migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
-                    const result = await replicationHandlerBase.masterWrite(rows);
+                    const result = await replicationHandlerBase.masterWrite(migratedRows as any);
                     return result;
                 },
                 masterChangeStream$: new Subject<any>().asObservable()

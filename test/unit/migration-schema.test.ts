@@ -19,7 +19,8 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
+    RxDocument
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -777,6 +778,125 @@ describe('migration-schema.test.ts', function () {
 
             await db2.close();
             await remoteDb.close();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/7204
+         */
+        it('issue #7204 schema migration failing when returning null', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomToken(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            // replicate the collection
+            const replicationState = await replicateRxCollection<
+                RxDocument,
+                { index: number; }
+            >({
+                replicationIdentifier: 'mycollection',
+                collection: collections.mycollection,
+                pull: {
+                    initialCheckpoint: { index: 0 },
+                    handler: async (checkpointOrNull) => {
+                        await wait(0);
+
+                        let docs: any[] = [];
+                        const index = checkpointOrNull?.index ?? 0;
+
+                        if (index === 0) {
+                            docs = [
+                                {
+                                    passportId: 'foobar',
+                                    firstName: 'Bob',
+                                    lastName: 'Kelso',
+                                    age: 56,
+                                },
+                            ];
+                        }
+
+                        return {
+                            checkpoint: { index: index + 1 },
+                            documents: docs,
+                        };
+                    },
+                },
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            // clean up afterwards
+            await db.close();
+
+            mySchema.version = 1;
+
+            // @ts-expect-error - add a new field to the schema
+            mySchema.properties.newField = {
+                type: 'string',
+            };
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            const collections2 = await db2.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    schema: mySchema,
+                    migrationStrategies: {
+                        1: () => null,
+                    },
+                },
+            });
+
+            const items = await collections2.mycollection.find().exec();
+            assert.strictEqual(items.length, 0);
+            await db2.close();
         });
     });
     describeParallel('issues', () => {
