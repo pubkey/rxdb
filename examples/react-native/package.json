@@ -13,7 +13,7 @@
     "test:bundle": "rimraf -rf ./dist && rimraf -rf ./expo && EXPO_DEBUG=true expo export"
   },
   "devDependencies": {
-    "@babel/core": "7.27.3",
+    "@babel/core": "7.27.4",
     "@expo/cli": "0.24.13",
     "babel-preset-expo": "13.1.11",
     "buffer": "6.0.3",
