@@ -550,7 +550,7 @@
     "disc": "1.3.3",
     "eslint": "9.28.0",
     "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-jsdoc": "50.6.17",
+    "eslint-plugin-jsdoc": "50.7.1",
     "exists-file": "3.0.2",
     "express": "5.1.0",
     "express-graphql": "0.12.0",
