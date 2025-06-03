@@ -8,20 +8,20 @@
  * - 'npm run test:node' so it runs in nodejs
  * - 'npm run test:browser' so it runs in the browser
  */
-import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
 import {
+    addRxPlugin,
     createRxDatabase,
-    randomToken
+    randomToken,
+    RxCollection,
 } from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
-describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async function () {
+import { isNode } from '../../plugins/test-utils/index.mjs';
+import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 
+describe('bug-report.test.js', () => {
+    addRxPlugin(RxDBMigrationPlugin);
+    it('Should migrate correctly when adding a migration strategy even if it was not present before', async function () {
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
@@ -45,20 +45,20 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+            },
         };
 
         /**
@@ -68,74 +68,84 @@ describe('bug-report.test.js', () => {
         const name = randomToken(10);
 
         // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
+        const db = await createDB();
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                autoMigrate: true,
+                migrationStrategies: {},
+                schema: mySchema,
+            },
         });
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        await insertDoc(collections.mycollection);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.close();
-        dbInOtherTab.close();
+
+        try {
+            const db2 = await createDB();
+            await db2.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    migrationStrategies: {},
+                    schema: getModifiedSchema(),
+                },
+            });
+            db2.close();
+        } catch (e) {
+            console.log('Fails because we did not add the migration strategy at this point');
+            // We expect this to fail
+        }
+
+        const db3 = await createDB();
+
+        // This should work (as we have a migration strategy at this point), but it keeps failing.
+        await db3.addCollections({
+            mycollection: {
+                autoMigrate: true,
+                migrationStrategies: {
+                    1: (doc) => {
+                        return {
+                            ...doc,
+                            dob: '1990-01-01',
+                        };
+                    },
+                },
+                schema: getModifiedSchema(),
+            },
+        });
+
+        db3.close();
+
+        function createDB() {
+            return createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true,
+            });
+        }
+
+        function insertDoc(collection: RxCollection<any>) {
+            return collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+            });
+        }
+
+        function getModifiedSchema() {
+            return {
+                ...mySchema,
+                version: 1,
+                properties: {
+                    ...mySchema.properties,
+                    dob: { type: 'string' },
+                },
+            };
+        }
     });
 });
