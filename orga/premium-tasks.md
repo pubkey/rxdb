@@ -23,6 +23,7 @@ const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
 - Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
+- 📢 Give an in-person talk about RxDB at a conference or meetup with at least 25 real, physically present attendees (no online-only events)
 
 ## Tasks already in progress (do no work on these!)
 
