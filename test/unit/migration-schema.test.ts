@@ -1,8 +1,14 @@
 import assert from 'assert';
 import config, { describeParallel } from './config.ts';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import AsyncTestUtil, { assertThrows, wait, waitUntil } from 'async-test-util';
 
-import { humanData, humansCollection, isFastMode, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import {
+    humanData,
+    humansCollection,
+    isFastMode,
+    schemaObjects,
+    schemas
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -900,6 +906,122 @@ describe('migration-schema.test.ts', function () {
         });
     });
     describeParallel('issues', () => {
+        it('#7226 db.addCollections fails after it failed for a missing migration strategy', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                },
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomToken(10);
+
+            // create a database
+            const db = await createDB();
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    migrationStrategies: {},
+                    schema: mySchema,
+                },
+            });
+
+            // insert a document
+            await insertDoc(collections.mycollection);
+
+            // clean up afterwards
+            await db.close();
+
+
+            const db2 = await createDB();
+
+            await assertThrows(
+                async () => {
+                    await db2.addCollections({
+                        mycollection: {
+                            autoMigrate: true,
+                            migrationStrategies: {},
+                            schema: getModifiedSchema(),
+                        },
+                    });
+                },
+                'RxError',
+                'COL12'
+            );
+            await db2.close();
+
+            const db3 = await createDB();
+
+            // This should work (as we have a migration strategy at this point), but it keeps failing.
+            const migrationStrategies = {
+                1: (doc: any) => {
+                    return {
+                        ...doc,
+                        dob: '1990-01-01',
+                    };
+                },
+            };
+            await db3.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    migrationStrategies,
+                    schema: getModifiedSchema(),
+                },
+            });
+
+            db3.close();
+
+            function createDB() {
+                return createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true,
+                });
+            }
+
+            function insertDoc(collection: RxCollection<any>) {
+                return collection.insert({
+                    passportId: 'foobar',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56,
+                });
+            }
+
+            function getModifiedSchema() {
+                return {
+                    ...clone(mySchema),
+                    version: 1,
+                    properties: {
+                        ...clone(mySchema).properties,
+                        dob: { type: 'string' },
+                    },
+                };
+            }
+        });
         /**
          * @link https://discord.com/channels/@me/1228248291196670114/1310584400710209556
          */
