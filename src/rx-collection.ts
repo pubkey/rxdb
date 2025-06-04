@@ -1083,7 +1083,7 @@ function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
 /**
  * creates and prepares a new collection
  */
-export function createRxCollection(
+export async function createRxCollection(
     {
         database,
         name,
@@ -1116,72 +1116,75 @@ export function createRxCollection(
         storageInstanceCreationParams
     );
 
-    return createRxCollectionStorageInstance(
+    const storageInstance = await createRxCollectionStorageInstance(
         database,
         storageInstanceCreationParams
-    ).then(storageInstance => {
-        const collection = new RxCollectionBase(
-            database,
-            name,
-            schema,
-            storageInstance,
-            instanceCreationOptions,
-            migrationStrategies,
-            methods,
-            attachments,
-            options,
-            cacheReplacementPolicy,
-            statics,
-            conflictHandler
-        );
+    );
 
-        return collection
-            .prepare()
-            .then(() => {
-                // ORM add statics
-                Object
-                    .entries(statics)
-                    .forEach(([funName, fun]) => {
-                        Object.defineProperty(collection, funName, {
-                            get: () => (fun as any).bind(collection)
-                        });
-                    });
+    const collection = new RxCollectionBase(
+        database,
+        name,
+        schema,
+        storageInstance,
+        instanceCreationOptions,
+        migrationStrategies,
+        methods,
+        attachments,
+        options,
+        cacheReplacementPolicy,
+        statics,
+        conflictHandler
+    );
 
-                let ret = PROMISE_RESOLVE_VOID;
-                if (autoMigrate && collection.schema.version !== 0) {
-                    ret = collection.migratePromise();
-                }
-                return ret;
-            })
-            .then(() => {
-                runPluginHooks('createRxCollection', {
-                    collection,
-                    creator: {
-                        name,
-                        schema,
-                        storageInstance,
-                        instanceCreationOptions,
-                        migrationStrategies,
-                        methods,
-                        attachments,
-                        options,
-                        cacheReplacementPolicy,
-                        localDocuments,
-                        statics
-                    }
+    try {
+        await collection.prepare();
+
+        // ORM add statics
+        Object
+            .entries(statics)
+            .forEach(([funName, fun]) => {
+                Object.defineProperty(collection, funName, {
+                    get: () => (fun as any).bind(collection)
                 });
-                return collection as any;
-            })
-            /**
-             * If the collection creation fails,
-             * we yet have to close the storage instances.
-             */
-            .catch(err => {
-                OPEN_COLLECTIONS.delete(collection);
-                return storageInstance.close()
-                    .then(() => Promise.reject(err as Error));
             });
-    });
+
+        runPluginHooks('createRxCollection', {
+            collection,
+            creator: {
+                name,
+                schema,
+                storageInstance,
+                instanceCreationOptions,
+                migrationStrategies,
+                methods,
+                attachments,
+                options,
+                cacheReplacementPolicy,
+                localDocuments,
+                statics
+            }
+        });
+
+        /**
+         * Migration must run after the hooks so that the
+         * dev-mode can check up front if the
+         * migration strategies are correctly set.
+         */
+        if (autoMigrate && collection.schema.version !== 0) {
+            await collection.migratePromise();
+        }
+
+    } catch (err) {
+        /**
+         * If the collection creation fails,
+         * we yet have to close the storage instances.
+         */
+        OPEN_COLLECTIONS.delete(collection);
+        await storageInstance.close();
+        throw err;
+    }
+
+    return collection as any;
 }
 
 export function isRxCollection(obj: any): boolean {
