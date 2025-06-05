@@ -770,6 +770,26 @@ describe('rx-query.test.ts', () => {
                 assert.strictEqual(doc, null);
                 c.database.close();
             });
+            it('update and remove in one atomic write', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find().where('age').gt(-1);
+                const updateResult = await query.update({
+                    $set: {
+                        firstName: 'aaa',
+                        _deleted: true,
+                    }
+                });
+
+                updateResult.forEach(d => {
+                    assert.strictEqual(d.firstName, 'aaa');
+                    assert.ok(d.deleted);
+                });
+
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
+                c.database.close();
+            });
         });
         describe('RxQuery.patch()', () => {
             it('updates a value on a query', async () => {
