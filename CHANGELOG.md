@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD option to remove and update a document in the same atomic write operation.
 - FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
 <!-- ADD new changes here! -->
 

@@ -35,6 +35,10 @@ import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 import { SimpleHumanDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 addRxPlugin(RxDBJsonDumpPlugin);
 
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+addRxPlugin(RxDBUpdatePlugin);
+
+
 describe('rx-document.test.js', () => {
     describeParallel('statics', () => { });
     describeParallel('prototype-merge', () => {
@@ -344,6 +348,24 @@ describe('rx-document.test.js', () => {
                 assert.strictEqual(updatedDoc.age, agePrev + 1);
                 c.database.close();
             });
+            it('update and remove in one operation', async () => {
+                const c = await humansCollection.create(1);
+                let doc = await c.findOne().exec(true);
+
+                doc = await doc.update({
+                    $set: {
+                        age: 1,
+                        _deleted: true
+                    }
+                });
+
+                assert.ok(doc.deleted);
+                assert.strictEqual(doc.age, 1);
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
+                c.database.close();
+            });
         });
         describe('negative', () => {
             it('should throw on conflict', async () => {
@@ -605,6 +627,23 @@ describe('rx-document.test.js', () => {
 
                 db.close();
                 db2.close();
+            });
+            it('modify and remove in one operation', async () => {
+                const c = await humansCollection.create(1);
+                let doc = await c.findOne().exec(true);
+
+                doc = await doc.modify(data => {
+                    data.age = 1;
+                    data._deleted = true;
+                    return data;
+                });
+
+                assert.ok(doc.deleted);
+                assert.ok(doc._data._rev.startsWith('2-'));
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
+                c.database.close();
             });
         });
         describe('negative', () => {
