@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD option to remove and update a document in the same atomic write operation.
 - FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
+- FIX SQLite storage fails while querying with null [#7236](https://github.com/pubkey/rxdb/pull/7236)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
