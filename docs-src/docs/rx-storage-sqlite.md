@@ -369,6 +369,15 @@ const storage = getRxStorageSQLite({
 });
 ```
 
+- By default, all tables will be created with the `WITHOUT ROWID` flag. Some tools like drizzle do not support tables with that option. You can disable it by setting `withoutRowId: false` when calling `getRxStorageSQLite()`:
+
+```ts
+const storage = getRxStorageSQLite({
+    sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor),
+    withoutRowId: false
+});
+```
+
 
 
 ## Related
