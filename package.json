@@ -468,7 +468,7 @@
     "@babel/runtime": "7.27.6",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.19",
-    "@types/express": "5.0.2",
+    "@types/express": "5.0.3",
     "@types/simple-peer": "9.11.8",
     "@types/ws": "8.18.1",
     "ajv": "8.17.1",
