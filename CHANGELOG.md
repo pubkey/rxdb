@@ -2,16 +2,20 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD option to remove and update a document in the same atomic write operation.
-- ADD option to disable `WITHOUT ROWID` in the SQLite RxStorage.
-- FIX ajv-validation must know about the `date-time` format by default [#7253](https://github.com/pubkey/rxdb/issues/7253)
-- FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
-- FIX SQLite storage fails while querying with null [#7236](https://github.com/pubkey/rxdb/pull/7236)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.15.0 (17 June 2025)
+
+- ADD option to remove and update a document in the same atomic write operation.
+- ADD option to disable `WITHOUT ROWID` in the SQLite RxStorage.
+- FIX ajv-validation must know about the `date-time` format by default [#7253](https://github.com/pubkey/rxdb/issues/7253)
+- FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
+- FIX SQLite storage fails while querying with null [#7236](https://github.com/pubkey/rxdb/pull/7236)
 
 ### 16.13.0 (30 May 2025)
 

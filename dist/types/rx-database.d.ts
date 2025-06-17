@@ -30,7 +30,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly reactivity?: RxReactivityFactory<any> | undefined;
     readonly onClosed?: (() => void) | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "16.13.0";
+    readonly rxdbVersion = "16.15.0";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.
