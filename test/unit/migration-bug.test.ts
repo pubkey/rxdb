@@ -113,15 +113,15 @@ describe('migration-bug.test.js', () => {
 
         await replicationStateBefore.awaitInSync();
 
-        const emmited: any[] = [];
+        const emitted: any[] = [];
         const sub2 = collection
             .findOne('a')
             .$.subscribe((doc) => {
                 emmited.push(doc);
             });
 
-        await AsyncTestUtil.waitUntil(() => emmited.length === 1);
-        assert.deepStrictEqual(emmited.pop().toJSON(), preDoc);
+        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.deepStrictEqual(emitted.pop().toJSON(), preDoc);
 
         await replicationStateBefore.cancel();
         sub1.unsubscribe();
@@ -172,12 +172,12 @@ describe('migration-bug.test.js', () => {
 
         await replicationStateAfter.awaitInSync();
 
-        const emmited: any[] = [];
+        const emitted: any[] = [];
         const sub2 = collection.findOne('a').$.subscribe((doc) => {
             emmited.push(doc);
         });
-        await AsyncTestUtil.waitUntil(() => emmited.length === 1);
-        assert.deepStrictEqual(emmited.pop().toJSON(), postDoc);
+        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.deepStrictEqual(emitted.pop().toJSON(), postDoc);
 
         await replicationStateAfter.cancel();
         sub1.unsubscribe();
@@ -258,15 +258,15 @@ describe('migration-bug.test.js', () => {
 
         await replicationStateAfter.awaitInSync();
 
-        const emmited: any[] = [];
+        const emitted: any[] = [];
 
         const sub2 = collection
             .findOne('a')
             .$.subscribe((doc) => {
-                emmited.push(doc);
+                emitted.push(doc);
             });
-        await AsyncTestUtil.waitUntil(() => emmited.length === 1);
-        assert.deepStrictEqual(emmited.pop().toJSON(), postDoc);
+        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.deepStrictEqual(emitted.pop().toJSON(), postDoc);
 
         await replicationStateAfter.cancel();
         sub1.unsubscribe();
