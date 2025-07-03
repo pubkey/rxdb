@@ -117,7 +117,7 @@ describe('migration-bug.test.js', () => {
         const sub2 = collection
             .findOne('a')
             .$.subscribe((doc) => {
-                emmited.push(doc);
+                emitted.push(doc);
             });
 
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
@@ -174,7 +174,7 @@ describe('migration-bug.test.js', () => {
 
         const emitted: any[] = [];
         const sub2 = collection.findOne('a').$.subscribe((doc) => {
-            emmited.push(doc);
+            emitted.push(doc);
         });
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
         assert.deepStrictEqual(emitted.pop().toJSON(), postDoc);
