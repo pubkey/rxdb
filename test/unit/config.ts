@@ -10,7 +10,6 @@ import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/sto
 import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../plugins/storage-sqlite/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
 import { randomNumber } from 'async-test-util';
 import * as path from 'node:path';
 import url from 'node:url';
