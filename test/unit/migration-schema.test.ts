@@ -693,6 +693,7 @@ describe('migration-schema.test.ts', function () {
                 remoteDb.humans.conflictHandler,
                 remoteDb.humans.database.token
             );
+
             const replicationState = replicateRxCollection({
                 collection: db.humans,
                 replicationIdentifier: 'migrate-replication-state',
@@ -703,7 +704,10 @@ describe('migration-schema.test.ts', function () {
                     handler: helper.masterChangesSince
                 },
                 push: {
-                    handler: helper.masterWrite
+                    async handler(rows) {
+                        const result = await helper.masterWrite(rows);
+                        return result;
+                    }
                 }
             });
             ensureReplicationHasNoErrors(replicationState);
@@ -748,10 +752,17 @@ describe('migration-schema.test.ts', function () {
                 autoStart: true,
                 waitForLeadership: false,
                 pull: {
-                    handler: helper.masterChangesSince
+                    async handler(checkpoint, batchSize) {
+                        const res = await helper.masterChangesSince(checkpoint, batchSize);
+                        res.documents = res.documents.map(d => {
+                            d.age = parseInt(d.age, 10);
+                            return d;
+                        });
+                        return res;
+                    }
                 },
                 push: {
-                    handler(rows) {
+                    async handler(rows) {
                         rows = rows.map(row => {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState.age = row.assumedMasterState.age + '';
@@ -759,7 +770,7 @@ describe('migration-schema.test.ts', function () {
                             row.newDocumentState.age = row.newDocumentState.age + '';
                             return row;
                         });
-                        const result = helper.masterWrite(rows);
+                        const result = await helper.masterWrite(rows);
                         return result;
                     }
                 }
