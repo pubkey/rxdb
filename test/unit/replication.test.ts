@@ -1186,8 +1186,6 @@ describe('replication.test.ts', () => {
                 required: ['id'],
             };
 
-
-
             // start and stop V1
             const dbV1 = await createRxDatabase({
                 name: dbName,
@@ -1241,7 +1239,6 @@ describe('replication.test.ts', () => {
             sub2.unsubscribe();
             await dbV1.close();
 
-
             // start v2
             const dbV2 = await createRxDatabase({
                 name: dbName,
@@ -1256,9 +1253,7 @@ describe('replication.test.ts', () => {
                 },
             });
             pullStream$ = new Subject<any>();
-
             collection = dbV2.items;
-
 
             const replicationStateAfter = replicateRxCollection({
                 collection,
@@ -1275,15 +1270,10 @@ describe('replication.test.ts', () => {
                 },
             });
             ensureReplicationHasNoErrors(replicationStateAfter);
-            await wait(200);
-
 
             await replicationStateAfter.awaitInitialReplication();
-
             sub1 = replicationStateAfter.received$.subscribe((doc) => {
-
             });
-
 
             emitted = [];
             sub2 = collection.findOne('a').$.subscribe((doc) => {
