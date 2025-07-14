@@ -26,7 +26,9 @@ import {
     RxDocumentData,
     InternalStoreStorageTokenDocType,
     rxStorageInstanceToReplicationHandler,
-    RxDocument
+    RxDocument,
+    RxJsonSchema,
+    removeRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -41,9 +43,12 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
+import { Subject } from 'rxjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 
 
 describe('migration-schema.test.ts', function () {
+    addRxPlugin(RxDBUpdatePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(1000 * 20);
     if (
@@ -905,6 +910,9 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
     });
+
+
+
     describeParallel('issues', () => {
         it('#7226 db.addCollections fails after it failed for a missing migration strategy', async () => {
             // create a schema

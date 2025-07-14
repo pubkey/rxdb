@@ -10,6 +10,7 @@ import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/sto
 import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../plugins/storage-sqlite/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
 import { randomNumber } from 'async-test-util';
 import * as path from 'node:path';
 import url from 'node:url';
@@ -63,7 +64,14 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'memory':
             return {
                 name: storageKey,
-                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
+                /**
+                 * Let the memory-storage tests
+                 * run on all schema validators
+                 * just to make sure they work the same.
+                 */
+                getStorage: () => wrappedValidateZSchemaStorage({
+                    storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
+                }),
                 getPerformanceStorage() {
                     return {
                         description: 'memory',
