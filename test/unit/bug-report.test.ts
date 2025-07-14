@@ -12,16 +12,12 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
 
-import {
-    createRxDatabase,
-    randomToken
-} from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+import { createRxDatabase, randomToken } from '../../plugins/core/index.mjs';
+import { isNode } from '../../plugins/test-utils/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
-
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
@@ -45,20 +41,20 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+            },
         };
 
         /**
@@ -76,66 +72,39 @@ describe('bug-report.test.js', () => {
              */
             storage: config.storage.getStorage(),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
+        });
+        const replicationState = replicateRxCollection({
+            collection: collections.mycollection,
+            replicationIdentifier: 'my-collection-http-replication',
+            waitForLeadership: false,
+            live: true,
+            pull: {
+                // eslint-disable-next-line require-await
+                handler: async () => {
+                    return {
+                        checkpoint: null,
+                        documents: [],
+                    };
+                },
+            },
+            push: {
+                // eslint-disable-next-line require-await
+                handler: async () => {
+                    return [];
+                },
+            },
         });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        await replicationState.pause();
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
         db.close();
-        dbInOtherTab.close();
+        replicationState.cancel();
     });
 });
