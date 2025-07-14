@@ -1206,7 +1206,10 @@ describe('replication.test.ts', () => {
                 replicationIdentifier: identifier,
                 live: true,
                 pull: {
-                    handler: async () => ({ documents: [], checkpoint: null }),
+                    handler: async () => {
+                        await wait(0);
+                        return { documents: [], checkpoint: null };
+                    },
                     stream$: pullStream$.asObservable(),
                     modifier: (d) => {
                         return d;
@@ -1217,7 +1220,7 @@ describe('replication.test.ts', () => {
 
             await replicationStateBefore.awaitInitialReplication();
 
-            let sub1 = replicationStateBefore.received$.subscribe((doc) => { });
+            let sub1 = replicationStateBefore.received$.subscribe((_doc) => { });
 
             const preDoc = { id: 'a', foo: 'changed-before' };
             pullStream$.next({ documents: [preDoc], checkpoint: {} });
@@ -1261,6 +1264,7 @@ describe('replication.test.ts', () => {
                 live: true,
                 pull: {
                     handler: async () => {
+                        await wait(0);
                         return ({ documents: [], checkpoint: null });
                     },
                     stream$: pullStream$.asObservable(),
@@ -1272,7 +1276,7 @@ describe('replication.test.ts', () => {
             ensureReplicationHasNoErrors(replicationStateAfter);
 
             await replicationStateAfter.awaitInitialReplication();
-            sub1 = replicationStateAfter.received$.subscribe((doc) => {
+            sub1 = replicationStateAfter.received$.subscribe((_doc) => {
             });
 
             emitted = [];

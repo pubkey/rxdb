@@ -26,9 +26,7 @@ import {
     RxDocumentData,
     InternalStoreStorageTokenDocType,
     rxStorageInstanceToReplicationHandler,
-    RxDocument,
-    RxJsonSchema,
-    removeRxDatabase
+    RxDocument
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -43,7 +41,6 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
-import { Subject } from 'rxjs';
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 
 
