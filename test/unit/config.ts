@@ -64,14 +64,7 @@ export function getStorage(storageKey: string): RxTestStorage {
         case 'memory':
             return {
                 name: storageKey,
-                /**
-                 * Let the memory-storage tests
-                 * run on all schema validators
-                 * just to make sure they work the same.
-                 */
-                getStorage: () => wrappedValidateZSchemaStorage({
-                    storage: wrappedValidateAjvStorage({ storage: getRxStorageMemory() })
-                }),
+                getStorage: () => wrappedValidateAjvStorage({ storage: getRxStorageMemory() }),
                 getPerformanceStorage() {
                     return {
                         description: 'memory',
