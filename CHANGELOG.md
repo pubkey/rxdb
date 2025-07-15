@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
 
 <!-- ADD new changes here! -->
 
