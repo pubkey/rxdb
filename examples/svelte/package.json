@@ -13,7 +13,7 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "devDependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "@rollup/plugin-commonjs": "28.0.3",
+    "@rollup/plugin-commonjs": "28.0.6",
     "@rollup/plugin-node-resolve": "16.0.1",
     "async-test-util": "2.5.0",
     "concurrently": "9.1.2",
