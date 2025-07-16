@@ -811,18 +811,6 @@ describe('rx-query.test.ts', () => {
                 }
                 c.database.close();
             });
-            it('unset a value on a query by patching with undefined', async () => {
-                const c = await humansCollection.create(2);
-                const query = c.find();
-                await query.patch({
-                    age: undefined
-                });
-                const docs = await query.exec();
-                for (const doc of docs) {
-                    assert.strictEqual(doc._data.age, undefined);
-                }
-                c.database.close();
-            });
             it('dont crash when findOne with no result', async () => {
                 const c = await humansCollection.create(2);
                 const query = c.findOne().where('age').gt(1000000);
@@ -852,6 +840,19 @@ describe('rx-query.test.ts', () => {
                 for (const doc of docs) {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                c.database.close();
+            });
+            it('unset a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                await query.modify(d => {
+                    delete d.age;
+                    return d;
+                });
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.age, undefined);
                 }
                 c.database.close();
             });

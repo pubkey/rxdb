@@ -36,7 +36,7 @@ import config, { describeParallel } from './config.ts';
 import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
-describeParallel('crdt.test.js', () => {
+describeParallel('crdt.test.ts', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
         crdts?: CRDTDocumentField<RxDocType>;
     };

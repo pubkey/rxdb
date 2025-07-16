@@ -645,6 +645,20 @@ describe('rx-document.test.js', () => {
 
                 c.database.close();
             });
+            it('unset optional property via .modify', async () => {
+                const c = await humansCollection.createNested(1);
+                let doc = await c.findOne().exec(true);
+
+                assert.ok(doc.mainSkill);
+
+                doc = await doc.modify(d => {
+                    delete (d as any).mainSkill;
+                    return d;
+                });
+
+                assert.strictEqual(doc.mainSkill, undefined);
+                c.database.close();
+            });
         });
         describe('negative', () => {
             it('should throw on conflict', async () => {
@@ -738,19 +752,6 @@ describe('rx-document.test.js', () => {
 
                 const docAfter = await c.findOne().exec(true);
                 assert.ok(docAfter === returnedDoc);
-                c.database.close();
-            });
-            it('unset optional property by assigning undefined', async () => {
-                const c = await humansCollection.createNested(1);
-                let doc = await c.findOne().exec(true);
-
-                assert.ok(doc.mainSkill);
-
-                doc = await doc.incrementalPatch({
-                    mainSkill: undefined
-                });
-
-                assert.strictEqual(doc.mainSkill, undefined);
                 c.database.close();
             });
         });

@@ -25,6 +25,9 @@ import {
 import {
     wrappedValidateAjvStorage
 } from '../../plugins/validate-ajv/index.mjs';
+import {
+    wrappedValidateZSchemaStorage
+} from '../../plugins/validate-z-schema/index.mjs';
 
 import {
     RxCollection,
@@ -62,6 +65,7 @@ import type {
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
+import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 
 type CheckpointType = any;
@@ -70,7 +74,7 @@ type TestDocType = HumanWithTimestampDocumentType;
 /**
  * Creates a pull handler that always returns
  * all documents.
- */
+*/
 export function getPullHandler<RxDocType>(
     remoteCollection: RxCollection<RxDocType, {}, {}, {}>
 ): ReplicationPullHandler<RxDocType, CheckpointType> {
@@ -153,8 +157,8 @@ export async function ensureEqualState<RxDocType>(
 export const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
 describe('replication.test.ts', () => {
     addRxPlugin(RxDBAttachmentsPlugin);
+    addRxPlugin(RxDBMigrationSchemaPlugin);
     addRxPlugin(RxDBCleanupPlugin);
-
 
     if (!config.storage.hasReplication) {
         return;
@@ -1148,6 +1152,150 @@ describe('replication.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        it('#7261 should update document via replication stream AFTER migration', async () => {
+            const dbName = randomToken(10);
+            const storage = wrappedValidateZSchemaStorage({ storage: config.storage.getStorage() });
+            const identifier = 'items-pull';
+            const migrationStrategies = {
+                1: (oldDoc: any) => oldDoc,
+            };
+
+            const schemaV1: RxJsonSchema<any> = {
+                title: 'TestSchema',
+                version: 0,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: { type: 'string', maxLength: 50 },
+                    foo: { type: 'string' },
+                },
+                required: ['id'],
+            };
+
+            const schemaV2: RxJsonSchema<any> = {
+                title: 'TestSchema',
+                version: 1,
+                type: 'object',
+                primaryKey: 'id',
+                properties: {
+                    id: { type: 'string', maxLength: 50 },
+                    foo: { type: 'string' },
+                    bar: { type: 'string' },
+                },
+                required: ['id'],
+            };
+
+            // start and stop V1
+            const dbV1 = await createRxDatabase({
+                name: dbName,
+                storage: storage,
+                multiInstance: false
+            });
+
+            await dbV1.addCollections({
+                items: { schema: schemaV1 },
+            });
+
+            let collection = dbV1.items;
+            await collection.insert({ id: 'a', foo: 'initial' });
+
+            let pullStream$ = new Subject<any>();
+            const replicationStateBefore = replicateRxCollection({
+                collection,
+                replicationIdentifier: identifier,
+                live: true,
+                pull: {
+                    handler: async () => {
+                        await wait(0);
+                        return { documents: [], checkpoint: null };
+                    },
+                    stream$: pullStream$.asObservable(),
+                    modifier: (d) => {
+                        return d;
+                    },
+                },
+            });
+            ensureReplicationHasNoErrors(replicationStateBefore);
+
+            await replicationStateBefore.awaitInitialReplication();
+
+            let sub1 = replicationStateBefore.received$.subscribe((_doc) => { });
+
+            const preDoc = { id: 'a', foo: 'changed-before' };
+            pullStream$.next({ documents: [preDoc], checkpoint: {} });
+
+            await replicationStateBefore.awaitInSync();
+
+            let emitted: any[] = [];
+            let sub2 = collection
+                .findOne('a')
+                .$.subscribe((doc) => {
+                    emitted.push(doc);
+                });
+
+            await waitUntil(() => emitted.length === 1);
+            assert.deepStrictEqual(emitted.pop().toJSON(), preDoc);
+
+            await replicationStateBefore.cancel();
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+            await dbV1.close();
+
+            // start v2
+            const dbV2 = await createRxDatabase({
+                name: dbName,
+                storage: storage,
+                multiInstance: false
+            });
+
+            await dbV2.addCollections({
+                items: {
+                    schema: schemaV2,
+                    migrationStrategies: migrationStrategies,
+                },
+            });
+            pullStream$ = new Subject<any>();
+            collection = dbV2.items;
+
+            const replicationStateAfter = replicateRxCollection({
+                collection,
+                replicationIdentifier: identifier,
+                live: true,
+                pull: {
+                    handler: async () => {
+                        await wait(0);
+                        return ({ documents: [], checkpoint: null });
+                    },
+                    stream$: pullStream$.asObservable(),
+                    modifier: (d) => {
+                        return d;
+                    },
+                },
+            });
+            ensureReplicationHasNoErrors(replicationStateAfter);
+
+            await replicationStateAfter.awaitInitialReplication();
+            sub1 = replicationStateAfter.received$.subscribe((_doc) => {
+            });
+
+            emitted = [];
+            sub2 = collection.findOne('a').$.subscribe((doc) => {
+                emitted.push(doc);
+            });
+
+            const postDoc = { id: 'a', foo: 'changed-after' };
+            pullStream$.next({ documents: [postDoc], checkpoint: {} });
+            await replicationStateAfter.awaitInSync();
+            await waitUntil(() => {
+                return emitted.length === 2;
+            });
+            assert.deepStrictEqual(emitted.pop().toJSON(), postDoc);
+
+            await replicationStateAfter.cancel();
+            sub1.unsubscribe();
+            sub2.unsubscribe();
+            await dbV2.close();
+        });
         it('#7264 Replication pause ensureNotFalsy() throws', async () => {
             // create a schema
             const mySchema = {

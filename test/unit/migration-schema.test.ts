@@ -41,9 +41,11 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 
 
 describe('migration-schema.test.ts', function () {
+    addRxPlugin(RxDBUpdatePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(1000 * 20);
     if (
@@ -691,6 +693,7 @@ describe('migration-schema.test.ts', function () {
                 remoteDb.humans.conflictHandler,
                 remoteDb.humans.database.token
             );
+
             const replicationState = replicateRxCollection({
                 collection: db.humans,
                 replicationIdentifier: 'migrate-replication-state',
@@ -701,7 +704,10 @@ describe('migration-schema.test.ts', function () {
                     handler: helper.masterChangesSince
                 },
                 push: {
-                    handler: helper.masterWrite
+                    async handler(rows) {
+                        const result = await helper.masterWrite(rows);
+                        return result;
+                    }
                 }
             });
             ensureReplicationHasNoErrors(replicationState);
@@ -746,10 +752,17 @@ describe('migration-schema.test.ts', function () {
                 autoStart: true,
                 waitForLeadership: false,
                 pull: {
-                    handler: helper.masterChangesSince
+                    async handler(checkpoint, batchSize) {
+                        const res = await helper.masterChangesSince(checkpoint, batchSize);
+                        res.documents = res.documents.map(d => {
+                            d.age = parseInt(d.age, 10);
+                            return d;
+                        });
+                        return res;
+                    }
                 },
                 push: {
-                    handler(rows) {
+                    async handler(rows) {
                         rows = rows.map(row => {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState.age = row.assumedMasterState.age + '';
@@ -757,7 +770,7 @@ describe('migration-schema.test.ts', function () {
                             row.newDocumentState.age = row.newDocumentState.age + '';
                             return row;
                         });
-                        const result = helper.masterWrite(rows);
+                        const result = await helper.masterWrite(rows);
                         return result;
                     }
                 }
@@ -905,6 +918,9 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
         });
     });
+
+
+
     describeParallel('issues', () => {
         it('#7226 db.addCollections fails after it failed for a missing migration strategy', async () => {
             // create a schema
