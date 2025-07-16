@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX updates not working after migration of replication state [#7260](https://github.com/pubkey/rxdb/issues/7260)
+- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
