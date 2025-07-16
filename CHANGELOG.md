@@ -2,14 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX updates not working after migration of replication state [#7260](https://github.com/pubkey/rxdb/issues/7260)
-- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.16.0 (16 July 2025)
+
+- FIX updates not working after migration of replication state [#7260](https://github.com/pubkey/rxdb/issues/7260)
+- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
 
 ### 16.15.0 (17 June 2025)
 

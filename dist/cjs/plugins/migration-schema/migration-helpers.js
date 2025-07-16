@@ -65,7 +65,9 @@ function migrateDocumentData(collection, docSchemaVersion, docData) {
     if (doc === null) {
       return _index.PROMISE_RESOLVE_NULL;
     }
-    doc._meta = meta;
+    if (meta) {
+      doc._meta = meta;
+    }
     return doc;
   });
 }

@@ -300,7 +300,13 @@ export var RxReplicationState = /*#__PURE__*/function () {
   };
   _proto.pause = function pause() {
     this.startQueue = this.startQueue.then(() => {
-      ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+      /**
+       * It must be possible to .pause() the replication
+       * at any time, even if it has not been started yet.
+       */
+      if (this.internalReplicationState) {
+        this.internalReplicationState.events.paused.next(true);
+      }
     });
     return this.startQueue;
   };
