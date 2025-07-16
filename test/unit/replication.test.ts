@@ -62,7 +62,7 @@ import type {
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
-
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 
 type CheckpointType = any;
 type TestDocType = HumanWithTimestampDocumentType;
@@ -153,6 +153,8 @@ export async function ensureEqualState<RxDocType>(
 export const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
 describe('replication.test.ts', () => {
     addRxPlugin(RxDBAttachmentsPlugin);
+    addRxPlugin(RxDBCleanupPlugin);
+
 
     if (!config.storage.hasReplication) {
         return;
@@ -1146,6 +1148,77 @@ describe('replication.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        it('#7264 Replication pause ensureNotFalsy() throws', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                },
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomToken(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage()
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema,
+                },
+            });
+            const replicationState = replicateRxCollection({
+                collection: collections.mycollection,
+                replicationIdentifier: 'my-collection-http-replication',
+                waitForLeadership: false,
+                live: true,
+                pull: {
+                    handler: async () => {
+                        await wait(0);
+                        return {
+                            checkpoint: null,
+                            documents: [],
+                        };
+                    },
+                },
+                push: {
+                    handler: async () => {
+                        await wait(0);
+                        return [];
+                    },
+                },
+            });
+
+            await replicationState.pause();
+
+            db.close();
+            replicationState.cancel();
+
+
+        });
         it('#7187 real-time query ignoring the latest changes after deleting and purging data', async () => {
             if (
                 config.storage.name.includes('random-delay') ||
