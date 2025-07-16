@@ -520,7 +520,7 @@
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.28.0",
     "@firebase/rules-unit-testing": "4.0.1",
-    "@rollup/plugin-commonjs": "28.0.3",
+    "@rollup/plugin-commonjs": "28.0.6",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@stylistic/eslint-plugin": "4.4.1",
     "@types/assert": "1.5.11",
