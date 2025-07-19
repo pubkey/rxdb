@@ -116,7 +116,7 @@ jobs:
       # because it otherwise does not know
       # about the tag and add the old source code to the release.
       # This might be a bug.
-      - uses: ncipollo/release-action@v1.16.0
+      - uses: ncipollo/release-action@v1.18.0
         with:
           prerelease: ${{ steps.vars.outputs.prerelease }}
           tag: ${{github.event.inputs.version}}
