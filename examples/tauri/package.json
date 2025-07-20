@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "2.5.0",
-    "@tauri-apps/plugin-opener": "2.2.7",
+    "@tauri-apps/plugin-opener": "2.4.0",
     "@tauri-apps/plugin-sql": "2.2.0",
     "rxdb": "file:rxdb-local.tgz"
   },
