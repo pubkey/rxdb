@@ -38,7 +38,7 @@
     "@vue/compiler-sfc": "3.5.17",
     "@vue/eslint-config-typescript": "13.0.0",
     "async-test-util": "2.5.0",
-    "concurrently": "9.1.2",
+    "concurrently": "9.2.0",
     "copy-webpack-plugin": "13.0.0",
     "eslint": "8.57.1",
     "eslint-plugin-vue": "9.33.0",
