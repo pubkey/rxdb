@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `blockSizeLimit` to memory mapped storage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
