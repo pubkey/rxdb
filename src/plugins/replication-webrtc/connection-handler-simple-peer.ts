@@ -87,7 +87,7 @@ export type SimplePeerConnectionHandlerOptions = {
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
     config?: SimplePeerConfig;
-    webSocketConstructor?: WebSocket;
+    webSocketConstructor?: new (url: string, protocols?: string | string[] | undefined) => WebSocket;
 };
 
 export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
