@@ -191,7 +191,7 @@ describeParallel('cleanup.test.js', () => {
             replicationMetaInstance.cleanup = (x) => {
                 cleanupCalls++;
                 return cleanupBefore(x);
-            }
+            };
 
             await collection.cleanup(0);
             assert.ok(cleanupCalls > 0, 'cleanup call count must be greater zero');
