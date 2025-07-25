@@ -144,6 +144,11 @@ describeParallel('cleanup.test.js', () => {
 
             db.remove();
         });
+        /**
+         * While the metadata of a replication is append-only
+         * we still have to run the cleanup on it because some storages
+         * like the memory-mapped storage will do additional stuff like data crunching.
+         */
         it('should also run a cleanup on the replication state meta data', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
