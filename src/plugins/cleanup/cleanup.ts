@@ -107,7 +107,7 @@ export async function cleanupRxCollection(
                     }
                 }
 
-                const hasFalse = (await allDone).find(v => !v);
+                const hasFalse = (await Promise.all(allDone)).find(v => !v);
                 return !hasFalse;
             });
         isDone = await RXSTORAGE_CLEANUP_QUEUE;
