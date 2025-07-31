@@ -47,6 +47,7 @@ import {
 import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import {
     MONGO_ID_SUBSTITUTE_FIELDNAME,
+    MONGO_OPTIONS_DRIVER_INFO,
     getMongoDBIndexName,
     prepareMongoDBQuery,
     swapMongoToRxDoc,
@@ -101,13 +102,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
-        
-        const mongoOptions: any = {};
-        mongoOptions.driverInfo = {
-            name: 'RxDB',
-            version: RXDB_VERSION
-        };
-        this.mongoClient = new MongoClient(storage.databaseSettings.connection, mongoOptions);
+
+        this.mongoClient = new MongoClient(storage.databaseSettings.connection, MONGO_OPTIONS_DRIVER_INFO);
         this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
 
         const indexes = (this.schema.indexes ? this.schema.indexes.slice() : []).map(index => {

@@ -345,6 +345,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.12.0
         with:
           mongodb-version: 8.0.4
+          mongodb-replica-set: rs0
 
       - name: install npm dependencies
         run: npm install
@@ -354,6 +355,7 @@ jobs:
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
+      - run: npm run test:replication-mongodb
 
   example-angular:
     runs-on: ubuntu-22.04
