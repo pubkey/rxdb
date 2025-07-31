@@ -30,14 +30,15 @@ import {
 
 import {
     RxMongoDBReplicationState,
-    replicateMongoDB
+    replicateMongoDB,
+    startChangeStream
 } from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
 import { RxCollection } from '../src/index.ts';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../plugins/storage-mongodb/index.mjs';
 
-const mongoConnectionString = 'mongodb://localhost:27017';
+const mongoConnectionString = 'mongodb://localhost:27017/?directConnection=true';
 const mongoDatabaseName = 'replication-test-db';
 const mongoCollectionName = 'replication-test-collection';
 
@@ -151,32 +152,24 @@ describe('replication-mongodb.test.ts', function () {
             assert.strictEqual(state.length, 3);
             await cleanUpServer();
         });
-        // it('ensure subscriptions work', async () => {
-        //     const channel = 'databases.' + databaseId + '.collections.' + collectionId + '.documents';
-        //     const emitted: any = [];
-        //     const unsubscribe = getClient().subscribe(
-        //         [channel],
-        //         response => {
-        //             emitted.push(response);
-        //         }
-        //     );
-        //     await waitUntil(async () => {
-        //         await databases.createDocument(
-        //             databaseId,
-        //             collectionId,
-        //             randomString(10, appwritePrimaryKeyCharset),
-        //             {
-        //                 firstName: 'subtest',
-        //                 lastName: 'subtest',
-        //                 deleted: false,
-        //                 age: 20
-        //             }
-        //         );
-        //         return emitted.length > 0;
-        //     }, 1000, 100);
-        //     unsubscribe();
-        //     await cleanUpServer();
-        // });
+    });
+    describe('helpers', () => {
+        it('should be able to listen to the changestream', async () => {
+            const changestream = await startChangeStream(
+                mongoCollection
+            );
+            const events = [];
+            changestream.on('change', (ev) => {
+                console.log('got change!!');
+                console.dir(ev);
+            });
+            await waitUntil(async () => {
+                await insertDocument();
+                console.log('events amount: ' + events.length);
+                return events.length > 0;
+            });
+            await cleanUpServer();
+        });
     });
 
     // describe('live replication', () => {

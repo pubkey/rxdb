@@ -20,6 +20,10 @@ export async function startChangeStream(
     errorSubject?: Subject<RxError | RxTypeError>
 ): Promise<ChangeStream> {
     const changeStream = mongoCollection.watch([], resumeToken ? { resumeAfter: resumeToken } : {});
+    changeStream.on('error', (err: any) => {
+        console.log('ERRROR ON CHANGESTREAM;');
+        console.dir(err);
+    });
     if (errorSubject) {
         changeStream.on('error', (err: any) => {
             const emitError = newRxError('RC_STREAM', {
@@ -28,11 +32,13 @@ export async function startChangeStream(
             errorSubject.next(emitError);
         });
     }
-    await new Promise<void>(res => {
-        changeStream.on('init', () => {
-            res();
-        });
-    });
+    // console.log('---0 ');
+    // await new Promise<void>(res => {
+    //     changeStream.on('init', () => {
+    //         res();
+    //     });
+    // });
+    console.log('---1 ');
 
     return changeStream;
 }
