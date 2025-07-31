@@ -354,6 +354,7 @@ jobs:
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
+      - run: npm run test:replication:mongodb
 
   example-angular:
     runs-on: ubuntu-22.04
