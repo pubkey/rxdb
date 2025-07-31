@@ -213,7 +213,7 @@ export default function Root({ children }) {
                             triggerTrackingEvent('notification_call_to_action', 0.40);
                             // track the ids also so we can delete the ones with a low clickrate.
                             triggerTrackingEvent(
-                                'notification_' + NOTIFICATION_SPLIT_TEST_VERSION + '_call_to_action_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
+                                'noti_' + NOTIFICATION_SPLIT_TEST_VERSION + '_CTA_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
                                 0.01
                             );
                             closePopup();

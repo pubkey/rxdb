@@ -1,6 +1,12 @@
 import { BulkWriteRow, RxDocumentData, MaybePromise } from '../../index.ts';
 import type { SQLResultRow, SQLiteBasics, SQLiteDatabaseClass, SQLiteQueryWithParams } from './sqlite-types.ts';
 export declare const NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = 50;
+export type DatabaseState = {
+    database: Promise<SQLiteDatabaseClass>;
+    openConnections: number;
+    sqliteBasics: SQLiteBasics<SQLiteDatabaseClass>;
+};
+export declare const DATABASE_STATE_BY_NAME: Map<string, DatabaseState>;
 export declare const RX_STORAGE_NAME_SQLITE = "sqlite";
 /**
  * @link https://www.sqlite.org/inmemorydb.html

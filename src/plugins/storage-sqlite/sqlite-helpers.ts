@@ -14,14 +14,12 @@ import type {
 } from './sqlite-types.ts';
 
 export const NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = 50;
-
-declare type DatabaseState = {
+export type DatabaseState = {
     database: Promise<SQLiteDatabaseClass>;
     openConnections: number;
     sqliteBasics: SQLiteBasics<SQLiteDatabaseClass>;
 }
-const DATABASE_STATE_BY_NAME: Map<string, DatabaseState> = new Map();
-
+export const DATABASE_STATE_BY_NAME: Map<string, DatabaseState> = new Map();
 export const RX_STORAGE_NAME_SQLITE = 'sqlite';
 
 

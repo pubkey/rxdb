@@ -161,7 +161,7 @@ var _init = () => {
       functionName: k
     });
   };
-  ['populate', 'update', 'putAttachment', 'getAttachment', 'allAttachments'].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
+  ['populate', 'update', 'putAttachment', 'putAttachmentBase64', 'getAttachment', 'allAttachments'].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
 };
 export function createRxLocalDocument(data, parent) {
   _init();

@@ -245,6 +245,7 @@ const _init = () => {
         'populate',
         'update',
         'putAttachment',
+        'putAttachmentBase64',
         'getAttachment',
         'allAttachments'
     ].forEach((k: string) => RxLocalDocumentPrototype[k] = getThrowingFun(k));

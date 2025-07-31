@@ -5,6 +5,7 @@
  * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import { wrappedValidateStorageFactory } from "../../plugin-helpers.js";
 var ajv;
 export function getAjv() {
@@ -23,6 +24,7 @@ export function getAjv() {
     ajv.addKeyword('attachments');
     ajv.addKeyword('ref');
     ajv.addKeyword('crdt');
+    addFormats(ajv);
   }
   return ajv;
 }

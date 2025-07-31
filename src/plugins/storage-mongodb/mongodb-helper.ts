@@ -97,7 +97,7 @@ export function swapRxDocToMongo<RxDocType>(
 export function swapToMongoSort<RxDocType>(
     sort: MangoQuerySortPart<RxDocType>[]
 ): MongoSort {
-    const ret: MongoSort = {};
+    const ret: any = {};
     sort.forEach(sortPart => {
         const [key, direction] = Object.entries(sortPart)[0];
         const mongoKey = key === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : key;

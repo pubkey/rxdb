@@ -1,8 +1,14 @@
 import assert from 'assert';
 import config, { describeParallel } from './config.ts';
-import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
+import AsyncTestUtil, { assertThrows, wait, waitUntil } from 'async-test-util';
 
-import { humanData, humansCollection, isFastMode, schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
+import {
+    humanData,
+    humansCollection,
+    isFastMode,
+    schemaObjects,
+    schemas
+} from '../../plugins/test-utils/index.mjs';
 
 import {
     createRxDatabase,
@@ -19,7 +25,8 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
+    RxDocument
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -34,9 +41,11 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ensureReplicationHasNoErrors } from '../../plugins/test-utils/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 
 
 describe('migration-schema.test.ts', function () {
+    addRxPlugin(RxDBUpdatePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(1000 * 20);
     if (
@@ -684,6 +693,7 @@ describe('migration-schema.test.ts', function () {
                 remoteDb.humans.conflictHandler,
                 remoteDb.humans.database.token
             );
+
             const replicationState = replicateRxCollection({
                 collection: db.humans,
                 replicationIdentifier: 'migrate-replication-state',
@@ -694,7 +704,10 @@ describe('migration-schema.test.ts', function () {
                     handler: helper.masterChangesSince
                 },
                 push: {
-                    handler: helper.masterWrite
+                    async handler(rows) {
+                        const result = await helper.masterWrite(rows);
+                        return result;
+                    }
                 }
             });
             ensureReplicationHasNoErrors(replicationState);
@@ -739,10 +752,17 @@ describe('migration-schema.test.ts', function () {
                 autoStart: true,
                 waitForLeadership: false,
                 pull: {
-                    handler: helper.masterChangesSince
+                    async handler(checkpoint, batchSize) {
+                        const res = await helper.masterChangesSince(checkpoint, batchSize);
+                        res.documents = res.documents.map(d => {
+                            d.age = parseInt(d.age, 10);
+                            return d;
+                        });
+                        return res;
+                    }
                 },
                 push: {
-                    handler(rows) {
+                    async handler(rows) {
                         rows = rows.map(row => {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState.age = row.assumedMasterState.age + '';
@@ -750,7 +770,7 @@ describe('migration-schema.test.ts', function () {
                             row.newDocumentState.age = row.newDocumentState.age + '';
                             return row;
                         });
-                        const result = helper.masterWrite(rows);
+                        const result = await helper.masterWrite(rows);
                         return result;
                     }
                 }
@@ -778,8 +798,246 @@ describe('migration-schema.test.ts', function () {
             await db2.close();
             await remoteDb.close();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/7204
+         */
+        it('issue #7204 schema migration failing when returning null', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomToken(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            // replicate the collection
+            const replicationState = await replicateRxCollection<
+                RxDocument,
+                { index: number; }
+            >({
+                replicationIdentifier: 'mycollection',
+                collection: collections.mycollection,
+                pull: {
+                    initialCheckpoint: { index: 0 },
+                    handler: async (checkpointOrNull) => {
+                        await wait(0);
+
+                        let docs: any[] = [];
+                        const index = checkpointOrNull?.index ?? 0;
+
+                        if (index === 0) {
+                            docs = [
+                                {
+                                    passportId: 'foobar',
+                                    firstName: 'Bob',
+                                    lastName: 'Kelso',
+                                    age: 56,
+                                },
+                            ];
+                        }
+
+                        return {
+                            checkpoint: { index: index + 1 },
+                            documents: docs,
+                        };
+                    },
+                },
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            // clean up afterwards
+            await db.close();
+
+            mySchema.version = 1;
+
+            // @ts-expect-error - add a new field to the schema
+            mySchema.properties.newField = {
+                type: 'string',
+            };
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            const collections2 = await db2.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    schema: mySchema,
+                    migrationStrategies: {
+                        1: () => null,
+                    },
+                },
+            });
+
+            const items = await collections2.mycollection.find().exec();
+            assert.strictEqual(items.length, 0);
+            await db2.close();
+        });
     });
+
+
+
     describeParallel('issues', () => {
+        it('#7226 db.addCollections fails after it failed for a missing migration strategy', async () => {
+            // create a schema
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    firstName: {
+                        type: 'string',
+                    },
+                    lastName: {
+                        type: 'string',
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                    },
+                },
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomToken(10);
+
+            // create a database
+            const db = await createDB();
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    migrationStrategies: {},
+                    schema: mySchema,
+                },
+            });
+
+            // insert a document
+            await insertDoc(collections.mycollection);
+
+            // clean up afterwards
+            await db.close();
+
+
+            const db2 = await createDB();
+
+            await assertThrows(
+                async () => {
+                    await db2.addCollections({
+                        mycollection: {
+                            autoMigrate: true,
+                            migrationStrategies: {},
+                            schema: getModifiedSchema(),
+                        },
+                    });
+                },
+                'RxError',
+                'COL12'
+            );
+            await db2.close();
+
+            const db3 = await createDB();
+
+            // This should work (as we have a migration strategy at this point), but it keeps failing.
+            const migrationStrategies = {
+                1: (doc: any) => {
+                    return {
+                        ...doc,
+                        dob: '1990-01-01',
+                    };
+                },
+            };
+            await db3.addCollections({
+                mycollection: {
+                    autoMigrate: true,
+                    migrationStrategies,
+                    schema: getModifiedSchema(),
+                },
+            });
+
+            db3.close();
+
+            function createDB() {
+                return createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true,
+                });
+            }
+
+            function insertDoc(collection: RxCollection<any>) {
+                return collection.insert({
+                    passportId: 'foobar',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56,
+                });
+            }
+
+            function getModifiedSchema() {
+                return {
+                    ...clone(mySchema),
+                    version: 1,
+                    properties: {
+                        ...clone(mySchema).properties,
+                        dob: { type: 'string' },
+                    },
+                };
+            }
+        });
         /**
          * @link https://discord.com/channels/@me/1228248291196670114/1310584400710209556
          */

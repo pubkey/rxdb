@@ -176,6 +176,9 @@ export var basePrototype = {
   putAttachment() {
     throw pluginMissing('attachments');
   },
+  putAttachmentBase64() {
+    throw pluginMissing('attachments');
+  },
   getAttachment() {
     throw pluginMissing('attachments');
   },

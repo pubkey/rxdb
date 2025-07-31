@@ -223,7 +223,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
           });
         },
         masterWrite: async rows => {
-          rows = await Promise.all(rows.map(async row => {
+          var migratedRows = await Promise.all(rows.map(async row => {
             var newDocData = row.newDocumentState;
             if (newStorage.schema.title === META_INSTANCE_SCHEMA_TITLE) {
               newDocData = row.newDocumentState.docData;
@@ -235,6 +235,14 @@ export var RxMigrationState = /*#__PURE__*/function () {
               }
             }
             var migratedDocData = await migrateDocumentData(this.collection, oldStorage.schema.version, newDocData);
+
+            /**
+             * The migration strategy can return null
+             * which means the document must be deleted during migration.
+             */
+            if (migratedDocData === null) {
+              return null;
+            }
             var newRow = {
               // drop the assumed master state, we do not have to care about conflicts here.
               assumedMasterState: undefined,
@@ -246,8 +254,8 @@ export var RxMigrationState = /*#__PURE__*/function () {
           }));
 
           // filter out the documents where the migration strategy returned null
-          rows = rows.filter(row => !!row.newDocumentState);
-          var result = await replicationHandlerBase.masterWrite(rows);
+          migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
+          var result = await replicationHandlerBase.masterWrite(migratedRows);
           return result;
         },
         masterChangeStream$: new Subject().asObservable()

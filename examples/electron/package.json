@@ -13,11 +13,11 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "electron": "36.2.0",
+    "electron": "36.7.3",
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "mocha": "11.2.2",
-    "playwright-core": "1.52.0"
+    "mocha": "11.7.1",
+    "playwright-core": "1.54.1"
   }
 }

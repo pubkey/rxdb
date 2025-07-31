@@ -15,7 +15,6 @@ To ensure there are not multiple people working on the same task, before you sta
 
 ## Open Tasks (pick one and work on it)
 
-- Publish an article about RxDB on the english wikipedia. (Must not be long, anything that is not deleted by the moderators is ok).
 - Create a `rxdb/plugins/react` plugins with a `useRxDatabase` provider and similiar functions like `useRxQuery`, `useRxCollection` and TypeScript support. (Should later replace the outdated [rxdb-hooks](https://github.com/cvara/rxdb-hooks) library).
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
@@ -24,6 +23,7 @@ const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
 - Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
+- 📢 Give an in-person talk about RxDB at a conference or meetup with at least 25 real, physically present attendees (no online-only events)
 
 ## Tasks already in progress (do no work on these!)
 

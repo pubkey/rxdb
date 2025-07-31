@@ -2,12 +2,32 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `blockSizeLimit` to memory mapped storage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.16.0 (16 July 2025)
+
+- FIX updates not working after migration of replication state [#7260](https://github.com/pubkey/rxdb/issues/7260)
+- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
+
+### 16.15.0 (17 June 2025)
+
+- ADD option to remove and update a document in the same atomic write operation.
+- ADD option to disable `WITHOUT ROWID` in the SQLite RxStorage.
+- FIX ajv-validation must know about the `date-time` format by default [#7253](https://github.com/pubkey/rxdb/issues/7253)
+- FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
+- FIX SQLite storage fails while querying with null [#7236](https://github.com/pubkey/rxdb/pull/7236)
+
+### 16.13.0 (30 May 2025)
+
+- FIX queue start/stop/cancel operations in the replication state to ensure operations do not intersect and cause errors.
+- FIX real-time query ignoring the latest changes after deleting and purging data [#7187](https://github.com/pubkey/rxdb/pull/7187)
+- ADD `putAttachmentBase64()` and `getDataBase64()` to the attachments API so that attachments can be stored and read in runtimes that do not support `Blob`.
+- FIX schema migration failing when returning null [#7204](https://github.com/pubkey/rxdb/pull/7204)
 
 ### 16.12.0 (10 May 2025)
 

@@ -770,6 +770,26 @@ describe('rx-query.test.ts', () => {
                 assert.strictEqual(doc, null);
                 c.database.close();
             });
+            it('update and remove in one atomic write', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find().where('age').gt(-1);
+                const updateResult = await query.update({
+                    $set: {
+                        firstName: 'aaa',
+                        _deleted: true,
+                    }
+                });
+
+                updateResult.forEach(d => {
+                    assert.strictEqual(d.firstName, 'aaa');
+                    assert.ok(d.deleted);
+                });
+
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
+                c.database.close();
+            });
         });
         describe('RxQuery.patch()', () => {
             it('updates a value on a query', async () => {
@@ -788,18 +808,6 @@ describe('rx-query.test.ts', () => {
                 for (const doc of docs) {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
-                }
-                c.database.close();
-            });
-            it('unset a value on a query by patching with undefined', async () => {
-                const c = await humansCollection.create(2);
-                const query = c.find();
-                await query.patch({
-                    age: undefined
-                });
-                const docs = await query.exec();
-                for (const doc of docs) {
-                    assert.strictEqual(doc._data.age, undefined);
                 }
                 c.database.close();
             });
@@ -832,6 +840,19 @@ describe('rx-query.test.ts', () => {
                 for (const doc of docs) {
                     assert.strictEqual(doc._data.firstName, 'new first name');
                     assert.strictEqual(doc.isInstanceOfRxDocument, true);
+                }
+                c.database.close();
+            });
+            it('unset a value on a query', async () => {
+                const c = await humansCollection.create(2);
+                const query = c.find();
+                await query.modify(d => {
+                    delete d.age;
+                    return d;
+                });
+                const docs = await query.exec();
+                for (const doc of docs) {
+                    assert.strictEqual(doc._data.age, undefined);
                 }
                 c.database.close();
             });

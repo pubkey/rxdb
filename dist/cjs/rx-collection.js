@@ -762,7 +762,7 @@ function _incrementalUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 /**
  * creates and prepares a new collection
  */
-function createRxCollection({
+async function createRxCollection({
   database,
   name,
   schema,
@@ -788,47 +788,52 @@ function createRxCollection({
     devMode: _overwritable.overwritable.isDevMode()
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
-  return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(storageInstance => {
-    var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
-    return collection.prepare().then(() => {
-      // ORM add statics
-      Object.entries(statics).forEach(([funName, fun]) => {
-        Object.defineProperty(collection, funName, {
-          get: () => fun.bind(collection)
-        });
+  var storageInstance = await (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams);
+  var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
+  try {
+    await collection.prepare();
+
+    // ORM add statics
+    Object.entries(statics).forEach(([funName, fun]) => {
+      Object.defineProperty(collection, funName, {
+        get: () => fun.bind(collection)
       });
-      var ret = _index.PROMISE_RESOLVE_VOID;
-      if (autoMigrate && collection.schema.version !== 0) {
-        ret = collection.migratePromise();
+    });
+    (0, _hooks.runPluginHooks)('createRxCollection', {
+      collection,
+      creator: {
+        name,
+        schema,
+        storageInstance,
+        instanceCreationOptions,
+        migrationStrategies,
+        methods,
+        attachments,
+        options,
+        cacheReplacementPolicy,
+        localDocuments,
+        statics
       }
-      return ret;
-    }).then(() => {
-      (0, _hooks.runPluginHooks)('createRxCollection', {
-        collection,
-        creator: {
-          name,
-          schema,
-          storageInstance,
-          instanceCreationOptions,
-          migrationStrategies,
-          methods,
-          attachments,
-          options,
-          cacheReplacementPolicy,
-          localDocuments,
-          statics
-        }
-      });
-      return collection;
-    })
+    });
+
+    /**
+     * Migration must run after the hooks so that the
+     * dev-mode can check up front if the
+     * migration strategies are correctly set.
+     */
+    if (autoMigrate && collection.schema.version !== 0) {
+      await collection.migratePromise();
+    }
+  } catch (err) {
     /**
      * If the collection creation fails,
      * we yet have to close the storage instances.
-     */.catch(err => {
-      OPEN_COLLECTIONS.delete(collection);
-      return storageInstance.close().then(() => Promise.reject(err));
-    });
-  });
+     */
+    OPEN_COLLECTIONS.delete(collection);
+    await storageInstance.close();
+    throw err;
+  }
+  return collection;
 }
 function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;

@@ -447,6 +447,39 @@ describeParallel('attachments.test.ts', () => {
             c.database.close();
         });
     });
+    describe('plain base64 operations', () => {
+        describe('.putAttachmentBase64()', () => {
+            it('should be possible to write attachment as plain base64 string and read it again', async () => {
+                const c = await humansCollection.createAttachments(1);
+                const doc = await c.findOne().exec(true);
+
+                const text = 'meowä😎';
+                const blob = createBlob(text, 'text/plain');
+                const dataString = await blobToBase64String(blob);
+                const attachment = await doc.putAttachmentBase64({
+                    id: 'cat.txt',
+                    length: 4,
+                    data: dataString,
+                    type: 'text/plain'
+                });
+                assert.ok(attachment);
+                assert.strictEqual(attachment.id, 'cat.txt');
+                assert.strictEqual(attachment.type, 'text/plain');
+
+                // ensure reading the data again has the same result
+                const dataAfter = await attachment.getDataBase64();
+                const blobAfter = await createBlobFromBase64(
+                    dataAfter,
+                    'text/plain'
+                );
+                const dataStringAfter = await blobToString(blobAfter);
+                assert.deepStrictEqual(dataStringAfter, text);
+
+
+                c.database.close();
+            });
+        });
+    });
     describe('schema', () => {
         it('should throw when attachments not defined in the schema', async () => {
             const c = await humansCollection.create(1);

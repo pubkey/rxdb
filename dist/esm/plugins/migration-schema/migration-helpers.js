@@ -52,7 +52,9 @@ export function migrateDocumentData(collection, docSchemaVersion, docData) {
     if (doc === null) {
       return PROMISE_RESOLVE_NULL;
     }
-    doc._meta = meta;
+    if (meta) {
+      doc._meta = meta;
+    }
     return doc;
   });
 }
