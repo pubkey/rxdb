@@ -25,13 +25,17 @@ import {
     Collection as MongoCollection,
     MongoClient,
     ObjectId,
-    ClientSession
+    ClientSession,
+    Timestamp
 } from 'mongodb';
 
 import {
     RxMongoDBReplicationState,
+    getDocsSinceChangestreamCheckpoint,
     replicateMongoDB,
-    startChangeStream
+    startChangeStream,
+    getCurrentResumeToken,
+    getDocsSinceDocumentCheckpoint
 } from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
@@ -125,6 +129,17 @@ describe('replication-mongodb.test.ts', function () {
     async function insertDocument(doc = getRandomMongoDoc()) {
         const result = await mongoCollection.insertOne(doc);
     }
+    async function insertDocuments(amount = 1) {
+        await Promise.all(
+            new Array(amount).fill(0).map(() => insertDocument())
+        );
+    }
+    async function getChangeStream() {
+        const changestream = await startChangeStream(
+            mongoCollection
+        );
+        return changestream;
+    }
 
     let mongoCollection: MongoCollection<any>;
     describe('basics', function () {
@@ -155,20 +170,58 @@ describe('replication-mongodb.test.ts', function () {
     });
     describe('helpers', () => {
         it('should be able to listen to the changestream', async () => {
-            const changestream = await startChangeStream(
-                mongoCollection
-            );
+            await cleanUpServer();
+            const changestream = await getChangeStream();
+            await insertDocument();
+            await insertDocument();
             const events = [];
             changestream.on('change', (ev) => {
                 console.log('got change!!');
                 console.dir(ev);
+                events.push(ev);
             });
             await waitUntil(async () => {
                 await insertDocument();
                 console.log('events amount: ' + events.length);
                 return events.length > 0;
             });
+            await changestream.close();
+        });
+        it('.getCurrentResumeToken()', async () => {
             await cleanUpServer();
+            await insertDocuments(1);
+            const token = await getCurrentResumeToken(mongoCollection);
+            assert.ok(token);
+            assert.ok(token._data);
+        });
+        it('.getDocsSinceChangestreamCheckpoint()', async () => {
+            await cleanUpServer();
+
+            const token = await getCurrentResumeToken(mongoCollection);
+            await insertDocuments(3);
+
+            const events = await getDocsSinceChangestreamCheckpoint<any>(mongoCollection, token, 10);
+
+            assert.strictEqual(events.length, 3);
+            assert.ok(events[0]._id);
+        });
+        it('.getDocsSinceDocumentCheckpoint()', async () => {
+            await cleanUpServer();
+
+            let shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
+            assert.ok(!shouldBeEmpty.checkpointId);
+
+            await insertDocuments(3);
+            let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
+            assert.ok(shouldNotBeEmpty.checkpointId);
+            assert.strictEqual(shouldNotBeEmpty.docs.length, 3);
+
+            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, shouldNotBeEmpty.checkpointId);
+            assert.strictEqual(shouldBeEmpty.docs.length, 0);
+
+            await insertDocuments(5);
+            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, shouldNotBeEmpty.checkpointId);
+            assert.strictEqual(shouldNotBeEmpty.docs.length, 5);
         });
     });
 

@@ -12,7 +12,8 @@ export type MongoDBChangeStreamResumeToken = {
 };
 
 export type MongoDbCheckpointType = {
-    token: MongoDBChangeStreamResumeToken;
+    changestreamResumeToken: MongoDBChangeStreamResumeToken;
+    docId?: string;
 }
 
 export type MongoDbConnectionConfig = {

@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { RxError, RxTypeError, newRxError } from '../../rx-error.ts';
-import { errorToPlainJson, toArray } from '../utils/index.ts';
+import { ensureNotFalsy, errorToPlainJson, promiseWait, requestIdlePromiseNoQueue, toArray } from '../utils/index.ts';
 import type {
     MongoDBChangeStreamResumeToken
 } from './mongodb-types';
@@ -19,7 +19,9 @@ export async function startChangeStream(
     resumeToken?: MongoDBChangeStreamResumeToken,
     errorSubject?: Subject<RxError | RxTypeError>
 ): Promise<ChangeStream> {
-    const changeStream = mongoCollection.watch([], resumeToken ? { resumeAfter: resumeToken } : {});
+    const changeStream = mongoCollection.watch([], resumeToken ? { resumeAfter: resumeToken } : {
+
+    });
     changeStream.on('error', (err: any) => {
         console.log('ERRROR ON CHANGESTREAM;');
         console.dir(err);
@@ -43,14 +45,73 @@ export async function startChangeStream(
     return changeStream;
 }
 
-export async function fetchEventsUntilEnd(
-    changeStream: ChangeStream
-) {
-    const ret: ChangeStreamDocument[] = [];
-    changeStream.on('change', (c) => {
-        console.log('got change:');
-        console.dir(c);
-        ret.push(c);
+export async function getCurrentResumeToken(
+    mongoCollection: MongoCollection
+): Promise<MongoDBChangeStreamResumeToken> {
+    const changeStream = mongoCollection.watch();
+
+    // Trigger the initial batch so postBatchResumeToken is available
+    await changeStream.tryNext().catch(() => { });
+
+    const token = changeStream.resumeToken;
+    changeStream.close();
+    return token as any;
+}
+
+export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
+    mongoCollection: MongoCollection,
+    /**
+     * MongoDB has no way to start the stream from 'timestamp zero',
+     * we always need a resumeToken
+     */
+    resumeToken: MongoDBChangeStreamResumeToken,
+    limit: number
+): Promise<MongoDocType[]> {
+    const resultByDocId = new Map<string, Promise<MongoDocType>>();
+    const changeStream = mongoCollection.watch([], { resumeAfter: resumeToken });
+
+    return new Promise(async (res, rej) => {
+        changeStream.on('error', (err: any) => {
+            rej(err);
+        });
+
+        while (resultByDocId.size < limit) {
+            const change = await changeStream.tryNext();
+            if (change) {
+                const docId = (change as any).documentKey._id;
+                if (!resultByDocId.has(docId)) {
+                    resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }) as any);
+                }
+            } else {
+                // No more events buffered—exit the loop
+                break;
+            }
+        }
+
+        changeStream.close();
+        res(await Promise.all(Array.from(resultByDocId.values())));
     });
-    return ret;
+}
+
+export async function getDocsSinceDocumentCheckpoint(
+    mongoCollection: MongoCollection,
+    limit: number,
+    checkpointId?: string
+) {
+    const query = checkpointId
+        ? { _id: { $gt: new ObjectId(checkpointId) } }
+        : {};
+
+    const docs = await mongoCollection
+        .find(query as any)
+        .sort({ _id: 1 })
+        .limit(limit)
+        .toArray();
+
+    const newCheckpointId =
+        docs.length > 0
+            ? docs[docs.length - 1]._id.toString()
+            : undefined;
+
+    return { docs, checkpointId: newCheckpointId };
 }
