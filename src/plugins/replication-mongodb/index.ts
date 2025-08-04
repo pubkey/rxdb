@@ -43,6 +43,7 @@ import {
 import { MONGO_OPTIONS_DRIVER_INFO } from '../storage-mongodb/mongodb-helper.ts';
 
 export * from './mongodb-helper.ts';
+export * from './mongodb-checkpoint.ts';
 export type * from './mongodb-types.ts';
 
 
@@ -85,6 +86,4 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.deletedField = options.deletedField ? options.deletedField : '_deleted';
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-
-
 }

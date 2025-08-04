@@ -12,6 +12,14 @@ export type MongoDBChangeStreamResumeToken = {
 };
 
 export type MongoDbCheckpointType = {
+    /**
+     * MongoDB has no wait to iterate over events
+     * from the beginning of time.
+     * Therefore we first iterate over the documents by their
+     * _id field and if that reached an end, we iterate from then on
+     * over the changestream resume token.
+     */
+    iterate: 'changestream' | 'docs-by-id';
     changestreamResumeToken: MongoDBChangeStreamResumeToken;
     docId?: string;
 }

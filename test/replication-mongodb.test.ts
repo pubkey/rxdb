@@ -9,6 +9,9 @@ import {
     ensureNotFalsy,
     addRxPlugin
 } from '../plugins/core/index.mjs';
+import {
+    lastOfArray
+} from '../plugins/utils/index.mjs';
 
 import {
     schemaObjects,
@@ -35,12 +38,14 @@ import {
     replicateMongoDB,
     startChangeStream,
     getCurrentResumeToken,
-    getDocsSinceDocumentCheckpoint
+    getDocsSinceDocumentCheckpoint,
+    MongoDbCheckpointType,
+    iterateCheckpoint
 } from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
-import { RxCollection } from '../src/index.ts';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../plugins/storage-mongodb/index.mjs';
+import { MongoDBCheckpointIterationState } from '../src/plugins/replication-mongodb/index.ts';
 
 const mongoConnectionString = 'mongodb://localhost:27017/?directConnection=true';
 const mongoDatabaseName = 'replication-test-db';
@@ -200,28 +205,46 @@ describe('replication-mongodb.test.ts', function () {
             const token = await getCurrentResumeToken(mongoCollection);
             await insertDocuments(3);
 
-            const events = await getDocsSinceChangestreamCheckpoint<any>(mongoCollection, token, 10);
+            const result = await getDocsSinceChangestreamCheckpoint<any>(mongoCollection, token, 10);
 
-            assert.strictEqual(events.length, 3);
-            assert.ok(events[0]._id);
+            assert.strictEqual(result.docs.length, 3);
+            assert.ok(result.docs[0]._id);
         });
         it('.getDocsSinceDocumentCheckpoint()', async () => {
             await cleanUpServer();
 
             let shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
-            assert.ok(!shouldBeEmpty.checkpointId);
+            assert.strictEqual(shouldBeEmpty.length, 0);
 
             await insertDocuments(3);
             let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
-            assert.ok(shouldNotBeEmpty.checkpointId);
-            assert.strictEqual(shouldNotBeEmpty.docs.length, 3);
+            assert.strictEqual(shouldNotBeEmpty.length, 3);
 
-            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, shouldNotBeEmpty.checkpointId);
-            assert.strictEqual(shouldBeEmpty.docs.length, 0);
+            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, ensureNotFalsy(lastOfArray(shouldNotBeEmpty))._id.toString());
+            assert.strictEqual(shouldBeEmpty.length, 0);
 
             await insertDocuments(5);
-            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, shouldNotBeEmpty.checkpointId);
-            assert.strictEqual(shouldNotBeEmpty.docs.length, 5);
+            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, ensureNotFalsy(lastOfArray(shouldNotBeEmpty))._id.toString());
+            assert.strictEqual(shouldNotBeEmpty.length, 5);
+        });
+        it('.getDocsSinceDocumentCheckpoint()', async () => {
+            await cleanUpServer();
+            await insertDocuments(12);
+            const limit = 10;
+            let state: MongoDBCheckpointIterationState<any> | undefined = undefined;
+
+            state = await iterateCheckpoint(mongoCollection, limit);
+            assert.strictEqual(state.docs.length, limit);
+            assert.strictEqual(state.checkpoint.iterate, 'docs-by-id');
+
+            state = await iterateCheckpoint(mongoCollection, limit, state.checkpoint);
+            assert.strictEqual(state.docs.length, 2);
+            assert.strictEqual(state.checkpoint.iterate, 'changestream');
+
+            await insertDocuments(7);
+            state = await iterateCheckpoint(mongoCollection, limit, state.checkpoint);
+            assert.strictEqual(state.docs.length, 7);
+            assert.strictEqual(state.checkpoint.iterate, 'changestream');
         });
     });
 
