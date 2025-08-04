@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD `blockSizeLimit` to memory mapped storage.
+- FIX cleanup of a collection must also run the cleanup of the meta data of replications.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

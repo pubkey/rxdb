@@ -13,7 +13,8 @@ import {
     randomToken,
     addRxPlugin,
     RxCollection,
-    RxJsonSchema
+    RxJsonSchema,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
@@ -24,7 +25,6 @@ addRxPlugin(RxDBCleanupPlugin);
 
 describeParallel('cleanup.test.js', () => {
     describe('basics', () => {
-
         it('should clean up the deleted documents', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
@@ -62,10 +62,40 @@ describeParallel('cleanup.test.js', () => {
 
             db.close();
         });
+        it('should work by manually calling RxCollection.cleanup()', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const cols = await db.addCollections({
+                humans: {
+                    schema: schemas.human
+                }
+            });
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+            const notDeleted = await collection.insert(schemaObjects.humanData());
+            const doc = await collection.insert(schemaObjects.humanData());
+            await doc.remove();
+
+
+            await collection.cleanup(0);
+            const deletedDocInStorage = await collection.storageInstance.findDocumentsById(
+                [
+                    doc.primary,
+                    notDeleted.primary
+                ],
+                true
+            );
+            assert.ok(deletedDocInStorage.length >= 1);
+
+            db.close();
+        });
+    });
+    describe('cleanup and replication', () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         it('should pause the cleanup when a replication is not in sync', async () => {
-            if (!config.storage.hasReplication) {
-                return;
-            }
             const db = await createRxDatabase({
                 name: randomToken(10),
                 storage: config.storage.getStorage(),
@@ -114,33 +144,59 @@ describeParallel('cleanup.test.js', () => {
 
             db.remove();
         });
-        it('should work by manually calling RxCollection.cleanup()', async () => {
+        /**
+         * While the metadata of a replication is append-only
+         * we still have to run the cleanup on it because some storages
+         * like the memory-mapped storage will do additional stuff like data crunching.
+         */
+        it('should also run a cleanup on the replication state meta data', async () => {
             const db = await createRxDatabase({
                 name: randomToken(10),
-                storage: config.storage.getStorage()
+                storage: config.storage.getStorage(),
+                cleanupPolicy: {
+                    awaitReplicationsInSync: true,
+                    minimumCollectionAge: 0,
+                    minimumDeletedTime: 0,
+                    runEach: 10,
+                    waitForLeadership: false
+                }
             });
             const cols = await db.addCollections({
                 humans: {
                     schema: schemas.human
                 }
             });
-            const collection: RxCollection<HumanDocumentType> = cols.humans;
-            const notDeleted = await collection.insert(schemaObjects.humanData());
-            const doc = await collection.insert(schemaObjects.humanData());
-            await doc.remove();
 
+            const collection: RxCollection<HumanDocumentType> = cols.humans;
+            const replicationState = replicateRxCollection<HumanDocumentType, any>({
+                collection,
+                replicationIdentifier: 'my-rep',
+                deletedField: '_deleted',
+                pull: {
+                    handler() {
+                        return Promise.resolve({
+                            checkpoint: {},
+                            documents: []
+                        });
+                    }
+                },
+                live: true
+            });
+            await replicationState.start();
+
+            const replicationMetaInstance = ensureNotFalsy(replicationState.metaInstance);
+            const cleanupBefore = replicationMetaInstance.cleanup.bind(replicationMetaInstance);
+
+            let cleanupCalls = 0;
+            replicationMetaInstance.cleanup = (x) => {
+                cleanupCalls++;
+                return cleanupBefore(x);
+            };
 
             await collection.cleanup(0);
-            const deletedDocInStorage = await collection.storageInstance.findDocumentsById(
-                [
-                    doc.primary,
-                    notDeleted.primary
-                ],
-                true
-            );
-            assert.strictEqual(deletedDocInStorage.length, 1);
+            assert.ok(cleanupCalls > 0, 'cleanup call count must be greater zero');
 
-            db.close();
+            db.remove();
         });
     });
     describe('issues', () => {
