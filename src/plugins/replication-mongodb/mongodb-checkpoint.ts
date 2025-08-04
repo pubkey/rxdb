@@ -1,6 +1,7 @@
 import { clone, lastOfArray } from '../utils/index.ts';
 import type {
     MongoDBChangeStreamResumeToken,
+    MongoDBCheckpointIterationState,
     MongoDbCheckpointType
 } from './mongodb-types';
 import {
@@ -79,10 +80,6 @@ export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
 }
 
 
-export type MongoDBCheckpointIterationState<MongoDocType> = {
-    docs: WithId<MongoDocType>[];
-    checkpoint: MongoDbCheckpointType;
-};
 export async function iterateCheckpoint<MongoDocType>(
     mongoCollection: MongoCollection,
     limit: number,

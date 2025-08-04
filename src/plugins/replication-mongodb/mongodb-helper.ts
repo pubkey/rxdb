@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import { RxError, RxTypeError, newRxError } from '../../rx-error.ts';
-import { ensureNotFalsy, errorToPlainJson, promiseWait, requestIdlePromiseNoQueue, toArray } from '../utils/index.ts';
+import { ensureNotFalsy, errorToPlainJson, flatClone, promiseWait, requestIdlePromiseNoQueue, toArray } from '../utils/index.ts';
 import type {
     MongoDBChangeStreamResumeToken
 } from './mongodb-types';
@@ -11,7 +11,8 @@ import {
     ObjectId,
     ClientSession,
     ChangeStreamDocument,
-    ChangeStream
+    ChangeStream,
+    WithId
 } from 'mongodb';
 
 export async function startChangeStream(
@@ -43,4 +44,18 @@ export async function startChangeStream(
     console.log('---1 ');
 
     return changeStream;
+}
+
+
+export function mongodbDocToRxDB(primaryPath: string, doc: WithId<any>) {
+    doc = flatClone(doc);
+    let id = doc._id;
+    if (typeof id !== 'string') {
+        id = id.toString();
+    }
+    doc[primaryPath] = id;
+    if (primaryPath !== '_id') {
+        delete doc._id;
+    }
+    return doc;
 }

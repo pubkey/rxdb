@@ -1,3 +1,4 @@
+import { WithId } from 'mongodb';
 import type {
     ReplicationOptions,
     ReplicationPullOptions,
@@ -23,6 +24,11 @@ export type MongoDbCheckpointType = {
     changestreamResumeToken: MongoDBChangeStreamResumeToken;
     docId?: string;
 }
+
+export type MongoDBCheckpointIterationState<MongoDocType> = {
+    docs: WithId<MongoDocType>[];
+    checkpoint: MongoDbCheckpointType;
+};
 
 export type MongoDbConnectionConfig = {
     connection: MongoDBConnectionString;

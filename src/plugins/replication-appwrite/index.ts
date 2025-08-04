@@ -54,7 +54,7 @@ export class RxAppwriteReplicationState<RxDocType> extends RxReplicationState<Rx
 export function replicateAppwrite<RxDocType>(
     options: SyncOptionsAppwrite<RxDocType>
 ): RxAppwriteReplicationState<RxDocType> {
-    const collection: RxCollection<RxDocType> = options.collection;
+    const collection: RxCollection<RxDocType, any, any> = options.collection;
     const primaryKey = collection.schema.primaryPath;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, AppwriteCheckpointType>> = new Subject();
 
