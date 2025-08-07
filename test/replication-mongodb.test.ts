@@ -7,7 +7,8 @@ import assert from 'assert';
 import {
     randomToken,
     ensureNotFalsy,
-    addRxPlugin
+    addRxPlugin,
+    RxCollection
 } from '../plugins/core/index.mjs';
 import {
     lastOfArray
@@ -71,65 +72,78 @@ describe('replication-mongodb.test.ts', function () {
 
 
     async function getServerState() {
-        const docs = await mongoCollection.find({}).toArray();
+        const docs = await mongoCollection.find().toArray();
         return docs;
     }
+    const primaryPath = 'passportId';
 
-    // function syncCollection<RxDocType = TestDocType>(
-    //     collection: RxCollection<RxDocType>,
-    // ): RxAppwriteReplicationState<RxDocType> {
-    //     const replicationState = replicateMongoDB<RxDocType>({
-    //         client: getClient(),
-    //         collectionId,
-    //         databaseId,
-    //         deletedField: 'deleted',
-    //         replicationIdentifier: randomToken(10),
-    //         collection,
-    //         pull: {
-    //             batchSize
-    //         },
-    //         push: {
-    //             batchSize
-    //         }
-    //     });
-    //     ensureReplicationHasNoErrors(replicationState);
-    //     return replicationState;
-    // }
+    function syncCollection<RxDocType = TestDocType>(
+        collection: RxCollection<RxDocType>,
+    ): RxMongoDBReplicationState<RxDocType> {
+        const replicationState = replicateMongoDB<RxDocType>({
+            config: {
+                collectionName: mongoCollectionName,
+                connection: mongoConnectionString,
+                databaseName: mongoDatabaseName
+            },
+            deletedField: 'deleted',
+            replicationIdentifier: randomToken(10),
+            collection,
+            pull: {
+                batchSize
+            },
+            push: {
+                batchSize
+            }
+        });
+        ensureReplicationHasNoErrors(replicationState);
+        return replicationState;
+    }
 
-    // async function syncCollectionOnce<RxDocType = TestDocType>(
-    //     collection: RxCollection<RxDocType>,
-    // ) {
-    //     const replicationState = replicateMongoDB<RxDocType>({
-    //         client: getClient(),
-    //         collectionId,
-    //         databaseId,
-    //         deletedField: 'deleted',
-    //         replicationIdentifier: 'sync-once',
-    //         collection,
-    //         live: false,
-    //         pull: {
-    //             batchSize
-    //         },
-    //         push: {
-    //             batchSize
-    //         }
-    //     });
-    //     ensureReplicationHasNoErrors(replicationState);
-    //     await replicationState.awaitInitialReplication();
-    //     await replicationState.awaitInSync();
-    //     await replicationState.cancel();
-    // }
+    async function syncCollectionOnce<RxDocType = TestDocType>(
+        collection: RxCollection<RxDocType>,
+    ) {
+        console.log('.... 0');
+        const replicationState = replicateMongoDB<RxDocType>({
+            config: {
+                collectionName: mongoCollectionName,
+                connection: mongoConnectionString,
+                databaseName: mongoDatabaseName
+            },
+            deletedField: 'deleted',
+            replicationIdentifier: 'sync-once',
+            collection,
+            live: false,
+            pull: {
+                batchSize
+            },
+            push: {
+                batchSize
+            }
+        });
+        console.log('.... 1');
+        ensureReplicationHasNoErrors(replicationState);
+        console.log('.... 2');
+        await replicationState.awaitInitialReplication();
+        console.log('.... 3');
+        await replicationState.awaitInSync();
+        console.log('.... 4');
+        await replicationState.cancel();
+        console.log('.... 5');
+    }
 
     async function cleanUpServer() {
         const result = await mongoCollection.deleteMany({});
         console.log(`Deleted ${result.deletedCount} documents`);
     }
     function getRandomMongoDoc() {
-        return {
+        const ret = {
             passportId: randomString(10),
             firstName: randomString(10),
             lastName: randomString(10)
         };
+        console.log('new doc passportId: ' + ret.passportId);
+        return ret;
     }
     async function insertDocument(doc = getRandomMongoDoc()) {
         const result = await mongoCollection.insertOne(doc);
@@ -199,52 +213,99 @@ describe('replication-mongodb.test.ts', function () {
             assert.ok(token);
             assert.ok(token._data);
         });
-        it('.getDocsSinceChangestreamCheckpoint()', async () => {
+        it('.getDocsSinceChangestreamCheckpoint() fetch some docs', async () => {
             await cleanUpServer();
 
+
+            console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
             const token = await getCurrentResumeToken(mongoCollection);
+            console.log('token 1 ' + token._data);
             await insertDocuments(3);
 
             const result = await getDocsSinceChangestreamCheckpoint<any>(mongoCollection, token, 10);
+            console.log('token 2 ' + result.nextToken._data);
 
             assert.strictEqual(result.docs.length, 3);
             assert.ok(result.docs[0]._id);
+
+
+            const shouldBeEmpty = await getDocsSinceChangestreamCheckpoint<any>(mongoCollection, result.nextToken, 10);
+            console.dir({ shouldBeEmpty });
+            console.log('token 3 ' + shouldBeEmpty.nextToken._data);
+            console.log('............');
+            console.dir(shouldBeEmpty);
+            assert.deepStrictEqual(shouldBeEmpty.docs, []);
+            assert.strictEqual(shouldBeEmpty.nextToken._data, result.nextToken._data, 'should have the same token because no docs');
         });
         it('.getDocsSinceDocumentCheckpoint()', async () => {
             await cleanUpServer();
 
-            let shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
+            let shouldBeEmpty = await getDocsSinceDocumentCheckpoint(primaryPath, mongoCollection, 10);
             assert.strictEqual(shouldBeEmpty.length, 0);
 
-            await insertDocuments(3);
-            let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10);
+            await insertDocuments(10);
+            let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint<TestDocType>(primaryPath, mongoCollection, 3);
             assert.strictEqual(shouldNotBeEmpty.length, 3);
 
-            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, ensureNotFalsy(lastOfArray(shouldNotBeEmpty))._id.toString());
-            assert.strictEqual(shouldBeEmpty.length, 0);
-
-            await insertDocuments(5);
-            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(mongoCollection, 10, ensureNotFalsy(lastOfArray(shouldNotBeEmpty))._id.toString());
+            let lastId = ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId;
+            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(
+                primaryPath,
+                mongoCollection,
+                5,
+                lastId
+            );
             assert.strictEqual(shouldNotBeEmpty.length, 5);
+
+            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(
+                primaryPath,
+                mongoCollection,
+                100,
+                ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId
+            );
+
+            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(
+                primaryPath,
+                mongoCollection,
+                10,
+                ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId
+            );
+            assert.strictEqual(shouldBeEmpty.length, 0);
         });
-        it('.getDocsSinceDocumentCheckpoint()', async () => {
+        it('.iterateCheckpoint()', async () => {
             await cleanUpServer();
             await insertDocuments(12);
             const limit = 10;
             let state: MongoDBCheckpointIterationState<any> | undefined = undefined;
 
-            state = await iterateCheckpoint(mongoCollection, limit);
+            state = await iterateCheckpoint<TestDocType>(primaryPath, mongoCollection, limit);
             assert.strictEqual(state.docs.length, limit);
             assert.strictEqual(state.checkpoint.iterate, 'docs-by-id');
 
-            state = await iterateCheckpoint(mongoCollection, limit, state.checkpoint);
+            state = await iterateCheckpoint(primaryPath, mongoCollection, limit, state.checkpoint);
             assert.strictEqual(state.docs.length, 2);
             assert.strictEqual(state.checkpoint.iterate, 'changestream');
 
             await insertDocuments(7);
-            state = await iterateCheckpoint(mongoCollection, limit, state.checkpoint);
+            state = await iterateCheckpoint(primaryPath, mongoCollection, limit, state.checkpoint);
             assert.strictEqual(state.docs.length, 7);
             assert.strictEqual(state.checkpoint.iterate, 'changestream');
+        });
+    });
+    describe('live:false push', () => {
+        it('should push the documents', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(10, undefined, false);
+
+
+            // initial push
+            console.log('::::::::::.0');
+            await syncCollectionOnce(collection);
+            console.log('::::::::::.1');
+            let state = await getServerState();
+            console.log('::::::::::.2');
+            console.dir(state);
+            assert.strictEqual(state.length, 10, 'must have pushed all docs to the server');
+
         });
     });
 

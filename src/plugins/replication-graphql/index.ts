@@ -49,7 +49,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         public readonly url: GraphQLServerUrl,
         public readonly clientState: RxGraphQLReplicationClientState,
         public readonly replicationIdentifier: string,
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, any, any, any>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -174,7 +174,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 }
 
                 return data;
-            }, 
+            },
             batchSize: push.batchSize,
             modifier: push.modifier
         };

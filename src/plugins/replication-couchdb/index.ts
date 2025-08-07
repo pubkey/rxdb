@@ -54,7 +54,7 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
         public readonly url: string,
         public fetch: FetchMethodType,
         public readonly replicationIdentifier: string,
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, any, any, any>,
         public readonly pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live: boolean = true,
@@ -78,7 +78,7 @@ export function replicateCouchDB<RxDocType>(
     options: SyncOptionsCouchDB<RxDocType>
 ) {
     const collection = options.collection;
-    const conflictHandler: RxConflictHandler<unknown> = collection.conflictHandler;
+    const conflictHandler: RxConflictHandler<any> = collection.conflictHandler;
     addRxPlugin(RxDBLeaderElectionPlugin);
     const primaryPath = options.collection.schema.primaryPath;
 

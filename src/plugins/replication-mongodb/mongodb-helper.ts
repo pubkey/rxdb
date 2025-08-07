@@ -23,6 +23,8 @@ export async function startChangeStream(
     const changeStream = mongoCollection.watch([], resumeToken ? { resumeAfter: resumeToken } : {
 
     });
+
+    // TODO remove this, only used in debugging
     changeStream.on('error', (err: any) => {
         console.log('ERRROR ON CHANGESTREAM;');
         console.dir(err);
@@ -41,21 +43,21 @@ export async function startChangeStream(
     //         res();
     //     });
     // });
-    console.log('---1 ');
 
     return changeStream;
 }
 
 
 export function mongodbDocToRxDB(primaryPath: string, doc: WithId<any>) {
-    doc = flatClone(doc);
-    let id = doc._id;
-    if (typeof id !== 'string') {
-        id = id.toString();
-    }
-    doc[primaryPath] = id;
-    if (primaryPath !== '_id') {
+    if (primaryPath === '_id' && typeof doc._id !== 'string') {
+        throw newRxError('MG1', {
+            document: doc
+        });
+    } else if (primaryPath === '_id') {
+        return doc;
+    } else {
+        doc = flatClone(doc);
         delete doc._id;
+        return doc;
     }
-    return doc;
 }

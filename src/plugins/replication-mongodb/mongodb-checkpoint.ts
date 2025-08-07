@@ -2,7 +2,7 @@ import { clone, lastOfArray } from '../utils/index.ts';
 import type {
     MongoDBChangeStreamResumeToken,
     MongoDBCheckpointIterationState,
-    MongoDbCheckpointType
+    MongoDbCheckpointType,
 } from './mongodb-types';
 import {
     Collection as MongoCollection,
@@ -36,6 +36,14 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
     const resultByDocId = new Map<string, Promise<WithId<MongoDocType>>>();
     const changeStream = mongoCollection.watch([], { resumeAfter: resumeToken });
 
+
+    /**
+     * We cannot use changeStream.resumeToken for the
+     * updated token because depending on the batchSize of mongoCollection.watch()
+     * it might have changes but not emitting a new token.
+     */
+    let nextToken = resumeToken;
+
     return new Promise(async (res, rej) => {
         changeStream.on('error', (err: any) => {
             rej(err);
@@ -44,6 +52,7 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
         while (resultByDocId.size < limit) {
             const change = await changeStream.tryNext();
             if (change) {
+                nextToken = change._id as any;
                 const docId = (change as any).documentKey._id;
                 if (!resultByDocId.has(docId)) {
                     resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }) as any);
@@ -55,24 +64,35 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
 
         changeStream.close();
 
-        const nextToken = changeStream.resumeToken;
+        // TODO remove this, used for debugging
+        if (resultByDocId.size > 0 && nextToken._data === resumeToken._data) {
+            console.log('io equal');
+            console.dir({
+                nextToken,
+                resumeToken,
+                result: Array.from(resultByDocId.keys())
+            });
+            rej(new Error('input output token equal'));
+            return;
+        }
         const docs = await Promise.all(Array.from(resultByDocId.values()));
         res({ docs, nextToken: nextToken as any });
     });
 }
 
 export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
+    primaryPath: string,
     mongoCollection: MongoCollection,
     limit: number,
     checkpointId?: string
 ): Promise<WithId<MongoDocType>[]> {
     const query = checkpointId
-        ? { _id: { $gt: new ObjectId(checkpointId) } }
+        ? { [primaryPath]: { $gt: checkpointId } }
         : {};
 
     const docs = await mongoCollection
         .find(query as any)
-        .sort({ _id: 1 })
+        .sort({ [primaryPath]: 1 })
         .limit(limit)
         .toArray();
 
@@ -81,6 +101,7 @@ export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
 
 
 export async function iterateCheckpoint<MongoDocType>(
+    primaryPath: string,
     mongoCollection: MongoCollection,
     limit: number,
     checkpoint?: MongoDbCheckpointType,
@@ -97,13 +118,18 @@ export async function iterateCheckpoint<MongoDocType>(
 
     let docs: WithId<MongoDocType>[] = [];
     if (checkpoint.iterate === 'docs-by-id') {
-        docs = await getDocsSinceDocumentCheckpoint<MongoDocType>(mongoCollection, limit, checkpoint.docId);
+        console.log('iterate docsbyid');
+        docs = await getDocsSinceDocumentCheckpoint<MongoDocType>(primaryPath, mongoCollection, limit, checkpoint.docId);
         const last = lastOfArray(docs);
         if (last) {
-            checkpoint.docId = last._id.toString();
+            checkpoint.docId = (last as any)[primaryPath];
         }
     } else {
+        console.log('iterate changestream:');
+        console.dir(checkpoint.changestreamResumeToken);
         const result = await getDocsSinceChangestreamCheckpoint<MongoDocType>(mongoCollection, checkpoint.changestreamResumeToken, limit);
+        console.log('iterate changestream result:');
+        console.dir(result);
         docs = result.docs;
         checkpoint.changestreamResumeToken = result.nextToken;
     }

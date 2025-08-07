@@ -12,6 +12,7 @@ export type MongoDBChangeStreamResumeToken = {
     _data: string;
 };
 
+
 export type MongoDbCheckpointType = {
     /**
      * MongoDB has no wait to iterate over events

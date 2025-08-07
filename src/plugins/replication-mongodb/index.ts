@@ -43,7 +43,7 @@ import {
 } from 'mongodb';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../storage-mongodb/mongodb-helper.ts';
 import { iterateCheckpoint } from './mongodb-checkpoint.ts';
-import { mongodbDocToRxDB } from './mongodb-helper.ts';
+import { mongodbDocToRxDB, startChangeStream } from './mongodb-helper.ts';
 
 export * from './mongodb-helper.ts';
 export * from './mongodb-checkpoint.ts';
@@ -58,7 +58,7 @@ export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxD
     constructor(
         public readonly options: SyncOptionsMongoDB<RxDocType>,
         public readonly replicationIdentifier: string,
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, any, any>,
         public readonly pull?: ReplicationPullOptions<RxDocType, MongoDbCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live: boolean = true,
@@ -104,7 +104,11 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 lastPulledCheckpoint: MongoDbCheckpointType | undefined,
                 batchSize: number
             ) {
-                const result = await iterateCheckpoint(mongoCollection, batchSize, lastPulledCheckpoint);
+                console.log('PULL 0:');
+                console.dir(lastPulledCheckpoint);
+                const result = await iterateCheckpoint(primaryPath, mongoCollection, batchSize, lastPulledCheckpoint);
+                console.log('PULL 1 ' + result.docs.length);
+                console.dir(result);
                 return {
                     documents: result.docs.map(d => mongodbDocToRxDB(primaryPath, d)),
                     checkpoint: result.checkpoint
@@ -122,6 +126,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
+                console.log('push START');
                 const conflicts: WithDeleted<RxDocType>[] = [];
                 const session: ClientSession = mongoClient.startSession();
                 session.startTransaction();
@@ -132,9 +137,10 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 ).toArray();
                 const currentDocsMap = new Map<any, any>();
                 currentDocsArray.forEach(doc => {
-                    currentDocsMap.set(doc._id.toString(), doc);
+                    currentDocsMap.set(doc[primaryPath], doc);
                 });
                 let promises: Promise<any>[] = [];
+                console.log('push rows: ' + rows.length);
                 rows.forEach(row => {
                     const doc = row.newDocumentState;
                     const docId = (doc as any)[primaryPath];
@@ -150,25 +156,84 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                             'mongodb-pull-equal-check'
                         )
                     ) {
+                        console.log('has conflict!');
                         hasConflict = current;
                     }
                     if (!hasConflict) {
-                        promises.push(
-                            mongoCollection.updateOne(
-                                { [primaryPath]: docId },
-                                { $set: doc },
-                                { upsert: true, session }
-                            )
-                        );
+                        console.log('update one:');
+                        console.dir({
+                            docId,
+                            doc,
+                            current: current ? current : 'none'
+                        });
+                        if (current) {
+
+                            promises.push(
+                                mongoCollection.updateOne(
+                                    { [primaryPath]: docId },
+                                    { $set: doc },
+                                    {
+                                        upsert: true,
+                                        session
+                                    }
+                                ).catch(er => {
+                                    console.log('update err:');
+                                    console.dir(er);
+                                }).then(() => {
+                                    console.log('update one done');
+                                })
+                            );
+                        } else {
+                            promises.push(
+                                mongoCollection.insertOne(doc)
+                            );
+                        }
                     } else {
                         conflicts.push(hasConflict);
                     }
                 });
                 await Promise.all(promises);
+                console.log('push DONE');
                 return conflicts;
             },
             batchSize: options.push.batchSize,
             modifier: options.push.modifier
         };
     }
+
+
+    const replicationState = new RxMongoDBReplicationState<RxDocType>(
+        options,
+        options.replicationIdentifier,
+        options.collection,
+        replicationPrimitivesPull,
+        replicationPrimitivesPush,
+        options.live,
+        options.retryTime,
+        options.autoStart
+    );
+
+    /**
+     * Subscribe to changes for the pull.stream$
+     */
+    if (options.live && options.pull) {
+        const startBefore = replicationState.start.bind(replicationState);
+        const cancelBefore = replicationState.cancel.bind(replicationState);
+        replicationState.start = async () => {
+            const changestream = await startChangeStream(mongoCollection, undefined, replicationState.subjects.error);
+            changestream.on('change', () => {
+                console.log('CHANGESTERAM EMITTED!!');
+                // TODO use the documents data of the change instead of emitting the RESYNC flag
+                pullStream$.next('RESYNC');
+            });
+            replicationState.cancel = async () => {
+                await changestream.close();
+                return cancelBefore();
+            };
+            return startBefore();
+        };
+    }
+
+    startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
+    return replicationState;
 }
