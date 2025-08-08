@@ -444,46 +444,49 @@ describe('replication-mongodb.test.ts', function () {
         });
     });
 
-    // describe('live replication', () => {
-    //     it('push replication to client-server', async () => {
-    //         const collection = await humansCollection.createPrimary(0, undefined, false);
-    //         await collection.insert(schemaObjects.humanData('a-' + getRandomAppwriteDocId()));
-    //         await collection.insert(schemaObjects.humanData('b-' + getRandomAppwriteDocId()));
+    describe('live replication', () => {
+        it('push replication to client-server', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+            await collection.insert(schemaObjects.humanData('aaaa'));
+            await collection.insert(schemaObjects.humanData('bbbb'));
 
-    //         const replicationState = syncCollection(collection);
-    //         ensureReplicationHasNoErrors(replicationState);
-    //         await replicationState.awaitInitialReplication();
+            const replicationState = syncCollection(collection);
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
 
-    //         let docsOnServer = await getServerState();
-    //         assert.strictEqual(docsOnServer.length, 2);
+            let docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 2, 'must have two docs');
 
-    //         // insert another one
-    //         await collection.insert(schemaObjects.humanData('c-' + getRandomAppwriteDocId()));
-    //         await replicationState.awaitInSync();
+            // insert another one
+            await collection.insert(schemaObjects.humanData('cccc'));
+            await replicationState.awaitInSync();
 
-    //         docsOnServer = await getServerState();
-    //         assert.strictEqual(docsOnServer.length, 3);
+            docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 3, '3 after insert');
 
-    //         // update one
-    //         const doc = await collection.findOne().exec(true);
-    //         await doc.incrementalPatch({ age: 100 });
-    //         await replicationState.awaitInSync();
-    //         docsOnServer = await getServerState();
-    //         assert.strictEqual(docsOnServer.length, 3);
-    //         const serverDoc = ensureNotFalsy(docsOnServer.find(d => d.$id === doc.primary), 'doc with id missing ' + doc.primary);
-    //         assert.strictEqual(serverDoc.age, 100);
+            // update one
+            const doc = await collection.findOne().exec(true);
+            await doc.incrementalPatch({ firstName: 'foobar' });
+            await replicationState.awaitInSync();
+            docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 3, '3 after update');
+            const serverDoc = ensureNotFalsy(docsOnServer.find(d => d[primaryPath] === doc.primary), 'doc with id missing ' + doc.primary);
+            assert.strictEqual(serverDoc.firstName, 'foobar');
 
-    //         // delete one
-    //         await doc.getLatest().remove();
-    //         await replicationState.awaitInSync();
-    //         docsOnServer = await getServerState();
+            // delete one
+            await doc.getLatest().remove();
+            await replicationState.awaitInSync();
+            docsOnServer = await getServerState();
 
-    //         // must still have 3 because there are no hard deletes
-    //         assert.strictEqual(docsOnServer.length, 3);
-    //         assert.ok(docsOnServer.find(d => (d as any).deleted));
+            // must still have 3 because there are no hard deletes
+            assert.strictEqual(docsOnServer.length, 3, '3 after delete');
+            assert.ok(docsOnServer.find(d => (d as any).deleted));
 
-    //         collection.database.close();
-    //     });
+            collection.database.close();
+        });
+
+    });
     //     it('two collections', async () => {
     //         await cleanUpServer();
     //         const collectionA = await humansCollection.createPrimary(0, undefined, false);
@@ -546,67 +549,6 @@ describe('replication-mongodb.test.ts', function () {
 
     //         collectionA.database.close();
     //         collectionB.database.close();
-    //     });
-    // });
-    // describe('conflict handling', () => {
-    //     it('INSERT: should keep the master state as default conflict handler', async () => {
-    //         await cleanUpServer();
-
-    //         // insert and sync
-    //         const c1 = await humansCollection.create(0);
-    //         const conflictDocId = '1-insert-conflict-' + getRandomAppwriteDocId();
-    //         await c1.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-first'));
-    //         await syncCollectionOnce(c1);
-
-
-    //         // insert same doc-id on other side
-    //         const c2 = await humansCollection.create(0);
-    //         await c2.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-conflict'));
-    //         await syncCollectionOnce(c2);
-
-    //         /**
-    //          * Must have kept the first-insert state
-    //          */
-    //         const serverState = await getServerState();
-    //         const doc1 = await c1.findOne().exec(true);
-    //         const doc2 = await c2.findOne().exec(true);
-    //         assert.strictEqual(serverState[0].firstName, 'insert-first');
-    //         assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
-    //         assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
-
-    //         c1.database.close();
-    //         c2.database.close();
-    //     });
-    //     it('UPDATE: should keep the master state as default conflict handler', async () => {
-    //         await cleanUpServer();
-    //         const c1 = await humansCollection.create(0);
-    //         await c1.insert(schemaObjects.humanData('1-conflict-' + getRandomAppwriteDocId()));
-
-    //         const c2 = await humansCollection.create(0);
-
-    //         await syncCollectionOnce(c1);
-    //         await syncCollectionOnce(c2);
-
-    //         const doc1 = await c1.findOne().exec(true);
-    //         const doc2 = await c2.findOne().exec(true);
-    //         assert.strictEqual(doc1.firstName, doc2.firstName, 'equal names');
-
-    //         // make update on both sides
-    //         await doc2.incrementalPatch({ firstName: 'c2' });
-    //         await syncCollectionOnce(c2);
-
-    //         // cause conflict
-    //         await doc1.incrementalPatch({ firstName: 'c1' });
-    //         await syncCollectionOnce(c1);
-
-    //         /**
-    //          * Must have kept the master state c2
-    //          */
-    //         assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
-    //         assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
-
-    //         c1.database.close();
-    //         c2.database.close();
     //     });
     // });
 });
