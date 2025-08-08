@@ -1,16 +1,15 @@
 import { Subject } from 'rxjs';
 import { RxError, RxTypeError, newRxError } from '../../rx-error.ts';
-import { ensureNotFalsy, errorToPlainJson, flatClone, promiseWait, requestIdlePromiseNoQueue, toArray } from '../utils/index.ts';
+import {
+    errorToPlainJson,
+    flatClone,
+    toArray
+} from '../utils/index.ts';
 import type {
     MongoDBChangeStreamResumeToken
 } from './mongodb-types';
 import {
-    Db as MongoDatabase,
     Collection as MongoCollection,
-    MongoClient,
-    ObjectId,
-    ClientSession,
-    ChangeStreamDocument,
     ChangeStream,
     WithId
 } from 'mongodb';

@@ -145,29 +145,32 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                     const doc = row.newDocumentState;
                     const docId = (doc as any)[primaryPath];
                     const current = currentDocsMap.get(docId);
-                    let hasConflict: any = false;
-                    if (!current && !row.assumedMasterState) {
-                    } else if (
-                        current &&
-                        row.assumedMasterState &&
-                        options.collection.conflictHandler.isEqual(
-                            row.assumedMasterState,
-                            mongodbDocToRxDB(primaryPath, current),
-                            'mongodb-pull-equal-check'
+                    const remoteDocState = current ? mongodbDocToRxDB(primaryPath, current) : undefined;
+
+                    if (
+                        remoteDocState &&
+                        (
+                            !row.assumedMasterState ||
+                            options.collection.conflictHandler.isEqual(remoteDocState, row.assumedMasterState, 'mongodb-pull-equal-check') === false
                         )
                     ) {
-                        console.log('has conflict!');
-                        hasConflict = current;
-                    }
-                    if (!hasConflict) {
+                        // conflict
+                        console.log('has conflict!:');
+                        console.dir({
+                            assumed: row.assumedMasterState,
+                            current,
+                            currentmongotorxdb: remoteDocState
+                        });
+                        conflicts.push(remoteDocState);
+                    } else {
                         console.log('update one:');
                         console.dir({
                             docId,
                             doc,
+                            primaryPath,
                             current: current ? current : 'none'
                         });
                         if (current) {
-
                             promises.push(
                                 mongoCollection.updateOne(
                                     { [primaryPath]: docId },
@@ -179,8 +182,9 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                 ).catch(er => {
                                     console.log('update err:');
                                     console.dir(er);
-                                }).then(() => {
+                                }).then((xxx) => {
                                     console.log('update one done');
+                                    console.dir({ xxx });
                                 })
                             );
                         } else {
@@ -188,11 +192,63 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                 mongoCollection.insertOne(doc)
                             );
                         }
-                    } else {
-                        conflicts.push(hasConflict);
                     }
+
+
+
+                    // if (!current && !row.assumedMasterState) {
+                    // } else if (
+                    //     current &&
+                    //     row.assumedMasterState &&
+                    //     options.collection.conflictHandler.isEqual(
+                    //         row.assumedMasterState,
+                    //         currentNonMongo,
+                    //         'mongodb-pull-equal-check'
+                    //     )
+                    // ) {
+                    //     console.log('has conflict!:');
+                    //     console.dir({
+                    //         assumed: row.assumedMasterState,
+                    //         current,
+                    //         currentmongotorxdb: currentNonMongo
+                    //     });
+                    //     hasConflict = currentNonMongo;
+                    // }
+                    // if (!hasConflict) {
+                    //     console.log('update one:');
+                    //     console.dir({
+                    //         docId,
+                    //         doc,
+                    //         current: current ? current : 'none'
+                    //     });
+                    //     if (current) {
+
+                    //         promises.push(
+                    //             mongoCollection.updateOne(
+                    //                 { [primaryPath]: docId },
+                    //                 { $set: doc },
+                    //                 {
+                    //                     upsert: true,
+                    //                     session
+                    //                 }
+                    //             ).catch(er => {
+                    //                 console.log('update err:');
+                    //                 console.dir(er);
+                    //             }).then(() => {
+                    //                 console.log('update one done');
+                    //             })
+                    //         );
+                    //     } else {
+                    //         promises.push(
+                    //             mongoCollection.insertOne(doc)
+                    //         );
+                    //     }
+                    // } else {
+                    //     conflicts.push(hasConflict);
+                    // }
                 });
                 await Promise.all(promises);
+                await session.commitTransaction();
                 console.log('push DONE');
                 return conflicts;
             },

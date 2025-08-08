@@ -30,7 +30,8 @@ import {
     MongoClient,
     ObjectId,
     ClientSession,
-    Timestamp
+    Timestamp,
+    WithId
 } from 'mongodb';
 
 import {
@@ -71,7 +72,7 @@ describe('replication-mongodb.test.ts', function () {
     const batchSize = 5;
 
 
-    async function getServerState() {
+    async function getServerState(): Promise<WithId<TestDocType>[]> {
         const docs = await mongoCollection.find().toArray();
         return docs;
     }
@@ -292,7 +293,7 @@ describe('replication-mongodb.test.ts', function () {
         });
     });
     describe('live:false push', () => {
-        it('should push the documents', async () => {
+        it('should push the inserted documents', async () => {
             await cleanUpServer();
             const collection = await humansCollection.createPrimary(10, undefined, false);
 
@@ -306,6 +307,140 @@ describe('replication-mongodb.test.ts', function () {
             console.dir(state);
             assert.strictEqual(state.length, 10, 'must have pushed all docs to the server');
 
+            // ongoing push
+            await collection.bulkInsert(
+                new Array(15).fill(0).map(() => schemaObjects.humanData())
+            );
+            await syncCollectionOnce(collection);
+            state = await getServerState();
+            assert.strictEqual(state.length, 25, 'must have pushed ongoing docs to the server');
+
+            await collection.database.remove();
+        });
+        it('should pushed the updated documents', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(4, undefined, false);
+
+            await syncCollectionOnce(collection);
+            let state = await getServerState();
+            assert.strictEqual(state.length, 4, 'must have pushed all docs to the server');
+
+            const doc = await collection.findOne().exec(true);
+            await doc.incrementalPatch({ firstName: 'foobar' });
+            await syncCollectionOnce(collection);
+
+            state = await getServerState();
+            const serverDoc = state.find(d => d.passportId === doc.passportId);
+            console.dir({
+                dname: ensureNotFalsy(serverDoc).firstName,
+                state
+            });
+            assert.strictEqual(
+                ensureNotFalsy(serverDoc).firstName,
+                'foobar'
+            );
+
+            await collection.database.remove();
+        });
+    });
+    describe('live:false pull', () => {
+        it('should pull the documents', async () => {
+            await cleanUpServer();
+            await insertDocuments(12);
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+
+            // initial pull
+            await syncCollectionOnce(collection);
+            let docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 12);
+
+            // ongoing pull
+            await insertDocuments(8);
+            await syncCollectionOnce(collection);
+            docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 20, 'should have pulled the ongoing inserted docs');
+
+            // pull updated doc
+            const firstDoc = ensureNotFalsy(lastOfArray(docs));
+            await mongoCollection.updateOne(
+                { [primaryPath]: firstDoc.primary },
+                {
+                    $set: {
+                        lastName: 'foobar'
+                    }
+                },
+                {
+                    upsert: true
+                }
+            );
+
+            await syncCollectionOnce(collection);
+            const docAfter = await collection.findOne(firstDoc.primary).exec(true);
+            assert.strictEqual(docAfter.lastName, 'foobar');
+
+
+            await collection.database.remove();
+        });
+    });
+    describe('conflict handling', () => {
+        it('INSERT: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+
+            // insert and sync
+            const c1 = await humansCollection.create(0);
+            const conflictDocId = '1-insert-conflict';
+            await c1.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-first'));
+            await syncCollectionOnce(c1);
+
+
+            // insert same doc-id on other side
+            const c2 = await humansCollection.create(0);
+            await c2.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-conflict'));
+            await syncCollectionOnce(c2);
+
+            /**
+             * Must have kept the first-insert state
+             */
+            const serverState = await getServerState();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(serverState[0].firstName, 'insert-first');
+            assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
+            assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
+
+            c1.database.close();
+            c2.database.close();
+        });
+        it('UPDATE: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+            const c1 = await humansCollection.create(0);
+            await c1.insert(schemaObjects.humanData('1-conflict'));
+
+            const c2 = await humansCollection.create(0);
+
+            await syncCollectionOnce(c1);
+            await syncCollectionOnce(c2);
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc1.firstName, doc2.firstName, 'equal names');
+
+            // make update on both sides
+            await doc2.incrementalPatch({ firstName: 'c2' });
+            await syncCollectionOnce(c2);
+
+            // cause conflict
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await syncCollectionOnce(c1);
+
+            /**
+             * Must have kept the master state c2
+             */
+            assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
+            assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
+
+            c1.database.close();
+            c2.database.close();
         });
     });
 
