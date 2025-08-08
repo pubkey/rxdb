@@ -66,7 +66,7 @@ export function replicateNats<RxDocType>(
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
 
-    const collection: RxCollection<RxDocType> = options.collection;
+    const collection: RxCollection<RxDocType, any, any> = options.collection;
     const primaryPath = collection.schema.primaryPath;
     addRxPlugin(RxDBLeaderElectionPlugin);
 

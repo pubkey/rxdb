@@ -115,7 +115,7 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * Like 'my-rest-replication-to-https://example.com/api/sync'
      */
     replicationIdentifier: string;
-    collection: RxCollection<RxDocType, any, any, any>;
+    collection: RxCollection<RxDocType, unknown, unknown, unknown>;
     /**
      * Define a custom property that is used
      * to flag a document as being deleted.

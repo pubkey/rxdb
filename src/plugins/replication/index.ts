@@ -109,7 +109,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * and to identify which documents state came from the remote.
          */
         public readonly replicationIdentifier: string,
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, unknown, unknown, unknown>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,

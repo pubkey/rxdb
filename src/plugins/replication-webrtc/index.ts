@@ -236,7 +236,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
     public error$ = new Subject<RxError | RxTypeError>();
 
     constructor(
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, any, any, any>,
         public readonly options: SyncOptionsWebRTC<RxDocType, PeerType>,
         public readonly connectionHandler: WebRTCConnectionHandler<PeerType>
     ) {

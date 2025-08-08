@@ -243,6 +243,12 @@
       "import": "./dist/esm/plugins/replication-websocket/index.js",
       "default": "./dist/esm/plugins/replication-websocket/index.js"
     },
+    "./plugins/replication-mongodb": {
+      "types": "./dist/types/plugins/replication-mongodb/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-mongodb/index.js",
+      "import": "./dist/esm/plugins/replication-mongodb/index.js",
+      "default": "./dist/esm/plugins/replication-mongodb/index.js"
+    },
     "./plugins/storage-remote": {
       "types": "./dist/types/plugins/storage-remote/index.d.ts",
       "require": "./dist/cjs/plugins/storage-remote/index.js",
@@ -406,6 +412,7 @@
     "aaa": "firebase init firestore",
     "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-couchdb.test.js\" --success first --kill-others",
     "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-nats.test.js\" --success first --kill-others",
+    "test:replication-mongodb": "node ./config/mongodb-connection-tester.js && npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-mongodb.test.js",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
@@ -426,7 +433,7 @@
     "test:memory-leak:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/memory-leak.test.js --inspect --unhandled-rejections=strict --expose-gc --max-old-space-size=256",
     "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.3",
     "couch:stop": "docker rm -f rxdb-couchdb",
-    "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4",
+    "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4 mongod --replSet rs0 --bind_ip_all",
     "mongodb:stop": "docker rm -f rxdb-mongodb",
     "nats:start": "docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js",
     "nats:stop": "docker rm -f rxdb-nats",

@@ -31,7 +31,7 @@ export function swapDefaultDeletedTodeletedField<RxDocType>(
  * Used to fill up fields or modify the deleted field etc.
  */
 export function handlePulledDocuments<RxDocType>(
-    collection: RxCollection<RxDocType>,
+    collection: RxCollection<RxDocType, unknown, unknown, unknown>,
     deletedField: string,
     docs: RxDocType[]
 ): WithDeleted<RxDocType>[] {
@@ -68,7 +68,7 @@ export function handlePulledDocuments<RxDocType>(
  * but will skip the wait time if the online-state changes.
  */
 export function awaitRetry(
-    collection: RxCollection,
+    collection: RxCollection<any, any, any>,
     retryTime: number
 ) {
     if (
