@@ -42,7 +42,6 @@ export type SyncOptionsMongoDB<RxDocType> = Omit<
     'pull' | 'push' | 'deletedField'
 > & {
     config: MongoDbConnectionConfig;
-    deletedField: string;
     pull?: Omit<ReplicationPullOptions<RxDocType, MongoDbCheckpointType>, 'handler' | 'stream$'> & {
     };
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;

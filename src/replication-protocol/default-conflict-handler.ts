@@ -29,15 +29,6 @@ export const defaultConflictHandler: RxConflictHandler<any> = {
             stripAttachmentsDataFromDocument(b)
         );
 
-
-        console.log('is equal result:');
-        console.dir({
-            a, b,
-            ret
-        });
-
-
-
         return ret;
     },
     resolve(i) {

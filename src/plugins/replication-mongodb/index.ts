@@ -1,5 +1,6 @@
 import {
     RXDB_VERSION,
+    clone,
     deepEqual,
     ensureNotFalsy,
     errorToPlainJson,
@@ -49,7 +50,6 @@ export * from './mongodb-helper.ts';
 export * from './mongodb-checkpoint.ts';
 export type * from './mongodb-types.ts';
 
-
 export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, MongoDbCheckpointType> {
     public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
@@ -69,7 +69,7 @@ export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxD
         super(
             replicationIdentifier,
             collection,
-            options.deletedField,
+            '_deleted',
             pull,
             push,
             live,
@@ -83,19 +83,16 @@ export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxD
     }
 }
 
-
 export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocType>) {
     addRxPlugin(RxDBLeaderElectionPlugin);
     const primaryPath = options.collection.schema.primaryPath;
     options.live = typeof options.live === 'undefined' ? true : options.live;
-    options.deletedField = options.deletedField ? options.deletedField : '_deleted';
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, MongoDbCheckpointType>> = new Subject();
 
     const mongoClient = new MongoClient(options.config.connection, MONGO_OPTIONS_DRIVER_INFO);
     const mongoDatabase = mongoClient.db(options.config.databaseName);
     const mongoCollection = mongoDatabase.collection(options.config.collectionName);
-
 
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, MongoDbCheckpointType> | undefined;
     if (options.pull) {
@@ -106,6 +103,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
             ) {
                 console.log('PULL 0:');
                 console.dir(lastPulledCheckpoint);
+                console.log('PULL 0.5:');
                 const result = await iterateCheckpoint(primaryPath, mongoCollection, batchSize, lastPulledCheckpoint);
                 console.log('PULL 1 ' + result.docs.length);
                 console.dir(result);
@@ -141,8 +139,17 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 });
                 let promises: Promise<any>[] = [];
                 console.log('push rows: ' + rows.length);
+                console.dir({
+                    rows,
+                    currentDocsArray
+                });
                 rows.forEach(row => {
-                    const doc = row.newDocumentState;
+
+                    /**
+                     * MongoDB operations like mongoCollection.updateOne() will mutate the input!
+                     * So we have to deep clone first here.
+                     */
+                    const doc = clone(row.newDocumentState);
                     const docId = (doc as any)[primaryPath];
                     const current = currentDocsMap.get(docId);
                     const remoteDocState = current ? mongodbDocToRxDB(primaryPath, current) : undefined;
@@ -250,6 +257,10 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 await Promise.all(promises);
                 await session.commitTransaction();
                 console.log('push DONE');
+                console.dir({
+                    conflicts,
+                    rows
+                });
                 return conflicts;
             },
             batchSize: options.push.batchSize,
