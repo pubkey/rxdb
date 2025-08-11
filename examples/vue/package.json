@@ -22,11 +22,11 @@
     "random-int": "3.0.0",
     "register-service-worker": "1.7.2",
     "rxjs": "7.8.2",
-    "vue": "3.5.17",
+    "vue": "3.5.18",
     "vue-router": "4.5.1"
   },
   "devDependencies": {
-    "@types/node": "22.16.5",
+    "@types/node": "22.17.0",
     "@types/pouchdb-adapter-http": "6.1.6",
     "@types/pouchdb-adapter-idb": "6.1.7",
     "@typescript-eslint/eslint-plugin": "7.18.0",
@@ -35,7 +35,7 @@
     "@vue/cli-plugin-pwa": "5.0.8",
     "@vue/cli-plugin-typescript": "5.0.8",
     "@vue/cli-service": "5.0.8",
-    "@vue/compiler-sfc": "3.5.17",
+    "@vue/compiler-sfc": "3.5.18",
     "@vue/eslint-config-typescript": "13.0.0",
     "async-test-util": "2.5.0",
     "concurrently": "9.2.0",

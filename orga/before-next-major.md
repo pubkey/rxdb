@@ -2,6 +2,10 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+
+## Add `context` string to all write errors
+We already pass the context string to `storageInstance.bulkWrite()` and when we include it into bulk-write errors, debugging becomes way easier.
+
 ## Add databaseNamePrefix to premium sqlite storage
 
 ## Merge memory-mapped fix BREAKING: deleted docs must be purged
