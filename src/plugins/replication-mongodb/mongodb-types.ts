@@ -2,7 +2,8 @@ import { WithId } from 'mongodb';
 import type {
     ReplicationOptions,
     ReplicationPullOptions,
-    ReplicationPushOptions
+    ReplicationPushOptions,
+    WithDeleted
 } from '../../types';
 import type {
     MongoDBConnectionString
@@ -27,7 +28,7 @@ export type MongoDbCheckpointType = {
 }
 
 export type MongoDBCheckpointIterationState<MongoDocType> = {
-    docs: WithId<MongoDocType>[];
+    docs: WithDeleted<MongoDocType>[];
     checkpoint: MongoDbCheckpointType;
 };
 

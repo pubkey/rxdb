@@ -44,7 +44,7 @@ import {
 } from 'mongodb';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../storage-mongodb/mongodb-helper.ts';
 import { iterateCheckpoint } from './mongodb-checkpoint.ts';
-import { mongodbDocToRxDB, startChangeStream } from './mongodb-helper.ts';
+import { mongodbDocToRxDB, rxdbDocToMongo, startChangeStream } from './mongodb-helper.ts';
 
 export * from './mongodb-helper.ts';
 export * from './mongodb-checkpoint.ts';
@@ -104,11 +104,11 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 console.log('PULL 0:');
                 console.dir(lastPulledCheckpoint);
                 console.log('PULL 0.5:');
-                const result = await iterateCheckpoint(primaryPath, mongoCollection, batchSize, lastPulledCheckpoint);
+                const result = await iterateCheckpoint<RxDocType>(primaryPath, mongoCollection, batchSize, lastPulledCheckpoint);
                 console.log('PULL 1 ' + result.docs.length);
                 console.dir(result);
                 return {
-                    documents: result.docs.map(d => mongodbDocToRxDB(primaryPath, d)),
+                    documents: result.docs,
                     checkpoint: result.checkpoint
                 };
             },
@@ -144,64 +144,96 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                     currentDocsArray
                 });
                 rows.forEach(row => {
-
-                    /**
-                     * MongoDB operations like mongoCollection.updateOne() will mutate the input!
-                     * So we have to deep clone first here.
-                     */
-                    const doc = clone(row.newDocumentState);
-                    const docId = (doc as any)[primaryPath];
+                    const toMongoDoc = rxdbDocToMongo(row.newDocumentState as any);
+                    const docId = (row.newDocumentState as any)[primaryPath];
                     const current = currentDocsMap.get(docId);
                     const remoteDocState = current ? mongodbDocToRxDB(primaryPath, current) : undefined;
 
-                    if (
-                        remoteDocState &&
-                        (
-                            !row.assumedMasterState ||
-                            options.collection.conflictHandler.isEqual(remoteDocState, row.assumedMasterState, 'mongodb-pull-equal-check') === false
-                        )
-                    ) {
-                        // conflict
-                        console.log('has conflict!:');
-                        console.dir({
-                            assumed: row.assumedMasterState,
-                            current,
-                            currentmongotorxdb: remoteDocState
-                        });
-                        conflicts.push(remoteDocState);
-                    } else {
-                        console.log('update one:');
-                        console.dir({
-                            docId,
-                            doc,
-                            primaryPath,
-                            current: current ? current : 'none'
-                        });
-                        if (current) {
-                            promises.push(
-                                mongoCollection.updateOne(
-                                    { [primaryPath]: docId },
-                                    { $set: doc },
-                                    {
-                                        upsert: true,
-                                        session
-                                    }
-                                ).catch(er => {
-                                    console.log('update err:');
-                                    console.dir(er);
-                                }).then((xxx) => {
-                                    console.log('update one done');
-                                    console.dir({ xxx });
-                                })
-                            );
+                    /**
+                     * We do not want to require a deleted-flag or any RxDB specific stuff on the RxDB side.
+                     * So for deletes we have to hack around this.
+                     */
+                    let assumedMaster = row.assumedMasterState;
+                    if (row.newDocumentState._deleted) {
+                        if (!remoteDocState) {
+                            if (!assumedMaster) {
+                                // no remote and no assumed master -> insertion of deleted -> do nothing
+                            } else if (assumedMaster._deleted) {
+                                // no remote and assumed master also deleted -> insertion of deleted -> do nothing
+                            }
                         } else {
-                            promises.push(
-                                mongoCollection.insertOne(doc)
-                            );
+                            if (!assumedMaster) {
+                                // remote exists but not assumed -> conflict
+                                conflicts.push(remoteDocState);
+                            } else if (assumedMaster._deleted) {
+                                // remote exists but assumed as deleted -> conflict
+                                conflicts.push(remoteDocState);
+                            } else {
+                                // remote exists and assumed to exist -> check for normal conflict or do the deletion-write
+                                if (options.collection.conflictHandler.isEqual(remoteDocState, assumedMaster, 'mongodb-pull-equal-check-deleted') === false) {
+                                    // conflict
+                                    conflicts.push(remoteDocState);
+                                } else {
+                                    console.log('DELETE ON REMOTE!');
+                                    promises.push(mongoCollection.deleteOne({
+                                        [primaryPath]: docId
+                                    }));
+                                }
+
+                            }
+                        }
+                    } else {
+                        /**
+                         * Non-deleted are handled normally like in every other
+                         * of the replication plugins.
+                         */
+                        if (
+                            remoteDocState &&
+                            (
+                                !row.assumedMasterState ||
+                                options.collection.conflictHandler.isEqual(remoteDocState, row.assumedMasterState, 'mongodb-pull-equal-check') === false
+                            )
+                        ) {
+                            // conflict
+                            console.log('has conflict!:');
+                            console.dir({
+                                assumed: row.assumedMasterState,
+                                current,
+                                currentmongotorxdb: remoteDocState
+                            });
+                            conflicts.push(remoteDocState);
+                        } else {
+                            console.log('update one:');
+                            console.dir({
+                                docId,
+                                toMongoDoc,
+                                primaryPath,
+                                current: current ? current : 'none'
+                            });
+                            if (current) {
+                                promises.push(
+                                    mongoCollection.updateOne(
+                                        { [primaryPath]: docId },
+                                        { $set: toMongoDoc },
+                                        {
+                                            upsert: true,
+                                            session
+                                        }
+                                    ).catch(er => {
+                                        console.log('update err:');
+                                        console.dir(er);
+                                    }).then((xxx) => {
+                                        console.log('update one done');
+                                        console.dir({ xxx });
+                                    })
+                                );
+                            } else {
+                                promises.push(
+                                    mongoCollection.insertOne(toMongoDoc)
+                                );
+                            }
                         }
                     }
-
-
 
                     // if (!current && !row.assumedMasterState) {
                     // } else if (

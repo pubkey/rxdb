@@ -13,6 +13,7 @@ import {
     ChangeStream,
     WithId
 } from 'mongodb';
+import type { RxDocumentData, WithDeleted } from '../../types/rx-storage';
 
 export async function startChangeStream(
     mongoCollection: MongoCollection<any>,
@@ -47,16 +48,34 @@ export async function startChangeStream(
 }
 
 
-export function mongodbDocToRxDB(primaryPath: string, doc: WithId<any>) {
+export function mongodbDocToRxDB<DocType>(primaryPath: string, doc: WithId<DocType>): WithDeleted<DocType> {
     if (primaryPath === '_id' && typeof doc._id !== 'string') {
         throw newRxError('MG1', {
             document: doc
         });
-    } else if (primaryPath === '_id') {
-        return doc;
-    } else {
-        doc = flatClone(doc);
-        delete doc._id;
-        return doc;
     }
+
+    const useDoc: any = flatClone(doc);
+    useDoc._deleted = false;
+
+    if (primaryPath === '_id') {
+        return useDoc;
+    } else {
+        delete useDoc._id;
+        return useDoc;
+    }
+}
+
+
+/**
+ * MongoDB operations like mongoCollection.updateOne() will mutate the input!
+ * So we have to flat-clone first here.
+ * Also we do not want to store RxDB-specific metadata in the mongodb database.
+ */
+export function rxdbDocToMongo<DocType>(doc: RxDocumentData<DocType>): DocType {
+    const ret: any = flatClone(doc);
+    delete ret._deleted;
+    delete ret._meta;
+    delete ret._attachments;
+    return ret;
 }

@@ -1,4 +1,6 @@
-import { clone, lastOfArray } from '../utils/index.ts';
+import { WithDeleted } from '../../types/rx-storage';
+import { clone, ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import { mongodbDocToRxDB } from './mongodb-helper.ts';
 import type {
     MongoDBChangeStreamResumeToken,
     MongoDBCheckpointIterationState,
@@ -25,6 +27,7 @@ export async function getCurrentResumeToken(
 }
 
 export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
+    primaryPath: string,
     mongoCollection: MongoCollection,
     /**
      * MongoDB has no way to start the stream from 'timestamp zero',
@@ -32,9 +35,16 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
      */
     resumeToken: MongoDBChangeStreamResumeToken,
     limit: number
-): Promise<{ docs: WithId<MongoDocType>[], nextToken: MongoDBChangeStreamResumeToken }> {
-    const resultByDocId = new Map<string, Promise<WithId<MongoDocType>>>();
-    const changeStream = mongoCollection.watch([], { resumeAfter: resumeToken });
+): Promise<{ docs: WithDeleted<MongoDocType>[], nextToken: MongoDBChangeStreamResumeToken }> {
+    const resultByDocId = new Map<string, Promise<WithDeleted<MongoDocType>>>();
+    const changeStream = mongoCollection.watch(
+        [],
+        {
+            resumeAfter: resumeToken,
+            fullDocument: 'required',
+            fullDocumentBeforeChange: 'required',
+        }
+    );
 
 
     /**
@@ -52,10 +62,37 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
         while (resultByDocId.size < limit) {
             const change = await changeStream.tryNext();
             if (change) {
+                console.log('GOT CHANGE:');
+                console.dir({ change })
                 nextToken = change._id as any;
                 const docId = (change as any).documentKey._id;
-                if (!resultByDocId.has(docId)) {
-                    resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }) as any);
+
+                if (change.operationType === 'delete') {
+                    const beforeDocMongo = ensureNotFalsy(
+                        change.fullDocumentBeforeChange,
+                        'change must have pre-deletion state'
+                    );
+                    const beforeDoc = mongodbDocToRxDB(primaryPath, beforeDocMongo as any);
+                    beforeDoc._deleted = true;
+                    resultByDocId.set(docId, Promise.resolve(beforeDoc as any));
+                } else if (
+                    change.operationType === 'insert' ||
+                    change.operationType === 'update' ||
+                    change.operationType === 'replace'
+                ) {
+                    resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }).then(doc => {
+                        if (doc) {
+                            return mongodbDocToRxDB(primaryPath, doc);
+                        } else {
+                            const docFromChange = ensureNotFalsy(
+                                change.fullDocument as any,
+                                'change must have change.fullDocument'
+                            );
+                            const ret = mongodbDocToRxDB(primaryPath, docFromChange);
+                            ret._deleted = true;
+                            return ret;
+                        }
+                    }));
                 }
             } else {
                 break;
@@ -85,7 +122,7 @@ export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
     mongoCollection: MongoCollection,
     limit: number,
     checkpointId?: string
-): Promise<WithId<MongoDocType>[]> {
+): Promise<WithDeleted<MongoDocType>[]> {
     const query = checkpointId
         ? { [primaryPath]: { $gt: checkpointId } }
         : {};
@@ -96,7 +133,7 @@ export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
         .limit(limit)
         .toArray();
 
-    return docs as any;
+    return docs.map(d => mongodbDocToRxDB(primaryPath, d as any));
 }
 
 
@@ -116,7 +153,7 @@ export async function iterateCheckpoint<MongoDocType>(
         checkpoint = clone(checkpoint);
     }
 
-    let docs: WithId<MongoDocType>[] = [];
+    let docs: WithDeleted<MongoDocType>[] = [];
     if (checkpoint.iterate === 'docs-by-id') {
         console.log('iterate docsbyid');
         docs = await getDocsSinceDocumentCheckpoint<MongoDocType>(primaryPath, mongoCollection, limit, checkpoint.docId);
@@ -127,7 +164,7 @@ export async function iterateCheckpoint<MongoDocType>(
     } else {
         console.log('iterate changestream:');
         console.dir(checkpoint.changestreamResumeToken);
-        const result = await getDocsSinceChangestreamCheckpoint<MongoDocType>(mongoCollection, checkpoint.changestreamResumeToken, limit);
+        const result = await getDocsSinceChangestreamCheckpoint<MongoDocType>(primaryPath, mongoCollection, checkpoint.changestreamResumeToken, limit);
         console.log('iterate changestream result:');
         console.dir(result);
         docs = result.docs;
@@ -140,8 +177,9 @@ export async function iterateCheckpoint<MongoDocType>(
      */
     if (checkpoint.iterate === 'docs-by-id' && docs.length < limit) {
         const ids = new Set<string>();
-        docs.forEach(d => ids.add(d._id.toString()));
+        docs.forEach(d => ids.add((d as any)[primaryPath]));
         const fillUp = await getDocsSinceChangestreamCheckpoint<MongoDocType>(
+            primaryPath,
             mongoCollection,
             checkpoint.changestreamResumeToken,
             limit
@@ -151,9 +189,9 @@ export async function iterateCheckpoint<MongoDocType>(
         checkpoint.changestreamResumeToken = fillUp.nextToken;
 
         fillUp.docs.forEach(doc => {
-            const id = doc._id.toString();
+            const id = (doc as any)[primaryPath];
             if (ids.has(id)) {
-                docs = docs.filter(d => d._id.toString() !== id);
+                docs = docs.filter(d => (d as any)[primaryPath] !== id);
             }
             docs.push(doc);
         });
