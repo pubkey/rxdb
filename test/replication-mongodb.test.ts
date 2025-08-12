@@ -524,6 +524,7 @@ describe('replication-mongodb.test.ts', function () {
     describe('other', () => {
 
         it('two collections', async () => {
+            console.log('--- 1');
             await cleanUpServer();
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
             await collectionA.insert(schemaObjects.humanData('1aaa'));
@@ -531,6 +532,7 @@ describe('replication-mongodb.test.ts', function () {
             await collectionB.insert(schemaObjects.humanData('1bbb'));
 
             const replicationStateA = syncCollection(collectionA);
+            console.log('--- 2');
 
             ensureReplicationHasNoErrors(replicationStateA);
             await replicationStateA.awaitInitialReplication();
@@ -541,6 +543,7 @@ describe('replication-mongodb.test.ts', function () {
 
             await wait(300);
             await replicationStateA.awaitInSync();
+            console.log('--- 3');
 
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
@@ -558,6 +561,7 @@ describe('replication-mongodb.test.ts', function () {
             await replicationStateA.awaitInSync();
             await wait(300);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
+            console.log('--- 4');
 
             // insert many
             await collectionA.bulkInsert(
@@ -570,6 +574,7 @@ describe('replication-mongodb.test.ts', function () {
             await replicationStateB.awaitInSync();
             await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
+            console.log('--- 5');
 
             // insert at both collections at the same time
             await Promise.all([
@@ -580,11 +585,14 @@ describe('replication-mongodb.test.ts', function () {
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
+            console.log('--- 6');
             await wait(300);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
+            console.log('--- 7');
 
-            collectionA.database.close();
-            collectionB.database.close();
+            await collectionA.database.close();
+            await collectionB.database.close();
+            console.log('--- 8');
         });
     });
 });
