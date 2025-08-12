@@ -851,10 +851,7 @@ describe('migration-schema.test.ts', function () {
             });
 
             // replicate the collection
-            const replicationState = await replicateRxCollection<
-                RxDocument,
-                { index: number; }
-            >({
+            const replicationState = await replicateRxCollection<any, any>({
                 replicationIdentifier: 'mycollection',
                 collection: collections.mycollection,
                 pull: {

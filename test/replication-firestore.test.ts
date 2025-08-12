@@ -22,11 +22,11 @@ import {
     HumanDocumentType,
     ensureCollectionsHaveEqualState,
     HumanWithTimestampDocumentType,
-    humanSchemaLiteral
+    humanSchemaLiteral,
+    HumanWithOwnershipDocumentType
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
-
 
 import {
     CollectionReference,
@@ -86,7 +86,7 @@ describe('replication-firestore.test.ts', function () {
         databaseURL: 'http://localhost:8080?ns=' + projectId
     });
     const database = getFirestore(app);
-    connectFirestoreEmulator(database, 'localhost', 8080, { mockUserToken: { user_id: ownerUid }});
+    connectFirestoreEmulator(database, 'localhost', 8080, { mockUserToken: { user_id: ownerUid } });
 
     function getFirestoreState(rootCollection = 'public'): FirestoreOptions<TestDocType> {
         const useCollection: CollectionReference<TestDocType> = getFirestoreCollection(database, rootCollection, randomToken(10), randomToken(10)) as any;
@@ -404,10 +404,10 @@ describe('replication-firestore.test.ts', function () {
                 storage: config.storage.getStorage()
             }));
             const firestoreState = getFirestoreState();
-            const replicationState = replicateFirestore({
+            const replicationState = replicateFirestore<TestDocType>({
                 replicationIdentifier: firestoreState.projectId,
                 firestore: firestoreState,
-                collection,
+                collection: collection as any,
                 pull: {},
                 push: {},
                 live: true,
@@ -466,13 +466,13 @@ describe('replication-firestore.test.ts', function () {
         it('#6707 firestore replication this owner rules', async () => {
             const collection1 = await humansCollection.createHumanWithOwnership(2, undefined, false, ownerUid);
             const firestoreState = getFirestoreState('ownership');
-            const replicationState = replicateFirestore({
+            const replicationState = replicateFirestore<HumanWithOwnershipDocumentType>({
                 replicationIdentifier: firestoreState.projectId,
-                firestore: firestoreState,
+                firestore: firestoreState as any,
                 collection: collection1,
                 pull: {
                     filter: [
-                      where('owner', '==', ownerUid),
+                        where('owner', '==', ownerUid),
                     ],
                 },
                 push: {},
