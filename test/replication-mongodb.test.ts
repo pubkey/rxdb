@@ -488,6 +488,35 @@ describe('replication-mongodb.test.ts', function () {
             c1.database.close();
             c2.database.close();
         });
+        it('conflict on delete', async () => {
+            await cleanUpServer();
+            const c1 = await humansCollection.create(0);
+            await c1.insert(schemaObjects.humanData('1-conflict'));
+
+            const c2 = await humansCollection.create(0);
+            await syncCollectionOnce(c1);
+            await syncCollectionOnce(c2);
+
+            const doc1 = await c1.findOne().exec(true);
+            let doc2 = await c2.findOne().exec(true);
+
+            await doc1.remove();
+            await syncCollectionOnce(c1);
+            const state = await getServerState();
+            assert.strictEqual(state.length, 0);
+
+            await doc2.patch({
+                firstName: 'foobar'
+            });
+
+            await syncCollectionOnce(c2);
+            doc2 = doc2.getLatest();
+            assert.strictEqual(doc2.firstName, doc1.firstName, 'should have kept the firstName because of conflict');
+            assert.strictEqual(doc2.deleted, true);
+
+            c1.database.close();
+            c2.database.close();
+        });
     });
 
     describe('live replication', () => {

@@ -4,6 +4,7 @@ import {
     deepEqual,
     ensureNotFalsy,
     errorToPlainJson,
+    flatClone,
     toArray
 } from '../../plugins/utils/index.ts';
 
@@ -153,15 +154,18 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                      * We do not want to require a deleted-flag or any RxDB specific stuff on the RxDB side.
                      * So for deletes we have to hack around this.
                      */
+
+
+                    console.log('CONFLICT CHECK::');
+                    console.dir({
+                        row,
+                        remoteDocState,
+                        current
+                    });
+
                     let assumedMaster = row.assumedMasterState;
                     if (row.newDocumentState._deleted) {
-                        if (!remoteDocState) {
-                            if (!assumedMaster) {
-                                // no remote and no assumed master -> insertion of deleted -> do nothing
-                            } else if (assumedMaster._deleted) {
-                                // no remote and assumed master also deleted -> insertion of deleted -> do nothing
-                            }
-                        } else {
+                        if (remoteDocState) {
                             if (!assumedMaster) {
                                 // remote exists but not assumed -> conflict
                                 conflicts.push(remoteDocState);
@@ -175,11 +179,24 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                     conflicts.push(remoteDocState);
                                 } else {
                                     console.log('DELETE ON REMOTE!');
-                                    promises.push(mongoCollection.deleteOne({
-                                        [primaryPath]: docId
-                                    }));
+                                    promises.push(
+                                        mongoCollection.deleteOne(
+                                            {
+                                                [primaryPath]: docId
+                                            },
+                                            {
+                                                session
+                                            }
+                                        )
+                                    );
                                 }
 
+                            }
+                        } else {
+                            if (!assumedMaster) {
+                                // no remote and no assumed master -> insertion of deleted -> do nothing
+                            } else if (assumedMaster._deleted) {
+                                // no remote and assumed master also deleted -> insertion of deleted -> do nothing
                             }
                         }
                     } else {
@@ -211,26 +228,54 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                 current: current ? current : 'none'
                             });
                             if (current) {
-                                promises.push(
-                                    mongoCollection.updateOne(
-                                        { [primaryPath]: docId },
-                                        { $set: toMongoDoc },
-                                        {
-                                            upsert: true,
-                                            session
-                                        }
-                                    ).catch(er => {
-                                        console.log('update err:');
-                                        console.dir(er);
-                                    }).then((xxx) => {
-                                        console.log('update one done');
-                                        console.dir({ xxx });
-                                    })
-                                );
+                                if (row.newDocumentState._deleted) {
+                                    promises.push(
+                                        mongoCollection.deleteOne(
+                                            {
+                                                [primaryPath]: docId
+                                            },
+                                            {
+                                                session
+                                            }
+                                        )
+                                    );
+                                } else {
+                                    promises.push(
+                                        mongoCollection.updateOne(
+                                            { [primaryPath]: docId },
+                                            { $set: toMongoDoc },
+                                            {
+                                                upsert: true,
+                                                session
+                                            }
+                                        ).catch(er => {
+                                            console.log('update err:');
+                                            console.dir(er);
+                                        }).then((xxx) => {
+                                            console.log('update one done');
+                                            console.dir({ xxx });
+                                        })
+                                    );
+                                }
                             } else {
-                                promises.push(
-                                    mongoCollection.insertOne(toMongoDoc)
-                                );
+                                /**
+                                 * No current but has assumed.
+                                 * This means the server state was deleted
+                                 * and we have a conflict.
+                                 */
+                                if (row.assumedMasterState) {
+                                    const conflicting = flatClone(row.assumedMasterState);
+                                    conflicting._deleted = true;
+                                    conflicts.push(conflicting);
+                                } else {
+                                    if (row.newDocumentState._deleted) {
+                                        // inserting deleted -> do nothing
+                                    } else {
+                                        promises.push(
+                                            mongoCollection.insertOne(toMongoDoc, { session })
+                                        );
+                                    }
+                                }
                             }
                         }
                     }
