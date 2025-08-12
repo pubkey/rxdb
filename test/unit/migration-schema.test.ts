@@ -25,8 +25,7 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler,
-    RxDocument
+    rxStorageInstanceToReplicationHandler
 } from '../../plugins/core/index.mjs';
 
 import {
