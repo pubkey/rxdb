@@ -7,9 +7,7 @@ import type {
     MongoDbCheckpointType,
 } from './mongodb-types';
 import {
-    Collection as MongoCollection,
-    ObjectId,
-    WithId
+    Collection as MongoCollection
 } from 'mongodb';
 
 
@@ -62,8 +60,6 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
         while (resultByDocId.size < limit) {
             const change = await changeStream.tryNext();
             if (change) {
-                console.log('GOT CHANGE:');
-                console.dir({ change })
                 nextToken = change._id as any;
                 const docId = (change as any).documentKey._id;
 
@@ -101,17 +97,6 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
 
         changeStream.close();
 
-        // TODO remove this, used for debugging
-        if (resultByDocId.size > 0 && nextToken._data === resumeToken._data) {
-            console.log('io equal');
-            console.dir({
-                nextToken,
-                resumeToken,
-                result: Array.from(resultByDocId.keys())
-            });
-            rej(new Error('input output token equal'));
-            return;
-        }
         const docs = await Promise.all(Array.from(resultByDocId.values()));
         res({ docs, nextToken: nextToken as any });
     });
@@ -155,18 +140,13 @@ export async function iterateCheckpoint<MongoDocType>(
 
     let docs: WithDeleted<MongoDocType>[] = [];
     if (checkpoint.iterate === 'docs-by-id') {
-        console.log('iterate docsbyid');
         docs = await getDocsSinceDocumentCheckpoint<MongoDocType>(primaryPath, mongoCollection, limit, checkpoint.docId);
         const last = lastOfArray(docs);
         if (last) {
             checkpoint.docId = (last as any)[primaryPath];
         }
     } else {
-        console.log('iterate changestream:');
-        console.dir(checkpoint.changestreamResumeToken);
         const result = await getDocsSinceChangestreamCheckpoint<MongoDocType>(primaryPath, mongoCollection, checkpoint.changestreamResumeToken, limit);
-        console.log('iterate changestream result:');
-        console.dir(result);
         docs = result.docs;
         checkpoint.changestreamResumeToken = result.nextToken;
     }

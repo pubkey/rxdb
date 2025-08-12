@@ -77,7 +77,7 @@ describe('replication-mongodb.test.ts', function () {
         collection: RxCollection<RxDocType>,
     ): RxMongoDBReplicationState<RxDocType> {
         const replicationState = replicateMongoDB<RxDocType>({
-            config: {
+            mongodb: {
                 collectionName: mongoCollectionName,
                 connection: mongoConnectionString,
                 databaseName: mongoDatabaseName
@@ -100,9 +100,8 @@ describe('replication-mongodb.test.ts', function () {
         push: boolean = true,
         pull: boolean = true
     ) {
-        console.log('.... 0');
         const replicationState = replicateMongoDB<RxDocType>({
-            config: {
+            mongodb: {
                 collectionName: mongoCollectionName,
                 connection: mongoConnectionString,
                 databaseName: mongoDatabaseName
@@ -117,20 +116,14 @@ describe('replication-mongodb.test.ts', function () {
                 batchSize
             } : undefined
         });
-        console.log('.... 1');
         ensureReplicationHasNoErrors(replicationState);
-        console.log('.... 2');
         await replicationState.awaitInitialReplication();
-        console.log('.... 3');
         await replicationState.awaitInSync();
-        console.log('.... 4');
         await replicationState.cancel();
-        console.log('.... 5');
     }
 
     async function cleanUpServer() {
-        const result = await mongoCollection.deleteMany({});
-        console.log(`Deleted ${result.deletedCount} documents`);
+        await mongoCollection.deleteMany({});
     }
     function getRandomMongoDoc() {
         const ret = {
@@ -138,7 +131,6 @@ describe('replication-mongodb.test.ts', function () {
             firstName: randomString(10),
             lastName: randomString(10)
         };
-        console.log('new doc passportId: ' + ret.passportId);
         return ret;
     }
     function insertDocument(doc = getRandomMongoDoc()) {
@@ -160,15 +152,11 @@ describe('replication-mongodb.test.ts', function () {
     describe('basics', function () {
         this.timeout(100000);
         it('init client and wait until database and collection exists', async () => {
-
-
             const mongoClient = new MongoClient(mongoConnectionString, MONGO_OPTIONS_DRIVER_INFO);
             const mongoDatabase = mongoClient.db(mongoDatabaseName);
             mongoCollection = await mongoDatabase.createCollection(mongoCollectionName, {
                 changeStreamPreAndPostImages: { enabled: true }
             });
-
-            console.log('mongodb collection created');
         });
         it('clean up database', async () => {
             await cleanUpServer();
@@ -193,13 +181,10 @@ describe('replication-mongodb.test.ts', function () {
             await insertDocument();
             const events = [];
             changestream.on('change', (ev) => {
-                console.log('got change!!');
-                console.dir(ev);
                 events.push(ev);
             });
             await waitUntil(async () => {
                 await insertDocument();
-                console.log('events amount: ' + events.length);
                 return events.length > 0;
             });
             await changestream.close();
@@ -213,25 +198,15 @@ describe('replication-mongodb.test.ts', function () {
         });
         it('.getDocsSinceChangestreamCheckpoint() fetch some docs', async () => {
             await cleanUpServer();
-
-
-            console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;');
             const token = await getCurrentResumeToken(mongoCollection);
-            console.log('token 1 ' + token._data);
             await insertDocuments(3);
 
             const result = await getDocsSinceChangestreamCheckpoint<any>(primaryPath, mongoCollection, token, 10);
-            console.log('token 2 ' + result.nextToken._data);
 
             assert.strictEqual(result.docs.length, 3);
             assert.strictEqual(result.docs[0]._deleted, false);
 
-
             const shouldBeEmpty = await getDocsSinceChangestreamCheckpoint<any>(primaryPath, mongoCollection, result.nextToken, 10);
-            console.dir({ shouldBeEmpty });
-            console.log('token 3 ' + shouldBeEmpty.nextToken._data);
-            console.log('............');
-            console.dir(shouldBeEmpty);
             assert.deepStrictEqual(shouldBeEmpty.docs, []);
             assert.strictEqual(shouldBeEmpty.nextToken._data, result.nextToken._data, 'should have the same token because no docs');
         });
@@ -312,12 +287,8 @@ describe('replication-mongodb.test.ts', function () {
 
 
             // initial push
-            console.log('::::::::::.0');
             await syncCollectionOnce(collection, true, false);
-            console.log('::::::::::.1');
             let state = await getServerState();
-            console.log('::::::::::.2');
-            console.dir(state);
             assert.strictEqual(state.length, 10, 'must have pushed all docs to the server');
 
             /**
@@ -353,10 +324,6 @@ describe('replication-mongodb.test.ts', function () {
 
             state = await getServerState();
             const serverDoc = state.find(d => d.passportId === doc.passportId);
-            console.dir({
-                dname: ensureNotFalsy(serverDoc).firstName,
-                state
-            });
             assert.strictEqual(
                 ensureNotFalsy(serverDoc).firstName,
                 'foobar'

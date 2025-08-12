@@ -7,13 +7,6 @@ import type { RxConflictHandler, RxDocumentData } from '../types';
 
 export const defaultConflictHandler: RxConflictHandler<any> = {
     isEqual(a, b, _ctx) {
-        if (a._id || b._id) {
-            console.log('_id errrrror:');
-            console.dir({ a, b, _ctx });
-            throw new Error('_id should not be there');
-        }
-
-
         a = addAttachmentsIfNotExists(a);
         b = addAttachmentsIfNotExists(b);
 

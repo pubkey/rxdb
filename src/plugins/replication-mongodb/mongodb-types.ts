@@ -1,4 +1,4 @@
-import { WithId } from 'mongodb';
+import { TransactionOptions, WithId } from 'mongodb';
 import type {
     ReplicationOptions,
     ReplicationPullOptions,
@@ -36,13 +36,14 @@ export type MongoDbConnectionConfig = {
     connection: MongoDBConnectionString;
     databaseName: string;
     collectionName: string;
+    pushTransactionOptions?: TransactionOptions;
 };
 
 export type SyncOptionsMongoDB<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
     'pull' | 'push' | 'deletedField'
 > & {
-    config: MongoDbConnectionConfig;
+    mongodb: MongoDbConnectionConfig;
     pull?: Omit<ReplicationPullOptions<RxDocType, MongoDbCheckpointType>, 'handler' | 'stream$'> & {
     };
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;

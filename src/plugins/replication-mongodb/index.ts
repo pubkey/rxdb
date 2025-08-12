@@ -1,11 +1,6 @@
 import {
-    RXDB_VERSION,
-    clone,
-    deepEqual,
     ensureNotFalsy,
-    errorToPlainJson,
-    flatClone,
-    toArray
+    flatClone
 } from '../../plugins/utils/index.ts';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -23,14 +18,11 @@ import {
 } from '../replication/index.ts';
 import {
     addRxPlugin,
-    newRxError,
     WithDeleted
 } from '../../index.ts';
 
 import { Subject } from 'rxjs';
-import { awaitRetry } from '../replication/replication-helper.ts';
 import type {
-    MongoDBChangeStreamResumeToken,
     MongoDbCheckpointType,
     SyncOptionsMongoDB
 } from './mongodb-types.ts';
@@ -39,9 +31,7 @@ import {
     Db as MongoDatabase,
     Collection as MongoCollection,
     MongoClient,
-    ObjectId,
-    ClientSession,
-    ChangeStreamDocument
+    ClientSession
 } from 'mongodb';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../storage-mongodb/mongodb-helper.ts';
 import { iterateCheckpoint } from './mongodb-checkpoint.ts';
@@ -52,11 +42,11 @@ export * from './mongodb-checkpoint.ts';
 export type * from './mongodb-types.ts';
 
 export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, MongoDbCheckpointType> {
-    public readonly mongoClient: MongoClient;
-    public readonly mongoDatabase: MongoDatabase;
-    public readonly mongoCollection: MongoCollection<RxDocumentData<RxDocType> | any>;
 
     constructor(
+        public readonly mongoClient: MongoClient,
+        public readonly mongoDatabase: MongoDatabase,
+        public readonly mongoCollection: MongoCollection<RxDocumentData<RxDocType> | any>,
         public readonly options: SyncOptionsMongoDB<RxDocType>,
         public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType, any, any>,
@@ -77,10 +67,6 @@ export class RxMongoDBReplicationState<RxDocType> extends RxReplicationState<RxD
             retryTime,
             autoStart
         );
-
-        this.mongoClient = new MongoClient(options.config.connection, MONGO_OPTIONS_DRIVER_INFO);
-        this.mongoDatabase = this.mongoClient.db(options.config.databaseName);
-        this.mongoCollection = this.mongoDatabase.collection(options.config.collectionName);
     }
 }
 
@@ -91,9 +77,9 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, MongoDbCheckpointType>> = new Subject();
 
-    const mongoClient = new MongoClient(options.config.connection, MONGO_OPTIONS_DRIVER_INFO);
-    const mongoDatabase = mongoClient.db(options.config.databaseName);
-    const mongoCollection = mongoDatabase.collection(options.config.collectionName);
+    const mongoClient = new MongoClient(options.mongodb.connection, MONGO_OPTIONS_DRIVER_INFO);
+    const mongoDatabase = mongoClient.db(options.mongodb.databaseName);
+    const mongoCollection = mongoDatabase.collection(options.mongodb.collectionName);
 
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, MongoDbCheckpointType> | undefined;
     if (options.pull) {
@@ -102,12 +88,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                 lastPulledCheckpoint: MongoDbCheckpointType | undefined,
                 batchSize: number
             ) {
-                console.log('PULL 0:');
-                console.dir(lastPulledCheckpoint);
-                console.log('PULL 0.5:');
                 const result = await iterateCheckpoint<RxDocType>(primaryPath, mongoCollection, batchSize, lastPulledCheckpoint);
-                console.log('PULL 1 ' + result.docs.length);
-                console.dir(result);
                 return {
                     documents: result.docs,
                     checkpoint: result.checkpoint
@@ -125,10 +106,9 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                console.log('push START');
                 const conflicts: WithDeleted<RxDocType>[] = [];
                 const session: ClientSession = mongoClient.startSession();
-                session.startTransaction();
+                session.startTransaction(options.mongodb.pushTransactionOptions);
                 const ids = rows.map(row => (row.newDocumentState as any)[primaryPath]);
                 const currentDocsArray = await mongoCollection.find(
                     { [primaryPath]: { $in: ids } },
@@ -139,11 +119,6 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                     currentDocsMap.set(doc[primaryPath], doc);
                 });
                 let promises: Promise<any>[] = [];
-                console.log('push rows: ' + rows.length);
-                console.dir({
-                    rows,
-                    currentDocsArray
-                });
                 rows.forEach(row => {
                     const toMongoDoc = rxdbDocToMongo(row.newDocumentState as any);
                     const docId = (row.newDocumentState as any)[primaryPath];
@@ -154,15 +129,6 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                      * We do not want to require a deleted-flag or any RxDB specific stuff on the RxDB side.
                      * So for deletes we have to hack around this.
                      */
-
-
-                    console.log('CONFLICT CHECK::');
-                    console.dir({
-                        row,
-                        remoteDocState,
-                        current
-                    });
-
                     let assumedMaster = row.assumedMasterState;
                     if (row.newDocumentState._deleted) {
                         if (remoteDocState) {
@@ -178,7 +144,6 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                     // conflict
                                     conflicts.push(remoteDocState);
                                 } else {
-                                    console.log('DELETE ON REMOTE!');
                                     promises.push(
                                         mongoCollection.deleteOne(
                                             {
@@ -212,21 +177,8 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                             )
                         ) {
                             // conflict
-                            console.log('has conflict!:');
-                            console.dir({
-                                assumed: row.assumedMasterState,
-                                current,
-                                currentmongotorxdb: remoteDocState
-                            });
                             conflicts.push(remoteDocState);
                         } else {
-                            console.log('update one:');
-                            console.dir({
-                                docId,
-                                toMongoDoc,
-                                primaryPath,
-                                current: current ? current : 'none'
-                            });
                             if (current) {
                                 if (row.newDocumentState._deleted) {
                                     promises.push(
@@ -248,13 +200,7 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                                                 upsert: true,
                                                 session
                                             }
-                                        ).catch(er => {
-                                            console.log('update err:');
-                                            console.dir(er);
-                                        }).then((xxx) => {
-                                            console.log('update one done');
-                                            console.dir({ xxx });
-                                        })
+                                        )
                                     );
                                 }
                             } else {
@@ -279,65 +225,9 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
                             }
                         }
                     }
-
-                    // if (!current && !row.assumedMasterState) {
-                    // } else if (
-                    //     current &&
-                    //     row.assumedMasterState &&
-                    //     options.collection.conflictHandler.isEqual(
-                    //         row.assumedMasterState,
-                    //         currentNonMongo,
-                    //         'mongodb-pull-equal-check'
-                    //     )
-                    // ) {
-                    //     console.log('has conflict!:');
-                    //     console.dir({
-                    //         assumed: row.assumedMasterState,
-                    //         current,
-                    //         currentmongotorxdb: currentNonMongo
-                    //     });
-                    //     hasConflict = currentNonMongo;
-                    // }
-                    // if (!hasConflict) {
-                    //     console.log('update one:');
-                    //     console.dir({
-                    //         docId,
-                    //         doc,
-                    //         current: current ? current : 'none'
-                    //     });
-                    //     if (current) {
-
-                    //         promises.push(
-                    //             mongoCollection.updateOne(
-                    //                 { [primaryPath]: docId },
-                    //                 { $set: doc },
-                    //                 {
-                    //                     upsert: true,
-                    //                     session
-                    //                 }
-                    //             ).catch(er => {
-                    //                 console.log('update err:');
-                    //                 console.dir(er);
-                    //             }).then(() => {
-                    //                 console.log('update one done');
-                    //             })
-                    //         );
-                    //     } else {
-                    //         promises.push(
-                    //             mongoCollection.insertOne(doc)
-                    //         );
-                    //     }
-                    // } else {
-                    //     conflicts.push(hasConflict);
-                    // }
                 });
                 await Promise.all(promises);
                 await session.commitTransaction();
-                console.log('push DONE');
-                console.dir({
-                    conflicts,
-                    rows
-                });
                 return conflicts;
             },
             batchSize: options.push.batchSize,
@@ -347,6 +237,9 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
 
 
     const replicationState = new RxMongoDBReplicationState<RxDocType>(
+        mongoClient,
+        mongoDatabase,
+        mongoCollection,
         options,
         options.replicationIdentifier,
         options.collection,
@@ -366,7 +259,6 @@ export function replicateMongoDB<RxDocType>(options: SyncOptionsMongoDB<RxDocTyp
         replicationState.start = async () => {
             const changestream = await startChangeStream(mongoCollection, undefined, replicationState.subjects.error);
             changestream.on('change', () => {
-                console.log('CHANGESTERAM EMITTED!!');
                 // TODO use the documents data of the change instead of emitting the RESYNC flag
                 pullStream$.next('RESYNC');
             });

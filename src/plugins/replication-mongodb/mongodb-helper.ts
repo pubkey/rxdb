@@ -24,11 +24,6 @@ export async function startChangeStream(
 
     });
 
-    // TODO remove this, only used in debugging
-    changeStream.on('error', (err: any) => {
-        console.log('ERRROR ON CHANGESTREAM;');
-        console.dir(err);
-    });
     if (errorSubject) {
         changeStream.on('error', (err: any) => {
             const emitError = newRxError('RC_STREAM', {
@@ -37,13 +32,6 @@ export async function startChangeStream(
             errorSubject.next(emitError);
         });
     }
-    // console.log('---0 ');
-    // await new Promise<void>(res => {
-    //     changeStream.on('init', () => {
-    //         res();
-    //     });
-    // });
-
     return changeStream;
 }
 

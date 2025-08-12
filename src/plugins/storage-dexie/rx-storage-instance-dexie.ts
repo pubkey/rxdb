@@ -80,19 +80,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotClosed(this);
 
-
-        // console.log(JSON.stringify({
-        //     dd: 'dexie bulk write',
-        //     context,
-        //     documentWrites
-        // }, null, 4));
-
-        // documentWrites.forEach(row => {
-        //     if((row as any).document?.docData?._id){
-        //         throw new Error('WRITE WITH DOC DATA ID');
-        //     }
-        // });
-
         if (
             !shownNonPremiumLog &&
             !(await hasPremiumFlag())
