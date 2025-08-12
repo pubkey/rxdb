@@ -31,12 +31,14 @@ async function run() {
     }
 
 
+    const start = Date.now();
     while (true) {
         const status = await admin.command({ replSetGetStatus: 1 });
         if (status.myState === 1) { // 1 = PRIMARY
             console.log('Node is PRIMARY');
             break;
         }
+        const timeoutMs = 30_000;
         if (Date.now() - start > timeoutMs) {
             throw new Error('Timed out waiting for PRIMARY');
         }

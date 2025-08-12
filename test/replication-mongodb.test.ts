@@ -25,12 +25,8 @@ import {
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 import {
-    Db as MongoDatabase,
     Collection as MongoCollection,
     MongoClient,
-    ObjectId,
-    ClientSession,
-    Timestamp,
     WithId
 } from 'mongodb';
 
@@ -41,7 +37,6 @@ import {
     startChangeStream,
     getCurrentResumeToken,
     getDocsSinceDocumentCheckpoint,
-    MongoDbCheckpointType,
     iterateCheckpoint
 } from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
@@ -266,7 +261,7 @@ describe('replication-mongodb.test.ts', function () {
             let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint<TestDocType>(primaryPath, mongoCollection, 3);
             assert.strictEqual(shouldNotBeEmpty.length, 3);
 
-            let lastId = ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId;
+            const lastId = ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId;
             shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(
                 primaryPath,
                 mongoCollection,
