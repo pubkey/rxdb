@@ -141,8 +141,8 @@ describe('replication-mongodb.test.ts', function () {
         console.log('new doc passportId: ' + ret.passportId);
         return ret;
     }
-    async function insertDocument(doc = getRandomMongoDoc()) {
-        const result = await mongoCollection.insertOne(doc);
+    function insertDocument(doc = getRandomMongoDoc()) {
+        return mongoCollection.insertOne(doc);
     }
     async function insertDocuments(amount = 1) {
         await Promise.all(
@@ -238,7 +238,7 @@ describe('replication-mongodb.test.ts', function () {
         it('.getDocsSinceChangestreamCheckpoint() get deleted docs', async () => {
             await cleanUpServer();
             const token = await getCurrentResumeToken(mongoCollection);
-            let shouldBeEmpty = await getDocsSinceChangestreamCheckpoint(primaryPath, mongoCollection, token, 10);
+            const shouldBeEmpty = await getDocsSinceChangestreamCheckpoint(primaryPath, mongoCollection, token, 10);
             assert.strictEqual(shouldBeEmpty.docs.length, 0);
 
             await insertDocuments(1);
@@ -289,7 +289,7 @@ describe('replication-mongodb.test.ts', function () {
             await cleanUpServer();
             await insertDocuments(12);
             const limit = 10;
-            let state: MongoDBCheckpointIterationState<any> | undefined = undefined;
+            let state: MongoDBCheckpointIterationState<any> | undefined;
 
             state = await iterateCheckpoint<TestDocType>(primaryPath, mongoCollection, limit);
             assert.strictEqual(state.docs.length, limit);
