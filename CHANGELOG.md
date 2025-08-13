@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - ADD `blockSizeLimit` to memory mapped storage.
 - FIX cleanup of a collection must also run the cleanup of the meta data of replications.
+- FIX type of SimplePeerConnectionHandlerOptions.webSocketConstructor [#7311](https://github.com/pubkey/rxdb/pull/7311)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
