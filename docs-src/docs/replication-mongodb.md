@@ -7,6 +7,7 @@ description: Build real-time, offline-capable apps with RxDB + MongoDB replicati
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 # MongoDB Replication Plugin for RxDB — Real-Time, Offline-First Sync
 
@@ -22,45 +23,31 @@ The [MongoDB](https://www.mongodb.com/) Replication Plugin for RxDB delivers sea
 Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication.md), which manages the complexities of real-world data replication for you. It automatically handles [conflict detection and resolution](./transactions-conflicts-revisions.md), maintains precise checkpoints for incremental updates, and gracefully manages transitions between offline and online states. This means you don't need to manually implement retry logic, reconcile divergent changes, or worry about data loss during connectivity drops, the Sync Engine ensures consistency and reliability in every sync cycle.
 
 
+## Key Features
+
+- **Two-way replication** between MongoDB and RxDB collections
+- **Offline-first support** with automatic re-sync
+- **Incremental updates** via MongoDB Change Streams
+- **Conflict resolution** handled by RxDB Sync Engine
+- **Atlas and self-hosted support** for replica sets and sharded clusters
+
+
 :::note
-This plugin is intended for Node.js environments. For example, when RxDB is running inside an [RxServer](./rx-server.md) instance or another backend service. A direct browser or mobile Client&lt;-&gt;MongoDB connection is not possible, because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.
+The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.
 :::
 
 
 
-## Common Configuration
+## Architecture Overview
 
-The simplest mental model is a three-tier flow: your clients talk to [RxServer](./rx-server.md), and RxServer talks to MongoDB. On the MongoDB side, the replication plugin listens for changes using change streams and writes back local updates. On the client side, RxServer exposes a replication endpoint over WebSocket or HTTP, which your RxDB-powered applications can consume.
+The plugin operates in a three-tier architecture: Clients connect to [RxServer](./rx-server.md), which in turn connects to MongoDB. RxServer streams changes from MongoDB to connected clients and pushes client-side updates back to MongoDB.
 
-Imagine a vertical stack of clients — browsers, mobile apps, or desktop apps — all connected to RxServer. On the right side of RxServer is MongoDB. Updates from any client go into RxServer, get written to MongoDB, and then streamed out to all other clients. Updates that originate in MongoDB, perhaps from another service or admin console, flow through change streams into RxServer and down to every connected client. The result is the same always-up-to-date dataset everywhere, with offline capability baked in.
+For the client side, RxServer exposes a [replication endpoint](./rx-server.md#replication-endpoint) over WebSocket or HTTP, which your RxDB-powered applications can consume.
 
+The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
-```
-    ┌──────────┐                                                                 
-    │          │                                                                 
-    │          │                                                                 
-    │ Client A ◄───────────────┐                                                 
-    │          │               │                                                 
-    │          │               │                                                 
-    │          │              ┌▼───────────────────┐          ┌─────────────────┐
-    └──────────┘              │                    │          │                 │
-    ┌──────────┐              │                    │          │                 │
-    │          │              │                    │          │                 │
-    │          │              │                    │          │                 │
-    │ Client B │              │      RxServer      │          │     MongoDB     │
-    │          ◄──────────────►                    ◄──────────►                 │
-    │          │              │                    │          │                 │
-    │          │              │                    │          │                 │
-    └──────────┘              │                    │          │                 │
-    ┌──────────┐              │                    │          │                 │
-    │          │              └▲───────────────────┘          └─────────────────┘
-    │          │               │                                                 
-    │ Client C │               │                                                 
-    │          ◄───────────────┘                                                 
-    │          │                                                                 
-    │          │                                                                 
-    └──────────┘                                                                 
-```
+<RxdbMongoDiagramPlain />
+
 
 
 ## Setting up the Client-RxServer-MongoDB Sync
@@ -206,12 +193,12 @@ import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
 const server = await createRxServer({
   database: db,
   adapter: RxServerAdapterExpress,
-  port: 8080,            // choose your port
-  cors: '*'              // tighten this in production
+  port: 8080,
+  cors: '*'
 });
 
 const endpoint = server.addReplicationEndpoint({
-    name: 'humans',    // endpoint path will include name + schema version
+    name: 'humans',
     collection: db.humans
 });
 console.log('Replication endpoint:', `http://localhost:8080/${endpoint.urlPath}`);
@@ -232,13 +219,11 @@ import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { replicateRxServer } from 'rxdb/plugins/replication-rxserver';
 
-// Create the client-side RxDB
 const db = await createRxDatabase({
   name: 'mydb-client',
   storage: getRxStorageDexie()
 });
 
-// Add the same collection + schema as on the server
 await db.addCollections({
   humans: {
     schema: {
@@ -276,3 +261,10 @@ const replicationState = replicateRxServer({
 The MongoDB Replication Plugin for RxDB is currently in **beta**.  
 While it is production-capable, the API and internal behavior may change before the stable release. We recommend thoroughly testing your integration and reviewing the changelog when upgrading to newer versions.
 :::
+
+
+## Follow Up
+
+- [Replication API Reference](./replication.md)
+- [RxServer Documentation](./rx-server.md)
+- Join our [Discord Forum](./chat) for questions and feedback
