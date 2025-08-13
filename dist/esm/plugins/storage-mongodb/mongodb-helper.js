@@ -1,6 +1,12 @@
-import { flatClone } from "../utils/index.js";
+import { RXDB_VERSION, flatClone } from "../utils/index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 export var RX_STORAGE_NAME_MONGODB = 'mongodb';
+export var MONGO_OPTIONS_DRIVER_INFO = {
+  driverInfo: {
+    name: 'RxDB',
+    version: RXDB_VERSION
+  }
+};
 
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)

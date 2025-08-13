@@ -183,6 +183,7 @@ export declare const ERROR_MESSAGES: {
     SQL2: string;
     SQL3: string;
     RM1: string;
+    MG1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

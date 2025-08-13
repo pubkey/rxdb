@@ -242,6 +242,8 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   SQL3: 'The trial version of the SQLite storage is limited to running 110 operations',
   // plugins/storage-remote
   RM1: 'Cannot communicate with a remote that was build on a different RxDB version. Did you forget to rebuild your workers when updating RxDB?',
+  // plugins/replication-mongodb
+  MG1: 'If _id is used as primaryKey, all documents in the MongoDB instance must have a string-value as _id, not an ObjectId or number',
   /**
    * Should never be thrown, use this for
    * null checks etc. so you do not have to increase the

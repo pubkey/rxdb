@@ -13,7 +13,7 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
      * and to identify which documents state came from the remote.
      */
     readonly replicationIdentifier: string;
-    readonly collection: RxCollection<RxDocType>;
+    readonly collection: RxCollection<RxDocType, unknown, unknown, unknown>;
     readonly deletedField: string;
     readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     readonly push?: ReplicationPushOptions<RxDocType> | undefined;
@@ -51,7 +51,7 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
      * The identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, toggleOnDocumentVisible?: boolean | undefined);
+    replicationIdentifier: string, collection: RxCollection<RxDocType, unknown, unknown, unknown>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, toggleOnDocumentVisible?: boolean | undefined);
     private callOnStart;
     internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;

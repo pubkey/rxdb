@@ -1,4 +1,4 @@
-import { PROMISE_RESOLVE_TRUE } from "../../plugins/utils/index.js";
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from "../../plugins/utils/index.js";
 import { REPLICATION_STATE_BY_COLLECTION } from "../replication/index.js";
 import { DEFAULT_CLEANUP_POLICY } from "./cleanup-helper.js";
 import { runAsyncPluginHooks } from "../../hooks.js";
@@ -55,14 +55,12 @@ export async function cleanupRxCollection(rxCollection, cleanupPolicy) {
   var isDone = false;
   while (!isDone && !rxCollection.closed) {
     if (cleanupPolicy.awaitReplicationsInSync) {
-      var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-      if (replicationStates) {
-        await Promise.all(replicationStates.map(replicationState => {
-          if (!replicationState.isStopped()) {
-            return replicationState.awaitInSync();
-          }
-        }));
-      }
+      var replicationStates = getFromMapOrCreate(REPLICATION_STATE_BY_COLLECTION, rxCollection, () => []);
+      await Promise.all(replicationStates.map(replicationState => {
+        if (!replicationState.isStopped()) {
+          return replicationState.awaitInSync();
+        }
+      }));
     }
     if (rxCollection.closed) {
       return;
@@ -72,7 +70,17 @@ export async function cleanupRxCollection(rxCollection, cleanupPolicy) {
         return true;
       }
       await rxDatabase.requestIdlePromise();
-      return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
+      var allDone = [];
+      allDone.push(storageInstance.cleanup(cleanupPolicy.minimumDeletedTime));
+      var replicationStates = getFromMapOrCreate(REPLICATION_STATE_BY_COLLECTION, rxCollection, () => []);
+      for (var replicationState of replicationStates) {
+        var meta = replicationState.metaInstance;
+        if (meta) {
+          allDone.push(meta.cleanup(cleanupPolicy.minimumDeletedTime));
+        }
+      }
+      var hasFalse = (await Promise.all(allDone)).find(v => !v);
+      return !hasFalse;
     });
     isDone = await RXSTORAGE_CLEANUP_QUEUE;
   }

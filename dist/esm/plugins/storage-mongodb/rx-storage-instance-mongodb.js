@@ -4,8 +4,7 @@ import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { ensureNotFalsy, getFromMapOrThrow, isMaybeReadonlyArray, now, PROMISE_RESOLVE_VOID, requestIdlePromise } from "../../plugins/utils/index.js";
 import { MongoClient } from 'mongodb';
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { MONGO_ID_SUBSTITUTE_FIELDNAME, getMongoDBIndexName, prepareMongoDBQuery, swapMongoToRxDoc, swapRxDocToMongo } from "./mongodb-helper.js";
-import { RXDB_VERSION } from "../utils/utils-rxdb-version.js";
+import { MONGO_ID_SUBSTITUTE_FIELDNAME, MONGO_OPTIONS_DRIVER_INFO, getMongoDBIndexName, prepareMongoDBQuery, swapMongoToRxDoc, swapRxDocToMongo } from "./mongodb-helper.js";
 export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
   // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
 
@@ -39,12 +38,7 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
     }
     this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
-    var mongoOptions = {};
-    mongoOptions.driverInfo = {
-      name: 'RxDB',
-      version: RXDB_VERSION
-    };
-    this.mongoClient = new MongoClient(storage.databaseSettings.connection, mongoOptions);
+    this.mongoClient = new MongoClient(storage.databaseSettings.connection, MONGO_OPTIONS_DRIVER_INFO);
     this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
     var indexes = (this.schema.indexes ? this.schema.indexes.slice() : []).map(index => {
       var arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];

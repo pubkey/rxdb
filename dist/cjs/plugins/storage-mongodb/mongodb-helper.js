@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_STORAGE_NAME_MONGODB = exports.MONGO_ID_SUBSTITUTE_FIELDNAME = void 0;
+exports.RX_STORAGE_NAME_MONGODB = exports.MONGO_OPTIONS_DRIVER_INFO = exports.MONGO_ID_SUBSTITUTE_FIELDNAME = void 0;
 exports.getMongoDBIndexName = getMongoDBIndexName;
 exports.prepareMongoDBQuery = prepareMongoDBQuery;
 exports.primarySwapMongoDBQuerySelector = primarySwapMongoDBQuerySelector;
@@ -13,6 +13,12 @@ exports.swapToMongoSort = swapToMongoSort;
 var _index = require("../utils/index.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var RX_STORAGE_NAME_MONGODB = exports.RX_STORAGE_NAME_MONGODB = 'mongodb';
+var MONGO_OPTIONS_DRIVER_INFO = exports.MONGO_OPTIONS_DRIVER_INFO = {
+  driverInfo: {
+    name: 'RxDB',
+    version: _index.RXDB_VERSION
+  }
+};
 
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)

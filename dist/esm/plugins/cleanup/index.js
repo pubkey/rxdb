@@ -1,7 +1,6 @@
-import { runAsyncPluginHooks } from "../../hooks.js";
 import { DEFAULT_CLEANUP_POLICY } from "./cleanup-helper.js";
 import { startCleanupForRxState } from "./cleanup-state.js";
-import { startCleanupForRxCollection } from "./cleanup.js";
+import { cleanupRxCollection, startCleanupForRxCollection } from "./cleanup.js";
 export var RxDBCleanupPlugin = {
   name: 'cleanup',
   rxdb: true,
@@ -14,14 +13,7 @@ export var RxDBCleanupPlugin = {
         }
 
         // run cleanup() until it returns true
-        var isDone = false;
-        while (!isDone && !this.closed) {
-          isDone = await this.storageInstance.cleanup(minimumDeletedTime);
-        }
-        await runAsyncPluginHooks('postCleanup', {
-          collectionName: this.name,
-          databaseName: this.database.name
-        });
+        await cleanupRxCollection(this, cleanupPolicy);
       };
     }
   },

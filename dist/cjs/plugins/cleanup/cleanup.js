@@ -63,14 +63,12 @@ async function cleanupRxCollection(rxCollection, cleanupPolicy) {
   var isDone = false;
   while (!isDone && !rxCollection.closed) {
     if (cleanupPolicy.awaitReplicationsInSync) {
-      var replicationStates = _index2.REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-      if (replicationStates) {
-        await Promise.all(replicationStates.map(replicationState => {
-          if (!replicationState.isStopped()) {
-            return replicationState.awaitInSync();
-          }
-        }));
-      }
+      var replicationStates = (0, _index.getFromMapOrCreate)(_index2.REPLICATION_STATE_BY_COLLECTION, rxCollection, () => []);
+      await Promise.all(replicationStates.map(replicationState => {
+        if (!replicationState.isStopped()) {
+          return replicationState.awaitInSync();
+        }
+      }));
     }
     if (rxCollection.closed) {
       return;
@@ -80,7 +78,17 @@ async function cleanupRxCollection(rxCollection, cleanupPolicy) {
         return true;
       }
       await rxDatabase.requestIdlePromise();
-      return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
+      var allDone = [];
+      allDone.push(storageInstance.cleanup(cleanupPolicy.minimumDeletedTime));
+      var replicationStates = (0, _index.getFromMapOrCreate)(_index2.REPLICATION_STATE_BY_COLLECTION, rxCollection, () => []);
+      for (var replicationState of replicationStates) {
+        var meta = replicationState.metaInstance;
+        if (meta) {
+          allDone.push(meta.cleanup(cleanupPolicy.minimumDeletedTime));
+        }
+      }
+      var hasFalse = (await Promise.all(allDone)).find(v => !v);
+      return !hasFalse;
     });
     isDone = await RXSTORAGE_CLEANUP_QUEUE;
   }

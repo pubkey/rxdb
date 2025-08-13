@@ -8,7 +8,7 @@ export * from './sqlite-basics-helpers.ts';
 export declare class RxStorageSQLiteTrial implements RxStorage<SQLiteInternals, SQLiteInstanceCreationOptions> {
     settings: SQLiteStorageSettings;
     name: string;
-    readonly rxdbVersion = "16.16.0";
+    readonly rxdbVersion = "16.17.0";
     constructor(settings: SQLiteStorageSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, SQLiteInstanceCreationOptions>): Promise<RxStorageInstanceSQLite<RxDocType>>;
 }
