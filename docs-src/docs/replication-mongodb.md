@@ -32,12 +32,6 @@ Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication
 - **Atlas and self-hosted support** for replica sets and sharded clusters
 
 
-:::note
-The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.
-:::
-
-
-
 ## Architecture Overview
 
 The plugin operates in a three-tier architecture: Clients connect to [RxServer](./rx-server.md), which in turn connects to MongoDB. RxServer streams changes from MongoDB to connected clients and pushes client-side updates back to MongoDB.
@@ -47,6 +41,13 @@ For the client side, RxServer exposes a [replication endpoint](./rx-server.md#re
 The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
 <RxdbMongoDiagramPlain />
+<br />
+<br />
+
+
+:::note
+The MongoDB Replication Plugin is optimized for Node.js environments (e.g., when RxDB runs within RxServer or other backend services). Direct connections from browsers or mobile apps to MongoDB are not supported because MongoDB does not use HTTP as its wire protocol and requires a driver-level connection to a replica set or sharded cluster.
+:::
 
 
 

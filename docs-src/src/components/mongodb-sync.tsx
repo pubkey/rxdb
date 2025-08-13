@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 export function RxdbMongoDiagramPlain({
-    className = "",
+    className = '',
     style,
-    clientLabels = ["Client A", "Client B", "Client C"],
-    serverLabel = "RxServer",
-    dbLabel = "MongoDB",
+    clientLabels = ['Client A', 'Client B', 'Client C'],
+    serverLabel = 'RxServer',
+    dbLabel = 'MongoDB',
 }: {
     className?: string;
     style?: React.CSSProperties;
@@ -14,8 +14,8 @@ export function RxdbMongoDiagramPlain({
     dbLabel?: string;
 }) {
 
-    const logoUrl = "/files/logo/logo.svg";
-    const mongoDBIcon = "/files/icons/mongodb-icon.svg";
+    const logoUrl = '/files/logo/logo.svg';
+    const mongoDBIcon = '/files/icons/mongodb-icon.svg';
 
     return (
         <div className={`rxdb-diagram ${className}`} style={style}>
@@ -121,7 +121,7 @@ export function RxdbMongoDiagramPlain({
                 <div className="grid">
                     {/* Client A */}
                     <div className="box" style={{ gridColumn: 1, gridRow: 1 }}>
-                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[0] || "Client A"}
+                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[0] || 'Client A'}
                     </div>
                     <div className="arrow" style={{ gridColumn: 2, gridRow: 1 }} aria-hidden />
 
@@ -140,13 +140,13 @@ export function RxdbMongoDiagramPlain({
 
                     {/* Client B */}
                     <div className="box" style={{ gridColumn: 1, gridRow: 3 }}>
-                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[1] || "Client B"}
+                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[1] || 'Client B'}
                     </div>
                     <div className="arrow" style={{ gridColumn: 2, gridRow: 3 }} aria-hidden />
 
                     {/* Client C */}
                     <div className="box" style={{ gridColumn: 1, gridRow: 5 }}>
-                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[2] || "Client C"}
+                        <img src={logoUrl} alt="" className="logo" aria-hidden />{clientLabels[2] || 'Client C'}
                     </div>
                     <div className="arrow" style={{ gridColumn: 2, gridRow: 5 }} aria-hidden />
                 </div>
