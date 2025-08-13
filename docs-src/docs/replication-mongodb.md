@@ -26,9 +26,9 @@ Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication
 ## Key Features
 
 - **Two-way replication** between MongoDB and RxDB collections
-- **Offline-first support** with automatic re-sync
+- **Offline-first support** with automatic incremental re-sync
 - **Incremental updates** via MongoDB Change Streams
-- **Conflict resolution** handled by RxDB Sync Engine
+- **Conflict resolution** handled by the RxDB Sync Engine
 - **Atlas and self-hosted support** for replica sets and sharded clusters
 
 

@@ -91,8 +91,8 @@ export function RxdbMongoDiagramPlain({
           position: relative;
           height: 0;
           border-top: var(--stroke) solid var(--line);
-          width: calc(100% + 3%);
-          margin-left: -1.5%;
+          width: calc(100% - 20%);
+          margin-left: 10%;
           margin-right: -1.5%;
         }
 
