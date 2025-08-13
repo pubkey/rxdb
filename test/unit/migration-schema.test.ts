@@ -25,8 +25,7 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler,
-    RxDocument
+    rxStorageInstanceToReplicationHandler
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -851,10 +850,7 @@ describe('migration-schema.test.ts', function () {
             });
 
             // replicate the collection
-            const replicationState = await replicateRxCollection<
-                RxDocument,
-                { index: number; }
-            >({
+            const replicationState = await replicateRxCollection<any, any>({
                 replicationIdentifier: 'mycollection',
                 collection: collections.mycollection,
                 pull: {

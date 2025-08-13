@@ -1,7 +1,7 @@
 ---
 title: Appwrite Realtime Sync for Local-First Apps
 slug: replication-appwrite.html
-description: Leverage RxDB to enable real-time, offline-first replication with Firestore. Cut cloud costs, resolve conflicts, and speed up your app.
+description: Sync RxDB with Appwrite for local-first apps. Supports real-time updates, offline mode, conflict resolution, and secure push/pull replication.
 ---
 
 import {Tabs} from '@site/src/components/tabs';

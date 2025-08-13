@@ -52,7 +52,7 @@ await myServer.start();
 
 ### Using RxServer with Koa
 
-There is also a [RxDB Premium 👑](/premium/) adapter to use the RxServer with [Koa](https://koajs.com/) instead of express. Koa has shown to have better compared to express.
+There is also a [RxDB Premium 👑](/premium/) adapter to use the RxServer with [Koa](https://koajs.com/) instead of express. Koa has shown to have better performance compared to express.
 
 ```ts
 import { createRxServer } from 'rxdb-server/plugins/server';

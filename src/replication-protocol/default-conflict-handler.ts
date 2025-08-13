@@ -21,6 +21,7 @@ export const defaultConflictHandler: RxConflictHandler<any> = {
             stripAttachmentsDataFromDocument(a),
             stripAttachmentsDataFromDocument(b)
         );
+
         return ret;
     },
     resolve(i) {

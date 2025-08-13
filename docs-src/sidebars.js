@@ -248,7 +248,6 @@ const sidebars = {
           id: 'replication-appwrite',
           label: 'Appwrite Replication'
         },
-
       ],
     },
     {
@@ -557,6 +556,17 @@ const sidebars = {
         },
       ],
     },
+    {
+      type: 'category',
+      label: 'Beta',
+      items: [
+        {
+          type: 'doc',
+          id: 'replication-mongodb',
+          label: 'MongoDB Replication'
+        },
+      ]
+    }
   ],
 };
 
