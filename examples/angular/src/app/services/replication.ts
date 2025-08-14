@@ -1,6 +1,6 @@
-import { RxDatabase } from 'rxdb/plugins/core';
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 import { EnvironmentParams } from '../../environments/environment';
+import { RxHeroesDatabase } from '../RxDB';
 
 /**
  * We start the replication in this separate file so
@@ -8,7 +8,7 @@ import { EnvironmentParams } from '../../environments/environment';
  * this file.
  */
 export async function startSync(
-    db: RxDatabase,
+    db: RxHeroesDatabase,
     environment: EnvironmentParams
 ) {
     console.log('DatabaseService: sync');
