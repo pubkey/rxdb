@@ -568,7 +568,7 @@
     "globals": "16.3.0",
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
-    "html-webpack-plugin": "5.6.3",
+    "html-webpack-plugin": "5.6.4",
     "karma": "6.4.4",
     "karma-babel-preprocessor": "8.0.2",
     "karma-chrome-launcher": "3.2.0",
