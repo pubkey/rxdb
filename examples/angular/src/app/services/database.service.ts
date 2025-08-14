@@ -28,7 +28,6 @@ import {
     RxHeroDocumentType
 } from '../schemas/hero.schema';
 
-import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 import { startSync } from './replication';
 
 const collectionSettings = {
