@@ -88,7 +88,7 @@ async function _create(injector: Injector): Promise<RxHeroesDatabase> {
         multiInstance: environment.multiInstance,
         reactivity: reactivityFactory
         // password: 'myLongAndStupidPassword' // no password needed
-    });
+    }) as RxHeroesDatabase;
     console.log('DatabaseService: created database');
 
     if (!environment.isServerSideRendering) {

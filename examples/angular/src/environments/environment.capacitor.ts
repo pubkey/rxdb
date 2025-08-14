@@ -1,4 +1,3 @@
-import { EnvironmentParams } from './environment.d';
 import {
     getRxStorageLocalstorage
 } from 'rxdb/plugins/storage-localstorage';
@@ -6,6 +5,7 @@ import {
     SYNC_PORT,
     DATABASE_NAME
 } from '../shared';
+import { EnvironmentParams } from './environment-type';
 
 /**
  * In capacitor/cordova you have to wait until all plugins are loaded and 'window.sqlitePlugin'

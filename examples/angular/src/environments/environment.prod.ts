@@ -1,4 +1,3 @@
-import { EnvironmentParams } from './environment.d';
 import {
   getRxStorageLocalstorage
 } from 'rxdb/plugins/storage-localstorage';
@@ -8,6 +7,7 @@ import {
 } from '../shared';
 import { addRxPlugin } from 'rxdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { EnvironmentParams } from './environment-type';
 
 export const environment: EnvironmentParams = {
   name: 'web-prod',

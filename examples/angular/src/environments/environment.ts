@@ -1,4 +1,3 @@
-import { EnvironmentParams } from './environment.d';
 import {
   getRxStorageLocalstorage
 } from 'rxdb/plugins/storage-localstorage';
@@ -12,6 +11,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import {
   RxDBDevModePlugin
 } from 'rxdb/plugins/dev-mode';
+import { EnvironmentParams } from './environment-type';
 
 export const environment: EnvironmentParams = {
   name: 'web-dev',
@@ -31,4 +31,3 @@ export const environment: EnvironmentParams = {
   },
 };
 
-export type { EnvironmentParams } from './environment.d';

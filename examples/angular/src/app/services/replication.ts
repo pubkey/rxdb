@@ -1,6 +1,6 @@
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
-import { EnvironmentParams } from '../../environments/environment';
 import { RxHeroesDatabase } from '../RxDB';
+import { EnvironmentParams } from 'src/environments/environment-type';
 
 /**
  * We start the replication in this separate file so
