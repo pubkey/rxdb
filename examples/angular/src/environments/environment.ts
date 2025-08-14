@@ -30,3 +30,5 @@ export const environment: EnvironmentParams = {
     });
   },
 };
+
+export type { EnvironmentParams } from './environment.d';
