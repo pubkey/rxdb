@@ -218,7 +218,7 @@ On the client-side we create the exact same RxDatabase and collection and then r
 
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { replicateRxServer } from 'rxdb/plugins/replication-rxserver';
+import { replicateServer } from 'rxdb-server/plugins/replication-server';
 
 const db = await createRxDatabase({
   name: 'mydb-client',
@@ -243,7 +243,7 @@ await db.addCollections({
 
 // Start replication to the RxServer endpoint printed by the server:
 // e.g. http://localhost:8080/humans/0
-const replicationState = replicateRxServer({
+const replicationState = replicateServer({
   replicationIdentifier: 'humans-rxserver',
   collection: db.humans,
   url: 'http://localhost:8080/humans/0',
