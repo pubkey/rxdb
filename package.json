@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "16.17.0",
+  "version": "16.17.1",
   "author": "pubkey",
   "repository": {
     "type": "git",

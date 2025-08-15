@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- UPDATE express to v5 in RxServer
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.17.1 (15 August 2025)
+
+- UPDATE express to v5 in RxServer
 
 ### 16.17.0 (13 August 2025)
 
