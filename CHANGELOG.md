@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX credentials header in RxServer [#283](https://github.com/pubkey/rxdb-server/pull/283)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.17.2 (15 August 2025)
+
+- FIX credentials header in RxServer [#283](https://github.com/pubkey/rxdb-server/pull/283)
 
 ### 16.17.1 (15 August 2025)
 
