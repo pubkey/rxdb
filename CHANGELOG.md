@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX credentials header in RxServer [#283](https://github.com/pubkey/rxdb-server/pull/283)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
