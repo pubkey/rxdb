@@ -42,7 +42,7 @@
     "eslint": "8.57.1",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
-    "html-webpack-plugin": "5.6.3",
+    "html-webpack-plugin": "5.6.4",
     "mini-css-extract-plugin": "2.9.4",
     "ncp": "2.0.0",
     "rimraf": "5.0.10",
