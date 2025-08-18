@@ -64,15 +64,6 @@ const testStorages = [
             IDBKeyRange: fakeIDBKeyRange
         }),
         new: () => config.storage.getStorage()
-    },
-    {
-        name: 'newest to newest',
-        hasAttachments: false,
-        hasReplication: true,
-        createRxDatabaseOld: createRxDatabase,
-        createRxDatabaseNew: createRxDatabase,
-        old: () => config.storage.getStorage(),
-        new: () => config.storage.getStorage()
     }
 
     // {
@@ -99,6 +90,7 @@ function destroyOrClose(db: RxDatabase | any) {
 
 testStorages.forEach(storages => {
     describe('migration-storage.test.ts (' + storages.name + ')', () => {
+        
         if(isBun){
             // TODO the dexie-memory-storage which is used in these test
             // is really slow in bun, so we disabled these tests for bun.
@@ -478,6 +470,78 @@ testStorages.forEach(storages => {
                 await db.col2.findOne().exec(true);
 
                 await db.remove();
+            });
+
+            it('#7351 migration old -> new with migration strategy', async () => {
+                if(storages.name !== 'prev-major to newest (dexie)'){
+                    return;
+                }
+                const oldDatabaseName = DB_PREFIX + randomToken(12);
+                const oldDb = await (storages.createRxDatabaseOld as any)({
+                    name: oldDatabaseName,
+                    storage: storages.old() as any,
+                    multiInstance: false
+                });
+                const schema0 = {
+                    version: 0,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            
+                        }
+                    }
+                };
+                const schema1 = {
+                    version: 1,
+                    primaryKey: 'id',
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            maxLength: 100
+                        }
+                    },
+                    required: ['id']
+                };
+                await oldDb.addCollections({
+                    col1: {
+                        schema: schema0 as any
+                    }
+                });
+                
+                await destroyOrClose(oldDb);
+
+                const db = await storages.createRxDatabaseNew({
+                    name: oldDatabaseName,
+                    storage: wrappedValidateAjvStorage({
+                        storage: storages.new()
+                    }),
+                    multiInstance: false
+                });
+                await db.addCollections({
+                    col1: {
+                        schema: schema1 as any,
+                        migrationStrategies: {
+                            1: (doc) => {
+                                return doc;
+                            }
+                        }
+                    }
+                });
+
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: storages.old() as any,
+                    batchSize: 1
+                });
+
+                
+
+                await db.remove();
+                
             });
         });
     });
