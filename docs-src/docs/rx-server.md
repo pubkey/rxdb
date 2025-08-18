@@ -19,6 +19,8 @@ import { createRxServer } from 'rxdb-server/plugins/server';
 
 /**
  * We use the express adapter which is the one that comes with RxDB core
+ * Make sure you have express installed in the correct version!
+ * @see https://github.com/pubkey/rxdb-server/blob/master/package.json
  */
 import { RxServerAdapterExpress } from 'rxdb-server/plugins/adapter-express';
 
