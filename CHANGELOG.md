@@ -9,6 +9,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 16.17.2 (15 August 2025)
+
+- FIX credentials header in RxServer [#283](https://github.com/pubkey/rxdb-server/pull/283)
+
 ### 16.17.1 (15 August 2025)
 
 - UPDATE express to v5 in RxServer
