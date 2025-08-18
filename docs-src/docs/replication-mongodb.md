@@ -266,6 +266,7 @@ While it is production-capable, the API and internal behavior may change before 
 
 ## Follow Up
 
+- Try it out with the [RxDB-MongoDB example repository](https://github.com/pubkey/rxdb-mongodb-sync-example)
 - [Replication API Reference](./replication.md)
 - [RxServer Documentation](./rx-server.md)
 - Join our [Discord Forum](./chat) for questions and feedback
