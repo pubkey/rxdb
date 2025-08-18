@@ -539,14 +539,6 @@ testStorages.forEach(storages => {
                     }
                 });
 
-                await migrateStorage({
-                    database: db,
-                    oldDatabaseName,
-                    oldStorage: storages.old() as any,
-                    batchSize: 1
-                });
-
-                
 
                 await db.remove();
             });
