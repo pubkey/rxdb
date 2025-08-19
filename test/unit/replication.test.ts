@@ -62,7 +62,7 @@ import type {
     RxStorage,
     RxStorageDefaultCheckpoint
 } from '../../plugins/core/index.mjs';
-import { firstValueFrom, Observable, Subject } from 'rxjs';
+import { firstValueFrom, map, Observable, Subject, timer } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
@@ -1152,6 +1152,115 @@ describe('replication.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        /**
+         * @link https://discord.com/channels/969553741705539624/1407063219062702111
+         */
+        it('not re-running push when canceled during reload', async () => {
+            const identifier = randomToken(10);
+            const databaseName = randomToken(10);
+            const collection1 = await humansCollection.createHumanWithTimestamp(0, databaseName, false);
+            let pushedOne = false;
+            const replicationState1 = replicateRxCollection({
+                collection: collection1,
+                replicationIdentifier: identifier,
+                live: true,
+                retryTime: 2_000,
+                pull: {
+                    handler: async (lastPulledCheckpoint, batchSize) => {
+                        console.log(`pull handler`);
+
+                        return {
+                            documents: [],
+                            checkpoint: "CHECKPOINT",
+                        };
+                    },
+                    stream$: timer(0, 600_000).pipe(
+                        map(() => {
+                            console.log(`returned RESYNC`);
+
+                            return "RESYNC";
+                        })
+                    ),
+                },
+                push: {
+                    batchSize: 1,
+                    handler: async (docsToSync: any) => {
+                        pushedOne = true;
+                        const message = `push FIRST ${docsToSync.length} docs ${docsToSync
+                            .map((doc: any) => doc.newDocumentState.name)
+                            .join(", ")}`;
+                        console.log(message);
+
+                        // reload sometime while waiting - the callback isn't retried again
+                        console.log('--- A0');
+                        await new Promise((resolve) => setTimeout(resolve, 9999999));
+                        console.log('--- A1');
+
+                        return [];
+                    },
+                },
+            });
+            console.log('--------------- 0');
+            await collection1.insert(
+                schemaObjects.humanWithTimestampData()
+            );
+            console.log('--------------- 1');
+            await waitUntil(() => pushedOne === true);
+            console.log('--------------- 1.5');
+
+            await collection1.database.close();
+            console.log('--------------- 2');
+
+
+            const collection2 = await humansCollection.createHumanWithTimestamp(0, databaseName, false);
+            console.log('--------------- 3');
+            let pushedTwo = false;
+            const replicationState2 = replicateRxCollection({
+                collection: collection2,
+                replicationIdentifier: identifier,
+                live: true,
+                retryTime: 2_000,
+                pull: {
+                    handler: async (lastPulledCheckpoint, batchSize) => {
+                        console.log(`pull handler`);
+
+                        return {
+                            documents: [],
+                            checkpoint: "CHECKPOINT",
+                        };
+                    },
+                    stream$: timer(0, 600_000).pipe(
+                        map(() => {
+                            console.log(`returned RESYNC`);
+
+                            return "RESYNC";
+                        })
+                    ),
+                },
+                push: {
+                    batchSize: 1,
+                    handler: async (docsToSync: any) => {
+                        pushedTwo = true;
+                        const message = `push SECOND ${docsToSync.length} docs ${docsToSync
+                            .map((doc: any) => doc.newDocumentState.name)
+                            .join(", ")}`;
+                        console.log(message);
+
+                        // reload sometime while waiting - the callback isn't retried again
+                        await new Promise((resolve) => setTimeout(resolve, 9999999));
+
+                        return [];
+                    },
+                },
+            });
+            console.log('--------------- 4');
+            await waitUntil(() => pushedTwo === true);
+            console.log('--------------- 5');
+            await collection2.database.close();
+
+            console.log(':::::::::::::::::::::::.');
+            process.exit();
+        });
         it('#7261 should update document via replication stream AFTER migration', async () => {
             const dbName = randomToken(10);
             const storage = wrappedValidateZSchemaStorage({ storage: config.storage.getStorage() });
