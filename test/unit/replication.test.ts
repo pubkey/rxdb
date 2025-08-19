@@ -1259,7 +1259,7 @@ describe('replication.test.ts', () => {
             await collection2.database.close();
 
             console.log(':::::::::::::::::::::::.');
-            process.exit();
+            // process.exit();
         });
         it('#7261 should update document via replication stream AFTER migration', async () => {
             const dbName = randomToken(10);
