@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX query hanging after local document inserted [#7349](https://github.com/pubkey/rxdb/pull/7349)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
