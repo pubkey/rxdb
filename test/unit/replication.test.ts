@@ -1200,7 +1200,14 @@ describe('replication.test.ts', () => {
                     },
                 },
             });
+            await replicationState1.awaitInSync();
+            await wait(10);
+            const checkpointAfter = await getLastCheckpointDoc(
+                ensureNotFalsy(replicationState1.internalReplicationState),
+                'up'
+            );
             console.log('--------------- 0');
+            console.dir({ checkpointAfter });
             await collection1.insert(
                 schemaObjects.humanWithTimestampData()
             );
@@ -1211,6 +1218,7 @@ describe('replication.test.ts', () => {
             await collection1.database.close();
             console.log('--------------- 2');
 
+            // process.exit();
 
             const collection2 = await humansCollection.createHumanWithTimestamp(0, databaseName, false);
             console.log('--------------- 3');
@@ -1259,7 +1267,6 @@ describe('replication.test.ts', () => {
             await collection2.database.close();
 
             console.log(':::::::::::::::::::::::.');
-            // process.exit();
         });
         it('#7261 should update document via replication stream AFTER migration', async () => {
             const dbName = randomToken(10);
