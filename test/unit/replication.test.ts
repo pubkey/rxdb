@@ -1166,36 +1166,27 @@ describe('replication.test.ts', () => {
                 live: true,
                 retryTime: 2_000,
                 pull: {
-                    handler: async (lastPulledCheckpoint, batchSize) => {
-                        console.log(`pull handler`);
+                    handler: async (_lastPulledCheckpoint, _batchSize) => {
+                        await wait(0);
 
                         return {
                             documents: [],
-                            checkpoint: "CHECKPOINT",
+                            checkpoint: 'CHECKPOINT',
                         };
                     },
                     stream$: timer(0, 600_000).pipe(
                         map(() => {
-                            console.log(`returned RESYNC`);
-
-                            return "RESYNC";
+                            return 'RESYNC';
                         })
                     ),
                 },
                 push: {
                     batchSize: 1,
-                    handler: async (docsToSync: any) => {
+                    handler: async (_docsToSync: any) => {
                         pushedOne = true;
-                        const message = `push FIRST ${docsToSync.length} docs ${docsToSync
-                            .map((doc: any) => doc.newDocumentState.name)
-                            .join(", ")}`;
-                        console.log(message);
 
                         // reload sometime while waiting - the callback isn't retried again
-                        console.log('--- A0');
                         await new Promise((resolve) => setTimeout(resolve, 9999999));
-                        console.log('--- A1');
-
                         return [];
                     },
                 },
@@ -1206,67 +1197,49 @@ describe('replication.test.ts', () => {
                 ensureNotFalsy(replicationState1.internalReplicationState),
                 'up'
             );
-            console.log('--------------- 0');
-            console.dir({ checkpointAfter });
+            assert.ok(!checkpointAfter);
+
             await collection1.insert(
                 schemaObjects.humanWithTimestampData()
             );
-            console.log('--------------- 1');
             await waitUntil(() => pushedOne === true);
-            console.log('--------------- 1.5');
 
             await collection1.database.close();
-            console.log('--------------- 2');
-
-            // process.exit();
 
             const collection2 = await humansCollection.createHumanWithTimestamp(0, databaseName, false);
-            console.log('--------------- 3');
             let pushedTwo = false;
-            const replicationState2 = replicateRxCollection({
+            replicateRxCollection({
                 collection: collection2,
                 replicationIdentifier: identifier,
                 live: true,
                 retryTime: 2_000,
                 pull: {
-                    handler: async (lastPulledCheckpoint, batchSize) => {
-                        console.log(`pull handler`);
-
+                    handler: async (_lastPulledCheckpoint, _batchSize) => {
+                        await wait(0);
                         return {
                             documents: [],
-                            checkpoint: "CHECKPOINT",
+                            checkpoint: 'CHECKPOINT',
                         };
                     },
                     stream$: timer(0, 600_000).pipe(
                         map(() => {
-                            console.log(`returned RESYNC`);
-
-                            return "RESYNC";
+                            return 'RESYNC';
                         })
                     ),
                 },
                 push: {
                     batchSize: 1,
-                    handler: async (docsToSync: any) => {
+                    handler: async (_docsToSync: any) => {
                         pushedTwo = true;
-                        const message = `push SECOND ${docsToSync.length} docs ${docsToSync
-                            .map((doc: any) => doc.newDocumentState.name)
-                            .join(", ")}`;
-                        console.log(message);
 
                         // reload sometime while waiting - the callback isn't retried again
                         await new Promise((resolve) => setTimeout(resolve, 9999999));
-
                         return [];
                     },
                 },
             });
-            console.log('--------------- 4');
             await waitUntil(() => pushedTwo === true);
-            console.log('--------------- 5');
             await collection2.database.close();
-
-            console.log(':::::::::::::::::::::::.');
         });
         it('#7261 should update document via replication stream AFTER migration', async () => {
             const dbName = randomToken(10);
