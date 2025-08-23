@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX "when a push handler is interrupted mid-way by a reload, after the reload retry doesn't happen" [via discord](https://discord.com/channels/969553741705539624/1059149217718861935/threads/1407063219062702111)
 - FIX query hanging after local document inserted [#7349](https://github.com/pubkey/rxdb/pull/7349)
 <!-- ADD new changes here! -->
 
