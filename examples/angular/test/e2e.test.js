@@ -23,10 +23,12 @@ test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
 
     // clear previous heroes
     const heroElements = Selector('.hero-list-component mat-list-item');
+    console.log('Angular first render done');
     const amount = heroElements.count;
     for (let i = 0; i < amount; i++) {
         await t.click('.delete-button');
     }
+    console.log('deleted all previous entries');
 
     // input name
     const heroNameInput = Selector('.hero-insert-component #insert-name');
