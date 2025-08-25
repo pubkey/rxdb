@@ -1073,6 +1073,27 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: [
                     'one'
                 ]
+            },
+            {
+                info: '$or with $eq null',
+                query: {
+                    selector: {
+                        $or: [
+                            {
+                                null: null
+                            },
+                            {
+                                null: 'not-null',
+                                id: 'two',
+                            }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one',
+                    'two'
+                ]
             }
         ]
     });
