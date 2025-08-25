@@ -13,6 +13,7 @@ fixture`Example page`
 test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
 
     // check if pouchdb server is up
+    console.log('Try reaching pouchdb server...');
     const res = await fetch('http://localhost:10101/');
     const data = await res.json();
     if (!data.version) {
