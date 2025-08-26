@@ -22,7 +22,7 @@ concurrency:
 # because github will start them likely earlier
 jobs:
   core:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -94,7 +94,7 @@ jobs:
       - run: npm run test:node:memory
 
   storage-localstorage:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -120,7 +120,7 @@ jobs:
       - run: npm run test:node:localstorage
 
   storage-dexie:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -162,7 +162,7 @@ jobs:
           run: npm run test:performance:dexie
 
   storage-memory:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -211,7 +211,7 @@ jobs:
           npm run test
 
   storage-remote:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -246,7 +246,7 @@ jobs:
           run: npm run test:browser:remote
 
   storage-foundationdb:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -293,7 +293,7 @@ jobs:
       - run: npm run test:performance:foundationdb
 
   storage-sqlite-trial:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -319,7 +319,7 @@ jobs:
       - run: npm run test:node:sqlite-trial
 
   storage-mongodb:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     steps:
@@ -358,7 +358,7 @@ jobs:
       - run: npm run test:replication-mongodb
 
   example-angular:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -413,7 +413,7 @@ jobs:
         run: npm run build:capacitor
 
   test-builds:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -452,7 +452,7 @@ jobs:
           npm run docs:build
 
   test-code-style:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -523,7 +523,7 @@ jobs:
 
 
   example-electron:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -553,7 +553,7 @@ jobs:
 
   example-tauri:
     # See https://tauri.app/develop/tests/webdriver/ci/ for more information
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -598,7 +598,7 @@ jobs:
           working-directory: ./examples/tauri
           run: npm run test
   example-react:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -627,7 +627,7 @@ jobs:
           run: npm run test:build
 
   example-react-native-expo:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -656,7 +656,7 @@ jobs:
           npm run test:bundle
 
   example-supabase:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -713,7 +713,7 @@ jobs:
       #     run: npm run test:localstorage
 
   example-vue:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -743,7 +743,7 @@ jobs:
           run: npm run test
 
   example-svelte:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -772,7 +772,7 @@ jobs:
           run: npm run test
 
   vite-vanilla-ts:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -800,7 +800,7 @@ jobs:
           run: npm run test
 
   example-graphql:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -830,7 +830,7 @@ jobs:
           run: npm run test:localstorage
 
   # example-flutter:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   timeout-minutes: 30
   #   steps:
   #     - uses: actions/checkout@v4
@@ -879,7 +879,7 @@ jobs:
   #           flutter test integration_test/basics_test.dart -d linux
 
   test-tutorials:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -899,7 +899,7 @@ jobs:
 
   # TODO this fails randomly because it will not always know about the project after running the import
   # appwrite:
-  #   runs-on: ubuntu-22.04
+  #   runs-on: ubuntu-24.04
   #   timeout-minutes: 60
   #   steps:
   #     - uses: actions/checkout@v4
@@ -965,7 +965,7 @@ jobs:
   #         run: npm run test:replication-appwrite
 
   test-others:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
