@@ -44,9 +44,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x4-
+            ${{ runner.os }}-npm-core-x5-
 
       - name: install npm dependencies
         run: npm install
@@ -82,9 +82,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-windows-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-windows-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-windows-x4-
+            ${{ runner.os }}-npm-windows-x5-
 
       - name: install npm dependencies
         run: npm install
@@ -111,9 +111,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-localstorage-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-localstorage-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-localstorage-x4-
+            ${{ runner.os }}-npm-storage-localstorage-x5-
 
       - run: npm install
       - run: npm run build
@@ -137,9 +137,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x4-
+            ${{ runner.os }}-npm-storage-dexie-x5-
 
       - name: install npm dependencies
         run: npm install
@@ -179,9 +179,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x4-
+            ${{ runner.os }}-npm-memory-x5-
 
       - run: npm install
 
@@ -228,9 +228,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-remote-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-remote-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-remote-x4-
+            ${{ runner.os }}-npm-remote-x5-
 
       - name: install npm dependencies
         run: npm install
@@ -264,9 +264,9 @@ jobs:
             ~/.npm
             ./node_modules
             /tmp/.buildx-cache
-          key: ${{ runner.os }}-npm-storage-foundationdb-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-foundationdb-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-foundationdb-x4-
+            ${{ runner.os }}-npm-storage-foundationdb-x5-
 
       - name: pre-pull foundationdb docker images
         # ensure it has downloaded the image
@@ -310,9 +310,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-sqlite-trial-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-sqlite-trial-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-sqlite-trial-x4-
+            ${{ runner.os }}-npm-storage-sqlite-trial-x5-
 
       - run: npm install
       - run: npm run build
@@ -337,9 +337,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-mongodb-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-mongodb-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-mongodb-x4-
+            ${{ runner.os }}-npm-storage-mongodb-x5-
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.12.0
@@ -379,9 +379,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x4-
+            ${{ runner.os }}-npm-angular-x5-
 
       - name: prepare RxDB core
         run: |
@@ -431,9 +431,9 @@ jobs:
             ~/.npm
             ./node_modules
             ./docs-src/node_modules
-          key: ${{ runner.os }}-npm-test-builds-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x4-
+            ${{ runner.os }}-npm-test-builds-x5-
 
       - name: prepare RxDB core
         run: |
@@ -469,9 +469,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x4-
+            ${{ runner.os }}-npm-test-code-style-x5-
 
       - name: spelling readme
         uses: codespell-project/actions-codespell@v2.1
@@ -674,7 +674,7 @@ jobs:
             ./node_modules
             ./examples/supabase/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-supabase-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-supabase-x4
       - name: Cache Docker layers
@@ -852,9 +852,9 @@ jobs:
   #           ~/.npm
   #           ./node_modules
   #           ./examples/flutter/javascript/node_modules
-  #         key: ${{ runner.os }}-npm-flutter-x4-${{ hashFiles('**/package.json') }}
+  #         key: ${{ runner.os }}-npm-flutter-x5-${{ hashFiles('**/package.json') }}
   #         restore-keys: |
-  #           ${{ runner.os }}-npm-flutter-x4-
+  #           ${{ runner.os }}-npm-flutter-x5-
   #     - name: prepare RxDB core
   #       run: |
   #         npm install --legacy-peer-deps
@@ -915,9 +915,9 @@ jobs:
   #       with:
   #         path: |
   #           ~/.npm
-  #         key: ${{ runner.os }}-npm-appwrite-x4-${{ hashFiles('**/package.json') }}
+  #         key: ${{ runner.os }}-npm-appwrite-x5-${{ hashFiles('**/package.json') }}
   #         restore-keys: |
-  #           ${{ runner.os }}-npm-appwrite-x4-
+  #           ${{ runner.os }}-npm-appwrite-x5-
   #     - name: Cache Docker layers
   #       uses: actions/cache@v4
   #       with:
@@ -981,9 +981,9 @@ jobs:
         with:
           path: |
             ~/.npm
-          key: ${{ runner.os }}-npm-others-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-others-x5-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-others-x4-
+            ${{ runner.os }}-npm-others-x5-
 
       - name: prepare RxDB core
         run: |
@@ -1021,7 +1021,7 @@ jobs:
             /home/runner/.cache/deno
           # do not cache based on package.json because deno install randomly fails
           # and it would then never succeed on the first run on dependency updateds
-          key: ${{ runner.os }}-deno-x4-
+          key: ${{ runner.os }}-deno-x5-
 
       - name: clear denoKV storage files
         run: rm -rf /home/runner/.cache/deno/location_data/*
