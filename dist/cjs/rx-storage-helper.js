@@ -79,7 +79,7 @@ function observeSingle(storageInstance, documentId) {
  * the document state from some, but not all shards.
  */
 function stackCheckpoints(checkpoints) {
-  return Object.assign({}, ...checkpoints);
+  return Object.assign({}, ...checkpoints.filter(x => !!x));
 }
 function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
