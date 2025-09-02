@@ -43,7 +43,7 @@ var RxPipeline = exports.RxPipeline = /*#__PURE__*/function () {
     this.checkpointId = 'rx-pipeline-' + identifier;
     this.source.onClose.push(() => this.close());
     this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
-    this.subs.push(this.source.eventBulks$.subscribe(bulk => {
+    this.subs.push(this.source.eventBulks$.pipe((0, _rxjs.filter)(bulk => !this.stopped && !bulk.isLocal)).subscribe(bulk => {
       this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
       this.somethingChanged.next({});
     }));
