@@ -4,7 +4,8 @@ import {
     randomToken,
     ensureNotFalsy,
     addRxPlugin,
-    RxCollection
+    RxCollection,
+    WithDeleted
 } from '../plugins/core/index.mjs';
 import {
     lastOfArray
@@ -43,8 +44,9 @@ const tableName = 'humans';
 
 describe('replication-supabase.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
+    config.storage.init?.();
 
-    async function getServerState(): Promise<TestDocType[]> {
+    async function getServerState(): Promise<WithDeleted<TestDocType>[]> {
         const { data, error } = await supabase
             .from(tableName)
             .select('*');
@@ -62,7 +64,14 @@ describe('replication-supabase.test.ts', function () {
             throw error;
         }
     }
-
+    function getRandomDoc() {
+        const ret = {
+            passportId: randomString(10),
+            firstName: randomString(10),
+            lastName: randomString(10)
+        };
+        return ret;
+    }
     function syncCollection<RxDocType = TestDocType>(
         collection: RxCollection<RxDocType>,
     ): RxSupabaseReplicationState<RxDocType> {
@@ -94,16 +103,45 @@ describe('replication-supabase.test.ts', function () {
             collection,
             live: false,
             pull: pull ? {
-                batchSize
+                batchSize,
+                modifier: d => {
+                    console.log('pull modifier:');
+                    console.dir(d);
+                    if (!d.age) {
+                        delete d.age;
+                    }
+                    return d;
+                }
             } : undefined,
             push: push ? {
                 batchSize
             } : undefined
         });
+        console.log('---- s0');
         ensureReplicationHasNoErrors(replicationState);
+        console.log('---- s1');
         await replicationState.awaitInitialReplication();
+        console.log('---- s2');
         await replicationState.awaitInSync();
+        console.log('---- s3');
         await replicationState.cancel();
+        console.log('---- s4');
+    }
+    async function insertDocument(doc = getRandomDoc()) {
+        const { data, error } = await supabase
+            .from(tableName)
+            .insert([
+                doc
+            ])
+            .select();
+        if (error) {
+            throw error;
+        }
+    }
+    async function insertDocuments(amount = 1) {
+        await Promise.all(
+            new Array(amount).fill(0).map(() => insertDocument())
+        );
     }
 
     let supabase: SupabaseClient;
@@ -116,6 +154,15 @@ describe('replication-supabase.test.ts', function () {
             const state = await getServerState();
             assert.strictEqual(state.length, 0, 'server should be empty');
         });
+        it('insert documents', async () => {
+            await insertDocument();
+            await insertDocument();
+            await insertDocument();
+
+            const state = await getServerState();
+            assert.strictEqual(state.length, 3);
+            await cleanUpServer();
+        });
     });
 
     describe('helpers', () => {
@@ -126,7 +173,6 @@ describe('replication-supabase.test.ts', function () {
         it('should push the inserted documents', async () => {
             await cleanUpServer();
             const collection = await humansCollection.createPrimary(10, undefined, false);
-
 
             // initial push
             await syncCollectionOnce(collection, true, false);
@@ -143,7 +189,7 @@ describe('replication-supabase.test.ts', function () {
 
             await collection.database.remove();
         });
-        it('should pushed the updated documents', async () => {
+        it('should have pushed the updated documents', async () => {
             await cleanUpServer();
             const collection = await humansCollection.createPrimary(4, undefined, false);
 
@@ -163,6 +209,151 @@ describe('replication-supabase.test.ts', function () {
             );
 
             await collection.database.remove();
+        });
+    });
+    describe('live:false pull', () => {
+        it('should pull the documents', async () => {
+            await cleanUpServer();
+            await insertDocuments(12);
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+
+            // initial pull
+            await syncCollectionOnce(collection);
+            let docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 12);
+
+            // ongoing pull
+            await insertDocuments(8);
+            await syncCollectionOnce(collection);
+            docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 20, 'should have pulled the ongoing inserted docs');
+
+            // pull updated doc
+            const firstDoc = ensureNotFalsy(lastOfArray(docs));
+            const { data, error } = await supabase
+                .from(tableName)
+                .update({ lastName: 'foobar' })
+                .eq(primaryPath, firstDoc.primary)   // replace with the actual row identifier
+                .select();
+            if (error) {
+                throw error;
+            }
+
+            await syncCollectionOnce(collection);
+            const docAfter = await collection.findOne(firstDoc.primary).exec(true);
+            assert.strictEqual(docAfter.lastName, 'foobar');
+
+
+            await collection.database.remove();
+        });
+    });
+    describe('deletes', () => {
+        it('should push the deletion', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.create(1);
+            await syncCollectionOnce(collection, true, false);
+            let state = await getServerState();
+            assert.strictEqual(state.length, 1, 'must have pushed the doc to the server');
+
+            const doc = await collection.findOne().exec(true);
+            await doc.remove();
+
+            await syncCollectionOnce(collection, true, false);
+
+            state = await getServerState();
+            assert.strictEqual(state[0]._deleted, true, 'must have deleted the doc on the server');
+
+            await collection.database.remove();
+        });
+    });
+    describe('conflict handling', () => {
+        it('INSERT: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+
+            // insert and sync
+            const c1 = await humansCollection.create(0);
+            const conflictDocId = '1-insert-conflict';
+            await c1.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-first'));
+            await syncCollectionOnce(c1);
+
+
+            // insert same doc-id on other side
+            const c2 = await humansCollection.create(0);
+            await c2.insert(schemaObjects.humanData(conflictDocId, undefined, 'insert-conflict'));
+            await syncCollectionOnce(c2);
+
+            /**
+             * Must have kept the first-insert state
+             */
+            const serverState = await getServerState();
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(serverState[0].firstName, 'insert-first');
+            assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
+            assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
+
+            c1.database.close();
+            c2.database.close();
+        });
+        it('UPDATE: should keep the master state as default conflict handler', async () => {
+            await cleanUpServer();
+            const c1 = await humansCollection.create(0);
+            await c1.insert(schemaObjects.humanData('1-conflict'));
+
+            const c2 = await humansCollection.create(0);
+
+            await syncCollectionOnce(c1);
+            await syncCollectionOnce(c2);
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
+            assert.strictEqual(doc1.firstName, doc2.firstName, 'equal names');
+
+            // make update on both sides
+            await doc2.incrementalPatch({ firstName: 'c2' });
+            await syncCollectionOnce(c2);
+
+            // cause conflict
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await syncCollectionOnce(c1);
+
+            /**
+             * Must have kept the master state c2
+             */
+            assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
+            assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
+
+            c1.database.close();
+            c2.database.close();
+        });
+        it('conflict on delete', async () => {
+            await cleanUpServer();
+            const c1 = await humansCollection.create(0);
+            await c1.insert(schemaObjects.humanData('1-conflict'));
+
+            const c2 = await humansCollection.create(0);
+            await syncCollectionOnce(c1);
+            await syncCollectionOnce(c2);
+
+            const doc1 = await c1.findOne().exec(true);
+            let doc2 = await c2.findOne().exec(true);
+
+            await doc1.remove();
+            await syncCollectionOnce(c1);
+            const state = await getServerState();
+            assert.strictEqual(state.length, 0);
+
+            await doc2.patch({
+                firstName: 'foobar'
+            });
+
+            await syncCollectionOnce(c2);
+            doc2 = doc2.getLatest();
+            assert.strictEqual(doc2.firstName, doc1.firstName, 'should have kept the firstName because of conflict');
+            assert.strictEqual(doc2.deleted, true);
+
+            c1.database.close();
+            c2.database.close();
         });
     });
 });

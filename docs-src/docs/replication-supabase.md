@@ -6,3 +6,4 @@
 ## Limitations
 
 - Currently no nested properties supported
+- nullable values might have to be converted to undefined with the pull.handler

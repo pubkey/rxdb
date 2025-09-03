@@ -1,4 +1,4 @@
-import { RxReplicationState } from '../replication/index.ts';
+import { RxReplicationState, startReplicationOnLeaderShip } from '../replication/index.ts';
 import { SupabaseCheckpoint, SyncOptionsSupabase } from './types.ts';
 import { addRxPlugin } from '../../plugin.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -99,6 +99,7 @@ export function replicateSupabase<RxDocType>(
                 lastPulledCheckpoint: SupabaseCheckpoint | undefined,
                 batchSize: number
             ) {
+                console.log('.... pull 0');
                 let query = options.client
                     .from(options.tableName)
                     .select('*');
@@ -112,6 +113,7 @@ export function replicateSupabase<RxDocType>(
                         `"${modifiedField}".gt.${modified},and("${modifiedField}".eq.${modified},"${primaryPath}".gt.${id})`
                     );
                 }
+                console.log('.... pull 1');
 
                 // deterministic order & batch size
                 query = query
@@ -122,6 +124,7 @@ export function replicateSupabase<RxDocType>(
 
                 const { data, error } = await query;
 
+                console.log('.... pull 2');
                 if (error) {
                     throw error;
                 }
@@ -134,6 +137,7 @@ export function replicateSupabase<RxDocType>(
 
                 const docs = data.map(row => rowToDoc(row))
 
+                console.log('.... pull 3');
                 return {
                     documents: docs,
                     checkpoint: newCheckpoint
@@ -151,6 +155,10 @@ export function replicateSupabase<RxDocType>(
             rows: RxReplicationWriteToMasterRow<RxDocType>[]
         ) {
             async function insertOrReturnConflict(doc: WithDeleted<RxDocType>): Promise<WithDeleted<RxDocType> | undefined> {
+                console.dir({
+                    op: 'insertOrReturnConflict',
+                    doc
+                });
                 const id = (doc as any)[primaryPath];
                 const { error } = await options.client.from(options.tableName).insert(doc)
                 if (!error) {
@@ -167,6 +175,11 @@ export function replicateSupabase<RxDocType>(
                 doc: WithDeleted<RxDocType>,
                 assumedMasterState: WithDeleted<RxDocType>
             ): Promise<WithDeleted<RxDocType> | undefined> {
+                console.dir({
+                    op: 'updateOrReturnConflict',
+                    doc,
+                    assumedMasterState
+                });
                 ensureNotFalsy(assumedMasterState);
                 const id = (doc as any)[primaryPath];
                 const toRow: Record<string, any> = flatClone(doc);
@@ -180,6 +193,11 @@ export function replicateSupabase<RxDocType>(
                 // modified field will be set server-side
                 delete toRow[modifiedField];
 
+
+
+                console.log('push row to server:')
+                console.dir(toRow);
+
                 let query = options.client
                     .from(options.tableName)
                     .update(toRow);
@@ -188,8 +206,8 @@ export function replicateSupabase<RxDocType>(
                     collection.schema.jsonSchema,
                     deletedField,
                     modifiedField,
-                    doc,
-                    assumedMasterState
+                    assumedMasterState,
+                    query
                 );
 
                 const { data, error } = await query.select();
@@ -205,14 +223,18 @@ export function replicateSupabase<RxDocType>(
                 }
             }
 
+            console.log('--- pa0');
             const conflicts: WithDeleted<RxDocType>[] = [];
             await Promise.all(
                 rows.map(async (row) => {
+                    console.log('--- p0');
                     const newDoc = row.newDocumentState as WithDeleted<RxDocType>;
                     if (!row.assumedMasterState) {
+                        console.log('--- pI0');
                         const c = await insertOrReturnConflict(newDoc);
                         if (c) conflicts.push(c);
                     } else {
+                        console.log('--- pU0');
                         const c = await updateOrReturnConflict(newDoc, row.assumedMasterState as any);
                         if (c) conflicts.push(c);
                     }
@@ -276,6 +298,8 @@ export function replicateSupabase<RxDocType>(
     }
 
 
+    startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
+    console.log('STATE CREATED');
     return replicationState;
 }
 
@@ -289,12 +313,19 @@ export function addDocEqualityToQuery<RxDocType>(
     query: any
 ) {
 
+    console.log('addDocEqualityToQuery:');
+    console.dir({
+        doc,
+        query
+    });
+
     const ignoreKeys = new Set([
         modifiedField,
         deletedField,
         '_deleted',
         '_meta',
-        '_attachments'
+        '_attachments',
+        '_rev'
     ]);
 
     for (const key of Object.keys(doc)) {

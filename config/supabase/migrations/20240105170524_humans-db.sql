@@ -1,10 +1,13 @@
-create table "public"."humans" (
-    passportId text primary key,
-    firstName text not null,
-    lastName text not null,
+create extension if not exists moddatetime schema extensions;
 
-    _deleted boolean DEFAULT false NOT NULL,
-    _modified timestamp with time zone DEFAULT now() NOT NULL
+create table "public"."humans" (
+    "passportId" text primary key,
+    "firstName" text not null,
+    "lastName" text not null,
+    "age" integer,
+
+    "_deleted" boolean DEFAULT false NOT NULL,
+    "_modified" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON public.humans FOR EACH ROW
