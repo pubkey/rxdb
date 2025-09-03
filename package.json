@@ -28,9 +28,6 @@
     "react-native",
     "encryption",
     "encrypted",
-    "firestore",
-    "firebase",
-    "couchdb",
     "pouchdb",
     "nats",
     "websql",
@@ -76,7 +73,13 @@
     "database-client",
     "dbms",
     "database engine",
-    "datastore"
+    "datastore",
+    "supabase",
+    "mongodb",
+    "appwrite",
+    "couchdb",
+    "firestore",
+    "firebase"
   ],
   "engines": {
     "node": ">=18"
@@ -443,6 +446,8 @@
     "couch:stop": "docker rm -f rxdb-couchdb",
     "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4 mongod --replSet rs0 --bind_ip_all",
     "mongodb:stop": "docker rm -f rxdb-mongodb",
+    "supabase:start": "npm run supabase:stop && supabase start --workdir ./config/ -x storage-api,imgproxy,vector,edge-runtime,logflare,pgadmin-schema-diff,inbucket",
+    "supabase:stop": "rm -rf ./config/supabase/.* && supabase stop --workdir ./config/ --no-backup",
     "nats:start": "docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js",
     "nats:stop": "docker rm -f rxdb-nats",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
@@ -612,6 +617,7 @@
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
+    "supabase": "2.39.2",
     "terser": "5.43.1",
     "terser-webpack-plugin": "5.3.14",
     "ts-loader": "9.5.2",

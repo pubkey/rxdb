@@ -1,13 +1,21 @@
-import type { ReplicationOptions } from '../../types';
-import type { SupabaseClient } from "@supabase/supabase-js"
+import type {
+    ReplicationOptions,
+    ReplicationPullOptions,
+    ReplicationPushOptions
+} from '../../types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type SyncOptionsSupabase<RxDocType> = Omit<
     ReplicationOptions<RxDocType, SupabaseCheckpoint>,
-    'pull.handler' | 'push.handler'
+    'pull' | 'push'
 > & {
     client: SupabaseClient;
     tableName: string;
     modifiedField?: '_modified' | string;
+
+    pull?: Omit<ReplicationPullOptions<RxDocType, SupabaseCheckpoint>, 'handler' | 'stream$'> & {
+    };
+    push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };
 
 export type SupabaseCheckpoint = {
