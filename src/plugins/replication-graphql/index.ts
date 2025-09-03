@@ -4,8 +4,7 @@
  */
 import {
     ensureNotFalsy,
-    flatClone,
-    getProperty
+    flatClone
 } from '../../plugins/utils/index.ts';
 
 import {
@@ -40,8 +39,6 @@ import {
     getGraphQLWebSocket
 } from './graphql-websocket.ts';
 import { Subject } from 'rxjs';
-
-
 
 
 export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
