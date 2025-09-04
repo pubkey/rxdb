@@ -19,7 +19,6 @@
     "docs-src/docusaurus-lunr-search-main/package.json",
     "docs/files/logo/package.json",
     "examples/ionic2/package.json",
-    "examples/supabase/package.json",
     "examples/flutter/pubspec.yaml",
     "src/plugins/flutter/dart/pubspec.yaml",
     "config/appwrite/docker-compose.yml",
