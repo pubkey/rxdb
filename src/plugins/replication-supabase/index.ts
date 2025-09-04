@@ -248,8 +248,6 @@ export function replicateSupabase<RxDocType>(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: options.tableName },
                     (payload) => {
-                        console.log('GOT EVENT:');
-                        console.dir(payload);
                         /**
                          * We assume soft-deletes in supabase
                          * and therefore cleanup-hard-deletes

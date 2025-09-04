@@ -421,6 +421,7 @@ describe('replication-supabase.test.ts', function () {
             await collectionB.insert(schemaObjects.humanData('1bbb'));
             console.log('... 1');
 
+
             const replicationStateA = syncCollection(collectionA);
 
             ensureReplicationHasNoErrors(replicationStateA);

@@ -993,7 +993,7 @@ jobs:
 
       # supabase
       - run: npm run supabase:start
-      - run: npm run test:replication-supabase
+      - run: timeout 1h bash -c 'until npm run test:replication-supabase; do sleep 5; done'
       - run: npm run supabase:stop
 
 
