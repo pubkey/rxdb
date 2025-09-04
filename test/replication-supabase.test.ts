@@ -413,16 +413,19 @@ describe('replication-supabase.test.ts', function () {
     describe('other', () => {
         it('two collections', async () => {
             await cleanUpServer();
+            console.log('... 0');
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
             await collectionA.insert(schemaObjects.humanData('1aaa'));
             const collectionB = await humansCollection.createPrimary(0, undefined, false);
             await collectionB.insert(schemaObjects.humanData('1bbb'));
+            console.log('... 1');
 
             const replicationStateA = syncCollection(collectionA);
 
             ensureReplicationHasNoErrors(replicationStateA);
             await replicationStateA.awaitInitialReplication();
             await replicationStateA.awaitInSync();
+            console.log('... 2');
 
             const replicationStateB = syncCollection(collectionB);
             ensureReplicationHasNoErrors(replicationStateB);
@@ -430,16 +433,19 @@ describe('replication-supabase.test.ts', function () {
 
             await wait(300);
             await replicationStateA.awaitInSync();
+            console.log('... 3');
 
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
             // insert one
             await collectionA.insert(schemaObjects.humanData('insert-a'));
             await replicationStateA.awaitInSync();
+            console.log('... 4');
 
             await replicationStateB.awaitInSync();
             await wait(300);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
+            console.log('... 5');
 
             // delete one
             await collectionB.findOne().remove();
@@ -447,6 +453,7 @@ describe('replication-supabase.test.ts', function () {
             await replicationStateA.awaitInSync();
             await wait(300);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
+            console.log('... 6');
 
             // insert many
             await collectionA.bulkInsert(
@@ -455,22 +462,26 @@ describe('replication-supabase.test.ts', function () {
                     .map(() => schemaObjects.humanData(undefined, undefined, 'bulk-insert-A'))
             );
             await replicationStateA.awaitInSync();
+            console.log('... 7');
 
             await replicationStateB.awaitInSync();
             await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
+            console.log('... 8');
 
             // insert at both collections at the same time
             await Promise.all([
                 collectionA.insert(schemaObjects.humanData('insert-parallel-a')),
                 collectionB.insert(schemaObjects.humanData('insert-parallel-b'))
             ]);
+            console.log('... 9');
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
             await wait(300);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
+            console.log('... 10');
 
             await collectionA.database.close();
             await collectionB.database.close();
