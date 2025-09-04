@@ -59,7 +59,7 @@ describe('replication-supabase.test.ts', function () {
         const { error } = await supabase
             .from(tableName)
             .delete()
-            .neq(primaryPath, 0)
+            .neq(primaryPath, 0);
         if (error) {
             throw error;
         }
@@ -127,7 +127,7 @@ describe('replication-supabase.test.ts', function () {
         await replicationState.cancel();
     }
     async function insertDocument(doc = getRandomDoc()) {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from(tableName)
             .insert([
                 doc
@@ -145,7 +145,7 @@ describe('replication-supabase.test.ts', function () {
 
     let supabase: SupabaseClient;
     describe('basics', () => {
-        it('init', async () => {
+        it('init', () => {
             supabase = createClient(SUPABASE_URL, SUPABASE_TOKEN, {});
         });
         it('should be empty', async () => {
@@ -229,7 +229,7 @@ describe('replication-supabase.test.ts', function () {
 
             // pull updated doc
             const firstDoc = ensureNotFalsy(lastOfArray(docs));
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from(tableName)
                 .update({ lastName: 'foobar' })
                 .eq(primaryPath, firstDoc.primary)   // replace with the actual row identifier
