@@ -7,7 +7,7 @@ description: Sync RxDB with Appwrite for local-first apps. Supports real-time up
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
-
+import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
 
@@ -41,10 +41,7 @@ Combining the two provides several benefits:
 <br />
 <br />
 
-<p align="center">
-  <img src="./files/icons/appwrite.svg" alt="Appwrite Sync" 
-  height="60" />
-</p>
+<RxdbMongoDiagramPlain showServer={false} dbIcon="/files/icons/appwrite.svg" dbLabel="" />
 
 
 ## Preparing the Appwrite Server
@@ -258,6 +255,13 @@ const replicationState = replicateAppwrite({
 The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
 
 </Steps>
+
+<p align="center">
+  <img src="./files/icons/appwrite.svg" alt="Appwrite Sync" 
+  height="60" />
+</p>
+
+
 
 ## Limitations of the Appwrite Replication Plugin
 

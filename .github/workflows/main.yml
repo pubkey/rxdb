@@ -655,63 +655,6 @@ jobs:
           sudo sysctl -p
           npm run test:bundle
 
-  example-supabase:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-      - name: Reuse npm cache folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/supabase/node_modules
-          # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x4-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-supabase-x4
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx
-      - name: prepare RxDB core
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-          rm -r node_modules
-      - name: Install
-        working-directory: ./examples/supabase
-        run: |
-          npm run preinstall
-          npm install --legacy-peer-deps
-      
-      - name: start supabase
-        working-directory: ./examples/supabase
-        run: npm run supabase:start
-
-      - name: build
-        working-directory: ./examples/supabase
-        run: npm run build
-
-      # TODO these tests randomly fail. Never because of RxDB
-      # but always because random supabase updates because the
-      # supabase build is not deterministic.
-      # - name: test
-      #   uses: coactions/setup-xvfb@v1
-      #   with:
-      #     working-directory: ./examples/supabase
-      #     run: npm run test:localstorage
-
   example-vue:
     runs-on: ubuntu-22.04
     timeout-minutes: 30

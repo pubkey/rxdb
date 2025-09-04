@@ -565,6 +565,11 @@ const sidebars = {
           id: 'replication-mongodb',
           label: 'MongoDB Replication'
         },
+        {
+          type: 'doc',
+          id: 'replication-supabase',
+          label: 'Supabase Replication'
+        },
       ]
     }
   ],

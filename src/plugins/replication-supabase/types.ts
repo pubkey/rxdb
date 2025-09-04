@@ -11,6 +11,10 @@ export type SyncOptionsSupabase<RxDocType> = Omit<
 > & {
     client: SupabaseClient;
     tableName: string;
+
+    /**
+     * Modified field, default "_modified"
+     */
     modifiedField?: '_modified' | string;
 
     pull?: Omit<ReplicationPullOptions<RxDocType, SupabaseCheckpoint>, 'handler' | 'stream$'> & {

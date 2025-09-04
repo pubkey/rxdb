@@ -1,9 +1,0 @@
-node_modules/
-log.txt
-dist/
-rxdb-local.tgz
-
-# Supabase
-supabase/.branches
-supabase/.temp
-supabase/.env
