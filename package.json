@@ -28,9 +28,6 @@
     "react-native",
     "encryption",
     "encrypted",
-    "firestore",
-    "firebase",
-    "couchdb",
     "pouchdb",
     "nats",
     "websql",
@@ -76,7 +73,13 @@
     "database-client",
     "dbms",
     "database engine",
-    "datastore"
+    "datastore",
+    "supabase",
+    "mongodb",
+    "appwrite",
+    "couchdb",
+    "firestore",
+    "firebase"
   ],
   "engines": {
     "node": ">=18"
@@ -249,6 +252,12 @@
       "import": "./dist/esm/plugins/replication-mongodb/index.js",
       "default": "./dist/esm/plugins/replication-mongodb/index.js"
     },
+    "./plugins/replication-supabase": {
+      "types": "./dist/types/plugins/replication-supabase/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-supabase/index.js",
+      "import": "./dist/esm/plugins/replication-supabase/index.js",
+      "default": "./dist/esm/plugins/replication-supabase/index.js"
+    },
     "./plugins/storage-remote": {
       "types": "./dist/types/plugins/storage-remote/index.d.ts",
       "require": "./dist/cjs/plugins/storage-remote/index.js",
@@ -414,6 +423,7 @@
     "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-couchdb.test.js\" --success first --kill-others",
     "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-nats.test.js\" --success first --kill-others",
     "test:replication-mongodb": "node ./config/mongodb-connection-tester.js && npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-mongodb.test.js",
+    "test:replication-supabase": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-supabase.test.js",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
@@ -436,6 +446,8 @@
     "couch:stop": "docker rm -f rxdb-couchdb",
     "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:8.0.4 mongod --replSet rs0 --bind_ip_all",
     "mongodb:stop": "docker rm -f rxdb-mongodb",
+    "supabase:start": "npm run supabase:stop && supabase start --workdir ./config/ -x storage-api,imgproxy,vector,edge-runtime,logflare,pgadmin-schema-diff,inbucket",
+    "supabase:stop": "rm -rf ./config/supabase/.[!.]* && supabase stop --workdir ./config/ --no-backup",
     "nats:start": "docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js",
     "nats:stop": "docker rm -f rxdb-nats",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
@@ -531,6 +543,7 @@
     "@rollup/plugin-commonjs": "28.0.6",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@stylistic/eslint-plugin": "5.2.3",
+    "@supabase/supabase-js": "2.56.1",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.19",
@@ -604,6 +617,7 @@
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
+    "supabase": "2.39.2",
     "terser": "5.43.1",
     "terser-webpack-plugin": "5.3.14",
     "ts-loader": "9.5.2",

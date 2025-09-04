@@ -40,7 +40,7 @@ For the client side, RxServer exposes a [replication endpoint](./rx-server.md#re
 
 The following diagram illustrates the flow of updates between clients, RxServer, and MongoDB in a live synchronization setup:
 
-<RxdbMongoDiagramPlain />
+<RxdbMongoDiagramPlain dbIcon="/files/icons/mongodb-icon.svg" dbLabel="MongoDB" />
 <br />
 <br />
 

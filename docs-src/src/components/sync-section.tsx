@@ -39,7 +39,7 @@ export function SyncSection(props: {
             <Tag img="/files/icons/firebase.svg" >Firebase</Tag>
           </a>
 
-          <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
+          <a href="/replication-supabase.html" target="_blank">
             <Tag img="/files/icons/supabase.svg" >Supabase</Tag>
           </a>
 
@@ -99,7 +99,7 @@ export function SyncSection(props: {
               />
             </div>
           </a>
-          <a href="https://github.com/pubkey/rxdb/tree/master/examples/supabase" target="_blank">
+          <a href="/replication-supabase.html" target="_blank">
             <div className="neumorphism-circle-s centered replicate-supabase enlarge-on-mouse">
               <img
                 src="/files/icons/supabase.svg"

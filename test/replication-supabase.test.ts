@@ -4,7 +4,8 @@ import {
     randomToken,
     ensureNotFalsy,
     addRxPlugin,
-    RxCollection
+    RxCollection,
+    WithDeleted
 } from '../plugins/core/index.mjs';
 import {
     lastOfArray
@@ -17,71 +18,76 @@ import {
     ensureCollectionsHaveEqualState,
     SimpleHumanDocumentType
 } from '../plugins/test-utils/index.mjs';
-
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
-
-import {
-    Collection as MongoCollection,
-    MongoClient,
-    WithId
-} from 'mongodb';
-
-import {
-    RxMongoDBReplicationState,
-    getDocsSinceChangestreamCheckpoint,
-    replicateMongoDB,
-    startChangeStream,
-    getCurrentResumeToken,
-    getDocsSinceDocumentCheckpoint,
-    iterateCheckpoint
-} from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
-import { MONGO_OPTIONS_DRIVER_INFO } from '../plugins/storage-mongodb/index.mjs';
-import { MongoDBCheckpointIterationState } from '../src/plugins/replication-mongodb/index.ts';
+import {
+    RxSupabaseReplicationState,
+    replicateSupabase
+} from '../plugins/replication-supabase/index.mjs';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
-const mongoConnectionString = 'mongodb://localhost:27017/?directConnection=true';
-const mongoDatabaseName = 'replication-test-db';
-const mongoCollectionName = 'sync-test-collection';
+
+const SUPABASE_TOKEN =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+const SUPABASE_URL = 'http://127.0.0.1:54321';
 
 /**
- * The tests for the MongoDB replication plugin
- * do not run in the normal test suite
- * because it is too slow to setup the mongodb database.
+ * Use a low batchSize in all tests
+ * to make it easier to test boundaries.
  */
-describe('replication-mongodb.test.ts', function () {
+const batchSize = 5;
+
+type TestDocType = SimpleHumanDocumentType;
+const primaryPath = 'passportId';
+const tableName = 'humans';
+
+describe('replication-supabase.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
     config.storage.init?.();
-    type TestDocType = SimpleHumanDocumentType;
 
-    this.timeout(1000 * 20);
-
-    /**
-     * Use a low batchSize in all tests
-     * to make it easier to test boundaries.
-     */
-    const batchSize = 5;
-
-
-    async function getServerState(): Promise<WithId<TestDocType>[]> {
-        const docs = await mongoCollection.find().toArray();
-        return docs;
+    async function getServerState(): Promise<WithDeleted<TestDocType>[]> {
+        const { data, error } = await supabase
+            .from(tableName)
+            .select('*');
+        if (error) {
+            throw error;
+        }
+        return data;
     }
-    const primaryPath = 'passportId';
-
+    async function cleanUpServer() {
+        const { error } = await supabase
+            .from(tableName)
+            .delete()
+            .neq(primaryPath, 0);
+        if (error) {
+            throw error;
+        }
+    }
+    function getRandomDoc() {
+        const ret = {
+            passportId: randomString(10),
+            firstName: randomString(10),
+            lastName: randomString(10)
+        };
+        return ret;
+    }
     function syncCollection<RxDocType = TestDocType>(
         collection: RxCollection<RxDocType>,
-    ): RxMongoDBReplicationState<RxDocType> {
-        const replicationState = replicateMongoDB<RxDocType>({
-            mongodb: {
-                collectionName: mongoCollectionName,
-                connection: mongoConnectionString,
-                databaseName: mongoDatabaseName
-            },
+    ): RxSupabaseReplicationState<RxDocType> {
+        const replicationState = replicateSupabase<RxDocType>({
+            tableName,
+            client: supabase,
             replicationIdentifier: randomToken(10),
             collection,
             pull: {
-                batchSize
+                batchSize,
+                modifier: d => {
+                    if (!d.age) {
+                        delete d.age;
+                    }
+                    return d;
+                }
             },
             push: {
                 batchSize
@@ -96,17 +102,20 @@ describe('replication-mongodb.test.ts', function () {
         push: boolean = true,
         pull: boolean = true
     ) {
-        const replicationState = replicateMongoDB<RxDocType>({
-            mongodb: {
-                collectionName: mongoCollectionName,
-                connection: mongoConnectionString,
-                databaseName: mongoDatabaseName
-            },
+        const replicationState = replicateSupabase<RxDocType>({
+            tableName,
+            client: supabase,
             replicationIdentifier: 'sync-once',
             collection,
             live: false,
             pull: pull ? {
-                batchSize
+                batchSize,
+                modifier: d => {
+                    if (!d.age) {
+                        delete d.age;
+                    }
+                    return d;
+                }
             } : undefined,
             push: push ? {
                 batchSize
@@ -117,47 +126,32 @@ describe('replication-mongodb.test.ts', function () {
         await replicationState.awaitInSync();
         await replicationState.cancel();
     }
-
-    async function cleanUpServer() {
-        await mongoCollection.deleteMany({});
-    }
-    function getRandomMongoDoc() {
-        const ret = {
-            passportId: randomString(10),
-            firstName: randomString(10),
-            lastName: randomString(10)
-        };
-        return ret;
-    }
-    function insertDocument(doc = getRandomMongoDoc()) {
-        return mongoCollection.insertOne(doc);
+    async function insertDocument(doc = getRandomDoc()) {
+        const { error } = await supabase
+            .from(tableName)
+            .insert([
+                doc
+            ])
+            .select();
+        if (error) {
+            throw error;
+        }
     }
     async function insertDocuments(amount = 1) {
         await Promise.all(
             new Array(amount).fill(0).map(() => insertDocument())
         );
     }
-    async function getChangeStream() {
-        const changestream = await startChangeStream(
-            mongoCollection
-        );
-        return changestream;
-    }
 
-    let mongoCollection: MongoCollection<any>;
-    describe('basics', function () {
-        this.timeout(100000);
-        it('init client and wait until database and collection exists', async () => {
-            const mongoClient = new MongoClient(mongoConnectionString, MONGO_OPTIONS_DRIVER_INFO);
-            const mongoDatabase = mongoClient.db(mongoDatabaseName);
-            mongoCollection = await mongoDatabase.createCollection(mongoCollectionName, {
-                changeStreamPreAndPostImages: { enabled: true }
-            });
+    let supabase: SupabaseClient;
+    describe('basics', () => {
+        it('init', () => {
+            supabase = createClient(SUPABASE_URL, SUPABASE_TOKEN, {});
         });
-        it('clean up database', async () => {
+        it('should be empty', async () => {
             await cleanUpServer();
-            const count = await mongoCollection.countDocuments({});
-            assert.strictEqual(count, 0, 'must not have documents after cleanup');
+            const state = await getServerState();
+            assert.strictEqual(state.length, 0, 'server should be empty');
         });
         it('insert documents', async () => {
             await insertDocument();
@@ -169,132 +163,20 @@ describe('replication-mongodb.test.ts', function () {
             await cleanUpServer();
         });
     });
+
     describe('helpers', () => {
-        it('should be able to listen to the changestream', async () => {
-            await cleanUpServer();
-            const changestream = await getChangeStream();
-            await insertDocument();
-            await insertDocument();
-            const events = [];
-            changestream.on('change', (ev) => {
-                events.push(ev);
-            });
-            await waitUntil(async () => {
-                await insertDocument();
-                return events.length > 0;
-            });
-            await changestream.close();
-        });
-        it('.getCurrentResumeToken()', async () => {
-            await cleanUpServer();
-            await insertDocuments(1);
-            const token = await getCurrentResumeToken(mongoCollection);
-            assert.ok(token);
-            assert.ok(token._data);
-        });
-        it('.getDocsSinceChangestreamCheckpoint() fetch some docs', async () => {
-            await cleanUpServer();
-            const token = await getCurrentResumeToken(mongoCollection);
-            await insertDocuments(3);
 
-            const result = await getDocsSinceChangestreamCheckpoint<any>(primaryPath, mongoCollection, token, 10);
-
-            assert.strictEqual(result.docs.length, 3);
-            assert.strictEqual(result.docs[0]._deleted, false);
-
-            const shouldBeEmpty = await getDocsSinceChangestreamCheckpoint<any>(primaryPath, mongoCollection, result.nextToken, 10);
-            assert.deepStrictEqual(shouldBeEmpty.docs, []);
-            assert.strictEqual(shouldBeEmpty.nextToken._data, result.nextToken._data, 'should have the same token because no docs');
-        });
-        it('.getDocsSinceChangestreamCheckpoint() get deleted docs', async () => {
-            await cleanUpServer();
-            const token = await getCurrentResumeToken(mongoCollection);
-            const shouldBeEmpty = await getDocsSinceChangestreamCheckpoint(primaryPath, mongoCollection, token, 10);
-            assert.strictEqual(shouldBeEmpty.docs.length, 0);
-
-            await insertDocuments(1);
-            let shouldNotBeEmpty = await getDocsSinceChangestreamCheckpoint<TestDocType>(primaryPath, mongoCollection, shouldBeEmpty.nextToken, 3);
-            assert.strictEqual(shouldNotBeEmpty.docs.length, 1);
-
-            await cleanUpServer();
-            shouldNotBeEmpty = await getDocsSinceChangestreamCheckpoint<TestDocType>(primaryPath, mongoCollection, shouldNotBeEmpty.nextToken, 3);
-
-            assert.strictEqual(shouldNotBeEmpty.docs.length, 1);
-            assert.strictEqual(shouldNotBeEmpty.docs[0]._deleted, true);
-        });
-        it('.getDocsSinceDocumentCheckpoint()', async () => {
-            await cleanUpServer();
-
-            let shouldBeEmpty = await getDocsSinceDocumentCheckpoint(primaryPath, mongoCollection, 10);
-            assert.strictEqual(shouldBeEmpty.length, 0);
-
-            await insertDocuments(10);
-            let shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint<TestDocType>(primaryPath, mongoCollection, 3);
-            assert.strictEqual(shouldNotBeEmpty.length, 3);
-
-            const lastId = ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId;
-            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(
-                primaryPath,
-                mongoCollection,
-                5,
-                lastId
-            );
-            assert.strictEqual(shouldNotBeEmpty.length, 5);
-
-            shouldNotBeEmpty = await getDocsSinceDocumentCheckpoint(
-                primaryPath,
-                mongoCollection,
-                100,
-                ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId
-            );
-
-            shouldBeEmpty = await getDocsSinceDocumentCheckpoint(
-                primaryPath,
-                mongoCollection,
-                10,
-                ensureNotFalsy(lastOfArray(shouldNotBeEmpty)).passportId
-            );
-            assert.strictEqual(shouldBeEmpty.length, 0);
-        });
-        it('.iterateCheckpoint()', async () => {
-            await cleanUpServer();
-            await insertDocuments(12);
-            const limit = 10;
-            let state: MongoDBCheckpointIterationState<any> | undefined;
-
-            state = await iterateCheckpoint<TestDocType>(primaryPath, mongoCollection, limit);
-            assert.strictEqual(state.docs.length, limit);
-            assert.strictEqual(state.checkpoint.iterate, 'docs-by-id');
-
-            state = await iterateCheckpoint(primaryPath, mongoCollection, limit, state.checkpoint);
-            assert.strictEqual(state.docs.length, 2);
-            assert.strictEqual(state.checkpoint.iterate, 'changestream');
-
-            await insertDocuments(7);
-            state = await iterateCheckpoint(primaryPath, mongoCollection, limit, state.checkpoint);
-            assert.strictEqual(state.docs.length, 7);
-            assert.strictEqual(state.checkpoint.iterate, 'changestream');
-        });
     });
+
     describe('live:false push', () => {
         it('should push the inserted documents', async () => {
             await cleanUpServer();
             const collection = await humansCollection.createPrimary(10, undefined, false);
 
-
             // initial push
             await syncCollectionOnce(collection, true, false);
             let state = await getServerState();
             assert.strictEqual(state.length, 10, 'must have pushed all docs to the server');
-
-            /**
-             * RxDB-Mongo-Sync should not require to store
-             * RxDB specific metadata in the mongodb database.
-             * So there should not be a _deleted property be pushed.
-             */
-            state.forEach(doc => {
-                assert.strictEqual(typeof (doc as any)._deleted, 'undefined');
-            });
 
             // ongoing push
             await collection.bulkInsert(
@@ -306,7 +188,7 @@ describe('replication-mongodb.test.ts', function () {
 
             await collection.database.remove();
         });
-        it('should pushed the updated documents', async () => {
+        it('should have pushed the updated documents', async () => {
             await cleanUpServer();
             const collection = await humansCollection.createPrimary(4, undefined, false);
 
@@ -347,17 +229,14 @@ describe('replication-mongodb.test.ts', function () {
 
             // pull updated doc
             const firstDoc = ensureNotFalsy(lastOfArray(docs));
-            await mongoCollection.updateOne(
-                { [primaryPath]: firstDoc.primary },
-                {
-                    $set: {
-                        lastName: 'foobar'
-                    }
-                },
-                {
-                    upsert: true
-                }
-            );
+            const { error } = await supabase
+                .from(tableName)
+                .update({ lastName: 'foobar' })
+                .eq(primaryPath, firstDoc.primary)   // replace with the actual row identifier
+                .select();
+            if (error) {
+                throw error;
+            }
 
             await syncCollectionOnce(collection);
             const docAfter = await collection.findOne(firstDoc.primary).exec(true);
@@ -381,7 +260,7 @@ describe('replication-mongodb.test.ts', function () {
             await syncCollectionOnce(collection, true, false);
 
             state = await getServerState();
-            assert.strictEqual(state.length, 0, 'must have deleted the doc on the server');
+            assert.strictEqual(state[0]._deleted, true, 'must have deleted the doc on the server');
 
             await collection.database.remove();
         });
@@ -449,7 +328,7 @@ describe('replication-mongodb.test.ts', function () {
         it('conflict on delete', async () => {
             await cleanUpServer();
             const c1 = await humansCollection.create(0);
-            await c1.insert(schemaObjects.humanData('1-conflict'));
+            await c1.insert(schemaObjects.humanData('1-conflict', undefined, 'before-conflict'));
 
             const c2 = await humansCollection.create(0);
             await syncCollectionOnce(c1);
@@ -461,7 +340,7 @@ describe('replication-mongodb.test.ts', function () {
             await doc1.remove();
             await syncCollectionOnce(c1);
             const state = await getServerState();
-            assert.strictEqual(state.length, 0);
+            assert.strictEqual(state[0]._deleted, true);
 
             await doc2.patch({
                 firstName: 'foobar'
@@ -476,7 +355,6 @@ describe('replication-mongodb.test.ts', function () {
             await c2.database.close();
         });
     });
-
     describe('live replication', () => {
         it('push replication to client-server', async () => {
             await cleanUpServer();
@@ -511,53 +389,78 @@ describe('replication-mongodb.test.ts', function () {
             await doc.getLatest().remove();
             await replicationState.awaitInSync();
             docsOnServer = await getServerState();
-            assert.strictEqual(docsOnServer.length, 2, '2 after delete');
+            assert.strictEqual(docsOnServer.filter(d => d._deleted === false).length, 2, '2 after delete');
+
+            await collection.database.close();
+        });
+        it('should get the event from server-side changes and sync the new data', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+            const replicationState = syncCollection(collection);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            await insertDocument();
+            await waitUntil(async () => {
+                const doc = await collection.findOne().exec();
+                return !!doc;
+            });
 
             await collection.database.close();
         });
 
     });
     describe('other', () => {
-
         it('two collections', async () => {
-            console.log('--- 1');
+            const waitTime = 600;
             await cleanUpServer();
+            console.log('... 0');
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
             await collectionA.insert(schemaObjects.humanData('1aaa'));
             const collectionB = await humansCollection.createPrimary(0, undefined, false);
             await collectionB.insert(schemaObjects.humanData('1bbb'));
+            console.log('... 1');
+
 
             const replicationStateA = syncCollection(collectionA);
-            console.log('--- 2');
 
             ensureReplicationHasNoErrors(replicationStateA);
             await replicationStateA.awaitInitialReplication();
+            await replicationStateA.awaitInSync();
+            console.log('... 2');
 
             const replicationStateB = syncCollection(collectionB);
             ensureReplicationHasNoErrors(replicationStateB);
             await replicationStateB.awaitInitialReplication();
 
-            await wait(300);
+            await wait(waitTime);
             await replicationStateA.awaitInSync();
-            console.log('--- 3');
+            console.log('... 3');
 
+            await waitUntil(() => collectionA.count().exec().then(c => c === 2));
+            console.log('... 3.1');
+            await waitUntil(() => collectionB.count().exec().then(c => c === 2));
+            console.log('... 3.2');
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
             // insert one
             await collectionA.insert(schemaObjects.humanData('insert-a'));
             await replicationStateA.awaitInSync();
+            console.log('... 4');
+
 
             await replicationStateB.awaitInSync();
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
+            console.log('... 5');
 
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
-            console.log('--- 4');
+            console.log('... 6');
 
             // insert many
             await collectionA.bulkInsert(
@@ -566,29 +469,35 @@ describe('replication-mongodb.test.ts', function () {
                     .map(() => schemaObjects.humanData(undefined, undefined, 'bulk-insert-A'))
             );
             await replicationStateA.awaitInSync();
+            console.log('... 7');
 
             await replicationStateB.awaitInSync();
             await wait(100);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
-            console.log('--- 5');
+            console.log('... 8');
 
             // insert at both collections at the same time
             await Promise.all([
                 collectionA.insert(schemaObjects.humanData('insert-parallel-a')),
                 collectionB.insert(schemaObjects.humanData('insert-parallel-b'))
             ]);
+            console.log('... 9');
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
-            console.log('--- 6');
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
-            console.log('--- 7');
+            console.log('... 10');
 
             await collectionA.database.close();
             await collectionB.database.close();
-            console.log('--- 8');
+        });
+    });
+
+    describe('last', () => {
+        it('clean server', async () => {
+            await cleanUpServer();
         });
     });
 });
