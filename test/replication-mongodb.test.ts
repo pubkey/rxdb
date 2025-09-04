@@ -412,8 +412,8 @@ describe('replication-mongodb.test.ts', function () {
             assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
             assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('UPDATE: should keep the master state as default conflict handler', async () => {
             await cleanUpServer();
@@ -443,8 +443,8 @@ describe('replication-mongodb.test.ts', function () {
             assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
             assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('conflict on delete', async () => {
             await cleanUpServer();
@@ -472,8 +472,8 @@ describe('replication-mongodb.test.ts', function () {
             assert.strictEqual(doc2.firstName, doc1.firstName, 'should have kept the firstName because of conflict');
             assert.strictEqual(doc2.deleted, true);
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
     });
 
@@ -513,7 +513,7 @@ describe('replication-mongodb.test.ts', function () {
             docsOnServer = await getServerState();
             assert.strictEqual(docsOnServer.length, 2, '2 after delete');
 
-            collection.database.close();
+            await collection.database.close();
         });
 
     });
