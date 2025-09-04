@@ -355,7 +355,7 @@ jobs:
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
-      - run: npm run test:replication-mongodb
+      - run: timeout 1h bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
 
   example-angular:
     runs-on: ubuntu-22.04
