@@ -291,8 +291,8 @@ describe('replication-supabase.test.ts', function () {
             assert.strictEqual(doc2.getLatest().firstName, 'insert-first');
             assert.strictEqual(doc1.getLatest().firstName, 'insert-first');
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('UPDATE: should keep the master state as default conflict handler', async () => {
             await cleanUpServer();
@@ -322,8 +322,8 @@ describe('replication-supabase.test.ts', function () {
             assert.strictEqual(doc2.getLatest().firstName, 'c2', 'doc2 firstName');
             assert.strictEqual(doc1.getLatest().firstName, 'c2', 'doc1 firstName');
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('conflict on delete', async () => {
             await cleanUpServer();
@@ -351,8 +351,8 @@ describe('replication-supabase.test.ts', function () {
             assert.strictEqual(doc2.firstName, doc1.firstName, 'should have kept the firstName because of conflict');
             assert.strictEqual(doc2.deleted, true);
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
     });
     describe('live replication', () => {
@@ -406,7 +406,7 @@ describe('replication-supabase.test.ts', function () {
                 return !!doc;
             });
 
-            collection.database.close();
+            await collection.database.close();
         });
 
     });
