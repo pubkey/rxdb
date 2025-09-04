@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Supabase Replication Plugin](https://rxdb.info/replication-supabase.html) (beta)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.19.0 (4 September 2025)
+
+- ADD [Supabase Replication Plugin](https://rxdb.info/replication-supabase.html) (beta)
 
 ### 16.18.0 (26 August 2025)
 
