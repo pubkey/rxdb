@@ -16,7 +16,8 @@ import { Subject } from 'rxjs';
 import {
     DEFAULT_DELETED_FIELD,
     DEFAULT_MODIFIED_FIELD,
-    POSTGRES_INSERT_CONFLICT_CODE
+    POSTGRES_INSERT_CONFLICT_CODE,
+    addDocEqualityToQuery
 } from './helper.ts';
 import { ensureNotFalsy, flatClone, lastOfArray } from '../utils/index.ts';
 
@@ -53,13 +54,16 @@ export function replicateSupabase<RxDocType>(
     addRxPlugin(RxDBLeaderElectionPlugin);
     const collection = options.collection;
     const primaryPath = collection.schema.primaryPath;
+
+    // set defaults
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+    options.live = typeof options.live === 'undefined' ? true : options.live;
+    const modifiedField = options.modifiedField ? options.modifiedField : DEFAULT_MODIFIED_FIELD;
+    const deletedField = options.deletedField ? options.deletedField : DEFAULT_DELETED_FIELD;
 
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, SupabaseCheckpoint>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, SupabaseCheckpoint> | undefined;
 
-    const modifiedField = options.modifiedField ? options.modifiedField : DEFAULT_MODIFIED_FIELD;
-    const deletedField = options.deletedField ? options.deletedField : DEFAULT_DELETED_FIELD;
 
     function rowToDoc(row: any): WithDeleted<RxDocType> {
         const deleted = !!row[deletedField];
@@ -99,7 +103,6 @@ export function replicateSupabase<RxDocType>(
                 lastPulledCheckpoint: SupabaseCheckpoint | undefined,
                 batchSize: number
             ) {
-                console.log('.... pull 0');
                 let query = options.client
                     .from(options.tableName)
                     .select('*');
@@ -113,7 +116,6 @@ export function replicateSupabase<RxDocType>(
                         `"${modifiedField}".gt.${modified},and("${modifiedField}".eq.${modified},"${primaryPath}".gt.${id})`
                     );
                 }
-                console.log('.... pull 1');
 
                 // deterministic order & batch size
                 query = query
@@ -121,10 +123,7 @@ export function replicateSupabase<RxDocType>(
                     .order(primaryPath as any, { ascending: true })
                     .limit(batchSize);
 
-
                 const { data, error } = await query;
-
-                console.log('.... pull 2');
                 if (error) {
                     throw error;
                 }
@@ -136,8 +135,6 @@ export function replicateSupabase<RxDocType>(
                 } : null;
 
                 const docs = data.map(row => rowToDoc(row))
-
-                console.log('.... pull 3');
                 return {
                     documents: docs,
                     checkpoint: newCheckpoint
@@ -155,10 +152,6 @@ export function replicateSupabase<RxDocType>(
             rows: RxReplicationWriteToMasterRow<RxDocType>[]
         ) {
             async function insertOrReturnConflict(doc: WithDeleted<RxDocType>): Promise<WithDeleted<RxDocType> | undefined> {
-                console.dir({
-                    op: 'insertOrReturnConflict',
-                    doc
-                });
                 const id = (doc as any)[primaryPath];
                 const { error } = await options.client.from(options.tableName).insert(doc)
                 if (!error) {
@@ -175,11 +168,6 @@ export function replicateSupabase<RxDocType>(
                 doc: WithDeleted<RxDocType>,
                 assumedMasterState: WithDeleted<RxDocType>
             ): Promise<WithDeleted<RxDocType> | undefined> {
-                console.dir({
-                    op: 'updateOrReturnConflict',
-                    doc,
-                    assumedMasterState
-                });
                 ensureNotFalsy(assumedMasterState);
                 const id = (doc as any)[primaryPath];
                 const toRow: Record<string, any> = flatClone(doc);
@@ -192,11 +180,6 @@ export function replicateSupabase<RxDocType>(
 
                 // modified field will be set server-side
                 delete toRow[modifiedField];
-
-
-
-                console.log('push row to server:')
-                console.dir(toRow);
 
                 let query = options.client
                     .from(options.tableName)
@@ -223,18 +206,14 @@ export function replicateSupabase<RxDocType>(
                 }
             }
 
-            console.log('--- pa0');
             const conflicts: WithDeleted<RxDocType>[] = [];
             await Promise.all(
                 rows.map(async (row) => {
-                    console.log('--- p0');
                     const newDoc = row.newDocumentState as WithDeleted<RxDocType>;
                     if (!row.assumedMasterState) {
-                        console.log('--- pI0');
                         const c = await insertOrReturnConflict(newDoc);
                         if (c) conflicts.push(c);
                     } else {
-                        console.log('--- pU0');
                         const c = await updateOrReturnConflict(newDoc, row.assumedMasterState as any);
                         if (c) conflicts.push(c);
                     }
@@ -264,12 +243,20 @@ export function replicateSupabase<RxDocType>(
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
             const sub = options.client
-                .channel('realtime')
+                .channel('realtime:' + options.tableName)
                 .on(
                     'postgres_changes',
-                    { event: '*', schema: 'public', table: 'heroes' },
+                    { event: '*', schema: 'public', table: options.tableName },
                     (payload) => {
-                        console.log('Change received!', payload);
+                        /**
+                         * We assume soft-deletes in supabase
+                         * and therefore cleanup-hard-deletes
+                         * are not relevant for the sync.
+                         */
+                        if (payload.eventType === 'DELETE') {
+                            return;
+                        }
+
                         const row = payload.new;
                         const doc = rowToDoc(row);
                         pullStream$.next({
@@ -299,66 +286,7 @@ export function replicateSupabase<RxDocType>(
 
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
-    console.log('STATE CREATED');
     return replicationState;
 }
 
 
-
-export function addDocEqualityToQuery<RxDocType>(
-    jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    deletedField: string,
-    modifiedField: string,
-    doc: WithDeleted<RxDocType>,
-    query: any
-) {
-
-    console.log('addDocEqualityToQuery:');
-    console.dir({
-        doc,
-        query
-    });
-
-    const ignoreKeys = new Set([
-        modifiedField,
-        deletedField,
-        '_deleted',
-        '_meta',
-        '_attachments',
-        '_rev'
-    ]);
-
-    for (const key of Object.keys(doc)) {
-        if (
-            ignoreKeys.has(key)
-        ) {
-            continue;
-        }
-
-        const v = (doc as any)[key];
-        const type = typeof v;
-
-        if (type === "string" || type === "number") {
-            query = query.eq(key, v);
-        } else if (type === "boolean" || v === null) {
-            query = query.is(key, v);
-        } else if (type === 'undefined') {
-            query = query.is(key, null);
-        } else {
-            throw new Error(`unknown how to handle type: ${type}`)
-        }
-    }
-
-    const schemaProps: Record<string, any> = jsonSchema.properties;
-    for (const key of Object.keys(schemaProps)) {
-        if (
-            ignoreKeys.has(key) ||
-            Object.hasOwn(doc, key)
-        ) {
-            continue;
-        }
-        query = query.is(key, null);
-    }
-
-    return query;
-}

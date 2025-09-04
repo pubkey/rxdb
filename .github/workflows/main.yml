@@ -1004,6 +1004,13 @@ jobs:
           docker pull nats:2.9.17
           npm run test:replication-nats
 
+
+      # supabase
+      - run: npm run supabase:start
+      - run: npm run test:replication-supabase
+      - run: npm run supabase:stop
+
+
       # bun
       - uses: oven-sh/setup-bun@v2
         with:

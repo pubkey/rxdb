@@ -81,7 +81,13 @@ describe('replication-supabase.test.ts', function () {
             replicationIdentifier: randomToken(10),
             collection,
             pull: {
-                batchSize
+                batchSize,
+                modifier: d => {
+                    if (!d.age) {
+                        delete d.age;
+                    }
+                    return d;
+                }
             },
             push: {
                 batchSize
@@ -105,8 +111,6 @@ describe('replication-supabase.test.ts', function () {
             pull: pull ? {
                 batchSize,
                 modifier: d => {
-                    console.log('pull modifier:');
-                    console.dir(d);
                     if (!d.age) {
                         delete d.age;
                     }
@@ -117,15 +121,10 @@ describe('replication-supabase.test.ts', function () {
                 batchSize
             } : undefined
         });
-        console.log('---- s0');
         ensureReplicationHasNoErrors(replicationState);
-        console.log('---- s1');
         await replicationState.awaitInitialReplication();
-        console.log('---- s2');
         await replicationState.awaitInSync();
-        console.log('---- s3');
         await replicationState.cancel();
-        console.log('---- s4');
     }
     async function insertDocument(doc = getRandomDoc()) {
         const { data, error } = await supabase
@@ -329,7 +328,7 @@ describe('replication-supabase.test.ts', function () {
         it('conflict on delete', async () => {
             await cleanUpServer();
             const c1 = await humansCollection.create(0);
-            await c1.insert(schemaObjects.humanData('1-conflict'));
+            await c1.insert(schemaObjects.humanData('1-conflict', undefined, 'before-conflict'));
 
             const c2 = await humansCollection.create(0);
             await syncCollectionOnce(c1);
@@ -341,7 +340,7 @@ describe('replication-supabase.test.ts', function () {
             await doc1.remove();
             await syncCollectionOnce(c1);
             const state = await getServerState();
-            assert.strictEqual(state.length, 0);
+            assert.strictEqual(state[0]._deleted, true);
 
             await doc2.patch({
                 firstName: 'foobar'
@@ -354,6 +353,127 @@ describe('replication-supabase.test.ts', function () {
 
             c1.database.close();
             c2.database.close();
+        });
+    });
+    describe('live replication', () => {
+        it('push replication to client-server', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+            await collection.insert(schemaObjects.humanData('aaaa'));
+            await collection.insert(schemaObjects.humanData('bbbb'));
+
+            const replicationState = syncCollection(collection);
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            let docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 2, 'must have two docs');
+
+            // insert another one
+            await collection.insert(schemaObjects.humanData('cccc'));
+            await replicationState.awaitInSync();
+
+            docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 3, '3 after insert');
+
+            // update one
+            const doc = await collection.findOne('aaaa').exec(true);
+            await doc.incrementalPatch({ firstName: 'foobar' });
+            await replicationState.awaitInSync();
+            docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.length, 3, '3 after update');
+            const serverDoc = ensureNotFalsy(docsOnServer.find(d => d[primaryPath] === doc.primary), 'doc with id missing ' + doc.primary);
+            assert.strictEqual(serverDoc.firstName, 'foobar');
+
+            // delete one
+            await doc.getLatest().remove();
+            await replicationState.awaitInSync();
+            docsOnServer = await getServerState();
+            assert.strictEqual(docsOnServer.filter(d => d._deleted === false).length, 2, '2 after delete');
+
+            await collection.database.close();
+        });
+        it('should get the event from server-side changes and sync the new data', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+            const replicationState = syncCollection(collection);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            await insertDocument();
+            await waitUntil(async () => {
+                const doc = await collection.findOne().exec();
+                return !!doc;
+            });
+
+            collection.database.close();
+        });
+
+    });
+    describe('other', () => {
+        it('two collections', async () => {
+            await cleanUpServer();
+            const collectionA = await humansCollection.createPrimary(0, undefined, false);
+            await collectionA.insert(schemaObjects.humanData('1aaa'));
+            const collectionB = await humansCollection.createPrimary(0, undefined, false);
+            await collectionB.insert(schemaObjects.humanData('1bbb'));
+
+            const replicationStateA = syncCollection(collectionA);
+
+            ensureReplicationHasNoErrors(replicationStateA);
+            await replicationStateA.awaitInitialReplication();
+            await replicationStateA.awaitInSync();
+
+            const replicationStateB = syncCollection(collectionB);
+            ensureReplicationHasNoErrors(replicationStateB);
+            await replicationStateB.awaitInitialReplication();
+
+            await wait(300);
+            await replicationStateA.awaitInSync();
+
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
+
+            // insert one
+            await collectionA.insert(schemaObjects.humanData('insert-a'));
+            await replicationStateA.awaitInSync();
+
+            await replicationStateB.awaitInSync();
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
+
+            // delete one
+            await collectionB.findOne().remove();
+            await replicationStateB.awaitInSync();
+            await replicationStateA.awaitInSync();
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
+
+            // insert many
+            await collectionA.bulkInsert(
+                new Array(10)
+                    .fill(0)
+                    .map(() => schemaObjects.humanData(undefined, undefined, 'bulk-insert-A'))
+            );
+            await replicationStateA.awaitInSync();
+
+            await replicationStateB.awaitInSync();
+            await wait(100);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert many');
+
+            // insert at both collections at the same time
+            await Promise.all([
+                collectionA.insert(schemaObjects.humanData('insert-parallel-a')),
+                collectionB.insert(schemaObjects.humanData('insert-parallel-b'))
+            ]);
+            await replicationStateA.awaitInSync();
+            await replicationStateB.awaitInSync();
+            await replicationStateA.awaitInSync();
+            await replicationStateB.awaitInSync();
+            await wait(300);
+            await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
+
+            await collectionA.database.close();
+            await collectionB.database.close();
         });
     });
 });
