@@ -412,6 +412,7 @@ describe('replication-supabase.test.ts', function () {
     });
     describe('other', () => {
         it('two collections', async () => {
+            const waitTime = 600;
             await cleanUpServer();
             console.log('... 0');
             const collectionA = await humansCollection.createPrimary(0, undefined, false);
@@ -431,7 +432,7 @@ describe('replication-supabase.test.ts', function () {
             ensureReplicationHasNoErrors(replicationStateB);
             await replicationStateB.awaitInitialReplication();
 
-            await wait(300);
+            await wait(waitTime);
             await replicationStateA.awaitInSync();
             console.log('... 3');
 
@@ -443,7 +444,7 @@ describe('replication-supabase.test.ts', function () {
             console.log('... 4');
 
             await replicationStateB.awaitInSync();
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert');
             console.log('... 5');
 
@@ -451,7 +452,7 @@ describe('replication-supabase.test.ts', function () {
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after deletion');
             console.log('... 6');
 
@@ -479,7 +480,7 @@ describe('replication-supabase.test.ts', function () {
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await replicationStateB.awaitInSync();
-            await wait(300);
+            await wait(waitTime);
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'after insert both at same time');
             console.log('... 10');
 
