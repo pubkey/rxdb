@@ -476,4 +476,10 @@ describe('replication-supabase.test.ts', function () {
             await collectionB.database.close();
         });
     });
+
+    describe('last', () => {
+        it('clean server', async () => {
+            await cleanUpServer();
+        });
+    });
 });
