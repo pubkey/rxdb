@@ -437,7 +437,9 @@ describe('replication-supabase.test.ts', function () {
             console.log('... 3');
 
             await waitUntil(() => collectionA.count().exec().then(c => c === 2));
+            console.log('... 3.1');
             await waitUntil(() => collectionB.count().exec().then(c => c === 2));
+            console.log('... 3.2');
             await ensureCollectionsHaveEqualState(collectionA, collectionB, 'init sync');
 
             // insert one

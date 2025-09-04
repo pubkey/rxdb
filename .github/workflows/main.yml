@@ -990,8 +990,14 @@ jobs:
           npm install
           npm run build
 
-      - run: npm run test:replication-couchdb
 
+      # supabase
+      - run: npm run supabase:start
+      - run: npm run test:replication-supabase
+      - run: npm run supabase:stop
+
+
+      - run: npm run test:replication-couchdb
 
       - name: firestore replication
         run: |
@@ -1003,12 +1009,6 @@ jobs:
         run: |
           docker pull nats:2.9.17
           npm run test:replication-nats
-
-
-      # supabase
-      - run: npm run supabase:start
-      - run: npm run test:replication-supabase
-      - run: npm run supabase:stop
 
 
       # bun
