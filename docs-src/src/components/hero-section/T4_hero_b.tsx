@@ -3,6 +3,7 @@ import { triggerTrackingEvent } from '../trigger-event';
 import { DevicesSync } from '../devices-sync';
 import { CheckedList } from '../checked-list';
 import { Button } from '../button';
+import { HeroRuntimes } from '../runtimes';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -118,6 +119,8 @@ export function HeroSection_B(props: {
                 <div className='clear'></div>
             </div>
         </div>
+
+        <HeroRuntimes rows={[]}></HeroRuntimes>
         <br />
         <br />
         <br />

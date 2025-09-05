@@ -11,7 +11,6 @@ const styles: Record<string, CSSProperties> = {
         listStyle: "none",
         padding: "1.5rem",
         margin: 0,
-        backgroundColor: "#000",
         color: "#fff",
         fontFamily: "monospace",
     },
