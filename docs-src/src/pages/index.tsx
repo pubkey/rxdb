@@ -25,6 +25,8 @@ import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
 import { RealtimeSection } from '../components/realtime-section';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { VideoPlayButton } from '../components/video-button';
+import { VideoBox } from '../components/video-box';
 // import { SyncSection } from '../components/sync-section';
 // import { RealtimeSection } from '../components/realtime-section';
 // import { OfflineSection } from '../components/offline-section';
@@ -393,10 +395,17 @@ export default function Home(props: {
               </> : ''
           }
 
+          <VideoPlayButton></VideoPlayButton>
+
+
+          <VideoBox
+           videoId='qRKWD1T5CD4'
+            title="Nuxt Nation 2024: Ben Hong – ..."
+            duration="34:18"
+          />
 
           <VideoSection sem={props.sem} />
 
-          <RuntimesSection sem={props.sem} runtimesRef={runtimesRef} dark={true} />
           <Trophy
             href="/code/"
             title="GitHub"
