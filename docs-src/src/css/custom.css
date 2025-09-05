@@ -5,24 +5,6 @@
     font-style: normal;
 }
 
-
-
-@font-face {
-    font-family: "Geist";
-    src: url("/fonts/Geist-VariableFont_wght.ttf") format("ttf");
-    font-weight: 100 900;
-    /* Variable font weights */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "Geist Mono";
-    src: url("/fonts/GeistMono-VariableFont_wght.ttf") format("ttf");
-    font-weight: 100 900;
-    /* Variable font weights */
-    font-style: normal;
-}
-
 /* You can override the default Infima variables here. */
 :root {
     --ifm-color-primary: #e6008d;
@@ -544,6 +526,7 @@ body {
  * switching between langinpages and docs
  */
 .navbar .navbar__items--right {
+    margin-left: 10%;
 
     display: flex;
     padding: 0 16px;
@@ -576,7 +559,8 @@ body {
 
 /* Navigation Bar Logo */
 .navbar .navbar__brand {
-    margin-left: 0.5rem;
+    margin-left: 10px;
+    margin-right: 28%;
 }
 
 /* Navigation Bar Logo Text */
@@ -588,10 +572,11 @@ body {
 
 .navbar-icon {
     display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    margin-left: 12px;
+    width: 30px;
+    height: 30px;
+    margin-right: 0px;
+    margin-left: 8px;
+    padding: 0;
     opacity: 0.9;
 }
 

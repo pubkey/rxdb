@@ -129,23 +129,41 @@ const config: Config = {
                     label: ' ',
                     position: 'right',
                     className: 'navbar-icon navbar-icon-discord'
-                  },
-                  {
+                },
+                {
                     to: '/code/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
                     className: 'navbar-icon navbar-icon-github'
-                  },
-                  {
-                    href: '/consulting/',
-                    label: 'Support',
-                    position: 'right',
                 },
+
+
+                {
+                    href: '/overview.html',
+                    label: 'Docs',
+                    position: 'left',
+                },
+                {
+                    href: '/replication.html',
+                    label: 'Sync',
+                    position: 'left',
+                },
+                {
+                    href: '/rx-storage.html',
+                    label: 'Storages',
+                    position: 'left',
+                },
+
                 {
                     href: '/premium/',
                     label: 'Premium',
-                    position: 'right',
+                    position: 'left',
+                },
+                {
+                    href: '/consulting/',
+                    label: 'Support',
+                    position: 'left',
                 },
                 // {
                 //     to: '/chat',
@@ -154,11 +172,6 @@ const config: Config = {
                 //     position: 'right',
                 //     className: 'navbar-icon-discord'
                 // },
-                {
-                    href: '/overview.html',
-                    label: 'Docs',
-                    position: 'right',
-                },
                 // {
                 //   href: '/code/',
                 //   target: '_blank',
