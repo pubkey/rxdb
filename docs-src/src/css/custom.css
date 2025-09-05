@@ -435,28 +435,28 @@ p a:hover {
 
 /* Checkbox Styling (Pricing Page) */
 ul.checked {
-    padding-left: 0px;
+    /* padding-left: 0px; */
+    /* list-style: square; */
 }
 
 ul.checked li {
-    text-align: justify;
+    /* text-align: justify;
     margin-bottom: 10px;
-    display: table;
-    list-style: none;
+    list-style: square; */
+
 }
 
 ul.checked li b {
     font-size: var(--fontSizes-m);
 }
 
-ul.checked li:before {
-    content: "✓ ";
+/* ul.checked li:before {
     font-size: 55px;
     padding-right: 10px;
     font-weight: bold;
     display: table-cell;
     vertical-align: middle;
-}
+} */
 
 /* Docs Main Body Content Styling */
 body {
@@ -914,10 +914,6 @@ body {
     }
 }
 
-.block.first.hero .content {
-    margin-top: 54px;
-}
-
 .block.first.hero h1,
 .block.first.hero h1 b {
     font-size: var(--fontSizes-5xl);
@@ -959,6 +955,7 @@ body {
     display: inline-grid;
     margin-right: 10px;
     text-align: center;
+    margin-top: 50px;
 }
 
 .block.first.hero .hero-action .buy-option-action:hover {

@@ -1,6 +1,8 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
 import { DevicesSync } from '../devices-sync';
+import { CheckedList } from '../checked-list';
+import { Button } from '../button';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -28,51 +30,43 @@ export function HeroSection_B(props: {
             </h1>
             <div className="inner">
                 <div className="half left">
-                    <ul className="checked">
-                        <li>
-                            Build apps that work <b className="underline" onClick={() => props.scrollToSection('offline')}>Offline</b>
-                        </li>
-                        <li>
-                            Sync with <b className="underline" onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </li>
-                        <li>
-                            Observable <b className="underline" onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </li>
-                        <li>
-                            All JavaScript <b className="underline" onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </li>
-                    </ul>
-                    {/* <div className="text">
-                        {
-                            props.sem && props.sem.text ? props.sem.text : <>Store data locally to build high performance realtime {getAppName(props)} applications that sync data with the backend and even work when offline.</>
-                        }
-                    </div> */}
 
-                    <br />
-                    <br />
 
+
+                    <CheckedList>
+                        <li>
+                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                        </li>
+                        <li>
+                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                        </li>
+                        <li>
+                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                        </li>
+                        <li>
+                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                        </li>
+                    </CheckedList>
 
                     <div className="hero-action">
-                        <div
-                            className="button button-empty"
+                        <Button
                             onClick={() => {
                                 triggerTrackingEvent('hero_section_how_others', 0.4);
                                 props.scrollToSection('reviews');
                             }}
-                        >
-                            How others use it
-                        </div>
+                        >How others use it</Button>
+
                     </div>
                     <div className="hero-action">
                         <a
-                            className="button"
                             href="/quickstart.html"
                             target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >
-                            Get Started For Free &#x27A4;<br />
+                            <Button primary
+                            >Get Started For Free</Button>
                         </a>
-                        <a
+                        {/* <a
                             href="/premium/"
                             target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4)}
@@ -80,8 +74,7 @@ export function HeroSection_B(props: {
                             <div className="buy-option-action">
                                 (Get Premium)
                             </div>
-                        </a>
-
+                        </a> */}
                     </div>
 
 
