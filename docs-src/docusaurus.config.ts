@@ -117,10 +117,10 @@ const config: Config = {
             respectPrefersColorScheme: false,
         },
         navbar: {
-            title: 'RxDB',
+            title: '',
             logo: {
-                alt: 'RxDB Logo',
-                src: 'files/logo/logo.svg',
+                alt: 'RxDB',
+                src: 'files/logo/logo_text_white.svg',
             },
             items: [
                 {

@@ -1,8 +1,11 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("ttf");
+    font-weight: 100 900;
+    font-style: normal;
+}
+
+
 
 @font-face {
     font-family: "Geist";
@@ -47,8 +50,8 @@
 }
 
 html[data-theme="dark"] {
-    --ifm-background-color: #10081d;
-    --ifm-navbar-background-color: #10081d;
+    --ifm-background-color: #0D0F18;
+    --ifm-navbar-background-color: #0D0F18;
     --ifm-code-background: var(--bg-color-code);
 }
 
@@ -58,13 +61,12 @@ pre code {
 
 :root {
     color-scheme: dark;
+    --ifm-font-family-base: "Atkinson Hyperlegible Mono", monospace;
+    --ifm-font-family-monospace: "Atkinson Hyperlegible Mono", monospace;
 
-    --ifm-font-family-base: "Geist", sans-serif;
-    --ifm-font-family-monospace: "Geist Mono", monospace;
-
-    --bg-color: #1a202c;
-    --bg-color-dark: #171923;
-    --bg-color-darkest: #0d0f18;
+    --bg-color: #2C3547;
+    --bg-color-dark: #0D0F18;
+    --bg-color-darkest: #0D0F18;
     --bg-color-code: #282330;
 
     --fontSizes-xxs: 0.6rem;
@@ -506,18 +508,33 @@ body {
 /* Navigation Bar Styling */
 .navbar {
     z-index: 10;
-    height: 4rem;
-    box-shadow: none;
+
+    display: flex;
+    padding: 16px 32px;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+    align-self: stretch;
     border-bottom: 1px solid var(--ifm-toc-border-color);
+    height: auto;
+
+
+    /* height: 4rem;
+    box-shadow: none;
     font-size: var(--fontSizes-s);
     width: 100%;
-    margin: 0 auto;
+    margin: 0 auto; */
 }
 
 .navbar .navbar__inner {
-    max-width: 86rem;
+    display: flex;
+    width: 1216px;
+    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+    /* max-width: 86rem;
     margin-left: auto;
-    margin-right: auto;
+    margin-right: auto; */
 }
 
 
@@ -527,13 +544,25 @@ body {
  * switching between langinpages and docs
  */
 .navbar .navbar__items--right {
+
     display: flex;
-    flex-direction: row-reverse;
+    padding: 0 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+
+    /* display: flex;
+    */
+    flex-direction: row-reverse; 
 }
 
+.navbar__logo {
+    height: 38px;
+    aspect-ratio: 106.93/38.00;
+}
 
 .navbar__items a {
-    color: var(--fontColor-offwhite);
+    color: var(--fontColor-white);
     font-weight: 400;
 }
 
@@ -901,21 +930,22 @@ body {
 }
 
 .block.first.hero .content {
-    margin-top: 90px;
+    margin-top: 54px;
 }
 
 .block.first.hero h1,
 .block.first.hero h1 b {
-    font-size: var(--fontSizes-6xl);
-    font-family: Helvetica;
-    font-weight: 400;
+    font-size: var(--fontSizes-5xl);
+    font-weight: 700;
     line-height: 140%;
-    text-align: left;
-    letter-spacing: -0.1rem;
+    text-align: center;
+    line-height: normal;
 }
 
 .block.first.hero h1 {
-    color: white;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .block.first.hero h1 b {
@@ -2773,7 +2803,6 @@ footer a:visited {
 .consulting-page .block.first h1 {
     color: white;
     font-size: var(--fontSizes-6xl);
-    font-family: Helvetica;
     font-weight: 400;
     text-align: left;
     line-height: 120%;
@@ -2785,7 +2814,6 @@ footer a:visited {
 .consulting-page .block.first h3 {
     color: #8e8e8e;
     font-size: var(--fontSizes-l);
-    font-family: Helvetica;
     font-weight: 400;
     text-align: left;
     line-height: 150%;

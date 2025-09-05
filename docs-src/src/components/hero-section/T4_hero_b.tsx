@@ -23,7 +23,7 @@ export function HeroSection_B(props: {
                 paddingBottom: 40
             }}>
                 {
-                    props.sem ? props.sem.title : <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data inside of your App</>
+                    props.sem ? props.sem.title : <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>
                 }
             </h1>
             <div className="inner">
