@@ -19,7 +19,11 @@ import {
     isFastMode,
     ensureReplicationHasNoErrors,
     randomStringWithSpecialChars,
-    isDeno
+    isDeno,
+    getPullHandler,
+    getPushHandler,
+    ensureEqualState,
+    getPullStream
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -33,7 +37,6 @@ import {
     RxCollection,
     ensureNotFalsy,
     randomToken,
-    rxStorageInstanceToReplicationHandler,
     normalizeMangoQuery,
     RxError,
     RxTypeError,
@@ -43,7 +46,6 @@ import {
     RxJsonSchema,
     createBlob,
     RxAttachmentCreator,
-    DeepReadonly,
     requestIdlePromise,
     prepareQuery,
     addRxPlugin,
@@ -56,13 +58,10 @@ import {
 } from '../../plugins/replication/index.mjs';
 
 import type {
-    ReplicationPullHandler,
-    ReplicationPushHandler,
-    RxReplicationWriteToMasterRow,
     RxStorage,
     RxStorageDefaultCheckpoint
 } from '../../plugins/core/index.mjs';
-import { firstValueFrom, map, Observable, Subject, timer } from 'rxjs';
+import { firstValueFrom, map, Subject, timer } from 'rxjs';
 import type { HumanWithCompositePrimary, HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
@@ -71,88 +70,7 @@ import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 type CheckpointType = any;
 type TestDocType = HumanWithTimestampDocumentType;
 
-/**
- * Creates a pull handler that always returns
- * all documents.
-*/
-export function getPullHandler<RxDocType>(
-    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
-): ReplicationPullHandler<RxDocType, CheckpointType> {
-    const helper = rxStorageInstanceToReplicationHandler(
-        remoteCollection.storageInstance,
-        remoteCollection.database.conflictHandler as any,
-        remoteCollection.database.token
-    );
-    const handler: ReplicationPullHandler<RxDocType, CheckpointType> = async (
-        latestPullCheckpoint: CheckpointType | null,
-        batchSize: number
-    ) => {
-        const result = await helper.masterChangesSince(latestPullCheckpoint, batchSize);
-        return result;
-    };
-    return handler;
-}
-export function getPullStream<RxDocType>(
-    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
-): Observable<RxReplicationPullStreamItem<RxDocType, any>> {
-    const helper = rxStorageInstanceToReplicationHandler(
-        remoteCollection.storageInstance,
-        remoteCollection.conflictHandler,
-        remoteCollection.database.token
-    );
-    return helper.masterChangeStream$;
-}
-export function getPushHandler<RxDocType>(
-    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
-): ReplicationPushHandler<RxDocType> {
-    const helper = rxStorageInstanceToReplicationHandler(
-        remoteCollection.storageInstance,
-        remoteCollection.conflictHandler,
-        remoteCollection.database.token
-    );
-    const handler: ReplicationPushHandler<RxDocType> = async (
-        rows: RxReplicationWriteToMasterRow<RxDocType>[]
-    ) => {
-        const result = await helper.masterWrite(rows);
-        return result;
-    };
-    return handler;
-}
 
-export async function ensureEqualState<RxDocType>(
-    collectionA: RxCollection<RxDocType>,
-    collectionB: RxCollection<RxDocType>,
-    context?: string
-) {
-    const [
-        docsA,
-        docsB
-    ] = await Promise.all([
-        collectionA.find().exec().then(docs => docs.map(d => d.toJSON(true))),
-        collectionB.find().exec().then(docs => docs.map(d => d.toJSON(true)))
-    ]);
-
-    docsA.forEach((docA, idx) => {
-        const docB = docsB[idx];
-        const cleanDocToCompare = (doc: DeepReadonly<RxDocType>) => {
-            return Object.assign({}, doc, {
-                _meta: undefined,
-                _rev: undefined
-            });
-        };
-        try {
-            assert.deepStrictEqual(
-                cleanDocToCompare(docA),
-                cleanDocToCompare(docB)
-            );
-        } catch (err) {
-            console.log('## ERROR: State not equal (context: "' + context + '")');
-            console.log(JSON.stringify(docA, null, 4));
-            console.log(JSON.stringify(docB, null, 4));
-            throw new Error('STATE not equal (context: "' + context + '")');
-        }
-    });
-}
 
 export const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
 describe('replication.test.ts', () => {

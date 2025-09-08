@@ -12,6 +12,7 @@ export * from './test-util.ts';
 
 export * from './schema-objects.ts';
 export * from './schemas.ts';
+export * from './replication.ts';
 
 import * as humansCollectionConst from './humans-collection.ts';
 export const humansCollection = humansCollectionConst;
