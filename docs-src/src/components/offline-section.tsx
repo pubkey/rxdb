@@ -1,5 +1,6 @@
 import { MutableRefObject } from 'react';
 import { SemPage, getAppName } from '../pages';
+import { CheckedList } from './checked-list';
 
 export function OfflineSection(props: {
     dark: boolean;
@@ -8,17 +9,9 @@ export function OfflineSection(props: {
     offlineRef: MutableRefObject<HTMLDivElement>;
 }) {
     return <div className={'block offline-first ' + (props.dark ? 'dark' : '')} id="offline" ref={props.offlineRef} style={{ order: props.order }}>
-        <div className="offline-image-wrapper">
-            <img
-                src={props.dark ? '/files/icons/wifi/wifi_1a202c.svg' : '/files/icons/wifi/wifi_171923.svg'}
-                className="offline-image beating-second"
-                loading="lazy"
-                alt="offline"
-            />
-        </div>
         <div className="content">
             <h2>
-                Online <b className="underline">is Optional</b>
+                Online <b>is Optional</b>
             </h2>
             <div className="full-width">
                 <div className="half left">
@@ -26,9 +19,8 @@ export function OfflineSection(props: {
                         RxDB adopts an <a href="/offline-first.html" target="_blank">offline-first</a> approach, keeping your app fully functional even without a connection.
                         Data is stored locally on the {getAppName(props)} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
                     </p>
-                </div>
-                <div className="half right">
-                    <ul className="checked">
+
+                    <CheckedList>
                         <li>
                             Keep your {getAppName(props)} app running <b>offline</b>
                         </li>
@@ -41,7 +33,11 @@ export function OfflineSection(props: {
                         <li>
                             Reduces backend load and <b>scales better</b>
                         </li>
-                    </ul>
+                    </CheckedList>
+
+                </div>
+                <div className="half right">
+
                 </div>
             </div>
         </div>

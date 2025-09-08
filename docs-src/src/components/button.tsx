@@ -3,15 +3,17 @@ import { CSSProperties, ReactNode, MouseEventHandler } from "react";
 type ButtonProps = {
     children: ReactNode;
     primary?: boolean;
+    icon?: React.ReactNode;
     onClick?: MouseEventHandler<HTMLDivElement>;
+    style?: CSSProperties;
 };
 
 const styles: Record<string, CSSProperties> = {
     base: {
-        display: "flex",
+        display: "inline-flex",
         height: "45px",
         padding: "6px 25px",
-        flexDirection: "column",
+        flexDirection: "row",  
         justifyContent: "center",
         alignItems: "center",
         gap: "10px",
@@ -23,7 +25,7 @@ const styles: Record<string, CSSProperties> = {
         textAlign: "center",
         transition: "all 0.2s ease-in-out",
         userSelect: "none",
-        boxSizing: "border-box", 
+        boxSizing: "border-box",
     },
     primary: {
         background: "linear-gradient(90deg, #ED168F 0%, #B2218B 100%)",
@@ -34,9 +36,15 @@ const styles: Record<string, CSSProperties> = {
         color: "#fff",
         border: "2px solid #fff",
     },
+    iconWrapper: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: 0,
+    },
 };
 
-export function Button({ children, primary, onClick }: ButtonProps) {
+export function Button({ children, primary, icon, onClick, style }: ButtonProps) {
     return (
         <div
             role="button"
@@ -50,8 +58,10 @@ export function Button({ children, primary, onClick }: ButtonProps) {
             style={{
                 ...styles.base,
                 ...(primary ? styles.primary : styles.secondary),
+                ...style
             }}
         >
+            {icon && <span style={styles.iconWrapper}>{icon}</span>}
             {children}
         </div>
     );

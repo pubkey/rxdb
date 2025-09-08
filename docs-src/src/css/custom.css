@@ -7,8 +7,8 @@
 
 /* You can override the default Infima variables here. */
 :root {
-    --ifm-color-primary: #e6008d;
-    --ifm-color-primary-dark: #e6008d;
+    --ifm-color-primary: #ED168F;
+    --ifm-color-primary-dark: #ED168F;
     --ifm-color-primary-darker: #8d2089;
     --ifm-color-primary-darkest: #5f2688;
     --ifm-color-primary-light: #29d5b0;
@@ -20,8 +20,8 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme="dark"] {
-    --ifm-color-primary: #e6008d;
-    --ifm-color-primary-dark: #e6008d;
+    --ifm-color-primary: #ED168F;
+    --ifm-color-primary-dark: #ED168F;
     --ifm-color-primary-darker: #8d2089;
     --ifm-color-primary-darkest: #5f2688;
     --ifm-color-primary-light: #29d5b0;
@@ -45,6 +45,9 @@ pre code {
     color-scheme: dark;
     --ifm-font-family-base: "Atkinson Hyperlegible Mono", monospace;
     --ifm-font-family-monospace: "Atkinson Hyperlegible Mono", monospace;
+
+
+    --ifm-heading-margin-bottom: 40px;
 
     --bg-color: #2C3547;
     --bg-color-dark: #0D0F18;
@@ -70,7 +73,7 @@ pre code {
     --fontColor-offwhite: #e0e0e0;
     --fontColor-gray: lightgray;
 
-    --color-top: #e6008d;
+    --color-top: #ED168F;
     --color-middle: #8d2089;
     --color-bottom: #5f2688;
 }
@@ -213,7 +216,7 @@ a:visited {
 
 .half {
     flex: 1;
-    width: calc(50% - 20px);
+    width: calc(50% - 120px);
     padding-left: 10px;
     padding-right: 10px;
 }
@@ -358,7 +361,7 @@ h1 .underline {
 
 h2 {
     margin-top: 0px;
-    font-size: var(--fontSizes-4xl);
+    font-size: var(--fontSizes-5xl);
 }
 
 h3 {
@@ -409,8 +412,9 @@ td a {
     font-weight: 600;
     text-decoration: underline;
     text-decoration-color: var(--color-top) !important;
-    text-decoration-thickness: 1.25px;
-    text-underline-offset: 4px;
+    text-decoration-thickness: 10%;
+    text-underline-offset: 2px;
+    text-underline-position: from-font;
 }
 
 .markdown a:hover,
@@ -536,7 +540,7 @@ body {
 
     /* display: flex;
     */
-    flex-direction: row-reverse; 
+    flex-direction: row-reverse;
 }
 
 .navbar__logo {
@@ -609,7 +613,7 @@ body {
     width: 96%;
     padding-left: 2%;
     padding-right: 2%;
-    max-width: 1348px;
+    max-width: 1120px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -644,12 +648,12 @@ body {
 }
 
 .slider-content {
-    padding: 30px 40px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     background: var(--bg-color-dark);
     height: auto;
-    border-radius: 15px;
+    max-width: 268px;
 }
 
 .slider-content h3 {
@@ -665,8 +669,8 @@ body {
 }
 
 .slider-content .slider-profile img {
-    width: 70px;
-    height: 70px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
     border-radius: 15px;
     padding: 5px;
@@ -686,11 +690,17 @@ body {
 }
 
 .slider-content .slider-profile .developer {
-    font-size: 1.1em;
-    margin-bottom: 0px;
-    font-weight: bold;
-    color: var(--color-top);
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
+
+.slider-content .slider-profile .developer b {
+    font-weight: 800;
+    color: white;
+}
+
 
 .slider-content .slider-profile .company-link {
     color: #fff;
@@ -699,10 +709,6 @@ body {
 }
 
 @media (min-width: 480px) {
-    .slider-content {
-        padding: 30px 40px;
-        height: auto;
-    }
 
     .slider-content h3 {
         font-size: 1em;
@@ -714,9 +720,6 @@ body {
 }
 
 @media (min-width: 600px) {
-    .slider-content {
-        padding: 30px 40px;
-    }
 
     .slider-content h3 {
         font-size: 1em;
@@ -728,27 +731,12 @@ body {
 }
 
 @media (min-width: 900px) {
-    .slider-content {
-        padding: 36px 46px;
-        height: auto;
-    }
-
     .slider-content h3 {
         font-size: 1.1em;
     }
 }
 
-@media (min-width: 1024px) {
-    .slider-content {
-        padding: 40px 50px;
-        height: auto;
-    }
 
-    .slider-content h3 {
-        font-size: 1.3em;
-        line-height: 30px;
-    }
-}
 
 .device {
     display: flex;
@@ -767,7 +755,7 @@ body {
     -webkit-transition: background-color 100ms linear;
     -ms-transition: background-color 100ms linear;
     transition: background-color 100ms linear;
-    background-color: #e6008d;
+    background-color: #ED168F;
 }
 
 .device.tablet {
@@ -1059,6 +1047,10 @@ body {
     position: relative;
 }
 
+.block.replication h2 {
+    text-align: center;
+}
+
 @media (max-width: 900px) {
     .block.replication .replication-icons {
         margin-left: 5%;
@@ -1153,6 +1145,10 @@ body {
 .block.offline-first {
     position: relative;
     overflow: hidden;
+}
+
+.block.offline-first h2 {
+    text-align: center;
 }
 
 .block.offline-first .offline-image-wrapper {
@@ -1680,24 +1676,30 @@ ul.checked li:before {
     -webkit-transition: background-color 400ms linear;
     -ms-transition: background-color 400ms linear;
     transition: background-color 400ms linear;
-    background-color: #e6008d;
+    background-color: #ED168F;
 }
 
 .trophy {
     display: flex;
     box-sizing: content-box;
-    color: #eac54f;
-    background-color: var(--bg-color);
-    border-radius: 6px;
+
+    border-radius: 10px;
     border-style: solid;
-    border-width: 1px;
+    border-width: 2px;
+    color: #eac54f;
+
+    padding: 12px;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    align-items: center;
 
     position: absolute;
     z-index: 9;
-    padding-top: 10px;
-    padding-bottom: 10px;
     margin-top: -30px;
     height: 40px;
+
+    background-color: var(--bg-color);
+    box-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30);
 
     width: 250px;
     padding-left: 10px;
@@ -1711,51 +1713,69 @@ ul.checked li:before {
 }
 
 .trophy img {
-    box-sizing: content-box;
-    height: 100%;
-    float: left;
-    padding-right: 10px;
+    display: flex;
+    width: 30px;
+    height: 30px;
+    flex-direction: column;
+    align-items: flex-start;
+    aspect-ratio: 1/1;
+    margin-right: 10px;
+    margin-top: -4px;
 }
 
 .trophy .subtitle {
     box-sizing: content-box;
     text-transform: uppercase;
-    font-size: 65%;
-    font-weight: bold;
+
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 
 .trophy .title {
     box-sizing: content-box;
-    font-size: 140%;
-    line-height: normal;
-    font-weight: bold;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 25px;
 }
 
 .trophy .valuetitle {
     box-sizing: content-box;
     text-transform: uppercase;
-    font-size: 65%;
-    font-weight: bold;
+
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 
 .trophy .value {
     box-sizing: content-box;
-    font-weight: bold;
     margin-top: 3px;
     line-height: normal;
     font-variant-numeric: tabular-nums;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 25px;
+    /* 156.25% */
 }
 
 .trophy .arrow-up {
     box-sizing: content-box;
-    width: 0;
     float: right;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-bottom: 9px solid #eac54f;
-    margin-top: 4px;
-    margin-left: 3px;
+    margin-top: 2px;
+    margin-left: 5px;
+
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+
 }
 
 .trophy.github {
@@ -1772,9 +1792,6 @@ ul.checked li:before {
     box-shadow: 2px 2px 13px white, -2px -1px 14px white;
 }
 
-.trophy.twitter .arrow-up {
-    border-bottom: 9px solid white;
-}
 
 .trophy.discord {
     color: #5962ee;
@@ -1784,9 +1801,6 @@ ul.checked li:before {
     box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee;
 }
 
-.trophy.discord .arrow-up {
-    border-bottom: 9px solid #5962ee;
-}
 
 .samp-wrapper {
     background-color: var(--bg-color-dark);
@@ -2917,7 +2931,7 @@ footer a:visited {
 }
 
 .consulting-page .block.packages h6 {
-    color: #e6008d;
+    color: #ED168F;
     font-size: 1em;
     font-weight: 500;
     line-height: 130%;
@@ -3019,7 +3033,7 @@ footer a:visited {
 
 .consulting-page .block.benefits .ant-tabs-tab-active {
     margin: 0;
-    border-left: 2px solid #e6008d;
+    border-left: 2px solid #ED168F;
 }
 
 .consulting-page .block.benefits .ant-tabs-tab-active .ant-tabs-tab-btn {
@@ -3255,8 +3269,8 @@ footer a:visited {
 }
 
 .slider-content .slider-profile img {
-    width: 70px;
-    height: 70px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
     border-radius: 100%;
     padding: 5px;
@@ -3302,6 +3316,21 @@ footer a:visited {
     flex-grow: 1;
     align-self: stretch;
     height: auto;
+}
+
+.slick-next:before {
+    content: '' !important;
+    /* wipe out default chevrons */
+}
+
+.slick-prev:before {
+    content: '' !important;
+    /* wipe out default chevrons */
+}
+
+.slick-prev,
+.slick-next {
+    top: 40% !important;
 }
 
 .slick-list {
@@ -3854,7 +3883,7 @@ footer a:visited {
     .consulting-page .block.benefits .ant-tabs-tab-active {
         margin: 0;
         border-left: unset;
-        border-bottom: 2px solid #e6008d;
+        border-bottom: 2px solid #ED168F;
     }
 
     .consulting-page .block.benefits .ant-tabs-tab {

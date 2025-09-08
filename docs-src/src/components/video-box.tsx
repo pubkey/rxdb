@@ -2,7 +2,7 @@ import { CSSProperties, useState } from "react";
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
 
-type VideoBoxProps = {
+export type VideoBoxProps = {
     videoId: string;
     title: string;
     duration: string;
@@ -14,11 +14,12 @@ const styles: Record<string, CSSProperties> = {
     container: {
         display: "flex",
         flexDirection: "column",
+
+        padding: '12px 12px 9px 12px',
+        gap: 8,
+
         width: "320px",
-        backgroundColor: "#0D0F18", // matches dark bg in screenshot
-        padding: "0.5rem",
-        fontFamily: "monospace",
-        color: "#fff",
+        backgroundColor: "#0D0F18",
     },
     thumbnailWrapper: {
         position: "relative",

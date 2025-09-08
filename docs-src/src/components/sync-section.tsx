@@ -14,14 +14,12 @@ export function SyncSection(props: {
 }) {
   return <div className={'block replication ' + (props.dark ? 'dark' : '')} id="replication" ref={props.replicationRef} style={{ order: props.order }}>
     <div className="content">
+      <h2>
+        Sync with <b>any Backend</b>
+      </h2>
+
+
       <div className="half left">
-        <br />
-        <br />
-        <br />
-        <br />
-        <h2>
-          Sync with <b className="underline">any Backend</b>
-        </h2>
         <p>
           RxDB's simple and high-performance <a href="/replication.html" target="_blank">Sync Engine</a> powers real-time synchronization between {getAppName(props)} clients and servers.
           Either use one of our prebuild replication plugins...
@@ -65,8 +63,9 @@ export function SyncSection(props: {
 
         </p>
         <p style={{
-          fontSize: '300%'
-        }}>OR...</p>
+          fontSize: '30px',
+          fontWeight: 800
+        }}>OR</p>
         <p>...sync with your <b>custom server</b> by implementing <a href="/replication-http.html" target="_blank">three simple endpoints</a>.</p>
       </div>
       <div className="half right">

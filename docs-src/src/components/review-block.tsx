@@ -1,16 +1,19 @@
 import Slider from 'react-slick';
+import { IconQuoteEnd, IconQuoteStart } from './icons/quote';
 
 
 export const REVIEW_ITEMS: {
     label: string;
     description: string;
+    location: string;
     href: string;
     target: '_blank';
     logo: string;
     logoStyle: 'slider-logo-black ' | 'slider-logo-white ';
 }[] = [
         {
-            label: 'Readwise, USA',
+            label: 'Readwise',
+            location: 'USA',
             description: 'We use RxDB because it works across multiple platforms and we need to store of a great deal of data, some users have tens of thousands of documents! RxDB was the only cross-platform, offline-first solution with good enough performance to meet our needs.',
             href: 'https://readwise.io/',
             target: '_blank',
@@ -18,7 +21,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-black '
         },
         {
-            label: 'SafeEx, Denmark',
+            label: 'SafeEx',
+            location: 'Denmark',
             description: 'We use RxDB for our offline-first inspection software. It ensures accurate data even under poor connectivity, while its single interface for multiple databases streamlines development. RxDB\'s flexibility also supports easy expansion to more platforms and environments.',
             href: 'https://safeex.com/',
             target: '_blank',
@@ -26,7 +30,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-white '
         },
         {
-            label: 'WebWare, Italy',
+            label: 'WebWare',
+            location: 'Italy',
             description: 'We use RxDB in our global offline-first app for technicians. Its robust features and total control ensure reliable performance, even with poor connectivity, resulting in a seamless maintenance solution.',
             href: 'https://webware.dev/',
             target: '_blank',
@@ -34,16 +39,17 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-black '
         },
         {
-            label: 'myAgro, Africa',
+            label: 'myAgro',
+            location: 'Africa',
             description: 'We rely on RxDB to manage all our data in one place. Our custom store became unwieldy, so we switched to RxDB for schema migrations, real-time replication, conflict resolution, and reactive programming. Its push and pull handlers also integrate smoothly with our existing APIs.',
-
             href: 'https://myagro.org/',
             target: '_blank',
             logo: '/files/companies/myagro.svg',
             logoStyle: 'slider-logo-black ',
         },
         {
-            label: 'MoreApp, Germany',
+            label: 'MoreApp',
+            location: 'Germany',
             description: `We provide a mobile app that is used by people in the
         field to fill in valuable information like inspections,
         surveys and audits. Our users don't always have access to the internet, building from an Offline-first approach with RxDB allows us to have the data integrity we need without being online.`,
@@ -53,7 +59,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-black ',
         },
         {
-            label: 'ALTGRAS, Guinea',
+            label: 'ALTGRAS',
+            location: 'Guinea',
             description: `We use RxDB to create applications capable of being
         used in the most remote areas where Internet access is
         really a challenge.`,
@@ -63,7 +70,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-white ',
         },
         {
-            label: 'WooCommerce POS, Australia',
+            label: 'WooCommerce POS',
+            location: 'Australia',
             description: `We use RxDB to provide an offline first, cross platform
         point of sale system. With RxDB we could create a web-, desktop- and mobile app using the same code base.`,
             href: 'https://wcpos.com/',
@@ -72,7 +80,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-black ',
         },
         {
-            label: 'atroo GmbH, Germany',
+            label: 'atroo GmbH',
+            location: 'Germany',
             description: `RxDB is a main component in building offline-ready
         multichannel apps. It has become our default stack for
         this kind of apps.`,
@@ -82,7 +91,8 @@ export const REVIEW_ITEMS: {
             logoStyle: 'slider-logo-black ',
         },
         {
-            label: 'Nutrien, Canada',
+            label: 'Nutrien',
+            location: 'Canada',
             description: 'With RxDB we have built an offline capable Progressive Web Application that is used by our borer operators to report on conditions at the mineface.',
             href: 'https://nutrien.com/',
             target: '_blank',
@@ -100,9 +110,9 @@ export const REVIEW_ITEMS: {
 
 
 export const SLICK_SLIDER_SETTINGS = {
-    dots: true,
+    dots: false,
     centerMode: true,
-    centerPadding: '180px',
+    centerPadding: '380px',
     infinite: true,
     arrows: false,
     adaptiveHeight: true,
@@ -117,8 +127,7 @@ export const SLICK_SLIDER_SETTINGS = {
                 slidesToShow: 2,
                 slidesToScroll: 1,
                 infinite: true,
-                dots: true,
-                centerPadding: '180px',
+                dots: false,
             },
         },
         {
@@ -127,8 +136,7 @@ export const SLICK_SLIDER_SETTINGS = {
                 slidesToShow: 2,
                 slidesToScroll: 1,
                 infinite: true,
-                dots: true,
-                centerPadding: '100px',
+                dots: false,
             },
         },
         {
@@ -137,8 +145,7 @@ export const SLICK_SLIDER_SETTINGS = {
                 slidesToShow: 2,
                 slidesToScroll: 1,
                 infinite: true,
-                dots: true,
-                centerPadding: '40px',
+                dots: false,
             },
         },
         {
@@ -147,9 +154,8 @@ export const SLICK_SLIDER_SETTINGS = {
                 slidesToShow: 1,
                 slidesToScroll: 1,
                 infinite: true,
-                dots: true,
+                dots: false,
                 centerMode: false,
-                centerPadding: '0px',
             },
         },
         {
@@ -158,10 +164,9 @@ export const SLICK_SLIDER_SETTINGS = {
                 slidesToShow: 1,
                 slidesToScroll: 1,
                 infinite: false,
-                dots: true,
+                dots: false,
                 swipeToSlide: true,
                 centerMode: false,
-                centerPadding: '0px',
             },
         },
     ],
@@ -174,13 +179,14 @@ export function ReviewsBlock() {
             <Slider {...SLICK_SLIDER_SETTINGS}>
                 {REVIEW_ITEMS.map((item) => (
                     <div className="slider-content" key={item.label}>
-                        <img
-                            src="/img/quote.svg"
-                            className="review-img"
-                            alt="RxDB review quote"
-                            loading="lazy"
-                        />
-                        <h3>{item.description}</h3>
+                        <IconQuoteStart />
+                        <p style={{
+                            fontSize: 14,
+                            fontStyle: 'normal',
+                            fontWeight: 500,
+                            lineHeight: '21px',
+                        }}>{item.description}</p>
+                        <IconQuoteEnd style={{ textAlign: 'right' }} />
                         <div className="slider-profile">
                             <img
                                 className={item.logoStyle}
@@ -189,10 +195,10 @@ export function ReviewsBlock() {
                                 alt="logo"
                             />
                             <div className="slider-info">
-                                <p className="developer">{item.label}</p>
-                                <span className="company-link"                                >
+                                <span className="developer"><b>{item.label}</b> ({item.location})</span>
+                                {/* <span className="company-link"                                >
                                     {new URL(item.href).hostname}
-                                </span>
+                                </span> */}
                                 {/* <a
                                     href={item.href}
                                     rel='nofollow noopener'
