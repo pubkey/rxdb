@@ -139,11 +139,11 @@ import {
     getRxStorageSQLite,
     getSQLiteBasicsNodeNative
 } from 'rxdb-premium/plugins/storage-sqlite';
-import sqlite from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLite({
-        sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+        sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
     })
 });
 ```
