@@ -1,5 +1,6 @@
-import React, { CSSProperties, useRef } from "react";
+import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import { EmojiMessageBox } from "./emoji-chat-message";
+import { Subject } from 'rxjs';
 
 type ChatItem = {
     emoji: string;
@@ -105,21 +106,97 @@ export function EmojiChat({ items, onButtonClick }: EmojiChatProps) {
 }
 
 
-export function EmojiChatStateful() {
-    const idRef = useRef<string>(
-        Math.random().toString(36).substring(2, 10) // short random id
+type EmojiChatStatefulProps = {
+    online: boolean;
+    chatId: string;
+};
+
+export function EmojiChatStateful({ online, chatId }: EmojiChatStatefulProps) {
+    // holds unsynced chat items for THIS instance (with timestamps so we can show them)
+    const unsynced = useRef<ChatItem[]>([]);
+  
+    // remembers the last time items were refreshed
+    const lastOnlineAt = useRef<number | null>(null);
+  
+    // local state for visible messages
+    const [items, setItems] = useState<ChatItem[]>([]);
+  
+    // helper to reload items from storage AND include our unsynced items
+    function refreshItems() {
+      const stored = getEmojiChatState();
+      const merged = [...stored, ...unsynced.current];
+  
+      // ✅ sort by unixTime ascending for consistent order
+      merged.sort((a, b) => a.unixTime - b.unixTime);
+  
+      setItems(merged);
+      lastOnlineAt.current = Date.now(); // track last refresh time
+    }
+  
+    // initial load + subscribe to subject (emits on local writes and cross-tab updates)
+    useEffect(() => {
+      refreshItems();
+  
+      const sub = chatStateSubject.subscribe(() => {
+        refreshItems();
+      });
+  
+      return () => sub.unsubscribe();
+    }, []);
+  
+    // flush unsynced items when switching to online
+    useEffect(() => {
+      if (online && unsynced.current.length > 0) {
+        addEmojiChatStates(
+          unsynced.current.map(({ emoji, creatorId }) => ({ emoji, creatorId }))
+        );
+        unsynced.current = [];
+        refreshItems();
+      }
+    }, [online]);
+  
+    function handleAdd(emoji: string) {
+      const entry: ChatItem = {
+        emoji,
+        creatorId: chatId,
+        unixTime: Date.now(),
+      };
+  
+      if (online) {
+        // write-through and emit via subject
+        addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId }]);
+        refreshItems();
+      } else {
+        // queue locally and show immediately
+        unsynced.current.push(entry);
+        refreshItems();
+      }
+    }
+  
+    // map persisted+unsynced items into EmojiChat's format
+    const mappedItems = items.map((item) => ({
+      emoji: item.emoji,
+      direction: item.creatorId === chatId ? ("right" as const) : ("left" as const),
+    }));
+  
+    return (
+      <EmojiChat
+        items={mappedItems}
+        onButtonClick={(_, emoji) => {
+          handleAdd(emoji);
+        }}
+      />
     );
-    const chatId = idRef.current;
-
-    return <EmojiChat
-        items={[]}
-        onButtonClick={(i, emoji) => addEmojiChatState(emoji, chatId)}
-    />;
-}
-
+  }
 
 
 const STORAGE_ID = 'emoji-chat-state';
+const chatStateSubject = new Subject<void>();
+window.addEventListener("storage", () => {
+    chatStateSubject.next();
+});
+
+
 export function getEmojiChatState(): ChatItem[] {
     const data = localStorage.getItem(STORAGE_ID);
     if (!data) {
@@ -128,11 +205,16 @@ export function getEmojiChatState(): ChatItem[] {
     return JSON.parse(data);
 }
 
-export function addEmojiChatState(emoji: string, creatorId: string) {
+export function addEmojiChatStates(list: { emoji: string, creatorId: string }[]) {
     const state = getEmojiChatState();
-    state.push({
-        creatorId,
-        emoji,
-        unixTime: Date.now()
+    list.forEach(i => {
+        state.push({
+            creatorId: i.creatorId,
+            emoji: i.emoji,
+            unixTime: Date.now()
+        });
     });
+    console.log('addEmojiChatStates set item!');
+    localStorage.setItem(STORAGE_ID, JSON.stringify(state));
+    chatStateSubject.next();
 }

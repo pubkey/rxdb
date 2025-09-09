@@ -4,11 +4,15 @@ import { CheckedList } from '../checked-list';
 import { Button } from '../button';
 import { HeroRuntimes } from '../runtimes';
 import { EmojiChat, EmojiChatStateful } from '../emoji-chat';
+import { PixelToggle } from '../toggle';
+import { useState } from 'react';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
+
+    const [online, setOnline] = useState(true);
 
     return <div className="block first hero centered dark">
         <div className="content">
@@ -37,8 +41,9 @@ export function HeroSection_B(props: {
 
 
                     <hr />
-                    <EmojiChatStateful
-                    />
+                    <PixelToggle checked={online} onChange={setOnline} />
+                    <EmojiChatStateful online={online} chatId='hero_left' />
+                    <EmojiChatStateful online={online} chatId='hero_right' />
 
                     <hr />
 
