@@ -42,9 +42,11 @@ import {
     getSQLiteBasicsNodeNative
 } from 'rxdb/plugins/storage-sqlite';
 
-// Create a Storage for it
+// Create a Storage for it, here we use the nodejs-native SQLite module
+// other SQLite modules can be used with a different sqliteBasics adapter
+import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLiteTrial({
-    sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+    sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 
 // Create a Database with the Storage
@@ -63,9 +65,11 @@ import {
     getSQLiteBasicsNodeNative
 } from 'rxdb-premium/plugins/storage-sqlite';
 
-// Create a Storage for it
+// Create a Storage for it, here we use the nodejs-native SQLite module
+// other SQLite modules can be used with a different sqliteBasics adapter
+import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLite({
-    sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+    sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 
 // Create a Database with the Storage
