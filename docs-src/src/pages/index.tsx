@@ -39,6 +39,8 @@ import { IconPremium } from '../components/icons/premium';
 import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
+import { PixelToggle } from '../components/toggle';
+import { IconWifi } from '../components/icons/wifi';
 // import { SyncSection } from '../components/sync-section';
 // import { RealtimeSection } from '../components/realtime-section';
 // import { OfflineSection } from '../components/offline-section';
@@ -393,6 +395,8 @@ export default function Home(props: {
 
   }
 
+  const [online, setOnline] = useState(false);
+
   return (
     <>
       <Head>
@@ -453,21 +457,6 @@ export default function Home(props: {
           />
 
 
-
-          {/* <div className="" style={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-
-
-
-
-
-
-
-
-
-          </div> */}
 
           <div className="block features dark">
             <div className="content">
@@ -544,206 +533,11 @@ export default function Home(props: {
               </div>
             </div>
             <ReviewsBlock></ReviewsBlock>
+
+            <PixelToggle checked={online} onChange={setOnline} />
+            <IconWifi />
           </div>
 
-          {/* <div className="block fifth dark">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Trusted and <b className="underline">open source</b>
-                </h2>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/github-star.svg" alt="github star" />
-                  <div className="label">Github Stars</div>
-                  <a
-                    className="value"
-                    href="/code/"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    20172
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/download.svg" alt="npm downloads" />
-                  <div className="label">npm downloads</div>
-                  <a
-                    className="value beating-number"
-                    href="https://www.npmjs.com/package/rxdb"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    238572
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/person.svg" alt="contributor" />
-                  <div className="label">Contributors</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/graphs/contributors"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    211
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/commit.svg" alt="commit" />
-                  <div className="label">Commits</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/commits/master"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    10409
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/gear.svg" alt="gear" />
-                  <div className="label">RxDB made Projects</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/network/dependents?package_id=UGFja2FnZS0xODM0NzAyMw%3D%3D"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    1402
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/twitter.svg" alt="twitter" />
-                  <div className="label">Twitter followers</div>
-                  <a
-                    className="value"
-                    href="https://twitter.com/intent/user?screen_name=rxdbjs"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    2925
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-              </div>
-            </div>
-          </div> */}
-
-          {/* <div className="block dark sixth">
-            <div className="content">
-              <h2>Free <b className='underline'>Open Core</b> Model</h2>
-              <br />
-              <div className="inner">
-                <div className="buy-options">
-                  <div className="buy-option bg-gradient-left-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Open Source Core</h2>
-                        <div className="price">for Hobbyists and Prototypes</div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          The RxDB Open Core provides a robust and reliable database engine
-                          that's freely accessible to everyone.
-                          <br />
-                          This core includes all the essential features you need to develop efficient,
-                          real-time {getAppName(props)} applications like storages, replication and other plugins.
-                          <br />
-                          <br />
-                          Our open-core approach encourages a vibrant community of developers,
-                          fostering collaboration and innovation.
-                        </p>
-                        <br />
-
-                      </div>
-                      <a
-                        href="/code/"
-                        target="_blank"
-                        rel="noopener"
-                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8)}
-                      >
-                        <div className="buy-option-action bg-top hover-shadow-top">
-                          Get the Code
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="buy-option bg-gradient-right-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Premium Plugins</h2>
-                        <div className="price">
-                          for professional Developers
-                        </div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          Our Premium Plugins are essential for professionals using RxDB.
-                          They boost the basic features of RxDB with significant performance improvements and reduced bundle size.
-                        </p>
-                        <ul>
-                          <li>
-                            <b>Enhanced Storage Plugins</b> to speed up data processing significantly.
-                          </li>
-                          <li>
-                            <b>Robust Encryption</b> secures your data with state-of-the-art encryption methods.
-                          </li>
-                          <li>
-                            <b>Advanced Metrics Logging</b> provides detailed insights for performance monitoring.
-                          </li>
-                        </ul>
-                        <br />
-
-                      </div>
-                      <a
-                        href="/premium/"
-                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3)}
-                      >
-                        <div className="buy-option-action bg-middle hover-shadow-middle">
-                          Get Premium
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="buy-option bg-gradient-left-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Consulting</h2>
-                        <div className="price">Get Professional Support</div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          Using new technologies can be hard. If you lack the capacity or skill to build your application, we are here to help.
-                          <br />
-                          <br />
-                          From quick <b>one-time support sessions</b> to <b>full project</b> development and <b>custom feature</b> implementation,
-                          we're here to ensure your project's success. Let's build something incredible together.
-                          <br />
-                          <br />
-                        </p>
-                      </div>
-                      <a
-                        href="/consulting/"
-                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4)}
-                      >
-                        <div className="buy-option-action bg-bottom hover-shadow-bottom">
-                          Get in Contact
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> */}
 
           <div className="block last dark">
             <div className="content">

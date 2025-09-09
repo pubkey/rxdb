@@ -1,9 +1,9 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
-import { DevicesSync } from '../devices-sync';
 import { CheckedList } from '../checked-list';
 import { Button } from '../button';
 import { HeroRuntimes } from '../runtimes';
+import { EmojiChat, EmojiChatStateful } from '../emoji-chat';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -32,6 +32,15 @@ export function HeroSection_B(props: {
             <div className="inner">
                 <div className="half left">
 
+
+                    <hr />
+
+
+                    <hr />
+                    <EmojiChatStateful
+                    />
+
+                    <hr />
 
 
                     <CheckedList>
@@ -113,7 +122,7 @@ export function HeroSection_B(props: {
                         paddingRight: '2%'
                     }}
                 >
-                    <DevicesSync sem={props.sem} />
+                    {/* <DevicesSync sem={props.sem} /> */}
                 </div>
 
                 <div className='clear'></div>
