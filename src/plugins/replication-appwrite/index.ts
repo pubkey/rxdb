@@ -96,10 +96,10 @@ export function replicateAppwrite<RxDocType>(
                 queries
             );
             const lastDoc = lastOfArray(result.documents);
-            const newCheckpoint: AppwriteCheckpointType | null = lastDoc ? {
+            const newCheckpoint: AppwriteCheckpointType | undefined = lastDoc ? {
                 id: lastDoc.$id,
                 updatedAt: lastDoc.$updatedAt
-            } : null;
+            } : undefined;
             const resultDocs: WithDeleted<RxDocType>[] = result.documents.map(doc => {
                 return appwriteDocToRxDB<RxDocType>(
                     doc,
