@@ -29,6 +29,7 @@ export function EmojiChat({ items, onButtonClick }: EmojiChatProps) {
             "0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30)",
         overflow: "hidden",
         padding: 8,
+        flexShrink: 0,
     };
 
     const screen: CSSProperties = {

@@ -6,6 +6,7 @@ import { HeroRuntimes } from '../runtimes';
 import { EmojiChat, EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
+import { IconWifi } from '../icons/wifi';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -34,19 +35,7 @@ export function HeroSection_B(props: {
                 }
             </h1>
             <div className="inner">
-                <div className="half left">
-
-
-                    <hr />
-
-
-                    <hr />
-                    <PixelToggle checked={online} onChange={setOnline} />
-                    <EmojiChatStateful online={online} chatId='hero_left' />
-                    <EmojiChatStateful online={online} chatId='hero_right' />
-
-                    <hr />
-
+                <div className="half left" style={{ paddingTop: 35 }}>
 
                     <CheckedList>
                         <li>
@@ -121,23 +110,31 @@ export function HeroSection_B(props: {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        alignSelf: 'start',
-                        paddingLeft: '6%',
-                        marginTop: 40,
-                        paddingRight: '2%'
+                        alignSelf: 'start'
                     }}
                 >
+
+                    <EmojiChatStateful online={online} chatId='hero_left' />
+                    <div style={{
+                        textAlign: 'center',
+                        padding: 20
+                    }}>
+                        <IconWifi style={{
+                            width: '100%',
+                            paddingBottom: 3
+                        }} />
+                        <PixelToggle checked={online} onChange={setOnline} />
+                    </div>
+                    <EmojiChatStateful online={online} chatId='hero_right' />
+
+
                     {/* <DevicesSync sem={props.sem} /> */}
                 </div>
 
                 <div className='clear'></div>
             </div>
+            <HeroRuntimes></HeroRuntimes>
         </div>
 
-        <HeroRuntimes rows={[]}></HeroRuntimes>
-        <br />
-        <br />
-        <br />
-        <br />
     </div >;
 }

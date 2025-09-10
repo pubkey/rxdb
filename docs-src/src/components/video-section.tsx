@@ -112,7 +112,7 @@ export function VideoSection(_props: {
 }) {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding, paddingBottom: 0 }}>
         <div className="content centered">
-            <div className="inner" style={{marginBottom: '74px'}}>
+            <div className="inner">
                 <h2>
                     Trusted by <b>Developers</b>
                 </h2>

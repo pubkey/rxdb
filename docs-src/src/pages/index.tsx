@@ -426,7 +426,7 @@ export default function Home(props: {
           <Trophy
             href="/code/"
             title="GitHub"
-            subTitle='Open Source on'
+            subTitle='Open Source'
             value={SOCIAL_PROOF_VALUES.github}
             imgUrl="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'

@@ -13,7 +13,9 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     gap: "2rem",
-    padding: "2rem",
+    paddingTop: 64,
+    paddingLeft: 31,
+    paddingRight: 31
   },
   text: {
     fontSize: "1.125rem",
@@ -77,9 +79,11 @@ export function HeroRuntimes() {
               href={item.url}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
+              target="_blank"
             >
               <img
                 src={item.icon}
+                loading="lazy"
                 alt={item.label}
                 style={{
                   ...styles.icon,

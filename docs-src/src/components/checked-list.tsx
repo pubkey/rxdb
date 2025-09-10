@@ -9,7 +9,7 @@ type FeatureListProps = {
 const styles: Record<string, CSSProperties> = {
     list: {
         listStyle: "none",
-        padding: "1.5rem",
+        padding: 0,
         margin: 0,
         color: "#fff",
         fontFamily: "monospace",

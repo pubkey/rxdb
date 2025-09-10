@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Atkinson Hyperlegible Mono";
-    src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("ttf");
+    src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("truetype");
     font-weight: 100 900;
     font-style: normal;
 }
@@ -214,12 +214,6 @@ a:visited {
     float: right;
 }
 
-.half {
-    flex: 1;
-    width: calc(50% - 120px);
-    padding-left: 10px;
-    padding-right: 10px;
-}
 
 @media (max-width: 900px) {
     .half {
@@ -433,27 +427,6 @@ p a:hover {
 }
 
 
-.hero ul.checked li b {
-    cursor: pointer;
-}
-
-/* Checkbox Styling (Pricing Page) */
-ul.checked {
-    /* padding-left: 0px; */
-    /* list-style: square; */
-}
-
-ul.checked li {
-    /* text-align: justify;
-    margin-bottom: 10px;
-    list-style: square; */
-
-}
-
-ul.checked li b {
-    font-size: var(--fontSizes-m);
-}
-
 /* ul.checked li:before {
     font-size: 55px;
     padding-right: 10px;
@@ -610,12 +583,11 @@ body {
 
 /* Home Page - Main Content */
 .content {
-    width: 96%;
-    padding-left: 2%;
-    padding-right: 2%;
+    width: 100%;
     max-width: 1120px;
     margin-left: auto;
     margin-right: auto;
+    padding-bottom: 64px;
 }
 
 @media (max-width: 1350px) {
@@ -858,7 +830,7 @@ body {
 
 .block.first {
     background-color: var(--bg-color-darkest);
-    padding-bottom: 70px;
+    padding-bottom: 0px;
     padding-top: 50px;
 }
 
@@ -870,12 +842,26 @@ body {
     margin-bottom: 10px;
 }
 
-.block.first .inner {
+.block .inner {
     display: flex;
-    align-items: center;
     justify-content: center;
     overflow: hidden;
 }
+
+.block .half.left {
+    flex: 0.9;
+}
+.block .half.right {
+    flex: 1.2;
+}
+
+
+.block .centered .inner {
+    display: block;
+    justify-content: center;
+    overflow: hidden;
+}
+
 
 .block.first h1 {
     font-size: var(--fontSizes-5xl);
@@ -889,7 +875,7 @@ body {
 }
 
 .block.first .half.left {
-    flex: 1.6;
+    flex: 1.2;
 }
 
 @media (max-width: 900px) {
@@ -902,17 +888,9 @@ body {
     }
 }
 
-.block.first.hero h1,
-.block.first.hero h1 b {
-    font-size: var(--fontSizes-5xl);
-    font-weight: 700;
-    line-height: 140%;
-    text-align: center;
-    line-height: normal;
-}
 
 .block.first.hero h1 {
-    width: 80%;
+    width: 86%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -933,11 +911,6 @@ body {
     width: 80%;
 }
 
-.block.first.hero .review-small {
-    height: 60px;
-    width: 60px;
-    margin-left: 30px;
-}
 
 .block.first.hero .hero-action {
     display: inline-grid;
@@ -1688,8 +1661,8 @@ ul.checked li:before {
     border-width: 2px;
     color: #eac54f;
 
-    padding: 12px;
-    padding-top: 8px;
+    padding: 10px;
+    padding-top: 6px;
     padding-bottom: 4px;
     align-items: center;
 
@@ -1701,7 +1674,7 @@ ul.checked li:before {
     background-color: var(--bg-color);
     box-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30);
 
-    width: 250px;
+    width: 220px;
     padding-left: 10px;
     padding-right: 10px;
     margin-left: -135px;
@@ -1754,7 +1727,6 @@ ul.checked li:before {
 
 .trophy .value {
     box-sizing: content-box;
-    margin-top: 3px;
     line-height: normal;
     font-variant-numeric: tabular-nums;
 

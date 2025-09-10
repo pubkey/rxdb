@@ -1,6 +1,7 @@
 import { CSSProperties, useState } from "react";
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
+import { Modal } from 'antd';
 
 export type VideoBoxProps = {
     videoId: string;
@@ -14,12 +15,11 @@ const styles: Record<string, CSSProperties> = {
     container: {
         display: "flex",
         flexDirection: "column",
-
         padding: '12px 12px 9px 12px',
         gap: 8,
-
         width: "320px",
         backgroundColor: "#0D0F18",
+        cursor: 'pointer'
     },
     thumbnailWrapper: {
         position: "relative",
@@ -101,6 +101,47 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                 </div>
                 <div style={styles.title}>{title}</div>
             </div>
+
+
+            {isOpen ?
+                <Modal
+                    open={isOpen}
+                    onCancel={(e) => {
+                        e.stopPropagation();
+                        console.log('CANCEL');
+                        setIsOpen(false);
+                    }}
+                    onClose={(e) => {
+                        e.stopPropagation();
+                        console.log('CLOSSSSSE');
+                        setIsOpen(false);
+                    }}
+                    onOk={(e) => {
+                        e.stopPropagation();
+                        console.log('OKKK');
+                        setIsOpen(false);
+                    }}
+                    footer={null}
+                    width={'auto'}
+                    style={{
+                        maxWidth: 800
+                    }}
+                >
+
+                    <br />
+                    <br />
+                    <br />
+                    <h3>{title}</h3>
+                    <center>
+                        <iframe className="img-radius" style={{ width: '100%', borderRadius: '15px' }}
+                            height="515" src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1&start=' + (startAt ? startAt : 0)}
+                            title="YouTube video player" frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
+                        ></iframe>
+                    </center>
+                </Modal> : <></>}
+
         </div>
     );
 }

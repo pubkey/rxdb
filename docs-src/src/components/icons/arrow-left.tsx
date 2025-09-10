@@ -1,11 +1,8 @@
 import React from "react";
+import { IconProps } from './arrow-right';
 
-type IconArrowLeftProps = {
-    style?: React.CSSProperties;
-    className?: string;
-};
 
-export function IconArrowLeft({ style, className }: IconArrowLeftProps) {
+export function IconArrowLeft({ style, className }: IconProps) {
     return (
         <div style={style} className={className}>
             <svg
