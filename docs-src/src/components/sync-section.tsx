@@ -3,6 +3,10 @@ import { SemPage, getAppName } from '../pages';
 import React from 'react';
 import { ReplicationDiagram } from './replication-diagram';
 import { Tag } from './tag';
+import { IconDeviceDesktop } from './icons/device-desktop';
+import { IconDeviceSmartwatch } from './icons/device-smartwatch';
+import { IconDeviceTablet } from './icons/device-tablet';
+import { IconDevicePhone } from './icons/device-phone';
 
 export const replicationLinks = [
   {
@@ -104,6 +108,12 @@ export function SyncSection(props: {
               </a>
               .
             </p>
+
+
+            <IconDeviceDesktop></IconDeviceDesktop>
+            <IconDeviceSmartwatch></IconDeviceSmartwatch>
+            <IconDeviceTablet></IconDeviceTablet>
+            <IconDevicePhone></IconDevicePhone>
           </div>
           <div className="half right">
             <ReplicationDiagram />

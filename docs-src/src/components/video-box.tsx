@@ -38,7 +38,6 @@ const styles: Record<string, CSSProperties> = {
         position: "absolute",
         top: "50%",
         left: "50%",
-        transform: "translate(-50%, -50%)",
         width: "50px",
         height: "50px",
         borderRadius: "50%",
@@ -79,8 +78,8 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div style={styles.container}
-
+        <div
+            style={styles.container}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={() => {
@@ -89,12 +88,19 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                 triggerTrackingEvent('open_video_' + videoId, 0.05, 1);
             }}
         >
-            <div
-                style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <div style={{ textDecoration: "none", color: "inherit" }}>
                 <div style={styles.thumbnailWrapper}>
-                    <img src={'http://img.youtube.com/vi/' + videoId + '/0.jpg'} style={styles.thumbnail} />
-                    <div style={styles.playButton}>
+                    <img
+                        src={'http://img.youtube.com/vi/' + videoId + '/0.jpg'}
+                        style={styles.thumbnail}
+                    />
+                    <div
+                        style={{
+                            ...styles.playButton,
+                            transform: `translate(-50%, -50%) scale(${isHovered ? 1.2 : 1})`,
+                            transition: "transform 0.1s ease-in-out",
+                        }}
+                    >
                         <VideoPlayButton />
                     </div>
                     <div style={styles.duration}>{duration}</div>
@@ -102,8 +108,7 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                 <div style={styles.title}>{title}</div>
             </div>
 
-
-            {isOpen ?
+            {isOpen ? (
                 <Modal
                     open={isOpen}
                     onCancel={(e) => {
@@ -127,21 +132,30 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                         maxWidth: 800
                     }}
                 >
-
                     <br />
                     <br />
                     <br />
                     <h3>{title}</h3>
                     <center>
-                        <iframe className="img-radius" style={{ width: '100%', borderRadius: '15px' }}
-                            height="515" src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1&start=' + (startAt ? startAt : 0)}
-                            title="YouTube video player" frameBorder="0"
+                        <iframe
+                            className="img-radius"
+                            style={{ width: '100%', borderRadius: '15px' }}
+                            height="515"
+                            src={
+                                'https://www.youtube.com/embed/' +
+                                videoId +
+                                '?autoplay=1&start=' +
+                                (startAt ? startAt : 0)
+                            }
+                            title="YouTube video player"
+                            frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            referrerPolicy="strict-origin-when-cross-origin" allowFullScreen
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
                         ></iframe>
                     </center>
-                </Modal> : <></>}
-
+                </Modal>
+            ) : null}
         </div>
     );
 }

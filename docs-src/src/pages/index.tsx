@@ -530,9 +530,9 @@ export default function Home(props: {
                   With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
                 </p>
                 <br /><br />
+                <ReviewsBlock></ReviewsBlock>
               </div>
             </div>
-            <ReviewsBlock></ReviewsBlock>
 
             <PixelToggle checked={online} onChange={setOnline} />
             <IconWifi />
