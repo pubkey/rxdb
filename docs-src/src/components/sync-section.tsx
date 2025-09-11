@@ -108,12 +108,6 @@ export function SyncSection(props: {
               </a>
               .
             </p>
-
-
-            <IconDeviceDesktop></IconDeviceDesktop>
-            <IconDeviceSmartwatch></IconDeviceSmartwatch>
-            <IconDeviceTablet></IconDeviceTablet>
-            <IconDevicePhone></IconDevicePhone>
           </div>
           <div className="half right">
             <ReplicationDiagram />

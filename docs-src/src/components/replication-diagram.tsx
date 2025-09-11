@@ -3,6 +3,11 @@ import { HEARTBEAT_DURATION } from '../pages';
 import { IconDevicePhone } from './icons/device-phone';
 import { IconDeviceSmartwatch } from './icons/device-smartwatch';
 import { Cloud } from './cloud';
+import { IconDeviceDesktop } from './icons/device-desktop';
+import { IconDeviceTablet } from './icons/device-tablet';
+
+
+export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
 
 /**
  * @link https://chatgpt.com/c/67ecc68e-db6c-8005-8398-7ecf5e1d222e
@@ -59,8 +64,15 @@ export function ReplicationDiagram() {
     const centerY = 250 * scale;
 
     // Diagram geometry (scaled)
-    const serverRadius = 40 * scale;
-    const deviceCount = 5;
+    const serverRadius = 60 * scale;
+    const devices: DeviceType[] = [
+        'smartwatch',
+        'desktop',
+        'phone',
+        'tablet',
+        'desktop',
+    ];
+    const deviceCount = devices.length;
     const deviceDistance = 150 * scale;
     const deviceRadius = 50 * scale;
     const serverMargin = 0 * scale;
@@ -114,8 +126,6 @@ export function ReplicationDiagram() {
 `)
         .join('\n');
 
-
-    const serverTicksSize = 10;
     return (
         <div ref={containerRef} style={styles.container}>
             {/* A relative child that matches the measured square "size" */}
@@ -135,7 +145,7 @@ export function ReplicationDiagram() {
                         top: centerY - serverRadius,
                         width: serverRadius * 2,
                         height: serverRadius * 2,
-                        borderRadius: '50%'
+                        justifyContent: 'center'
                     }}
                 >
                     <Cloud darkMode={true}></Cloud>
@@ -146,6 +156,7 @@ export function ReplicationDiagram() {
                 {linesData.map(({ angleDeg, lineLength, deviceX, deviceY, animationName }, i) => {
                     // Distance from the center to the line start = serverRadius + serverMargin
                     const lineStart = serverRadius + serverMargin;
+                    const device = devices[i];
 
                     return (
                         <Fragment key={i}>
@@ -198,17 +209,17 @@ export function ReplicationDiagram() {
                                 }}
                             >
                                 {
-                                    i % 3 === 0 ? <div
-                                    className='device '
+                                    device === 'phone' ? <div
+                                        className='device '
                                         style={{
                                             width: '70%',
                                             height: '60%',
                                             top: '20%',
-                                            left: '15%',
+                                            left: '30%',
                                             marginLeft: 0
                                         }}
                                     >
-                                        <IconDevicePhone></IconDevicePhone>
+                                        <IconDevicePhone iconUrl='/files/logo/logo.svg'></IconDevicePhone>
                                         {/* <div className="beating-color" style={{
                                             borderTopLeftRadius: 5,
                                             borderTopRightRadius: 5
@@ -223,17 +234,44 @@ export function ReplicationDiagram() {
                                                 }}
                                             />
                                         </div> */}
-                                    </div> : <div
-                                        className='device'
-                                        style={{
-                                            width: '46%',
-                                            height: '60%',
-                                            top: '20%',
-                                            left: '27%'
-                                        }}
-                                    >
-                                        <IconDeviceSmartwatch></IconDeviceSmartwatch>
-                                    </div>
+                                    </div> :
+                                        device === 'smartwatch' ?
+                                            <div
+                                                className='device'
+                                                style={{
+                                                    width: '46%',
+                                                    height: '60%',
+                                                    top: '20%',
+                                                    left: '27%'
+                                                }}
+                                            >
+                                                    <IconDeviceSmartwatch iconUrl='/files/logo/logo.svg'></IconDeviceSmartwatch>
+                                            </div>
+                                            :
+                                            device === 'desktop' ? < div
+                                                className='device'
+                                                style={{
+                                                    width: '46%',
+                                                    height: '60%',
+                                                    top: '20%',
+                                                    left: '27%'
+                                                }}
+                                            >
+                                                <IconDeviceDesktop iconUrl='/files/logo/logo.svg'></IconDeviceDesktop>
+                                            </div>
+                                                :
+                                                < div
+                                                    className='device'
+                                                    style={{
+                                                        width: '46%',
+                                                        height: '60%',
+                                                        top: '20%',
+                                                        left: '27%'
+                                                    }}
+                                                >
+                                                    <IconDeviceTablet iconUrl='/files/logo/logo.svg'></IconDeviceTablet>
+                                                </div>
+
                                 }
 
                                 {/* <div
@@ -267,7 +305,7 @@ export function ReplicationDiagram() {
                 {/* Inject dynamic keyframes */}
                 <style>{dynamicKeyframes}</style>
             </div>
-        </div>
+        </div >
     );
 }
 
