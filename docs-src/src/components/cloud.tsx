@@ -1,30 +1,47 @@
-import React, { CSSProperties, FC, useEffect, useRef, useState } from "react";
+import React, {
+  CSSProperties,
+  FC,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import { replicationLinks } from './sync-section';
 
 interface CloudProps {
-  iconUrl?: string;
   darkMode?: boolean;
 }
 
 // Old icon slides out to the RIGHT; new icon slides in from the LEFT
-export const Cloud: FC<CloudProps> = ({ iconUrl, darkMode = false }) => {
-  const [currentUrl, setCurrentUrl] = useState<string | undefined>(iconUrl);
+export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
+  const [iconIndex, setIconIndex] = useState(0);
+  const [currentUrl, setCurrentUrl] = useState<string>(replicationLinks[0].iconUrl);
   const [prevUrl, setPrevUrl] = useState<string | undefined>(undefined);
 
   const prevRef = useRef<HTMLImageElement | null>(null);
   const currRef = useRef<HTMLImageElement | null>(null);
 
-  // When iconUrl changes, stage a transition
+  // Handle "heartbeat": advance to next icon and trigger slide transition
   useEffect(() => {
-    if (iconUrl === currentUrl) return;
-    setPrevUrl(currentUrl);
-    setCurrentUrl(iconUrl);
-  }, [iconUrl]);
+    const handleHeartbeat = () => {
+      setIconIndex(prev => {
+        const next = (prev + 1) % replicationLinks.length;
+        const nextUrl = replicationLinks[next].iconUrl;
+
+        setPrevUrl(currentUrl);
+        setCurrentUrl(nextUrl);
+
+        return next;
+      });
+    };
+
+    window.addEventListener('heartbeat', handleHeartbeat);
+    return () => window.removeEventListener('heartbeat', handleHeartbeat);
+  }, [currentUrl]);
 
   // Kick off the slide animation when there's a prev icon
   useEffect(() => {
     if (!prevUrl) return;
 
-    // Ensure the DOM has mounted both images before animating
     const raf = requestAnimationFrame(() => {
       if (prevRef.current) {
         prevRef.current.style.transform = "translateX(100%)"; // out to RIGHT
@@ -62,8 +79,8 @@ export const Cloud: FC<CloudProps> = ({ iconUrl, darkMode = false }) => {
   const circleBorder: string = darkMode ? "var(--bg-color-dark)" : "var(--bg-color)";
 
   const badgeInnerStyle: CSSProperties = {
-    width: 56,
-    height: 56,
+    width: "clamp(10px, 8vw, 56px)",
+    height: "clamp(10px, 8vw, 56px)",
     background: circleColor,
     borderRadius: "50%",
     display: "flex",
@@ -124,7 +141,6 @@ export const Cloud: FC<CloudProps> = ({ iconUrl, darkMode = false }) => {
                 opacity: prevUrl ? 0 : 1,
               }}
               onLoad={() => {
-                // If there's no prev icon (initial mount), ensure it's visible
                 if (!prevUrl && currRef.current) {
                   currRef.current.style.transform = "translateX(0)";
                   currRef.current.style.opacity = "1";

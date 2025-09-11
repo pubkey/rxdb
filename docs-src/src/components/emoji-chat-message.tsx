@@ -15,7 +15,6 @@ type EmojiMessageBoxProps = {
   onClick?: MouseEventHandler<HTMLDivElement>;
 };
 
-
 const usedEvents = new WeakSet<CustomEvent>();
 
 export function EmojiMessageBox({
@@ -25,22 +24,16 @@ export function EmojiMessageBox({
 }: EmojiMessageBoxProps) {
   const [isClicked, setIsClicked] = useState(false);
 
-
-
   function triggerClick() {
     setIsClicked(true);
     setTimeout(() => setIsClicked(false), 100);
     onClick?.({} as any); // simulate a click event (you can pass null if not needed)
   }
 
-
-
   useEffect(() => {
     function handleHeartbeat(e) {
-      console.log('xxx:');
-      console.dir(e);
       if (direction === "button" && Math.random() < 0.3) {
-        if(usedEvents.has(e)){
+        if (usedEvents.has(e)) {
           return;
         }
         usedEvents.add(e);

@@ -16,9 +16,10 @@ type EmojiChatProps = {
   }[];
   /** Fired when one of the 3 bottom buttons is clicked */
   onButtonClick?: (index: number, emoji: string) => void;
+  buttonEmojis?: [string, string, string];
 };
 
-export function EmojiChat({ items, onButtonClick }: EmojiChatProps) {
+export function EmojiChat({ items, onButtonClick, buttonEmojis = ["👾", "👨‍💻", "💡"] }: EmojiChatProps) {
   const frame: CSSProperties = {
     width: 230,
     height: 435,
@@ -72,9 +73,6 @@ export function EmojiChat({ items, onButtonClick }: EmojiChatProps) {
   // Only show the last 5 messages
   const visibleItems = items.slice(-5);
 
-  // Fixed set of 3 button emojis
-  const buttonEmojis = ["👾", "👨‍💻", "💡"];
-
   return (
     <div style={frame}>
       <div style={screen} className="chat-background">
@@ -110,9 +108,10 @@ export function EmojiChat({ items, onButtonClick }: EmojiChatProps) {
 type EmojiChatStatefulProps = {
   online: boolean;
   chatId: string;
+  buttonEmojis?: [string, string, string];
 };
 
-export function EmojiChatStateful({ online, chatId }: EmojiChatStatefulProps) {
+export function EmojiChatStateful({ online, chatId, buttonEmojis }: EmojiChatStatefulProps) {
   // holds unsynced chat items for THIS instance (with timestamps so we can show them)
   const unsynced = useRef<ChatItem[]>([]);
 
@@ -183,6 +182,7 @@ export function EmojiChatStateful({ online, chatId }: EmojiChatStatefulProps) {
   return (
     <EmojiChat
       items={mappedItems}
+      buttonEmojis={buttonEmojis}
       onButtonClick={(_, emoji) => {
         handleAdd(emoji);
       }}

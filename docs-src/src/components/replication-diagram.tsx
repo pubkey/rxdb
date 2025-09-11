@@ -1,5 +1,8 @@
 import { useRef, useState, useEffect, Fragment } from 'react';
 import { HEARTBEAT_DURATION } from '../pages';
+import { IconDevicePhone } from './icons/device-phone';
+import { IconDeviceSmartwatch } from './icons/device-smartwatch';
+import { Cloud } from './cloud';
 
 /**
  * @link https://chatgpt.com/c/67ecc68e-db6c-8005-8398-7ecf5e1d222e
@@ -125,7 +128,7 @@ export function ReplicationDiagram() {
             >
                 {/* Server circle */}
                 <div
-                    className='neumorphism-circle-xl'
+                    className='device'
                     style={{
                         position: 'absolute',
                         left: centerX - serverRadius,
@@ -135,34 +138,8 @@ export function ReplicationDiagram() {
                         borderRadius: '50%'
                     }}
                 >
-                    <div className='device server' style={{
-                        width: '60%',
-                        height: '60%',
-                        top: '20%',
-                        left: '20%'
-                    }}>
-                        <div className="beating-color one" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                        <div className="beating-color two" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                        <div className="beating-color three" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                    </div>
+                    <Cloud darkMode={true}></Cloud>
+
                 </div>
 
                 {/* Lines & devices */}
@@ -209,7 +186,6 @@ export function ReplicationDiagram() {
 
                             {/* Device circle */}
                             <div
-                                className='neumorphism-circle-s'
                                 style={{
                                     position: 'absolute',
                                     left: deviceX - deviceRadius,
@@ -223,7 +199,7 @@ export function ReplicationDiagram() {
                             >
                                 {
                                     i % 3 === 0 ? <div
-                                        className='device desktop'
+                                    className='device '
                                         style={{
                                             width: '70%',
                                             height: '60%',
@@ -232,7 +208,8 @@ export function ReplicationDiagram() {
                                             marginLeft: 0
                                         }}
                                     >
-                                        <div className="beating-color" style={{
+                                        <IconDevicePhone></IconDevicePhone>
+                                        {/* <div className="beating-color" style={{
                                             borderTopLeftRadius: 5,
                                             borderTopRightRadius: 5
                                         }}>
@@ -245,9 +222,9 @@ export function ReplicationDiagram() {
                                                     width: '26%'
                                                 }}
                                             />
-                                        </div>
+                                        </div> */}
                                     </div> : <div
-                                        className='device tablet'
+                                        className='device'
                                         style={{
                                             width: '46%',
                                             height: '60%',
@@ -255,19 +232,7 @@ export function ReplicationDiagram() {
                                             left: '27%'
                                         }}
                                     >
-                                        <div className="beating-color" style={{
-                                            borderRadius: 5,
-                                        }}>
-                                            <img
-                                                src="/files/logo/logo.svg"
-                                                className="beating logo animation"
-                                                alt="RxDB"
-                                                loading='lazy'
-                                                style={{
-                                                    width: '50%'
-                                                }}
-                                            />
-                                        </div>
+                                        <IconDeviceSmartwatch></IconDeviceSmartwatch>
                                     </div>
                                 }
 

@@ -720,7 +720,6 @@ body {
      * Do not use 'background-size: contain' because it is broken on svg files in firefox.
      * @link https://stackoverflow.com/a/40154556
      */
-    background-size: 100% 100%;
 }
 
 .device .beating-color {
@@ -730,38 +729,6 @@ body {
     background-color: #ED168F;
 }
 
-.device.tablet {
-    width: 23%;
-    height: 60%;
-    right: 0;
-    bottom: 0;
-    background-image: url(/files/smartphone/tablet_white.svg);
-}
-
-.device.tablet .beating-color {
-    width: 92%;
-    height: 82%;
-    margin-top: 4%;
-    margin-left: auto;
-    margin-right: auto;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 8px;
-}
-
-.device.tablet .beating.logo {
-    width: 33%;
-}
-
-.device.desktop {
-    width: 50%;
-    height: 100%;
-    margin-left: 25%;
-    background-image: url(/files/smartphone/desktop_white.svg);
-}
 
 .device.desktop .beating-color {
     width: calc(100% - 4.9%);

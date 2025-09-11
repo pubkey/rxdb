@@ -56,14 +56,37 @@ const rows: Row[] = [
   { icon: "/files/icons/svelte.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/svelte", label: "Svelte" },
 ];
 
+// Fade-in keyframes
+const fadeIn = `
+  @keyframes fadeIn {
+    from { opacity: 0 }
+    to { opacity: 1 }
+  }
+`;
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(fadeIn, styleSheet.cssRules.length);
+
 export function HeroRuntimes() {
   const [hovered, setHovered] = useState<number | null>(null);
+  const [animationKey, setAnimationKey] = useState(0);
+
+  const text = hovered !== null ? rows[hovered].label : "these Frameworks";
 
   return (
     <div style={styles.container}>
-      <div style={styles.text}>
+      <div
+        style={{
+          ...styles.text,
+        }}
+      >
         Use RxDB with{"\n"}
-        {hovered !== null ? rows[hovered].label : "these Frameworks"}
+        <span
+        key={animationKey + text} // force re-render for animation
+        style={{
+          animation: "fadeIn 0.2s ease-in"
+        }}
+        
+        >{text}</span>
       </div>
       <div style={styles.iconsRow}>
         {rows.map((item, i) => {
@@ -77,8 +100,14 @@ export function HeroRuntimes() {
             <a
               key={i}
               href={item.url}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseEnter={() => {
+                setHovered(i);
+                setAnimationKey(prev => prev + 1); // trigger fade-in
+              }}
+              onMouseLeave={() => {
+                setHovered(null);
+                setAnimationKey(prev => prev + 1);
+              }}
               target="_blank"
             >
               <img

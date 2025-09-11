@@ -14,15 +14,6 @@ export function OfflineSection(props: {
   offlineRef: MutableRefObject<HTMLDivElement>;
 }) {
   const [online, setOnline] = useState(true);
-  const [iconIndex, setIconIndex] = useState(0);
-
-  // Cycle through replicationLinks every 200ms
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIconIndex((prev) => (prev + 1) % replicationLinks.length);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div
@@ -79,7 +70,7 @@ export function OfflineSection(props: {
               alignSelf: 'start',
             }}
           >
-            <Cloud iconUrl={replicationLinks[iconIndex].iconUrl} />
+            <Cloud />
             <div
               style={{
                 textAlign: 'center',

@@ -80,9 +80,6 @@ export function HeroSection_B(props: {
                             </div>
                         </a> */}
                     </div>
-
-
-
                     {/* <a
             className="button light"
             href="/code/"
@@ -100,7 +97,6 @@ export function HeroSection_B(props: {
             </svg>
             Star (20,172)
           </a> */}
-
                     <div className="clear" />
                     <br />
                 </div>
@@ -113,7 +109,6 @@ export function HeroSection_B(props: {
                         alignSelf: 'start'
                     }}
                 >
-
                     <EmojiChatStateful online={online} chatId='hero_left' />
                     <div style={{
                         textAlign: 'center',
@@ -125,16 +120,12 @@ export function HeroSection_B(props: {
                         }} />
                         <PixelToggle checked={online} onChange={setOnline} />
                     </div>
-                    <EmojiChatStateful online={online} chatId='hero_right' />
-
-
+                    <EmojiChatStateful online={online} chatId='hero_right' buttonEmojis={['🧩', '👩🏼‍💻', '🔥']} />
                     {/* <DevicesSync sem={props.sem} /> */}
                 </div>
-
                 <div className='clear'></div>
             </div>
             <HeroRuntimes></HeroRuntimes>
         </div>
-
     </div >;
 }
