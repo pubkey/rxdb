@@ -26,7 +26,7 @@ export default function NavbarWrapper(props) {
       zIndex: 10,
       height: 1.5,
       backgroundColor: 'var(--color-top)',
-      top: 62.5,
+      top: 89.5,
       borderTopRightRadius: 2,
       borderBottomRightRadius: 2,
     }

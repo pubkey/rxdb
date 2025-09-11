@@ -6,7 +6,7 @@ description: Build real-time, offline-capable apps with RxDB + Supabase. Push/pu
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
-import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
@@ -21,7 +21,7 @@ The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchron
 Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features—RxDB takes care of sync.
 
 <center>
-    <YouTubeVideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
+    <VideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
 </center>
 
 

@@ -134,6 +134,7 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
+            return;
             if (location.pathname.includes('premium')) {
                 return;
             }

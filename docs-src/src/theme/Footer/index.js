@@ -104,10 +104,7 @@ export default function FooterWrapper() {
                   href="/"
                   className="footer-logo-button"
                 >
-                  <img src="/files/logo/logo.svg" alt="RxDB" loading="lazy" />
-                  <div>
-                    RxDB
-                  </div>
+                  <img src="/files/logo/logo_text_white.svg" alt="RxDB" loading="lazy" style={{width: 100}} />
                 </a>
                 <div className="footer-community-links">
                   {footerConfig.communityLinks.map((link, index) => (

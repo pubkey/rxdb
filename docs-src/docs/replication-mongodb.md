@@ -6,7 +6,7 @@ description: Build real-time, offline-capable apps with RxDB + MongoDB replicati
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
-import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 # MongoDB Replication Plugin for RxDB — Real-Time, Offline-First Sync
@@ -89,7 +89,7 @@ Learn here how to create a MongoDB atlas account and how to start a MongoDB clus
 
 <br />
 <center>
-    <YouTubeVideoBox videoId="bBA9rUdqmgY" title="Create MongoDB Atlas Server" duration="19:55" />
+    <VideoBox videoId="bBA9rUdqmgY" title="Create MongoDB Atlas Server" duration="19:55" />
 </center>
 
 

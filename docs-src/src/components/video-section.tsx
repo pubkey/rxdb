@@ -1,9 +1,11 @@
 import { SemPage } from '../pages';
 import Slider from 'react-slick';
-import { YouTubeVideoBox, YoutubeVideoData } from './youtube-video-box';
+import { VideoBox, VideoBoxProps } from './video-box';
+import { IconArrowLeft } from './icons/arrow-left';
+import { IconArrowRight } from './icons/arrow-right';
 
 
-const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
+const YOUTUBE_VIDEOS: VideoBoxProps[] = [
     {
         videoId: 'tDWmfenF2AM',
         title: 'The Easiest Way to Store Data',
@@ -44,18 +46,66 @@ const YOUTUBE_VIDEOS: YoutubeVideoData[] = [
 
 
 
+export function NextArrow(props) {
+    const { className, style, onClick } = props;
+    return (
+        <div
+            className={className}
+            style={{
+                ...style,
+                display: "block",
+                right: "10px",
+                zIndex: 10,
+                height: 'calc(100% - 50px)',
+                // top: 0,
+                // backgroundColor: 'red',
+                paddingLeft: 20,
+                paddingRight: 40
+            }}
+            onClick={onClick}
+        >
+            <IconArrowRight style={{ marginTop: 100 }} />
+        </div>
+    );
+}
+
+export function PrevArrow(props) {
+    const { className, style, onClick } = props;
+    return (
+        <div
+            className={className}
+            style={{
+                ...style,
+                display: "block",
+                left: "10px",
+                zIndex: 10,
+                height: 'calc(100% - 50px)',
+                // top: 0,
+                // backgroundColor: 'red',
+                paddingLeft: 20,
+                paddingRight: 40
+            }}
+            onClick={onClick}
+        >
+            <IconArrowLeft style={{ marginTop: 100 }} />
+        </div>
+    );
+}
+
 const padding = 50;
-const sliderSettings = {
-    dots: true,
+export const sliderSettings = {
+    dots: false,
     centerMode: true,
-    centerPadding: '180px',
+    centerPadding: '120px',
     infinite: true,
-    arrows: false,
+    arrows: true,
     adaptiveHeight: true,
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    initialSlide: 0
+    initialSlide: 0,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
 };
 export function VideoSection(_props: {
     sem?: SemPage;
@@ -63,13 +113,16 @@ export function VideoSection(_props: {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding, paddingBottom: 0 }}>
         <div className="content centered">
             <div className="inner">
+                <h2>
+                    Trusted by <b>Developers</b>
+                </h2>
                 <Slider {...sliderSettings}>
                     {YOUTUBE_VIDEOS.map(item => (
                         <div key={item.videoId} style={{
                             float: 'left',
-                            margin: 20
+                            margin: 24
                         }}>
-                            <YouTubeVideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
+                            <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
                         </div>
                     ))}
                 </Slider>

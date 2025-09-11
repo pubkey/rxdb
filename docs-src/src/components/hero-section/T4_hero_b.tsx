@@ -1,11 +1,19 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
-import { DevicesSync } from '../devices-sync';
+import { CheckedList } from '../checked-list';
+import { Button } from '../button';
+import { HeroRuntimes } from '../runtimes';
+import { EmojiChat, EmojiChatStateful } from '../emoji-chat';
+import { PixelToggle } from '../toggle';
+import { useState } from 'react';
+import { IconWifi } from '../icons/wifi';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
+
+    const [online, setOnline] = useState(true);
 
     return <div className="block first hero centered dark">
         <div className="content">
@@ -23,56 +31,46 @@ export function HeroSection_B(props: {
                 paddingBottom: 40
             }}>
                 {
-                    props.sem ? props.sem.title : <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data inside of your App</>
+                    props.sem ? props.sem.title : <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>
                 }
             </h1>
             <div className="inner">
-                <div className="half left">
-                    <ul className="checked">
-                        <li>
-                            Build apps that work <b className="underline" onClick={() => props.scrollToSection('offline')}>Offline</b>
-                        </li>
-                        <li>
-                            Sync with <b className="underline" onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </li>
-                        <li>
-                            Observable <b className="underline" onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </li>
-                        <li>
-                            All JavaScript <b className="underline" onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </li>
-                    </ul>
-                    {/* <div className="text">
-                        {
-                            props.sem && props.sem.text ? props.sem.text : <>Store data locally to build high performance realtime {getAppName(props)} applications that sync data with the backend and even work when offline.</>
-                        }
-                    </div> */}
+                <div className="half left" style={{ paddingTop: 35 }}>
 
-                    <br />
-                    <br />
-
+                    <CheckedList>
+                        <li>
+                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                        </li>
+                        <li>
+                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                        </li>
+                        <li>
+                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                        </li>
+                        <li>
+                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                        </li>
+                    </CheckedList>
 
                     <div className="hero-action">
-                        <div
-                            className="button button-empty"
+                        <Button
                             onClick={() => {
                                 triggerTrackingEvent('hero_section_how_others', 0.4);
                                 props.scrollToSection('reviews');
                             }}
-                        >
-                            How others use it
-                        </div>
+                        >How others use it</Button>
+
                     </div>
                     <div className="hero-action">
                         <a
-                            className="button"
                             href="/quickstart.html"
                             target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >
-                            Get Started For Free &#x27A4;<br />
+                            <Button primary
+                            >Get Started For Free</Button>
                         </a>
-                        <a
+                        {/* <a
                             href="/premium/"
                             target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4)}
@@ -80,12 +78,8 @@ export function HeroSection_B(props: {
                             <div className="buy-option-action">
                                 (Get Premium)
                             </div>
-                        </a>
-
+                        </a> */}
                     </div>
-
-
-
                     {/* <a
             className="button light"
             href="/code/"
@@ -103,7 +97,6 @@ export function HeroSection_B(props: {
             </svg>
             Star (20,172)
           </a> */}
-
                     <div className="clear" />
                     <br />
                 </div>
@@ -113,21 +106,26 @@ export function HeroSection_B(props: {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        alignSelf: 'start',
-                        paddingLeft: '6%',
-                        marginTop: 40,
-                        paddingRight: '2%'
+                        alignSelf: 'start'
                     }}
                 >
-                    <DevicesSync sem={props.sem} />
+                    <EmojiChatStateful online={online} chatId='hero_left' />
+                    <div style={{
+                        textAlign: 'center',
+                        padding: 20
+                    }}>
+                        <IconWifi style={{
+                            width: '100%',
+                            paddingBottom: 3
+                        }} />
+                        <PixelToggle checked={online} onChange={setOnline} />
+                    </div>
+                    <EmojiChatStateful online={online} chatId='hero_right' buttonEmojis={['🧩', '👩🏼‍💻', '🔥']} />
+                    {/* <DevicesSync sem={props.sem} /> */}
                 </div>
-
                 <div className='clear'></div>
             </div>
+            <HeroRuntimes></HeroRuntimes>
         </div>
-        <br />
-        <br />
-        <br />
-        <br />
     </div >;
 }
