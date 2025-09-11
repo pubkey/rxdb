@@ -11,6 +11,7 @@ export function Tag(props: {
             style={{
                 display: "inline-flex",
                 alignItems: "center",
+                verticalAlign: 'bottom',
                 backgroundColor: "var(--bg-color)",
                 height: 41,
                 padding: "0 10px",
@@ -32,22 +33,29 @@ export function Tag(props: {
                         alt=""
                         style={{
                             height: "60%",
-                            marginRight: 6, // spacing between image and text
+                            marginRight: 6,
+                            display: "block",        // ← remove baseline alignment
+                            objectFit: "contain",    // optional, keeps it tidy
                         }}
                     />
                 ) : (
-                    <div style={{
-                        display: "flex",
-                        alignItems: "center",
+                    <span style={{
+                        height: "60%",
                         marginRight: 6,
+                        display: "block",        // ← remove baseline alignment
+                        objectFit: "contain",    // optional, keeps it tidy
+                        alignItems: "center",
                     }}>
                         {props.img ? props.img : ''}
-                    </div>
-                ))}
+                    </span>
+                )
+                )}
 
             <div style={{
                 display: 'flex'
-            }}>{props.children}</div>
+            }}>
+                {props.children}
+            </div>
         </div>
     );
 }

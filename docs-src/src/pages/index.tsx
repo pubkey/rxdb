@@ -491,30 +491,6 @@ export default function Home(props: {
                   }
 
                 })}
-
-                {/* <TagCloud
-                  minSize={18}
-                  maxSize={55}
-                  tags={tags}
-                  randomSeed={145}
-                  renderer={(tag, size, _color) => {
-                    return (
-                      <a key={tag.value}
-                        style={{
-                          color: 'white',
-                          fontSize: size,
-                          margin: '0px ' + size + 'px',
-                          verticalAlign: 'middle',
-                          display: 'inline-block'
-                        }}
-                        className="tag-cloud-tag"
-                        href={tag.url}
-                      >
-                        {ucfirst(tag.value)}
-                      </a>
-                    );
-                  }}
-                /> */}
               </div>
             </div>
           </div>
