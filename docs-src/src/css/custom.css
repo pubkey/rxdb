@@ -624,8 +624,8 @@ body {
     display: flex;
     flex-direction: column;
     background: var(--bg-color-dark);
-    height: auto;
-    max-width: 268px;
+    padding: 12px 12px 9px 12px;
+    width: 300px;
 }
 
 .slider-content h3 {
@@ -3696,6 +3696,10 @@ footer a:visited {
 }
 
 @media (max-width: 950px) {
+    .hide-on-mobile {
+        display: none;
+    }
+
     .consulting-page .block.first {
         padding-bottom: 180px;
     }

@@ -46,7 +46,7 @@ const YOUTUBE_VIDEOS: VideoBoxProps[] = [
 
 
 
-function NextArrow(props) {
+export function NextArrow(props) {
     const { className, style, onClick } = props;
     return (
         <div
@@ -69,7 +69,7 @@ function NextArrow(props) {
     );
 }
 
-function PrevArrow(props) {
+export function PrevArrow(props) {
     const { className, style, onClick } = props;
     return (
         <div
@@ -93,10 +93,10 @@ function PrevArrow(props) {
 }
 
 const padding = 50;
-const sliderSettings = {
+export const sliderSettings = {
     dots: false,
     centerMode: true,
-    centerPadding: '80px',
+    centerPadding: '120px',
     infinite: true,
     arrows: true,
     adaptiveHeight: true,

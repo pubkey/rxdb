@@ -509,9 +509,6 @@ export default function Home(props: {
                 <ReviewsBlock></ReviewsBlock>
               </div>
             </div>
-
-            <PixelToggle checked={online} onChange={setOnline} />
-            <IconWifi />
           </div>
 
 
@@ -532,7 +529,7 @@ export default function Home(props: {
                     style={{
                       left: '50%',
                       top: '20%',
-                      marginLeft: '-122px',
+                      marginLeft: '-93px',
                       position: 'absolute'
                     }}>
                     Quickstart
@@ -565,7 +562,7 @@ export default function Home(props: {
                   <Button icon={<IconDiscord />} style={{
                     left: '77%',
                     top: '6%',
-                    marginLeft: '-70.5px',
+                    marginLeft: '-110.5px',
                     position: 'absolute'
                   }}>
                     <span className='hide-on-mobile'>Join the</span>Chat
@@ -586,7 +583,9 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
                   <Button icon={<IconTwitter />} style={{
-                    top: '44%', left: '73%', marginLeft: '-85px',
+                    top: '44%', 
+                    left: '73%', 
+                    marginLeft: '-129px',
                     position: 'absolute'
                   }}>
                     <span className='hide-on-mobile'>Follow on</span>Twitter

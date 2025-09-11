@@ -1,5 +1,6 @@
 import Slider from 'react-slick';
 import { IconQuoteEnd, IconQuoteStart } from './icons/quote';
+import { NextArrow, PrevArrow, sliderSettings } from './video-section';
 
 
 export const REVIEW_ITEMS: {
@@ -109,74 +110,12 @@ export const REVIEW_ITEMS: {
     ];
 
 
-export const SLICK_SLIDER_SETTINGS = {
-    dots: false,
-    centerMode: true,
-    centerPadding: '380px',
-    infinite: true,
-    arrows: false,
-    adaptiveHeight: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    initialSlide: 0,
-    responsive: [
-        {
-            breakpoint: 1460,
-            settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1,
-                infinite: true,
-                dots: false,
-            },
-        },
-        {
-            breakpoint: 1124,
-            settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1,
-                infinite: true,
-                dots: false,
-            },
-        },
-        {
-            breakpoint: 900,
-            settings: {
-                slidesToShow: 2,
-                slidesToScroll: 1,
-                infinite: true,
-                dots: false,
-            },
-        },
-        {
-            breakpoint: 690,
-            settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                infinite: true,
-                dots: false,
-                centerMode: false,
-            },
-        },
-        {
-            breakpoint: 480,
-            settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                infinite: false,
-                dots: false,
-                swipeToSlide: true,
-                centerMode: false,
-            },
-        },
-    ],
-};
 
 export function ReviewsBlock() {
 
     return (
         <>
-            <Slider {...SLICK_SLIDER_SETTINGS}>
+            <Slider {...sliderSettings}>
                 {REVIEW_ITEMS.map((item) => (
                     <div className="slider-content" key={item.label}>
                         <IconQuoteStart />
