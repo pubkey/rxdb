@@ -73,19 +73,19 @@ export function HeroRuntimes() {
   const text = hovered !== null ? rows[hovered].label : "these Frameworks";
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className='column-mobile'>
       <div
         style={{
           ...styles.text,
         }}
       >
-        Use RxDB with{"\n"}
+        Use RxDB with{' '}
         <span
-        key={animationKey + text} // force re-render for animation
-        style={{
-          animation: "fadeIn 0.2s ease-in"
-        }}
-        
+          key={animationKey + text} // force re-render for animation
+          style={{
+            animation: "fadeIn 0.2s ease-in"
+          }}
+
         >{text}</span>
       </div>
       <div style={styles.iconsRow}>

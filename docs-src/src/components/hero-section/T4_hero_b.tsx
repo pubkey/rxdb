@@ -37,7 +37,9 @@ export function HeroSection_B(props: {
             <div className="inner">
                 <div className="half left" style={{ paddingTop: 35 }}>
 
-                    <CheckedList>
+                    <CheckedList className='centered-mobile' style={{
+                        maxWidth: 360
+                    }}>
                         <li>
                             Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
                         </li>
@@ -52,24 +54,24 @@ export function HeroSection_B(props: {
                         </li>
                     </CheckedList>
 
-                    <div className="hero-action">
-                        <Button
+                    <div style={{
+                        marginTop: 60,
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 10,
+                        maxWidth: 500
+                    }} className='centered-smaller-mobile'>
+                        <Button className="hero-action"
                             onClick={() => {
                                 triggerTrackingEvent('hero_section_how_others', 0.4);
                                 props.scrollToSection('reviews');
                             }}
                         >How others use it</Button>
-
-                    </div>
-                    <div className="hero-action">
-                        <a
+                        <Button primary
+                            className="hero-action"
                             href="/quickstart.html"
-                            target="_blank"
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
-                        >
-                            <Button primary
-                            >Get Started For Free</Button>
-                        </a>
+                        >Get Started For Free</Button>
                         {/* <a
                             href="/premium/"
                             target="_blank"
@@ -101,11 +103,10 @@ export function HeroSection_B(props: {
                     <br />
                 </div>
                 <div
-                    className="half right"
+                    className="half right justify-center-mobile"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
                         alignSelf: 'start'
                     }}
                 >

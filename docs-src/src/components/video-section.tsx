@@ -112,10 +112,10 @@ export function VideoSection(_props: {
 }) {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding }}>
         <div className="content centered">
-            <div className="inner">
-                <h2>
+        <h2>
                     Trusted by <b>Developers</b>
                 </h2>
+            <div className="inner">
                 <Slider {...sliderSettings}>
                     {YOUTUBE_VIDEOS.map(item => (
                         <div key={item.videoId} style={{

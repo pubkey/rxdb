@@ -452,7 +452,6 @@ export default function Home(props: {
             value={SOCIAL_PROOF_VALUES.discord}
             imgUrl="/files/icons/discord.svg"
             valueTitle='members'
-            da
           />
 
 
@@ -498,10 +497,10 @@ export default function Home(props: {
             paddingTop: 50
           }}>
             <div className="content centered">
+              <h2>
+                Used by <b>Thousands Worldwide</b>
+              </h2>
               <div className="inner">
-                <h2>
-                  Used by <b className="underline">Thousands Worldwide</b>
-                </h2>
                 {/* <p>
                   RxDB is a proven, battle-tested solution used by countless developers across the globe.
                   With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
@@ -584,8 +583,8 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
                   <Button icon={<IconTwitter />} style={{
-                    top: '44%', 
-                    left: '83%', 
+                    top: '44%',
+                    left: '83%',
                     marginLeft: '-129px',
                     position: 'absolute'
                   }}>
