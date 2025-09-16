@@ -9,36 +9,31 @@ import { IconDeviceTablet } from './icons/device-tablet';
 export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
 
 /**
- * On each heartbeat:
- *  1) Pick a random device as the source.
- *  2) Pick one of 3 colors for THIS TICK.
- *  3) Emit ONE circle from that device to the center cloud (Phase 1).
- *  4) Then emit circles from the center to all OTHER devices (Phase 2).
- *  5) All circles in this tick share the chosen color.
+ * Container width & height are calculated from element positions,
+ * and the inner diagram div is right-aligned inside the outer container.
  */
-export function ReplicationDiagram() {
+export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [size, setSize] = useState(0);
 
+  // trigger rerender on resize so scaling updates correctly if font/zoom changes
+  const [, forceRerender] = useState(0);
   useEffect(() => {
-    function handleResize() {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const newSize = Math.min(rect.width, rect.height);
-        setSize(newSize);
-      }
-    }
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
+    const onResize = () => forceRerender(c => c + 1);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const devices: DeviceType[] = ['smartwatch', 'desktop', 'phone', 'tablet', 'desktop'];
+  const devices: DeviceType[] = [
+    'phone',
+    'desktop',
+    'desktop',
+    'smartwatch',
+    'tablet',
+  ];
 
   const [heartbeatCount, setHeartbeatCount] = useState(0);
   const [sourceIndex, setSourceIndex] = useState<number | null>(null);
 
-  // Color palette (pick your 3 brand colors here)
   const COLORS = ['var(--color-top)', 'var(--color-middle)', 'var(--color-bottom)'] as const;
   const [packetColor, setPacketColor] = useState<string>(COLORS[0]);
 
@@ -46,53 +41,78 @@ export function ReplicationDiagram() {
     function handleHeartbeat() {
       setHeartbeatCount((c) => c + 1);
       setSourceIndex(Math.floor(Math.random() * devices.length));
-      // pick one of three colors for this tick; all packets use it
       setPacketColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
     }
     window.addEventListener('heartbeat', handleHeartbeat);
     return () => window.removeEventListener('heartbeat', handleHeartbeat);
   }, []);
 
-  if (size <= 0) {
-    return <div ref={containerRef} style={styles.container} />;
-  }
-
-  const scale = size / 500;
+  // ---- Geometry ----
+  const scale = scaleProp;
   const centerX = 250 * scale;
-  const centerY = 250 * scale;
+  const centerY = 200 * scale;
 
   const serverRadius = 55 * scale;
   const deviceCount = devices.length;
-  const deviceDistance = 150 * scale;
   const deviceRadius = 50 * scale;
-  const serverMargin = 0 * scale;
-  const deviceMargin = 0 * scale;
+
+  const deviceDistance = centerY - deviceRadius; // top-most device sits at y=0
+  const angleOffset = -Math.PI / 2;
+
+  const serverMargin = 0;
+  const deviceMargin = 0;
 
   const linesData = Array.from({ length: deviceCount }, (_, i) => {
-    const angle = (2 * Math.PI * i) / deviceCount;
+    const angle = angleOffset + (2 * Math.PI * i) / deviceCount;
     const deviceX = centerX + deviceDistance * Math.cos(angle);
     const deviceY = centerY + deviceDistance * Math.sin(angle);
+
     const dx = deviceX - centerX;
     const dy = deviceY - centerY;
     const dist = Math.sqrt(dx * dx + dy * dy);
+
     const lineLength =
       dist - (serverRadius + serverMargin) - (deviceRadius + deviceMargin);
-    const angleDeg = (angle * 180) / Math.PI;
 
+    const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
     const inwardName = `deviceToCenter-${i}-${heartbeatCount}`;
     const outwardName = `centerToDevice-${i}-${heartbeatCount}`;
 
-    return { angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName };
+    const deviceLeft = deviceX - deviceRadius;
+    const deviceRight = deviceX + deviceRadius;
+    const deviceTop = deviceY - deviceRadius;
+    const deviceBottom = deviceY + deviceRadius;
+
+    return {
+      angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName,
+      deviceLeft, deviceRight, deviceTop, deviceBottom,
+    };
   });
 
-  // Timing
+  // --- bounding box across all elements ---
+  const serverLeft = centerX - serverRadius;
+  const serverRight = centerX + serverRadius;
+  const serverTop = centerY - serverRadius;
+  const serverBottom = centerY + serverRadius;
+
+  const minLeft = Math.min(serverLeft, ...linesData.map(d => d.deviceLeft));
+  const maxRight = Math.max(serverRight, ...linesData.map(d => d.deviceRight));
+  const minTop = Math.min(serverTop, ...linesData.map(d => d.deviceTop));
+  const maxBot = Math.max(serverBottom, ...linesData.map(d => d.deviceBottom));
+
+  const contentWidth = Math.ceil(maxRight - minLeft);
+  const contentHeight = Math.ceil(maxBot - minTop);
+
+  const offsetX = -minLeft;
+  const offsetY = -minTop;
+
+  // --- Timing ---
   const PHASE1 = Math.max(200, Math.floor(HEARTBEAT_DURATION * 0.45));
   const PHASE2 = Math.max(200, Math.floor(HEARTBEAT_DURATION * 0.45));
   const GAP = Math.max(0, HEARTBEAT_DURATION - (PHASE1 + PHASE2));
 
-  const dynamicKeyframes = linesData
-    .map(
-      ({ inwardName, outwardName, lineLength }) => `
+  const dynamicKeyframes = linesData.map(
+    ({ inwardName, outwardName, lineLength }) => `
 @keyframes ${inwardName} {
   0%   { transform: translateX(${lineLength}px); opacity: 0; }
   10%  { opacity: 1; }
@@ -104,25 +124,24 @@ export function ReplicationDiagram() {
   10%  { opacity: 1; }
   90%  { opacity: 1; }
   100% { transform: translateX(${lineLength}px); opacity: 0; }
-}
-`
-    )
-    .join('\n');
+}`
+  ).join('\n');
 
   return (
     <div
       ref={containerRef}
       style={{
         ...styles.container,
-        // expose chosen color to descendants as a CSS var (handy if you later move styles to CSS)
         ['--packetColor' as any]: packetColor,
+        display: 'flex',           // flex container
+        justifyContent: 'flex-end' // align diagram wrapper to the right
       }}
     >
       <div
         style={{
           position: 'relative',
-          width: `${size}px`,
-          height: `${size}px`,
+          width: `${contentWidth}px`,
+          height: `${contentHeight}px`,
         }}
       >
         {/* Server (center cloud) */}
@@ -130,8 +149,8 @@ export function ReplicationDiagram() {
           className="device"
           style={{
             position: 'absolute',
-            left: centerX - serverRadius,
-            top: centerY - serverRadius,
+            left: centerX - serverRadius + offsetX,
+            top: centerY - serverRadius + offsetY,
             width: serverRadius * 2,
             height: serverRadius * 2,
             justifyContent: 'center',
@@ -142,10 +161,7 @@ export function ReplicationDiagram() {
 
         {/* Lines & devices */}
         {linesData.map(
-          (
-            { angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName },
-            i
-          ) => {
+          ({ angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName }, i) => {
             const lineStart = serverRadius + serverMargin;
             const device = devices[i];
             const isSource = sourceIndex === i;
@@ -157,8 +173,8 @@ export function ReplicationDiagram() {
                   style={{
                     position: 'absolute',
                     borderRadius: 5,
-                    left: centerX,
-                    top: centerY,
+                    left: centerX + offsetX,
+                    top: centerY + offsetY,
                     width: lineLength,
                     height: '2px',
                     backgroundColor: 'white',
@@ -166,7 +182,7 @@ export function ReplicationDiagram() {
                     transformOrigin: 'left center',
                   }}
                 >
-                  {/* Phase 1: ONLY on the source line, travel inward device -> center */}
+                  {/* Phase 1: ONLY source line */}
                   {heartbeatCount > 0 && isSource && (
                     <div
                       style={{
@@ -176,15 +192,14 @@ export function ReplicationDiagram() {
                         width: '12px',
                         height: '12px',
                         borderRadius: '50%',
-                        backgroundColor: packetColor, // chosen color for this tick
+                        backgroundColor: packetColor,
                         boxShadow: `0 0 10px ${packetColor}55`,
                         animation: `${inwardName} ${PHASE1}ms linear 1 forwards`,
                         opacity: 0,
                       }}
                     />
                   )}
-
-                  {/* Phase 2: ONLY on non-source lines, center -> device (after Phase 1) */}
+                  {/* Phase 2: ONLY non-source lines */}
                   {heartbeatCount > 0 && !isSource && (
                     <div
                       style={{
@@ -194,7 +209,7 @@ export function ReplicationDiagram() {
                         width: '12px',
                         height: '12px',
                         borderRadius: '50%',
-                        backgroundColor: packetColor, // same chosen color
+                        backgroundColor: packetColor,
                         boxShadow: `0 0 10px ${packetColor}55`,
                         animation: `${outwardName} ${PHASE2}ms ${PHASE1 + GAP}ms linear 1 forwards`,
                         opacity: 0,
@@ -207,60 +222,27 @@ export function ReplicationDiagram() {
                 <div
                   style={{
                     position: 'absolute',
-                    left: deviceX - deviceRadius,
-                    top: deviceY - deviceRadius,
+                    left: deviceX - deviceRadius + offsetX,
+                    top: deviceY - deviceRadius + offsetY,
                     width: deviceRadius * 2,
                     height: deviceRadius * 2,
                     borderRadius: '50%',
                   }}
                 >
                   {device === 'phone' ? (
-                    <div
-                      className="device"
-                      style={{
-                        width: '70%',
-                        height: '60%',
-                        top: '20%',
-                        left: '30%',
-                        marginLeft: 0,
-                      }}
-                    >
+                    <div className="device" style={{ width: '70%', height: '60%', top: '20%', left: '30%' }}>
                       <IconDevicePhone iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'smartwatch' ? (
-                    <div
-                      className="device"
-                      style={{
-                        width: '46%',
-                        height: '60%',
-                        top: '20%',
-                        left: '17%',
-                      }}
-                    >
+                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '17%' }}>
                       <IconDeviceSmartwatch iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'desktop' ? (
-                    <div
-                      className="device"
-                      style={{
-                        width: '46%',
-                        height: '60%',
-                        top: '20%',
-                        left: '27%',
-                      }}
-                    >
+                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '27%' }}>
                       <IconDeviceDesktop iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : (
-                    <div
-                      className="device"
-                      style={{
-                        width: '46%',
-                        height: '60%',
-                        top: '20%',
-                        left: '27%',
-                      }}
-                    >
+                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '27%' }}>
                       <IconDeviceTablet iconUrl="/files/logo/logo.svg" />
                     </div>
                   )}
@@ -279,8 +261,7 @@ export function ReplicationDiagram() {
 
 const styles = {
   container: {
-    width: '100%',
-    aspectRatio: '1',
-    overflow: 'hidden',
+    width: '100%',       // outer container can stretch
+    overflow: 'visible', // let diagram content grow
   } as React.CSSProperties,
 };

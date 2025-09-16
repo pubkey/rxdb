@@ -124,6 +124,7 @@ export function ReviewsBlock() {
                             fontStyle: 'normal',
                             fontWeight: 500,
                             lineHeight: '21px',
+                            marginBottom: 0
                         }}>{item.description}</p>
                         <IconQuoteEnd style={{ textAlign: 'right' }} />
                         <div className="slider-profile">

@@ -440,7 +440,6 @@ export default function Home(props: {
             value={SOCIAL_PROOF_VALUES.twitter}
             imgUrl="/files/icons/twitter-blue.svg"
             valueTitle='followers'
-            order={2}
           />
 
           <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={false} />
@@ -453,7 +452,7 @@ export default function Home(props: {
             value={SOCIAL_PROOF_VALUES.discord}
             imgUrl="/files/icons/discord.svg"
             valueTitle='members'
-            order={3}
+            da
           />
 
 
@@ -468,8 +467,8 @@ export default function Home(props: {
                 Giving you the confidence to create robust, scalable apps with ease.
               </p> */}
               <div style={{
-                marginTop: 65,
-                marginBottom: 5,
+                marginTop: 35,
+                marginBottom: 0,
                 width: '100%',
                 maxWidth: 1200,
                 padding: 10,
@@ -495,16 +494,18 @@ export default function Home(props: {
             </div>
           </div>
 
-          <div className="block reviews" id="reviews" ref={reviewsRef}>
+          <div className="block reviews" id="reviews" ref={reviewsRef} style={{
+            paddingTop: 50
+          }}>
             <div className="content centered">
               <div className="inner">
                 <h2>
                   Used by <b className="underline">Thousands Worldwide</b>
                 </h2>
-                <p>
+                {/* <p>
                   RxDB is a proven, battle-tested solution used by countless developers across the globe.
                   With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
-                </p>
+                </p> */}
                 <br /><br />
                 <ReviewsBlock></ReviewsBlock>
               </div>
@@ -528,7 +529,7 @@ export default function Home(props: {
                     primary
                     style={{
                       left: '50%',
-                      top: '20%',
+                      top: '23%',
                       marginLeft: '-93px',
                       position: 'absolute'
                     }}>
@@ -542,7 +543,7 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
                   <Button icon={<IconNewsletter />} style={{
-                    left: '25%',
+                    left: '24%',
                     marginLeft: '-90px',
                     position: 'absolute'
                   }}>
@@ -560,7 +561,7 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40)}
                 >
                   <Button icon={<IconDiscord />} style={{
-                    left: '77%',
+                    left: '85%',
                     top: '6%',
                     marginLeft: '-110.5px',
                     position: 'absolute'
@@ -570,7 +571,7 @@ export default function Home(props: {
                 </a>
                 <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
                   <Button icon={<IconPremium />} style={{
-                    top: '40%', left: '20%', marginLeft: '-70.5px',
+                    top: '44%', left: '20%', marginLeft: '-70.5px',
                     position: 'absolute'
                   }}>
                     <span className='hide-on-mobile'>Get</span>Premium
@@ -584,7 +585,7 @@ export default function Home(props: {
                 >
                   <Button icon={<IconTwitter />} style={{
                     top: '44%', 
-                    left: '73%', 
+                    left: '83%', 
                     marginLeft: '-129px',
                     position: 'absolute'
                   }}>
@@ -599,7 +600,7 @@ export default function Home(props: {
                 >
 
                   <Button icon={<IconCode />} style={{
-                    top: '54%', left: '32%', marginLeft: '-70px',
+                    top: '64%', left: '43%', marginLeft: '-70px',
                     position: 'absolute'
                   }}>
                     <span className='hide-on-mobile'>Get the</span>Code

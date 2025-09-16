@@ -110,7 +110,7 @@ export const sliderSettings = {
 export function VideoSection(_props: {
     sem?: SemPage;
 }) {
-    return <div className="block reviews" id="videos" style={{ paddingTop: padding, paddingBottom: 0 }}>
+    return <div className="block reviews" id="videos" style={{ paddingTop: padding }}>
         <div className="content centered">
             <div className="inner">
                 <h2>

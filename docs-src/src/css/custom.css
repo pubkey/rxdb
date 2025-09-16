@@ -139,11 +139,9 @@ body:not(.homepage) .main-wrapper {
 }
 
 .footer {
-    background-color: var(--ifm-navbar-background-color);
-    background-image: url("/img/footer-column.svg");
-    background-position: right bottom;
-    background-repeat: no-repeat;
-    height: fit-content;
+    border-top-style: solid;
+    border-color: white;
+    border-width: 1px;
 }
 
 .card {
@@ -587,7 +585,6 @@ body {
     max-width: 1120px;
     margin-left: auto;
     margin-right: auto;
-    padding-bottom: 64px;
 }
 
 @media (max-width: 1350px) {
@@ -789,7 +786,7 @@ body {
     width: 100%;
     min-height: 250px;
     padding-top: 150px;
-    padding-bottom: 150px;
+    padding-bottom: 64px;
     background-color: var(--bg-color);
     position: relative;
     overflow: hidden;
@@ -797,7 +794,6 @@ body {
 
 .block.first {
     background-color: var(--bg-color-darkest);
-    padding-bottom: 0px;
     padding-top: 50px;
 }
 
@@ -820,7 +816,7 @@ body {
 }
 
 .block .half.right {
-    flex: 1.2;
+    flex: 1.12;
 }
 
 
@@ -926,12 +922,6 @@ body {
     .block.first.hero h1 {
         font-size: 3em;
     }
-}
-
-/* REVIEWS BLOCK */
-.block.reviews {
-    min-height: 150px;
-    padding-bottom: 0px;
 }
 
 .block.reviews p {
@@ -1102,7 +1092,7 @@ body {
 }
 
 .block.offline-first p {
-    margin-top: 50px;
+    margin-top: 31px;
 }
 
 @media (max-width: 900px) {
@@ -1377,7 +1367,7 @@ ul.checked li:before {
 .block.last .buttons {
     margin-top: 90px;
     position: relative;
-    height: 500px;
+    height: 382px;
 }
 
 .block.last .buttons .button {
@@ -1722,7 +1712,6 @@ ul.checked li:before {
 
 .trophy.twitter {
     color: white;
-    background-color: var(--bg-color-dark);
 }
 
 .trophy.twitter:hover {
@@ -1732,6 +1721,7 @@ ul.checked li:before {
 
 .trophy.discord {
     color: #5962ee;
+    background-color: var(--bg-color-dark);
 }
 
 .trophy.discord:hover {
@@ -3476,13 +3466,14 @@ footer a:visited {
 /* footer */
 
 .block.footer {
-    background-color: var(--ifm-navbar-background-color);
+    padding-top: 25px;
+    /* background-color: var(--ifm-navbar-background-color);
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 2rem;
-    padding-bottom: 8rem;
+    padding-bottom: 8rem; */
 }
 
 .block.footer .footer-block {
@@ -3497,6 +3488,8 @@ footer a:visited {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    color: white;
+    min-width: 180px;
 }
 
 .block.footer .footer-links span {
@@ -3504,15 +3497,6 @@ footer a:visited {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 0;
-}
-
-.block.footer .footer-links .footer-community-links {
-    display: flex;
-    gap: 1.25rem;
-}
-
-.block.footer .footer-links .footer-policy {
-    display: flex;
 }
 
 .footer-logo-button {
@@ -3537,14 +3521,8 @@ footer a:visited {
     padding-left: 3px;
 }
 
-.footer-nav-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-    align-items: center;
-}
 
-.footer-nav-links a {
+.footer-links a {
     font-size: var(--fontSizes-s);
     font-weight: 400;
     color: white;
@@ -3560,6 +3538,14 @@ footer a:visited {
 .footer-nav-links {
     padding: 0;
 }
+
+.footer-community-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 130px;
+}
+
 
 .footer-policy {
     border-top: 1px solid #5c5c75;

@@ -20,9 +20,13 @@ export function OfflineSection(props: {
       className={'block offline-first ' + (props.dark ? 'dark' : '')}
       id="offline"
       ref={props.offlineRef}
-      style={{ order: props.order }}
+      style={{
+        order: props.order,
+      }}
     >
-      <div className="content">
+      <div className="content" style={{
+        paddingBottom: 20
+      }}>
         <h2>
           Online <b>is Optional</b>
         </h2>
@@ -32,11 +36,7 @@ export function OfflineSection(props: {
               RxDB adopts an{' '}
               <a href="/offline-first.html" target="_blank">
                 offline-first
-              </a>{' '}
-              approach, keeping your app fully functional even without a connection.
-              Data is stored locally on the {getAppName(props)} client and seamlessly{' '}
-              <b>replicated in the background</b>, and you can even skip the backend entirely if you
-              choose.
+              </a>{' '} approach, ensuring your app remains fully functional by storing data locally on the {getAppName(props)} client and seamlessly syncing in the background. You can even run your app without a backend at all.
             </p>
 
             <CheckedList>
@@ -66,7 +66,7 @@ export function OfflineSection(props: {
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'right',
               alignSelf: 'start',
             }}
           >
