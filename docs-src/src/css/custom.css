@@ -816,24 +816,25 @@ body {
         margin-right: auto;
     }
 
+    .flex-wrap-mobile {
+        flex-wrap: wrap;
+    }
+
+    .grid-2-mobile {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     .block h2,
     .block h1 {
         font-size: 26px;
         font-weight: 800;
     }
 
-    .flex-wrap-mobile {
-        flex-wrap: wrap;
-    }
-
-
-    .grid-2-mobile {
-        grid-template-columns: repeat(2, 1fr);
+    .half p {
+        text-align: center;
     }
 }
 
-
-.block .half {}
 
 .block .half.left {
     flex: 0.9;
@@ -1508,7 +1509,7 @@ ul.checked li:before {
     width: 220px;
     padding-left: 10px;
     padding-right: 10px;
-    margin-left: -135px;
+    margin-left: -122px;
     left: 50%;
 }
 

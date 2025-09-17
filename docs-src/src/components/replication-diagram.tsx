@@ -134,7 +134,7 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number })
         ...styles.container,
         ['--packetColor' as any]: packetColor,
         display: 'flex',           // flex container
-        justifyContent: 'flex-end' // align diagram wrapper to the right
+        justifyContent: 'center' // align diagram wrapper to the right
       }}
     >
       <div
