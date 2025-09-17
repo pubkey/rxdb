@@ -17,9 +17,16 @@ type EmojiChatProps = {
   /** Fired when one of the 3 bottom buttons is clicked */
   onButtonClick?: (index: number, emoji: string) => void;
   buttonEmojis?: [string, string, string];
+  /** Optional class for the outer frame */
+  className?: string;               // ✅ NEW
 };
 
-export function EmojiChat({ items, onButtonClick, buttonEmojis = ["👾", "👨‍💻", "💡"] }: EmojiChatProps) {
+export function EmojiChat({
+  items,
+  onButtonClick,
+  buttonEmojis = ["👾", "👨‍💻", "💡"],
+  className,                       // ✅ NEW
+}: EmojiChatProps) {
   const frame: CSSProperties = {
     width: 230,
     height: 435,
@@ -70,11 +77,10 @@ export function EmojiChat({ items, onButtonClick, buttonEmojis = ["👾", "👨�
     padding: "0 12px",
   };
 
-  // Only show the last 5 messages
   const visibleItems = items.slice(-5);
 
   return (
-    <div style={frame}>
+    <div style={frame} className={className}> {/* ✅ applied */}
       <div style={screen} className="chat-background">
         <div style={notchWrap} />
 
@@ -104,47 +110,39 @@ export function EmojiChat({ items, onButtonClick, buttonEmojis = ["👾", "👨�
   );
 }
 
-
 type EmojiChatStatefulProps = {
   online: boolean;
   chatId: string;
   buttonEmojis?: [string, string, string];
+  className?: string;               // ✅ allow passing through
 };
 
-export function EmojiChatStateful({ online, chatId, buttonEmojis }: EmojiChatStatefulProps) {
-  // holds unsynced chat items for THIS instance (with timestamps so we can show them)
+export function EmojiChatStateful({
+  online,
+  chatId,
+  buttonEmojis,
+  className,                         // ✅ receive it
+}: EmojiChatStatefulProps) {
   const unsynced = useRef<ChatItem[]>([]);
-
-  // remembers the last time items were refreshed
   const lastOnlineAt = useRef<number | null>(null);
-
-  // local state for visible messages
   const [items, setItems] = useState<ChatItem[]>([]);
 
-  // helper to reload items from storage AND include our unsynced items
   function refreshItems() {
     const stored = getEmojiChatState();
     const merged = [...stored, ...unsynced.current];
-
-    // ✅ sort by unixTime ascending for consistent order
     merged.sort((a, b) => a.unixTime - b.unixTime);
-
     setItems(merged);
-    lastOnlineAt.current = Date.now(); // track last refresh time
+    lastOnlineAt.current = Date.now();
   }
 
-  // initial load + subscribe to subject (emits on local writes and cross-tab updates)
   useEffect(() => {
     refreshItems();
-
     const sub = chatStateSubject.subscribe(() => {
       refreshItems();
     });
-
     return () => sub.unsubscribe();
   }, []);
 
-  // flush unsynced items when switching to online
   useEffect(() => {
     if (online && unsynced.current.length > 0) {
       addEmojiChatStates(
@@ -163,17 +161,14 @@ export function EmojiChatStateful({ online, chatId, buttonEmojis }: EmojiChatSta
     };
 
     if (online) {
-      // write-through and emit via subject
       addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId }]);
       refreshItems();
     } else {
-      // queue locally and show immediately
       unsynced.current.push(entry);
       refreshItems();
     }
   }
 
-  // map persisted+unsynced items into EmojiChat's format
   const mappedItems = items.map((item) => ({
     emoji: item.emoji,
     direction: item.creatorId === chatId ? ("right" as const) : ("left" as const),
@@ -183,6 +178,7 @@ export function EmojiChatStateful({ online, chatId, buttonEmojis }: EmojiChatSta
     <EmojiChat
       items={mappedItems}
       buttonEmojis={buttonEmojis}
+      className={className}        
       onButtonClick={(_, emoji) => {
         handleAdd(emoji);
       }}
@@ -190,42 +186,27 @@ export function EmojiChatStateful({ online, chatId, buttonEmojis }: EmojiChatSta
   );
 }
 
-
 const STORAGE_ID = 'emoji-chat-state';
 const chatStateSubject = new Subject<void>();
 window.addEventListener("storage", () => {
   chatStateSubject.next();
 });
 
-
 export function getEmojiChatState(): ChatItem[] {
   const data = localStorage.getItem(STORAGE_ID);
-  if (!data) {
-    return [];
-  }
+  if (!data) return [];
   let list: ChatItem[] = JSON.parse(data);
-
-  /**
-   * To not fill up the locale storage over time,
-   * clean up the list if it becomes too big.
-   */
   if (list.length > 20) {
-    list = list.sort((a, b) => a.unixTime - b.unixTime);
-    list = list.slice(-10);
+    list = list.sort((a, b) => a.unixTime - b.unixTime).slice(-10);
     localStorage.setItem(STORAGE_ID, JSON.stringify(list));
   }
-
   return list;
 }
 
 export function addEmojiChatStates(list: { emoji: string, creatorId: string }[]) {
   const state = getEmojiChatState();
   list.forEach(i => {
-    state.push({
-      creatorId: i.creatorId,
-      emoji: i.emoji,
-      unixTime: Date.now()
-    });
+    state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: Date.now() });
   });
   console.log('addEmojiChatStates set item!');
   localStorage.setItem(STORAGE_ID, JSON.stringify(state));

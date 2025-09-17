@@ -546,11 +546,11 @@ export default function Home(props: {
                     marginLeft: '-90px',
                     position: 'absolute'
                   }}>
-                    <span className='hide-on-mobile'>Subscribe to the</span> Newsletter
+                    <span className='hide-mobile'>Subscribe to the</span> Newsletter
                   </Button>
                   {/* <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     <IconNewsletter />
-                    <span className='hide-on-mobile'>Subscribe to the</span> Newsletter
+                    <span className='hide-mobile'>Subscribe to the</span> Newsletter
                   </div> */}
                 </a>
                 <a
@@ -565,7 +565,7 @@ export default function Home(props: {
                     marginLeft: '-110.5px',
                     position: 'absolute'
                   }}>
-                    <span className='hide-on-mobile'>Join the</span>Chat
+                    <span className='hide-mobile'>Join the</span>Chat
                   </Button>
                 </a>
                 <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
@@ -573,7 +573,7 @@ export default function Home(props: {
                     top: '44%', left: '20%', marginLeft: '-70.5px',
                     position: 'absolute'
                   }}>
-                    <span className='hide-on-mobile'>Get</span>Premium
+                    <span className='hide-mobile'>Get</span>Premium
                   </Button>
                 </a>
                 <a
@@ -588,7 +588,7 @@ export default function Home(props: {
                     marginLeft: '-129px',
                     position: 'absolute'
                   }}>
-                    <span className='hide-on-mobile'>Follow on</span>Twitter
+                    <span className='hide-mobile'>Follow on</span>Twitter
                   </Button>
                 </a>
                 <a
@@ -602,7 +602,7 @@ export default function Home(props: {
                     top: '64%', left: '43%', marginLeft: '-70px',
                     position: 'absolute'
                   }}>
-                    <span className='hide-on-mobile'>Get the</span>Code
+                    <span className='hide-mobile'>Get the</span>Code
                   </Button>
                 </a>
               </div>
