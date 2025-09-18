@@ -37,17 +37,17 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
     const el = viewportRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
- el.scrollLeft = BAND + 1;
-});
+      el.scrollLeft = BAND + 1;
+    });
     return () => cancelAnimationFrame(id);
   }, [BAND]);
 
   const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const stopAnim = () => {
- if (animRef.current) {
- cancelAnimationFrame(animRef.current); animRef.current = null;
-}
-};
+    if (animRef.current) {
+      cancelAnimationFrame(animRef.current); animRef.current = null;
+    }
+  };
   const animateScrollTo = (to: number, duration = 450) => {
     const el = viewportRef.current; if (!el) return;
     stopAnim();
@@ -90,7 +90,6 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   };
   const onPointerUp = (e: React.PointerEvent) => {
     stopAnim();
-    console.log('Pointer moved X:', drag.current.distance);
     if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
       e.preventDefault();
       e.stopPropagation();

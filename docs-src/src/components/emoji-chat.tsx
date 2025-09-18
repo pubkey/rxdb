@@ -169,7 +169,7 @@ export function EmojiChatStateful({
 
     if (online && unsynced.current.length > 0) {
       addEmojiChatStates(
-        unsynced.current.map(({ emoji, creatorId }) => ({ emoji, creatorId }))
+        unsynced.current
       );
       unsynced.current = [];
       refreshItems();
@@ -184,7 +184,7 @@ export function EmojiChatStateful({
     };
 
     if (isBrowser && online) {
-      addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId }]);
+      addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId, unixTime: Date.now() }]);
       refreshItems();
     } else {
       // Safe to update local ref even during SSR; only read on client
@@ -231,12 +231,12 @@ export function getEmojiChatState(): ChatItem[] {
   }
 }
 
-export function addEmojiChatStates(list: { emoji: string; creatorId: string; }[]) {
+export function addEmojiChatStates(list: { emoji: string; creatorId: string; unixTime: number; }[]) {
   // Guard for SSR
   if (typeof window === 'undefined') return;
   const state = getEmojiChatState();
   list.forEach(i => {
-    state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: Date.now() });
+    state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: i.unixTime });
   });
   // eslint-disable-next-line no-console
   console.log('addEmojiChatStates set item!');
