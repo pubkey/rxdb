@@ -84,7 +84,11 @@ export function HeroSection_B(props: {
                         gap: 20
                     }}
                 >
-                    <EmojiChatStateful online={online} chatId='hero_left' />
+                    <EmojiChatStateful
+                        online={online}
+                        chatId='hero_left'
+                        simulateClicks={true}
+                    />
                     <div
                         className='hide-mobile'
                         style={{
@@ -100,9 +104,8 @@ export function HeroSection_B(props: {
                         online={online}
                         chatId='hero_right'
                         buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
-
+                        simulateClicks={true}
                     />
-
                     <div
                         className='hide-desktop'
                         style={{

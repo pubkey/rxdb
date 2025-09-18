@@ -224,7 +224,6 @@ export function NextArrow(props: any) {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        zIndex: 10,
       }}
       onClick={onClick}
     >
@@ -248,7 +247,6 @@ export function PrevArrow(props: any) {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        zIndex: 10,
       }}
       onClick={onClick}
     >

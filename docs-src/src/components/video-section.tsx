@@ -98,7 +98,7 @@ const padding = 50;
 export function VideoSection(_props: {
     sem?: SemPage;
 }) {
-    return <div className="block reviews" id="videos" style={{ paddingTop: padding }}>
+    return <div className="block reviews trophy-after" id="videos" style={{ paddingTop: padding }}>
         <div className="content centered" style={{
             marginBottom: 50
         }}>

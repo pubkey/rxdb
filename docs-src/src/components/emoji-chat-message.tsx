@@ -13,6 +13,7 @@ type EmojiMessageBoxProps = {
   direction: "left" | "right" | "button";
   /** Optional click handler (used when direction = "button"). */
   onClick?: MouseEventHandler<HTMLDivElement>;
+  simulateClicks: boolean;
 };
 
 const usedEvents = new WeakSet<CustomEvent>();
@@ -21,6 +22,7 @@ export function EmojiMessageBox({
   emoji,
   direction,
   onClick,
+  simulateClicks
 }: EmojiMessageBoxProps) {
   const [isClicked, setIsClicked] = useState(false);
 
@@ -32,7 +34,11 @@ export function EmojiMessageBox({
 
   useEffect(() => {
     function handleHeartbeat(e) {
-      if (direction === "button" && Math.random() < 0.3) {
+      if (
+        simulateClicks &&
+        direction === "button" &&
+        Math.random() < 0.16
+      ) {
         if (usedEvents.has(e)) {
           return;
         }

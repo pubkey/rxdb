@@ -64,7 +64,7 @@ export function SyncSection(props: {
 }) {
   return (
     <div
-      className={'block replication ' + (props.dark ? 'dark' : '') + ' tropy-before'}
+      className={'block replication ' + (props.dark ? 'dark' : '') + ' trophy-before trophy-after'}
       id="replication"
       ref={props.replicationRef}
       style={{ order: props.order }}
@@ -76,7 +76,7 @@ export function SyncSection(props: {
 
         <div className="inner" >
           <div className="half left">
-            <p className='font-16-14'>
+            <p className='font-16-14 centered-mobile-p'>
               RxDB's simple and high-performance{' '}
               <a href="/replication.html" target="_blank">
                 Sync Engine
@@ -85,7 +85,7 @@ export function SyncSection(props: {
               Either use one of our prebuild replication plugins...
             </p>
 
-            <p>
+            <p className='centered-mobile-p'>
               {replicationLinks.map(link => (
                 <a key={link.url} href={link.url} target="_blank">
                   <Tag img={link.iconUrl}>{link.label}</Tag>

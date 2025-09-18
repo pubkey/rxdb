@@ -734,14 +734,18 @@ body {
     width: 100%;
     min-height: 250px;
     padding-top: 50px;
-    padding-bottom: 64px;
+    padding-bottom: 46px;
     background-color: var(--bg-color);
     position: relative;
     overflow: hidden;
 }
 
-.block.tropy-before {
+.block.trophy-before {
     padding-top: 120px;
+}
+
+.block.trophy-after {
+    padding-bottom: 80px;
 }
 
 .block.first .button {
@@ -794,8 +798,40 @@ body {
     font-size: 16px;
 }
 
+.gap-24-20 {
+    gap: 24px;
+}
+
+.height-26-21 {
+    height: 26px;
+}
+
+.margin-left-10-0 {
+    margin-left: 10px;
+}
+
+.padding-top-64-28 {
+    padding-top: 64px;
+}
+
 
 @media (max-width: 900px) {
+    .padding-top-64-28 {
+        padding-top: 28px;
+    }
+
+    .margin-left-10-0 {
+        margin-left: 0px;
+    }
+
+    .height-26-21 {
+        height: 21px;
+    }
+
+    .gap-24-20 {
+        gap: 20px;
+    }
+
     .font-20-16 {
         font-size: 16px;
     }
@@ -856,7 +892,13 @@ body {
     }
 
     .centered-mobile {
-        width: min(1120px, 86%);
+        width: min(1120px, 74%);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .centered-mobile-p {
+        max-width: 88%;
         margin-left: auto;
         margin-right: auto;
     }
@@ -890,8 +932,8 @@ body {
     }
 
     .framework-icon {
-        width: 27px;
-        height: 27px;
+        width: 28px;
+        height: 28px;
     }
 
 
@@ -1326,7 +1368,7 @@ ul.checked li:before {
 }
 
 .block.last .buttons {
-    margin-top: 90px;
+    margin-top: 66px;
     position: relative;
     height: 382px;
 }
@@ -3437,6 +3479,9 @@ footer a:visited {
 
 .block.footer {
     padding-top: 25px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 60px;
     /* background-color: var(--ifm-navbar-background-color);
     position: relative;
     display: flex;

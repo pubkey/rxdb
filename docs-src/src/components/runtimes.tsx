@@ -13,7 +13,6 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     justifyContent: "center",
     gap: "2rem",
-    paddingTop: 64,
     paddingLeft: 31,
     paddingRight: 31
   },
@@ -26,7 +25,6 @@ const styles: Record<string, CSSProperties> = {
     display: "flex",
     alignItems: "center",
     justifyContent: 'center',
-    gap: "1.5rem",
     flexWrap: "wrap",
   },
   icon: {
@@ -70,7 +68,7 @@ export function HeroRuntimes() {
   const text = hovered !== null ? rows[hovered].label : "these Frameworks";
 
   return (
-    <div style={styles.container} className='column-mobile'>
+    <div style={styles.container} className='column-mobile padding-top-64-28'>
       <div
         className='font-20-14'
         style={{
@@ -86,7 +84,7 @@ export function HeroRuntimes() {
 
         >{text}</span>
       </div>
-      <div style={styles.iconsRow}>
+      <div style={styles.iconsRow} className='gap-24-20'>
         {rows.map((item, i) => {
           const defaultFilter = item.invert
             ? "grayscale(100%) brightness(1.8) invert(1)"

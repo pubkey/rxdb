@@ -55,26 +55,25 @@ export default function FooterWrapper() {
         label: 'Github',
         target: '_blank',
         href: '/code/',
-        logo: <span className="navbar-icon-github" style={{width: 22, height: 22, display: 'inline-block'}}></span>
+        logo: <span className="navbar-icon-github" style={{ width: 22, height: 22, display: 'inline-block' }}></span>
       },
       {
         label: 'Discord',
         target: '_blank',
         href: '/chat/',
-        logo: <span className="navbar-icon-discord" style={{width: 22, height: 22, display: 'inline-block'}}></span>,
+        logo: <span className="navbar-icon-discord" style={{ width: 22, height: 22, display: 'inline-block' }}></span>,
       },
     ],
     policyLinks: [
       {
         label: 'Our Customers',
-        target: '_blank',
-        href: '/legal-notice/',
+        href: '/#reviews',
       },
-      {
-        label: 'About us',
-        target: '_blank',
-        href: '/legal-notice/',
-      },
+      // {
+      //   label: 'About us',
+      //   target: '_blank',
+      //   href: '/legal-notice/',
+      // },
       {
         label: 'Legal Notice',
         target: '_blank',
@@ -90,11 +89,11 @@ export default function FooterWrapper() {
       <>
 
         <div className='block footer dark'>
-          <div className="content" style={{
+          <div style={{
             display: 'flex',
             flexWrap: 'wrap',
             gap: 44
-          }}>
+          }} className='content'>
             <div className="half left">
               <span>
                 <a

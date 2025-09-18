@@ -21,13 +21,13 @@ export function Tag(props: {
                 width: "auto",
                 marginRight: 12,
                 marginBottom: 12,
-                fontSize: 16,
                 fontWeight: hasImg ? 800 : 500,
                 whiteSpace: "nowrap",
                 boxSizing: "border-box",
                 userSelect: "none",
                 border: props.border ? '2px solid var(--White, #FFF)' : 'none'
             }}
+            className='font-16-14'
         >
             {hasImg &&
                 (typeof props.img === "string" ? (

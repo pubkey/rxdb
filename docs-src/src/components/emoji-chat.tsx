@@ -18,14 +18,16 @@ type EmojiChatProps = {
   onButtonClick?: (index: number, emoji: string) => void;
   buttonEmojis?: [string, string, string];
   /** Optional class for the outer frame */
-  className?: string;               // ✅ NEW
+  className?: string;
+  simulateClicks: boolean;
 };
 
 export function EmojiChat({
   items,
   onButtonClick,
   buttonEmojis = ["👾", "👨‍💻", "💡"],
-  className,                       // ✅ NEW
+  className,
+  simulateClicks
 }: EmojiChatProps) {
   const frame: CSSProperties = {
     width: 230,
@@ -90,6 +92,7 @@ export function EmojiChat({
               key={i}
               direction={item.direction}
               emoji={item.emoji}
+              simulateClicks={false}
             />
           ))}
         </div>
@@ -102,6 +105,7 @@ export function EmojiChat({
               direction="button"
               emoji={emoji}
               onClick={() => onButtonClick?.(i, emoji)}
+              simulateClicks={simulateClicks}
             />
           ))}
         </div>
@@ -114,14 +118,16 @@ type EmojiChatStatefulProps = {
   online: boolean;
   chatId: string;
   buttonEmojis?: [string, string, string];
-  className?: string;               // ✅ allow passing through
+  className?: string;
+  simulateClicks: boolean;
 };
 
 export function EmojiChatStateful({
   online,
   chatId,
   buttonEmojis,
-  className,                         // ✅ receive it
+  className,
+  simulateClicks
 }: EmojiChatStatefulProps) {
   const unsynced = useRef<ChatItem[]>([]);
   const lastOnlineAt = useRef<number | null>(null);
@@ -178,7 +184,8 @@ export function EmojiChatStateful({
     <EmojiChat
       items={mappedItems}
       buttonEmojis={buttonEmojis}
-      className={className}        
+      className={className}
+      simulateClicks={simulateClicks}
       onButtonClick={(_, emoji) => {
         handleAdd(emoji);
       }}

@@ -17,7 +17,7 @@ export function OfflineSection(props: {
 
   return (
     <div
-      className={'block offline-first ' + (props.dark ? 'dark' : '') + ' tropy-before'}
+      className={'block offline-first ' + (props.dark ? 'dark' : '') + ' trophy-before trophy-after'}
       id="offline"
       ref={props.offlineRef}
       style={{
@@ -32,7 +32,7 @@ export function OfflineSection(props: {
         </h2>
         <div className="inner">
           <div className="half left">
-            <p className='font-16-14'>
+            <p className='font-16-14 centered-mobile-p'>
               RxDB adopts an{' '}
               <a href="/offline-first.html" target="_blank">
                 offline-first
@@ -86,7 +86,11 @@ export function OfflineSection(props: {
               />
               <PixelToggle checked={online} onChange={setOnline} />
             </div>
-            <EmojiChatStateful online={online} chatId="offline" />
+            <EmojiChatStateful
+              online={online}
+              chatId="offline"
+              simulateClicks={false}
+            />
           </div>
         </div>
       </div>

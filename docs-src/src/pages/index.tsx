@@ -386,16 +386,20 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40)}
                 >
-                  <Button icon={<IconQuickstart />}
-                    primary
-                    style={{
-                      left: '50%',
-                      top: '23%',
-                      marginLeft: '-93px',
-                      position: 'absolute'
-                    }}>
-                    Quickstart
-                  </Button>
+                  <div style={{
+                    width: 186,
+                    left: '50%',
+                    top: '23%',
+                    marginLeft: '-93px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconQuickstart />}
+                      primary
+                    >
+                      Quickstart
+                    </Button>
+                  </div>
                 </a>
                 <a
                   href="/newsletter"
@@ -403,13 +407,18 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
-                  <Button icon={<IconNewsletter />} style={{
-                    left: '25%',
-                    marginLeft: '-90px',
-                    position: 'absolute'
+
+                  <div style={{
+                    left: '29%',
+                    width: 361,
+                    marginLeft: '-180px',
+                    position: 'absolute',
+                    textAlign: 'center'
                   }}>
-                    <span className='hide-mobile'>Subscribe to the</span> Newsletter
-                  </Button>
+                    <Button icon={<IconNewsletter />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Subscribe to the</span> Newsletter
+                    </Button>
+                  </div>
                   {/* <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                     <IconNewsletter />
                     <span className='hide-mobile'>Subscribe to the</span> Newsletter
@@ -421,22 +430,32 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40)}
                 >
-                  <Button icon={<IconDiscord />} style={{
-                    left: '85%',
+                  <div style={{
+                    width: 221,
+                    left: '76%',
                     top: '6%',
                     marginLeft: '-110.5px',
-                    position: 'absolute'
+                    position: 'absolute',
+                    textAlign: 'center'
                   }}>
-                    <span className='hide-mobile'>Join the</span>Chat
-                  </Button>
+                    <Button icon={<IconDiscord />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Join the</span>Chat
+                    </Button>
+                  </div>
                 </a>
                 <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
-                  <Button icon={<IconPremium />} style={{
-                    top: '44%', left: '20%', marginLeft: '-70.5px',
-                    position: 'absolute'
+                  <div style={{
+                    width: 220,
+                    top: '44%',
+                    left: '26%',
+                    marginLeft: '-100px',
+                    position: 'absolute',
+                    textAlign: 'center'
                   }}>
-                    <span className='hide-mobile'>Get</span>Premium
-                  </Button>
+                    <Button icon={<IconPremium />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Get</span>Premium
+                    </Button>
+                  </div>
                 </a>
                 <a
                   href="https://twitter.com/intent/user?screen_name=rxdbjs"
@@ -444,14 +463,18 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
-                  <Button icon={<IconTwitter />} style={{
-                    top: '41%',
-                    left: '83%',
+                  <div style={{
+                    width: 258,
+                    top: '40%',
+                    left: '75%',
                     marginLeft: '-129px',
-                    position: 'absolute'
+                    position: 'absolute',
+                    textAlign: 'center'
                   }}>
-                    <span className='hide-mobile'>Follow on</span>Twitter
-                  </Button>
+                    <Button icon={<IconTwitter />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Follow on</span>Twitter
+                    </Button>
+                  </div>
                 </a>
                 <a
                   href="/code/"
@@ -459,13 +482,18 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40)}
                 >
-
-                  <Button icon={<IconCode />} style={{
-                    top: '64%', left: '43%', marginLeft: '-70px',
-                    position: 'absolute'
+                  <div style={{
+                    width: 209,
+                    top: '64%',
+                    left: '43%',
+                    marginLeft: '-104px',
+                    position: 'absolute',
+                    textAlign: 'center'
                   }}>
-                    <span className='hide-mobile'>Get the</span>Code
-                  </Button>
+                    <Button icon={<IconCode />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Get the</span>Code
+                    </Button>
+                  </div>
                 </a>
               </div>
             </div>

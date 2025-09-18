@@ -23,13 +23,11 @@ const defaultStyles: Record<string, CSSProperties> = {
   icon: {
     color: "#fff",
     width: 37,
-    height: 26,
     flexShrink: 0,
     alignSelf: "center",
   },
   text: {
     flex: 1,
-    marginLeft: 10,
     fontStyle: 'normal',
     fontWeight: 700,
     lineHeight: 'normal',
@@ -48,8 +46,8 @@ export function CheckedList({ children, style, className }: FeatureListProps) {
     <ul className={className} style={{ ...defaultStyles.list, ...style }}>
       {items.map((child, i) => (
         <li key={i} style={defaultStyles.item} className='font-20-16'>
-          <IconCheck style={defaultStyles.icon} />
-          <div style={defaultStyles.text}>{child}</div>
+          <IconCheck style={defaultStyles.icon} className='height-26-21' />
+          <div style={defaultStyles.text} className='margin-left-10-0'>{child}</div>
         </li>
       ))}
     </ul>
