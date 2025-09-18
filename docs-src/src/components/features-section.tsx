@@ -5,6 +5,7 @@ import { IconEncryption } from './icons/encryption';
 import { IconReplication } from './icons/replication';
 import { IconServer } from './icons/server';
 import { Tag } from './tag';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
 const tags: {
     value: string;
@@ -33,10 +34,12 @@ const tags: {
     ];
 
 export function FeaturesSection() {
-    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 900);
+    const isBrowser = useIsBrowser();
+    const [isMobile, setIsMobile] = useState(() => isBrowser ? window.innerWidth < 900 : false);
     const [showMore, setShowMore] = useState(false);
 
     useEffect(() => {
+        if (!isBrowser) return;
         const handleResize = () => {
             const mobile = window.innerWidth < 900;
             setIsMobile(mobile);

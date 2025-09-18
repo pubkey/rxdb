@@ -137,6 +137,9 @@ export function EmojiChatStateful({
   const [items, setItems] = useState<ChatItem[]>([]);
 
   function refreshItems() {
+    if (!isBrowser) return;
+
+
     // Safe on SSR: returns [] when not in browser
     const stored = getEmojiChatState();
     const merged = [...stored, ...unsynced.current];

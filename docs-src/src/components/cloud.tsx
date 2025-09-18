@@ -27,8 +27,8 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   // Handle "heartbeat": advance to next icon and trigger slide transition
   useEffect(() => {
     if (isBrowser) {
- return;
-}
+      return;
+    }
     const handleHeartbeat = () => {
       setIconIndex(prev => {
         const next = (prev + 1) % replicationLinks.length;
@@ -48,8 +48,8 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   // Kick off the slide animation when there's a prev icon
   useEffect(() => {
     if (isBrowser) {
- return;
-}
+      return;
+    }
     if (!prevUrl) return;
 
     const raf = requestAnimationFrame(() => {
