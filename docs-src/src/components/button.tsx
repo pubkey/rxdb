@@ -7,14 +7,13 @@ type ButtonProps = {
   onClick?: MouseEventHandler<HTMLDivElement | HTMLAnchorElement>;
   style?: CSSProperties;
   className?: string;
-  href?: string; // ✅ new prop
+  href?: string;
 };
 
 const styles: Record<string, CSSProperties> = {
   base: {
     display: "inline-flex",
     height: "45px",
-    padding: "6px 25px",
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -26,10 +25,10 @@ const styles: Record<string, CSSProperties> = {
     cursor: "pointer",
     textAlign: "center",
     transition: "all 0.2s ease-in-out",
-    lineHeight: 'initial',
+    lineHeight: "initial",
     userSelect: "none",
     boxSizing: "border-box",
-    textDecoration: "none", // ensures <a> looks like button
+    textDecoration: "none",
   },
   primary: {
     background: "linear-gradient(90deg, #ED168F 0%, #B2218B 100%)",
@@ -57,8 +56,10 @@ export function Button({
   className,
   href,
 }: ButtonProps) {
+  const mergedClassName = `padding-button${className ? ` ${className}` : ""}`;
+
   const commonProps = {
-    className,
+    className: mergedClassName,
     style: {
       ...styles.base,
       ...(primary ? styles.primary : styles.secondary),
@@ -67,7 +68,6 @@ export function Button({
   };
 
   if (href) {
-    // ✅ Render as <a>
     return (
       <a href={href} onClick={onClick} {...commonProps}>
         {icon && <span style={styles.iconWrapper}>{icon}</span>}
@@ -76,7 +76,6 @@ export function Button({
     );
   }
 
-  // ✅ Default: render as <div>
   return (
     <div
       role="button"
@@ -84,7 +83,7 @@ export function Button({
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          onClick?.(e as any); // simulate click with keyboard
+          onClick?.(e as any);
         }
       }}
       {...commonProps}

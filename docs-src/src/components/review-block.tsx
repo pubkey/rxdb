@@ -1,6 +1,5 @@
-import Slider from 'react-slick';
 import { IconQuoteEnd, IconQuoteStart } from './icons/quote';
-import { NextArrow, PrevArrow, sliderSettings } from './video-section';
+import { Slider } from './slider';
 
 
 export const REVIEW_ITEMS: {
@@ -115,8 +114,8 @@ export function ReviewsBlock() {
 
     return (
         <>
-            <Slider {...sliderSettings}>
-                {REVIEW_ITEMS.map((item) => (
+            <Slider items={
+                REVIEW_ITEMS.map((item) => (
                     <div className="slider-content" key={item.label}>
                         <IconQuoteStart />
                         <p style={{
@@ -137,20 +136,21 @@ export function ReviewsBlock() {
                             <div className="slider-info">
                                 <span className="developer"><b>{item.label}</b> ({item.location})</span>
                                 {/* <span className="company-link"                                >
-                                    {new URL(item.href).hostname}
-                                </span> */}
+                    {new URL(item.href).hostname}
+                </span> */}
                                 {/* <a
-                                    href={item.href}
-                                    rel='nofollow noopener'
-                                    target={item.target ? '_blank' : '_self'}
-                                    className="company-link"
-                                >
-                                    {item.href}
-                                </a> */}
+                    href={item.href}
+                    rel='nofollow noopener'
+                    target={item.target ? '_blank' : '_self'}
+                    className="company-link"
+                >
+                    {item.href}
+                </a> */}
                             </div>
                         </div>
                     </div>
-                ))}
+                ))
+            }>
             </Slider>
         </>
     );

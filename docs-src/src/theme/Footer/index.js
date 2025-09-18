@@ -91,7 +91,9 @@ export default function FooterWrapper() {
 
         <div className='block footer dark'>
           <div className="content" style={{
-            display: 'flex'
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 44
           }}>
             <div className="half left">
               <span>

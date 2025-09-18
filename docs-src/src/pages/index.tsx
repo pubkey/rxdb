@@ -41,6 +41,7 @@ import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { PixelToggle } from '../components/toggle';
 import { IconWifi } from '../components/icons/wifi';
+import { FeaturesSection } from '../components/features-section';
 // import { SyncSection } from '../components/sync-section';
 // import { RealtimeSection } from '../components/realtime-section';
 // import { OfflineSection } from '../components/offline-section';
@@ -234,111 +235,6 @@ export default function Home(props: {
   // getTestGroup(props.sem ? props.sem.id : '');
   const { siteConfig } = useDocusaurusContext();
 
-  const [tags] = useState<{ value: string; url: string; count: number, img?: string | React.ReactNode; break?: boolean }[]>([
-
-
-
-    {
-      value: 'Logging',
-      count: 38,
-      url: '/logger.html'
-    },
-    {
-      value: 'Attachments',
-      count: 38,
-      url: '/rx-attachment.html',
-      img: <IconAttachment />
-    },
-    {
-      value: 'ORM',
-      count: 38,
-      url: '/orm.html'
-    },
-    {
-      value: 'Conflict Handling',
-      count: 10,
-      url: '/transactions-conflicts-revisions.html',
-      break: true
-    },
-    {
-      value: 'Middleware',
-      count: 38,
-      url: '/middleware.html'
-    },
-    {
-      value: 'Signals',
-      count: 38,
-      url: '/reactivity.html'
-    },
-    {
-      value: 'Server',
-      count: 38,
-      url: '/rx-server.html',
-      img: <IconServer />
-    },
-    {
-      value: 'Backup',
-      count: 38,
-      url: '/backup.html',
-      break: true
-    },
-
-    {
-      value: 'Storages',
-      count: 10,
-      url: '/rx-storage.html'
-    },
-    {
-      value: 'Replication',
-      count: 10,
-      url: '/replication.html',
-      img: <IconReplication />
-    },
-    {
-      value: 'Local Documents',
-      count: 38,
-      url: '/rx-local-document.html'
-    },
-    {
-      value: 'Schema Validation',
-      count: 38,
-      url: '/schema-validation.html'
-    },
-    {
-      value: 'State',
-      count: 38,
-      url: '/rx-state.html',
-      break: true
-    },
-    {
-      value: 'Migration',
-      count: 38,
-      url: '/migration-schema.html'
-    },
-    {
-      value: 'CRDT',
-      count: 38,
-      url: '/crdt.html'
-    },
-    {
-      value: 'Compression',
-      count: 38,
-      url: '/key-compression.html',
-      img: <IconCompression />
-    },
-    {
-      value: 'Population',
-      count: 38,
-      url: '/population.html'
-    },
-    {
-      value: 'Encryption',
-      count: 38,
-      url: '/encryption.html',
-      img: <IconEncryption />
-    },
-  ]);
-
   const isBrowser = useIsBrowser();
   useEffect(() => {
     if (isBrowser) {
@@ -456,42 +352,7 @@ export default function Home(props: {
 
 
 
-          <div className="block features dark">
-            <div className="content">
-              <h2 style={{ textAlign: 'center' }}>All the <b >Features</b> You'll Ever Need</h2>
-              {/* <p>
-                Since its creation in 2018,
-                RxDB has evolved into a powerhouse of features and plugins, offering an all-inclusive,
-                future-proof solution for any type of {getAppName(props)} application. Whatever you need now or might need down the road, is already built in.
-                Giving you the confidence to create robust, scalable apps with ease.
-              </p> */}
-              <div style={{
-                marginTop: 35,
-                marginBottom: 0,
-                width: '100%',
-                maxWidth: 1200,
-                padding: 10,
-                textAlign: 'center'
-              }}>
-                {tags.map(tag => {
-
-                  const el = <a href={tag.url} target="_blank" style={{ color: 'white' }}>
-                    <Tag img={tag.img}>{tag.value}</Tag>
-                  </a>;
-
-                  if (tag.break) {
-                    return <>
-                      {el}
-                      <div className="clear"></div>
-                    </>
-                  } else {
-                    return el;
-                  }
-
-                })}
-              </div>
-            </div>
-          </div>
+          <FeaturesSection />
 
           <div className="block reviews" id="reviews" ref={reviewsRef} style={{
             paddingTop: 50
@@ -512,7 +373,9 @@ export default function Home(props: {
           </div>
 
 
-          <div className="block last dark">
+          <div className="block last dark" style={{
+            paddingTop: 50
+          }}>
             <div className="content">
               <h2>
                 Start using <b >RxDB</b> today

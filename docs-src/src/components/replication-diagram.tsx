@@ -24,10 +24,10 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number })
   }, []);
 
   const devices: DeviceType[] = [
-    'phone',
-    'desktop',
     'desktop',
     'smartwatch',
+    'phone',
+    'desktop',
     'tablet',
   ];
 
@@ -52,14 +52,14 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number })
   const centerX = 250 * scale;
   const centerY = 200 * scale;
 
-  const serverRadius = 55 * scale;
+  const serverRadius = 45 * scale;
   const deviceCount = devices.length;
-  const deviceRadius = 50 * scale;
+  const deviceRadius = 55 * scale;
 
   const deviceDistance = centerY - deviceRadius; // top-most device sits at y=0
   const angleOffset = -Math.PI / 2;
 
-  const serverMargin = 0;
+  const serverMargin = 10;
   const deviceMargin = 0;
 
   const linesData = Array.from({ length: deviceCount }, (_, i) => {
@@ -180,6 +180,9 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number })
                     backgroundColor: 'white',
                     transform: `rotate(${angleDeg}deg) translateX(${lineStart}px)`,
                     transformOrigin: 'left center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    display: 'flex'
                   }}
                 >
                   {/* Phase 1: ONLY source line */}
@@ -227,22 +230,27 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number })
                     width: deviceRadius * 2,
                     height: deviceRadius * 2,
                     borderRadius: '50%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    alignItems: 'center',
+                    verticalAlign: 'middle'
                   }}
                 >
                   {device === 'phone' ? (
-                    <div className="device" style={{ width: '70%', height: '60%', top: '20%', left: '30%' }}>
+                    <div className="device" style={{ top: '20%', left: '30%' }}>
                       <IconDevicePhone iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'smartwatch' ? (
-                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '17%' }}>
+                    <div className="device" style={{ width: '80%', top: '20%', left: '17%' }}>
                       <IconDeviceSmartwatch iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'desktop' ? (
-                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '27%' }}>
+                    <div className="device" style={{ top: '20%', left: '27%' }}>
                       <IconDeviceDesktop iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : (
-                    <div className="device" style={{ width: '46%', height: '60%', top: '20%', left: '27%' }}>
+                    <div className="device" style={{ top: '20%', left: '27%' }}>
                       <IconDeviceTablet iconUrl="/files/logo/logo.svg" />
                     </div>
                   )}

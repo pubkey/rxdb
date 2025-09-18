@@ -1,8 +1,9 @@
 import { SemPage } from '../pages';
-import Slider from 'react-slick';
+// import Slider from 'react-slick';
 import { VideoBox, VideoBoxProps } from './video-box';
 import { IconArrowLeft } from './icons/arrow-left';
 import { IconArrowRight } from './icons/arrow-right';
+import { Slider } from './slider';
 
 
 const YOUTUBE_VIDEOS: VideoBoxProps[] = [
@@ -93,41 +94,35 @@ export function PrevArrow(props) {
 }
 
 const padding = 50;
-export const sliderSettings = {
-    dots: false,
-    centerMode: true,
-    centerPadding: '120px',
-    infinite: true,
-    arrows: true,
-    adaptiveHeight: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    initialSlide: 0,
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
-};
+
 export function VideoSection(_props: {
     sem?: SemPage;
 }) {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding }}>
         <div className="content centered">
-        <h2>
-                    Trusted by <b>Developers</b>
-                </h2>
+            <h2>
+                Trusted by <b>Developers</b>
+            </h2>
             <div className="inner">
-                <Slider {...sliderSettings}>
-                    {YOUTUBE_VIDEOS.map(item => (
-                        <div key={item.videoId} style={{
-                            float: 'left',
-                            margin: 24
-                        }}>
-                            <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
-                        </div>
-                    ))}
-                </Slider>
+                <Slider
+                    width={300}
+                    items={
+                        YOUTUBE_VIDEOS.map(item => (
+                            <div key={item.videoId} style={{
+                                float: 'left',
+                                margin: 24
+                            }}>
+                                <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
+                            </div>
+                        ))
+                    }
+                ></Slider>
             </div>
         </div>
     </div>;
 
 }
+
+
+
+

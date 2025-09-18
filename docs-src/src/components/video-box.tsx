@@ -32,7 +32,11 @@ const styles: Record<string, CSSProperties> = {
         height: "100%",
         objectFit: "cover",
         display: "block",
-    },
+        userDrag: 'none',
+        userSelect: 'none',
+        'user-drag': 'none',
+        '-webkit-user-drag': 'none'
+    } as any,
     playButton: {
         position: "absolute",
         top: "50%",

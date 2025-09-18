@@ -128,17 +128,15 @@ const config: Config = {
                     target: '_blank',
                     label: ' ',
                     position: 'right',
-                    className: 'navbar-icon navbar-icon-discord'
+                    className: 'navbar-icon navbar__item navbar-icon-discord'
                 },
                 {
                     to: '/code/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
-                    className: 'navbar-icon navbar-icon-github'
+                    className: 'navbar-icon navbar__item navbar-icon-github'
                 },
-
-
                 {
                     href: '/overview.html',
                     label: 'Docs',

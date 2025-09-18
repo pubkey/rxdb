@@ -26,16 +26,14 @@ const styles: Record<string, CSSProperties> = {
   iconsRow: {
     display: "flex",
     alignItems: "center",
+    justifyContent: 'center',
     gap: "1.5rem",
     flexWrap: "wrap",
   },
   icon: {
-    width: "40px",
-    height: "40px",
     objectFit: "contain",
     opacity: 0.7,
     filter: "grayscale(100%) brightness(1.8)",
-    transition: "filter 0.2s ease-in-out, opacity 0.2s ease-in-out",
     cursor: "pointer"
   },
 };
@@ -79,11 +77,11 @@ export function HeroRuntimes() {
           ...styles.text,
         }}
       >
-        Use RxDB with{' '}
+        Use RxDB with{'\n'}
         <span
           key={animationKey + text} // force re-render for animation
           style={{
-            animation: "fadeIn 0.2s ease-in"
+            animation: "fadeIn 0.1s ease-in"
           }}
 
         >{text}</span>
@@ -111,6 +109,7 @@ export function HeroRuntimes() {
               target="_blank"
             >
               <img
+                className='framework-icon'
                 src={item.icon}
                 loading="lazy"
                 alt={item.label}

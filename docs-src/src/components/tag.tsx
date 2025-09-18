@@ -2,6 +2,7 @@ import React from "react";
 
 export function Tag(props: {
     img?: string | React.ReactNode;
+    border?: boolean;
     children?: React.ReactNode;
 }) {
     const hasImg = !!props.img;
@@ -23,6 +24,9 @@ export function Tag(props: {
                 fontSize: 16,
                 fontWeight: hasImg ? 800 : 500,
                 whiteSpace: "nowrap",
+                boxSizing: "border-box",
+                userSelect: "none",
+                border: props.border ? '2px solid var(--White, #FFF)' : 'none'
             }}
         >
             {hasImg &&

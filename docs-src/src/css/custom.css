@@ -488,7 +488,7 @@ body {
 .navbar .navbar__items--right {
     margin-left: 10%;
 
-    display: flex;
+    /* display: flex; */
     padding: 0 16px;
     justify-content: center;
     align-items: center;
@@ -531,13 +531,20 @@ body {
 }
 
 .navbar-icon {
-    display: inline-block;
+    /* display: inline-block; */
     width: 30px;
     height: 30px;
     margin-right: 0px;
     margin-left: 8px;
     padding: 0;
     opacity: 0.9;
+}
+
+/* make it render on the right */
+.navbar__toggle {
+    order: 2;
+    position: absolute;
+    right: 10px;
 }
 
 .navbar-icon:hover {
@@ -651,7 +658,6 @@ body {
 
 .device {
     display: flex;
-    position: absolute;
     flex-direction: column;
     background-repeat: no-repeat;
 
@@ -768,6 +774,16 @@ body {
     display: none;
 }
 
+.framework-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.flex {
+    display: flex;
+}
+
+
 @media (max-width: 900px) {
     .hide-desktop {
         display: block;
@@ -833,8 +849,31 @@ body {
     .half p {
         text-align: center;
     }
+
+    .framework-icon {
+        width: 27px;
+        height: 27px;
+    }
+
+
+    .footer .footer-community-links {
+        margin-top: 32px;
+    }
+
 }
 
+
+
+.padding-button {
+    padding: 6px 25px;
+}
+
+@media (max-width: 480px) {
+    .padding-button {
+        padding: 6px 15px;
+    }
+
+}
 
 .block .half.left {
     flex: 0.9;
@@ -1859,10 +1898,15 @@ samp .cm-comment {
     }
 }
 
+/**
+ * 1000px is the mobile-breakpoint of native docusaurus
+ */
 @media (max-width: 1000px) {
     .premium-blocks {
         grid-template-columns: repeat(3, 1fr);
     }
+
+
 }
 
 @media (max-width: 800px) {
@@ -3152,12 +3196,6 @@ footer a:visited {
         );
 }
 
-@media (max-width: 1200px) {
-    .slick-list {
-        mask-image: none;
-    }
-}
-
 .slick-dots {
     border: 1px solid #2c3039;
     padding: 8px !important;
@@ -4049,10 +4087,6 @@ footer a:visited {
         max-height: 740px;
     }
 
-    /* footer */
-    .block.footer {
-        padding: 80px 16px 40px;
-    }
 
     .block.footer .footer-links span {
         flex-direction: column;

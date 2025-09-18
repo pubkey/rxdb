@@ -27,19 +27,8 @@ export function VideoPlayButton({ size = 50, onClick }: VideoPlayButtonProps) {
     };
     return (
         <div style={styles.container} onClick={onClick}>
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 26"
-                style={styles.icon}
-                fill="none"
-            >
-                <path d="M5.5 20.5H10.5V15.5H5.5V20.5Z" fill="white" />
-                <path d="M0.5 25.5H5.5V20.5H0.5V25.5Z" fill="white" />
-                <path d="M10.5 15.5H15.5V10.5H10.5V15.5Z" fill="white" />
-                <path d="M5.5 10.5H10.5V5.5H5.5V10.5Z" fill="white" />
-                <path d="M0.5 5.5H5.5V0.5H0.5V5.5Z" fill="white" />
-                <path d="M0.5 20.5H5.5V5.5H0.5V20.5Z" fill="white" />
-                <path d="M5.5 15.5H10.5V10.5H5.5V15.5Z" fill="white" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="25" viewBox="0 0 15 25" fill="none">
+                <path d="M10 10V5H5V0H0V5V20V25H5V20H10V15H15V10H10Z" fill="white" />
             </svg>
         </div>
     );
