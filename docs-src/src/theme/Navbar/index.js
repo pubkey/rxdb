@@ -26,7 +26,6 @@ export default function NavbarWrapper(props) {
       zIndex: 10,
       height: 1.5,
       backgroundColor: 'var(--color-top)',
-      top: 62.5,
       borderTopRightRadius: 2,
       borderBottomRightRadius: 2,
     }
@@ -34,7 +33,10 @@ export default function NavbarWrapper(props) {
   return (
     <>
       <Navbar {...props} />
-      {<div style={{ ...styles.scrollIndicator, ...{ width: scrollPosition + '%' } }}></div>}
+      {<div
+        className='navbar-line'
+        style={{ ...styles.scrollIndicator, ...{ width: scrollPosition + '%' } }}
+      ></div>}
     </>
   );
 }

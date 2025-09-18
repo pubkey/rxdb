@@ -134,6 +134,7 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
+            return;
             if (location.pathname.includes('premium')) {
                 return;
             }
@@ -231,6 +232,7 @@ export default function Root({ children }) {
 }
 
 function addCallToActionButton() {
+    return;
     // do only show on docs-pages, not on landingpages like premium or consulting page.
     if (!location.pathname.includes('.html')) {
         return;

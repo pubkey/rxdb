@@ -6,7 +6,7 @@ description: Sync RxDB with Appwrite for local-first apps. Supports real-time up
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
-import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
@@ -17,7 +17,7 @@ This replication plugin allows you to synchronize documents between RxDB and an 
 
 <br />
 <center>
-    <YouTubeVideoBox videoId="L07xPMyL8sY" title="Appwrite in 100 Seconds" duration="2:35" />
+    <VideoBox videoId="L07xPMyL8sY" title="Appwrite in 100 Seconds" duration="2:35" />
 </center>
 
 
@@ -115,7 +115,7 @@ At the <a href="https://cloud.appwrite.io/console/" rel="noopener nofollow">cons
 After creating an Appwrite project you have to create an Appwrite Database and a collection, you can either do this in code with the <a href="https://appwrite.io/docs/products/databases/databases" rel="noopener nofollow">node-appwrite SDK</a> or in the <a href="https://cloud.appwrite.io/console/" rel="noopener nofollow">Appwrite Console</a> as shown in this video:
 
 <center>
-    <YouTubeVideoBox videoId="HGlBpna17LQ" title="Appwrite Database Tutorial" duration="9:47" startAt={328} />
+    <VideoBox videoId="HGlBpna17LQ" title="Appwrite Database Tutorial" duration="9:47" startAt={328} />
 </center>
 <br />
 
