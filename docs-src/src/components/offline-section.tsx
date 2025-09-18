@@ -17,7 +17,7 @@ export function OfflineSection(props: {
 
   return (
     <div
-      className={'block offline-first ' + (props.dark ? 'dark' : '')}
+      className={'block offline-first ' + (props.dark ? 'dark' : '') + ' tropy-before'}
       id="offline"
       ref={props.offlineRef}
       style={{
@@ -32,7 +32,7 @@ export function OfflineSection(props: {
         </h2>
         <div className="inner">
           <div className="half left">
-            <p>
+            <p className='font-16-14'>
               RxDB adopts an{' '}
               <a href="/offline-first.html" target="_blank">
                 offline-first

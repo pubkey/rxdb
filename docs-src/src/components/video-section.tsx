@@ -99,18 +99,21 @@ export function VideoSection(_props: {
     sem?: SemPage;
 }) {
     return <div className="block reviews" id="videos" style={{ paddingTop: padding }}>
-        <div className="content centered">
+        <div className="content centered" style={{
+            marginBottom: 50
+        }}>
             <h2>
                 Trusted by <b>Developers</b>
             </h2>
-            <div className="inner">
+            <div className="inner" style={{
+
+            }}>
                 <Slider
                     width={300}
                     items={
                         YOUTUBE_VIDEOS.map(item => (
                             <div key={item.videoId} style={{
                                 float: 'left',
-                                margin: 24
                             }}>
                                 <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
                             </div>

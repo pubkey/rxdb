@@ -120,7 +120,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   const styles = {
     root: {
       width: "100%",
-      padding: "40px 0",
+      padding: "0px 0",
       boxSizing: "border-box",
       display: "flex",
       alignItems: "center",
@@ -157,7 +157,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
       display: "flex",
       alignItems: "flex-start",
       gap: GAP + "px",
-      padding: "40px 0",
+      padding: "0px 0",
       width: ITEM_SPACE * TOTAL,
     } as CSSProperties,
     card: {

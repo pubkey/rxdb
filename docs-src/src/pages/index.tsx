@@ -366,7 +366,6 @@ export default function Home(props: {
                   RxDB is a proven, battle-tested solution used by countless developers across the globe.
                   With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
                 </p> */}
-                <br /><br />
                 <ReviewsBlock></ReviewsBlock>
               </div>
             </div>
@@ -405,7 +404,7 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
                   <Button icon={<IconNewsletter />} style={{
-                    left: '24%',
+                    left: '25%',
                     marginLeft: '-90px',
                     position: 'absolute'
                   }}>
@@ -446,7 +445,7 @@ export default function Home(props: {
                   onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
                   <Button icon={<IconTwitter />} style={{
-                    top: '44%',
+                    top: '41%',
                     left: '83%',
                     marginLeft: '-129px',
                     position: 'absolute'

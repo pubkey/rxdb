@@ -62,7 +62,7 @@ export function FeaturesSection() {
     }
 
     return (
-        <div className="block features dark">
+        <div className="block features dark tropy-before">
             <div className="content">
                 <h2 style={{ textAlign: 'center' }}>
                     All the <b>Features</b> You'll Ever Need

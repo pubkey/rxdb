@@ -18,7 +18,6 @@ const styles: Record<string, CSSProperties> = {
     paddingRight: 31
   },
   text: {
-    fontSize: "1.125rem",
     fontWeight: 600,
     whiteSpace: "pre-line",
     minWidth: "200px",
@@ -73,11 +72,12 @@ export function HeroRuntimes() {
   return (
     <div style={styles.container} className='column-mobile'>
       <div
+        className='font-20-14'
         style={{
           ...styles.text,
         }}
       >
-        Use RxDB with{'\n'}
+        Use RxDB with{' '}<br className='hide-mobile' />
         <span
           key={animationKey + text} // force re-render for animation
           style={{

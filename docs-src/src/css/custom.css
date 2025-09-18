@@ -733,16 +733,15 @@ body {
 .block {
     width: 100%;
     min-height: 250px;
-    padding-top: 150px;
+    padding-top: 50px;
     padding-bottom: 64px;
     background-color: var(--bg-color);
     position: relative;
     overflow: hidden;
 }
 
-.block.first {
-    background-color: var(--bg-color-darkest);
-    padding-top: 50px;
+.block.tropy-before {
+    padding-top: 120px;
 }
 
 .block.first .button {
@@ -783,8 +782,32 @@ body {
     display: flex;
 }
 
+.font-20-16 {
+    font-size: 20px;
+}
+
+.font-20-14 {
+    font-size: 20px;
+}
+
+.font-16-14 {
+    font-size: 16px;
+}
+
 
 @media (max-width: 900px) {
+    .font-20-16 {
+        font-size: 16px;
+    }
+
+    .font-20-14 {
+        font-size: 14px;
+    }
+
+    .font-16-14 {
+        font-size: 14px;
+    }
+
     .hide-desktop {
         display: block;
     }
@@ -793,6 +816,18 @@ body {
         display: none;
     }
 
+    .block {
+        padding-top: 30px;
+    }
+
+    .block.tropy-before {
+        padding-top: 90px;
+    }
+
+
+    .block .content {
+        max-width: 100%;
+    }
 
     .block .inner {
         flex-direction: column-reverse;
@@ -844,6 +879,10 @@ body {
     .block h1 {
         font-size: 26px;
         font-weight: 800;
+
+        max-width: 92%;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .half p {
@@ -899,7 +938,7 @@ body {
 
 
 .block.first.hero h1 {
-    width: 86%;
+    width: 88%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -1898,6 +1937,11 @@ samp .cm-comment {
     }
 }
 
+
+.navbar-line {
+    top: 89.5px;
+}
+
 /**
  * 1000px is the mobile-breakpoint of native docusaurus
  */
@@ -1906,7 +1950,25 @@ samp .cm-comment {
         grid-template-columns: repeat(3, 1fr);
     }
 
+    .navbar {
+        padding: 2px 0px;
+    }
 
+    .navbar__logo {
+        height: 30px;
+    }
+
+    .navbar .navbar__brand {
+        margin-left: 0px;
+    }
+
+    .navbar .navbar__inner {
+        padding: 16px;
+    }
+
+    .navbar-line {
+        top: 65.5px;
+    }
 }
 
 @media (max-width: 800px) {

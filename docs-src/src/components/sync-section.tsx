@@ -64,7 +64,7 @@ export function SyncSection(props: {
 }) {
   return (
     <div
-      className={'block replication ' + (props.dark ? 'dark' : '')}
+      className={'block replication ' + (props.dark ? 'dark' : '') + ' tropy-before'}
       id="replication"
       ref={props.replicationRef}
       style={{ order: props.order }}
@@ -74,9 +74,9 @@ export function SyncSection(props: {
           Sync with <b>any Backend</b>
         </h2>
 
-        <div className="inner">
+        <div className="inner" >
           <div className="half left">
-            <p>
+            <p className='font-16-14'>
               RxDB's simple and high-performance{' '}
               <a href="/replication.html" target="_blank">
                 Sync Engine
@@ -101,7 +101,7 @@ export function SyncSection(props: {
             >
               OR
             </p>
-            <p>
+            <p className='font-16-14'>
               ...sync with your <b>custom server</b> by implementing{' '}
               <a href="/replication-http.html" target="_blank">
                 three simple endpoints
