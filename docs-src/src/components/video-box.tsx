@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
 import { Modal } from 'antd';
@@ -13,55 +13,54 @@ export type VideoBoxProps = {
 
 const styles: Record<string, CSSProperties> = {
     container: {
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         padding: '12px 12px 9px 12px',
-        width: "300px",
-        backgroundColor: "#0D0F18",
+        width: '300px',
+        backgroundColor: '#0D0F18',
         cursor: 'pointer'
     },
     thumbnailWrapper: {
-        position: "relative",
-        width: "100%",
-        height: "180px",
-        overflow: "hidden",
-        backgroundColor: "#000",
+        position: 'relative',
+        width: '100%',
+        height: '180px',
+        overflow: 'hidden',
+        backgroundColor: '#000',
     },
     thumbnail: {
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        display: "block",
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        display: 'block',
         userDrag: 'none',
         userSelect: 'none',
-        'user-drag': 'none',
         '-webkit-user-drag': 'none'
     } as any,
     playButton: {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        width: "50px",
-        height: "50px",
-        borderRadius: "50%",
-        backgroundColor: "#ED168F",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        width: '50px',
+        height: '50px',
+        borderRadius: '50%',
+        backgroundColor: '#ED168F',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     playIcon: {
-        width: "20px",
-        height: "20px",
-        borderLeft: "14px solid white",
-        borderTop: "8px solid transparent",
-        borderBottom: "8px solid transparent",
+        width: '20px',
+        height: '20px',
+        borderLeft: '14px solid white',
+        borderTop: '8px solid transparent',
+        borderBottom: '8px solid transparent',
     },
     duration: {
-        position: "absolute",
-        bottom: "6px",
+        position: 'absolute',
+        bottom: '6px',
         right: 0,
-        fontSize: "0.875rem",
-        fontWeight: "bold",
+        fontSize: '0.875rem',
+        fontWeight: 'bold',
         paddingLeft: 8,
         paddingRight: 2,
         backgroundColor: '#0D0F18'
@@ -70,9 +69,9 @@ const styles: Record<string, CSSProperties> = {
         marginTop: 0,
         fontSize: 16,
         fontWeight: 700,
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
     },
 };
 
@@ -91,7 +90,7 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                 triggerTrackingEvent('open_video_' + videoId, 0.05, 1);
             }}
         >
-            <div style={{ textDecoration: "none", color: "inherit" }}>
+            <div style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={styles.thumbnailWrapper}>
                     <img
                         src={'http://img.youtube.com/vi/' + videoId + '/0.jpg'}
@@ -101,7 +100,7 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                         style={{
                             ...styles.playButton,
                             transform: `translate(-50%, -50%) scale(${isHovered ? 1.2 : 1})`,
-                            transition: "transform 0.1s ease-in-out",
+                            transition: 'transform 0.1s ease-in-out',
                         }}
                     >
                         <VideoPlayButton />

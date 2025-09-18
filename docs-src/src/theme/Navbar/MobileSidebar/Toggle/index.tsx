@@ -1,7 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { useNavbarMobileSidebar } from '@docusaurus/theme-common/internal';
 import { translate } from '@docusaurus/Translate';
-import IconMenu from '@theme/Icon/Menu';
 import { IconHamburger } from '@site/src/components/icons/hamburger';
 
 export default function MobileSidebarToggle(): ReactNode {

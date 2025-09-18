@@ -1,8 +1,6 @@
 import React from 'react';
 import { IconNewsletter } from '../../components/icons/newsletter';
-import { IconGithub } from '../../components/icons/github';
 import { IconTwitter } from '../../components/icons/twitter';
-import { IconDiscord } from '../../components/icons/discord';
 import { IconLinkedIn } from '../../components/icons/linkedin';
 
 export default function FooterWrapper() {
@@ -82,7 +80,6 @@ export default function FooterWrapper() {
     ],
   };
 
-  const rightsText = `© ${new Date().getFullYear()} RxDB. All rights reserved.`;
   return (
     <>
       {/* <Footer {...props} /> */}

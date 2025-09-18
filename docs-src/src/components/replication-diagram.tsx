@@ -12,7 +12,7 @@ export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
  * Container width & height are calculated from element positions,
  * and the inner diagram div is right-aligned inside the outer container.
  */
-export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number }) {
+export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // trigger rerender on resize so scaling updates correctly if font/zoom changes

@@ -54,8 +54,8 @@ export function NextArrow(props) {
             className={className}
             style={{
                 ...style,
-                display: "block",
-                right: "10px",
+                display: 'block',
+                right: '10px',
                 zIndex: 10,
                 height: 'calc(100% - 50px)',
                 // top: 0,
@@ -77,8 +77,8 @@ export function PrevArrow(props) {
             className={className}
             style={{
                 ...style,
-                display: "block",
-                left: "10px",
+                display: 'block',
+                left: '10px',
                 zIndex: 10,
                 height: 'calc(100% - 50px)',
                 // top: 0,

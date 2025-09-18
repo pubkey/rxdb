@@ -9,22 +9,22 @@ type FeatureListProps = {
 
 const defaultStyles: Record<string, CSSProperties> = {
   list: {
-    listStyle: "none",
+    listStyle: 'none',
     padding: 0,
     paddingRight: 20,
   },
   item: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
     marginBottom: 16,
     height: 52,
   },
   icon: {
-    color: "#fff",
+    color: '#fff',
     width: 37,
     flexShrink: 0,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   text: {
     flex: 1,
@@ -34,7 +34,7 @@ const defaultStyles: Record<string, CSSProperties> = {
     maxWidth: 306,
   },
   highlight: {
-    color: "#e6007a",
+    color: '#e6007a',
     fontWeight: 600,
   },
 };

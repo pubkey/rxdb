@@ -1,11 +1,10 @@
-import { MutableRefObject, useState, useEffect } from 'react';
+import { MutableRefObject, useState } from 'react';
 import { SemPage, getAppName } from '../pages';
 import { CheckedList } from './checked-list';
 import { IconWifi } from './icons/wifi';
 import { PixelToggle } from './toggle';
 import { EmojiChatStateful } from './emoji-chat';
 import { Cloud } from './cloud';
-import { replicationLinks } from './sync-section';
 
 export function OfflineSection(props: {
   dark: boolean;

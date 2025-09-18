@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 type IconDeviceTabletProps = React.SVGProps<SVGSVGElement> & {
   iconUrl?: string;

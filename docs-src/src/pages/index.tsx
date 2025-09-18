@@ -4,11 +4,9 @@ import Head from '@docusaurus/Head';
 
 import {
   ensureNotFalsy,
-  promiseWait,
-  ucfirst,
-  hashStringToNumber
+  promiseWait
 } from '../../../';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 import 'slick-carousel/slick/slick.css';
@@ -19,19 +17,9 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 // import { ABTestContent, getTestGroup } from '../components/a-b-tests';
-import { RuntimesSection } from '../components/runtimes-section';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
-import { RealtimeSection } from '../components/realtime-section';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
-import { VideoPlayButton } from '../components/video-button';
-import { VideoBox } from '../components/video-box';
-import { Tag } from '../components/tag';
-import { IconAttachment } from '../components/icons/attachment';
-import { IconServer } from '../components/icons/server';
-import { IconCompression } from '../components/icons/compression';
-import { IconReplication } from '../components/icons/replication';
-import { IconEncryption } from '../components/icons/encryption';
 import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
@@ -39,15 +27,7 @@ import { IconPremium } from '../components/icons/premium';
 import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
-import { PixelToggle } from '../components/toggle';
-import { IconWifi } from '../components/icons/wifi';
 import { FeaturesSection } from '../components/features-section';
-// import { SyncSection } from '../components/sync-section';
-// import { RealtimeSection } from '../components/realtime-section';
-// import { OfflineSection } from '../components/offline-section';
-// import { RuntimesSection } from '../components/runtimes-section';
-// import PriceTag from '../components/price-tag';
-// import { Modal } from 'antd';
 
 
 export const colors = [
@@ -290,8 +270,6 @@ export default function Home(props: {
     }
 
   }
-
-  const [online, setOnline] = useState(false);
 
   return (
     <>

@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState
-} from "react";
+} from 'react';
 import { replicationLinks } from './sync-section';
 
 interface CloudProps {
@@ -13,7 +13,7 @@ interface CloudProps {
 
 // Old icon slides out to the RIGHT; new icon slides in from the LEFT
 export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
-  const [iconIndex, setIconIndex] = useState(0);
+  const [, setIconIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState<string>(replicationLinks[0].iconUrl);
   const [prevUrl, setPrevUrl] = useState<string | undefined>(undefined);
 
@@ -44,12 +44,12 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
 
     const raf = requestAnimationFrame(() => {
       if (prevRef.current) {
-        prevRef.current.style.transform = "translateX(100%)"; // out to RIGHT
-        prevRef.current.style.opacity = "0";
+        prevRef.current.style.transform = 'translateX(100%)'; // out to RIGHT
+        prevRef.current.style.opacity = '0';
       }
       if (currRef.current) {
-        currRef.current.style.transform = "translateX(0)"; // in to center
-        currRef.current.style.opacity = "1";
+        currRef.current.style.transform = 'translateX(0)'; // in to center
+        currRef.current.style.opacity = '1';
       }
     });
 
@@ -61,43 +61,43 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   }, [prevUrl]);
 
   const wrapperStyle: CSSProperties = {
-    position: "relative",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
+    position: 'relative',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 12,
   };
 
   const badgeStyle: CSSProperties = {
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    transform: "translate(-50%, -10%)",
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    transform: 'translate(-50%, -10%)',
   };
 
-  const circleColor: string = darkMode ? "var(--bg-color)" : "var(--bg-color-dark)";
-  const circleBorder: string = darkMode ? "var(--bg-color-dark)" : "var(--bg-color)";
+  const circleColor: string = darkMode ? 'var(--bg-color)' : 'var(--bg-color-dark)';
+  const circleBorder: string = darkMode ? 'var(--bg-color-dark)' : 'var(--bg-color)';
 
   const badgeInnerStyle: CSSProperties = {
-    width: "clamp(10px, 8vw, 56px)",
-    height: "clamp(10px, 8vw, 56px)",
+    width: 'clamp(10px, 8vw, 56px)',
+    height: 'clamp(10px, 8vw, 56px)',
     background: circleColor,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     border: `4px solid ${circleBorder}`,
-    position: "relative",
-    overflow: "hidden",
+    position: 'relative',
+    overflow: 'hidden',
   };
 
   const iconBase: CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     inset: 0,
-    margin: "auto",
-    maxWidth: "60%",
-    maxHeight: "60%",
-    transition: "transform 300ms ease, opacity 300ms ease",
+    margin: 'auto',
+    maxWidth: '60%',
+    maxHeight: '60%',
+    transition: 'transform 300ms ease, opacity 300ms ease',
   };
 
   return (
@@ -125,7 +125,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
               alt="previous icon"
               style={{
                 ...iconBase,
-                transform: "translateX(0)", // start centered
+                transform: 'translateX(0)', // start centered
                 opacity: 1,
               }}
             />
@@ -137,13 +137,13 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
               alt="icon"
               style={{
                 ...iconBase,
-                transform: prevUrl ? "translateX(-100%)" : "translateX(0)", // come from LEFT
+                transform: prevUrl ? 'translateX(-100%)' : 'translateX(0)', // come from LEFT
                 opacity: prevUrl ? 0 : 1,
               }}
               onLoad={() => {
                 if (!prevUrl && currRef.current) {
-                  currRef.current.style.transform = "translateX(0)";
-                  currRef.current.style.opacity = "1";
+                  currRef.current.style.transform = 'translateX(0)';
+                  currRef.current.style.opacity = '1';
                 }
               }}
             />

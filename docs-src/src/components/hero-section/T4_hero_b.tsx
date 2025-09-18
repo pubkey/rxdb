@@ -3,7 +3,7 @@ import { triggerTrackingEvent } from '../trigger-event';
 import { CheckedList } from '../checked-list';
 import { Button } from '../button';
 import { HeroRuntimes } from '../runtimes';
-import { EmojiChat, EmojiChatStateful } from '../emoji-chat';
+import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
@@ -75,6 +75,19 @@ export function HeroSection_B(props: {
                     <br />
                 </div>
                 <div
+                    className='hide-desktop'
+                    style={{
+                        textAlign: 'center',
+                        width: '100%',
+                        gridColumn: '1 / -1'
+                    }}>
+                    <IconWifi style={{
+                        width: '100%',
+                        paddingBottom: 3
+                    }} />
+                    <PixelToggle checked={online} onChange={setOnline} />
+                </div>
+                <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
                     style={{
                         display: 'grid',
@@ -106,20 +119,6 @@ export function HeroSection_B(props: {
                         buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
                         simulateClicks={true}
                     />
-                    <div
-                        className='hide-desktop'
-                        style={{
-                            textAlign: 'center',
-                            width: '100%',
-                            gridColumn: '1 / -1'
-                        }}>
-                        <IconWifi style={{
-                            width: '100%',
-                            paddingBottom: 3
-                        }} />
-                        <PixelToggle checked={online} onChange={setOnline} />
-                    </div>
-
                 </div>
                 <div className='clear'></div>
             </div>

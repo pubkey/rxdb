@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import { CSSProperties } from 'react';
 
 type VideoPlayButtonProps = {
     size?: number; // diameter in px
@@ -10,19 +10,19 @@ export function VideoPlayButton({ size = 50, onClick }: VideoPlayButtonProps) {
         container: {
             width: size,
             height: size,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            userSelect: "none",
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            userSelect: 'none',
 
-            border: "2px solid var(--White, #FFF)",
-            background: "linear-gradient(90deg, #ED168F 0%, #B2218B 100%)",
+            border: '2px solid var(--White, #FFF)',
+            background: 'linear-gradient(90deg, #ED168F 0%, #B2218B 100%)',
         },
         icon: {
             width: 15,
-            display: "block",
+            display: 'block',
         },
     };
     return (

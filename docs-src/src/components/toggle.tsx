@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useId } from "react";
+import React, { CSSProperties, useCallback, useId } from 'react';
 
 type PixelToggleProps = {
   checked?: boolean;
@@ -27,22 +27,22 @@ export function PixelToggle({
   const LEFT_OFF = 5;
 
   const container: CSSProperties = {
-    display: "inline-block",
-    position: "relative",
+    display: 'inline-block',
+    position: 'relative',
     width: W,
     height: H,
-    cursor: "pointer",
-    outline: "none",
+    cursor: 'pointer',
+    outline: 'none',
   };
 
   const thumbStyle: CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     top: TOP,
     left: checked ? LEFT_ON : LEFT_OFF,
     width: THUMB_W,
     height: THUMB_H,
-    transition: "left 140ms ease",
-    pointerEvents: "none",
+    transition: 'left 140ms ease',
+    pointerEvents: 'none',
   };
 
   return (
@@ -52,7 +52,7 @@ export function PixelToggle({
       tabIndex={0}
       onClick={handleToggle}
       onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") {
+        if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
           handleToggle();
         }
@@ -67,11 +67,11 @@ export function PixelToggle({
         height={H}
         viewBox="0 0 52 27"
         fill="none"
-        style={{ display: "block" }}
+        style={{ display: 'block' }}
       >
         <path
           d="M46.8 5.78331V0.583313H5.20003V5.78331H0V21.3833H5.20003V26.5833L46.8 26.5833V21.3833H52V5.78331H46.8Z"
-          fill={checked ? `url(#${gradientId})` : "#5a5a6a"}
+          fill={checked ? `url(#${gradientId})` : '#5a5a6a'}
         />
         <defs>
           <linearGradient

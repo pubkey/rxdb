@@ -1,4 +1,4 @@
-import { CSSProperties, ReactNode, MouseEventHandler } from "react";
+import { CSSProperties, ReactNode, MouseEventHandler } from 'react';
 
 type ButtonProps = {
   children: ReactNode;
@@ -12,37 +12,37 @@ type ButtonProps = {
 
 const styles: Record<string, CSSProperties> = {
   base: {
-    display: "inline-flex",
-    height: "45px",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "10px",
+    display: 'inline-flex',
+    height: '45px',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
 
-    fontSize: "1rem",
+    fontSize: '1rem',
     fontWeight: 700,
-    borderRadius: "2px",
-    cursor: "pointer",
-    textAlign: "center",
-    transition: "all 0.2s ease-in-out",
-    lineHeight: "initial",
-    userSelect: "none",
-    boxSizing: "border-box",
-    textDecoration: "none",
+    borderRadius: '2px',
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'all 0.2s ease-in-out',
+    lineHeight: 'initial',
+    userSelect: 'none',
+    boxSizing: 'border-box',
+    textDecoration: 'none',
   },
   primary: {
-    background: "linear-gradient(90deg, #ED168F 0%, #B2218B 100%)",
-    color: "#fff",
+    background: 'linear-gradient(90deg, #ED168F 0%, #B2218B 100%)',
+    color: '#fff',
   },
   secondary: {
-    background: "transparent",
-    color: "#fff",
-    border: "2px solid #fff",
+    background: 'transparent',
+    color: '#fff',
+    border: '2px solid #fff',
   },
   iconWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     lineHeight: 0,
   },
 };
@@ -56,7 +56,7 @@ export function Button({
   className,
   href,
 }: ButtonProps) {
-  const mergedClassName = `padding-button${className ? ` ${className}` : ""}`;
+  const mergedClassName = `padding-button${className ? ` ${className}` : ''}`;
 
   const commonProps = {
     className: mergedClassName,
@@ -82,7 +82,7 @@ export function Button({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === 'Enter' || e.key === ' ') {
           onClick?.(e as any);
         }
       }}

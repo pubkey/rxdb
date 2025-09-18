@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useState } from 'react';
 
 type Row = {
   icon: string;
@@ -9,46 +9,46 @@ type Row = {
 
 const styles: Record<string, CSSProperties> = {
   container: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "2rem",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '2rem',
     paddingLeft: 31,
     paddingRight: 31
   },
   text: {
     fontWeight: 600,
-    whiteSpace: "pre-line",
-    minWidth: "200px",
+    whiteSpace: 'pre-line',
+    minWidth: '200px',
   },
   iconsRow: {
-    display: "flex",
-    alignItems: "center",
+    display: 'flex',
+    alignItems: 'center',
     justifyContent: 'center',
-    flexWrap: "wrap",
+    flexWrap: 'wrap',
   },
   icon: {
-    objectFit: "contain",
+    objectFit: 'contain',
     opacity: 0.7,
-    filter: "grayscale(100%) brightness(1.8)",
-    cursor: "pointer"
+    filter: 'grayscale(100%) brightness(1.8)',
+    cursor: 'pointer'
   },
 };
 
 const rows: Row[] = [
-  { icon: "/files/icons/electron.svg", url: "/electron-database.html#rxdb", label: "Electron" },
-  { icon: "/files/icons/vuejs.svg", url: "/articles/vue-database.html", label: "Vue.js" },
-  { icon: "/files/icons/ionic.svg", url: "/articles/ionic-storage.html", label: "Ionic" },
-  { icon: "/files/icons/nativescript.svg", url: "https://github.com/herefishyfish/rxdb-nativescript", label: "NativeScript" },
-  { icon: "/files/icons/react.svg", url: "/react-native-database.html#rxdb", label: "React Native" },
-  { icon: "/files/icons/nextjs.svg", label: "Next.js", invert: true },
-  { icon: "/files/icons/flutter.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/flutter", label: "Flutter" },
-  { icon: "/files/icons/angular.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/angular", label: "Angular" },
-  { icon: "/files/icons/capacitor.svg", url: "https://rxdb.info/capacitor-database.html#rxdb", label: "Capacitor" },
-  { icon: "/files/icons/deno.svg", url: "https://rxdb.info/rx-storage-denokv.html", label: "Deno", invert: true },
-  { icon: "/files/icons/nodejs.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/node", label: "Node.js" },
-  { icon: "/files/icons/react.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/react", label: "React" },
-  { icon: "/files/icons/svelte.svg", url: "https://github.com/pubkey/rxdb/tree/master/examples/svelte", label: "Svelte" },
+  { icon: '/files/icons/electron.svg', url: '/electron-database.html#rxdb', label: 'Electron' },
+  { icon: '/files/icons/vuejs.svg', url: '/articles/vue-database.html', label: 'Vue.js' },
+  { icon: '/files/icons/ionic.svg', url: '/articles/ionic-storage.html', label: 'Ionic' },
+  { icon: '/files/icons/nativescript.svg', url: 'https://github.com/herefishyfish/rxdb-nativescript', label: 'NativeScript' },
+  { icon: '/files/icons/react.svg', url: '/react-native-database.html#rxdb', label: 'React Native' },
+  { icon: '/files/icons/nextjs.svg', label: 'Next.js', invert: true },
+  { icon: '/files/icons/flutter.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/flutter', label: 'Flutter' },
+  { icon: '/files/icons/angular.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/angular', label: 'Angular' },
+  { icon: '/files/icons/capacitor.svg', url: 'https://rxdb.info/capacitor-database.html#rxdb', label: 'Capacitor' },
+  { icon: '/files/icons/deno.svg', url: 'https://rxdb.info/rx-storage-denokv.html', label: 'Deno', invert: true },
+  { icon: '/files/icons/nodejs.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/node', label: 'Node.js' },
+  { icon: '/files/icons/react.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/react', label: 'React' },
+  { icon: '/files/icons/svelte.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
 ];
 
 // Fade-in keyframes
@@ -65,7 +65,7 @@ export function HeroRuntimes() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
 
-  const text = hovered !== null ? rows[hovered].label : "these Frameworks";
+  const text = hovered !== null ? rows[hovered].label : 'these Frameworks';
 
   return (
     <div style={styles.container} className='column-mobile padding-top-64-28'>
@@ -79,7 +79,7 @@ export function HeroRuntimes() {
         <span
           key={animationKey + text} // force re-render for animation
           style={{
-            animation: "fadeIn 0.1s ease-in"
+            animation: 'fadeIn 0.1s ease-in'
           }}
 
         >{text}</span>
@@ -87,10 +87,10 @@ export function HeroRuntimes() {
       <div style={styles.iconsRow} className='gap-24-20'>
         {rows.map((item, i) => {
           const defaultFilter = item.invert
-            ? "grayscale(100%) brightness(1.8) invert(1)"
-            : "grayscale(100%) brightness(1.8)";
+            ? 'grayscale(100%) brightness(1.8) invert(1)'
+            : 'grayscale(100%) brightness(1.8)';
 
-          const hoverFilter = item.invert ? defaultFilter : "none";
+          const hoverFilter = item.invert ? defaultFilter : 'none';
 
           return (
             <a

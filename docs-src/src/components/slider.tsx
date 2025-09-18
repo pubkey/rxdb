@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, CSSProperties, JSX } from "react";
+import React, { useRef, useEffect, useState, CSSProperties, JSX } from 'react';
 import { IconArrowLeft } from './icons/arrow-left';
 import { IconArrowRight } from './icons/arrow-right';
 
@@ -19,7 +19,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
 
   // Default demo boxes if no items provided
   const defaultItems = Array.from({ length: 8 }).map((_, i) => (
-    <div style={{ color: "#fff", fontSize: 18 }}>Box {i + 1}</div>
+    <div style={{ color: '#fff', fontSize: 18 }}>Box {i + 1}</div>
   ));
 
   const content: React.ReactNode[] = items && items.length > 0 ? items : defaultItems;
@@ -36,12 +36,18 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
-    const id = requestAnimationFrame(() => { el.scrollLeft = BAND + 1; });
+    const id = requestAnimationFrame(() => {
+ el.scrollLeft = BAND + 1;
+});
     return () => cancelAnimationFrame(id);
   }, [BAND]);
 
   const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-  const stopAnim = () => { if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; } };
+  const stopAnim = () => {
+ if (animRef.current) {
+ cancelAnimationFrame(animRef.current); animRef.current = null;
+}
+};
   const animateScrollTo = (to: number, duration = 450) => {
     const el = viewportRef.current; if (!el) return;
     stopAnim();
@@ -84,7 +90,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   };
   const onPointerUp = (e: React.PointerEvent) => {
     stopAnim();
-    console.log("Pointer moved X:", drag.current.distance);
+    console.log('Pointer moved X:', drag.current.distance);
     if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
       e.preventDefault();
       e.stopPropagation();
@@ -109,7 +115,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   };
   const onTouchEnd = (e: React.TouchEvent) => {
     stopAnim();
-    console.log("Touch moved X:", drag.current.distance);
+    console.log('Touch moved X:', drag.current.distance);
     if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
       e.preventDefault();
       e.stopPropagation();
@@ -119,27 +125,27 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
 
   const styles = {
     root: {
-      width: "100%",
-      padding: "0px 0",
-      boxSizing: "border-box",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
+      width: '100%',
+      padding: '0px 0',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
       gap: 0,
     } as CSSProperties,
     viewport: {
-      position: "relative",
-      width: "min(1200px, 96vw)",
-      overflowX: "auto",
-      overflowY: "hidden",
-      padding: "0 24px",
-      WebkitOverflowScrolling: "auto",
-      cursor: isDragging ? "grabbing" : "grab",
-      userSelect: isDragging ? "none" : "auto",
-      scrollSnapType: "none",
-      scrollbarWidth: "none" as any,
-      touchAction: "pan-y" as any,
+      position: 'relative',
+      width: 'min(1200px, 96vw)',
+      overflowX: 'auto',
+      overflowY: 'hidden',
+      padding: '0 24px',
+      WebkitOverflowScrolling: 'auto',
+      cursor: isDragging ? 'grabbing' : 'grab',
+      userSelect: isDragging ? 'none' : 'auto',
+      scrollSnapType: 'none',
+      scrollbarWidth: 'none' as any,
+      touchAction: 'pan-y' as any,
       maskImage: `-webkit-gradient(linear,
         left center,
         right center,
@@ -154,20 +160,20 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
     )`
     } as CSSProperties,
     track: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: GAP + "px",
-      padding: "0px 0",
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: GAP + 'px',
+      padding: '0px 0',
       width: ITEM_SPACE * TOTAL,
     } as CSSProperties,
     card: {
-      width: WIDTH + "px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      width: WIDTH + 'px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       flexShrink: 0,
-      overflow: "hidden",
-      pointerEvents: "auto",
+      overflow: 'hidden',
+      pointerEvents: 'auto',
     } as CSSProperties,
   };
 

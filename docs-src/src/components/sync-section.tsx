@@ -3,56 +3,52 @@ import { SemPage, getAppName } from '../pages';
 import React from 'react';
 import { ReplicationDiagram } from './replication-diagram';
 import { Tag } from './tag';
-import { IconDeviceDesktop } from './icons/device-desktop';
-import { IconDeviceSmartwatch } from './icons/device-smartwatch';
-import { IconDeviceTablet } from './icons/device-tablet';
-import { IconDevicePhone } from './icons/device-phone';
 
 export const replicationLinks = [
   {
-    url: "/replication-server.html",
-    label: "RxServer",
-    iconUrl: "/files/logo/logo.svg",
+    url: '/replication-server.html',
+    label: 'RxServer',
+    iconUrl: '/files/logo/logo.svg',
   },
   {
-    url: "/replication-graphql.html",
-    label: "GraphQL",
-    iconUrl: "/files/icons/graphql.svg",
+    url: '/replication-graphql.html',
+    label: 'GraphQL',
+    iconUrl: '/files/icons/graphql.svg',
   },
   {
-    url: "/replication-firestore.html",
-    label: "Firebase",
-    iconUrl: "/files/icons/firebase.svg",
+    url: '/replication-firestore.html',
+    label: 'Firebase',
+    iconUrl: '/files/icons/firebase.svg',
   },
   {
-    url: "/replication-supabase.html",
-    label: "Supabase",
-    iconUrl: "/files/icons/supabase.svg",
+    url: '/replication-supabase.html',
+    label: 'Supabase',
+    iconUrl: '/files/icons/supabase.svg',
   },
   {
-    url: "/replication-nats.html",
-    label: "NATS",
-    iconUrl: "/files/icons/nats.svg",
+    url: '/replication-nats.html',
+    label: 'NATS',
+    iconUrl: '/files/icons/nats.svg',
   },
   {
-    url: "/replication-http.html",
-    label: "HTTP",
-    iconUrl: "/files/icons/http.svg",
+    url: '/replication-http.html',
+    label: 'HTTP',
+    iconUrl: '/files/icons/http.svg',
   },
   {
-    url: "/replication-couchdb.html",
-    label: "CouchDB",
-    iconUrl: "/files/icons/couchdb.svg",
+    url: '/replication-couchdb.html',
+    label: 'CouchDB',
+    iconUrl: '/files/icons/couchdb.svg',
   },
   {
-    url: "/replication-webrtc.html",
-    label: "WebRTC (P2P)",
-    iconUrl: "/files/icons/webrtc.svg",
+    url: '/replication-webrtc.html',
+    label: 'WebRTC (P2P)',
+    iconUrl: '/files/icons/webrtc.svg',
   },
   {
-    url: "/replication-appwrite.html",
-    label: "appwrite",
-    iconUrl: "/files/icons/appwrite-small.svg",
+    url: '/replication-appwrite.html',
+    label: 'appwrite',
+    iconUrl: '/files/icons/appwrite-small.svg',
   },
 ];
 

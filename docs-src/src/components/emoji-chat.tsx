@@ -1,5 +1,5 @@
-import React, { CSSProperties, useEffect, useRef, useState } from "react";
-import { EmojiMessageBox } from "./emoji-chat-message";
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import { EmojiMessageBox } from './emoji-chat-message';
 import { Subject } from 'rxjs';
 
 type ChatItem = {
@@ -12,7 +12,7 @@ type EmojiChatProps = {
   /** Array of chat items (messages) */
   items: {
     emoji: string;
-    direction: "left" | "right";
+    direction: 'left' | 'right';
   }[];
   /** Fired when one of the 3 bottom buttons is clicked */
   onButtonClick?: (index: number, emoji: string) => void;
@@ -25,58 +25,58 @@ type EmojiChatProps = {
 export function EmojiChat({
   items,
   onButtonClick,
-  buttonEmojis = ["👾", "👨‍💻", "💡"],
+  buttonEmojis = ['👾', '👨‍💻', '💡'],
   className,
   simulateClicks
 }: EmojiChatProps) {
   const frame: CSSProperties = {
     width: 230,
     height: 435,
-    position: "relative",
+    position: 'relative',
     borderRadius: 40,
-    border: "4px solid var(--White, #FFF)",
+    border: '4px solid var(--White, #FFF)',
     boxShadow:
-      "0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30)",
-    overflow: "hidden",
+      '0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30)',
+    overflow: 'hidden',
     padding: 8,
     flexShrink: 0,
   };
 
   const screen: CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     inset: 4,
     borderRadius: 32,
-    overflow: "hidden",
+    overflow: 'hidden',
   };
 
   const notchWrap: CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     top: 10,
-    left: "50%",
-    transform: "translateX(-50%)",
+    left: '50%',
+    transform: 'translateX(-50%)',
     width: 80,
     height: 20,
     borderRadius: 10,
-    background: "var(--Section-Dark, #0D0F18)",
+    background: 'var(--Section-Dark, #0D0F18)',
     zIndex: 2,
-  }
+  };
 
   const content: CSSProperties = {
-    position: "absolute",
-    inset: "50px 12px 60px 12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
+    position: 'absolute',
+    inset: '50px 12px 60px 12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
   };
 
   const bottomBar: CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 12,
-    display: "flex",
-    justifyContent: "space-around",
-    padding: "0 12px",
+    display: 'flex',
+    justifyContent: 'space-around',
+    padding: '0 12px',
   };
 
   const visibleItems = items.slice(-5);
@@ -177,7 +177,7 @@ export function EmojiChatStateful({
 
   const mappedItems = items.map((item) => ({
     emoji: item.emoji,
-    direction: item.creatorId === chatId ? ("right" as const) : ("left" as const),
+    direction: item.creatorId === chatId ? ('right' as const) : ('left' as const),
   }));
 
   return (
@@ -195,7 +195,7 @@ export function EmojiChatStateful({
 
 const STORAGE_ID = 'emoji-chat-state';
 const chatStateSubject = new Subject<void>();
-window.addEventListener("storage", () => {
+window.addEventListener('storage', () => {
   chatStateSubject.next();
 });
 
@@ -210,7 +210,7 @@ export function getEmojiChatState(): ChatItem[] {
   return list;
 }
 
-export function addEmojiChatStates(list: { emoji: string, creatorId: string }[]) {
+export function addEmojiChatStates(list: { emoji: string; creatorId: string; }[]) {
   const state = getEmojiChatState();
   list.forEach(i => {
     state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: Date.now() });
