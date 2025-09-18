@@ -39,9 +39,10 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
   const [packetColor, setPacketColor] = useState<string>(COLORS[0]);
 
   const isBrowser = useIsBrowser();
-  0
   useEffect(() => {
-    if (isBrowser) { return; }
+    if (isBrowser) {
+      return;
+    }
     function handleHeartbeat() {
       setHeartbeatCount((c) => c + 1);
       setSourceIndex(Math.floor(Math.random() * devices.length));

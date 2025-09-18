@@ -238,7 +238,7 @@ export function addEmojiChatStates(list: { emoji: string; creatorId: string; uni
   list.forEach(i => {
     state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: i.unixTime });
   });
-  // eslint-disable-next-line no-console
+
   console.log('addEmojiChatStates set item!');
   window.localStorage.setItem(STORAGE_ID, JSON.stringify(state));
   chatStateSubject.next();

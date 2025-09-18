@@ -35,7 +35,9 @@ export function EmojiMessageBox({
 
   const isBrowser = useIsBrowser();
   useEffect(() => {
-    if (isBrowser) { return; }
+    if (isBrowser) {
+ return;
+}
 
     function handleHeartbeat(e) {
       if (
