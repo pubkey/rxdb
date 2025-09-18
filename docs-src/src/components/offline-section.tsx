@@ -89,6 +89,7 @@ export function OfflineSection(props: {
               online={online}
               chatId="offline"
               simulateClicks={false}
+              buttonEmojis={['📡', '🛰️', '🌍']}
             />
           </div>
         </div>

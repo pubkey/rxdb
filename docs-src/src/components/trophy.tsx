@@ -7,7 +7,7 @@ export const SOCIAL_PROOF_VALUES = {
     twitter: 3003,
     // @link https://discord.com/invite/tqt9ZttJfD
     discord: 1251
-};
+} as const;
 
 
 export function Trophy(props: {

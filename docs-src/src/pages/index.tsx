@@ -13,10 +13,8 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-// import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
-// import { ABTestContent, getTestGroup } from '../components/a-b-tests';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
 import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
@@ -36,7 +34,6 @@ export const colors = [
   '#5f2688'
 ];
 
-// const STARTER_PACK_PRICE = 24;
 
 let animationStarted = false;
 function startLandingpageAnimation() {
@@ -283,9 +280,6 @@ export default function Home(props: {
         <main>
 
           <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
-          {/* <HeroSection_C sem={props.sem} scrollToSection={scrollToSection} />
-          <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
-          <HeroSection_A sem={props.sem} scrollToSection={scrollToSection} /> */}
 
           {
             props.sem && props.sem.blocks ?
@@ -296,7 +290,6 @@ export default function Home(props: {
 
 
           <VideoSection sem={props.sem} />
-
           <Trophy
             href="/code/"
             title="GitHub"
@@ -317,7 +310,6 @@ export default function Home(props: {
           />
 
           <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={false} />
-          {/* <RealtimeSection sem={props.sem} realtimeRef={realtimeRef} dark={false} /> */}
 
           <Trophy
             href="/chat/"
@@ -340,10 +332,6 @@ export default function Home(props: {
                 Used by <b>Thousands Worldwide</b>
               </h2>
               <div className="inner">
-                {/* <p>
-                  RxDB is a proven, battle-tested solution used by countless developers across the globe.
-                  With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
-                </p> */}
                 <ReviewsBlock></ReviewsBlock>
               </div>
             </div>

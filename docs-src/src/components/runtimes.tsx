@@ -14,7 +14,7 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: 'center',
     gap: '2rem',
     paddingLeft: 31,
-    paddingRight: 31
+    paddingRight: 31,
   },
   text: {
     fontWeight: 600,
@@ -31,7 +31,7 @@ const styles: Record<string, CSSProperties> = {
     objectFit: 'contain',
     opacity: 0.7,
     filter: 'grayscale(100%) brightness(1.8)',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
 };
 
@@ -51,40 +51,19 @@ const rows: Row[] = [
   { icon: '/files/icons/svelte.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
 ];
 
-// Fade-in keyframes
-const fadeIn = `
-  @keyframes fadeIn {
-    from { opacity: 0 }
-    to { opacity: 1 }
-  }
-`;
-const styleSheet = document.styleSheets[0];
-styleSheet.insertRule(fadeIn, styleSheet.cssRules.length);
-
 export function HeroRuntimes() {
   const [hovered, setHovered] = useState<number | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
 
   const text = hovered !== null ? rows[hovered].label : 'these Frameworks';
 
   return (
-    <div style={styles.container} className='column-mobile padding-top-64-28'>
-      <div
-        className='font-20-14'
-        style={{
-          ...styles.text,
-        }}
-      >
-        Use RxDB with{' '}<br className='hide-mobile' />
-        <span
-          key={animationKey + text} // force re-render for animation
-          style={{
-            animation: 'fadeIn 0.1s ease-in'
-          }}
-
-        >{text}</span>
+    <div style={styles.container} className="column-mobile padding-top-64-28">
+      <div className="font-20-14" style={styles.text}>
+        Use RxDB with{' '}
+        <br className="hide-mobile" />
+        <span>{text}</span>
       </div>
-      <div style={styles.iconsRow} className='gap-24-20'>
+      <div style={styles.iconsRow} className="gap-24-20">
         {rows.map((item, i) => {
           const defaultFilter = item.invert
             ? 'grayscale(100%) brightness(1.8) invert(1)'
@@ -96,18 +75,12 @@ export function HeroRuntimes() {
             <a
               key={i}
               href={item.url}
-              onMouseEnter={() => {
-                setHovered(i);
-                setAnimationKey(prev => prev + 1); // trigger fade-in
-              }}
-              onMouseLeave={() => {
-                setHovered(null);
-                setAnimationKey(prev => prev + 1);
-              }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
               target="_blank"
             >
               <img
-                className='framework-icon'
+                className="framework-icon"
                 src={item.icon}
                 loading="lazy"
                 alt={item.label}

@@ -1,6 +1,7 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { EmojiMessageBox } from './emoji-chat-message';
 import { Subject } from 'rxjs';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
 type ChatItem = {
   emoji: string;
@@ -82,7 +83,7 @@ export function EmojiChat({
   const visibleItems = items.slice(-5);
 
   return (
-    <div style={frame} className={className}> {/* ✅ applied */}
+    <div style={frame} className={className}>
       <div style={screen} className="chat-background">
         <div style={notchWrap} />
 
@@ -129,11 +130,14 @@ export function EmojiChatStateful({
   className,
   simulateClicks
 }: EmojiChatStatefulProps) {
+  const isBrowser = useIsBrowser();
+
   const unsynced = useRef<ChatItem[]>([]);
   const lastOnlineAt = useRef<number | null>(null);
   const [items, setItems] = useState<ChatItem[]>([]);
 
   function refreshItems() {
+    // Safe on SSR: returns [] when not in browser
     const stored = getEmojiChatState();
     const merged = [...stored, ...unsynced.current];
     merged.sort((a, b) => a.unixTime - b.unixTime);
@@ -142,14 +146,27 @@ export function EmojiChatStateful({
   }
 
   useEffect(() => {
+    if (!isBrowser) return;
+
     refreshItems();
+
+    // Register storage listener only in the browser
+    const onStorage = () => chatStateSubject.next();
+    window.addEventListener('storage', onStorage);
+
     const sub = chatStateSubject.subscribe(() => {
       refreshItems();
     });
-    return () => sub.unsubscribe();
-  }, []);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      sub.unsubscribe();
+    };
+  }, [isBrowser]);
 
   useEffect(() => {
+    if (!isBrowser) return;
+
     if (online && unsynced.current.length > 0) {
       addEmojiChatStates(
         unsynced.current.map(({ emoji, creatorId }) => ({ emoji, creatorId }))
@@ -157,7 +174,7 @@ export function EmojiChatStateful({
       unsynced.current = [];
       refreshItems();
     }
-  }, [online]);
+  }, [online, isBrowser]);
 
   function handleAdd(emoji: string) {
     const entry: ChatItem = {
@@ -166,10 +183,11 @@ export function EmojiChatStateful({
       unixTime: Date.now(),
     };
 
-    if (online) {
+    if (isBrowser && online) {
       addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId }]);
       refreshItems();
     } else {
+      // Safe to update local ref even during SSR; only read on client
       unsynced.current.push(entry);
       refreshItems();
     }
@@ -195,27 +213,33 @@ export function EmojiChatStateful({
 
 const STORAGE_ID = 'emoji-chat-state';
 const chatStateSubject = new Subject<void>();
-window.addEventListener('storage', () => {
-  chatStateSubject.next();
-});
 
 export function getEmojiChatState(): ChatItem[] {
-  const data = localStorage.getItem(STORAGE_ID);
-  if (!data) return [];
-  let list: ChatItem[] = JSON.parse(data);
-  if (list.length > 20) {
-    list = list.sort((a, b) => a.unixTime - b.unixTime).slice(-10);
-    localStorage.setItem(STORAGE_ID, JSON.stringify(list));
+  // Guard for SSR
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = window.localStorage.getItem(STORAGE_ID);
+    if (!data) return [];
+    let list: ChatItem[] = JSON.parse(data);
+    if (list.length > 20) {
+      list = list.sort((a, b) => a.unixTime - b.unixTime).slice(-10);
+      window.localStorage.setItem(STORAGE_ID, JSON.stringify(list));
+    }
+    return list;
+  } catch {
+    return [];
   }
-  return list;
 }
 
 export function addEmojiChatStates(list: { emoji: string; creatorId: string; }[]) {
+  // Guard for SSR
+  if (typeof window === 'undefined') return;
   const state = getEmojiChatState();
   list.forEach(i => {
     state.push({ creatorId: i.creatorId, emoji: i.emoji, unixTime: Date.now() });
   });
+  // eslint-disable-next-line no-console
   console.log('addEmojiChatStates set item!');
-  localStorage.setItem(STORAGE_ID, JSON.stringify(state));
+  window.localStorage.setItem(STORAGE_ID, JSON.stringify(state));
   chatStateSubject.next();
 }
