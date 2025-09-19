@@ -7,7 +7,6 @@ import Content from '@theme/DocSidebar/Desktop/Content';
 import type { Props } from '@theme/DocSidebar/Desktop';
 
 import styles from './styles.module.css';
-import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
 
 function DocSidebarDesktop({ path, sidebar, onCollapse, isHidden }: Props) {
   const {

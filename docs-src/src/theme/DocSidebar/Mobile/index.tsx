@@ -5,12 +5,11 @@ import {
   type NavbarSecondaryMenuComponent,
   ThemeClassNames,
 } from '@docusaurus/theme-common';
-import {useNavbarMobileSidebar} from '@docusaurus/theme-common/internal';
+import { useNavbarMobileSidebar } from '@docusaurus/theme-common/internal';
 import DocSidebarItems from '@theme/DocSidebarItems';
-import type {Props} from '@theme/DocSidebar/Mobile';
+import type { Props } from '@theme/DocSidebar/Mobile';
 import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
 
-// eslint-disable-next-line react/function-component-definition
 const DocSidebarMobileSecondaryMenu: NavbarSecondaryMenuComponent<Props> = ({
   sidebar,
   path,
