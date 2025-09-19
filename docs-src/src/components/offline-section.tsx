@@ -41,10 +41,10 @@ export function OfflineSection(props: {
             <CheckedList className='centered-mobile' style={{
               maxWidth: 360
             }}>
-              <li>
+              <>
                 Keep your {getAppName(props)} app running <b>offline</b>
-              </li>
-              <li>
+              </>
+              <>
                 Run local queries with{' '}
                 <a
                   href="https://rxdb.info/articles/zero-latency-local-first.html"
@@ -52,13 +52,13 @@ export function OfflineSection(props: {
                 >
                   <b>zero latency</b>
                 </a>
-              </li>
-              <li>
+              </>
+              <>
                 Simplify and <b>speed up development</b>
-              </li>
-              <li>
+              </>
+              <>
                 Reduces backend load and <b>scales better</b>
-              </li>
+              </>
             </CheckedList>
           </div>
 

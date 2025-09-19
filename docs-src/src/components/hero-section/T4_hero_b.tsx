@@ -38,18 +38,18 @@ export function HeroSection_B(props: {
                     <CheckedList className='centered-mobile' style={{
                         maxWidth: 360
                     }}>
-                        <li>
+                        <>
                             Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
-                        </li>
-                        <li>
+                        </>
+                        <>
                             Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </li>
-                        <li>
+                        </>
+                        <>
                             Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </li>
-                        <li>
+                        </>
+                        <>
                             All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </li>
+                        </>
                     </CheckedList>
 
                     <div style={{

@@ -81,13 +81,13 @@ export function SyncSection(props: {
               Either use one of our prebuild replication plugins...
             </p>
 
-            <p className='centered-mobile-p'>
+            <div className='centered-mobile-p'>
               {replicationLinks.map(link => (
                 <a key={link.url} href={link.url} target="_blank">
                   <Tag img={link.iconUrl}>{link.label}</Tag>
                 </a>
               ))}
-            </p>
+            </div>
 
             <p
               style={{

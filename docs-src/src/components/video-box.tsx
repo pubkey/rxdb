@@ -34,7 +34,7 @@ const styles: Record<string, CSSProperties> = {
         display: 'block',
         userDrag: 'none',
         userSelect: 'none',
-        '-webkit-user-drag': 'none'
+        WebkitUserDrag: 'none'
     } as any,
     playButton: {
         position: 'absolute',

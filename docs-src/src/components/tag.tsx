@@ -18,6 +18,7 @@ export function Tag(props: {
                 padding: '0 10px',
                 borderRadius: '50vh',
                 textAlign: 'center',
+                color: 'white' ,
                 width: 'auto',
                 marginRight: 12,
                 marginBottom: 12,
