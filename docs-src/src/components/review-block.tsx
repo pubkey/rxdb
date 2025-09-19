@@ -125,7 +125,7 @@ export function ReviewsBlock() {
                             lineHeight: '21px',
                             marginBottom: 0
                         }}>{item.description}</p>
-                        <IconQuoteEnd style={{ textAlign: 'right' }} />
+                        <IconQuoteEnd />
                         <div className="slider-profile">
                             <img
                                 className={item.logoStyle}

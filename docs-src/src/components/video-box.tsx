@@ -15,22 +15,25 @@ const styles: Record<string, CSSProperties> = {
     container: {
         display: 'flex',
         flexDirection: 'column',
-        padding: '12px 12px 9px 12px',
+        padding: '12px 12px 6px 12px',
         width: '300px',
         backgroundColor: '#0D0F18',
+        // backgroundColor: 'red',
         cursor: 'pointer'
     },
     thumbnailWrapper: {
         position: 'relative',
         width: '100%',
-        height: '180px',
+        height: '155px',
         overflow: 'hidden',
         backgroundColor: '#000',
     },
     thumbnail: {
         width: '100%',
         height: '100%',
-        objectFit: 'cover',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center -25px',
+        backgroundRepeat: 'no-repeat',
         display: 'block',
         userDrag: 'none',
         userSelect: 'none',
@@ -48,16 +51,9 @@ const styles: Record<string, CSSProperties> = {
         alignItems: 'center',
         justifyContent: 'center',
     },
-    playIcon: {
-        width: '20px',
-        height: '20px',
-        borderLeft: '14px solid white',
-        borderTop: '8px solid transparent',
-        borderBottom: '8px solid transparent',
-    },
     duration: {
         position: 'absolute',
-        bottom: '6px',
+        bottom: '0px',
         right: 0,
         fontSize: '0.875rem',
         fontWeight: 'bold',
@@ -66,7 +62,7 @@ const styles: Record<string, CSSProperties> = {
         backgroundColor: '#0D0F18'
     },
     title: {
-        marginTop: 0,
+        marginTop: 5,
         fontSize: 16,
         fontWeight: 700,
         whiteSpace: 'nowrap',
@@ -91,10 +87,16 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
             }}
         >
             <div style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={styles.thumbnailWrapper}>
-                    <img
-                        src={'http://img.youtube.com/vi/' + videoId + '/0.jpg'}
-                        style={styles.thumbnail}
+                <div
+                    style={{
+                        ...styles.thumbnailWrapper,
+                    }}
+                >
+                    <div
+                        style={{
+                            ...styles.thumbnail,
+                            backgroundImage: `url(http://img.youtube.com/vi/${videoId}/0.jpg)`
+                        }}
                     />
                     <div
                         style={{
@@ -115,17 +117,14 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                     open={isOpen}
                     onCancel={(e) => {
                         e.stopPropagation();
-                        console.log('CANCEL');
                         setIsOpen(false);
                     }}
                     onClose={(e) => {
                         e.stopPropagation();
-                        console.log('CLOSSSSSE');
                         setIsOpen(false);
                     }}
                     onOk={(e) => {
                         e.stopPropagation();
-                        console.log('OKKK');
                         setIsOpen(false);
                     }}
                     footer={null}
@@ -134,9 +133,6 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                         maxWidth: 800
                     }}
                 >
-                    <br />
-                    <br />
-                    <br />
                     <h3>{title}</h3>
                     <center>
                         <iframe

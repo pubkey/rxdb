@@ -10,14 +10,14 @@ const YOUTUBE_VIDEOS: VideoBoxProps[] = [
     {
         videoId: 'tDWmfenF2AM',
         title: 'The Easiest Way to Store Data',
-        duration: '4:28',
+        duration: '04:28',
         startAt: 8
 
     },
     {
         videoId: 'qHWrooWyCYg',
         title: 'This solved a problem I\'ve had in Angular for years',
-        duration: '3:45',
+        duration: '03:45',
         startAt: 2
     },
     {
@@ -29,7 +29,7 @@ const YOUTUBE_VIDEOS: VideoBoxProps[] = [
     {
         videoId: 'm3T0gMuitbI',
         title: 'Build REAL TIME Applications easily 👩‍💻',
-        duration: '0:52',
+        duration: '00:52',
         startAt: 9
     },
     // {

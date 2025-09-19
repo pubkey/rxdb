@@ -430,7 +430,7 @@ p a:hover {
 /* Docs Main Body Content Styling */
 body {
     color: var(--fontColor-offwhite);
-    font-weight: 400;
+    font-weight: 500;
 }
 
 /* Pagination links at bottom of page */
@@ -1630,7 +1630,7 @@ ul.checked li:before {
 
     position: absolute;
     z-index: 9;
-    margin-top: -30px;
+    margin-top: -26.715px;
     height: 40px;
 
     background-color: var(--bg-color);

@@ -38,6 +38,7 @@ export function Tag(props: {
                         alt=""
                         style={{
                             height: '60%',
+                            width: 24,
                             marginRight: 6,
                             display: 'block',        // ← remove baseline alignment
                             objectFit: 'contain',    // optional, keeps it tidy
@@ -46,6 +47,7 @@ export function Tag(props: {
                 ) : (
                     <span style={{
                         height: '60%',
+                        width: 24,
                         marginRight: 6,
                         display: 'block',        // ← remove baseline alignment
                         objectFit: 'contain',    // optional, keeps it tidy
