@@ -8,7 +8,7 @@ export function IconQuoteStartSingle({ style, className }: IconProps) {
     </div>;
 }
 
-export function IconQuoteStart({ style, className }: IconProps) {
+export function IconQuoteStart({ style }: IconProps) {
     return <div style={{
         display: 'flex',
         gap: 5,
@@ -28,7 +28,7 @@ export function IconQuoteEndSingle({ style, className }: IconProps) {
 }
 
 
-export function IconQuoteEnd({ style, className }: IconProps) {
+export function IconQuoteEnd({ style }: IconProps) {
     return <div style={{
         display: 'flex',
         justifyContent: 'flex-end',

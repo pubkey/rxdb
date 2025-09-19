@@ -19,7 +19,7 @@ const styles: Record<string, CSSProperties> = {
   text: {
     fontWeight: 600,
     whiteSpace: 'pre-line',
-    minWidth: '200px',
+    minWidth: '210px',
   },
   iconsRow: {
     display: 'flex',
