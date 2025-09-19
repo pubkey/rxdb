@@ -26,7 +26,7 @@ type EmojiChatProps = {
 export function EmojiChat({
   items,
   onButtonClick,
-  buttonEmojis = ['👾', '👨‍💻', '💡'],
+  buttonEmojis = ['⚙️', '👨‍💻', '💡'],
   className,
   simulateClicks
 }: EmojiChatProps) {
@@ -58,7 +58,7 @@ export function EmojiChat({
     width: 80,
     height: 20,
     borderRadius: 10,
-    background: 'var(--Section-Dark, #0D0F18)',
+    background: 'var(--bg-color-dark)',
     zIndex: 2,
   };
 

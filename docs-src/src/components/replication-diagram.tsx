@@ -26,10 +26,10 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
 
   const devices: DeviceType[] = [
     'desktop',
-    'smartwatch',
+    'tablet',
     'phone',
     'desktop',
-    'tablet',
+    'smartwatch',
   ];
 
   const [heartbeatCount, setHeartbeatCount] = useState(0);
@@ -57,7 +57,7 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
   const centerX = 250 * scale;
   const centerY = 200 * scale;
 
-  const serverRadius = 45 * scale;
+  const serverRadius = 35 * scale;
   const deviceCount = devices.length;
   const deviceRadius = 55 * scale;
 
@@ -161,7 +161,9 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
             justifyContent: 'center',
           }}
         >
-          <Cloud darkMode={true} />
+          <Cloud darkMode={true} style={{
+            width: '140%'
+          }} />
         </div>
 
         {/* Lines & devices */}

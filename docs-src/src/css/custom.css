@@ -340,7 +340,15 @@ h2 {
 .block h2,
 .block h1 {
     font-size: var(--fontSizes-5xl);
+    letter-spacing: 1.5px;
+    word-spacing: -4px;
 }
+
+.block h2 b,
+.block h1 b {
+    font-weight: 800;
+}
+
 
 h3 {
     margin-top: 0px;
@@ -507,7 +515,7 @@ body {
 
 .navbar__items a {
     color: var(--fontColor-white);
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .navbar__items a:hover {
@@ -661,6 +669,7 @@ body {
     display: flex;
     flex-direction: column;
     background-repeat: no-repeat;
+    align-items: center;
 
     /**
      * Do not use 'background-size: contain' because it is broken on svg files in firefox.

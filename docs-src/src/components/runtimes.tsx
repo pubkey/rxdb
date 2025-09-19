@@ -87,7 +87,7 @@ export function HeroRuntimes() {
                 style={{
                   ...styles.icon,
                   filter: hovered === i ? hoverFilter : defaultFilter,
-                  opacity: hovered === i && !item.invert ? 1 : styles.icon.opacity,
+                  opacity: hovered === i ? 1 : styles.icon.opacity,
                 }}
               />
             </a>

@@ -102,7 +102,7 @@ export function EmojiMessageBox({
     container = {
       ...base,
       borderRadius: '24px',
-      background: 'var(--Section-Dark, #0D0F18)',
+      background: 'var(--bg-color-dark)',
       cursor: 'pointer',
       transform: isClicked ? 'scale(1.2)' : 'scale(1)', // grow briefly
     };
