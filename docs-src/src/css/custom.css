@@ -93,6 +93,7 @@ pre code {
 
 .navbar__search-input {
     font-size: var(--fontSizes-s);
+    width: 90%;
 }
 
 .container .col article {

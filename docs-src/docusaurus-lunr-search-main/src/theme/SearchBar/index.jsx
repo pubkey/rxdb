@@ -107,7 +107,7 @@ const Search = props => {
       'Search ⌘+K' : 'Search Ctrl+K'
   }
 
-  if(!isDocsPage){
+  if (!isDocsPage) {
     return;
   }
 
@@ -139,6 +139,11 @@ const Search = props => {
         onBlur={toggleSearchIconClick}
         ref={searchBarRef}
         disabled={!indexReady}
+        style={{
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          display: 'block'
+        }}
       />
       <HighlightSearchResults />
     </div>
