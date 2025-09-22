@@ -966,6 +966,7 @@ body {
         max-width: 88%;
         margin-left: auto;
         margin-right: auto;
+        text-align: center;
     }
 
     .centered-smaller-mobile {

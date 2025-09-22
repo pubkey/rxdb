@@ -102,7 +102,7 @@ export function SyncSection(props: {
             >
               OR
             </p>
-            <p className='font-16-14'>
+            <p className='font-16-14 centered-mobile-p'>
               ...sync with your <b>custom server</b> by implementing{' '}
               <a href="/replication-http.html" target="_blank">
                 three simple endpoints
