@@ -1,4 +1,11 @@
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import
+React,
+{
+  CSSProperties,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import { EmojiMessageBox } from './emoji-chat-message';
 import { Subject } from 'rxjs';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
@@ -130,26 +137,27 @@ export function EmojiChatStateful({
   className,
   simulateClicks
 }: EmojiChatStatefulProps) {
+
+  // simulateClicks = false;
+
   const unsynced = useRef<ChatItem[]>([]);
   const lastOnlineAt = useRef<number | null>(null);
   const [items, setItems] = useState<ChatItem[]>([]);
 
   function refreshItems() {
-
-    console.log('refresh items ' + online);
-
     if (
       !ExecutionEnvironment.canUseDOM
-      || !online
     ) return;
 
+    if (online) {
+      lastOnlineAt.current = Date.now();
+    }
 
     // Safe on SSR: returns [] when not in browser
-    const stored = getEmojiChatState();
+    const stored = getEmojiChatState(lastOnlineAt.current);
     const merged = [...stored, ...unsynced.current];
     merged.sort((a, b) => a.unixTime - b.unixTime);
     setItems(merged);
-    lastOnlineAt.current = Date.now();
   }
 
   useEffect(() => {
@@ -189,8 +197,12 @@ export function EmojiChatStateful({
       unixTime: Date.now(),
     };
 
-    if (ExecutionEnvironment.canUseDOM && online) {
-      addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId, unixTime: Date.now() }]);
+    if (online) {
+      addEmojiChatStates([{
+        emoji: entry.emoji,
+        creatorId: entry.creatorId,
+        unixTime: Date.now()
+      }]);
       refreshItems();
     } else {
       // Safe to update local ref even during SSR; only read on client
@@ -220,7 +232,7 @@ export function EmojiChatStateful({
 const STORAGE_ID = 'emoji-chat-state';
 const chatStateSubject = new Subject<void>();
 
-export function getEmojiChatState(): ChatItem[] {
+export function getEmojiChatState(olderThenDate?: number): ChatItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const data = window.localStorage.getItem(STORAGE_ID);
@@ -229,6 +241,9 @@ export function getEmojiChatState(): ChatItem[] {
     if (list.length > 20) {
       list = list.sort((a, b) => a.unixTime - b.unixTime).slice(-10);
       window.localStorage.setItem(STORAGE_ID, JSON.stringify(list));
+    }
+    if (olderThenDate) {
+      list = list.filter(i => i.unixTime <= olderThenDate);
     }
     return list;
   } catch {
