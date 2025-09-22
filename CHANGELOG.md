@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(types) pull handler can return `undefined` as checkpoint.
 
 <!-- ADD new changes here! -->
 
