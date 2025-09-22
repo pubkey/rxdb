@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react';
 import { replicationLinks } from './sync-section';
-import useIsBrowser from '@docusaurus/useIsBrowser';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 interface CloudProps {
   darkMode?: boolean;
@@ -22,11 +22,9 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   const currRef = useRef<HTMLImageElement | null>(null);
 
 
-  const isBrowser = useIsBrowser();
-
   // Handle "heartbeat": advance to next icon and trigger slide transition
   useEffect(() => {
-    if (isBrowser) {
+    if (!ExecutionEnvironment.canUseDOM) {
       return;
     }
     const handleHeartbeat = () => {
@@ -47,7 +45,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
 
   // Kick off the slide animation when there's a prev icon
   useEffect(() => {
-    if (isBrowser) {
+    if (!ExecutionEnvironment.canUseDOM) {
       return;
     }
     if (!prevUrl) return;

@@ -5,7 +5,7 @@ import { IconEncryption } from './icons/encryption';
 import { IconReplication } from './icons/replication';
 import { IconServer } from './icons/server';
 import { Tag } from './tag';
-import useIsBrowser from '@docusaurus/useIsBrowser';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const tags: {
     value: string;
@@ -34,12 +34,11 @@ const tags: {
     ];
 
 export function FeaturesSection() {
-    const isBrowser = useIsBrowser();
-    const [isMobile, setIsMobile] = useState(() => isBrowser ? window.innerWidth < 900 : false);
+    const [isMobile, setIsMobile] = useState(() => ExecutionEnvironment.canUseDOM ? window.innerWidth < 900 : false);
     const [showMore, setShowMore] = useState(false);
 
     useEffect(() => {
-        if (!isBrowser) return;
+        if (!ExecutionEnvironment.canUseDOM) return;
         const handleResize = () => {
             const mobile = window.innerWidth < 900;
             setIsMobile(mobile);
@@ -58,9 +57,9 @@ export function FeaturesSection() {
 
     if (isMobile) {
         if (showMore) {
-            visibleTags = tags; // show everything
+            visibleTags = tags;
         } else {
-            visibleTags = tags.filter(tag => tag.img); // only icon tags
+            visibleTags = tags.filter(tag => tag.img);
         }
     }
 
@@ -84,7 +83,7 @@ export function FeaturesSection() {
                     {visibleTags.map((tag, i) => {
                         const el = (
                             <a key={i} href={tag.url} target="_blank" style={{ color: 'white' }}>
-                                <Tag img={tag.img}>{tag.value}</Tag>
+                                <Tag img={tag.img} wideMode={true}>{tag.value}</Tag>
                             </a>
                         );
 

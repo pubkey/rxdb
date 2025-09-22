@@ -1,5 +1,4 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
 import Layout from '@theme/Layout';
@@ -21,13 +20,7 @@ import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
-
-    const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (!isBrowser) {
-            return;
-        }
-
         (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 2);
         })();

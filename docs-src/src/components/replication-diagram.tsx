@@ -5,7 +5,7 @@ import { IconDeviceSmartwatch } from './icons/device-smartwatch';
 import { Cloud } from './cloud';
 import { IconDeviceDesktop } from './icons/device-desktop';
 import { IconDeviceTablet } from './icons/device-tablet';
-import useIsBrowser from '@docusaurus/useIsBrowser';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
 
@@ -38,9 +38,8 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
   const COLORS = ['var(--color-top)', 'var(--color-middle)', 'var(--color-bottom)'] as const;
   const [packetColor, setPacketColor] = useState<string>(COLORS[0]);
 
-  const isBrowser = useIsBrowser();
   useEffect(() => {
-    if (isBrowser) {
+    if (!ExecutionEnvironment.canUseDOM) {
       return;
     }
     function handleHeartbeat() {

@@ -26,6 +26,11 @@ export const replicationLinks = [
     iconUrl: '/files/icons/supabase.svg',
   },
   {
+    url: '/replication-mongodb.html',
+    label: 'MongoDB',
+    iconUrl: '/files/icons/mongodb-icon.svg',
+  },
+  {
     url: '/replication-nats.html',
     label: 'NATS',
     iconUrl: '/files/icons/nats.svg',

@@ -4,6 +4,7 @@ export function Tag(props: {
     img?: string | React.ReactNode;
     border?: boolean;
     children?: React.ReactNode;
+    wideMode?: boolean
 }) {
     const hasImg = !!props.img;
 
@@ -15,10 +16,11 @@ export function Tag(props: {
                 verticalAlign: 'bottom',
                 backgroundColor: 'var(--bg-color)',
                 height: 41,
-                padding: '0 10px',
-                borderRadius: '50vh',
+                paddingTop: 0,
+                paddingBottom: 0,
+                borderRadius: 20,
                 textAlign: 'center',
-                color: 'white' ,
+                color: 'white',
                 width: 'auto',
                 marginRight: 12,
                 marginBottom: 12,
@@ -28,7 +30,7 @@ export function Tag(props: {
                 userSelect: 'none',
                 border: props.border ? '2px solid var(--White, #FFF)' : 'none'
             }}
-            className='font-16-14'
+            className={(props.wideMode ? 'font-20-14' : 'font-16-14') + ' ' + (props.wideMode ? 'padding-side-16-12' : 'padding-side-10-12')}
         >
             {hasImg &&
                 (typeof props.img === 'string' ? (
@@ -36,23 +38,26 @@ export function Tag(props: {
                         src={props.img}
                         loading="lazy"
                         alt=""
+                        className={(props.wideMode ? 'margin-right-8' : 'margin-right-6-8')}
                         style={{
                             height: '60%',
                             width: 24,
                             marginRight: 6,
-                            display: 'block',        // ← remove baseline alignment
-                            objectFit: 'contain',    // optional, keeps it tidy
+                            display: 'block',
+                            objectFit: 'contain',
                         }}
                     />
                 ) : (
-                    <span style={{
-                        height: '60%',
-                        width: 24,
-                        marginRight: 6,
-                        display: 'block',        // ← remove baseline alignment
-                        objectFit: 'contain',    // optional, keeps it tidy
-                        alignItems: 'center',
-                    }}>
+                    <span
+                        className={(props.wideMode ? 'margin-right-8' : 'margin-right-6-8')}
+                        style={{
+                            height: '60%',
+                            width: 24,
+                            marginRight: 6,
+                            display: 'block',
+                            objectFit: 'contain',
+                            alignItems: 'center',
+                        }}>
                         {props.img ? props.img : ''}
                     </span>
                 )

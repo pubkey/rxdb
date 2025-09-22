@@ -366,10 +366,12 @@ function startAnalytics() {
      * but only run trigger these once per page load
      */
     let trackScrollPercentages = new Set([25, 50, 75, 90]);
-    (window as any).navigation.addEventListener('navigate', () => {
-        // reset if url changes
-        trackScrollPercentages = new Set([25, 50, 75, 90]);
-    });
+    if ((window as any).navigation) {
+        (window as any).navigation.addEventListener('navigate', () => {
+            // reset if url changes
+            trackScrollPercentages = new Set([25, 50, 75, 90]);
+        });
+    }
     let nextScrollTimestamp = 0;
     if (location.pathname === '/' || location.pathname.includes('/sem/')) {
         window.addEventListener('scroll', (event) => {

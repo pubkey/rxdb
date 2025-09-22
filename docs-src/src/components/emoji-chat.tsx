@@ -1,7 +1,7 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import { EmojiMessageBox } from './emoji-chat-message';
 import { Subject } from 'rxjs';
-import useIsBrowser from '@docusaurus/useIsBrowser';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 type ChatItem = {
   emoji: string;
@@ -130,14 +130,12 @@ export function EmojiChatStateful({
   className,
   simulateClicks
 }: EmojiChatStatefulProps) {
-  const isBrowser = useIsBrowser();
-
   const unsynced = useRef<ChatItem[]>([]);
   const lastOnlineAt = useRef<number | null>(null);
   const [items, setItems] = useState<ChatItem[]>([]);
 
   function refreshItems() {
-    if (!isBrowser) return;
+    if (!ExecutionEnvironment.canUseDOM) return;
 
 
     // Safe on SSR: returns [] when not in browser
@@ -149,7 +147,7 @@ export function EmojiChatStateful({
   }
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (!ExecutionEnvironment.canUseDOM) return;
 
     refreshItems();
 
@@ -165,10 +163,10 @@ export function EmojiChatStateful({
       window.removeEventListener('storage', onStorage);
       sub.unsubscribe();
     };
-  }, [isBrowser]);
+  }, [ExecutionEnvironment.canUseDOM]);
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (!ExecutionEnvironment.canUseDOM) return;
 
     if (online && unsynced.current.length > 0) {
       addEmojiChatStates(
@@ -177,7 +175,7 @@ export function EmojiChatStateful({
       unsynced.current = [];
       refreshItems();
     }
-  }, [online, isBrowser]);
+  }, [online, ExecutionEnvironment.canUseDOM]);
 
   function handleAdd(emoji: string) {
     const entry: ChatItem = {
@@ -186,7 +184,7 @@ export function EmojiChatStateful({
       unixTime: Date.now(),
     };
 
-    if (isBrowser && online) {
+    if (ExecutionEnvironment.canUseDOM && online) {
       addEmojiChatStates([{ emoji: entry.emoji, creatorId: entry.creatorId, unixTime: Date.now() }]);
       refreshItems();
     } else {

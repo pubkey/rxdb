@@ -399,7 +399,7 @@ td a {
     text-decoration: underline;
     text-decoration-color: var(--color-top) !important;
     text-decoration-thickness: 10%;
-    text-underline-offset: 2px;
+    text-underline-offset: 4px;
     text-underline-position: from-font;
 }
 
@@ -820,12 +820,47 @@ body {
     margin-left: 10px;
 }
 
+.margin-right-8 {
+    margin-right: 8px;
+}
+
+.margin-right-6-8 {
+    margin-right: 6px;
+}
+
+
 .padding-top-64-28 {
     padding-top: 64px;
 }
 
+.padding-side-16-12 {
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.padding-side-10-12 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
 
 @media (max-width: 900px) {
+    .margin-right-6-8 {
+        margin-right: 8px;
+    }
+
+    .padding-side-10-12 {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .padding-side-16-12 {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+
     .padding-top-64-28 {
         padding-top: 28px;
     }

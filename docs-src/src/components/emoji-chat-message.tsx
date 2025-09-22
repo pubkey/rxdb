@@ -1,4 +1,3 @@
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import React, {
   CSSProperties,
   ReactNode,
@@ -6,6 +5,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 type EmojiMessageBoxProps = {
   /** Emoji to display (string or custom React node). */
@@ -33,11 +33,10 @@ export function EmojiMessageBox({
     onClick?.({} as any); // simulate a click event (you can pass null if not needed)
   }
 
-  const isBrowser = useIsBrowser();
   useEffect(() => {
-    if (isBrowser) {
- return;
-}
+    if (!ExecutionEnvironment.canUseDOM) {
+      return;
+    }
 
     function handleHeartbeat(e) {
       if (

@@ -1,4 +1,5 @@
 import { getTestGroupEventPrefix } from './a-b-tests';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 export function triggerTrackingEvent(
     type: string,
@@ -10,7 +11,9 @@ export function triggerTrackingEvent(
      */
     maxPerUser: number = 5
 ) {
-
+    if (!ExecutionEnvironment.canUseDOM) {
+        return;
+    }
     const prefix = 'event_count_';
     const stored = localStorage.getItem(prefix + type);
     const triggeredBefore = stored ? parseInt(stored, 10) : 0;
