@@ -10,7 +10,7 @@ import DocSidebarItems from '@theme/DocSidebarItems';
 import type {Props} from '@theme/DocSidebar/Desktop/Content';
 
 import styles from './styles.module.css';
-import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
+// import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
 
 function useShowAnnouncementBar() {
   const {isActive} = useAnnouncementBar();

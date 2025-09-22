@@ -8,7 +8,7 @@ import {
 import { useNavbarMobileSidebar } from '@docusaurus/theme-common/internal';
 import DocSidebarItems from '@theme/DocSidebarItems';
 import type { Props } from '@theme/DocSidebar/Mobile';
-import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
+// import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
 
 const DocSidebarMobileSecondaryMenu: NavbarSecondaryMenuComponent<Props> = ({
   sidebar,
