@@ -57,8 +57,8 @@ export function HeroSection_B(props: {
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: 10,
-                        maxWidth: 500
-                    }} className='centered-smaller-mobile'>
+                        maxWidth: 500,
+                    }} className='hero-action-buttons centered-smaller-mobile'>
                         <Button className="hero-action"
                             onClick={() => {
                                 triggerTrackingEvent('hero_section_how_others', 0.4);

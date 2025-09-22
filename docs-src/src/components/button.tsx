@@ -20,7 +20,7 @@ const styles: Record<string, CSSProperties> = {
     gap: '10px',
 
     fontSize: '1rem',
-    fontWeight: 700,
+    fontWeight: 500,
     borderRadius: '2px',
     cursor: 'pointer',
     textAlign: 'center',
@@ -33,6 +33,7 @@ const styles: Record<string, CSSProperties> = {
   primary: {
     background: 'linear-gradient(90deg, #ED168F 0%, #B2218B 100%)',
     color: '#fff',
+    fontWeight: 800
   },
   secondary: {
     background: 'transparent',

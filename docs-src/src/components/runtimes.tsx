@@ -125,7 +125,7 @@ export function HeroRuntimes() {
                   );
                 })}
               </div>
-            }</div>
+            }</div>;
           })
         }
       </div>

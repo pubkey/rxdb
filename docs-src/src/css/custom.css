@@ -845,8 +845,22 @@ body {
     width: 140px;
 }
 
+.margin-bottom-16-10 {
+    margin-bottom: 16px;
+}
+
+.margin-bottom-12 {
+    margin-bottom: 12px;
+}
 
 @media (max-width: 900px) {
+    .margin-right-16-6 {
+        margin-right: 6px;
+    }
+
+    .margin-bottom-16-10 {
+        margin-bottom: 10px;
+    }
 
     .width-140-120 {
         width: 120px;
@@ -958,6 +972,7 @@ body {
         width: min(1120px, 68%);
         margin-left: auto;
         margin-right: auto;
+        justify-content: center;
     }
 
     .flex-wrap-mobile {
@@ -1053,10 +1068,13 @@ body {
 }
 
 
+
+
 .block.first.hero .hero-action {
     flex: 1 1 auto;
     /* allow shrinking/growing */
     text-align: center;
+    max-width: 300px;
 }
 
 

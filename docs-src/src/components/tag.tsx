@@ -15,22 +15,27 @@ export function Tag(props: {
                 alignItems: 'center',
                 verticalAlign: 'bottom',
                 backgroundColor: 'var(--bg-color)',
-                height: 41,
+                height: props.border ? 37 : 41,
                 paddingTop: 0,
                 paddingBottom: 0,
                 borderRadius: 20,
                 textAlign: 'center',
                 color: 'white',
                 width: 'auto',
-                marginRight: 12,
-                marginBottom: 12,
                 fontWeight: hasImg ? 800 : 500,
                 whiteSpace: 'nowrap',
                 boxSizing: 'border-box',
                 userSelect: 'none',
-                border: props.border ? '2px solid var(--White, #FFF)' : 'none'
+                border: props.border ? '2px solid var(--White, #FFF)' : 'none',
             }}
-            className={(props.wideMode ? 'font-20-14' : 'font-16-14') + ' ' + (props.wideMode ? 'padding-side-16-12' : 'padding-side-10-12')}
+            className={
+                'margin-right-16-6 ' +
+                (props.wideMode ? 'font-20-14' : 'font-16-14')
+                + ' '
+                + (props.wideMode ? 'padding-side-16-12' : 'padding-side-10-12')
+                + ' '
+                + (props.wideMode ? 'margin-bottom-16-10' : 'margin-bottom-12')
+            }
         >
             {hasImg &&
                 (typeof props.img === 'string' ? (
