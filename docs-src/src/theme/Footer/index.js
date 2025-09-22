@@ -98,7 +98,7 @@ export default function FooterWrapper() {
                   href="/"
                   className="footer-logo-button"
                 >
-                  <img src="/files/logo/logo_text_white.svg" alt="RxDB" loading="lazy" style={{ width: 100 }} />
+                  <img src="/files/logo/logo_text_white.svg" alt="RxDB" loading="lazy" className='width-140-120' />
                 </a>
                 <div className="footer-community-links">
                   {footerConfig.communityLinks.map((link, index) => (
@@ -146,15 +146,23 @@ export default function FooterWrapper() {
                     {link.label}
                   </a>
                 ))}
-                {/* <span className="footer-rights">{rightsText}</span> */}
               </div>
-
-
-
             </div>
           </div>
         </div>
       </>
+      <div
+        className='navbar-line'
+        style={{
+          display: 'block',
+          zIndex: 10,
+          height: 1.5,
+          backgroundColor: 'var(--color-top)',
+          borderTopRightRadius: 2,
+          borderBottomRightRadius: 2,
+          width: '100%'
+        }}
+      ></div>
     </>
   );
 }

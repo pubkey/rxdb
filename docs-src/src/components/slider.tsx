@@ -194,7 +194,9 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
 
   return (
     <div style={styles.root}>
-      <PrevArrow className='flex hide-mobile' onClick={() => scrollByItems(-1)} />
+      <PrevArrow className='flex hide-mobile' onClick={() => scrollByItems(-1)} style={{
+        zIndex: 9
+      }} />
       <div
         ref={viewportRef}
         style={styles.viewport}
@@ -221,6 +223,7 @@ export function NextArrow(props: any) {
       className={className}
       style={{
         ...style,
+        'user-select': 'none',
         position: 'absolute',
         top: 0,
         right: -15,
@@ -244,6 +247,7 @@ export function PrevArrow(props: any) {
       className={className}
       style={{
         ...style,
+        'user-select': 'none',
         position: 'absolute',
         top: 0,
         left: 0,

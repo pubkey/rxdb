@@ -39,7 +39,6 @@ export function OfflineSection(props: {
             </p>
 
             <CheckedList className='centered-mobile' style={{
-              maxWidth: 360
             }}>
               <>
                 Keep your {getAppName(props)} app running <b>offline</b>

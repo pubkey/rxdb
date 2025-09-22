@@ -31,7 +31,6 @@ const defaultStyles: Record<string, CSSProperties> = {
     fontStyle: 'normal',
     fontWeight: 700,
     lineHeight: 'normal',
-    maxWidth: 306,
   },
   highlight: {
     color: '#e6007a',
