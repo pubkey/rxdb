@@ -4,7 +4,7 @@ export function Tag(props: {
     img?: string | React.ReactNode;
     border?: boolean;
     children?: React.ReactNode;
-    wideMode?: boolean
+    wideMode?: boolean;
 }) {
     const hasImg = !!props.img;
 
