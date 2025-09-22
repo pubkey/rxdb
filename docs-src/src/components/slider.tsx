@@ -218,12 +218,14 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
 
 export function NextArrow(props: any) {
   const { className, style, onClick } = props;
+  const [hover, setHover] = React.useState(false);
+
   return (
     <div
       className={className}
       style={{
         ...style,
-        'user-select': 'none',
+        userSelect: 'none',
         position: 'absolute',
         top: 0,
         right: -15,
@@ -232,8 +234,12 @@ export function NextArrow(props: any) {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        transition: 'transform 0.1s ease',
+        transform: hover ? 'scale(1.25)' : 'scale(1)',
       }}
       onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
       <IconArrowRight />
     </div>
@@ -242,12 +248,14 @@ export function NextArrow(props: any) {
 
 export function PrevArrow(props: any) {
   const { className, style, onClick } = props;
+  const [hover, setHover] = React.useState(false);
+
   return (
     <div
       className={className}
       style={{
         ...style,
-        'user-select': 'none',
+        userSelect: 'none',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -256,8 +264,12 @@ export function PrevArrow(props: any) {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
+        transition: 'transform 0.1s ease',
+        transform: hover ? 'scale(1.25)' : 'scale(1)',
       }}
       onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
       <IconArrowLeft />
     </div>
