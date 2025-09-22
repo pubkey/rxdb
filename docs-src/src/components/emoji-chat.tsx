@@ -135,7 +135,13 @@ export function EmojiChatStateful({
   const [items, setItems] = useState<ChatItem[]>([]);
 
   function refreshItems() {
-    if (!ExecutionEnvironment.canUseDOM) return;
+
+    console.log('refresh items ' + online);
+
+    if (
+      !ExecutionEnvironment.canUseDOM
+      || !online
+    ) return;
 
 
     // Safe on SSR: returns [] when not in browser
@@ -151,7 +157,6 @@ export function EmojiChatStateful({
 
     refreshItems();
 
-    // Register storage listener only in the browser
     const onStorage = () => chatStateSubject.next();
     window.addEventListener('storage', onStorage);
 
@@ -163,7 +168,7 @@ export function EmojiChatStateful({
       window.removeEventListener('storage', onStorage);
       sub.unsubscribe();
     };
-  }, [ExecutionEnvironment.canUseDOM]);
+  }, [online, ExecutionEnvironment.canUseDOM]);
 
   useEffect(() => {
     if (!ExecutionEnvironment.canUseDOM) return;
@@ -216,7 +221,6 @@ const STORAGE_ID = 'emoji-chat-state';
 const chatStateSubject = new Subject<void>();
 
 export function getEmojiChatState(): ChatItem[] {
-  // Guard for SSR
   if (typeof window === 'undefined') return [];
   try {
     const data = window.localStorage.getItem(STORAGE_ID);
