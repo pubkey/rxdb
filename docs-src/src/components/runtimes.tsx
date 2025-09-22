@@ -11,7 +11,6 @@ const styles: Record<string, CSSProperties> = {
   container: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: '2rem',
     paddingLeft: 31,
     paddingRight: 31,
@@ -21,11 +20,18 @@ const styles: Record<string, CSSProperties> = {
     whiteSpace: 'pre-line',
     minWidth: '210px',
   },
+  displayRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
+    flex: '1 1 auto'
+  },
   iconsRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    flexShrink: 0
   },
   icon: {
     objectFit: 'contain',
@@ -51,10 +57,23 @@ const rows: Row[] = [
   { icon: '/files/icons/svelte.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
 ];
 
-export function HeroRuntimes() {
-  const [hovered, setHovered] = useState<number | null>(null);
 
-  const text = hovered !== null ? rows[hovered].label : 'these Frameworks';
+export function HeroRuntimes() {
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const text = hovered !== null ? hovered : 'these Frameworks';
+
+
+  const displayRows = (() => {
+    const middle = Math.ceil(rows.length / 2);
+    const firstHalf = rows.slice(0, middle);
+    const secondHalf = rows.slice(middle);
+    return [
+      firstHalf,
+      secondHalf
+    ];
+  })();
+
 
   return (
     <div style={styles.container} className="column-mobile padding-top-64-28">
@@ -63,36 +82,52 @@ export function HeroRuntimes() {
         <br className="hide-mobile" />
         <span>{text}</span>
       </div>
-      <div style={styles.iconsRow} className="gap-24-20">
-        {rows.map((item, i) => {
-          const defaultFilter = item.invert
-            ? 'grayscale(100%) brightness(1.8) invert(1)'
-            : 'grayscale(100%) brightness(1.8)';
+      <div style={{
+        flex: 'auto',
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        // display: 'grid',
+        // gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', /* two equal halves */
+        // listStyle: 'none',
+      }} className="gap-24-20">
+        {
+          displayRows.map(displayRow => {
+            return <div style={styles.displayRow}>{
+              <div style={styles.iconsRow} className="gap-24-20">
+                {displayRow.map((item) => {
+                  const defaultFilter = item.invert
+                    ? 'grayscale(100%) brightness(1.8) invert(1)'
+                    : 'grayscale(100%) brightness(1.8)';
 
-          const hoverFilter = item.invert ? defaultFilter : 'none';
+                  const hoverFilter = item.invert ? defaultFilter : 'none';
 
-          return (
-            <a
-              key={i}
-              href={item.url}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              target="_blank"
-            >
-              <img
-                className="framework-icon"
-                src={item.icon}
-                loading="lazy"
-                alt={item.label}
-                style={{
-                  ...styles.icon,
-                  filter: hovered === i ? hoverFilter : defaultFilter,
-                  opacity: hovered === i ? 1 : styles.icon.opacity,
-                }}
-              />
-            </a>
-          );
-        })}
+                  return (
+                    <a
+                      key={item.label}
+                      href={item.url}
+                      onMouseEnter={() => setHovered(item.label)}
+                      onMouseLeave={() => setHovered(null)}
+                      target="_blank"
+                    >
+                      <img
+                        className="framework-icon"
+                        src={item.icon}
+                        loading="lazy"
+                        alt={item.label}
+                        style={{
+                          ...styles.icon,
+                          filter: hovered === item.label ? hoverFilter : defaultFilter,
+                          opacity: hovered === item.label ? 1 : styles.icon.opacity,
+                        }}
+                      />
+                    </a>
+                  );
+                })}
+              </div>
+            }</div>
+          })
+        }
       </div>
     </div>
   );

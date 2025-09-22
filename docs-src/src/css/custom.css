@@ -787,6 +787,7 @@ body {
 .framework-icon {
     width: 40px;
     height: 40px;
+    flex-shrink: 0;
 }
 
 .flex {
@@ -846,6 +847,7 @@ body {
 
 
 @media (max-width: 900px) {
+
     .width-140-120 {
         width: 120px;
     }
@@ -981,8 +983,8 @@ body {
     }
 
     .framework-icon {
-        width: 28px;
-        height: 28px;
+        width: 30px;
+        height: 30px;
     }
 
 
