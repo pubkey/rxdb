@@ -17,7 +17,10 @@ const DocSidebarMobileSecondaryMenu: NavbarSecondaryMenuComponent<Props> = ({
   const mobileSidebar = useNavbarMobileSidebar();
   return (
     <ul className={clsx(ThemeClassNames.docs.docSidebarMenu, 'menu__list')}>
-      <SearchBar />
+      {
+        /** TODO enable and fix searchbar **/
+        /* <SearchBar /> */
+      }
       <DocSidebarItems
         items={sidebar}
         activePath={path}
