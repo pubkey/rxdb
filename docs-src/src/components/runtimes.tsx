@@ -74,7 +74,6 @@ export function HeroRuntimes() {
     ];
   })();
 
-
   return (
     <div style={styles.container} className="column-mobile padding-top-64-28">
       <div className="font-20-14" style={styles.text}>
@@ -92,19 +91,18 @@ export function HeroRuntimes() {
         // listStyle: 'none',
       }} className="gap-24-20">
         {
-          displayRows.map(displayRow => {
-            return <div style={styles.displayRow}>{
+          displayRows.map((displayRow, i) => {
+            return <div style={styles.displayRow} key={'drow_' + i}>{
               <div style={styles.iconsRow} className="gap-24-20">
-                {displayRow.map((item) => {
+                {displayRow.map((item, i2) => {
                   const defaultFilter = item.invert
                     ? 'grayscale(100%) brightness(1.8) invert(1)'
                     : 'grayscale(100%) brightness(1.8)';
 
                   const hoverFilter = item.invert ? defaultFilter : 'none';
-
                   return (
                     <a
-                      key={item.label}
+                      key={i + '_' + i2}
                       href={item.url}
                       onMouseEnter={() => setHovered(item.label)}
                       onMouseLeave={() => setHovered(null)}
