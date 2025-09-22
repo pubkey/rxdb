@@ -10,17 +10,18 @@ import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 interface CloudProps {
   darkMode?: boolean;
+  style?: CSSProperties;
+  className?: string;
 }
 
 // Old icon slides out to the RIGHT; new icon slides in from the LEFT
-export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
+export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) => {
   const [, setIconIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState<string>(replicationLinks[0].iconUrl);
   const [prevUrl, setPrevUrl] = useState<string | undefined>(undefined);
 
   const prevRef = useRef<HTMLImageElement | null>(null);
   const currRef = useRef<HTMLImageElement | null>(null);
-
 
   // Handle "heartbeat": advance to next icon and trigger slide transition
   useEffect(() => {
@@ -74,6 +75,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
+    ...style, // merge custom style
   };
 
   const badgeStyle: CSSProperties = {
@@ -87,8 +89,8 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   const circleBorder: string = darkMode ? 'var(--bg-color-dark)' : 'var(--bg-color)';
 
   const badgeInnerStyle: CSSProperties = {
-    width: 'clamp(10px, 8vw, 56px)',
-    height: 'clamp(10px, 8vw, 56px)',
+    width: '56px',
+    height: '56px',
     background: circleColor,
     borderRadius: '50%',
     display: 'flex',
@@ -109,7 +111,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false }) => {
   };
 
   return (
-    <div style={wrapperStyle}>
+    <div style={wrapperStyle} className={className}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="126"

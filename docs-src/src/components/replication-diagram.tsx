@@ -56,15 +56,15 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
   const centerX = 250 * scale;
   const centerY = 200 * scale;
 
-  const serverRadius = 35 * scale;
+  const serverRadius = 60 * scale;
   const deviceCount = devices.length;
-  const deviceRadius = 55 * scale;
+  const deviceRadius = 45 * scale;
 
   const deviceDistance = centerY - deviceRadius; // top-most device sits at y=0
   const angleOffset = -Math.PI / 2;
 
-  const serverMargin = 10;
-  const deviceMargin = 0;
+  const serverMargin = 3;
+  const deviceMargin = 7;
 
   const linesData = Array.from({ length: deviceCount }, (_, i) => {
     const angle = angleOffset + (2 * Math.PI * i) / deviceCount;
@@ -161,7 +161,7 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
           }}
         >
           <Cloud darkMode={true} style={{
-            width: '140%'
+            width: '100%'
           }} />
         </div>
 
