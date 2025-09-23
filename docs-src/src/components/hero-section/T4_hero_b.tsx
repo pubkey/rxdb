@@ -83,6 +83,7 @@ export function HeroSection_B(props: {
                         justifyContent: 'center', // horizontally center the pair
                         alignItems: 'center',     // vertically center (optional)
                         gap: '1rem',
+                        marginTop: 9
                     }}>
                     <IconWifi style={{
                         height: 20

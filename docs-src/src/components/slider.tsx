@@ -15,6 +15,11 @@ export function Slider({ items, width = 300 }: SliderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const animRef = useRef<number | null>(null);
   const [gap, setGap] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 900 ? 16 : 24));
+
+  // tap/drag bookkeeping for preserving clicks with pointer capture
+  const downTargetRef = useRef<EventTarget | null>(null);
+  const downTimeRef = useRef<number>(0);
+
   useEffect(() => {
     const handleResize = () => {
       setGap(window.innerWidth < 900 ? 16 : 24);
@@ -25,7 +30,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
 
   // Default demo boxes if no items provided
   const defaultItems = Array.from({ length: 8 }).map((_, i) => (
-    <div style={{ color: '#fff', fontSize: 18 }}>Box {i + 1}</div>
+    <div key={`demo-${i}`} style={{ color: '#fff', fontSize: 18 }}>Box {i + 1}</div>
   ));
 
   const content: React.ReactNode[] = items && items.length > 0 ? items : defaultItems;
@@ -78,54 +83,88 @@ export function Slider({ items, width = 300 }: SliderProps) {
     if (x < EDGE || x > max - EDGE) el.scrollLeft = BAND + within;
   };
 
-  const CLICK_DISTANCE_THRESHOLD = 50;
+  const CLICK_DISTANCE_THRESHOLD = 50;   // consider as a drag beyond this
+  const TAP_DISTANCE_THRESHOLD = 8;       // treat as tap if under this
+  const DRAG_ACTIVATION_THRESHOLD = 8;    // start preventing defaults after this
+
+  // ---- Helpers to end drag & manage capture ----
+  const endDrag = (e?: React.PointerEvent | PointerEvent) => {
+    stopAnim();
+    drag.current.active = false;
+    setIsDragging(false);
+    const el = viewportRef.current;
+    if (el && e && 'pointerId' in e) {
+      try {
+ el.releasePointerCapture((e as any).pointerId);
+} catch {}
+    }
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     const el = viewportRef.current; if (!el) return;
     stopAnim();
     drag.current = { active: true, startX: e.clientX, startY: e.clientY, scrollStart: el.scrollLeft, distance: 0 };
+    downTargetRef.current = e.target as EventTarget;
+    downTimeRef.current = Date.now();
+    // Capture so we keep receiving events even when the finger leaves the element
+    try {
+ el.setPointerCapture(e.pointerId);
+} catch {}
   };
+
   const onPointerMove = (e: React.PointerEvent) => {
     if (!drag.current.active) return;
     const el = viewportRef.current; if (!el) return;
     const dx = e.clientX - drag.current.startX;
     drag.current.distance = Math.abs(dx);
-    if (drag.current.distance > 0) setIsDragging(true);
+
+    if (drag.current.distance >= DRAG_ACTIVATION_THRESHOLD) {
+      if (!isDragging) setIsDragging(true);
+      // Once it's clearly a drag, prevent UA gestures from stealing it
+      if (e.pointerType !== 'mouse') e.preventDefault();
+    }
+
     el.scrollLeft = drag.current.scrollStart - dx;
   };
+
   const onPointerUp = (e: React.PointerEvent) => {
-    stopAnim();
-    if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
+    const draggedFar = drag.current.distance > CLICK_DISTANCE_THRESHOLD;
+    const isTap = drag.current.distance <= TAP_DISTANCE_THRESHOLD && Date.now() - downTimeRef.current < 600;
+
+    if (draggedFar) {
+      // real drag: swallow the click
       e.preventDefault();
       e.stopPropagation();
+      endDrag(e);
+      drag.current.distance = 0;
+      return;
     }
-    drag.current.active = false; drag.current.distance = 0; setIsDragging(false);
+
+    // release capture first
+    endDrag(e);
+
+    if (isTap) {
+      // Some browsers (iOS Safari) may drop the native click after capture.
+      // Synthesize a click on the element at the end position.
+      const nodeAtPoint = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const target = nodeAtPoint || (downTargetRef.current as HTMLElement | null);
+      if (target) {
+        if (typeof (target as any).click === 'function') {
+          (target as any).click();
+        } else {
+          const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+          target.dispatchEvent(evt);
+        }
+      }
+    }
+
+    drag.current.distance = 0;
   };
 
-  // const onTouchStart = (e: React.TouchEvent) => {
-  //   const el = viewportRef.current; if (!el) return; stopAnim();
-  //   const x = e.touches[0].clientX;
-  //   drag.current = { active: true, startX: x, startY: 0, scrollStart: el.scrollLeft, distance: 0 } as any;
-  // };
-  // const onTouchMove = (e: React.TouchEvent) => {
-  //   if (!drag.current.active) return;
-  //   const el = viewportRef.current; if (!el) return;
-  //   const x = e.touches[0].clientX;
-  //   const dx = x - drag.current.startX;
-  //   drag.current.distance = Math.abs(dx);
-  //   if (drag.current.distance > 0) setIsDragging(true);
-  //   if (drag.current.distance > 0) e.preventDefault();
-  //   el.scrollLeft = drag.current.scrollStart - dx;
-  // };
-  // const onTouchEnd = (e: React.TouchEvent) => {
-  //   stopAnim();
-  //   console.log('Touch moved X:', drag.current.distance);
-  //   if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //   }
-  //   drag.current.active = false; drag.current.distance = 0; setIsDragging(false);
-  // };
+  const onPointerCancel = (e: React.PointerEvent) => {
+    endDrag(e);
+    drag.current.distance = 0;
+  };
 
   const styles = {
     root: {
@@ -144,12 +183,13 @@ export function Slider({ items, width = 300 }: SliderProps) {
       overflowX: 'auto',
       overflowY: 'hidden',
       padding: '0 24px',
-      WebkitOverflowScrolling: 'auto',
+      WebkitOverflowScrolling: 'touch', // improves iOS touch behavior
       cursor: isDragging ? 'grabbing' : 'grab',
       userSelect: 'none',
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
-      touchAction: 'pan-y' as any,
+      touchAction: 'pan-y' as any,      // allow vertical page scroll; JS handles horizontal
+      overscrollBehavior: 'contain',    // reduce scroll chaining / rubber-banding
       maskImage: `-webkit-gradient(linear,
         left center,
         right center,
@@ -161,7 +201,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
         /* stay solid until 80% */
         color-stop(1, rgba(0, 0, 0, 0))
         /* fade out to transparent at right edge */
-    )`
+      )`
     } as CSSProperties,
     track: {
       display: 'flex',
@@ -199,9 +239,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
 
   return (
     <div style={styles.root}>
-      <PrevArrow className='flex hide-mobile' onClick={() => scrollByItems(-1)} style={{
-        zIndex: 9
-      }} />
+      <PrevArrow className='flex hide-mobile' onClick={() => scrollByItems(-1)} style={{ zIndex: 9 }} />
       <div
         ref={viewportRef}
         style={styles.viewport}
@@ -209,11 +247,11 @@ export function Slider({ items, width = 300 }: SliderProps) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onMouseLeave={onPointerUp as any}
-      // onPointerLeave={onPointerUp}
-      // onTouchStart={onTouchStart}
-      // onTouchMove={onTouchMove}
-      // onTouchEnd={onTouchEnd}
+        onPointerCancel={onPointerCancel}
+        onMouseLeave={(e: any) => {
+          // only end drag when the MOUSE leaves. touch drags are handled by cancel/up.
+          if (e.pointerType === 'mouse') onPointerUp(e);
+        }}
       >
         <div style={styles.track as CSSProperties}>{renderBoxes()}</div>
       </div>
