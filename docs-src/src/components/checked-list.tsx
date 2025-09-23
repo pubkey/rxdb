@@ -10,8 +10,6 @@ type FeatureListProps = {
 const defaultStyles: Record<string, CSSProperties> = {
   list: {
     listStyle: 'none',
-    padding: 0,
-    paddingRight: 20,
   },
   item: {
     display: 'flex',

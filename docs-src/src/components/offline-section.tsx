@@ -38,7 +38,10 @@ export function OfflineSection(props: {
               </a>{' '} approach, ensuring your app remains fully functional by storing data locally on the {getAppName(props)} client and seamlessly syncing in the background. You can even run your app without a backend at all.
             </p>
 
-            <CheckedList className='centered-mobile' style={{
+            <CheckedList className='centered-mobile padding-right-20-0' style={{
+              paddingLeft: 0,
+              paddingBottom: 0,
+              maxWidth: 360
             }}>
               <>
                 Keep your {getAppName(props)} app running <b>offline</b>
@@ -62,7 +65,7 @@ export function OfflineSection(props: {
           </div>
 
           <div
-            className="half right justify-center-mobile"
+            className="half right justify-center-mobile gap-30-16"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -73,7 +76,6 @@ export function OfflineSection(props: {
             <div
               style={{
                 textAlign: 'center',
-                padding: 41,
               }}
             >
               <IconWifi

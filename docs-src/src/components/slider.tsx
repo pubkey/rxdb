@@ -7,15 +7,21 @@ export type SliderProps = {
   items?: React.ReactNode[];
   /** Override per-box width (px). Default 300. */
   width?: number;
-  /** Override gap between boxes (px). Default 28. */
-  gap?: number;
 };
 
-export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
+export function Slider({ items, width = 300 }: SliderProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, startY: 0, scrollStart: 0, distance: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const animRef = useRef<number | null>(null);
+  const [gap, setGap] = useState(() => (window.innerWidth < 900 ? 16 : 24));
+  useEffect(() => {
+    const handleResize = () => {
+      setGap(window.innerWidth < 900 ? 16 : 24);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Default demo boxes if no items provided
   const defaultItems = Array.from({ length: 8 }).map((_, i) => (
@@ -28,8 +34,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
   const BASE_COUNT = Math.max(1, content.length);
   const COPIES = 3;
   const WIDTH = width;
-  const GAP = gap;
-  const ITEM_SPACE = WIDTH + GAP;
+  const ITEM_SPACE = WIDTH + gap;
   const BAND = ITEM_SPACE * BASE_COUNT;
   const TOTAL = BASE_COUNT * COPIES;
 
@@ -141,7 +146,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
       padding: '0 24px',
       WebkitOverflowScrolling: 'auto',
       cursor: isDragging ? 'grabbing' : 'grab',
-      userSelect: isDragging ? 'none' : 'auto',
+      userSelect: 'none',
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
       touchAction: 'pan-y' as any,
@@ -161,7 +166,7 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
     track: {
       display: 'flex',
       alignItems: 'flex-start',
-      gap: GAP + 'px',
+      gap: gap + 'px',
       padding: '0px 0',
       width: ITEM_SPACE * TOTAL,
     } as CSSProperties,
@@ -204,10 +209,11 @@ export function Slider({ items, width = 300, gap = 28 }: SliderProps) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        onMouseLeave={onPointerUp as any}
+      // onPointerLeave={onPointerUp}
+      // onTouchStart={onTouchStart}
+      // onTouchMove={onTouchMove}
+      // onTouchEnd={onTouchEnd}
       >
         <div style={styles.track as CSSProperties}>{renderBoxes()}</div>
       </div>

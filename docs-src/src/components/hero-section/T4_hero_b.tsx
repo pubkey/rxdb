@@ -35,7 +35,9 @@ export function HeroSection_B(props: {
             </h1>
             <div className="inner">
                 <div className="half left" style={{ paddingTop: 35 }}>
-                    <CheckedList className='centered-mobile' style={{
+                    <CheckedList className='centered-mobile padding-right-20-0' style={{
+                        paddingLeft: 0,
+                        paddingBottom: 0,
                         maxWidth: 360
                     }}>
                         <>
@@ -78,12 +80,12 @@ export function HeroSection_B(props: {
                     className='hide-desktop'
                     style={{
                         textAlign: 'center',
-                        width: '100%',
-                        gridColumn: '1 / -1'
+                        justifyContent: "center", // horizontally center the pair
+                        alignItems: "center",     // vertically center (optional)
+                        gap: "1rem",
                     }}>
                     <IconWifi style={{
-                        width: '100%',
-                        paddingBottom: 3
+                        height: 20
                     }} />
                     <PixelToggle checked={online} onChange={setOnline} />
                 </div>

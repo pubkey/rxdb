@@ -2,7 +2,6 @@ import React, {
   CSSProperties,
   FC,
   useEffect,
-  useRef,
   useState
 } from 'react';
 import { replicationLinks } from './sync-section';
@@ -14,60 +13,27 @@ interface CloudProps {
   className?: string;
 }
 
-// Old icon slides out to the RIGHT; new icon slides in from the LEFT
+// No animations: just swap the icon
 export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) => {
   const [, setIconIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState<string>(replicationLinks[0].iconUrl);
-  const [prevUrl, setPrevUrl] = useState<string | undefined>(undefined);
 
-  const prevRef = useRef<HTMLImageElement | null>(null);
-  const currRef = useRef<HTMLImageElement | null>(null);
-
-  // Handle "heartbeat": advance to next icon and trigger slide transition
+  // Handle "heartbeat": advance to next icon (no transitions)
   useEffect(() => {
-    if (!ExecutionEnvironment.canUseDOM) {
-      return;
-    }
+    if (!ExecutionEnvironment.canUseDOM) return;
+
     const handleHeartbeat = () => {
       setIconIndex(prev => {
         const next = (prev + 1) % replicationLinks.length;
         const nextUrl = replicationLinks[next].iconUrl;
-
-        setPrevUrl(currentUrl);
         setCurrentUrl(nextUrl);
-
         return next;
       });
     };
 
     window.addEventListener('heartbeat', handleHeartbeat);
     return () => window.removeEventListener('heartbeat', handleHeartbeat);
-  }, [currentUrl]);
-
-  // Kick off the slide animation when there's a prev icon
-  useEffect(() => {
-    if (!ExecutionEnvironment.canUseDOM) {
-      return;
-    }
-    if (!prevUrl) return;
-
-    const raf = requestAnimationFrame(() => {
-      if (prevRef.current) {
-        prevRef.current.style.transform = 'translateX(100%)'; // out to RIGHT
-        prevRef.current.style.opacity = '0';
-      }
-      if (currRef.current) {
-        currRef.current.style.transform = 'translateX(0)'; // in to center
-        currRef.current.style.opacity = '1';
-      }
-    });
-
-    const tid = window.setTimeout(() => setPrevUrl(undefined), 340);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.clearTimeout(tid);
-    };
-  }, [prevUrl]);
+  }, []);
 
   const wrapperStyle: CSSProperties = {
     position: 'relative',
@@ -101,13 +67,12 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
     overflow: 'hidden',
   };
 
-  const iconBase: CSSProperties = {
+  const iconStyle: CSSProperties = {
     position: 'absolute',
     inset: 0,
     margin: 'auto',
     maxWidth: '60%',
     maxHeight: '60%',
-    transition: 'transform 300ms ease, opacity 300ms ease',
   };
 
   return (
@@ -128,34 +93,11 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
       </svg>
       <div style={badgeStyle}>
         <div style={badgeInnerStyle}>
-          {prevUrl && (
-            <img
-              ref={prevRef}
-              src={prevUrl}
-              alt="previous icon"
-              style={{
-                ...iconBase,
-                transform: 'translateX(0)', // start centered
-                opacity: 1,
-              }}
-            />
-          )}
           {currentUrl && (
             <img
-              ref={currRef}
               src={currentUrl}
               alt="icon"
-              style={{
-                ...iconBase,
-                transform: prevUrl ? 'translateX(-100%)' : 'translateX(0)', // come from LEFT
-                opacity: prevUrl ? 0 : 1,
-              }}
-              onLoad={() => {
-                if (!prevUrl && currRef.current) {
-                  currRef.current.style.transform = 'translateX(0)';
-                  currRef.current.style.opacity = '1';
-                }
-              }}
+              style={iconStyle}
             />
           )}
         </div>

@@ -853,8 +853,44 @@ body {
     margin-bottom: 12px;
 }
 
+.margin-right-10-6 {
+    margin-right: 10px;
+}
+
+.padding-right-20-0 {
+    padding-right: 20px;
+}
+
+.font-30-20 {
+    font-size: 30px;
+}
+
+.gap-30-16 {
+    gap: 30px;
+}
+
+.min-width-180-135 {
+    min-width: 180px;
+}
+
 @media (max-width: 900px) {
-    .margin-right-16-6 {
+    .min-width-180-135 {
+        min-width: 135px;
+    }
+
+    .gap-30-16 {
+        gap: 16px;
+    }
+
+    .font-30-20 {
+        font-size: 20px;
+    }
+
+    .padding-right-20-0 {
+        padding-right: 0px;
+    }
+
+    .margin-right-10-6 {
         margin-right: 6px;
     }
 
@@ -910,7 +946,7 @@ body {
     }
 
     .hide-desktop {
-        display: block;
+        display: flex;
     }
 
     .hide-mobile {
@@ -3575,7 +3611,6 @@ footer a:visited {
     flex-direction: column;
     gap: 1rem;
     color: white;
-    min-width: 180px;
 }
 
 .block.footer .footer-links span {

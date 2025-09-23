@@ -119,33 +119,34 @@ export default function FooterWrapper() {
               display: 'flex',
               flex: 1
             }}>
+              <div style={{
+                display: 'flex'
+              }}>
+                <div className="footer-links min-width-180-135">
+                  {footerConfig.navLinks.map((link, index) => (
+                    <a
+                      variant="text"
+                      href={link.href}
+                      target={link.target ? '_blank' : ''}
+                      key={link.href + index}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
 
-
-
-              <div className="footer-links">
-                {footerConfig.navLinks.map((link, index) => (
-                  <a
-                    variant="text"
-                    href={link.href}
-                    target={link.target ? '_blank' : ''}
-                    key={link.href + index}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-
-              <div className="footer-links">
-                {footerConfig.policyLinks.map((link, index) => (
-                  <a
-                    variant="text"
-                    href={link.href}
-                    key={link.href + index}
-                    target={link.target ? '_blank' : ''}
-                  >
-                    {link.label}
-                  </a>
-                ))}
+                <div className="footer-links min-width-180-135">
+                  {footerConfig.policyLinks.map((link, index) => (
+                    <a
+                      variant="text"
+                      href={link.href}
+                      key={link.href + index}
+                      target={link.target ? '_blank' : ''}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

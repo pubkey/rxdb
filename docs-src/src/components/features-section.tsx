@@ -11,21 +11,20 @@ const tags: {
     value: string;
     url: string;
     img?: string | React.ReactNode;
-    break?: boolean;
 }[] = [
         { value: 'Logging', url: '/logger.html' },
         { value: 'Attachments', url: '/rx-attachment.html', img: <IconAttachment /> },
         { value: 'ORM', url: '/orm.html' },
-        { value: 'Conflict Handling', url: '/transactions-conflicts-revisions.html', break: true },
+        { value: 'Conflict Handling', url: '/transactions-conflicts-revisions.html' },
+        { value: 'Backup', url: '/backup.html' },
         { value: 'Middleware', url: '/middleware.html' },
         { value: 'Signals', url: '/reactivity.html' },
         { value: 'Server', url: '/rx-server.html', img: <IconServer /> },
-        { value: 'Backup', url: '/backup.html', break: true },
         { value: 'Storages', url: '/rx-storage.html' },
         { value: 'Replication', url: '/replication.html', img: <IconReplication /> },
         { value: 'Local Documents', url: '/rx-local-document.html' },
         { value: 'Schema Validation', url: '/schema-validation.html' },
-        { value: 'State', url: '/rx-state.html', break: true },
+        { value: 'State', url: '/rx-state.html' },
         { value: 'Migration', url: '/migration-schema.html' },
         { value: 'CRDT', url: '/crdt.html' },
         { value: 'Compression', url: '/key-compression.html', img: <IconCompression /> },
@@ -86,17 +85,7 @@ export function FeaturesSection() {
                                 <Tag img={tag.img} wideMode={true}>{tag.value}</Tag>
                             </a>
                         );
-
-                        if (tag.break) {
-                            return (
-                                <span key={i}>
-                                    {el}
-                                    <div className="clear"></div>
-                                </span>
-                            );
-                        } else {
-                            return el;
-                        }
+                        return el;
                     })}
 
                     {/* "Show more" only on mobile when collapsed */}

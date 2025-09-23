@@ -95,8 +95,10 @@ export function SyncSection(props: {
             </div>
 
             <p
+              className='font-30-20'
               style={{
-                fontSize: '30px',
+                marginTop: 12,
+                lineHeight: '100%',
                 fontWeight: 800,
               }}
             >

@@ -29,7 +29,7 @@ export function Tag(props: {
                 border: props.border ? '2px solid var(--White, #FFF)' : 'none',
             }}
             className={
-                'margin-right-16-6 ' +
+                'margin-right-10-6 ' +
                 (props.wideMode ? 'font-20-14' : 'font-16-14')
                 + ' '
                 + (props.wideMode ? 'padding-side-16-12' : 'padding-side-10-12')
