@@ -11,3 +11,4 @@ export function IconClose() {
         <path d="M20 0H16V4H20V0Z" fill="white" />
     </svg>;
 }
+

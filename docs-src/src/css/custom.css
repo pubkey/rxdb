@@ -124,6 +124,21 @@ body:not(.homepage) .main-wrapper {
     font-weight: 400;
 }
 
+.menu__list {
+    padding-top: 100px;
+}
+
+.menu__list-item .menu__link {
+    padding-left: 60px;
+}
+
+.menu__list .navbar__item {
+    padding-left: 0px;
+    margin-left: 60px;
+    margin-top: 20px;
+    display: block;
+}
+
 /* Header Collapsible Styling */
 .menu__list-item-collapsible {
     font-weight: 600;

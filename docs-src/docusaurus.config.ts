@@ -124,20 +124,6 @@ const config: Config = {
             },
             items: [
                 {
-                    to: '/chat/',
-                    target: '_blank',
-                    label: ' ',
-                    position: 'right',
-                    className: 'navbar-icon navbar__item navbar-icon-discord'
-                },
-                {
-                    to: '/code/',
-                    target: '_blank',
-                    label: ' ',
-                    position: 'right',
-                    className: 'navbar-icon navbar__item navbar-icon-github'
-                },
-                {
                     href: '/overview.html',
                     label: 'Docs',
                     position: 'left',
@@ -162,6 +148,20 @@ const config: Config = {
                     href: '/consulting/',
                     label: 'Support',
                     position: 'left',
+                },
+                {
+                    to: '/chat/',
+                    target: '_blank',
+                    label: ' ',
+                    position: 'right',
+                    className: 'navbar-icon navbar__item navbar-icon-discord'
+                },
+                {
+                    to: '/code/',
+                    target: '_blank',
+                    label: ' ',
+                    position: 'right',
+                    className: 'navbar-icon navbar__item navbar-icon-github'
                 },
                 // {
                 //     to: '/chat',
