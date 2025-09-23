@@ -138,7 +138,11 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
         ...styles.container,
         ['--packetColor' as any]: packetColor,
         display: 'flex',           // flex container
-        justifyContent: 'center' // align diagram wrapper to the right
+        justifyContent: 'center', // align diagram wrapper to the right
+        WebkitBackfaceVisibility: "hidden",
+        backfaceVisibility: "hidden",
+        // keep composited
+        transformStyle: "preserve-3d",
       }}
     >
       <div
@@ -146,6 +150,10 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
           position: 'relative',
           width: `${contentWidth}px`,
           height: `${contentHeight}px`,
+          WebkitBackfaceVisibility: "hidden",
+          backfaceVisibility: "hidden",
+          // keep composited
+          transformStyle: "preserve-3d",
         }}
       >
         {/* Server (center cloud) */}
@@ -158,6 +166,10 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
             width: serverRadius * 2,
             height: serverRadius * 2,
             justifyContent: 'center',
+            WebkitBackfaceVisibility: "hidden",
+            backfaceVisibility: "hidden",
+            // keep composited
+            transformStyle: "preserve-3d",
           }}
         >
           <Cloud darkMode={true} style={{
@@ -240,7 +252,11 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
                     justifyContent: 'center',
                     textAlign: 'center',
                     alignItems: 'center',
-                    verticalAlign: 'middle'
+                    verticalAlign: 'middle',
+                    WebkitBackfaceVisibility: "hidden",
+                    backfaceVisibility: "hidden",
+                    // keep composited
+                    transformStyle: "preserve-3d",
                   }}
                 >
                   {device === 'phone' ? (

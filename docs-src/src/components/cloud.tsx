@@ -41,6 +41,10 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
+    WebkitBackfaceVisibility: "hidden",
+    backfaceVisibility: "hidden",
+    // keep composited
+    transformStyle: "preserve-3d",
     ...style, // merge custom style
   };
 
@@ -49,6 +53,10 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
     left: '50%',
     top: '50%',
     transform: 'translate(-50%, -10%)',
+    WebkitBackfaceVisibility: "hidden",
+    backfaceVisibility: "hidden",
+    // keep composited
+    transformStyle: "preserve-3d",
   };
 
   const circleColor: string = darkMode ? 'var(--bg-color)' : 'var(--bg-color-dark)';
@@ -65,6 +73,10 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
     border: `4px solid ${circleBorder}`,
     position: 'relative',
     overflow: 'hidden',
+    WebkitBackfaceVisibility: "hidden",
+    backfaceVisibility: "hidden",
+    // keep composited
+    transformStyle: "preserve-3d",
   };
 
   const iconStyle: CSSProperties = {
@@ -73,6 +85,10 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
     margin: 'auto',
     maxWidth: '60%',
     maxHeight: '60%',
+    WebkitBackfaceVisibility: "hidden",
+    backfaceVisibility: "hidden",
+    // keep composited
+    transformStyle: "preserve-3d",
   };
 
   return (
