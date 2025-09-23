@@ -14,7 +14,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
   const drag = useRef({ active: false, startX: 0, startY: 0, scrollStart: 0, distance: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const animRef = useRef<number | null>(null);
-  const [gap, setGap] = useState(() => (window.innerWidth < 900 ? 16 : 24));
+  const [gap, setGap] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 900 ? 16 : 24));
   useEffect(() => {
     const handleResize = () => {
       setGap(window.innerWidth < 900 ? 16 : 24);
