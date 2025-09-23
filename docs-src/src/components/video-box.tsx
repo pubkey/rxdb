@@ -1,7 +1,7 @@
 import { CSSProperties, useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
-import { Modal } from 'antd';
+import { Modal } from './modal';
 
 export type VideoBoxProps = {
     videoId: string;
@@ -132,12 +132,11 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                     style={{
                         maxWidth: 800
                     }}
+                    title={title}
                 >
-                    <h3>{title}</h3>
                     <center>
                         <iframe
-                            className="img-radius"
-                            style={{ width: '100%', borderRadius: '15px' }}
+                            style={{ borderRadius: '0px', width: '90vw', maxWidth: '100%' }}
                             height="515"
                             src={
                                 'https://www.youtube.com/embed/' +

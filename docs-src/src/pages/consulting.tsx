@@ -6,7 +6,6 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 
-import { Modal } from 'antd';
 import { Tabs } from 'antd';
 import { Collapse } from 'antd';
 
@@ -17,6 +16,7 @@ import 'slick-carousel/slick/slick-theme.css';
 
 import { ReviewsBlock } from '../components/review-block';
 import { triggerTrackingEvent } from '../components/trigger-event';
+import { Modal } from '../components/modal';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
@@ -643,9 +643,10 @@ function FormDialog({ onClose, open }) {
             open={open}
             width={'auto'}
             onCancel={handleClose}
-            closeIcon={null}
             footer={null}
         >
+            <br />
+            <br />
             <iframe
                 style={{
                     width: '100%',

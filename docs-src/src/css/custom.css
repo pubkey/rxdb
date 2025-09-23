@@ -74,8 +74,8 @@ pre code {
     --fontColor-gray: lightgray;
 
     --color-top: #ED168F;
-    --color-middle: #8d2089;
-    --color-bottom: #5f2688;
+    --color-middle: #b2218b;
+    --color-bottom: #752a8a;
 }
 
 .footer.footer--dark {
@@ -2622,6 +2622,7 @@ footer a:visited {
 
 #CybotCookiebotDialog {
     padding: 12px !important;
+    font-family: var(--ifm-font-family-monospace) !important;
 }
 
 .CybotCookiebotDialogBodyBottomWrapper {
@@ -2752,7 +2753,12 @@ footer a:visited {
 }
 
 /* dialog */
-.modal-consulting-page .ant-modal-content {
+.ant-modal-body h3 {
+    width: calc(100% - 40px);
+    margin-bottom: 12px;
+}
+
+.ant-modal-content {
     background-color: transparent;
 }
 

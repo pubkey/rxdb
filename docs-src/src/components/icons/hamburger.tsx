@@ -1,7 +1,7 @@
 export function IconHamburger() {
-    return <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
-        <path d="M5 15H25" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5 22.5H25" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M5 7.5H25" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    return <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M-1.90735e-06 20.0001L20 20.0001V16.0001L-1.90735e-06 16.0001V20.0001Z" fill="white" />
+        <path d="M-1.90735e-06 12.0001L20 12.0001V8.00006L-1.90735e-06 8.00006V12.0001Z" fill="white" />
+        <path d="M-1.90735e-06 4L20 4V0L-1.90735e-06 0V4Z" fill="white" />
     </svg>;
 }

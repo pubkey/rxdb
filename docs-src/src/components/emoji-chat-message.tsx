@@ -86,7 +86,8 @@ export function EmojiMessageBox({
     container = {
       ...base,
       borderRadius: '0 24px 24px 24px',
-      background: 'var(--40-grey, #666)',
+      background: 'rgba(102, 102, 102, 0.50)',
+      border: '2px solid var(--40-grey, #666)',
       cursor: 'default',
     };
   } else if (direction === 'right') {
