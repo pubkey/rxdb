@@ -1,11 +1,11 @@
 // Modal.tsx
-import React, { forwardRef } from "react";
-import type { ModalProps as AntdModalProps } from "antd";
-import { Modal as AntdModal } from "antd";
+import React, { forwardRef } from 'react';
+import type { ModalProps as AntdModalProps } from 'antd';
+import { Modal as AntdModal } from 'antd';
 import { IconClose } from './icons/close';
 
 export interface ModalProps
-    extends Omit<AntdModalProps, "closeIcon" | "rootClassName"> {
+    extends Omit<AntdModalProps, 'closeIcon' | 'rootClassName'> {
     /** Extra class applied to the modal root for styling hooks */
     className?: string;
     title?: string;
@@ -32,7 +32,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
             maskClosable={maskClosable}
             footer={footer}
             // keep AntD's default width; don't set `width`
-            rootClassName={["my-modal", className].filter(Boolean).join(" ")}
+            rootClassName={['my-modal', className].filter(Boolean).join(' ')}
             styles={{
                 content: {
                     borderRadius: 0,
@@ -44,7 +44,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                     width: '90vw',
                     maxWidth: '100%'
                 },
-                header: { margin: 0, padding: "16px 20px", borderBottom: "1px solid #f0f0f0" },
+                header: { margin: 0, padding: '16px 20px', borderBottom: '1px solid #f0f0f0' },
                 body: { padding: 0 },
                 footer: { padding: 16 },
                 ...styles,
@@ -53,9 +53,9 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                 <span
                     className="my-modal__close"
                     style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         width: 28,
                         height: 28,
                         borderRadius: 8,

@@ -3,7 +3,7 @@ import {
   ReactNode,
   MouseEventHandler,
   useState,
-} from "react";
+} from 'react';
 
 type ButtonProps = {
   children: ReactNode;
@@ -17,41 +17,41 @@ type ButtonProps = {
 
 const styles: Record<string, CSSProperties> = {
   base: {
-    display: "inline-flex",
-    height: "45px",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "10px",
+    display: 'inline-flex',
+    height: '45px',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '10px',
 
-    fontSize: "1rem",
+    fontSize: '1rem',
     fontWeight: 500,
-    cursor: "pointer",
-    textAlign: "center",
-    transition: "all 0.2s ease-in-out",
-    lineHeight: "initial",
-    userSelect: "none",
-    boxSizing: "border-box",
-    textDecoration: "none",
-    position: "relative", // so gradient anchor works
-    overflow: "hidden",
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'all 0.2s ease-in-out',
+    lineHeight: 'initial',
+    userSelect: 'none',
+    boxSizing: 'border-box',
+    textDecoration: 'none',
+    position: 'relative', // so gradient anchor works
+    overflow: 'hidden',
   },
   primary: {
-    background: "linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%)",
-    color: "#fff",
+    background: 'linear-gradient(90deg, var(--color-top) 0%, var(--color-middle) 100%)',
+    color: '#fff',
     fontWeight: 800,
   },
   secondary: {
-    background: "transparent",
-    color: "#fff",
-    border: "2px solid #fff",
+    background: 'transparent',
+    color: '#fff',
+    border: '2px solid #fff',
   },
   iconWrapper: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     lineHeight: 0,
-    transition: "filter 0.2s ease-in-out",
+    transition: 'filter 0.2s ease-in-out',
   },
 };
 
@@ -65,11 +65,11 @@ export function Button({
   href,
 }: ButtonProps) {
   const [hovered, setHovered] = useState(false);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(
+  const [mousePos, setMousePos] = useState<{ x: number; y: number; } | null>(
     null
   );
 
-  const mergedClassName = `padding-button${className ? ` ${className}` : ""}`;
+  const mergedClassName = `padding-button${className ? ` ${className}` : ''}`;
 
   const baseStyle = {
     ...styles.base,
@@ -89,8 +89,8 @@ export function Button({
   const secondaryHoverStyle =
     !primary && hovered
       ? {
-        background: "#fff",
-        color: "var(--bg-color-dark)",
+        background: '#fff',
+        color: 'var(--bg-color-dark)',
       }
       : {};
 
@@ -98,7 +98,7 @@ export function Button({
 
   const iconStyle =
     !primary && hovered
-      ? { ...styles.iconWrapper, filter: "invert(1)" }
+      ? { ...styles.iconWrapper, filter: 'invert(1)' }
       : styles.iconWrapper;
 
   const commonProps = {
@@ -141,7 +141,7 @@ export function Button({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === 'Enter' || e.key === ' ') {
           onClick?.(e as any);
         }
       }}

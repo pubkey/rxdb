@@ -80,9 +80,9 @@ export function HeroSection_B(props: {
                     className='hide-desktop'
                     style={{
                         textAlign: 'center',
-                        justifyContent: "center", // horizontally center the pair
-                        alignItems: "center",     // vertically center (optional)
-                        gap: "1rem",
+                        justifyContent: 'center', // horizontally center the pair
+                        alignItems: 'center',     // vertically center (optional)
+                        gap: '1rem',
                     }}>
                     <IconWifi style={{
                         height: 20

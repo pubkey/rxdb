@@ -19,8 +19,8 @@ export function Slider({ items, width = 300 }: SliderProps) {
     const handleResize = () => {
       setGap(window.innerWidth < 900 ? 16 : 24);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Default demo boxes if no items provided
@@ -102,30 +102,30 @@ export function Slider({ items, width = 300 }: SliderProps) {
     drag.current.active = false; drag.current.distance = 0; setIsDragging(false);
   };
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    const el = viewportRef.current; if (!el) return; stopAnim();
-    const x = e.touches[0].clientX;
-    drag.current = { active: true, startX: x, startY: 0, scrollStart: el.scrollLeft, distance: 0 } as any;
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!drag.current.active) return;
-    const el = viewportRef.current; if (!el) return;
-    const x = e.touches[0].clientX;
-    const dx = x - drag.current.startX;
-    drag.current.distance = Math.abs(dx);
-    if (drag.current.distance > 0) setIsDragging(true);
-    if (drag.current.distance > 0) e.preventDefault();
-    el.scrollLeft = drag.current.scrollStart - dx;
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    stopAnim();
-    console.log('Touch moved X:', drag.current.distance);
-    if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    drag.current.active = false; drag.current.distance = 0; setIsDragging(false);
-  };
+  // const onTouchStart = (e: React.TouchEvent) => {
+  //   const el = viewportRef.current; if (!el) return; stopAnim();
+  //   const x = e.touches[0].clientX;
+  //   drag.current = { active: true, startX: x, startY: 0, scrollStart: el.scrollLeft, distance: 0 } as any;
+  // };
+  // const onTouchMove = (e: React.TouchEvent) => {
+  //   if (!drag.current.active) return;
+  //   const el = viewportRef.current; if (!el) return;
+  //   const x = e.touches[0].clientX;
+  //   const dx = x - drag.current.startX;
+  //   drag.current.distance = Math.abs(dx);
+  //   if (drag.current.distance > 0) setIsDragging(true);
+  //   if (drag.current.distance > 0) e.preventDefault();
+  //   el.scrollLeft = drag.current.scrollStart - dx;
+  // };
+  // const onTouchEnd = (e: React.TouchEvent) => {
+  //   stopAnim();
+  //   console.log('Touch moved X:', drag.current.distance);
+  //   if (drag.current.distance > CLICK_DISTANCE_THRESHOLD) {
+  //     e.preventDefault();
+  //     e.stopPropagation();
+  //   }
+  //   drag.current.active = false; drag.current.distance = 0; setIsDragging(false);
+  // };
 
   const styles = {
     root: {
