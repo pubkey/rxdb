@@ -80,7 +80,7 @@
     "@types/mocha": "10.0.10",
     "@types/node": "22.17.1",
     "async-test-util": "2.5.0",
-    "browser-sync": "3.0.0",
+    "browser-sync": "3.0.4",
     "concurrently": "9.2.1",
     "copyfiles": "2.4.1",
     "local-web-server": "5.4.0",
