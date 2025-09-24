@@ -94,9 +94,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
     setIsDragging(false);
     const el = viewportRef.current;
     if (el && e && 'pointerId' in e) {
-      try {
- el.releasePointerCapture((e as any).pointerId);
-} catch {}
+      try { el.releasePointerCapture((e as any).pointerId); } catch {}
     }
   };
 
@@ -107,9 +105,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
     downTargetRef.current = e.target as EventTarget;
     downTimeRef.current = Date.now();
     // Capture so we keep receiving events even when the finger leaves the element
-    try {
- el.setPointerCapture(e.pointerId);
-} catch {}
+    try { el.setPointerCapture(e.pointerId); } catch {}
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -165,6 +161,19 @@ export function Slider({ items, width = 300 }: SliderProps) {
     endDrag(e);
     drag.current.distance = 0;
   };
+  // Wheel: allow page scroll on vertical, only use horizontal deltas for the slider
+  const onWheel = (e: React.WheelEvent) => {
+    const el = viewportRef.current; if (!el) return;
+    const primarilyVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+    if (primarilyVertical) {
+      // let it bubble so the page scrolls
+      return;
+    }
+    const before = el.scrollLeft;
+    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY; // support shift+wheel mapping
+    el.scrollLeft += delta;
+    if (el.scrollLeft !== before) e.preventDefault();
+  };
 
   const styles = {
     root: {
@@ -189,7 +198,8 @@ export function Slider({ items, width = 300 }: SliderProps) {
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
       touchAction: 'pan-y' as any,      // allow vertical page scroll; JS handles horizontal
-      overscrollBehavior: 'contain',    // reduce scroll chaining / rubber-banding
+      overscrollBehaviorX: 'contain' as any,
+      overscrollBehaviorY: 'auto' as any,    // reduce scroll chaining / rubber-banding
       maskImage: `-webkit-gradient(linear,
         left center,
         right center,
@@ -248,6 +258,7 @@ export function Slider({ items, width = 300 }: SliderProps) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
+        onWheel={onWheel}
         onMouseLeave={(e: any) => {
           // only end drag when the MOUSE leaves. touch drags are handled by cancel/up.
           if (e.pointerType === 'mouse') onPointerUp(e);
