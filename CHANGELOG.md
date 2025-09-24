@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 16.19.1 (24 September 2025)
+
 ### 16.19.0 (4 September 2025)
 
 - ADD [Supabase Replication Plugin](https://rxdb.info/replication-supabase.html) (beta)
