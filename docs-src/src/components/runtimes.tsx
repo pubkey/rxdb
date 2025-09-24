@@ -42,18 +42,18 @@ const styles: Record<string, CSSProperties> = {
 };
 
 const rows: Row[] = [
-  { icon: '/files/icons/electron.svg', url: '/electron-database.html#rxdb', label: 'Electron' },
+  { icon: '/files/icons/electron.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/electron', label: 'Electron' },
   { icon: '/files/icons/vuejs.svg', url: '/articles/vue-database.html', label: 'Vue.js' },
-  { icon: '/files/icons/ionic.svg', url: '/articles/ionic-storage.html', label: 'Ionic' },
+  { icon: '/files/icons/ionic.svg', url: '/articles/ionic-data ase.html', label: 'Ionic' },
   { icon: '/files/icons/nativescript.svg', url: 'https://github.com/herefishyfish/rxdb-nativescript', label: 'NativeScript' },
-  { icon: '/files/icons/react.svg', url: '/react-native-database.html#rxdb', label: 'React Native' },
+  { icon: '/files/icons/react.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/react-native', label: 'React Native' },
   { icon: '/files/icons/nextjs.svg', label: 'Next.js', invert: true },
   { icon: '/files/icons/flutter.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/flutter', label: 'Flutter' },
-  { icon: '/files/icons/angular.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/angular', label: 'Angular' },
-  { icon: '/files/icons/capacitor.svg', url: 'https://rxdb.info/capacitor-database.html#rxdb', label: 'Capacitor' },
-  { icon: '/files/icons/deno.svg', url: 'https://rxdb.info/rx-storage-denokv.html', label: 'Deno', invert: true },
-  { icon: '/files/icons/nodejs.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/node', label: 'Node.js' },
-  { icon: '/files/icons/react.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/react', label: 'React' },
+  { icon: '/files/icons/angular.svg', url: '/articles/angular-database.html', label: 'Angular' },
+  { icon: '/files/icons/capacitor.svg', url: '/capacitor-database.html#rxdb', label: 'Capacitor' },
+  { icon: '/files/icons/deno.svg', url: '/rx-storage-denokv.html', label: 'Deno', invert: true },
+  { icon: '/files/icons/nodejs.svg', url: '/nodejs-database.html', label: 'Node.js' },
+  { icon: '/files/icons/react.svg', url: '/articles/react-database.html', label: 'React' },
   { icon: '/files/icons/svelte.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
 ];
 
