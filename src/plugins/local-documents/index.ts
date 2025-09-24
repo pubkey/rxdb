@@ -9,9 +9,9 @@ import {
 } from './local-documents.ts';
 import {
     closeStateByParent,
-    createLocalDocStateByParent,
     removeLocalDocumentsStorageInstance
 } from './local-documents-helper.ts';
+import { createLocalDocStateByParent } from './rx-local-document.ts';
 
 export * from './local-documents-helper.ts';
 export * from './local-documents.ts';
