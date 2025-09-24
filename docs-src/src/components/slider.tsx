@@ -94,7 +94,9 @@ export function Slider({ items, width = 300 }: SliderProps) {
     setIsDragging(false);
     const el = viewportRef.current;
     if (el && e && 'pointerId' in e) {
-      try { el.releasePointerCapture((e as any).pointerId); } catch {}
+      try {
+ el.releasePointerCapture((e as any).pointerId);
+} catch {}
     }
   };
 
@@ -105,7 +107,9 @@ export function Slider({ items, width = 300 }: SliderProps) {
     downTargetRef.current = e.target as EventTarget;
     downTimeRef.current = Date.now();
     // Capture so we keep receiving events even when the finger leaves the element
-    try { el.setPointerCapture(e.pointerId); } catch {}
+    try {
+ el.setPointerCapture(e.pointerId);
+} catch {}
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
