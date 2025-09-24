@@ -51,7 +51,7 @@
     "@angular/pwa": "17.3.17",
     "@angular/router": "17.3.12",
     "@angular/service-worker": "17.3.12",
-    "@angular/ssr": "17.3.2",
+    "@angular/ssr": "17.3.17",
     "@capacitor/android": "7.4.2",
     "@capacitor/angular": "2.0.3",
     "@capacitor/core": "7.4.2",
