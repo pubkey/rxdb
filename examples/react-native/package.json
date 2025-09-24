@@ -28,7 +28,7 @@
     "react-native": "0.79.3",
     "react-native-gesture-handler": "2.27.2",
     "react-native-get-random-values": "1.11.0",
-    "react-native-quick-base64": "2.2.1",
+    "react-native-quick-base64": "2.2.2",
     "react-test-renderer": "19.1.1",
     "rimraf": "6.0.1",
     "rxjs": "7.8.2",
