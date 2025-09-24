@@ -121,11 +121,10 @@ body:not(.homepage) .main-wrapper {
 /* Main Sidebar (left) Styling */
 .theme-doc-sidebar-menu {
     font-size: var(--fontSizes-s);
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .menu__list {
-    padding-top: 100px;
 }
 
 .menu__list-item .menu__link {
@@ -2110,6 +2109,10 @@ samp .cm-comment {
  * 1000px is the mobile-breakpoint of native docusaurus
  */
 @media (max-width: 1000px) {
+    .navbar-sidebar__item.menu {
+        padding-top: 50px;
+    }
+
     .premium-blocks {
         grid-template-columns: repeat(3, 1fr);
     }
