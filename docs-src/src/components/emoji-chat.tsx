@@ -28,6 +28,7 @@ type EmojiChatProps = {
   /** Optional class for the outer frame */
   className?: string;
   simulateClicks: boolean;
+  dark: boolean;
 };
 
 export function EmojiChat({
@@ -35,7 +36,8 @@ export function EmojiChat({
   onButtonClick,
   buttonEmojis = ['⚙️', '👨‍💻', '💡'],
   className,
-  simulateClicks
+  simulateClicks,
+  dark
 }: EmojiChatProps) {
   const frame: CSSProperties = {
     width: 230,
@@ -91,7 +93,7 @@ export function EmojiChat({
 
   return (
     <div style={frame} className={className}>
-      <div style={screen} className="chat-background">
+      <div style={screen} className={'chat-background ' + (dark ? ' dark' : '')}>
         <div style={notchWrap} />
 
         <div style={content}>
@@ -128,6 +130,7 @@ type EmojiChatStatefulProps = {
   buttonEmojis?: [string, string, string];
   className?: string;
   simulateClicks: boolean;
+  dark: boolean;
 };
 
 export function EmojiChatStateful({
@@ -135,7 +138,8 @@ export function EmojiChatStateful({
   chatId,
   buttonEmojis,
   className,
-  simulateClicks
+  simulateClicks,
+  dark
 }: EmojiChatStatefulProps) {
 
   // simulateClicks = false;
@@ -222,6 +226,7 @@ export function EmojiChatStateful({
       buttonEmojis={buttonEmojis}
       className={className}
       simulateClicks={simulateClicks}
+      dark={dark}
       onButtonClick={(_, emoji) => {
         handleAdd(emoji);
       }}

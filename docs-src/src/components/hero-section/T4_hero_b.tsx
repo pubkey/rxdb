@@ -101,6 +101,7 @@ export function HeroSection_B(props: {
                     }}
                 >
                     <EmojiChatStateful
+                        dark={true}
                         online={online}
                         chatId='hero_left'
                         simulateClicks={true}
@@ -117,6 +118,7 @@ export function HeroSection_B(props: {
                         <PixelToggle checked={online} onChange={setOnline} />
                     </div>
                     <EmojiChatStateful
+                        dark={true}
                         online={online}
                         chatId='hero_right'
                         buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}

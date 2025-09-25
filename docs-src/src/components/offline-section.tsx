@@ -33,8 +33,8 @@ export function OfflineSection(props: {
           <div className="half left">
             <p className='font-16-14 centered-mobile-p'>
               RxDB adopts an{' '}
-              <a href="/offline-first.html" target="_blank">
-                offline-first
+              <a href="/articles/local-first-future.html" target="_blank">
+                local-first
               </a>{' '} approach, ensuring your app remains fully functional by storing data locally on the {getAppName(props)} client and seamlessly syncing in the background. You can even run your app without a backend at all.
             </p>
 
@@ -87,6 +87,7 @@ export function OfflineSection(props: {
               <PixelToggle checked={online} onChange={setOnline} />
             </div>
             <EmojiChatStateful
+              dark={false}
               online={online}
               chatId="offline"
               simulateClicks={false}
