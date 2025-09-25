@@ -26,7 +26,7 @@ import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
-import { HeroSection_A } from '../components/hero-section/T4_hero_a';
+// import { HeroSection_A } from '../components/hero-section/T4_hero_a';
 
 
 export const colors = [

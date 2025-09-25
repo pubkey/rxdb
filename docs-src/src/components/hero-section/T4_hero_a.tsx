@@ -1,6 +1,6 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
-import { CheckedList } from '../checked-list';
+// import { CheckedList } from '../checked-list';
 import { Button } from '../button';
 import { HeroRuntimes } from '../runtimes';
 import { EmojiChatStateful } from '../emoji-chat';
