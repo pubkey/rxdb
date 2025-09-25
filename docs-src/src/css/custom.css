@@ -124,8 +124,7 @@ body:not(.homepage) .main-wrapper {
     font-weight: 500;
 }
 
-.menu__list {
-}
+.menu__list {}
 
 .menu__list-item .menu__link {
     padding-left: 60px;
@@ -2111,6 +2110,10 @@ samp .cm-comment {
 @media (max-width: 1000px) {
     .navbar-sidebar__item.menu {
         padding-top: 50px;
+    }
+
+    .navbar-sidebar .navbar-sidebar__brand {
+        padding-top: 16px;
     }
 
     .premium-blocks {
