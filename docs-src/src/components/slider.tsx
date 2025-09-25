@@ -7,11 +7,11 @@ export type SliderProps = {
   items?: React.ReactNode[];
   /** Override per-box width (px).*/
   width?: number;
-  /** Initial offset as a fraction of one BAND (0.1 = 10% to the right). */
-  initialOffsetPercent?: number;
+  /** Initial offset in pixels (applied to the base BAND start). */
+  initialOffsetPx?: number;
 };
 
-export function Slider({ items, width = 275, initialOffsetPercent = -0.01 }: SliderProps) {
+export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, startY: 0, scrollStart: 0, distance: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -49,11 +49,11 @@ export function Slider({ items, width = 275, initialOffsetPercent = -0.01 }: Sli
     const el = viewportRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
-      // Start at BAND (the middle copy), shifted by % offset
-      el.scrollLeft = BAND + BAND * initialOffsetPercent;
+      // Start at BAND (the middle copy), shifted by pixel offset
+      el.scrollLeft = BAND + initialOffsetPx;
     });
     return () => cancelAnimationFrame(id);
-  }, [BAND, initialOffsetPercent]);
+  }, [BAND, initialOffsetPx]);
 
   const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const stopAnim = () => {
@@ -86,11 +86,10 @@ export function Slider({ items, width = 275, initialOffsetPercent = -0.01 }: Sli
     if (x < EDGE || x > max - EDGE) el.scrollLeft = BAND + within;
   };
 
-  const CLICK_DISTANCE_THRESHOLD = 50;   // consider as a drag beyond this
-  const TAP_DISTANCE_THRESHOLD = 8;       // treat as tap if under this
-  const DRAG_ACTIVATION_THRESHOLD = 8;    // start preventing defaults after this
+  const CLICK_DISTANCE_THRESHOLD = 50;
+  const TAP_DISTANCE_THRESHOLD = 8;
+  const DRAG_ACTIVATION_THRESHOLD = 8;
 
-  // ---- Helpers to end drag & manage capture ----
   const endDrag = (e?: React.PointerEvent | PointerEvent) => {
     stopAnim();
     drag.current.active = false;
