@@ -620,7 +620,7 @@
     "supabase": "2.39.2",
     "terser": "5.43.1",
     "terser-webpack-plugin": "5.3.14",
-    "ts-loader": "9.5.2",
+    "ts-loader": "9.5.4",
     "typescript": "5.9.2",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
