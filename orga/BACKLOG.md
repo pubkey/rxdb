@@ -2,6 +2,10 @@
 
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
+## database viewer plugin
+
+Something where devs can open a UI to inspect the locally stored data.
+
 
 ## Storage based on ReactNative-MMKV
 
