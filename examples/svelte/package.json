@@ -21,7 +21,7 @@
     "rollup-plugin-css-only": "4.5.5",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",
-    "rollup-plugin-svelte": "7.2.2",
+    "rollup-plugin-svelte": "7.2.3",
     "rollup-plugin-terser": "7.0.2",
     "rxjs": "7.8.2",
     "svelte": "4.2.20",
