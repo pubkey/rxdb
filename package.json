@@ -543,7 +543,7 @@
     "@rollup/plugin-commonjs": "28.0.6",
     "@rollup/plugin-node-resolve": "16.0.1",
     "@stylistic/eslint-plugin": "5.4.0",
-    "@supabase/supabase-js": "2.56.1",
+    "@supabase/supabase-js": "2.57.4",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
     "@types/cors": "2.8.19",
