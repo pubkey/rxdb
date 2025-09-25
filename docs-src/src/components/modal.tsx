@@ -61,7 +61,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                         borderRadius: 8,
                     }}
                 >
-                    <IconClose />
+                    <IconClose clickable />
                 </span>
             }
             {...rest}
