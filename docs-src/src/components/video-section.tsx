@@ -109,7 +109,6 @@ export function VideoSection(_props: {
 
             }}>
                 <Slider
-                    width={300}
                     items={
                         YOUTUBE_VIDEOS.map(item => (
                             <div key={item.videoId} style={{

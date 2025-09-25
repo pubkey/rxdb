@@ -16,7 +16,7 @@ const styles: Record<string, CSSProperties> = {
         display: 'flex',
         flexDirection: 'column',
         padding: '12px 12px 6px 12px',
-        width: '300px',
+        width: '275px',
         backgroundColor: '#0D0F18',
         // backgroundColor: 'red',
         cursor: 'pointer'

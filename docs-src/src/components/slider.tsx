@@ -5,11 +5,13 @@ import { IconArrowRight } from './icons/arrow-right';
 export type SliderProps = {
   /** Optional array of React components/nodes to show as boxes. */
   items?: React.ReactNode[];
-  /** Override per-box width (px). Default 300. */
+  /** Override per-box width (px).*/
   width?: number;
+  /** Initial offset as a fraction of one BAND (0.1 = 10% to the right). */
+  initialOffsetPercent?: number;
 };
 
-export function Slider({ items, width = 300 }: SliderProps) {
+export function Slider({ items, width = 275, initialOffsetPercent = -0.01 }: SliderProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, startY: 0, scrollStart: 0, distance: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -47,10 +49,11 @@ export function Slider({ items, width = 300 }: SliderProps) {
     const el = viewportRef.current;
     if (!el) return;
     const id = requestAnimationFrame(() => {
-      el.scrollLeft = BAND + 1;
+      // Start at BAND (the middle copy), shifted by % offset
+      el.scrollLeft = BAND + BAND * initialOffsetPercent;
     });
     return () => cancelAnimationFrame(id);
-  }, [BAND]);
+  }, [BAND, initialOffsetPercent]);
 
   const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const stopAnim = () => {
@@ -95,8 +98,8 @@ export function Slider({ items, width = 300 }: SliderProps) {
     const el = viewportRef.current;
     if (el && e && 'pointerId' in e) {
       try {
- el.releasePointerCapture((e as any).pointerId);
-} catch {}
+        el.releasePointerCapture((e as any).pointerId);
+      } catch {}
     }
   };
 
@@ -106,10 +109,9 @@ export function Slider({ items, width = 300 }: SliderProps) {
     drag.current = { active: true, startX: e.clientX, startY: e.clientY, scrollStart: el.scrollLeft, distance: 0 };
     downTargetRef.current = e.target as EventTarget;
     downTimeRef.current = Date.now();
-    // Capture so we keep receiving events even when the finger leaves the element
     try {
- el.setPointerCapture(e.pointerId);
-} catch {}
+      el.setPointerCapture(e.pointerId);
+    } catch {}
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -120,7 +122,6 @@ export function Slider({ items, width = 300 }: SliderProps) {
 
     if (drag.current.distance >= DRAG_ACTIVATION_THRESHOLD) {
       if (!isDragging) setIsDragging(true);
-      // Once it's clearly a drag, prevent UA gestures from stealing it
       if (e.pointerType !== 'mouse') e.preventDefault();
     }
 
@@ -132,7 +133,6 @@ export function Slider({ items, width = 300 }: SliderProps) {
     const isTap = drag.current.distance <= TAP_DISTANCE_THRESHOLD && Date.now() - downTimeRef.current < 600;
 
     if (draggedFar) {
-      // real drag: swallow the click
       e.preventDefault();
       e.stopPropagation();
       endDrag(e);
@@ -140,12 +140,9 @@ export function Slider({ items, width = 300 }: SliderProps) {
       return;
     }
 
-    // release capture first
     endDrag(e);
 
     if (isTap) {
-      // Some browsers (iOS Safari) may drop the native click after capture.
-      // Synthesize a click on the element at the end position.
       const nodeAtPoint = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
       const target = nodeAtPoint || (downTargetRef.current as HTMLElement | null);
       if (target) {
@@ -165,16 +162,13 @@ export function Slider({ items, width = 300 }: SliderProps) {
     endDrag(e);
     drag.current.distance = 0;
   };
-  // Wheel: allow page scroll on vertical, only use horizontal deltas for the slider
+
   const onWheel = (e: React.WheelEvent) => {
     const el = viewportRef.current; if (!el) return;
     const primarilyVertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
-    if (primarilyVertical) {
-      // let it bubble so the page scrolls
-      return;
-    }
+    if (primarilyVertical) return;
     const before = el.scrollLeft;
-    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY; // support shift+wheel mapping
+    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
     el.scrollLeft += delta;
     if (el.scrollLeft !== before) e.preventDefault();
   };
@@ -196,25 +190,21 @@ export function Slider({ items, width = 300 }: SliderProps) {
       overflowX: 'auto',
       overflowY: 'hidden',
       padding: '0 24px',
-      WebkitOverflowScrolling: 'touch', // improves iOS touch behavior
+      WebkitOverflowScrolling: 'touch',
       cursor: isDragging ? 'grabbing' : 'grab',
       userSelect: 'none',
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
-      touchAction: 'pan-y' as any,      // allow vertical page scroll; JS handles horizontal
+      touchAction: 'pan-y' as any,
       overscrollBehaviorX: 'contain' as any,
-      overscrollBehaviorY: 'auto' as any,    // reduce scroll chaining / rubber-banding
+      overscrollBehaviorY: 'auto' as any,
       maskImage: `-webkit-gradient(linear,
         left center,
         right center,
         color-stop(0, rgba(0, 0, 0, 0)),
-        /* fully transparent at left edge */
         color-stop(0.3, rgba(0, 0, 0, 1)),
-        /* fade in to solid by 20% */
         color-stop(0.7, rgba(0, 0, 0, 1)),
-        /* stay solid until 80% */
         color-stop(1, rgba(0, 0, 0, 0))
-        /* fade out to transparent at right edge */
       )`
     } as CSSProperties,
     track: {
@@ -264,7 +254,6 @@ export function Slider({ items, width = 300 }: SliderProps) {
         onPointerCancel={onPointerCancel}
         onWheel={onWheel}
         onMouseLeave={(e: any) => {
-          // only end drag when the MOUSE leaves. touch drags are handled by cancel/up.
           if (e.pointerType === 'mouse') onPointerUp(e);
         }}
       >

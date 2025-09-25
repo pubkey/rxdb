@@ -621,7 +621,6 @@ body {
     display: flex;
     flex-direction: column;
     background: var(--bg-color-dark);
-    width: 300px;
 }
 
 .slider-content h3 {
@@ -1056,7 +1055,6 @@ body {
     .footer .footer-community-links {
         margin-top: 32px;
     }
-
 }
 
 
