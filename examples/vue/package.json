@@ -19,7 +19,7 @@
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
     "pouchdb-server": "4.2.0",
-    "random-int": "3.0.0",
+    "random-int": "3.1.0",
     "register-service-worker": "1.7.2",
     "rxjs": "7.8.2",
     "vue": "3.5.22",
