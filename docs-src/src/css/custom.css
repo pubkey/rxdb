@@ -1001,6 +1001,7 @@ body {
 
     .block .inner .half.right {
         overflow-x: scroll;
+        overflow-y: hidden;
         scrollbar-width: none;
     }
 
