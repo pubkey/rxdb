@@ -7,6 +7,7 @@ import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
+import { ABTestContent } from '../a-b-tests';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -34,8 +35,15 @@ export function HeroSection_B(props: {
                 }
             </h1>
             <div className="inner">
-                <div className="half left" style={{ paddingTop: 35 }}>
+                <div className="half left" style={{}}>
+                    <p style={{
+                        marginTop: 0,
+                        marginBottom: 0
+                    }} className='centered-mobile-p'>
+                        <ABTestContent></ABTestContent>
+                    </p>
                     <CheckedList className='centered-mobile padding-right-20-0' style={{
+                        paddingTop: 35,
                         paddingLeft: 0,
                         paddingBottom: 0,
                         maxWidth: 360
@@ -73,59 +81,63 @@ export function HeroSection_B(props: {
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>
-                    <div className="clear" />
-                    <br />
-                </div>
-                <div
-                    className='hide-desktop'
-                    style={{
-                        textAlign: 'center',
-                        justifyContent: 'center', // horizontally center the pair
-                        alignItems: 'center',     // vertically center (optional)
-                        gap: '1rem',
-                        marginTop: 9
-                    }}>
-                    <IconWifi style={{
-                        height: 20
-                    }} />
-                    <PixelToggle checked={online} onChange={setOnline} />
                 </div>
                 <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
-                    style={{
-                        display: 'grid',
+                >
+
+                    <div style={{
+                        display: 'flex',
                         alignItems: 'center',
                         justifyItems: 'center',
                         alignSelf: 'start',
-                        gap: 20
-                    }}
-                >
-                    <EmojiChatStateful
-                        dark={true}
-                        online={online}
-                        chatId='hero_left'
-                        simulateClicks={true}
-                    />
+                        flexDirection: 'row',
+                        gap: 20,
+                    }} className='flex-end-center'
+                    >
+                        <EmojiChatStateful
+                            dark={true}
+                            online={online}
+                            chatId='hero_left'
+                            simulateClicks={true}
+                        />
+                        <div
+                            className='hide-mobile'
+                            style={{
+                                textAlign: 'center',
+                            }}>
+                            <IconWifi style={{
+                                width: '100%',
+                                paddingBottom: 3
+                            }} />
+                            <PixelToggle checked={online} onChange={setOnline} />
+                        </div>
+                        <EmojiChatStateful
+                            dark={true}
+                            online={online}
+                            chatId='hero_right'
+                            buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
+                            simulateClicks={true}
+                        />
+                    </div>
+
                     <div
-                        className='hide-mobile'
+                        className='hide-desktop'
                         style={{
                             textAlign: 'center',
+                            justifyContent: 'center', // horizontally center the pair
+                            alignItems: 'center',     // vertically center (optional)
+                            gap: '1rem',
+                            marginTop: 19,
                         }}>
                         <IconWifi style={{
-                            width: '100%',
-                            paddingBottom: 3
+                            height: 20
                         }} />
                         <PixelToggle checked={online} onChange={setOnline} />
                     </div>
-                    <EmojiChatStateful
-                        dark={true}
-                        online={online}
-                        chatId='hero_right'
-                        buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
-                        simulateClicks={true}
-                    />
+
+
                 </div>
-                <div className='clear'></div>
             </div>
             <HeroRuntimes></HeroRuntimes>
         </div>

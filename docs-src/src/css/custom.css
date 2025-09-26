@@ -777,7 +777,7 @@ body {
 
 .block .inner {
     display: flex;
-    gap: 10px;
+    gap: 20px;
     justify-content: center;
     overflow: hidden;
 }
@@ -839,7 +839,7 @@ body {
 }
 
 
-.padding-top-64-28 {
+.padding-top-64-46 {
     padding-top: 64px;
 }
 
@@ -885,7 +885,15 @@ body {
     min-width: 180px;
 }
 
+.flex-end-center {
+    justify-content: end;
+}
+
 @media (max-width: 900px) {
+    .flex-end-center {
+        justify-content: center;
+    }
+
     .min-width-180-135 {
         min-width: 135px;
     }
@@ -929,8 +937,8 @@ body {
     }
 
 
-    .padding-top-64-28 {
-        padding-top: 28px;
+    .padding-top-64-46 {
+        padding-top: 46;
     }
 
     .margin-left-10-0 {
@@ -980,6 +988,7 @@ body {
 
     .block .inner {
         flex-direction: column-reverse;
+        gap: 32px;
     }
 
     .column-mobile {
@@ -1256,7 +1265,6 @@ body {
 }
 
 .block.offline-first p {
-    margin-top: 32px;
     margin-bottom: 32px;
 }
 

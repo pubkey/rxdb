@@ -49,9 +49,9 @@ const rows: Row[] = [
   { icon: '/files/icons/nodejs.svg', url: '/nodejs-database.html', label: 'Node.js' },
   { icon: '/files/icons/deno.svg', url: '/rx-storage-denokv.html', label: 'Deno', invert: true },
   { icon: '/files/icons/electron.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/electron', label: 'Electron' },
-  { icon: '/files/icons/react.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/react-native', label: 'React Native' },
-  { icon: '/files/icons/nativescript.svg', url: 'https://github.com/herefishyfish/rxdb-nativescript', label: 'NativeScript' },
   { icon: '/files/icons/ionic.svg', url: '/articles/ionic-database.html', label: 'Ionic' },
+  { icon: '/files/icons/nativescript.svg', url: 'https://github.com/herefishyfish/rxdb-nativescript', label: 'NativeScript' },
+  { icon: '/files/icons/react.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/react-native', label: 'React Native' },
   { icon: '/files/icons/flutter.svg', url: 'https://github.com/pubkey/rxdb/tree/master/examples/flutter', label: 'Flutter' },
   { icon: '/files/icons/capacitor.svg', url: '/capacitor-database.html#rxdb', label: 'Capacitor' },
   { icon: '/files/icons/nextjs.svg', label: 'Next.js', invert: true },
@@ -75,7 +75,7 @@ export function HeroRuntimes() {
   })();
 
   return (
-    <div style={styles.container} className="column-mobile padding-top-64-28">
+    <div style={styles.container} className="column-mobile padding-top-64-46">
       <div className="font-20-14" style={styles.text}>
         Use RxDB with{' '}
         <br className="hide-mobile" />
