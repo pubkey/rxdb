@@ -78,11 +78,11 @@ export function SyncSection(props: {
         <div className="inner" >
           <div className="half left">
             <p className='font-16-14 centered-mobile-p'>
-              RxDB's simple and high-performance{' '}
+              RxDB's easy-to-use {' '}
               <a href="/replication.html" target="_blank">
                 Sync Engine
               </a>{' '}
-              powers real-time synchronization between {getAppName(props)} clients and servers.
+              powers realtime synchronization between {getAppName(props)} clients and servers.
               Either use one of our prebuild replication plugins...
             </p>
 
@@ -105,7 +105,7 @@ export function SyncSection(props: {
               OR
             </p>
             <p className='font-16-14 centered-mobile-p'>
-              ...sync with your <b>custom server</b> by implementing{' '}
+              ...sync with your <b>custom server</b> by implementing only{' '}
               <a href="/replication-http.html" target="_blank">
                 three simple endpoints
               </a>

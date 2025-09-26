@@ -32,10 +32,11 @@ export function OfflineSection(props: {
         <div className="inner">
           <div className="half left">
             <p className='font-16-14 centered-mobile-p'>
-              RxDB adopts an{' '}
+              RxDB adopts the{' '}
               <a href="/articles/local-first-future.html" target="_blank">
                 local-first
-              </a>{' '} approach, ensuring your app remains fully functional by storing data locally on the {getAppName(props)} client and seamlessly syncing in the background. You can even run your app without a backend at all.
+              </a>{' '} approach by storing data locally on the {getAppName(props)} client and managing continuous synchronization.{' '}
+              You can even run your app entirely without a backend.
             </p>
 
             <CheckedList className='centered-mobile padding-right-20-0' style={{
