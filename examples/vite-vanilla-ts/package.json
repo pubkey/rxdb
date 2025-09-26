@@ -19,7 +19,7 @@
     "copyfiles": "2.4.1",
     "testcafe": "3.7.2",
     "typescript": "5.9.2",
-    "vite": "7.0.6"
+    "vite": "7.1.7"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
