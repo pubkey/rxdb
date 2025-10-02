@@ -62,7 +62,7 @@
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
     "material-design-icons": "3.0.1",
-    "mocha": "11.7.2",
+    "mocha": "11.7.4",
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
     "rxjs": "7.8.2",
