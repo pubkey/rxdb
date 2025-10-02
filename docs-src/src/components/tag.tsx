@@ -5,6 +5,7 @@ export function Tag(props: {
     border?: boolean;
     children?: React.ReactNode;
     wideMode?: boolean;
+    dark?: boolean;
 }) {
     const hasImg = !!props.img;
     const [hovered, setHovered] = useState(false);
@@ -15,13 +16,13 @@ export function Tag(props: {
                 display: 'inline-flex',
                 alignItems: 'center',
                 verticalAlign: 'bottom',
-                background: hovered ? '#fff' : 'var(--bg-color)',
+                background: hovered ? '#fff' : (props.dark ? 'var(--bg-color)' : 'var(--bg-color-dark)'),
                 height: props.border ? 37 : 41,
                 paddingTop: 0,
                 paddingBottom: 0,
                 borderRadius: 20,
                 textAlign: 'center',
-                color: hovered ? 'var(--bg-color-dark)' : 'white',
+                color: hovered ? (props.dark ? 'var(--bg-color-dark)' : 'var(--bg-color)') : 'white',
                 width: 'auto',
                 fontWeight: hasImg ? 800 : 500,
                 whiteSpace: 'nowrap',

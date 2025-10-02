@@ -4,6 +4,7 @@ import { VideoPlayButton } from './video-button';
 import { Modal } from './modal';
 
 export type VideoBoxProps = {
+    dark: boolean;
     videoId: string;
     title: string;
     duration: string;
@@ -17,9 +18,9 @@ const styles: Record<string, CSSProperties> = {
         flexDirection: 'column',
         padding: '12px 12px 6px 12px',
         width: '275px',
-        backgroundColor: '#0D0F18',
-        // backgroundColor: 'red',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        boxSizing: 'content-box'
+
     },
     thumbnailWrapper: {
         position: 'relative',
@@ -59,7 +60,6 @@ const styles: Record<string, CSSProperties> = {
         fontWeight: 'bold',
         paddingLeft: 8,
         paddingRight: 2,
-        backgroundColor: '#0D0F18'
     },
     title: {
         marginTop: 5,
@@ -71,13 +71,16 @@ const styles: Record<string, CSSProperties> = {
     },
 };
 
-export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
+export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div
-            style={styles.container}
+            style={{
+                ...styles.container,
+                backgroundColor: dark ? 'var(--bg-color)' : 'var(--bg-color-dark)',
+            }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={() => {
@@ -87,15 +90,11 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
             }}
         >
             <div style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div
-                    style={{
-                        ...styles.thumbnailWrapper,
-                    }}
-                >
+                <div style={{ ...styles.thumbnailWrapper }}>
                     <div
                         style={{
                             ...styles.thumbnail,
-                            backgroundImage: `url(http://img.youtube.com/vi/${videoId}/0.jpg)`
+                            backgroundImage: `url(https://img.youtube.com/vi/${videoId}/0.jpg)`
                         }}
                     />
                     <div
@@ -107,7 +106,14 @@ export function VideoBox({ videoId, title, duration, startAt }: VideoBoxProps) {
                     >
                         <VideoPlayButton />
                     </div>
-                    <div style={styles.duration}>{duration}</div>
+                    <div
+                        style={{
+                            ...styles.duration,
+                            backgroundColor: dark ? 'var(--bg-color)' : 'var(--bg-color-dark)',
+                        }}
+                    >
+                        {duration}
+                    </div>
                 </div>
                 <div style={styles.title}>{title}</div>
             </div>

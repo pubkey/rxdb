@@ -110,7 +110,7 @@ export function HeroSection_B(props: {
                                 width: '100%',
                                 paddingBottom: 3
                             }} />
-                            <PixelToggle checked={online} onChange={setOnline} />
+                            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
                         </div>
                         <EmojiChatStateful
                             dark={true}
@@ -133,7 +133,7 @@ export function HeroSection_B(props: {
                         <IconWifi style={{
                             height: 20
                         }} />
-                        <PixelToggle checked={online} onChange={setOnline} />
+                        <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
                     </div>
 
 

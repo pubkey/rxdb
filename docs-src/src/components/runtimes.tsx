@@ -24,20 +24,19 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     display: 'flex',
-    flex: '1 1 auto'
+    flex: '1 1 auto',
   },
   iconsRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexWrap: 'nowrap',
-    flexShrink: 0
+    flexShrink: 0,
   },
   icon: {
     objectFit: 'contain',
     opacity: 0.7,
     filter: 'grayscale(100%) brightness(1.8)',
-    cursor: 'pointer',
   },
 };
 
@@ -57,21 +56,16 @@ const rows: Row[] = [
   { icon: '/files/icons/nextjs.svg', label: 'Next.js', invert: true },
 ];
 
-
 export function HeroRuntimes() {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const text = hovered !== null ? hovered : 'these Frameworks';
 
-
   const displayRows = (() => {
     const middle = Math.ceil(rows.length / 2);
     const firstHalf = rows.slice(0, middle);
     const secondHalf = rows.slice(middle);
-    return [
-      firstHalf,
-      secondHalf
-    ];
+    return [firstHalf, secondHalf];
   })();
 
   return (
@@ -81,51 +75,58 @@ export function HeroRuntimes() {
         <br className="hide-mobile" />
         <span>{text}</span>
       </div>
-      <div style={{
-        flex: 'auto',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        // display: 'grid',
-        // gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', /* two equal halves */
-        // listStyle: 'none',
-      }} className="gap-24-20">
-        {
-          displayRows.map((displayRow, i) => {
-            return <div style={styles.displayRow} key={'drow_' + i}>{
-              <div style={styles.iconsRow} className="gap-24-20">
-                {displayRow.map((item, i2) => {
-                  const defaultFilter = item.invert
-                    ? 'grayscale(100%) brightness(1.8) invert(1)'
-                    : 'grayscale(100%) brightness(1.8)';
+      <div
+        style={{
+          flex: 'auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+        }}
+        className="gap-24-20"
+      >
+        {displayRows.map((displayRow, i) => (
+          <div style={styles.displayRow} key={'drow_' + i}>
+            <div style={styles.iconsRow} className="gap-24-20">
+              {displayRow.map((item, i2) => {
+                const defaultFilter = item.invert
+                  ? 'grayscale(100%) brightness(1.8) invert(1)'
+                  : 'grayscale(100%) brightness(1.8)';
 
-                  const hoverFilter = item.invert ? defaultFilter : 'none';
-                  return (
-                    <a
-                      key={i + '_' + i2}
-                      href={item.url}
-                      onMouseEnter={() => setHovered(item.label)}
-                      onMouseLeave={() => setHovered(null)}
-                      target="_blank"
-                    >
-                      <img
-                        className="framework-icon"
-                        src={item.icon}
-                        loading="lazy"
-                        alt={item.label}
-                        style={{
-                          ...styles.icon,
-                          filter: hovered === item.label ? hoverFilter : defaultFilter,
-                          opacity: hovered === item.label ? 1 : styles.icon.opacity,
-                        }}
-                      />
-                    </a>
-                  );
-                })}
-              </div>
-            }</div>;
-          })
-        }
+                const hoverFilter = item.invert ? defaultFilter : 'none';
+
+                const img = (
+                  <img
+                    className="framework-icon"
+                    src={item.icon}
+                    loading="lazy"
+                    alt={item.label}
+                    style={{
+                      ...styles.icon,
+                      cursor: item.url ? 'pointer' : 'default', // 👈 only pointer when URL exists
+                      filter: hovered === item.label ? hoverFilter : defaultFilter,
+                      opacity: hovered === item.label ? 1 : styles.icon.opacity,
+                    }}
+                    onMouseEnter={() => setHovered(item.label)}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                );
+
+                return item.url ? (
+                  <a
+                    key={i + '_' + i2}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {img}
+                  </a>
+                ) : (
+                  <div key={i + '_' + i2}>{img}</div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

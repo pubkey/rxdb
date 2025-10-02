@@ -107,6 +107,7 @@ export default function FooterWrapper() {
                       variant="text"
                       href={link.href}
                       target={link.target ? '_blank' : ''}
+                      aria-label={link.label}
                     >
                       {link.logo}
                     </a>

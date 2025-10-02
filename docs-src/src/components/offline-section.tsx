@@ -73,7 +73,7 @@ export function OfflineSection(props: {
               alignSelf: 'start',
             }}
           >
-            <Cloud />
+            <Cloud darkMode={props.dark} />
             <div
               style={{
                 textAlign: 'center',
@@ -85,10 +85,10 @@ export function OfflineSection(props: {
                   paddingBottom: 3,
                 }}
               />
-              <PixelToggle checked={online} onChange={setOnline} />
+              <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
             </div>
             <EmojiChatStateful
-              dark={false}
+              dark={props.dark}
               online={online}
               chatId="offline"
               simulateClicks={false}

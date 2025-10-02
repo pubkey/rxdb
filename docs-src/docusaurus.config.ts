@@ -12,11 +12,21 @@ const config: Config = {
     title: 'RxDB - JavaScript Database',
     tagline: 'Realtime JavaScript Database',
     favicon: '/img/favicon.png',
- // Add multiple sizes + Apple touch icon (+ optional SVG)
- headTags: [
-    { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
-    { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-  ],
+    // Add multiple sizes + Apple touch icon (+ optional SVG)
+    headTags: [
+        { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
+        { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preload',
+                href: '/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf',
+                as: 'font',
+                type: 'font/ttf',
+                crossorigin: 'anonymous',
+            },
+        },
+    ],
 
     // Set the production url of your site here
     url: 'https://rxdb.info',

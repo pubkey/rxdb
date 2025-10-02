@@ -76,7 +76,7 @@ export const REVIEW_ITEMS: {
         point of sale system. With RxDB we could create a web-, desktop- and mobile app using the same code base.`,
             href: 'https://wcpos.com/',
             target: '_blank',
-            logo: '/files/companies/woopos.png',
+            logo: '/files/companies/woopos.svg',
             logoStyle: 'slider-logo-black ',
         },
         {

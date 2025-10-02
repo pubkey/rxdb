@@ -13,7 +13,7 @@ export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
  * Container width & height are calculated from element positions,
  * and the inner diagram div is right-aligned inside the outer container.
  */
-export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }) {
+export function ReplicationDiagram({ scale: scaleProp = 1, dark }: { scale?: number; dark: boolean; }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // trigger rerender on resize so scaling updates correctly if font/zoom changes
@@ -172,7 +172,7 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
             transformStyle: 'preserve-3d',
           }}
         >
-          <Cloud darkMode={true} style={{
+          <Cloud darkMode={dark} style={{
             width: '100%'
           }} />
         </div>
@@ -261,19 +261,19 @@ export function ReplicationDiagram({ scale: scaleProp = 1 }: { scale?: number; }
                 >
                   {device === 'phone' ? (
                     <div className="device" style={{ top: '20%', left: '30%' }}>
-                      <IconDevicePhone iconUrl="/files/logo/logo.svg" />
+                      <IconDevicePhone dark={dark} iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'smartwatch' ? (
                     <div className="device" style={{ width: '80%', top: '20%', left: '17%' }}>
-                      <IconDeviceSmartwatch iconUrl="/files/logo/logo.svg" />
+                      <IconDeviceSmartwatch dark={dark} iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : device === 'desktop' ? (
                     <div className="device" style={{ top: '20%', left: '27%' }}>
-                      <IconDeviceDesktop iconUrl="/files/logo/logo.svg" />
+                      <IconDeviceDesktop dark={dark} iconUrl="/files/logo/logo.svg" />
                     </div>
                   ) : (
                     <div className="device" style={{ top: '20%', left: '27%' }}>
-                      <IconDeviceTablet iconUrl="/files/logo/logo.svg" />
+                      <IconDeviceTablet dark={dark} iconUrl="/files/logo/logo.svg" />
                     </div>
                   )}
                 </div>

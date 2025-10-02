@@ -288,8 +288,10 @@ export default function Home(props: {
               </> : ''
           }
 
+          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
 
-          <VideoSection sem={props.sem} />
+
+
           <Trophy
             href="/code/"
             title="GitHub"
@@ -298,7 +300,9 @@ export default function Home(props: {
             imgUrl="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'
           />
-          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={true} />
+
+          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
+
 
           <Trophy
             href="https://twitter.com/intent/user?screen_name=rxdbjs"
@@ -309,7 +313,8 @@ export default function Home(props: {
             valueTitle='followers'
           />
 
-          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={false} />
+
+          <VideoSection sem={props.sem} dark={false} />
 
           <Trophy
             href="/chat/"
@@ -321,8 +326,7 @@ export default function Home(props: {
           />
 
 
-
-          <FeaturesSection />
+          <FeaturesSection dark={true} />
 
           <div className="block reviews" id="reviews" ref={reviewsRef} style={{
             paddingTop: 50

@@ -65,7 +65,7 @@ export function SyncSection(props: {
 }) {
   return (
     <div
-      className={'block replication ' + (props.dark ? 'dark' : '') + ' trophy-before trophy-after'}
+      className={'block replication ' + (props.dark ? 'dark' : '') + ' trophy-after'}
       id="replication"
       ref={props.replicationRef}
       style={{ order: props.order }}
@@ -113,7 +113,7 @@ export function SyncSection(props: {
             </p>
           </div>
           <div className="half right">
-            <ReplicationDiagram />
+            <ReplicationDiagram dark={props.dark} />
           </div>
         </div>
       </div>

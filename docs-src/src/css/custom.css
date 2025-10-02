@@ -3,6 +3,7 @@
     src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("truetype");
     font-weight: 100 900;
     font-style: normal;
+    font-display: swap;
 }
 
 /* You can override the default Infima variables here. */
@@ -43,8 +44,8 @@ pre code {
 
 :root {
     color-scheme: dark;
-    --ifm-font-family-base: "Atkinson Hyperlegible Mono", monospace;
-    --ifm-font-family-monospace: "Atkinson Hyperlegible Mono", monospace;
+    --ifm-font-family-base: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
+    --ifm-font-family-monospace: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'DejaVu Sans Mono', monospace;
 
 
     --ifm-heading-margin-bottom: 40px;

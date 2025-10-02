@@ -6,13 +6,12 @@ import { IconArrowRight } from './icons/arrow-right';
 import { Slider } from './slider';
 
 
-const YOUTUBE_VIDEOS: VideoBoxProps[] = [
+const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
     {
         videoId: 'tDWmfenF2AM',
         title: 'The Easiest Way to Store Data',
         duration: '04:28',
         startAt: 8
-
     },
     {
         videoId: 'qHWrooWyCYg',
@@ -93,12 +92,11 @@ export function PrevArrow(props) {
     );
 }
 
-const padding = 50;
-
-export function VideoSection(_props: {
+export function VideoSection(props: {
+    dark: boolean;
     sem?: SemPage;
 }) {
-    return <div className="block reviews trophy-after" id="videos" style={{ paddingTop: padding }}>
+    return <div className={'block reviews trophy-before trophy-after ' + (props.dark ? ' dark ' : '')} id="videos">
         <div className="content centered" style={{
             marginBottom: 50
         }}>
@@ -114,7 +112,7 @@ export function VideoSection(_props: {
                             <div key={item.videoId} style={{
                                 float: 'left',
                             }}>
-                                <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
+                                <VideoBox dark={props.dark} videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
                             </div>
                         ))
                     }
