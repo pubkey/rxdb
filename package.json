@@ -617,7 +617,7 @@
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
-    "supabase": "2.45.5",
+    "supabase": "2.47.2",
     "terser": "5.44.0",
     "terser-webpack-plugin": "5.3.14",
     "ts-loader": "9.5.4",
