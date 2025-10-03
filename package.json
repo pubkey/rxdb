@@ -500,6 +500,7 @@
   },
   "dependencies": {
     "@babel/runtime": "7.28.4",
+    "@fastify/deepmerge": "3.1.0",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
