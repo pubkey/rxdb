@@ -48,11 +48,11 @@ export function getMingoQuery<RxDocType>(
     selector?: MangoQuerySelector<RxDocType>
 ) {
     if (!mingoInitDone) {
-        useOperators('pipeline', {
+        useOperators('pipeline' as any, {
             $sort,
             $project
         } as any);
-        useOperators('query', {
+        useOperators('query' as any, {
             $and,
             $eq,
             $elemMatch,
