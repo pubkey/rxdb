@@ -41,6 +41,8 @@ import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import { getWrittenDocumentsFromBulkWriteResponse, throwIfIsStorageWriteError } from './rx-storage-helper.ts';
 import { modifierFromPublicToInternal } from './incremental-write.ts';
 
+import { merge } from 'object-deep-merge';
+
 export const basePrototype = {
     get primaryPath() {
         const _this: RxDocument = this as any;
@@ -301,12 +303,7 @@ export const basePrototype = {
         patch: Partial<RxDocType>
     ) {
         const oldData = this._data;
-        const newData = clone(oldData);
-        Object
-            .entries(patch)
-            .forEach(([k, v]) => {
-                (newData as any)[k] = v;
-            });
+        const newData = merge(clone(oldData), patch);
         return this._saveData(newData, oldData);
     },
 
@@ -318,12 +315,7 @@ export const basePrototype = {
         patch: Partial<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType>> {
         return this.incrementalModify((docData) => {
-            Object
-                .entries(patch)
-                .forEach(([k, v]) => {
-                    (docData as any)[k] = v;
-                });
-            return docData;
+            return merge(docData, patch);
         });
     },
 
