@@ -2,9 +2,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import {
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    RXDB_VERSION,
     ensureNotFalsy,
-    lastOfArray,
     now,
     toArray
 } from '../utils/index.ts';
@@ -17,7 +15,6 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
@@ -28,8 +25,7 @@ import type {
     StringKeys
 } from '../../types/index';
 import {
-    categorizeBulkWriteRows,
-    ensureRxStorageInstanceParamsAreCorrect
+    categorizeBulkWriteRows
 } from '../../rx-storage-helper.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
@@ -488,7 +484,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
 
     getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
-        throw newRxError('SNH');
+        throw newRxError('LS1');
     }
 
     remove(): Promise<void> {
