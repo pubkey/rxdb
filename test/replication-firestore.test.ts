@@ -485,6 +485,47 @@ describe('replication-firestore.test.ts', function () {
             const docsOnServer = await getAllDocsOfFirestore(firestoreState, where('owner', '==', ownerUid));
             assert.strictEqual(docsOnServer.length, 2);
         });
+        it('#7371 documents moving outside replication scope', async () => {
+            const firestoreState = await getFirestoreState();
+            const collection = await humansCollection.create(0);
 
+            const firstDocRef =
+                await addDoc(firestoreState.collection, makeFirestoreHumanDocument(schemaObjects.humanData('abc', 35, 'replicated')));
+            await addDoc(firestoreState.collection, makeFirestoreHumanDocument(schemaObjects.humanData('def', 22, 'replicated')));
+            await addDoc(firestoreState.collection, makeFirestoreHumanDocument(schemaObjects.humanData('fgh', 34, 'replicated')));
+
+            const replicationState = replicateFirestore<HumanDocumentType>({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState as any,
+                collection: collection,
+                pull: {
+                    filter: where('firstName', '==', 'replicated')
+                },
+                push: {},
+                live: true,
+                autoStart: true
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            let allLocalDocs = await collection.find().exec();
+
+            assert.strictEqual(allLocalDocs.length, 3);
+
+            /** update document to fall out of replication scope **/
+            await updateDoc(doc(firestoreState.collection, firstDocRef.id), {
+                firstName: 'not-replicated'
+            });
+
+            await replicationState.awaitInSync();
+
+            allLocalDocs = await collection.find().exec();
+            const docsOnServer = await getAllDocsOfFirestore(firestoreState, where('firstName', '==', 'replicated'));
+
+            assert.strictEqual(allLocalDocs.length, docsOnServer.length);
+
+            collection.close();
+            collection.database.close();
+        });
     });
 });
