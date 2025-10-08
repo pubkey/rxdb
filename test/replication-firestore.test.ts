@@ -44,8 +44,7 @@ import {
     getDoc,
     QueryConstraint,
     addDoc,
-    updateDoc,
-    doc
+    updateDoc
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
@@ -516,7 +515,7 @@ describe('replication-firestore.test.ts', function () {
             assert.strictEqual(allLocalDocs.length, 3);
 
             /** update document to fall out of replication scope **/
-            await updateDoc(doc(firestoreState.collection, firstDocRef.id), {
+            await updateDoc(DocRef(firestoreState.collection, firstDocRef.id), {
                 firstName: 'not-replicated'
             });
 
