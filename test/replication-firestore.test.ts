@@ -42,7 +42,10 @@ import {
     orderBy,
     limit,
     getDoc,
-    QueryConstraint
+    QueryConstraint,
+    addDoc,
+    updateDoc,
+    doc
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
