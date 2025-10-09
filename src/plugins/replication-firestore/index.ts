@@ -60,6 +60,7 @@ import {
     stripPrimaryKey,
     stripServerTimestampField
 } from './firestore-helper.ts';
+import {DocumentData} from "@firebase/firestore";
 
 export * from './firestore-helper.ts';
 export * from './firestore-types.ts';
@@ -100,6 +101,10 @@ export function replicateFirestore<RxDocType>(
     const serverTimestampField = typeof options.serverTimestampField === 'undefined' ? 'serverTimestamp' : options.serverTimestampField;
     options.serverTimestampField = serverTimestampField;
     const primaryPath = collection.schema.primaryPath;
+
+    // This variable will be updated by the pull handler to ensure the live-stream
+    // starts from the correct point in time.
+    let lastCheckpointFromPull: FirestoreCheckpointType | null;
 
     /**
      * The serverTimestampField MUST NOT be part of the collections RxJsonSchema.
@@ -192,8 +197,9 @@ export function replicateFirestore<RxDocType>(
                 }
 
                 if (useDocs.length === 0) {
+                    lastCheckpointFromPull = lastPulledCheckpoint ?? null;
                     return {
-                        checkpoint: lastPulledCheckpoint ?? null,
+                        checkpoint: lastCheckpointFromPull,
                         documents: []
                     };
                 }
@@ -208,6 +214,7 @@ export function replicateFirestore<RxDocType>(
                     id: lastDoc.id,
                     serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc.data())
                 };
+                lastCheckpointFromPull = newCheckpoint;
                 const ret = {
                     documents: documents,
                     checkpoint: newCheckpoint
@@ -260,20 +267,20 @@ export function replicateFirestore<RxDocType>(
                                 where(documentId(), 'in', ids)
                             )
                         )
-                        .then(result => result.docs)
-                        .catch(error => {
-                            if (error?.code && (error as FirestoreError).code === 'permission-denied') {
-                                // Query may fail due to rules using 'resource' with non existing ids
-                                // So try to get the docs one by one
-                                return Promise.all(
-                                    ids.map(
-                                        id => getDoc(doc(options.firestore.collection, id))
+                            .then(result => result.docs)
+                            .catch(error => {
+                                if (error?.code && (error as FirestoreError).code === 'permission-denied') {
+                                    // Query may fail due to rules using 'resource' with non existing ids
+                                    // So try to get the docs one by one
+                                    return Promise.all(
+                                        ids.map(
+                                            id => getDoc(doc(options.firestore.collection, id))
+                                        )
                                     )
-                                )
-                                .then(docs => docs.filter(doc => doc.exists()));
-                            }
-                            throw error;
-                        });
+                                        .then(docs => docs.filter(doc => doc.exists()));
+                                }
+                                throw error;
+                            });
                     };
 
                     const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);
@@ -346,26 +353,78 @@ export function replicateFirestore<RxDocType>(
     );
 
     /**
-     * Use long polling to get live changes for the pull.stream$
+     * Use a snapshot listener to get live changes for the pull.stream$
      */
     if (options.live && options.pull) {
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
-        replicationState.start = () => {
-            const lastChangeQuery = query(
-                pullQuery,
-                orderBy(serverTimestampField, 'desc'),
-                limit(1)
-            );
-            const unsubscribe = onSnapshot(
-                lastChangeQuery,
-                (_querySnapshot) => {
-                    /**
-                     * There is no good way to observe the event stream in firestore.
-                     * So instead we listen to any write to the collection
-                     * and then emit a 'RESYNC' flag.
-                     */
-                    replicationState.reSync();
+        let snapshotUnsubscribe: (() => void) | null = null;
+
+        replicationState.start = async () => {
+            const startPromise = startBefore();
+
+            // Wait for the initial replication to complete before starting the listener.
+            //await replicationState.awaitInitialSync();
+
+            // Do not set up the listener if it already exists or replication was cancelled.
+            if (replicationState.isStopped() || snapshotUnsubscribe) {
+                return startPromise;
+            }
+
+            const checkpoint = lastCheckpointFromPull;
+
+            let liveQuery: ReturnType<typeof query>;
+            if (checkpoint) {
+                const lastServerTimestamp = isoStringToServerTimestamp(checkpoint.serverTimestamp);
+                liveQuery = query(
+                    pullQuery,
+                    where(serverTimestampField, '>', lastServerTimestamp),
+                    orderBy(serverTimestampField, 'asc')
+                );
+            } else {
+                // No checkpoint yet, listen from the beginning of time.
+                liveQuery = query(
+                    pullQuery,
+                    orderBy(serverTimestampField, 'asc')
+                );
+            }
+
+            snapshotUnsubscribe = onSnapshot(
+                liveQuery,
+                (snapshot) => {
+                    if (snapshot.metadata.hasPendingWrites || snapshot.empty) {
+                        return;
+                    }
+                    const changes = snapshot.docChanges();
+                    const documents = changes.map(change => {
+                        const docId = change.doc.id;
+                        if (change.type === 'removed') {
+                            const data = firestoreRowToDocData(
+                                serverTimestampField,
+                                primaryPath,
+                                change.doc as QueryDocumentSnapshot<RxDocType>
+                            );
+                            data._deleted = true;
+                            return data;
+                        } else { // 'added' or 'modified'
+                            return firestoreRowToDocData(
+                                serverTimestampField,
+                                primaryPath,
+                                change.doc as QueryDocumentSnapshot<RxDocType>
+                            );
+                        }
+                    });
+
+                    const lastDoc = ensureNotFalsy(lastOfArray(snapshot.docs));
+                    const newCheckpoint: FirestoreCheckpointType = {
+                        id: lastDoc.id,
+                        serverTimestamp: serverTimestampToIsoString(serverTimestampField, lastDoc.data())
+                    };
+
+                    pullStream$.next({
+                        documents,
+                        checkpoint: newCheckpoint
+                    });
                 },
                 (error) => {
                     replicationState.subjects.error.next(
@@ -373,11 +432,12 @@ export function replicateFirestore<RxDocType>(
                     );
                 }
             );
+
             replicationState.cancel = () => {
-                unsubscribe();
+                snapshotUnsubscribe?.();
                 return cancelBefore();
             };
-            return startBefore();
+            return startPromise;
         };
     }
 
