@@ -59,7 +59,7 @@ const config: Config = {
         function myWebpackTweaks() {
             return {
                 name: 'custom-webpack-tweaks',
-                configureWebpack(config, isServer, utils) {
+                configureWebpack(_config, _isServer, _utils) {
                     return {
                         module: {
                             /**
