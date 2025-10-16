@@ -363,7 +363,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Chrome to specific version
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 140
       - name: Set node version
         uses: actions/setup-node@v4
         with:
