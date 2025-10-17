@@ -47,7 +47,7 @@ There are two types of conflicts in RxDB, the **local conflict** and the **repli
 
 ### Local conflicts
 
-A local conflict can happen when a write operation assumes a different previous document state, then what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.
+A local conflict can happen when a write operation assumes a different previous document state, than what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.
 
 When a local conflict appears, RxDB will throw a `409 CONFLICT` error. The calling code must then handle the error properly, depending on the application logic.
 
