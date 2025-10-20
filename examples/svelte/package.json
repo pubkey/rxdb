@@ -7,7 +7,7 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear --port 5000",
-    "test:e2e": "testcafe chromium -e test/ --hostname localhost --selector-timeout 8000",
+    "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --disable-features=LocalNetworkAccessChecks",
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
