@@ -542,7 +542,7 @@
     "@firebase/rules-unit-testing": "4.0.1",
     "@rollup/plugin-commonjs": "28.0.8",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@stylistic/eslint-plugin": "5.4.0",
+    "@stylistic/eslint-plugin": "5.5.0",
     "@supabase/supabase-js": "2.58.0",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
