@@ -26,6 +26,7 @@ import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
+import { getTestGroup } from '../components/a-b-tests';
 
 
 export const colors = [
@@ -209,7 +210,9 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
-  // getTestGroup(props.sem ? props.sem.id : '');
+  // must be directly called here first, before any A/B-Test content is rendered
+  getTestGroup(props.sem ? props.sem.id : '');
+
   const { siteConfig } = useDocusaurusContext();
 
   const isBrowser = useIsBrowser();
