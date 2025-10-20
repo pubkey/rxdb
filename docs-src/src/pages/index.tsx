@@ -17,7 +17,7 @@ import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
-import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { PartnerTrophy, SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
@@ -328,8 +328,14 @@ export default function Home(props: {
 
           <FeaturesSection dark={true} />
 
-          <div className="block reviews" id="reviews" ref={reviewsRef} style={{
-            paddingTop: 50
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
+
+
+          <div className="block reviews trophy-before" id="reviews" ref={reviewsRef} style={{
           }}>
             <div className="content centered">
               <h2>

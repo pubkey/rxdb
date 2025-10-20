@@ -46,5 +46,28 @@ export function Trophy(props: {
             </div>
         </div>
     </a>;
+}
 
+export function PartnerTrophy(props: {
+    href: string;
+    title: string;
+    imgUrl: string;
+    order?: number;
+}) {
+    return <a
+    href={props.href}
+    onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
+    target="_blank"
+    style={{ order: props.order }}
+>
+    <div className={'trophy ' + props.title.toLowerCase()} style={{
+        width: 'auto'
+    }}>
+        <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
+        <div style={{ flex: 1 }}>
+            <div className="subtitle">Official Partner</div>
+            <div className="title">{props.title}</div>
+        </div>
+    </div>
+</a>;
 }

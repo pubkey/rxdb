@@ -63,7 +63,7 @@ import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-cry
 
 /*
  * For testing, we use the in-memory storage of RxDB.
- * In production you would use the persistend SQLite based storage instead.
+ * In production you would use the persistent SQLite based storage instead.
  */
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 
