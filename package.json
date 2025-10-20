@@ -540,7 +540,7 @@
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.37.0",
     "@firebase/rules-unit-testing": "4.0.1",
-    "@rollup/plugin-commonjs": "28.0.6",
+    "@rollup/plugin-commonjs": "28.0.8",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@stylistic/eslint-plugin": "5.4.0",
     "@supabase/supabase-js": "2.58.0",
