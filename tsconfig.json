@@ -27,7 +27,8 @@
         ],
         "types": [],
         "noEmit": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true,
+        "skipLibCheck": true
     },
     "formatCodeOptions": {
         "indentSize": 2,
