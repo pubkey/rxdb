@@ -203,7 +203,7 @@ export const ERROR_MESSAGES = {
     SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
     SC15: 'SchemaCheck: primary cannot be encrypted',
     SC16: 'SchemaCheck: primary must have type: string',
-    SC17: 'SchemaCheck: top-level fieldname is not allowed',
+    SC17: 'SchemaCheck: top-level fieldname is not allowed. See https://rxdb.info/rx-schema.html#non-allowed-properties ',
     SC18: 'SchemaCheck: indexes must be an array',
     SC19: 'SchemaCheck: indexes must contain strings or arrays of strings',
     SC20: 'SchemaCheck: indexes.array must contain strings',
