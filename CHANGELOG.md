@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - FIX(types) pull handler can return `undefined` as checkpoint.
 - FIX Issue running rxdb dev mode plugin on latest react native [#7421](https://github.com/pubkey/rxdb/issues/7421)
+- DOCS add info about non allowed top level properties [#7449](https://github.com/pubkey/rxdb/issues/7449)
 
 <!-- ADD new changes here! -->
 
