@@ -77,11 +77,11 @@ export function isFolderPath(name: string) {
  * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
  * @link https://stackoverflow.com/a/76240378/3443137
  */
-export function arrayBufferToString(arrayBuffer: ArrayBuffer): string {
+export function arrayBufferToString(arrayBuffer: Uint8Array<ArrayBuffer>) {
     return new TextDecoder().decode(arrayBuffer);
 }
 
-export function stringToArrayBuffer(str: string): ArrayBuffer {
+export function stringToArrayBuffer(str: string): Uint8Array<ArrayBuffer> {
     return new TextEncoder().encode(str);
 }
 

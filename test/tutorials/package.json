@@ -8,12 +8,12 @@
     "rxdb": "../../"
   },
   "devDependencies": {
-    "@types/node": "22.17.1",
+    "@types/node": "22.18.8",
     "@types/request-promise-native": "1.0.21",
     "async-test-util": "2.5.0",
     "request": "2.88.2",
     "request-promise-native": "1.0.9",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.9.3"
   }
 }

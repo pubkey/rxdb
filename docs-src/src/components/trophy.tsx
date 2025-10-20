@@ -2,12 +2,12 @@ import { triggerTrackingEvent } from './trigger-event';
 
 export const SOCIAL_PROOF_VALUES = {
     // @link https://www.star-history.com/#pubkey/rxdb&Date
-    github: 22299,
+    github: 22590,
     // @link https://x.com/rxdbjs
     twitter: 3003,
     // @link https://discord.com/invite/tqt9ZttJfD
     discord: 1251
-};
+} as const;
 
 
 export function Trophy(props: {
@@ -41,7 +41,7 @@ export function Trophy(props: {
                         start={props.value - 30}
                         duration={2}
                     ></CountUp> */}
-                    <div className="arrow-up"> </div>
+                    <div className="arrow-up">▲</div>
                 </div>
             </div>
         </div>

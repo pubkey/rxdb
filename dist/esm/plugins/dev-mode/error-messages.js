@@ -230,6 +230,8 @@ export var ERROR_MESSAGES = {
   DXE1: 'non-required index fields are not possible with the dexie.js RxStorage: https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082',
   // removed in 15.0.0, added boolean index support to dexie storage - DXE1: 'The dexie.js RxStorage does not support boolean indexes, see https://rxdb.info/rx-storage-dexie.html#boolean-index',
 
+  // plugins/storage-localstorage
+  LS1: 'The localstorage RxStorage does not use attachments. In browsers use the IndexedDB, OPFS or Dexie RxStorage if you need attachments support.',
   // plugins/storage-sqlite-trial/
   SQL1: 'The trial version of the SQLite storage does not support attachments.',
   SQL2: 'The trial version of the SQLite storage is limited to contain 300 documents',

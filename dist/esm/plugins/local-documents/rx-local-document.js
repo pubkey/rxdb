@@ -4,10 +4,12 @@ import { overwritable } from "../../overwritable.js";
 import { getDocumentDataOfRxChangeEvent } from "../../rx-change-event.js";
 import { basePrototype, createRxDocumentConstructor } from "../../rx-document.js";
 import { newRxError, newRxTypeError } from "../../rx-error.js";
-import { getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "../../rx-storage-helper.js";
+import { getWrappedStorageInstance, getWrittenDocumentsFromBulkWriteResponse, writeSingle } from "../../rx-storage-helper.js";
 import { ensureNotFalsy, flatClone, getFromMapOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from "../../plugins/utils/index.js";
-import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from "./local-documents-helper.js";
+import { createLocalDocumentStorageInstance, getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT, LOCAL_DOC_STATE_BY_PARENT_RESOLVED, RX_LOCAL_DOCUMENT_SCHEMA } from "./local-documents-helper.js";
 import { isRxDatabase } from "../../rx-database.js";
+import { DocumentCache } from "../../doc-cache.js";
+import { IncrementalWriteQueue } from "../../incremental-write.js";
 var RxDocumentParent = createRxDocumentConstructor();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
   function RxLocalDocumentClass(id, jsonData, parent) {
@@ -177,5 +179,70 @@ export function getRxDatabaseFromLocalDocument(doc) {
   } else {
     return parent.database;
   }
+}
+export function createLocalDocStateByParent(parent) {
+  var database = parent.database ? parent.database : parent;
+  var collectionName = parent.database ? parent.name : '';
+  var statePromise = (async () => {
+    var storageInstance = await createLocalDocumentStorageInstance(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance);
+    storageInstance = getWrappedStorageInstance(database, storageInstance, RX_LOCAL_DOCUMENT_SCHEMA);
+    var docCache = new DocumentCache('id', database.eventBulks$.pipe(filter(changeEventBulk => {
+      var ret = false;
+      if (
+      // parent is database
+      collectionName === '' && !changeEventBulk.collectionName ||
+      // parent is collection
+
+      collectionName !== '' && changeEventBulk.collectionName === collectionName) {
+        ret = true;
+      }
+      return ret && changeEventBulk.isLocal;
+    }), map(b => b.events)), docData => createRxLocalDocument(docData, parent));
+    var incrementalWriteQueue = new IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
+
+    /**
+     * Emit the changestream into the collections change stream
+     */
+    var databaseStorageToken = await database.storageToken;
+    var subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+      var events = new Array(eventBulk.events.length);
+      var rawEvents = eventBulk.events;
+      var collectionName = parent.database ? parent.name : undefined;
+      for (var index = 0; index < rawEvents.length; index++) {
+        var event = rawEvents[index];
+        events[index] = {
+          documentId: event.documentId,
+          collectionName,
+          isLocal: true,
+          operation: event.operation,
+          documentData: overwritable.deepFreezeWhenDevMode(event.documentData),
+          previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData)
+        };
+      }
+      var changeEventBulk = {
+        id: eventBulk.id,
+        isLocal: true,
+        internal: false,
+        collectionName: parent.database ? parent.name : undefined,
+        storageToken: databaseStorageToken,
+        events,
+        databaseToken: database.token,
+        checkpoint: eventBulk.checkpoint,
+        context: eventBulk.context
+      };
+      database.$emit(changeEventBulk);
+    });
+    parent._subs.push(subLocalDocs);
+    var state = {
+      database,
+      parent,
+      storageInstance,
+      docCache,
+      incrementalWriteQueue
+    };
+    LOCAL_DOC_STATE_BY_PARENT_RESOLVED.set(parent, state);
+    return state;
+  })();
+  LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
 }
 //# sourceMappingURL=rx-local-document.js.map

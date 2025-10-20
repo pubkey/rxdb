@@ -1,13 +1,4 @@
-// import { SOCIAL_PROOF_VALUES, Trophy } from '@site/src/components/trophy';
 import Home from '..';
-// import { triggerTrackingEvent } from '@site/src/components/trigger-event';
-
-
-// const styles = {
-//     table: {
-//         borderCollapse: 'collapse'
-//     }
-// } as any;
 
 export default function Page() {
     return Home({

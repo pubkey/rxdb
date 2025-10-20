@@ -297,7 +297,7 @@ export var RxStorageInstanceLocalstorage = /*#__PURE__*/function () {
     return PROMISE_RESOLVE_TRUE;
   };
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
-    throw newRxError('SNH');
+    throw newRxError('LS1');
   };
   _proto.remove = function remove() {
     ensureNotRemoved(this);

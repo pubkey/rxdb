@@ -10,12 +10,14 @@ import {Steps} from '@site/src/components/steps';
 
 Welcome to the RxDB Quickstart. Here we'll learn how to create a simple real-time app with the RxDB database that is able to store and query data persistently in a browser and does realtime updates to the UI on changes.
 
+<br />
 <center>
     <a href="https://rxdb.info/">
         <img src="/files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220" />
     </a>
 </center>
 
+<br />
 
 <Steps>
 
@@ -59,6 +61,19 @@ const myDatabase = await createRxDatabase({
   })
 });
 ```
+
+<details>
+    <summary>Which storage should I use?</summary>
+    <div>
+        RxDB provides a wide range of storages depending on your JavaScript runtime and performance needs.
+        <ul>
+    <li>In the Browser: Use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage for simple setup and small build size. For bigger datasets, use either the <a href="/rx-storage-dexie.html">dexie.js storage</a> (free) or the <a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a> if you have <a href="/premium/">👑 premium access</a> which is a bit faster and has a smaller build size.</li>
+    <li>In <a href="/electron-database.html">Electron</a> and <a href="/react-native-database.html">ReactNative</a>: Use the <a href="./rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a> or the <a href="/rx-storage-sqlite.html">trial-SQLite RxStorage</a> for tryouts.</li>
+    <li>In Capacitor: Use the <a href="/rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a>, otherwise use the <a href="/rx-storage-localstorage.html">localStorage</a> storage.</li>
+</ul>
+
+    </div>
+</details>
 
 ### Add a Collection
 

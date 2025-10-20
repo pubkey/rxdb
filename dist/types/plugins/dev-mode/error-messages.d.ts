@@ -179,6 +179,7 @@ export declare const ERROR_MESSAGES: {
     CRDT2: string;
     CRDT3: string;
     DXE1: string;
+    LS1: string;
     SQL1: string;
     SQL2: string;
     SQL3: string;

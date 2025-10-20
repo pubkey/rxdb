@@ -69,7 +69,7 @@ var RxDBLocalDocumentsPlugin = exports.RxDBLocalDocumentsPlugin = {
            * the creation to speed up initial page load.
            */
           /* await */
-          (0, _localDocumentsHelper.createLocalDocStateByParent)(args.database);
+          (0, _rxLocalDocument.createLocalDocStateByParent)(args.database);
         }
       }
     },
@@ -81,7 +81,7 @@ var RxDBLocalDocumentsPlugin = exports.RxDBLocalDocumentsPlugin = {
            * the creation to speed up initial page load.
            */
           /* await */
-          (0, _localDocumentsHelper.createLocalDocStateByParent)(args.collection);
+          (0, _rxLocalDocument.createLocalDocStateByParent)(args.collection);
         }
       }
     },

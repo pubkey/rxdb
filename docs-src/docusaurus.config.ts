@@ -11,7 +11,22 @@ import type { Config } from '@docusaurus/types';
 const config: Config = {
     title: 'RxDB - JavaScript Database',
     tagline: 'Realtime JavaScript Database',
-    favicon: 'img/favicon.ico',
+    favicon: '/img/favicon.png',
+    // Add multiple sizes + Apple touch icon (+ optional SVG)
+    headTags: [
+        { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
+        { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preload',
+                href: '/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf',
+                as: 'font',
+                type: 'font/ttf',
+                crossorigin: 'anonymous',
+            },
+        },
+    ],
 
     // Set the production url of your site here
     url: 'https://rxdb.info',
@@ -41,6 +56,31 @@ const config: Config = {
                 excludeRoutes: ['blog', 'releases'],
             },
         ],
+        function myWebpackTweaks() {
+            return {
+                name: 'custom-webpack-tweaks',
+                configureWebpack(_config, _isServer, _utils) {
+                    return {
+                        module: {
+                            /**
+                             * Disable file hashing of fonts so we can
+                             * use html-preload on them.
+                             */
+                            rules: [
+                                {
+                                    test: /\.(woff(2)?|ttf|eot|otf)$/,
+                                    type: 'asset/resource',
+                                    generator: {
+                                        // Remove hash from font filenames
+                                        filename: 'static/fonts/[name][ext]',
+                                    },
+                                },
+                            ],
+                        },
+                    };
+                },
+            };
+        },
     ],
     scripts: [
         // {
@@ -117,35 +157,51 @@ const config: Config = {
             respectPrefersColorScheme: false,
         },
         navbar: {
-            title: 'RxDB',
+            title: '',
             logo: {
-                alt: 'RxDB Logo',
-                src: 'files/logo/logo.svg',
+                alt: 'RxDB',
+                src: 'files/logo/logo_text_white.svg',
             },
             items: [
+                {
+                    href: '/overview.html',
+                    label: 'Docs',
+                    position: 'left',
+                },
+                {
+                    href: '/replication.html',
+                    label: 'Sync',
+                    position: 'left',
+                },
+                {
+                    href: '/rx-storage.html',
+                    label: 'Storages',
+                    position: 'left',
+                },
+
+                {
+                    href: '/premium/',
+                    label: 'Premium',
+                    position: 'left',
+                },
+                {
+                    href: '/consulting/',
+                    label: 'Support',
+                    position: 'left',
+                },
                 {
                     to: '/chat/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
-                    className: 'navbar-icon navbar-icon-discord'
-                  },
-                  {
+                    className: 'navbar-icon navbar__item navbar-icon-discord'
+                },
+                {
                     to: '/code/',
                     target: '_blank',
                     label: ' ',
                     position: 'right',
-                    className: 'navbar-icon navbar-icon-github'
-                  },
-                  {
-                    href: '/consulting/',
-                    label: 'Support',
-                    position: 'right',
-                },
-                {
-                    href: '/premium/',
-                    label: 'Premium',
-                    position: 'right',
+                    className: 'navbar-icon navbar__item navbar-icon-github'
                 },
                 // {
                 //     to: '/chat',
@@ -154,11 +210,6 @@ const config: Config = {
                 //     position: 'right',
                 //     className: 'navbar-icon-discord'
                 // },
-                {
-                    href: '/overview.html',
-                    label: 'Docs',
-                    position: 'right',
-                },
                 // {
                 //   href: '/code/',
                 //   target: '_blank',

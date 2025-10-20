@@ -134,6 +134,7 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
+            return;
             if (location.pathname.includes('premium')) {
                 return;
             }
@@ -231,6 +232,7 @@ export default function Root({ children }) {
 }
 
 function addCallToActionButton() {
+    return;
     // do only show on docs-pages, not on landingpages like premium or consulting page.
     if (!location.pathname.includes('.html')) {
         return;
@@ -364,10 +366,12 @@ function startAnalytics() {
      * but only run trigger these once per page load
      */
     let trackScrollPercentages = new Set([25, 50, 75, 90]);
-    (window as any).navigation.addEventListener('navigate', () => {
-        // reset if url changes
-        trackScrollPercentages = new Set([25, 50, 75, 90]);
-    });
+    if ((window as any).navigation) {
+        (window as any).navigation.addEventListener('navigate', () => {
+            // reset if url changes
+            trackScrollPercentages = new Set([25, 50, 75, 90]);
+        });
+    }
     let nextScrollTimestamp = 0;
     if (location.pathname === '/' || location.pathname.includes('/sem/')) {
         window.addEventListener('scroll', (event) => {

@@ -6,14 +6,14 @@ description: Build real-time, offline-capable apps with RxDB + Supabase. Push/pu
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
-import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
 # Supabase Replication Plugin for RxDB - Real-Time, Offline-First Sync
 
 <p align="center">
-  <img src="./files/icons/supabase.svg" alt="Supabase" height="60" class="img-padding img-in-text-right" />
+  <img src="./files/icons/supabase.svg" alt="Supabase" height="60" className="img-padding img-in-text-right" />
 </p>
 
 The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchronization between your RxDB collections and a Supabase (Postgres) table. It uses **PostgREST** for pull/push and **Supabase Realtime** (logical replication) to stream live updates, so your data stays consistent across devices with first-class [local-first](./articles/local-first-future.md), offline-ready support.
@@ -21,7 +21,7 @@ The **Supabase Replication Plugin** for RxDB delivers seamless, two-way synchron
 Under the hood, the plugin is powered by the RxDB [Sync Engine](./replication.md). It handles checkpointed incremental pulls, robust retry logic, and [conflict detection/resolution](./transactions-conflicts-revisions.md) for you. You focus on features—RxDB takes care of sync.
 
 <center>
-    <YouTubeVideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
+    <VideoBox videoId="zBZgdTb-dns" title="Supabase in 100 Seconds" duration="2:36" />
 </center>
 
 

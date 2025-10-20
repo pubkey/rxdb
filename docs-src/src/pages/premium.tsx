@@ -4,7 +4,6 @@ import Head from '@docusaurus/Head';
 
 import React, { useEffect } from 'react';
 import { CollectionsOfDatabase, RxDatabase, RxLocalDocument, deepEqual, ensureNotFalsy } from '../../../plugins/core';
-import { Modal } from 'antd';
 import {
     PackageName,
     calculatePriceFromFormValueDoc
@@ -15,6 +14,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 // } from 'antd';
 import { distinctUntilChanged, map } from 'rxjs';
 import { triggerTrackingEvent } from '../components/trigger-event';
+import { Modal } from '../components/modal';
 
 export type FormValueDocData = {
     developers: number;
@@ -1021,7 +1021,6 @@ function BuyFormDialog({ onClose, open }) {
             open={open}
             width={'auto'}
             onCancel={handleClose}
-            closeIcon={null}
             footer={null}
         >
             <iframe

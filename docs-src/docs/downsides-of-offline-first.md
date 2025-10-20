@@ -4,14 +4,18 @@ slug: downsides-of-offline-first.html
 description: Discover the hidden pitfalls of local-first apps. Learn about storage limits, conflicts, and real-time illusions before building your offline solution.
 ---
 
-
+import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # Downsides of Local First / Offline First
 
 So you have read [all these things](./offline-first.md) about how the [local-first](./articles/local-first-future.md) (aka offline-first) paradigm makes it easy to create realtime web applications that even work when the user has no internet connection.
 But there is no free lunch. The offline first paradigm is not the perfect approach for all kinds of apps.
 
-> **You fully understood a technology when you know when not to use it**
+<QuoteBlock 
+  author="Daniel"
+  year="2024"
+  sourceLink="https://github.com/pubkey"
+>You fully understood a technology when you know when <b>not</b> to use it</QuoteBlock>
 
 In the following I will point out the limitations you need to know before you decide to use [RxDB](https://github.com/pubkey/rxdb) or even before you decide to create an offline first application.
 
