@@ -125,7 +125,7 @@ function replicateFirestore(options) {
         }
         if (useDocs.length === 0) {
           return {
-            checkpoint: lastPulledCheckpoint ?? null,
+            checkpoint: lastPulledCheckpoint ?? undefined,
             documents: []
           };
         }

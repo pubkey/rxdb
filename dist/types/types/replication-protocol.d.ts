@@ -94,9 +94,9 @@ export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = Docum
 export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
     masterChangeStream$: Observable<RxReplicationPullStreamItem<RxDocType, MasterCheckpointType>>;
     masterChangesSince(
-        checkpoint: MasterCheckpointType,
+        checkpoint: MasterCheckpointType | undefined,
         batchSize: number
-    ): Promise<DocumentsWithCheckpoint<RxDocType, MasterCheckpointType>>;
+    ): Promise<DocumentsWithCheckpoint<RxDocType, MasterCheckpointType | undefined>>;
     /**
      * Writes the fork changes to the master.
      * Only returns the conflicts if there are any.

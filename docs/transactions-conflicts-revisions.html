@@ -17,9 +17,9 @@
 
 <link rel="icon" type="image/svg+xml" href="/files/logo/logo.svg">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180">
-<link rel="preload" href="/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.51487b4e.css">
-<script src="/assets/js/runtime~main.bf9d4303.js" defer="defer"></script>
-<script src="/assets/js/main.50a602ca.js" defer="defer"></script>
+<link rel="preload" href="/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.ad559b08.css">
+<script src="/assets/js/runtime~main.aab3d487.js" defer="defer"></script>
+<script src="/assets/js/main.d8e04d6a.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -55,9 +55,9 @@ With an ACID transaction you can mutate data dependent on the current state of t
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="conflicts">Conflicts<a href="#conflicts" class="hash-link" aria-label="Direct link to Conflicts" title="Direct link to Conflicts">​</a></h2>
 <p>There are two types of conflicts in RxDB, the <strong>local conflict</strong> and the <strong>replication conflict</strong>.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="local-conflicts">Local conflicts<a href="#local-conflicts" class="hash-link" aria-label="Direct link to Local conflicts" title="Direct link to Local conflicts">​</a></h3>
-<p>A local conflict can happen when a write operation assumes a different previous document state, then what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.</p>
+<p>A local conflict can happen when a write operation assumes a different previous document state, than what is currently stored in the database. This can happen when multiple parts of your application do simultaneous writes to the same document. This can happen on a single browser tab, or when multiple tabs write at once or when a write appears while the document gets replicated from a remote server replication.</p>
 <p>When a local conflict appears, RxDB will throw a <code>409 CONFLICT</code> error. The calling code must then handle the error properly, depending on the application logic.</p>
-<p>Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using <code>incremental</code> database operations like <a href="/rx-document.html">incrementalModify()</a>, <a href="/rx-document.html">incrementalPatch()</a> or <a href="/rx-collection.html">incrementalUpsert()</a>. These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.</p>
+<p>Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using <code>incremental</code> database operations like <a href="/rx-document.html">incrementalModify()</a>, <a href="/rx-document.html">incrementalPatch()</a> or <a href="/rx-collection.html">incrementalUpsert()</a>. These write operations have a built-in way to handle conflicts by re-applying the mutation functions to the conflicting document state.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="replication-conflicts">Replication conflicts<a href="#replication-conflicts" class="hash-link" aria-label="Direct link to Replication conflicts" title="Direct link to Replication conflicts">​</a></h2>
 <p>A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server.</p>
 <p>When you replicate with the <a href="/replication-graphql.html">Graphql replication</a> and the <a href="/replication.html">replication primitives</a>, RxDB assumes that conflicts are <strong>detected</strong> and <strong>resolved</strong> at the client side.</p>
