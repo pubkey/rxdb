@@ -94,7 +94,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                     <div
                         style={{
                             ...styles.thumbnail,
-                            backgroundImage: `url(https://img.youtube.com/vi/${videoId}/0.jpg)`
+                            backgroundImage: `url(https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg)`
                         }}
                     />
                     <div

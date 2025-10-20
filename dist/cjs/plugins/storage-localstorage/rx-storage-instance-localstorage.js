@@ -308,7 +308,7 @@ var RxStorageInstanceLocalstorage = exports.RxStorageInstanceLocalstorage = /*#_
     return _index.PROMISE_RESOLVE_TRUE;
   };
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
-    throw (0, _rxError.newRxError)('SNH');
+    throw (0, _rxError.newRxError)('LS1');
   };
   _proto.remove = function remove() {
     ensureNotRemoved(this);

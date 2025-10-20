@@ -12,7 +12,7 @@
     "build": "vue-cli-service build",
     "build:serve": "ws -p 8888 -d dist/",
     "lint": "vue-cli-service lint",
-    "test:run": "testcafe chromium -e test/ --hostname localhost --selector-timeout 30000",
+    "test:run": "testcafe chrome -e test/ --hostname localhost --selector-timeout 30000 --disable-features=LocalNetworkAccessChecks",
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",

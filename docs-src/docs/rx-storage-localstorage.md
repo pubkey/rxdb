@@ -27,6 +27,7 @@ While LocalStorage is the easiest way to get started, it does come with some con
 
 1. **Limited Storage Capacity**: Browsers often limit LocalStorage to around [5 MB per domain](./articles/localstorage.md#understanding-the-limitations-of-local-storage), though exact limits vary.
 2. **Synchronous Access**: LocalStorage operations block the main thread. This is usually fine for small amounts of data but can cause performance bottlenecks with heavier use.
+3. The LocalStorage RxStorage does not support [attachments](./rx-attachment.md) because storing big binary values in the browsers localstorage is not a good solution. Use the [IndexdDB](./rx-storage-indexeddb.md), [OPFS](./rx-storage-opfs.md) or [dexie.js](./rx-storage-dexie.md) storage instead to use attachments.
 
 Despite these limitations, LocalStorage remains a great default option for smaller projects, prototypes, or cases where you need the absolute simplest way to persist data in the browser.
 
