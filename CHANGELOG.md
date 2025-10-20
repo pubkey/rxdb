@@ -2,7 +2,9 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(types) pull handler can return `undefined` as checkpoint.
 - FIX Issue running rxdb dev mode plugin on latest react native [#7421](https://github.com/pubkey/rxdb/issues/7421)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
