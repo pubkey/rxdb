@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "npm run build && concurrently \"npm run preview\" \"npm run test:e2e\" --kill-others --success first",
-    "test:e2e": "testcafe chromium -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages"
+    "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages --disable-features=LocalNetworkAccessChecks"
   },
   "devDependencies": {
     "async-test-util": "2.5.0",

@@ -20,7 +20,7 @@ const config: Config = {
             tagName: 'link',
             attributes: {
                 rel: 'preload',
-                href: '/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf',
+                href: '/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf',
                 as: 'font',
                 type: 'font/ttf',
                 crossorigin: 'anonymous',
@@ -56,6 +56,31 @@ const config: Config = {
                 excludeRoutes: ['blog', 'releases'],
             },
         ],
+        function myWebpackTweaks() {
+            return {
+                name: 'custom-webpack-tweaks',
+                configureWebpack(_config, _isServer, _utils) {
+                    return {
+                        module: {
+                            /**
+                             * Disable file hashing of fonts so we can
+                             * use html-preload on them.
+                             */
+                            rules: [
+                                {
+                                    test: /\.(woff(2)?|ttf|eot|otf)$/,
+                                    type: 'asset/resource',
+                                    generator: {
+                                        // Remove hash from font filenames
+                                        filename: 'static/fonts/[name][ext]',
+                                    },
+                                },
+                            ],
+                        },
+                    };
+                },
+            };
+        },
     ],
     scripts: [
         // {
