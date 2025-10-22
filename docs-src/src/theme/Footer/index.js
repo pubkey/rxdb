@@ -34,7 +34,7 @@ export default function FooterWrapper() {
       {
         label: 'Newsletter',
         target: '_blank',
-        href: '/chat/',
+        href: '/newsletter/',
         logo: <IconNewsletter />,
       },
       {
