@@ -117,9 +117,9 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
   <a href="./examples/angular">Browsers</a>
-  <img height="13" src="docs-src/static/files/icons/nodejs.png" />
+  <img height="13" src="docs-src/static/files/icons/nodejs.svg" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/static/files/icons/react-native.png" />
+  <img height="13" src="docs-src/static/files/icons/react-native.svg" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
@@ -127,7 +127,7 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
   <img height="13" src="docs-src/static/files/icons/flutter.svg" />
   <a href="./examples/flutter">Flutter</a>
-  or as an <img height="13" src="docs-src/static/files/icons/electron.png" />
+  or as an <img height="13" src="docs-src/static/files/icons/electron.svg" />
   <a href="https://rxdb.info/electron-database.html">Electron Database</a>
 </h4>
 
