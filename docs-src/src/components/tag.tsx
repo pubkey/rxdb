@@ -30,6 +30,7 @@ export function Tag(props: {
                 userSelect: 'none',
                 border: props.border ? '2px solid var(--White, #FFF)' : 'none',
                 transition: 'all 0.2s ease-in-out',
+                lineHeight: '100%'
             }}
             className={
                 'margin-right-10-6 ' +
