@@ -18,8 +18,8 @@
 <link rel="icon" type="image/svg+xml" href="/files/logo/logo.svg">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png" sizes="180x180">
 <link rel="preload" href="/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.62d86dd1.css">
-<script src="/assets/js/runtime~main.95bcaaa7.js" defer="defer"></script>
-<script src="/assets/js/main.73e1aea8.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.317084ac.js" defer="defer"></script>
+<script src="/assets/js/main.5dada2dc.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL63TR5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -29,7 +29,7 @@
 <p>React Native provides a cross-platform JavaScript runtime that runs on different operating systems like Android, iOS, Windows and others. Mostly it is used to create hybrid Apps that run on mobile devices at Android (Google) and iOS (Apple).</p>
 <p>In difference to the JavaScript runtime of browsers, React Native does not support all HTML5 APIs and so it is not possible to use browser storage possibilities like localstorage, cookies, WebSQL or IndexedDB.
 Instead a different storage solution must be chosen that does not come directly with React Native itself but has to be installed as a library or plugin.</p>
-<p align="center"><img src="./files/icons/react-native.png" alt="React Native" width="20"></p>
+<p align="center"><img src="./files/icons/react.svg" alt="React Native" width="20"></p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="database-solutions-for-react-native">Database Solutions for React-Native<a href="#database-solutions-for-react-native" class="hash-link" aria-label="Direct link to Database Solutions for React-Native" title="Direct link to Database Solutions for React-Native">​</a></h2>
 <p>There are multiple database solutions that can be used with React Native. While I would recommend to use <a href="/">RxDB</a> for most use cases, it is still helpful to learn about other alternatives.</p>
 <center><a href="https://rxdb.info/"><img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB" width="220"></a></center>
@@ -59,7 +59,7 @@ In your code you can then import the library and create a database connection:</
 </ul>
 <p>Overall, SQLite can be a good solution for straightforward, local-only data storage where complex real-time features or synchronization are not needed. For more advanced requirements, like reactive UI updates or multi-client <a href="/replication.html">data replication</a>, you&#x27;ll likely want a more feature-rich solution.</p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="pouchdb">PouchDB<a href="#pouchdb" class="hash-link" aria-label="Direct link to PouchDB" title="Direct link to PouchDB">​</a></h3>
-<p align="center"><img src="./files/icons/pouchdb.png" alt="PouchDB" width="40"></p>
+<p align="center"><img src="./files/icons/pouchdb.svg" alt="PouchDB" width="40"></p>
 <p>PouchDB is a JavaScript NoSQL database that follows the API of the <a href="https://couchdb.apache.org/" target="_blank" rel="noopener noreferrer">Apache CouchDB</a> server database.
 The core feature of PouchDB is the ability to do a two-way replication with any CouchDB compliant endpoint.
 While PouchDB is pretty mature, it has some drawbacks that blocks it from being used in a client-side React Native application. For example it has to store all documents states over time which is required to replicate with CouchDB. Also it is not easily possible to fully purge documents and so it will fill up disc space over time. A big problem is also that PouchDB is not really maintained and major bugs like wrong query results are not fixed anymore. The performance of PouchDB is a general bottleneck which is caused by how it has to store and fetch documents while being compliant to CouchDB. The only real reason to use <a href="/rx-storage-pouchdb.html">PouchDB</a> in React Native, is when you want to replicate with a <a href="/replication-couchdb.html">CouchDB or Couchbase server</a>.</p>
