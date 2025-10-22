@@ -891,6 +891,8 @@ body {
 }
 
 @media (max-width: 900px) {
+
+
     .flex-end-center {
         justify-content: center;
     }
@@ -994,6 +996,10 @@ body {
 
     .column-mobile {
         flex-direction: column;
+    }
+
+    .text-center-mobile {
+        text-align: center;
     }
 
     .block .inner .half {

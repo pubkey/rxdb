@@ -70,9 +70,9 @@ export function HeroRuntimes() {
 
   return (
     <div style={styles.container} className="column-mobile padding-top-64-46">
-      <div className="font-20-14" style={styles.text}>
+      <div className="font-20-14 text-center-mobile" style={styles.text}>
         Use RxDB with{' '}
-        <br className="hide-mobile" />
+        <br />
         <span>{text}</span>
       </div>
       <div
