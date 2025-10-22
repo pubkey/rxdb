@@ -9,9 +9,9 @@ export default function Page() {
              * @link https://chatgpt.com/c/6794f6c2-052c-8005-9a18-4a049bf97cc1
              */
             metaTitle: 'The best Database on top of IndexedDB',
-            // title: <>The best <b className="underline">Database</b> on top of{' '}
-            //     <b className="underline">IndexedDB</b></>,
-            title: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in IndexedDB</>,
+            // title: <>The best <b >Database</b> on top of{' '}
+            //     <b >IndexedDB</b></>,
+            title: <>The easiest way to <b >store</b> and <b >sync</b> Data in IndexedDB</>,
             appName: 'Browser',
             // text: <>Store data inside the Browsers IndexedDB to build high performance realtime applications that sync data from the backend and even work when offline.</>,
             text: <>Upgrade from traditional IndexedDB. RxDB uses advanced optimizations, queries, and real-time updates for a lightning-fast, reliable data layer.</>,
@@ -28,7 +28,7 @@ export default function Page() {
 
             //         <div className="block">
             //             <div className='content centered'>
-            //                 <h2>Why <b className="underline">RxDB is Superior</b> to IndexedDB</h2>
+            //                 <h2>Why <b >RxDB is Superior</b> to IndexedDB</h2>
 
             //                 <br />
             //                 <br />

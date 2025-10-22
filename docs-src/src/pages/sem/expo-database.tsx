@@ -6,7 +6,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'The local Database for Expo',
             appName: 'Expo',
-            title: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in Expo</>,
+            title: <>The easiest way to <b >store</b> and <b >sync</b> Data in Expo</>,
             iconUrl: '/files/icons/expo_white.svg'
         }
     });
