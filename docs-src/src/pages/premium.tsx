@@ -780,6 +780,16 @@ export default function Premium() {
                                 you build your application with RxDB and deploy it to production, it
                                 will not make requests from your users to any RxDB server.
                             </details>
+                            <details>
+                                <summary>
+                                    Can I add more Premium Packages later if I've already purchased some?
+                                </summary>
+                                Yes! You can upgrade or add additional Premium Packages at any time.
+                                When you decide to purchase more, we'll calculate a fair upgrade price,
+                                meaning you only pay the difference between your existing purchase and the new package total.
+                                <br />
+                                Your previous payments are fully credited, so you never pay twice for the same plugins.
+                            </details>
                         </div>
                     </div>
 
