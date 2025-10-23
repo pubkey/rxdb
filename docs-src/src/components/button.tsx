@@ -13,7 +13,7 @@ type ButtonProps = {
   style?: CSSProperties;
   className?: string;
   href?: string;
-  target?: '_blank'
+  target?: '_blank';
 };
 
 const styles: Record<string, CSSProperties> = {
