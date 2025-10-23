@@ -516,6 +516,7 @@ describe('replication-firestore.test.ts', function () {
 
             /** update document to fall out of replication scope **/
             await updateDoc(DocRef(firestoreState.collection, firstDocRef.id), {
+                serverTimestamp: serverTimestamp(),
                 firstName: 'not-replicated'
             });
 
