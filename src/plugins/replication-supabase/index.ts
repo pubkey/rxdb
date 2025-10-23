@@ -129,10 +129,10 @@ export function replicateSupabase<RxDocType>(
                 }
 
                 const lastDoc = lastOfArray(data);
-                const newCheckpoint: SupabaseCheckpoint | null = lastDoc ? {
+                const newCheckpoint: SupabaseCheckpoint | undefined = lastDoc ? {
                     id: lastDoc[primaryPath],
                     modified: lastDoc[modifiedField]
-                } : null;
+                } : undefined;
 
                 const docs = data.map(row => rowToDoc(row))
                 return {

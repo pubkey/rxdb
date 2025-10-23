@@ -78,6 +78,7 @@ export function HeroSection_B(props: {
                         <Button primary
                             className="hero-action"
                             href="/quickstart.html"
+                            target='_blank'
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>

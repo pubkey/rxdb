@@ -11,9 +11,6 @@ import { Collapse } from 'antd';
 
 const FILE_EVENT_ID = 'consulting-link-clicked';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-
 import { ReviewsBlock } from '../components/review-block';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { Modal } from '../components/modal';

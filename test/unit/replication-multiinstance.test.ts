@@ -4,7 +4,10 @@ import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    randomStringWithSpecialChars
+    randomStringWithSpecialChars,
+    ensureEqualState,
+    getPullHandler,
+    getPushHandler
 } from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
 
@@ -20,10 +23,7 @@ import {
 
 import type { HumanWithTimestampDocumentType } from '../../src/plugins/test-utils/schema-objects.ts';
 import {
-    REPLICATION_IDENTIFIER_TEST,
-    ensureEqualState,
-    getPullHandler,
-    getPushHandler
+    REPLICATION_IDENTIFIER_TEST
 } from './replication.test.ts';
 
 type TestDocType = HumanWithTimestampDocumentType;

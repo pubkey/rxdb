@@ -17,7 +17,7 @@ import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
-import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { PartnerTrophy, SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
@@ -26,6 +26,7 @@ import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
+import { getTestGroup } from '../components/a-b-tests';
 
 
 export const colors = [
@@ -209,7 +210,9 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
-  // getTestGroup(props.sem ? props.sem.id : '');
+  // must be directly called here first, before any A/B-Test content is rendered
+  getTestGroup(props.sem ? props.sem.id : '');
+
   const { siteConfig } = useDocusaurusContext();
 
   const isBrowser = useIsBrowser();
@@ -328,8 +331,14 @@ export default function Home(props: {
 
           <FeaturesSection dark={true} />
 
-          <div className="block reviews" id="reviews" ref={reviewsRef} style={{
-            paddingTop: 50
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
+
+
+          <div className="block reviews trophy-before" id="reviews" ref={reviewsRef} style={{
           }}>
             <div className="content centered">
               <h2>

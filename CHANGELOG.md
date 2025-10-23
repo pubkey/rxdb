@@ -2,12 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX Issue running rxdb dev mode plugin on latest react native [#7421](https://github.com/pubkey/rxdb/issues/7421)
+- ADD(storage-localstorage) attachment support.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.20.0 (20 October 2025)
+
+- FIX(types) pull handler can return `undefined` as checkpoint.
+- FIX Issue running rxdb dev mode plugin on latest react native [#7421](https://github.com/pubkey/rxdb/issues/7421)
+- DOCS add info about non allowed top level properties [#7449](https://github.com/pubkey/rxdb/issues/7449)
 
 ### 16.19.1 (24 September 2025)
 

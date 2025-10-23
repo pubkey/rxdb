@@ -101,7 +101,7 @@ function replicateSupabase(options) {
         var newCheckpoint = lastDoc ? {
           id: lastDoc[primaryPath],
           modified: lastDoc[modifiedField]
-        } : null;
+        } : undefined;
         var docs = data.map(row => rowToDoc(row));
         return {
           documents: docs,

@@ -120,7 +120,7 @@ To observe document deletions on the changestream, `changeStreamPreAndPostImages
 
 ### Create a RxDB Database and Collection
 
-Now we create an RxDB [database](./rx-database.md) and a [collection](./rx-collection.md). In this example the [memory storage](./rx-storage-memory.md), in production you would use a [persistend storage](./rx-storage.md) instead.
+Now we create an RxDB [database](./rx-database.md) and a [collection](./rx-collection.md). In this example the [memory storage](./rx-storage-memory.md), in production you would use a [persistent storage](./rx-storage.md) instead.
 
 ```ts
 //> server.ts

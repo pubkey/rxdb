@@ -891,6 +891,8 @@ body {
 }
 
 @media (max-width: 900px) {
+
+
     .flex-end-center {
         justify-content: center;
     }
@@ -994,6 +996,10 @@ body {
 
     .column-mobile {
         flex-direction: column;
+    }
+
+    .text-center-mobile {
+        text-align: center;
     }
 
     .block .inner .half {
@@ -1757,8 +1763,8 @@ ul.checked li:before {
     width: 220px;
     padding-left: 10px;
     padding-right: 10px;
-    margin-left: -122px;
     left: 50%;
+    transform: translateX(-50%);
 }
 
 .trophy:hover {
@@ -1851,6 +1857,22 @@ ul.checked li:before {
 
 .trophy.discord:hover {
     box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee;
+}
+
+.trophy.supabase {
+    color: #3ECF8E;
+}
+
+.trophy.supabase:hover {
+    box-shadow: 2px 2px 13px #3ECF8E, -2px -1px 14px #3ECF8E;
+}
+
+.trophy.mongodb {
+    color: #00ED64;
+}
+
+.trophy.mongodb:hover {
+    box-shadow: 2px 2px 13px #00ED64, -2px -1px 14px #00ED64;
 }
 
 

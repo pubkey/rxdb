@@ -199,7 +199,7 @@ export function replicateFirestore<RxDocType>(
                 if (useDocs.length === 0) {
                     lastCheckpointFromPull = lastPulledCheckpoint ?? null;
                     return {
-                        checkpoint: lastCheckpointFromPull,
+                        checkpoint: lastPulledCheckpoint ?? undefined,
                         documents: []
                     };
                 }
