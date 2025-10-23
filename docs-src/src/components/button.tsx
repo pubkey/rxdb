@@ -13,6 +13,7 @@ type ButtonProps = {
   style?: CSSProperties;
   className?: string;
   href?: string;
+  target?: '_blank'
 };
 
 const styles: Record<string, CSSProperties> = {
@@ -63,6 +64,7 @@ export function Button({
   style,
   className,
   href,
+  target
 }: ButtonProps) {
   const [hovered, setHovered] = useState(false);
   const [mousePos, setMousePos] = useState<{ x: number; y: number; } | null>(
@@ -129,7 +131,7 @@ export function Button({
 
   if (href) {
     return (
-      <a href={href} onClick={onClick} {...commonProps}>
+      <a href={href} target={target} onClick={onClick} {...commonProps}>
         {content}
       </a>
     );
