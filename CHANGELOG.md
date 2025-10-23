@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD(storage-localstorage) attachment support.
 
 <!-- ADD new changes here! -->
 
