@@ -425,13 +425,6 @@ export function replicateFirestore<RxDocType>(
                         documents,
                         checkpoint: newCheckpoint
                     });
-
-                     /**
-                     * There is no good way to observe the event stream in firestore.
-                     * So instead we listen to any write to the collection
-                     * and then emit a 'RESYNC' flag.
-                     */
-                    replicationState.reSync();
                 },
                 (error) => {
                     replicationState.subjects.error.next(
