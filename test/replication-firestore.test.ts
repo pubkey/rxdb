@@ -42,7 +42,8 @@ import {
     orderBy,
     limit,
     getDoc,
-    QueryConstraint
+    QueryConstraint,
+    or
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
@@ -343,6 +344,40 @@ describe('replication-firestore.test.ts', function () {
 
             assert.strictEqual(docsOnServer.length, 1);
             assert.strictEqual(docsOnServer[0].id, 'replicated');
+
+            collection.database.close();
+        });
+
+        it('should sync documents matching an or constraint from firestore', async () => {
+            const firestoreState = getFirestoreState();
+
+            const h1 = makeFirestoreHumanDocument(schemaObjects.humanData('alice', 25, 'alice-passport'));
+            const h2 = makeFirestoreHumanDocument(schemaObjects.humanData('bob', 45, 'bob-passport'));
+            const h3 = makeFirestoreHumanDocument(schemaObjects.humanData('charlie', 30, 'charlie-passport'));
+            const h4 = makeFirestoreHumanDocument(schemaObjects.humanData('diana', 50, 'diana-passport'));
+
+            await setDoc(DocRef(firestoreState.collection, 'alice-passport'), h1);
+            await setDoc(DocRef(firestoreState.collection, 'bob-passport'), h2);
+            await setDoc(DocRef(firestoreState.collection, 'charlie-passport'), h3);
+            await setDoc(DocRef(firestoreState.collection, 'diana-passport'), h4);
+
+            const collection = await humansCollection.create(0);
+
+            await syncOnce(collection, firestoreState, {
+                pull: {
+                    filter: or(
+                        where('firstName', '==', 'alice'),
+                        where('firstName', '==', 'diana')
+                    )
+                },
+                push: {},
+            });
+
+            const allLocalDocs = await collection.find().exec();
+
+            assert.strictEqual(allLocalDocs.length, 2);
+            const passportIds = allLocalDocs.map(d => d.passportId).sort();
+            assert.deepStrictEqual(passportIds, ['alice-passport', 'diana-passport']);
 
             collection.database.close();
         });
