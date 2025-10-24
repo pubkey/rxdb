@@ -1,6 +1,7 @@
 @font-face {
     font-family: "Atkinson Hyperlegible Mono";
-    src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("truetype");
+    /* src: url("/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf") format("truetype"); */
+    src: url(data:font/truetype;charset=utf-8;base64,ZXhwb3J0IGRlZmF1bHQgX193ZWJwYWNrX3B1YmxpY19wYXRoX18gKyAiYXNzZXRzL2ZvbnRzL0F0a2luc29uSHlwZXJsZWdpYmxlTW9uby1WYXJpYWJsZUZvbnRfd2dodC0wMTBjMGM4Y2I5OTFjZmQ3ZmQ2N2VjZGY5ZGU3ZTI0MS50dGYiOw==) format('truetype');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
