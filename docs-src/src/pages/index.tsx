@@ -9,8 +9,6 @@ import {
 import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
