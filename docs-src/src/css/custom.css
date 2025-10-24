@@ -1771,7 +1771,8 @@ ul.checked li:before {
     box-shadow: 2px 2px 13px #eac54f, -2px -1px 14px #eac54f;
 }
 
-.trophy img {
+.trophy img,
+.trophy svg {
     display: flex;
     width: 30px;
     height: 30px;
@@ -3722,6 +3723,11 @@ footer a:visited {
     gap: 16px;
     align-items: center;
     margin-top: 130px;
+}
+
+.footer-community-links svg, .footer-community-links img {
+    height: 22px;
+    filter: grayscale(100%) brightness(1.8);
 }
 
 

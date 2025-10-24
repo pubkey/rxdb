@@ -300,7 +300,7 @@ export default function Home(props: {
             title="GitHub"
             subTitle='Open Source'
             value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
+            icon="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'
           />
 
@@ -312,7 +312,7 @@ export default function Home(props: {
             title="Twitter"
             subTitle='Follow on'
             value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
+            icon="/files/icons/twitter-blue.svg"
             valueTitle='followers'
           />
 
@@ -324,7 +324,7 @@ export default function Home(props: {
             title="Discord"
             subTitle='Chat on'
             value={SOCIAL_PROOF_VALUES.discord}
-            imgUrl="/files/icons/discord.svg"
+            icon="/files/icons/discord.svg"
             valueTitle='members'
           />
 

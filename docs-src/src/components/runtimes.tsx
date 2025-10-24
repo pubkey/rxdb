@@ -5,7 +5,7 @@ import { ComponentType, CSSProperties, SVGProps, useState } from 'react';
  * we directly put them into the html for faster initial load.
  */
 import ReactIcon from '@site/static/files/icons/react.svg';
-// import AngularIcon from '@site/static/files/icons/angular.svg';
+import AngularIcon from '@site/static/files/icons/angular.svg';
 import VueIcon from '@site/static/files/icons/vuejs.svg';
 import SvelteIcon from '@site/static/files/icons/svelte.svg';
 import NodeIcon from '@site/static/files/icons/nodejs.svg';
@@ -24,15 +24,9 @@ type BaseRow = {
   invert?: boolean;
 };
 
-type RowWithComponent = BaseRow & {
+type Row = BaseRow & {
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
-  iconUrl?: never;
 };
-type RowWithImage = BaseRow & {
-  iconUrl: string;
-  Icon?: never;
-};
-type Row = RowWithComponent | RowWithImage;
 
 const styles: Record<string, CSSProperties> = {
   container: {
@@ -76,7 +70,7 @@ const styles: Record<string, CSSProperties> = {
  */
 const rows: Row[] = [
   { Icon: ReactIcon, href: '/articles/react-database.html', label: 'React' },
-  { iconUrl: '/files/icons/angular.svg', href: '/articles/angular-database.html', label: 'Angular' },
+  { Icon: AngularIcon, href: '/articles/angular-database.html', label: 'Angular' },
   { Icon: VueIcon, href: '/articles/vue-database.html', label: 'Vue.js' },
   { Icon: SvelteIcon, href: 'https://github.com/pubkey/rxdb/tree/master/examples/svelte', label: 'Svelte' },
   { Icon: NodeIcon, href: '/nodejs-database.html', label: 'Node.js' },
@@ -132,28 +126,15 @@ export function HeroRuntimes() {
                   opacity: hovered === item.label ? 1 : (styles.icon.opacity as number),
                 };
 
-                const content =
-                  'Icon' in item ? (
-                    <item.Icon
-                      className="framework-icon"
-                      aria-label={item.label}
-                      style={commonStyle}
-                      onMouseEnter={() => setHovered(item.label)}
-                      onMouseLeave={() => setHovered(null)}
-                      // Helpful for inconsistent SVGs
-                      preserveAspectRatio="xMidYMid meet"
-                    />
-                  ) : (
-                    <img
-                      className="framework-icon"
-                      src={item.iconUrl}
-                      alt={item.label}
-                      loading="lazy"
-                      style={commonStyle}
-                      onMouseEnter={() => setHovered(item.label)}
-                      onMouseLeave={() => setHovered(null)}
-                    />
-                  );
+                const content = <item.Icon
+                  className="framework-icon"
+                  aria-label={item.label}
+                  style={commonStyle}
+                  onMouseEnter={() => setHovered(item.label)}
+                  onMouseLeave={() => setHovered(null)}
+                  // Helpful for inconsistent SVGs
+                  preserveAspectRatio="xMidYMid meet"
+                />;
 
                 const key = i + '_' + i2;
 
