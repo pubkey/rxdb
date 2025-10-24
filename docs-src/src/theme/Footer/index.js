@@ -1,6 +1,5 @@
 import React from 'react';
 import { IconNewsletter } from '../../components/icons/newsletter';
-import { IconTwitter } from '../../components/icons/twitter';
 import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
 
 export default function FooterWrapper() {
@@ -41,7 +40,7 @@ export default function FooterWrapper() {
         label: 'Twitter',
         href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
         target: '_blank',
-        logo: "/files/icons/twitter-blue.svg",
+        logo: '/files/icons/twitter-blue.svg',
       },
       {
         label: 'LinkedIn',

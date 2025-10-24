@@ -22,7 +22,6 @@ import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
 import { IconPremium } from '../components/icons/premium';
-import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
