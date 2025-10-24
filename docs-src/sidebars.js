@@ -20,7 +20,7 @@ const sidebars = {
   tutorialSidebar: [
     {
       type: 'category',
-      label: 'Getting Started with RxDB',
+      label: 'Getting Started',
       collapsed: false,
       items: [
         {
@@ -37,7 +37,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Core Entities',
-      collapsed: false,
+      collapsed: true,
       items: [
         {
           type: 'doc',
@@ -237,6 +237,16 @@ const sidebars = {
           type: 'doc',
           id: 'replication-firestore',
           label: 'Firestore Replication'
+        },
+        {
+          type: 'doc',
+          id: 'replication-mongodb',
+          label: 'MongoDB Replication'
+        },
+        {
+          type: 'doc',
+          id: 'replication-supabase',
+          label: 'Supabase Replication'
         },
         {
           type: 'doc',
@@ -556,22 +566,12 @@ const sidebars = {
         },
       ],
     },
-    {
-      type: 'category',
-      label: 'Beta',
-      items: [
-        {
-          type: 'doc',
-          id: 'replication-mongodb',
-          label: 'MongoDB Replication'
-        },
-        {
-          type: 'doc',
-          id: 'replication-supabase',
-          label: 'Supabase Replication'
-        },
-      ]
-    }
+    // {
+    //   type: 'category',
+    //   label: 'Beta',
+    //   items: [
+    //   ]
+    // }
   ],
 };
 
