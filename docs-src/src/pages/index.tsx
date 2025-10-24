@@ -450,7 +450,7 @@ export default function Home(props: {
                     position: 'absolute',
                     textAlign: 'center'
                   }}>
-                    <Button icon={<IconTwitter />} >
+                    <Button icon="/files/icons/twitter-blue.svg" >
                       <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Follow on</span>Twitter
                     </Button>
                   </div>
