@@ -75,6 +75,7 @@ export function PartnerTrophy(props: {
         href={props.href}
         onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
         target="_blank"
+        rel="noopener noreferrer"
         style={{ order: props.order }}
     >
         <div className={'trophy ' + props.title.toLowerCase()} style={{

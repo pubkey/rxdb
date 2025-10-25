@@ -303,16 +303,11 @@ export default function Home(props: {
 
           <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
 
-
-          <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            icon="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
+          <PartnerTrophy
+            href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+            title="MongoDB"
+            imgUrl="/files/icons/mongodb-icon.svg"
           />
-
 
           <VideoSection sem={props.sem} dark={false} />
 
@@ -328,15 +323,19 @@ export default function Home(props: {
 
           <FeaturesSection dark={true} />
 
-          <PartnerTrophy
-            href="https://supabase.com/partners/integrations/rxdb"
-            title="Supabase"
-            imgUrl="/files/icons/supabase.svg"
+
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            icon="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
           />
 
 
-          <div className="block reviews trophy-before" id="reviews" ref={reviewsRef} style={{
-          }}>
+
+          <div className="block reviews trophy-before trophy-after" id="reviews" ref={reviewsRef} >
             <div className="content centered">
               <h2>
                 Used by <b>Thousands Worldwide</b>
@@ -347,10 +346,14 @@ export default function Home(props: {
             </div>
           </div>
 
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
 
-          <div className="block last dark" style={{
-            paddingTop: 50
-          }}>
+
+          <div className="block last trophy-before dark">
             <div className="content">
               <h2>
                 Start using <b >RxDB</b> today

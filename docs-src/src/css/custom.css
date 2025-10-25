@@ -1863,6 +1863,8 @@ ul.checked li:before {
 
 .trophy.supabase {
     color: #3ECF8E;
+    background-color: var(--bg-color-dark);
+
 }
 
 .trophy.supabase:hover {
