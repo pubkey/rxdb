@@ -214,8 +214,9 @@ const config: Config = {
             copyright: ' ',
         },
         prism: {
-            theme: prismThemes.github,
+            theme: prismThemes.dracula,
             darkTheme: prismThemes.dracula,
+            additionalLanguages: ['bash', 'json', 'graphql', 'typescript', 'javascript'],
         },
     },
 };

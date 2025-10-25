@@ -15,11 +15,11 @@
     "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
-    "@docusaurus/core": "3.7.0",
-    "@docusaurus/plugin-google-gtag": "3.7.0",
-    "@docusaurus/preset-classic": "3.7.0",
-    "@mdx-js/react": "3.1.0",
-    "antd": "5.23.3",
+    "@docusaurus/core": "3.9.2",
+    "@docusaurus/plugin-google-gtag": "3.9.2",
+    "@docusaurus/preset-classic": "3.9.2",
+    "@mdx-js/react": "3.1.1",
+    "antd": "5.27.6",
     "autocomplete.js": "0.37.0",
     "clsx": "2.1.1",
     "gauge": "5.0.2",
@@ -30,10 +30,10 @@
     "lunr-languages": "1.14.0",
     "mark.js": "8.11.1",
     "minimatch": "3.0.4",
-    "prism-react-renderer": "2.4.1",
-    "react": "18.2.0",
+    "prismjs": "1.30.0",
+    "react": "19.2.0",
     "react-countup": "6.5.3",
-    "react-dom": "18.2.0",
+    "react-dom": "19.2.0",
     "react-tagcloud": "2.3.3",
     "rehype-parse": "7.0.1",
     "to-vfile": "6.1.0",
@@ -41,9 +41,9 @@
     "unist-util-is": "4.0.2"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "3.7.0",
-    "@docusaurus/tsconfig": "3.7.0",
-    "@docusaurus/types": "3.7.0",
+    "@docusaurus/module-type-aliases": "3.9.2",
+    "@docusaurus/tsconfig": "3.9.2",
+    "@docusaurus/types": "3.9.2",
     "typescript": "5.7.3"
   },
   "browserslist": {
