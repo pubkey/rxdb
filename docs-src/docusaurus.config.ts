@@ -4,8 +4,8 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
+import rehypeShiki from '@shikijs/rehype';
 
 /** @type {import('@docusaurus/types').Config} */
 const config: Config = {
@@ -14,13 +14,57 @@ const config: Config = {
     favicon: '/img/favicon.png',
     // Add multiple sizes + Apple touch icon (+ optional SVG)
     headTags: [
-        { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
-        { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consentcdn.cookiebot.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consent.cookiebot.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
-        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'icon',
+                type: 'image/svg+xml',
+                href: '/files/logo/logo.svg',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'apple-touch-icon',
+                href: '/img/apple-touch-icon.png',
+                sizes: '180x180',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://consentcdn.cookiebot.com/',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://consent.cookiebot.com/',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://region1.analytics.google.com/',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://www.redditstatic.com/',
+            },
+        },
+        {
+            tagName: 'link',
+            attributes: {
+                rel: 'preconnect',
+                href: 'https://pixel-config.reddit.com/',
+            },
+        },
     ],
 
     // Set the production url of your site here
@@ -83,7 +127,6 @@ const config: Config = {
         //   src: 'https://consent.cookiebot.com/c429ebbd-6e92-4150-b700-ca186e06bc7c/cd.js',
         //   type: 'text/javascript'
         // }
-
         // already included via google tag manager
         // {
         //   id: 'Cookiebot',
@@ -128,6 +171,28 @@ const config: Config = {
                     breadcrumbs: false,
                     // I disabled the editUrl because it just confuses users and does not look professional
                     // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
+                    rehypePlugins: [
+                        [
+                            rehypeShiki,
+                            {
+                                themes: {
+                                    light: 'dracula',
+                                    dark: 'dracula',
+                                },
+                                langs: [
+                                    'javascript',
+                                    'typescript',
+                                    'json',
+                                    'bash',
+                                    'graphql',
+                                    'html',
+                                    'css',
+                                    'jsx',
+                                    'tsx',
+                                ],
+                            },
+                        ],
+                    ],
                 },
                 // blog: {
                 //   showReadingTime: true,
@@ -142,88 +207,85 @@ const config: Config = {
     ],
 
     themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-    {
-        // Replace with your project's social card
-        image: 'img/rxdb_social_card.png',
-        colorMode: {
-            defaultMode: 'dark',
-            disableSwitch: true,
-            respectPrefersColorScheme: false,
-        },
-        navbar: {
-            title: '',
-            logo: {
-                alt: 'RxDB',
-                src: 'files/logo/logo_text_white.svg',
+        /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+        {
+            // Replace with your project's social card
+            image: 'img/rxdb_social_card.png',
+            colorMode: {
+                defaultMode: 'dark',
+                disableSwitch: true,
+                respectPrefersColorScheme: false,
             },
-            items: [
-                {
-                    href: '/overview.html',
-                    label: 'Docs',
-                    position: 'left',
+            navbar: {
+                title: '',
+                logo: {
+                    alt: 'RxDB',
+                    src: 'files/logo/logo_text_white.svg',
                 },
-                {
-                    href: '/replication.html',
-                    label: 'Sync',
-                    position: 'left',
-                },
-                {
-                    href: '/rx-storage.html',
-                    label: 'Storages',
-                    position: 'left',
-                },
+                items: [
+                    {
+                        href: '/overview.html',
+                        label: 'Docs',
+                        position: 'left',
+                    },
+                    {
+                        href: '/replication.html',
+                        label: 'Sync',
+                        position: 'left',
+                    },
+                    {
+                        href: '/rx-storage.html',
+                        label: 'Storages',
+                        position: 'left',
+                    },
 
-                {
-                    href: '/premium/',
-                    label: 'Premium',
-                    position: 'left',
-                },
-                {
-                    href: '/consulting/',
-                    label: 'Support',
-                    position: 'left',
-                },
-                {
-                    to: '/chat/',
-                    target: '_blank',
-                    label: ' ',
-                    position: 'right',
-                    className: 'navbar-icon navbar__item navbar-icon-discord'
-                },
-                {
-                    to: '/code/',
-                    target: '_blank',
-                    label: ' ',
-                    position: 'right',
-                    className: 'navbar-icon navbar__item navbar-icon-github'
-                },
-                // {
-                //     to: '/chat',
-                //     target: '_blank',
-                //     label: 'Community',
-                //     position: 'right',
-                //     className: 'navbar-icon-discord'
-                // },
-                // {
-                //   href: '/code/',
-                //   target: '_blank',
-                //   label: 'Code',
-                //   position: 'right',
-                // },
-            ],
+                    {
+                        href: '/premium/',
+                        label: 'Premium',
+                        position: 'left',
+                    },
+                    {
+                        href: '/consulting/',
+                        label: 'Support',
+                        position: 'left',
+                    },
+                    {
+                        to: '/chat/',
+                        target: '_blank',
+                        label: ' ',
+                        position: 'right',
+                        className:
+                            'navbar-icon navbar__item navbar-icon-discord',
+                    },
+                    {
+                        to: '/code/',
+                        target: '_blank',
+                        label: ' ',
+                        position: 'right',
+                        className:
+                            'navbar-icon navbar__item navbar-icon-github',
+                    },
+                    // {
+                    //     to: '/chat',
+                    //     target: '_blank',
+                    //     label: 'Community',
+                    //     position: 'right',
+                    //     className: 'navbar-icon-discord'
+                    // },
+                    // {
+                    //   href: '/code/',
+                    //   target: '_blank',
+                    //   label: 'Code',
+                    //   position: 'right',
+                    // },
+                ],
+            },
+            footer: {
+                style: 'dark',
+                links: [],
+                copyright: ' ',
+            },
         },
-        footer: {
-            style: 'dark',
-            links: [],
-            copyright: ' ',
-        },
-        prism: {
-            theme: prismThemes.dracula,
-            darkTheme: prismThemes.dracula,
-            additionalLanguages: ['bash', 'json', 'graphql', 'typescript', 'javascript'],
-        },
-    },
 };
 
 export default config;
