@@ -9,19 +9,16 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config.ts';
+import { indexedDB as fakeIndexedDB, IDBKeyRange } from 'fake-indexeddb';
 
-import {
-    createRxDatabase,
-    randomToken
-} from '../../plugins/core/index.mjs';
-import {
-    isNode
-} from '../../plugins/test-utils/index.mjs';
+import { createRxDatabase, randomToken } from '../../plugins/core/index.mjs';
+import { isNode } from '../../plugins/test-utils/index.mjs';
+import { getRxStorageDexie } from '../../plugins/storage-dexie/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async function () {
-
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
@@ -30,7 +27,7 @@ describe('bug-report.test.js', () => {
             !isNode // runs only in node
             // isNode // runs only in the browser
         ) {
-            // return;
+            return;
         }
 
         if (!config.storage.hasMultiInstance) {
@@ -45,20 +42,20 @@ describe('bug-report.test.js', () => {
             properties: {
                 passportId: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 100,
                 },
                 firstName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 lastName: {
-                    type: 'string'
+                    type: 'string',
                 },
                 age: {
                     type: 'integer',
                     minimum: 0,
-                    maximum: 150
-                }
-            }
+                    maximum: 150,
+                },
+            },
         };
 
         /**
@@ -74,68 +71,70 @@ describe('bug-report.test.js', () => {
              * By calling config.storage.getStorage(),
              * we can ensure that all variations of RxStorage are tested in the CI.
              */
-            storage: config.storage.getStorage(),
+            // !!! NEEDS TO BE DEXIE STORAGE (does not have issue with memory storage. I have not tested other storages.)
+            // fakeIndexedDB in node will replicate it as well
+            storage: wrappedValidateAjvStorage({
+                storage: getRxStorageDexie({
+                    indexedDB: fakeIndexedDB,
+                    IDBKeyRange: IDBKeyRange,
+                }),
+            }),
             eventReduce: true,
-            ignoreDuplicate: true
+            ignoreDuplicate: true,
         });
+
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
-                schema: mySchema
-            }
+                schema: mySchema,
+            },
         });
 
         // insert a document
-        await collections.mycollection.insert({
+        const doc = await collections.mycollection.insert({
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
-            age: 56
+            age: 56,
+        });
+        console.log('doc inserted ' + JSON.stringify(doc.toJSON()));
+
+        // define the query
+        const query = collections.mycollection.findOne().sort({ age: 'asc' });
+
+        // !!!! SUBSCRIPTION IS IMPORTANT TO REPRODUCE THE BUG
+        // I don't think it actually has to be the same query that we execute later.
+        // things that seem relevant:
+        // - the query is a findOne query
+        // - the query does NOT have a selector on `passportId` (or whatever)
+        const subscription = query.$.subscribe((result) => {
+            console.log('result ' + JSON.stringify(result?.toJSON()));
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        // now remove the doc
+        console.log('removing doc');
+        await doc.remove();
+        console.log('doc removed');
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // now execute the query
+        console.log('executing query');
+        const foundDoc = await query.exec();
+        console.log('query executed ' + JSON.stringify(foundDoc?.toJSON()));
 
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
+        // BUG: The query should return null after the doc is removed, but it doesn't
+        // This assertion should fail, proving the bug exists
+        if (foundDoc !== null) {
+            throw new Error(
+                'BUG REPRODUCED: Query returned a document when it should return null after removal. Document: ' +
+                    JSON.stringify(foundDoc?.toJSON())
+            );
+        }
 
+        // I couldn't actually get the assertion to fail? I think I'm writing the test wrong...
+        assert.strictEqual(foundDoc, null);
 
-        // you can also wait for events
-        const emitted: any[] = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => {
-                emitted.push(doc);
-            });
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
+        // cleanup
+        subscription.unsubscribe();
         db.close();
-        dbInOtherTab.close();
     });
 });
