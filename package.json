@@ -502,7 +502,7 @@
     "event-reduce-js": "5.2.7",
     "firebase": "11.10.0",
     "get-graphql-from-jsonschema": "8.1.0",
-    "graphql": "15.10.1",
+    "graphql": "16.12.0",
     "graphql-ws": "5.16.2",
     "is-my-json-valid": "2.20.6",
     "isomorphic-ws": "5.0.0",
