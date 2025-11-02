@@ -71,3 +71,38 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
         </AntdModal>
     );
 });
+
+
+export function IframeFormModal(props: {
+    iframeUrl: string;
+    onClose: Function;
+    open: boolean;
+}) {
+    const handleClose = () => {
+        props.onClose();
+    };
+    return <Modal
+        className="modal-consulting-page"
+        open={props.open}
+        width={'auto'}
+        onCancel={handleClose}
+        footer={null}
+    >
+        <iframe
+            style={{
+                width: '100%',
+                height: '70vh',
+            }}
+            src={props.iframeUrl}
+        >
+            Your browser doesn't support iframes,{' '}
+            <a
+                href={props.iframeUrl}
+                target="_blank"
+                rel="nofollow noreferrer"
+            >
+                Click here
+            </a>
+        </iframe>
+    </Modal>;
+}

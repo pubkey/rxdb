@@ -1872,11 +1872,11 @@ ul.checked li:before {
 }
 
 .trophy.mongodb {
-    color: #00ED64;
+    color: #00A35C;
 }
 
 .trophy.mongodb:hover {
-    box-shadow: 2px 2px 13px #00ED64, -2px -1px 14px #00ED64;
+    box-shadow: 2px 2px 13px #00A35C, -2px -1px 14px #00A35C;
 }
 
 

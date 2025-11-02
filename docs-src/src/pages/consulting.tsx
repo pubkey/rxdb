@@ -13,7 +13,7 @@ const FILE_EVENT_ID = 'consulting-link-clicked';
 
 import { ReviewsBlock } from '../components/review-block';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { Modal } from '../components/modal';
+import { IframeFormModal, Modal } from '../components/modal';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
@@ -631,39 +631,11 @@ function ContactBlock() {
 
 // components
 function FormDialog({ onClose, open }) {
-    const handleClose = () => {
-        onClose();
-    };
-    return (
-        <Modal
-            className="modal-consulting-page"
-            open={open}
-            width={'auto'}
-            onCancel={handleClose}
-            footer={null}
-        >
-            <br />
-            <br />
-            <iframe
-                style={{
-                    width: '100%',
-                    height: '70vh',
-                    borderRadius: '32px',
-                }}
-                id="request-project-form"
-                src="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
-            >
-                Your browser doesn't support iframes,{' '}
-                <a
-                    href="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
-                    target="_blank"
-                    rel="nofollow"
-                >
-                    Click here
-                </a>
-            </iframe>
-        </Modal>
-    );
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
+    />;
 }
 function ArrowDownwardIcon({ rotate }) {
     const style = {
