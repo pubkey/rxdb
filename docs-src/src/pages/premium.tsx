@@ -14,7 +14,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 // } from 'antd';
 import { distinctUntilChanged, map } from 'rxjs';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { IframeFormModal, Modal } from '../components/modal';
+import { IframeFormModal } from '../components/modal';
 
 export type FormValueDocData = {
     developers: number;

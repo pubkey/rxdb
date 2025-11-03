@@ -13,7 +13,7 @@ const FILE_EVENT_ID = 'consulting-link-clicked';
 
 import { ReviewsBlock } from '../components/review-block';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { IframeFormModal, Modal } from '../components/modal';
+import { IframeFormModal } from '../components/modal';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
