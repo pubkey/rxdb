@@ -7,7 +7,6 @@ import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
-import { ABTestContent } from '../a-b-tests';
 import { IframeFormModal } from '../modal';
 
 export function HeroSection_B(props: {
