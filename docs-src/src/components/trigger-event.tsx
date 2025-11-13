@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { getTestGroupEventPrefix } from './a-b-tests';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
@@ -69,4 +70,20 @@ export function triggerTrackingEvent(
             console.dir(err);
         }
     }
+}
+
+/**
+ * Empty component that can be used in .mdx files
+ * to trigger events on page load.
+ */
+export function TriggerEvent(props) {
+    useEffect(() => {
+        if (!ExecutionEnvironment.canUseDOM) return;
+        triggerTrackingEvent(
+            props.type,
+            props.value,
+            props.maxPerUser
+        );
+    }, []);
+    return <></>;
 }

@@ -98,7 +98,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                         decoding="async"
                         referrerPolicy="no-referrer"
                         crossOrigin="anonymous"
-                        fetchpriority="low"
+                        fetchPriority="low"
                     />
                     <div
                         style={{
