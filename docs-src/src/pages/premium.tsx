@@ -41,10 +41,7 @@ let formValueDocPromiseCache: Promise<RxLocalDocument<RxDatabase<CollectionsOfDa
 function getFormValueDoc() {
     if (!formValueDocPromiseCache) {
         formValueDocPromiseCache = (async () => {
-            console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
             const dbModule = await import('../components/database.module');
-            console.log('aaaaaa dbmodule:');
-            console.dir(dbModule);
             const database = await dbModule.getDatabase();
             let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             if (!formValueDoc) {
@@ -56,8 +53,6 @@ function getFormValueDoc() {
                     ]
                 });
             }
-            console.log('form value doc:');
-            console.dir(formValueDoc);
             return formValueDoc;
         })();
     }
