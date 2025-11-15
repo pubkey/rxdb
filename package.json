@@ -580,7 +580,7 @@
     "firebase-tools": "14.23.0",
     "get-port": "5.1.1",
     "globals": "16.5.0",
-    "graphql-subscriptions": "2.0.0",
+    "graphql-subscriptions": "3.0.0",
     "gzip-size-cli": "5.1.0",
     "html-webpack-plugin": "5.6.4",
     "karma": "6.4.4",
