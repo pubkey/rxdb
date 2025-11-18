@@ -248,6 +248,27 @@ describe('rx-collection.test.ts', () => {
                     await collections.nestedhuman.insert(schemaObjects.nestedHumanData());
                     db.close();
                 });
+                it('should insert nested human with null prototype subobject', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        nestedhuman: {
+                            schema: schemas.nestedHuman
+                        }
+                    });
+                    const doc = schemaObjects.nestedHumanData();
+                    doc.mainSkill = Object.create(null);
+                    doc.mainSkill.name = 'Skill';
+                    doc.mainSkill.level = 5;
+                    try {
+                        await collections.nestedhuman.insert(doc);
+                    } catch (err) {
+                        assert.fail('should not throw error: ' + (err as any).message);
+                    }
+                    db.close();
+                });
                 it('should insert more than once', async () => {
                     const db = await createRxDatabase({
                         name: randomToken(10),
