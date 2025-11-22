@@ -10,7 +10,7 @@ import DocSidebarItems from '@theme/DocSidebarItems';
 import type {Props} from '@theme/DocSidebar/Desktop/Content';
 
 import styles from './styles.module.css';
-// import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
+import SearchBar from '@site/docusaurus-lunr-search-main/src/theme/SearchBar';
 
 function useShowAnnouncementBar() {
   const {isActive} = useAnnouncementBar();
@@ -47,16 +47,14 @@ export default function DocSidebarDesktopContent({
         showAnnouncementBar && styles.menuWithAnnouncementBar,
         className,
       )}>
-        {
-        /* TODO, enable and fix search bar */
-        /* <div style={{
+        <div style={{
         padding: 10,
         paddingTop: 30,
         marginLeft: 'auto',
         marginRight: 'auto'
       }}>
         <SearchBar />
-      </div> */}
+      </div>
       <ul className={clsx(ThemeClassNames.docs.docSidebarMenu, 'menu__list')}>
         <DocSidebarItems items={sidebar} activePath={path} level={1} />
       </ul>

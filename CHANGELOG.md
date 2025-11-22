@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(docs) search visibility and positioning
 - ADD(storage-localstorage) attachment support.
 
 <!-- ADD new changes here! -->
