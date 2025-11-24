@@ -612,26 +612,10 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Setup Chrome to specific version
-        id: setup-chrome
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 140
-
-
-      - name: Override google-chrome to use the installed version
-        run: |
-          CHROME_PATH="${{ steps.setup-chrome.outputs.chrome-path }}"
-          echo "Chrome installed at: $CHROME_PATH"
-
-          # Remove any existing google-chrome symlinks/binaries
-          sudo rm -f /usr/bin/google-chrome /usr/local/bin/google-chrome || true
-
-          # Point google-chrome to the action-installed Chrome
-          sudo ln -s "$CHROME_PATH" /usr/local/bin/google-chrome
-
-          # Verify
-          which google-chrome
-          google-chrome --version
 
       - name: prepare RxDB core
         run: |
