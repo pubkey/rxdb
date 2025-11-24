@@ -363,6 +363,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -402,6 +403,8 @@ jobs:
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/angular
           run: npm run test:build
@@ -535,6 +538,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -551,6 +555,8 @@ jobs:
 
       - name: electron test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -610,10 +616,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
+
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
+
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -628,9 +637,13 @@ jobs:
 
       - name: react test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/react
-          run: npm run test:build
+          run: |
+            google-chrome --version
+            npm run test:build
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
@@ -667,6 +680,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -689,6 +703,8 @@ jobs:
 
       - name: vue test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vue
           run: npm run test
@@ -699,6 +715,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -720,6 +737,8 @@ jobs:
 
       - name: svelte test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/svelte
           run: npm run test
@@ -730,6 +749,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -750,6 +770,8 @@ jobs:
           npm run build
       - name: vite vanilla ts test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
@@ -760,6 +782,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -782,6 +805,8 @@ jobs:
         run: npm run build
       - name: test test:localstorage
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/graphql
           run: npm run test:localstorage
