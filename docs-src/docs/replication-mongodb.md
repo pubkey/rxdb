@@ -120,7 +120,7 @@ To observe document deletions on the changestream, `changeStreamPreAndPostImages
 
 ### Create a RxDB Database and Collection
 
-Now we create an RxDB [database](./rx-database.md) and a [collection](./rx-collection.md). In this example the [memory storage](./rx-storage-memory.md), in production you would use a [persistend storage](./rx-storage.md) instead.
+Now we create an RxDB [database](./rx-database.md) and a [collection](./rx-collection.md). In this example the [memory storage](./rx-storage-memory.md), in production you would use a [persistent storage](./rx-storage.md) instead.
 
 ```ts
 //> server.ts
@@ -267,6 +267,7 @@ While it is production-capable, the API and internal behavior may change before 
 ## Follow Up
 
 - Try it out with the [RxDB-MongoDB example repository](https://github.com/pubkey/rxdb-mongodb-sync-example)
+- Read [From Local to Global: Scalable Edge Apps with RxDB + MongoDB](https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb)
 - [Replication API Reference](./replication.md)
 - [RxServer Documentation](./rx-server.md)
 - Join our [Discord Forum](./chat) for questions and feedback

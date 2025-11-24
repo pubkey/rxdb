@@ -8,7 +8,7 @@ export const REVIEW_ITEMS: {
     location: string;
     href: string;
     target: '_blank';
-    logo: string;
+    logo?: string;
     logoStyle: 'slider-logo-black ' | 'slider-logo-white ';
 }[] = [
         {
@@ -66,7 +66,6 @@ export const REVIEW_ITEMS: {
         really a challenge.`,
             href: 'https://altgras.com/',
             target: '_blank',
-            logo: '/files/companies/altgras.png',
             logoStyle: 'slider-logo-white ',
         },
         {
@@ -127,12 +126,12 @@ export function ReviewsBlock() {
                         }}>{item.description}</p>
                         <IconQuoteEnd />
                         <div className="slider-profile">
-                            <img
+                            {item.logo ? <img
                                 className={item.logoStyle}
                                 src={item.logo}
                                 loading="lazy"
                                 alt="logo"
-                            />
+                            /> : <></>}
                             <div className="slider-info">
                                 <span className="developer"><b>{item.label}</b> ({item.location})</span>
                                 {/* <span className="company-link"                                >

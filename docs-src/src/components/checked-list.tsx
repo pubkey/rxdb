@@ -28,7 +28,7 @@ const defaultStyles: Record<string, CSSProperties> = {
     flex: 1,
     fontStyle: 'normal',
     fontWeight: 700,
-    lineHeight: 'normal',
+    lineHeight: 'inherit',
   },
   highlight: {
     color: '#e6007a',

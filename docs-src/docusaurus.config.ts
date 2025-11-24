@@ -14,18 +14,14 @@ const config: Config = {
     favicon: '/img/favicon.png',
     // Add multiple sizes + Apple touch icon (+ optional SVG)
     headTags: [
+        { tagName: 'meta', attributes: { name: 'theme-color', content: '#ed168f' } },
         { tagName: 'link', attributes: { rel: 'icon', type: 'image/svg+xml', href: '/files/logo/logo.svg' } },
         { tagName: 'link', attributes: { rel: 'apple-touch-icon', href: '/img/apple-touch-icon.png', sizes: '180x180' } },
-        {
-            tagName: 'link',
-            attributes: {
-                rel: 'preload',
-                href: '/static/fonts/AtkinsonHyperlegibleMono-VariableFont_wght.ttf',
-                as: 'font',
-                type: 'font/ttf',
-                crossorigin: 'anonymous',
-            },
-        },
+        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consentcdn.cookiebot.com/' } },
+        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://consent.cookiebot.com/' } },
+        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
+        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
+        { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
     ],
 
     // Set the production url of your site here
@@ -224,8 +220,9 @@ const config: Config = {
             copyright: ' ',
         },
         prism: {
-            theme: prismThemes.github,
+            theme: prismThemes.dracula,
             darkTheme: prismThemes.dracula,
+            additionalLanguages: ['bash', 'json', 'graphql', 'typescript', 'javascript'],
         },
     },
 };

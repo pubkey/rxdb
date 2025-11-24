@@ -6,7 +6,7 @@ export default function Page() {
             id: 'gads',
             metaTitle: 'The local Database for Svelte Apps',
             appName: 'Svelte',
-            title: <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data in Svelte</>,
+            title: <>The easiest way to <b >store</b> and <b >sync</b> Data in Svelte</>,
             iconUrl: '/files/icons/svelte.svg'
         }
     });

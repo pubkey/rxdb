@@ -15,7 +15,10 @@ import {
     humansCollection,
     ensureReplicationHasNoErrors,
     ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType
+    SimpleHumanDocumentType,
+    getPullStream,
+    getPullHandler,
+    getPushHandler
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -39,6 +42,7 @@ import config from './unit/config.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../plugins/storage-mongodb/index.mjs';
 import { MongoDBCheckpointIterationState } from '../src/plugins/replication-mongodb/index.ts';
+import { replicateRxCollection } from '../plugins/replication/index.mjs';
 
 const mongoConnectionString = 'mongodb://localhost:27017/?directConnection=true';
 const mongoDatabaseName = 'replication-test-db';
@@ -474,6 +478,55 @@ describe('replication-mongodb.test.ts', function () {
 
             await c1.database.close();
             await c2.database.close();
+        });
+        it('delete on cloud while update on client and server is offline', async () => {
+            await cleanUpServer();
+
+            const clientCollection = await humansCollection.create(0);
+            await clientCollection.insert(schemaObjects.humanData('edit-me', 1));
+
+
+            const serverCollection = await humansCollection.create(0);
+            const clientServerReplication = replicateRxCollection({
+                collection: clientCollection,
+                replicationIdentifier: randomString(5),
+                live: true,
+                pull: {
+                    handler: getPullHandler(serverCollection),
+                    stream$: getPullStream(serverCollection)
+                },
+                push: {
+                    handler: getPushHandler(serverCollection),
+                }
+            });
+            const serverCloudReplication = await syncCollection(serverCollection);
+
+            await clientServerReplication.awaitInSync();
+            await clientServerReplication.pause();
+            await serverCloudReplication.pause();
+
+
+
+            // delete on cloud
+            await cleanUpServer();
+
+            // update on client
+            const doc = await clientCollection.findOne().exec(true);
+            await doc.patch({ age: 2 });
+
+            // restart sync
+            await clientServerReplication.start();
+            await serverCloudReplication.start();
+            await clientServerReplication.awaitInSync();
+            await serverCloudReplication.awaitInSync();
+
+
+
+            const serverState = await getServerState();
+            assert.deepStrictEqual(serverState, []);
+
+            await clientCollection.database.close();
+            await serverCollection.database.close();
         });
     });
 

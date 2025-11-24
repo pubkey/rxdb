@@ -46,7 +46,7 @@ const myDatabase = await createRxDatabase({
 
 ### High query Load
 
-Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the shardingstorage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the [localstorage-meta-optimizer](./rx-storage-localstorage-meta-optimizer.md) to improve initialization time.
+Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the sharding storage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the [localstorage-meta-optimizer](./rx-storage-localstorage-meta-optimizer.md) to improve initialization time.
 
 ```ts
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';

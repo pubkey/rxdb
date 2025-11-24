@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "npm run build && concurrently \"npm run preview\" \"npm run test:e2e\" --kill-others --success first",
-    "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages --disable-features=LocalNetworkAccessChecks"
+    "test:e2e": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages --disable-features=LocalNetworkAccessChecks"
   },
   "devDependencies": {
     "async-test-util": "2.5.0",
@@ -19,7 +19,7 @@
     "copyfiles": "2.4.1",
     "testcafe": "3.7.2",
     "typescript": "5.9.3",
-    "vite": "7.1.9"
+    "vite": "7.1.12"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {

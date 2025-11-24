@@ -19,8 +19,7 @@ const styles: Record<string, CSSProperties> = {
         padding: '12px 12px 6px 12px',
         width: '275px',
         cursor: 'pointer',
-        boxSizing: 'content-box'
-
+        boxSizing: 'content-box',
     },
     thumbnailWrapper: {
         position: 'relative',
@@ -32,13 +31,12 @@ const styles: Record<string, CSSProperties> = {
     thumbnail: {
         width: '100%',
         height: '100%',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center -25px',
-        backgroundRepeat: 'no-repeat',
+        objectFit: 'cover',
+        objectPosition: 'center',
         display: 'block',
         userDrag: 'none',
         userSelect: 'none',
-        WebkitUserDrag: 'none'
+        WebkitUserDrag: 'none',
     } as any,
     playButton: {
         position: 'absolute',
@@ -51,6 +49,7 @@ const styles: Record<string, CSSProperties> = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        transform: 'translate(-50%, -50%)',
     },
     duration: {
         position: 'absolute',
@@ -91,11 +90,15 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
         >
             <div style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ ...styles.thumbnailWrapper }}>
-                    <div
-                        style={{
-                            ...styles.thumbnail,
-                            backgroundImage: `url(https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg)`
-                        }}
+                    <img
+                        src={`https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+                        alt={title}
+                        style={styles.thumbnail}
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        fetchPriority="low"
                     />
                     <div
                         style={{
@@ -136,7 +139,7 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                     footer={null}
                     width={'auto'}
                     style={{
-                        maxWidth: 800
+                        maxWidth: 800,
                     }}
                     title={title}
                 >

@@ -7,7 +7,7 @@ import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
-import { ABTestContent } from '../a-b-tests';
+import { IframeFormModal } from '../modal';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -15,6 +15,7 @@ export function HeroSection_B(props: {
 }) {
 
     const [online, setOnline] = useState(true);
+    const [openDemo, setOpenDemo] = useState(false);
 
     return <div className="block first hero centered dark">
         <div className="content">
@@ -40,7 +41,7 @@ export function HeroSection_B(props: {
                         marginTop: 0,
                         marginBottom: 0
                     }} className='centered-mobile-p'>
-                        <ABTestContent></ABTestContent>
+                        RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design, it delivers zero-latency queries even offline, and syncs seamlessly with many backends. With observable queries, your UI updates instantly as data changes.
                     </p>
                     <CheckedList className='centered-mobile padding-right-20-0' style={{
                         paddingTop: 35,
@@ -71,13 +72,19 @@ export function HeroSection_B(props: {
                     }} className='hero-action-buttons centered-smaller-mobile'>
                         <Button className="hero-action"
                             onClick={() => {
-                                triggerTrackingEvent('hero_section_how_others', 0.4);
-                                props.scrollToSection('reviews');
+                                setOpenDemo(true);
+                                triggerTrackingEvent('hero_section_demo_open', 0.4);
                             }}
-                        >How others use it</Button>
+                        >Schedule a Demo</Button>
+                        <IframeFormModal
+                            iframeUrl='https://webforms.pipedrive.com/f/6Fz0viOs1HDtaA9sgYbt29eTE4tsxrW29hQbk8hGIvr1Bzl8NJrZNhcGWQlLcN1Dxh'
+                            open={openDemo}
+                            onClose={() => setOpenDemo(false)}
+                        />
                         <Button primary
                             className="hero-action"
                             href="/quickstart.html"
+                            target='_blank'
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>

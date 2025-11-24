@@ -67,7 +67,7 @@ export function FeaturesSection(props: {
     }
 
     return (
-        <div className={'block features trophy-before' + (props.dark ? ' dark ' : '')}>
+        <div className={'block features trophy-before trophy-after' + (props.dark ? ' dark ' : '')}>
             <div className="content">
                 <h2 style={{ textAlign: 'center' }}>
                     All the <b>Features</b> You'll Ever Need
