@@ -302,6 +302,7 @@ function triggerClickEventWhenFromCode() {
     if (!urlParams.has('console')) {
         return;
     }
+    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID, 10);
     triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10);
 }
 

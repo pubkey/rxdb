@@ -25,6 +25,10 @@ const Search = props => {
       searchIndex,
       baseUrl,
       inputSelector: "#search_input_react",
+      autocompleteOptions: {
+        hint: false,
+        appendTo: '.navbar__search',
+      },
       // Override algolia's default selection event, allowing us to do client-side
       // navigation and avoiding a full page refresh.
       handleSelected: (_input, _event, suggestion) => {

@@ -363,6 +363,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -402,6 +403,8 @@ jobs:
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/angular
           run: npm run test:build
@@ -476,33 +479,33 @@ jobs:
             ${{ runner.os }}-npm-test-code-style-x4-
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src/docs
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/docs
       - name: spelling docs-src/src
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
-          skip: legal-notice.tsx
+          skip: legal-notice.tsx,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
@@ -535,6 +538,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -551,6 +555,8 @@ jobs:
 
       - name: electron test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -610,10 +616,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
+
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
+
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -628,9 +637,13 @@ jobs:
 
       - name: react test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/react
-          run: npm run test:build
+          run: |
+            google-chrome --version
+            npm run test:build
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
@@ -667,6 +680,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -689,6 +703,8 @@ jobs:
 
       - name: vue test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vue
           run: npm run test
@@ -699,6 +715,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -720,6 +737,8 @@ jobs:
 
       - name: svelte test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/svelte
           run: npm run test
@@ -730,6 +749,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -750,6 +770,8 @@ jobs:
           npm run build
       - name: vite vanilla ts test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
@@ -760,6 +782,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -782,6 +805,8 @@ jobs:
         run: npm run build
       - name: test test:localstorage
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/graphql
           run: npm run test:localstorage
@@ -993,7 +1018,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "2.5.4"
+          deno-version: "2.5.6"
       - name: run deno tests:dexie
         run: |
           sudo npm i -g cross-env

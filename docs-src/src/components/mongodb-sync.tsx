@@ -36,6 +36,9 @@ export function RxdbMongoDiagramPlain({
     <div className={`rxdb-diagram ${className}`} style={style}>
       <style>{`
     .rxdb-diagram {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      box-sizing: border-box;
       color: inherit;
       width: 100%;
       max-width: 100%;

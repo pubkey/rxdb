@@ -12,7 +12,7 @@
     "build": "vue-cli-service build",
     "build:serve": "ws -p 8888 -d dist/",
     "lint": "vue-cli-service lint",
-    "test:run": "testcafe chrome -e test/ --hostname localhost --selector-timeout 30000 --disable-features=LocalNetworkAccessChecks",
+    "test:run": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --selector-timeout 30000 --disable-features=LocalNetworkAccessChecks",
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
@@ -26,7 +26,7 @@
     "vue-router": "4.6.3"
   },
   "devDependencies": {
-    "@types/node": "22.18.12",
+    "@types/node": "22.18.13",
     "@types/pouchdb-adapter-http": "6.1.6",
     "@types/pouchdb-adapter-idb": "6.1.7",
     "@typescript-eslint/eslint-plugin": "7.18.0",

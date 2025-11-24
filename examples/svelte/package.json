@@ -7,13 +7,13 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear --port 5000",
-    "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --disable-features=LocalNetworkAccessChecks",
+    "test:e2e": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --selector-timeout 8000 --disable-features=LocalNetworkAccessChecks",
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "devDependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "@rollup/plugin-commonjs": "28.0.9",
+    "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-node-resolve": "16.0.3",
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
