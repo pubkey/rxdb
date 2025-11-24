@@ -363,6 +363,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -535,6 +536,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -615,7 +617,7 @@ jobs:
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: 140
+          chrome-version: 141
 
       - name: prepare RxDB core
         run: |
@@ -674,6 +676,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -706,6 +709,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -737,6 +741,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141
@@ -767,6 +772,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Chrome to specific version
+        id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 141

@@ -9,7 +9,7 @@
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
-    "test:e2e": "testcafe chrome -e test/ --hostname localhost --disable-features=LocalNetworkAccessChecks",
+    "test:e2e": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --disable-features=LocalNetworkAccessChecks",
     "test:pouchdb": "STORAGE=pouchdb concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
     "test:localstorage": "STORAGE=localstorage concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
