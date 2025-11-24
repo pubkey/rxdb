@@ -631,7 +631,9 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/react
-          run: npm run test:build
+          run: |
+            google-chrome --version
+            npm run test:build
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
