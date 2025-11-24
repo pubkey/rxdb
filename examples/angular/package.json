@@ -19,7 +19,7 @@
     "build:serve9000": "ws -p 9000 -d dist/angular/",
     "build:copy": "cp test/multitab.html dist/angular/browser/multitab.html",
     "test": "testcafe chrome -e test/e2e.test.js --hostname localhost --selector-timeout 30000",
-    "test:ci": "testcafe firefox -e test/e2e.test.js --hostname localhost --selector-timeout 30000 --ajax-request-timeout 10000 --disable-features=LocalNetworkAccessChecks",
+    "test:ci": "testcafe chrome -e test/e2e.test.js --hostname localhost --selector-timeout 30000 --ajax-request-timeout 10000 --disable-features=LocalNetworkAccessChecks",
     "test:build": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:ci\" --kill-others --success first",
     "// test:ssr": "TODO use npm run serve:ssr instead when bug is fixed",
     "test:ssr": "concurrently \"npm run server\" \"npm run dev:ssr\" \"sleep 20 && ts-mocha  --bail --exit ./test/ssr.test.ts\" --kill-others --success first",
