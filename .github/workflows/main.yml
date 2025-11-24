@@ -631,6 +631,8 @@ jobs:
 
       - name: react test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/react
           run: |
