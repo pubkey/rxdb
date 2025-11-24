@@ -403,6 +403,8 @@ jobs:
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/angular
           run: npm run test:build
@@ -553,6 +555,8 @@ jobs:
 
       - name: electron test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -699,6 +703,8 @@ jobs:
 
       - name: vue test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vue
           run: npm run test
@@ -731,6 +737,8 @@ jobs:
 
       - name: svelte test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/svelte
           run: npm run test
@@ -762,6 +770,8 @@ jobs:
           npm run build
       - name: vite vanilla ts test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
@@ -795,6 +805,8 @@ jobs:
         run: npm run build
       - name: test test:localstorage
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/graphql
           run: npm run test:localstorage
