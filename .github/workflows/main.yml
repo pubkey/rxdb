@@ -400,8 +400,8 @@ jobs:
           npm run build
 
       - name: angular test
-        # uses: DevExpress/testcafe-action@latest
-        uses: coactions/setup-xvfb@v1
+        uses: DevExpress/testcafe-action@latest
+        # uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/angular
           run: npm run test:build
