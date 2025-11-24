@@ -613,7 +613,7 @@ jobs:
       - name: Setup Chrome to specific version
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: 141
+          chrome-version: 140
       - run: google-chrome --version
       - name: prepare RxDB core
         run: |
