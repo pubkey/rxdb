@@ -614,7 +614,21 @@ jobs:
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: 140
-      - run: google-chrome --version
+      - name: Override google-chrome to use the installed version
+        run: |
+          echo "Chrome installed at: $CHROME_PATH"
+          
+          # Remove any existing google-chrome from PATH (system Chrome)
+          sudo rm -f /usr/bin/google-chrome || true
+          sudo rm -f /usr/local/bin/google-chrome || true
+
+          # Create symlink so google-chrome → CHROME_PATH
+          sudo ln -s "$CHROME_PATH" /usr/local/bin/google-chrome
+
+          # Verify
+          which google-chrome
+          google-chrome --version
+
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
