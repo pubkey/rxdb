@@ -9,8 +9,6 @@ import {
 import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
@@ -22,7 +20,6 @@ import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
 import { IconPremium } from '../components/icons/premium';
-import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
@@ -300,22 +297,17 @@ export default function Home(props: {
             title="GitHub"
             subTitle='Open Source'
             value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
+            icon="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'
           />
 
           <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
 
-
-          <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
+          <PartnerTrophy
+            href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+            title="MongoDB"
+            imgUrl="/files/icons/mongodb-icon.svg"
           />
-
 
           <VideoSection sem={props.sem} dark={false} />
 
@@ -324,22 +316,26 @@ export default function Home(props: {
             title="Discord"
             subTitle='Chat on'
             value={SOCIAL_PROOF_VALUES.discord}
-            imgUrl="/files/icons/discord.svg"
+            icon="/files/icons/discord.svg"
             valueTitle='members'
           />
 
 
           <FeaturesSection dark={true} />
 
-          <PartnerTrophy
-            href="https://supabase.com/partners/integrations/rxdb"
-            title="Supabase"
-            imgUrl="/files/icons/supabase.svg"
+
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            icon="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
           />
 
 
-          <div className="block reviews trophy-before" id="reviews" ref={reviewsRef} style={{
-          }}>
+
+          <div className="block reviews trophy-before trophy-after" id="reviews" ref={reviewsRef} >
             <div className="content centered">
               <h2>
                 Used by <b>Thousands Worldwide</b>
@@ -350,10 +346,14 @@ export default function Home(props: {
             </div>
           </div>
 
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
 
-          <div className="block last dark" style={{
-            paddingTop: 50
-          }}>
+
+          <div className="block last trophy-before dark">
             <div className="content">
               <h2>
                 Start using <b >RxDB</b> today
@@ -450,7 +450,7 @@ export default function Home(props: {
                     position: 'absolute',
                     textAlign: 'center'
                   }}>
-                    <Button icon={<IconTwitter />} >
+                    <Button icon="/files/icons/twitter-blue.svg" >
                       <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Follow on</span>Twitter
                     </Button>
                   </div>

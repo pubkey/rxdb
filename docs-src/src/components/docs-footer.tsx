@@ -59,7 +59,6 @@ export function DocsFooter(props: Props) {
     if (showTitle.length > maxTitleLength) {
         showTitle = showTitle.slice(0, maxTitleLength);
         const words = showTitle.split(' ');
-        console.dir(words);
         words.pop();
         showTitle = words.join(' ') + '...';
     }

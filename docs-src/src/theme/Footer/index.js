@@ -1,7 +1,6 @@
 import React from 'react';
 import { IconNewsletter } from '../../components/icons/newsletter';
-import { IconTwitter } from '../../components/icons/twitter';
-import { IconLinkedIn } from '../../components/icons/linkedin';
+import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
 
 export default function FooterWrapper() {
 
@@ -41,13 +40,13 @@ export default function FooterWrapper() {
         label: 'Twitter',
         href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
         target: '_blank',
-        logo: <IconTwitter />,
+        logo: '/files/icons/twitter-blue.svg',
       },
       {
         label: 'LinkedIn',
         href: 'https://www.linkedin.com/company/rxdb',
         target: '_blank',
-        logo: <IconLinkedIn />,
+        logo: <LinkedInLogo />,
       },
       {
         label: 'Github',
@@ -109,7 +108,15 @@ export default function FooterWrapper() {
                       target={link.target ? '_blank' : ''}
                       aria-label={link.label}
                     >
-                      {link.logo}
+                      {typeof link.logo === 'string' ? (
+                        <img
+                          src={link.logo}
+                          alt={link.label}
+                          loading="lazy"
+                        />
+                      ) : (
+                        link.logo
+                      )}
                     </a>
                   ))}
                 </div>

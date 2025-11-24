@@ -10,42 +10,59 @@ export const SOCIAL_PROOF_VALUES = {
 } as const;
 
 
-export function Trophy(props: {
+type TrophyProps = {
     href: string;
     title: string;
     subTitle: string;
     valueTitle: string;
-    imgUrl: string;
+    icon: string | React.ReactNode; // can be URL or React component
     value: number;
     order?: number;
-}) {
+};
 
-    return <a
-        href={props.href}
-        onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
-        target="_blank"
-        style={{ order: props.order }}
-    >
-        <div className={'trophy ' + props.title.toLowerCase()}>
-            <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
-            <div style={{ flex: 1 }}>
-                <div className="subtitle">{props.subTitle}</div>
-                <div className="title">{props.title}</div>
-            </div>
-            <div>
-                <div className="valuetitle">{props.valueTitle}</div>
-                <div className="value">
-                    {props.value.toLocaleString()}
-                    {/* <CountUp
-                        end={props.value}
-                        start={props.value - 30}
-                        duration={2}
-                    ></CountUp> */}
-                    <div className="arrow-up">▲</div>
+export function Trophy({
+    href,
+    title,
+    subTitle,
+    valueTitle,
+    icon,
+    value,
+    order
+}: TrophyProps) {
+    const isIconUrl = typeof icon === 'string';
+
+    return (
+        <a
+            href={href}
+            onClick={() =>
+                triggerTrackingEvent(title.toLowerCase() + '_trophy_click', 0.2)
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ order }}
+        >
+            <div className={'trophy ' + title.toLowerCase()}>
+                {isIconUrl ? (
+                    <img loading="lazy" src={icon} alt={'RxDB ' + title} />
+                ) : (
+                    <div className="trophy-icon">{icon}</div>
+                )}
+
+                <div style={{ flex: 1 }}>
+                    <div className="subtitle">{subTitle}</div>
+                    <div className="title">{title}</div>
+                </div>
+
+                <div>
+                    <div className="valuetitle">{valueTitle}</div>
+                    <div className="value">
+                        {value.toLocaleString()}
+                        <div className="arrow-up">▲</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </a>;
+        </a>
+    );
 }
 
 export function PartnerTrophy(props: {
@@ -55,19 +72,20 @@ export function PartnerTrophy(props: {
     order?: number;
 }) {
     return <a
-    href={props.href}
-    onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
-    target="_blank"
-    style={{ order: props.order }}
->
-    <div className={'trophy ' + props.title.toLowerCase()} style={{
-        width: 'auto'
-    }}>
-        <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
-        <div style={{ flex: 1 }}>
-            <div className="subtitle">Official Partner</div>
-            <div className="title">{props.title}</div>
+        href={props.href}
+        onClick={() => triggerTrackingEvent(props.title.toLowerCase() + '_trophy_click', 0.20)}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ order: props.order }}
+    >
+        <div className={'trophy ' + props.title.toLowerCase()} style={{
+            width: 'auto'
+        }}>
+            <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
+            <div style={{ flex: 1 }}>
+                <div className="subtitle">Official Partner</div>
+                <div className="title">{props.title}</div>
+            </div>
         </div>
-    </div>
-</a>;
+    </a>;
 }

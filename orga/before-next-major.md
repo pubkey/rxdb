@@ -2,6 +2,9 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+## no longer ship the dist-folder in the repo
+
+Same for /docs, use a different branch for that.
 
 ## Add `context` string to all write errors
 We already pass the context string to `storageInstance.bulkWrite()` and when we include it into bulk-write errors, debugging becomes way easier.

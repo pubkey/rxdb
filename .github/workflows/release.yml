@@ -48,7 +48,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v6.0.0
         with:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"

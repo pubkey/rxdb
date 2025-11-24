@@ -1,5 +1,4 @@
 import { SemPage } from '../pages';
-// import Slider from 'react-slick';
 import { VideoBox, VideoBoxProps } from './video-box';
 import { IconArrowLeft } from './icons/arrow-left';
 import { IconArrowRight } from './icons/arrow-right';

@@ -50,7 +50,7 @@ export const ERROR_MESSAGES = {
     QU16: '$regex queries must be defined by a string, not an RegExp instance. ' +
         'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
     QU17: 'Chained queries cannot be used on findByIds() RxQuery instances',
-    QU18: 'Malformed query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
+    QU18: 'Malformed query result data. This likely happens because you create a OPFS-storage RxDatabase inside of a worker but did not set the usesRxDatabaseInWorker setting. https://rxdb.info/rx-storage-opfs.html?console=opfs#setting-usesrxdatabaseinworker-when-a-rxdatabase-is-also-used-inside-of-the-worker ',
     QU19: 'Queries must not contain fields or properties with the value `undefined`: https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824 ',
 
     // mquery.js
@@ -69,7 +69,7 @@ export const ERROR_MESSAGES = {
     DB3: 'RxDatabase.addCollections(): collection already exists. use myDatabase[collectionName] to get it',
     DB4: 'RxDatabase.addCollections(): schema is missing',
     DB5: 'RxDatabase.addCollections(): collection-name not allowed',
-    DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://rxdb.info/questions-answers.html?console=qa#cant-change-the-schema ',
+    DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read thishttps://rxdb.info/rx-schema.html?console=qa#faq ',
     // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'createRxDatabase(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination of storage+databaseName only once\n' +
@@ -107,7 +107,7 @@ export const ERROR_MESSAGES = {
     COL21: 'The RxCollection is closed or removed already, either from this JavaScript realm or from another, like a browser tab',
     CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
     COL22: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
-    COL23: 'In the open-source version of RxDB, the amount of collections that can exist in parallel is limited to ' + NON_PREMIUM_COLLECTION_LIMIT + '. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html#faq',
+    COL23: 'In the open-source version of RxDB, the amount of collections that can exist in parallel is limited to ' + NON_PREMIUM_COLLECTION_LIMIT + '. If you already purchased the premium access, you can remove this limit: https://rxdb.info/rx-collection.html?console=limit#faq',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
@@ -203,7 +203,7 @@ export const ERROR_MESSAGES = {
     SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
     SC15: 'SchemaCheck: primary cannot be encrypted',
     SC16: 'SchemaCheck: primary must have type: string',
-    SC17: 'SchemaCheck: top-level fieldname is not allowed. See https://rxdb.info/rx-schema.html#non-allowed-properties ',
+    SC17: 'SchemaCheck: top-level fieldname is not allowed. See https://rxdb.info/rx-schema.html?console=toplevel#non-allowed-properties ',
     SC18: 'SchemaCheck: indexes must be an array',
     SC19: 'SchemaCheck: indexes must contain strings or arrays of strings',
     SC20: 'SchemaCheck: indexes.array must contain strings',

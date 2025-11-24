@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "2.7.0",
-    "@tauri-apps/plugin-opener": "2.5.0",
-    "@tauri-apps/plugin-sql": "2.3.0",
+    "@tauri-apps/plugin-opener": "2.5.2",
+    "@tauri-apps/plugin-sql": "2.3.1",
     "rxdb": "file:rxdb-local.tgz"
   },
   "devDependencies": {
@@ -24,6 +24,6 @@
     "@wdio/local-runner": "7.40.0",
     "@wdio/mocha-framework": "7.40.0",
     "@wdio/spec-reporter": "7.40.0",
-    "vite": "7.1.11"
+    "vite": "7.1.12"
   }
 }
