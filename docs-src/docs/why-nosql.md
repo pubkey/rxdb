@@ -4,6 +4,8 @@ slug: why-nosql.html
 description: Discover how NoSQL enables offline-first UI apps. Learn about easy replication, conflict resolution, and why relational data isn't always necessary.
 ---
 
+import {VideoBox} from '@site/src/components/video-box';
+
 # Why UI applications need NoSQL
 
 [RxDB](https://rxdb.info), a client side, offline first, JavaScript database, is now several years old.
@@ -129,7 +131,8 @@ Now Bob's client replicates the changes from Alice and runs them. Bob will end u
 
 Let me loosely describe how "many" SQL replications work:
 
-Instead of just running all replicated queries, we remember a list of all past queries. When a new query comes in that happened `before` our last query, we roll back the previous queries, run the new query, and then re-execute our own queries on top of that. For that to work, all queries need a timestamp so we can order them correctly. But you cannot rely on the clock that is running at the client. Client side clocks drift, they can run in a different speed or even a malicious client modifies the clock on purpose. So instead of a normal timestamp, we have to use a [Hybrid Logical Clock](https://jaredforsyth.com/posts/hybrid-logical-clocks/) that takes a client generated id and the number of the clients query into account. Our timestamp will then look like `2021-10-04T15:29.40.273Z-0000-eede1195b7d94dd5`. These timestamps can be brought into a deterministic order and each client can run the replicated queries in the same order. Watch [this video](https://www.youtube.com/watch?v=iEFcmfmdh2w&t=607s) to learn how to implement that.
+Instead of just running all replicated queries, we remember a list of all past queries. When a new query comes in that happened `before` our last query, we roll back the previous queries, run the new query, and then re-execute our own queries on top of that. For that to work, all queries need a timestamp so we can order them correctly. But you cannot rely on the clock that is running at the client. Client side clocks drift, they can run in a different speed or even a malicious client modifies the clock on purpose. So instead of a normal timestamp, we have to use a [Hybrid Logical Clock](https://jaredforsyth.com/posts/hybrid-logical-clocks/) that takes a client generated id and the number of the clients query into account. Our timestamp will then look like `2021-10-04T15:29.40.273Z-0000-eede1195b7d94dd5`. These timestamps can be brought into a deterministic order and each client can run the replicated queries in the same order.
+
 
 While this sounds easy and realizable, we have some problems:
 This kind of replication works great when you replicate between multiple SQL servers. It does not work great when you replicate between a single server and many clients.
