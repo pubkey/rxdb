@@ -4,7 +4,8 @@
 <!-- CHANGELOG NEWEST -->
 - FIX(docs) search visibility and positioning
 - ADD(storage-localstorage) attachment support.
-- Fix error in dev mode when writing object with no prototype [#7530](https://github.com/pubkey/rxdb/pull/7530)
+- FIX error in dev mode when writing object with no prototype [#7530](https://github.com/pubkey/rxdb/pull/7530)
+- FIX findOne subscription + exec returns wrong results [#7497](https://github.com/pubkey/rxdb/pull/7497)
 
 <!-- ADD new changes here! -->
 

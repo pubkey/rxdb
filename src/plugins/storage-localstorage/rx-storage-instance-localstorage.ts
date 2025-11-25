@@ -351,7 +351,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async query(
+    query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const queryPlan = preparedQuery.queryPlan;
