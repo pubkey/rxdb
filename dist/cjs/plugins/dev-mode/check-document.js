@@ -51,7 +51,7 @@ function containsDateInstance(obj) {
     return false;
   }
   for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
       if (obj[key] instanceof Date) {
         return true;
       }

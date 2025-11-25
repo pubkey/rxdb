@@ -97,14 +97,17 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
     this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
     if (this.op === 'count') {
       var preparedQuery = this.getPreparedQuery();
-      var result = await this.collection.storageInstance.count(preparedQuery);
-      if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
+      var countResult = await this.collection.storageInstance.count(preparedQuery);
+      if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
         throw (0, _rxError.newRxError)('QU14', {
           collection: this.collection,
           queryObj: this.mangoQuery
         });
       } else {
-        return result.count;
+        return {
+          result: countResult.count,
+          counter: this.collection._changeEventBuffer.getCounter()
+        };
       }
     }
     if (this.op === 'findByIds') {
@@ -131,12 +134,16 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
           ret.set(doc.primary, doc);
         });
       }
-      return ret;
+      return {
+        result: ret,
+        counter: this.collection._changeEventBuffer.getCounter()
+      };
     }
-    var docsPromise = queryCollection(this);
-    return docsPromise.then(docs => {
-      return docs;
-    });
+    var result = await queryCollection(this);
+    return {
+      result: result.docs,
+      counter: result.counter
+    };
   }
 
   /**
@@ -398,11 +405,6 @@ async function _ensureEqual(rxQuery) {
   if (rxQuery.collection.awaitBeforeReads.size > 0) {
     await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
   }
-
-  // Optimisation shortcut
-  if (rxQuery.collection.database.closed || _isResultsInSync(rxQuery)) {
-    return false;
-  }
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(() => __ensureEqual(rxQuery));
   return rxQuery._ensureEqualQueue;
 }
@@ -477,13 +479,15 @@ function __ensureEqual(rxQuery) {
 
   // oh no we have to re-execute the whole query over the database
   if (mustReExec) {
-    return rxQuery._execOverDatabase().then(newResultData => {
+    return rxQuery._execOverDatabase().then(result => {
+      var newResultData = result.result;
+
       /**
        * The RxStorage is defined to always first emit events and then return
        * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
        * has been run, not the one from before.
        */
-      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.getCounter();
+      rxQuery._latestChangeEvent = result.counter;
 
       // A count query needs a different has-changed check.
       if (typeof newResultData === 'number') {
@@ -560,7 +564,10 @@ async function queryCollection(rxQuery) {
     var queryResult = await collection.storageInstance.query(preparedQuery);
     docs = queryResult.documents;
   }
-  return docs;
+  return {
+    docs,
+    counter: collection._changeEventBuffer.getCounter()
+  };
 }
 
 /**

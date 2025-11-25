@@ -2,17 +2,20 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(docs) search visibility and positioning
-- ADD(storage-localstorage) attachment support.
-- FIX error in dev mode when writing object with no prototype [#7530](https://github.com/pubkey/rxdb/pull/7530)
-- FIX findOne subscription + exec returns wrong results [#7497](https://github.com/pubkey/rxdb/pull/7497)
-- FIX(supabase-replication) push.modifier is not used [#7513](https://github.com/pubkey/rxdb/issues/7513)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.21.0 (25 November 2025)
+
+- FIX(docs) search visibility and positioning
+- ADD(storage-localstorage) attachment support.
+- FIX error in dev mode when writing object with no prototype [#7530](https://github.com/pubkey/rxdb/pull/7530)
+- FIX findOne subscription + exec returns wrong results [#7497](https://github.com/pubkey/rxdb/pull/7497)
+- FIX(supabase-replication) push.modifier is not used [#7513](https://github.com/pubkey/rxdb/issues/7513)
 
 ### 16.20.0 (20 October 2025)
 

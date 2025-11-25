@@ -107,6 +107,9 @@ export function replicateSupabase(options) {
     };
   }
   var replicationPrimitivesPush = options.push ? {
+    batchSize: options.push.batchSize,
+    initialCheckpoint: options.push.initialCheckpoint,
+    modifier: options.push.modifier,
     async handler(rows) {
       async function insertOrReturnConflict(doc) {
         var id = doc[primaryPath];

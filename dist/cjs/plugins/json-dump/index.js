@@ -43,8 +43,8 @@ var dumpRxCollection = async function () {
     docs: []
   };
   var query = (0, _rxQuery.createRxQuery)('find', (0, _rxQuery._getDefaultQuery)(), this);
-  return (0, _rxQuery.queryCollection)(query).then(docs => {
-    json.docs = docs.map(docData => {
+  return (0, _rxQuery.queryCollection)(query).then(result => {
+    json.docs = result.docs.map(docData => {
       docData = (0, _index.flatClone)(docData);
       delete docData._rev;
       delete docData._attachments;

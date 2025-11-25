@@ -221,7 +221,7 @@ var RxStorageInstanceLocalstorage = exports.RxStorageInstanceLocalstorage = /*#_
     });
     return ret;
   };
-  _proto.query = async function query(preparedQuery) {
+  _proto.query = function query(preparedQuery) {
     var queryPlan = preparedQuery.queryPlan;
     var query = preparedQuery.query;
     var skip = query.skip ? query.skip : 0;

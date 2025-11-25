@@ -47,7 +47,10 @@ export declare class RxQueryBase<RxDocType, RxQueryResult, OrmMethods = {}, Reac
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number>;
+    _execOverDatabase(): Promise<{
+        result: RxDocumentData<RxDocType>[] | number;
+        counter: number;
+    }>;
     /**
      * Execute the query
      * To have an easier implementations,
@@ -112,7 +115,15 @@ export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQ
  * Does some optimizations to ensure findById is used
  * when specific queries are used.
  */
-export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>): Promise<RxDocumentData<RxDocType>[]>;
+export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>): Promise<{
+    docs: RxDocumentData<RxDocType>[];
+    /**
+     * We need to remember the counter directly here
+     * because getting if after the returned Promise is resolved,
+     * can result in a value that no longer matches the result set.
+     */
+    counter: number;
+}>;
 /**
  * Returns true if the given query
  * selects exactly one document by its id.
