@@ -7,6 +7,7 @@ var _exportNames = {
   RxAttachment: true,
   fromStorageInstanceResult: true,
   putAttachment: true,
+  putAttachmentBase64: true,
   getAttachment: true,
   allAttachments: true,
   preMigrateDocument: true,
@@ -20,6 +21,7 @@ exports.getAttachment = getAttachment;
 exports.postMigrateDocument = postMigrateDocument;
 exports.preMigrateDocument = preMigrateDocument;
 exports.putAttachment = putAttachment;
+exports.putAttachmentBase64 = putAttachmentBase64;
 var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
 var _attachmentsUtils = require("./attachments-utils.js");
@@ -65,7 +67,7 @@ var RxAttachment = exports.RxAttachment = /*#__PURE__*/function () {
    * returns the data for the attachment
    */;
   _proto.getData = async function getData() {
-    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id, this.digest);
+    var plainDataBase64 = await this.getDataBase64();
     var ret = await (0, _index.createBlobFromBase64)(plainDataBase64, this.type);
     return ret;
   };
@@ -73,6 +75,10 @@ var RxAttachment = exports.RxAttachment = /*#__PURE__*/function () {
     var data = await this.getData();
     var asString = await (0, _index.blobToString)(data);
     return asString;
+  };
+  _proto.getDataBase64 = async function getDataBase64() {
+    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id, this.digest);
+    return plainDataBase64;
   };
   return RxAttachment;
 }();
@@ -89,15 +95,24 @@ async function putAttachment(attachmentData) {
   (0, _attachmentsUtils.ensureSchemaSupportsAttachments)(this);
   var dataSize = (0, _index.getBlobSize)(attachmentData.data);
   var dataString = await (0, _index.blobToBase64String)(attachmentData.data);
-  var digest = await this.collection.database.hashFunction(dataString);
+  return this.putAttachmentBase64({
+    id: attachmentData.id,
+    length: dataSize,
+    type: attachmentData.type,
+    data: dataString
+  });
+}
+async function putAttachmentBase64(attachmentData) {
+  (0, _attachmentsUtils.ensureSchemaSupportsAttachments)(this);
+  var digest = await this.collection.database.hashFunction(attachmentData.data);
   var id = attachmentData.id;
   var type = attachmentData.type;
-  var data = dataString;
+  var data = attachmentData.data;
   return this.collection.incrementalWriteQueue.addWrite(this._data, docWriteData => {
     docWriteData = (0, _index.flatClone)(docWriteData);
     docWriteData._attachments = (0, _index.flatClone)(docWriteData._attachments);
     docWriteData._attachments[id] = {
-      length: dataSize,
+      length: attachmentData.length,
       type,
       data,
       digest
@@ -175,6 +190,7 @@ var RxDBAttachmentsPlugin = exports.RxDBAttachmentsPlugin = {
   prototypes: {
     RxDocument: proto => {
       proto.putAttachment = putAttachment;
+      proto.putAttachmentBase64 = putAttachmentBase64;
       proto.getAttachment = getAttachment;
       proto.allAttachments = allAttachments;
       Object.defineProperty(proto, 'allAttachments$', {

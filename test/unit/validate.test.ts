@@ -650,6 +650,62 @@ validationImplementations.forEach(
             });
         });
         describe('issues', () => {
+            /**
+             * date-time is used by most users and also in the quickstart guide
+             * and docs, so it must be supported by default.
+             */
+            it('#7253 should know about the date-time format by default by all validation plugins', async () => {
+                const db = await createRxDatabase({
+                    name: randomToken(10),
+                    storage
+                });
+                const collections = await db.addCollections({
+                    human: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100 // <- the primary key must have maxLength
+                                },
+                                name: {
+                                    type: 'string'
+                                },
+                                done: {
+                                    type: 'boolean'
+                                },
+                                timestamp: {
+                                    type: 'string',
+                                    format: 'date-time'
+                                }
+                            },
+                            required: ['id', 'name', 'done', 'timestamp']
+                        }
+                    }
+                });
+
+                await collections.human.insert({
+                    id: 'foobar',
+                    name: 'barfoo',
+                    done: true,
+                    timestamp: new Date().toISOString()
+                });
+
+
+                await assertThrows(
+                    () => collections.human.insert({
+                        id: 'foobar2',
+                        name: 'barfoo2',
+                        done: true,
+                        timestamp: 'broken-timestamp'
+                    }),
+                    'RxError',
+                    'not match schema'
+                );
+                db.close();
+            });
             it('#734 Invalid value persists in document after failed update', async () => {
                 // create a schema
                 const schemaEnum = ['A', 'B'];

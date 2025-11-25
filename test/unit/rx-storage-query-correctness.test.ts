@@ -112,10 +112,13 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 );
                 return writeData;
             });
-            await storageInstance.bulkWrite(
+            const bulkWriteResult = await storageInstance.bulkWrite(
                 rawDocsData.map(document => ({ document })),
                 TEST_CONTEXT
             );
+            if (bulkWriteResult.error.length > 0) {
+                throw new Error('bulkWrite(' + input.testTitle + ') error: ' + JSON.stringify(bulkWriteResult.error, null, 4));
+            }
 
             const database = await createRxDatabase({
                 name: randomToken(10),
@@ -971,7 +974,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     type: 'boolean'
                 },
                 null: {
-                    type: 'null'
+                    type: ['null', 'string']
                 }
             },
             indexes: [
@@ -1069,6 +1072,27 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 expectedResultDocIds: [
                     'one'
+                ]
+            },
+            {
+                info: '$or with $eq null',
+                query: {
+                    selector: {
+                        $or: [
+                            {
+                                null: null
+                            },
+                            {
+                                null: 'not-null',
+                                id: 'two',
+                            }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one',
+                    'two'
                 ]
             }
         ]
@@ -1776,7 +1800,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             },
             {
                 passportId: 'not-there',
-                oneOptional: undefined,
+                // oneOptional: undefined,
                 age: 10
             }
         ],

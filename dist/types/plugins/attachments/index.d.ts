@@ -1,4 +1,4 @@
-import type { RxDocument, RxPlugin, RxAttachmentData, RxDocumentData, RxAttachmentCreator, RxCollection } from '../../types/index.ts';
+import type { RxDocument, RxPlugin, RxAttachmentData, RxDocumentData, RxAttachmentCreator, RxCollection, RxAttachmentCreatorBase64 } from '../../types/index.ts';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -16,9 +16,11 @@ export declare class RxAttachment {
      */
     getData(): Promise<Blob>;
     getStringData(): Promise<string>;
+    getDataBase64(): Promise<string>;
 }
 export declare function fromStorageInstanceResult<RxDocType>(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument<RxDocType>): RxAttachment;
 export declare function putAttachment<RxDocType>(this: RxDocument<RxDocType>, attachmentData: RxAttachmentCreator): Promise<RxAttachment>;
+export declare function putAttachmentBase64<RxDocType>(this: RxDocument<RxDocType>, attachmentData: RxAttachmentCreatorBase64): Promise<RxAttachment>;
 /**
  * get an attachment of the document by its id
  */

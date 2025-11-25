@@ -1,5 +1,4 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
@@ -7,11 +6,8 @@ import { triggerTrackingEvent } from '../components/trigger-event';
 export default function Newsletter() {
     const { siteConfig } = useDocusaurusContext();
 
-    const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (isBrowser) {
-            triggerTrackingEvent('get_newsletter', 0.40);
-        }
+        triggerTrackingEvent('get_newsletter', 0.40);
     });
 
     return (

@@ -71,8 +71,9 @@ export function areRxDocumentArraysEqual<RxDocType>(
         i++;
 
         if (
+            row1[primaryPath] !== row2[primaryPath] ||
             row1._rev !== row2._rev ||
-            row1[primaryPath] !== row2[primaryPath]
+            row1._meta.lwt !== row2._meta.lwt
         ) {
             return false;
         }

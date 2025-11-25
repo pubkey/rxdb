@@ -1,7 +1,8 @@
 import { Observable } from 'rxjs';
-import type { NumberFunctionMap, RxCollection, RxDatabase, RxStorageInstance } from '../../types/index.d.ts';
+import type { NumberFunctionMap, RxCollection, RxDatabase, RxStorageInstance, RxStorageInstanceReplicationState } from '../../types/index.d.ts';
 import { getOldCollectionMeta, mustMigrate } from './migration-helpers.ts';
 import type { MigrationStatusUpdate, RxMigrationStatus } from './migration-types.ts';
+import { BroadcastChannel } from 'broadcast-channel';
 export declare class RxMigrationState {
     readonly collection: RxCollection;
     readonly migrationStrategies: NumberFunctionMap;
@@ -12,6 +13,9 @@ export declare class RxMigrationState {
     readonly mustMigrate: ReturnType<typeof mustMigrate>;
     readonly statusDocId: string;
     readonly $: Observable<RxMigrationStatus>;
+    replicationState?: RxStorageInstanceReplicationState<any>;
+    canceled: boolean;
+    broadcastChannel?: BroadcastChannel;
     constructor(collection: RxCollection, migrationStrategies: NumberFunctionMap, statusDocKey?: string);
     getStatus(): Promise<RxMigrationStatus>;
     /**
@@ -27,7 +31,13 @@ export declare class RxMigrationState {
     updateStatusQueue: Promise<any>;
     updateStatus(handler: MigrationStatusUpdate): Promise<any>;
     migrateStorage(oldStorage: RxStorageInstance<any, any, any>, newStorage: RxStorageInstance<any, any, any>, batchSize: number): Promise<void>;
-    countAllDoucments(storageInstances: RxStorageInstance<any, any, any>[]): Promise<number>;
+    /**
+     * Stops the migration.
+     * Mostly used in tests to simulate what happens
+     * when the user reloads the page during a migration.
+     */
+    cancel(): Promise<void>;
+    countAllDocuments(storageInstances: RxStorageInstance<any, any, any>[]): Promise<number>;
     getConnectedStorageInstances(): Promise<{
         oldStorage: RxStorageInstance<any, any, any>;
         newStorage: RxStorageInstance<any, any, any>;

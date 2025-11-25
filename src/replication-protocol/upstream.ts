@@ -218,7 +218,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * Merge/filter all open tasks
              */
             const docs: RxDocumentData<RxDocType>[] = [];
-            let checkpoint: CheckpointType = {} as any;
+            let checkpoint: CheckpointType | undefined;
             while (openTasks.length > 0) {
                 const taskWithTime = ensureNotFalsy(openTasks.shift());
                 /**
@@ -255,7 +255,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             await persistToMaster(
                 docs,
-                checkpoint
+                checkpoint as any
             );
 
             // might have got more tasks while running persistToMaster()

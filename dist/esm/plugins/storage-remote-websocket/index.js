@@ -5,6 +5,7 @@ import { exposeRxStorageRemote } from "../storage-remote/remote.js";
 import { getRxStorageRemote } from "../storage-remote/rx-storage-remote.js";
 import { createErrorAnswer } from "../storage-remote/storage-remote-helpers.js";
 export function startRxStorageRemoteWebsocketServer(options) {
+  options.perMessageDeflate = true;
   var serverState = startSocketServer(options);
   var websocketByConnectionId = new Map();
   var messages$ = new Subject();

@@ -11,6 +11,7 @@ export declare const ERROR_MESSAGES: {
     UT5: string;
     UT6: string;
     UT7: string;
+    UT8: string;
     PL1: string;
     PL3: string;
     P2: string;
@@ -182,6 +183,7 @@ export declare const ERROR_MESSAGES: {
     SQL2: string;
     SQL3: string;
     RM1: string;
+    MG1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

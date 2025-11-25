@@ -1,317 +1,297 @@
 import { useRef, useState, useEffect, Fragment } from 'react';
 import { HEARTBEAT_DURATION } from '../pages';
+import { IconDevicePhone } from './icons/device-phone';
+import { IconDeviceSmartwatch } from './icons/device-smartwatch';
+import { Cloud } from './cloud';
+import { IconDeviceDesktop } from './icons/device-desktop';
+import { IconDeviceTablet } from './icons/device-tablet';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+
+export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
 
 /**
- * @link https://chatgpt.com/c/67ecc68e-db6c-8005-8398-7ecf5e1d222e
+ * Container width & height are calculated from element positions,
+ * and the inner diagram div is right-aligned inside the outer container.
  */
-export function ReplicationDiagram() {
-    // A reference to our parent container so we can measure its size
-    const containerRef = useRef(null);
+export function ReplicationDiagram({ scale: scaleProp = 1, dark }: { scale?: number; dark: boolean; }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-    // Store the container's current (square) dimension
-    // We'll use min(width, height) to ensure we always have a square
-    const [size, setSize] = useState(0);
+  // trigger rerender on resize so scaling updates correctly if font/zoom changes
+  const [, forceRerender] = useState(0);
+  useEffect(() => {
+    const onResize = () => forceRerender(c => c + 1);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
-    // Measure the container whenever it mounts or resizes
-    useEffect(() => {
-        function handleResize() {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const newSize = Math.min(rect.width, rect.height);
-                setSize(newSize);
-            }
-        }
-        window.addEventListener('resize', handleResize);
-        // Measure once on mount
-        handleResize();
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+  const devices: DeviceType[] = [
+    'desktop',
+    'tablet',
+    'phone',
+    'desktop',
+    'smartwatch',
+  ];
 
-    // Each time a heartbeat event fires, increment a counter
-    // so that we can “restart” the animation.
-    const [heartbeatCount, setHeartbeatCount] = useState(0);
+  const [heartbeatCount, setHeartbeatCount] = useState(0);
+  const [sourceIndex, setSourceIndex] = useState<number | null>(null);
 
-    useEffect(() => {
-        function handleHeartbeat() {
-            // Each new heartbeat increments the counter,
-            // causing our packet animations to restart
-            setHeartbeatCount(count => count + 1);
-        }
-        window.addEventListener('heartbeat', handleHeartbeat);
-        return () => window.removeEventListener('heartbeat', handleHeartbeat);
-    }, []);
+  const COLORS = ['var(--color-top)', 'var(--color-middle)', 'var(--color-bottom)'] as const;
+  const [packetColor, setPacketColor] = useState<string>(COLORS[0]);
 
-    // If we haven’t measured yet, don’t render the diagram
-    if (size <= 0) {
-        return <div ref={containerRef} style={styles.container} />;
+  useEffect(() => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      return;
     }
+    function handleHeartbeat() {
+      setHeartbeatCount((c) => c + 1);
+      setSourceIndex(Math.floor(Math.random() * devices.length));
+      setPacketColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
+    }
+    window.addEventListener('heartbeat', handleHeartbeat);
+    return () => window.removeEventListener('heartbeat', handleHeartbeat);
+  }, []);
 
-    // The scale factor relative to our “base” 500×500 coordinate space
-    const scale = size / 500;
+  // ---- Geometry ----
+  const scale = scaleProp;
+  const centerX = 250 * scale;
+  const centerY = 200 * scale;
 
-    // “Coordinates” in a 500×500 system, then multiplied by `scale`
-    const centerX = 250 * scale;
-    const centerY = 250 * scale;
+  const serverRadius = 60 * scale;
+  const deviceCount = devices.length;
+  const deviceRadius = 45 * scale;
 
-    // Diagram geometry (scaled)
-    const serverRadius = 40 * scale;
-    const deviceCount = 5;
-    const deviceDistance = 150 * scale;
-    const deviceRadius = 50 * scale;
-    const serverMargin = 0 * scale;
-    const deviceMargin = 0 * scale;
+  const deviceDistance = centerY - deviceRadius; // top-most device sits at y=0
+  const angleOffset = -Math.PI / 2;
 
-    // Build our lines data
-    const linesData = Array.from({ length: deviceCount }, (_, i) => {
-        const angle = (2 * Math.PI * i) / deviceCount;
+  const serverMargin = 3;
+  const deviceMargin = 7;
 
-        // Device center
-        const deviceX = centerX + deviceDistance * Math.cos(angle);
-        const deviceY = centerY + deviceDistance * Math.sin(angle);
+  const linesData = Array.from({ length: deviceCount }, (_, i) => {
+    const angle = angleOffset + (2 * Math.PI * i) / deviceCount;
+    const deviceX = centerX + deviceDistance * Math.cos(angle);
+    const deviceY = centerY + deviceDistance * Math.sin(angle);
 
-        // Vector & distance from center
-        const dx = deviceX - centerX;
-        const dy = deviceY - centerY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+    const dx = deviceX - centerX;
+    const dy = deviceY - centerY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Subtract margins from both ends
-        const lineLength = dist - (serverRadius + serverMargin) - (deviceRadius + deviceMargin);
+    const lineLength =
+      dist - (serverRadius + serverMargin) - (deviceRadius + deviceMargin);
 
-        // Convert to degrees for CSS rotate
-        const angleDeg = (angle * 180) / Math.PI;
+    const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+    const inwardName = `deviceToCenter-${i}-${heartbeatCount}`;
+    const outwardName = `centerToDevice-${i}-${heartbeatCount}`;
 
-        // Unique animation name for each line & heartbeat
-        // So it restarts from the beginning whenever heartbeatCount changes.
-        const animationName = `packetMove-${i}-${heartbeatCount}`;
+    const deviceLeft = deviceX - deviceRadius;
+    const deviceRight = deviceX + deviceRadius;
+    const deviceTop = deviceY - deviceRadius;
+    const deviceBottom = deviceY + deviceRadius;
 
-        return { angleDeg, lineLength, deviceX, deviceY, animationName };
-    });
+    return {
+      angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName,
+      deviceLeft, deviceRight, deviceTop, deviceBottom,
+    };
+  });
 
-    // Build CSS keyframes for each line’s pink “packet” animation
-    const dynamicKeyframes = linesData
-        .map(({ animationName, lineLength }) => `
-        @keyframes ${animationName} {
-            0% {
-              transform: translateX(0);
-              opacity: 0;
-            }
-            10% {
-              opacity: 1; 
-            }
-            90% {
-              opacity: 1; 
-            }
-            100% {
-              transform: translateX(${lineLength}px);
-              opacity: 0;
-            }
-          }
-`)
-        .join('\n');
+  // --- bounding box across all elements ---
+  const serverLeft = centerX - serverRadius;
+  const serverRight = centerX + serverRadius;
+  const serverTop = centerY - serverRadius;
+  const serverBottom = centerY + serverRadius;
 
+  const minLeft = Math.min(serverLeft, ...linesData.map(d => d.deviceLeft));
+  const maxRight = Math.max(serverRight, ...linesData.map(d => d.deviceRight));
+  const minTop = Math.min(serverTop, ...linesData.map(d => d.deviceTop));
+  const maxBot = Math.max(serverBottom, ...linesData.map(d => d.deviceBottom));
 
-    const serverTicksSize = 10;
-    return (
-        <div ref={containerRef} style={styles.container}>
-            {/* A relative child that matches the measured square "size" */}
-            <div
-                style={{
-                    position: 'relative',
-                    width: `${size}px`,
-                    height: `${size}px`,
-                }}
-            >
-                {/* Server circle */}
+  const contentWidth = Math.ceil(maxRight - minLeft);
+  const contentHeight = Math.ceil(maxBot - minTop);
+
+  const offsetX = -minLeft;
+  const offsetY = -minTop;
+
+  // --- Timing ---
+  const PHASE1 = Math.max(200, Math.floor(HEARTBEAT_DURATION * 0.45));
+  const PHASE2 = Math.max(200, Math.floor(HEARTBEAT_DURATION * 0.45));
+  const GAP = Math.max(0, HEARTBEAT_DURATION - (PHASE1 + PHASE2));
+
+  const dynamicKeyframes = linesData.map(
+    ({ inwardName, outwardName, lineLength }) => `
+@keyframes ${inwardName} {
+  0%   { transform: translateX(${lineLength}px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(0px); opacity: 0; }
+}
+@keyframes ${outwardName} {
+  0%   { transform: translateX(0px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(${lineLength}px); opacity: 0; }
+}`
+  ).join('\n');
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        ...styles.container,
+        ['--packetColor' as any]: packetColor,
+        display: 'flex',           // flex container
+        justifyContent: 'center', // align diagram wrapper to the right
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+        // keep composited
+        transformStyle: 'preserve-3d',
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          width: `${contentWidth}px`,
+          height: `${contentHeight}px`,
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          // keep composited
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* Server (center cloud) */}
+        <div
+          className="device"
+          style={{
+            position: 'absolute',
+            left: centerX - serverRadius + offsetX,
+            top: centerY - serverRadius + offsetY,
+            width: serverRadius * 2,
+            height: serverRadius * 2,
+            justifyContent: 'center',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            // keep composited
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <Cloud darkMode={dark} style={{
+            width: '100%'
+          }} />
+        </div>
+
+        {/* Lines & devices */}
+        {linesData.map(
+          ({ angleDeg, lineLength, deviceX, deviceY, inwardName, outwardName }, i) => {
+            const lineStart = serverRadius + serverMargin;
+            const device = devices[i];
+            const isSource = sourceIndex === i;
+
+            return (
+              <Fragment key={i}>
+                {/* Line (from center outward) */}
                 <div
-                    className='neumorphism-circle-xl'
-                    style={{
-                        position: 'absolute',
-                        left: centerX - serverRadius,
-                        top: centerY - serverRadius,
-                        width: serverRadius * 2,
-                        height: serverRadius * 2,
-                        borderRadius: '50%'
-                    }}
+                  style={{
+                    position: 'absolute',
+                    borderRadius: 5,
+                    left: centerX + offsetX,
+                    top: centerY + offsetY,
+                    width: lineLength,
+                    height: '2px',
+                    backgroundColor: 'white',
+                    transform: `rotate(${angleDeg}deg) translateX(${lineStart}px)`,
+                    transformOrigin: 'left center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    display: 'flex'
+                  }}
                 >
-                    <div className='device server' style={{
-                        width: '60%',
-                        height: '60%',
-                        top: '20%',
-                        left: '20%'
-                    }}>
-                        <div className="beating-color one" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                        <div className="beating-color two" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                        <div className="beating-color three" style={{
-                            backgroundColor: 'rgb(230, 0, 141)',
-                            width: serverTicksSize,
-                            height: serverTicksSize,
-                            marginTop: -(serverTicksSize / 2),
-                            marginLeft: -(serverTicksSize / 2)
-                        }}></div>
-                    </div>
+                  {/* Phase 1: ONLY source line */}
+                  {heartbeatCount > 0 && isSource && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: '-6px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: packetColor,
+                        boxShadow: `0 0 10px ${packetColor}55`,
+                        animation: `${inwardName} ${PHASE1}ms linear 1 forwards`,
+                        opacity: 0,
+                      }}
+                    />
+                  )}
+                  {/* Phase 2: ONLY non-source lines */}
+                  {heartbeatCount > 0 && !isSource && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: '-6px',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: packetColor,
+                        boxShadow: `0 0 10px ${packetColor}55`,
+                        animation: `${outwardName} ${PHASE2}ms ${PHASE1 + GAP}ms linear 1 forwards`,
+                        opacity: 0,
+                      }}
+                    />
+                  )}
                 </div>
 
-                {/* Lines & devices */}
-                {linesData.map(({ angleDeg, lineLength, deviceX, deviceY, animationName }, i) => {
-                    // Distance from the center to the line start = serverRadius + serverMargin
-                    const lineStart = serverRadius + serverMargin;
+                {/* Device icons */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: deviceX - deviceRadius + offsetX,
+                    top: deviceY - deviceRadius + offsetY,
+                    width: deviceRadius * 2,
+                    height: deviceRadius * 2,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    alignItems: 'center',
+                    verticalAlign: 'middle',
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden',
+                    // keep composited
+                    transformStyle: 'preserve-3d',
+                  }}
+                >
+                  {device === 'phone' ? (
+                    <div className="device" style={{ top: '20%', left: '30%' }}>
+                      <IconDevicePhone dark={dark} iconUrl="/files/logo/logo.svg" />
+                    </div>
+                  ) : device === 'smartwatch' ? (
+                    <div className="device" style={{ width: '80%', top: '20%', left: '17%' }}>
+                      <IconDeviceSmartwatch dark={dark} iconUrl="/files/logo/logo.svg" />
+                    </div>
+                  ) : device === 'desktop' ? (
+                    <div className="device" style={{ top: '20%', left: '27%' }}>
+                      <IconDeviceDesktop dark={dark} iconUrl="/files/logo/logo.svg" />
+                    </div>
+                  ) : (
+                    <div className="device" style={{ top: '20%', left: '27%' }}>
+                      <IconDeviceTablet dark={dark} iconUrl="/files/logo/logo.svg" />
+                    </div>
+                  )}
+                </div>
+              </Fragment>
+            );
+          }
+        )}
 
-                    return (
-                        <Fragment key={i}>
-                            {/* The grey line (rotated div) */}
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    borderRadius: 5,
-                                    left: centerX,
-                                    top: centerY,
-                                    width: lineLength,
-                                    height: '2px',
-                                    backgroundColor: 'white',
-                                    transform: `rotate(${angleDeg}deg) translateX(${lineStart}px)`,
-                                    transformOrigin: 'left center',
-                                }}
-                            >
-                                {/* Pink “packet” traveling along the line */}
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        left: 0,
-                                        top: '-6px',
-                                        width: '12px',
-                                        height: '12px',
-                                        borderRadius: '50%',
-                                        // Animate only if we've had at least 1 heartbeat
-                                        // "2s linear 1 forwards" => 2s duration, no repeat, end state is retained
-                                        animation:
-                                            heartbeatCount > 0
-                                                ? `${animationName} ${HEARTBEAT_DURATION / 2}ms linear 1 forwards`
-                                                : 'none',
-                                        opacity: 0, // hidden by default
-                                    }}
-                                    className='beating-color'
-                                />
-                            </div>
-
-                            {/* Device circle */}
-                            <div
-                                className='neumorphism-circle-s'
-                                style={{
-                                    position: 'absolute',
-                                    left: deviceX - deviceRadius,
-                                    top: deviceY - deviceRadius,
-                                    width: deviceRadius * 2,
-                                    height: deviceRadius * 2,
-                                    borderRadius: '50%',
-                                    // backgroundColor: '#ffa500',
-                                    // border: '2px solid #222',
-                                }}
-                            >
-                                {
-                                    i % 3 === 0 ? <div
-                                        className='device desktop'
-                                        style={{
-                                            width: '70%',
-                                            height: '60%',
-                                            top: '20%',
-                                            left: '15%',
-                                            marginLeft: 0
-                                        }}
-                                    >
-                                        <div className="beating-color" style={{
-                                            borderTopLeftRadius: 5,
-                                            borderTopRightRadius: 5
-                                        }}>
-                                            <img
-                                                src="/files/logo/logo.svg"
-                                                className="beating logo animation"
-                                                alt="RxDB"
-                                                loading='lazy'
-                                                style={{
-                                                    width: '26%'
-                                                }}
-                                            />
-                                        </div>
-                                    </div> : <div
-                                        className='device tablet'
-                                        style={{
-                                            width: '46%',
-                                            height: '60%',
-                                            top: '20%',
-                                            left: '27%'
-                                        }}
-                                    >
-                                        <div className="beating-color" style={{
-                                            borderRadius: 5,
-                                        }}>
-                                            <img
-                                                src="/files/logo/logo.svg"
-                                                className="beating logo animation"
-                                                alt="RxDB"
-                                                loading='lazy'
-                                                style={{
-                                                    width: '50%'
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                }
-
-                                {/* <div
-                                    className='device tablet'
-                                    style={{
-                                        width: '46%',
-                                        height: '60%',
-                                        top: '20%',
-                                        left: '27%'
-                                    }}
-                                >
-                                    <div className="beating-color" style={{
-                                        borderRadius: 2
-                                    }}>
-                                        <img
-                                            src="/files/logo/logo.svg"
-                                            className="beating logo animation"
-                                            alt="RxDB"
-                                            loading='lazy'
-                                            style={{
-                                                width: '50%'
-                                            }}
-                                        />
-                                    </div>
-                                </div> */}
-                            </div>
-                        </Fragment>
-                    );
-                })}
-
-                {/* Inject dynamic keyframes */}
-                <style>{dynamicKeyframes}</style>
-            </div>
-        </div>
-    );
+        {/* Inject dynamic keyframes */}
+        <style>{dynamicKeyframes}</style>
+      </div>
+    </div>
+  );
 }
 
 const styles = {
-    container: {
-        width: '100%',
-        // Keeps a square aspect ratio in modern browsers
-        aspectRatio: '1',
-        // You could also use “padding-bottom hack” if needed for older browsers
-        overflow: 'hidden',
-    },
+  container: {
+    width: '100%',       // outer container can stretch
+    overflow: 'visible', // let diagram content grow
+  } as React.CSSProperties,
 };

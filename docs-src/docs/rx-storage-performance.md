@@ -15,7 +15,7 @@ Therefore the performance can be completely different depending on where you use
 
 The "normal" storages are always persistent. This means each RxDB write is directly written to disc and all queries run on the disc state. This means a good startup performance because nothing has to be done on startup.
 
-In contrast, semi-persistent storages like [memory mapped](./rx-storage-memory-mapped.md) store all data in memory on startup and only save to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also these storages can only be used when all data fits into the memory at least once. In general it is recommended to stay on the persistent storages and only use semi-persitend ones, when you know for sure that the dataset will stay small (less than 2k documents).
+In contrast, semi-persistent storages like [memory mapped](./rx-storage-memory-mapped.md) store all data in memory on startup and only save to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also these storages can only be used when all data fits into the memory at least once. In general it is recommended to stay on the persistent storages and only use semi-persistent ones, when you know for sure that the dataset will stay small (less than 2k documents).
 
 
 ## Performance comparison

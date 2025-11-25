@@ -140,6 +140,12 @@ export type PlainJsonError = {
  * RxStorage.bulkWrite() is called
  */
 export type RxStorageWriteErrorBase<RxDocType> = {
+    /**
+     * The content-string that has been passed to
+     * RxStorageInstance.bulkWrite()
+     * TODO add this!
+     */
+    // context: string;
 
     status: number
     | 409 // conflict

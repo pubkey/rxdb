@@ -28,6 +28,7 @@ Object.keys(_types).forEach(function (key) {
   });
 });
 function startRxStorageRemoteWebsocketServer(options) {
+  options.perMessageDeflate = true;
   var serverState = (0, _index2.startSocketServer)(options);
   var websocketByConnectionId = new Map();
   var messages$ = new _rxjs.Subject();

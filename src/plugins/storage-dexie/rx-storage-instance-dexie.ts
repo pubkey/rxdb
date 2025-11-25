@@ -80,7 +80,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotClosed(this);
 
-
         if (
             !shownNonPremiumLog &&
             !(await hasPremiumFlag())

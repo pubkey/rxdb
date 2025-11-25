@@ -74,6 +74,7 @@ var RxStorageInstanceLocalstorage = exports.RxStorageInstanceLocalstorage = /*#_
     this.docsKey = 'RxDB-ls-doc-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
     this.changestreamStorageKey = 'RxDB-ls-changes-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
     this.indexesKey = 'RxDB-ls-idx-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
+    this.attachmentsKey = 'RxDB-ls-attachment-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
     this.changeStreamSub = getStorageEventStream().subscribe(ev => {
       if (ev.key !== this.changestreamStorageKey || !ev.newValue || ev.fromStorageEvent && ev.databaseInstanceToken === this.databaseInstanceToken) {
         return;
@@ -175,6 +176,17 @@ var RxStorageInstanceLocalstorage = exports.RxStorageInstanceLocalstorage = /*#_
     indexValues.forEach((indexValue, i) => {
       var index = Object.values(this.internals.indexes);
       this.setIndex(index[i].index, indexValue);
+    });
+
+    // attachments
+    categorized.attachmentsAdd.forEach(attachment => {
+      this.localStorage.setItem(this.attachmentsKey + '-' + attachment.documentId + '||' + attachment.attachmentId, attachment.attachmentData.data);
+    });
+    categorized.attachmentsUpdate.forEach(attachment => {
+      this.localStorage.setItem(this.attachmentsKey + '-' + attachment.documentId + '||' + attachment.attachmentId, attachment.attachmentData.data);
+    });
+    categorized.attachmentsRemove.forEach(attachment => {
+      this.localStorage.removeItem(this.attachmentsKey + '-' + attachment.documentId + '||' + attachment.attachmentId);
     });
     if (categorized.eventBulk.events.length > 0) {
       var lastState = (0, _index.ensureNotFalsy)(categorized.newestRow).document;
@@ -307,8 +319,9 @@ var RxStorageInstanceLocalstorage = exports.RxStorageInstanceLocalstorage = /*#_
     });
     return _index.PROMISE_RESOLVE_TRUE;
   };
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
-    throw (0, _rxError.newRxError)('SNH');
+  _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId) {
+    var data = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
+    return (0, _index.ensureNotFalsy)(data);
   };
   _proto.remove = function remove() {
     ensureNotRemoved(this);

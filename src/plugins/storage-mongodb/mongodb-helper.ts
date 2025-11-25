@@ -8,10 +8,17 @@ import type {
 import {
     Sort as MongoSort
 } from 'mongodb';
-import { flatClone } from '../utils/index.ts';
+import { RXDB_VERSION, flatClone } from '../utils/index.ts';
 import { MongoDBPreparedQuery, MongoQuerySelector } from './mongodb-types.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 export const RX_STORAGE_NAME_MONGODB = 'mongodb';
+
+export const MONGO_OPTIONS_DRIVER_INFO = {
+    driverInfo: {
+        name: 'RxDB',
+        version: RXDB_VERSION
+    }
+};
 
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)
@@ -97,7 +104,7 @@ export function swapRxDocToMongo<RxDocType>(
 export function swapToMongoSort<RxDocType>(
     sort: MangoQuerySortPart<RxDocType>[]
 ): MongoSort {
-    const ret: MongoSort = {};
+    const ret: any = {};
     sort.forEach(sortPart => {
         const [key, direction] = Object.entries(sortPart)[0];
         const mongoKey = key === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : key;

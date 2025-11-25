@@ -49,6 +49,7 @@ export declare class RxStorageInstanceLocalstorage<RxDocType> implements RxStora
      * inside of the localstorage.
      */
     readonly docsKey: string;
+    readonly attachmentsKey: string;
     readonly changestreamStorageKey: string;
     readonly indexesKey: string;
     private changeStreamSub;
@@ -68,7 +69,7 @@ export declare class RxStorageInstanceLocalstorage<RxDocType> implements RxStora
     count(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
+    getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
     remove(): Promise<void>;
     close(): Promise<void>;
 }

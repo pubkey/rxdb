@@ -23,11 +23,11 @@ var mingoInitDone = false;
  */
 function getMingoQuery(selector) {
   if (!mingoInitDone) {
-    (0, _core.useOperators)(_core.OperatorType.PIPELINE, {
+    (0, _core.useOperators)('pipeline', {
       $sort: _pipeline.$sort,
       $project: _pipeline.$project
     });
-    (0, _core.useOperators)(_core.OperatorType.QUERY, {
+    (0, _core.useOperators)('query', {
       $and: _logical.$and,
       $eq: _comparison.$eq,
       $elemMatch: _array.$elemMatch,

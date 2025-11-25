@@ -25,9 +25,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -63,9 +63,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -97,9 +97,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -123,9 +123,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -165,9 +165,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -214,9 +214,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -249,9 +249,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -296,9 +296,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -323,9 +323,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -345,6 +345,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.12.0
         with:
           mongodb-version: 8.0.4
+          mongodb-replica-set: rs0
 
       - name: install npm dependencies
         run: npm install
@@ -354,16 +355,20 @@ jobs:
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
+      - run: timeout 1h bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
 
   example-angular:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      #- name: install dependencies
-      #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - uses: actions/checkout@v5
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -398,6 +403,8 @@ jobs:
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/angular
           run: npm run test:build
@@ -414,9 +421,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -453,9 +460,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -472,33 +479,33 @@ jobs:
             ${{ runner.os }}-npm-test-code-style-x4-
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src/docs
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/docs
       - name: spelling docs-src/src
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
-          skip: legal-notice.tsx
+          skip: legal-notice.tsx,custom.css
           path: docs-src/src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v2.1
+        uses: codespell-project/actions-codespell@v2.2
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
@@ -524,14 +531,17 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -545,6 +555,8 @@ jobs:
 
       - name: electron test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -554,9 +566,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       # install system dependencies that Tauri needs to compile on Linux.
@@ -599,13 +611,18 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
+
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -620,17 +637,21 @@ jobs:
 
       - name: react test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/react
-          run: npm run test:build
+          run: |
+            google-chrome --version
+            npm run test:build
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -653,72 +674,18 @@ jobs:
           sudo sysctl -p
           npm run test:bundle
 
-  example-supabase:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-      - name: Reuse npm cache folder
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-            ./examples/supabase/node_modules
-          # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x4-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-supabase-x4
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx
-      - name: prepare RxDB core
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-          rm -r node_modules
-      - name: Install
-        working-directory: ./examples/supabase
-        run: |
-          npm run preinstall
-          npm install --legacy-peer-deps
-      
-      - name: start supabase
-        working-directory: ./examples/supabase
-        run: npm run supabase:start
-
-      - name: build
-        working-directory: ./examples/supabase
-        run: npm run build
-
-      # TODO these tests randomly fail. Never because of RxDB
-      # but always because random supabase updates because the
-      # supabase build is not deterministic.
-      # - name: test
-      #   uses: coactions/setup-xvfb@v1
-      #   with:
-      #     working-directory: ./examples/supabase
-      #     run: npm run test:localstorage
-
   example-vue:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - uses: actions/checkout@v5
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -736,6 +703,8 @@ jobs:
 
       - name: vue test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vue
           run: npm run test
@@ -744,11 +713,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - uses: actions/checkout@v5
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -765,6 +737,8 @@ jobs:
 
       - name: svelte test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/svelte
           run: npm run test
@@ -773,11 +747,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - uses: actions/checkout@v5
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -793,6 +770,8 @@ jobs:
           npm run build
       - name: vite vanilla ts test
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
@@ -801,11 +780,14 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - uses: actions/checkout@v5
+      - name: Setup Chrome to specific version
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 141
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -823,6 +805,8 @@ jobs:
         run: npm run build
       - name: test test:localstorage
         uses: coactions/setup-xvfb@v1
+        env:
+          BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/graphql
           run: npm run test:localstorage
@@ -880,9 +864,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -966,9 +950,9 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ".nvmrc"
 
@@ -988,8 +972,14 @@ jobs:
           npm install
           npm run build
 
-      - run: npm run test:replication-couchdb
 
+      # supabase
+      - run: npm run supabase:start
+      - run: timeout 1h bash -c 'until npm run test:replication-supabase; do sleep 5; done'
+      - run: npm run supabase:stop
+
+
+      - run: npm run test:replication-couchdb
 
       - name: firestore replication
         run: |
@@ -1001,6 +991,7 @@ jobs:
         run: |
           docker pull nats:2.9.17
           npm run test:replication-nats
+
 
       # bun
       - uses: oven-sh/setup-bun@v2
@@ -1027,7 +1018,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "2.0.6"
+          deno-version: "2.5.6"
       - name: run deno tests:dexie
         run: |
           sudo npm i -g cross-env

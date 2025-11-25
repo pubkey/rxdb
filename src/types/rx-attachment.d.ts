@@ -16,6 +16,21 @@ export type RxAttachmentCreator = {
     data: Blob;
 };
 
+export type RxAttachmentCreatorBase64 = {
+    id: string;
+    /**
+     * Content type like 'plain/text'
+     */
+    type: string;
+    /**
+     * The data of the attachment as base64.
+     */
+    data: string;
+
+    // must be set manually
+    length: number;
+};
+
 export declare class RxAttachment<RxDocumentType, OrmMethods = {}, Reactivity = unknown> {
     readonly doc: RxDocument<RxDocumentType, OrmMethods, Reactivity>;
     readonly id: string;
@@ -26,5 +41,6 @@ export declare class RxAttachment<RxDocumentType, OrmMethods = {}, Reactivity = 
 
     remove(): Promise<void>;
     getData(): Promise<Blob>;
+    getDataBase64(): Promise<string>;
     getStringData(): Promise<string>;
 }

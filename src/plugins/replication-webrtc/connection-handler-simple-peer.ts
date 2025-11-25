@@ -15,10 +15,10 @@ import type {
     SyncOptionsWebRTC
 } from './webrtc-types.ts';
 
-import type { 
-    SimplePeer as Peer, 
-    Instance as SimplePeerInstance, 
-    Options as SimplePeerOptions 
+import type {
+    SimplePeer as Peer,
+    Instance as SimplePeerInstance,
+    Options as SimplePeerOptions
 } from 'simple-peer';
 import {
     default as _Peer
@@ -76,6 +76,7 @@ let defaultServerWarningShown = false;
 
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
 export type SimplePeerConfig = SimplePeerOptions['config'];
+export type SimplePeerWebSocketConstructor = { new(url: string): WebSocket; };
 
 export type SimplePeerConnectionHandlerOptions = {
     /**
@@ -87,7 +88,7 @@ export type SimplePeerConnectionHandlerOptions = {
     signalingServerUrl?: string;
     wrtc?: SimplePeerWrtc;
     config?: SimplePeerConfig;
-    webSocketConstructor?: WebSocket;
+    webSocketConstructor?: SimplePeerWebSocketConstructor;
 };
 
 export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
@@ -96,15 +97,12 @@ export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export function getConnectionHandlerSimplePeer({
-    signalingServerUrl,
+    signalingServerUrl = DEFAULT_SIGNALING_SERVER,
     wrtc,
     config,
-    webSocketConstructor
+    webSocketConstructor = WebSocket
 }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer> {
     ensureProcessNextTickIsSet();
-
-    signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
-    webSocketConstructor = webSocketConstructor ? webSocketConstructor as any : WebSocket;
 
     if (
         signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
@@ -164,7 +162,7 @@ export function getConnectionHandlerSimplePeer({
             if (closed) {
                 return;
             }
-            socket = new (webSocketConstructor as any)(signalingServerUrl) as WebSocket;
+            socket = new webSocketConstructor(signalingServerUrl);
             socket.onclose = () => createSocket();
             socket.onopen = () => {
                 ensureNotFalsy(socket).onmessage = (msgEvent: any) => {

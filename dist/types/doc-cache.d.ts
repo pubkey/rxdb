@@ -9,11 +9,15 @@ import { Observable } from 'rxjs';
 declare type CacheItem<RxDocType, OrmMethods> = [
     /**
      * Store the different document states of time
-     * based on their revision height (rev height = array index).
+     * based on their [revisionHeight+_meta.lwt] .
      * We store WeakRefs so that we can later clean up
      * document states that are no longer needed.
+     *
+     * Notice that we can not only rely on the revisionHeight
+     * because when cleanup is used, two document states can end up with
+     * the same revision but different _meta.lwt.
      */
-    Map<number, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
+    Map<string, WeakRef<RxDocument<RxDocType, OrmMethods>>>,
     /**
      * Store the latest known document state.
      * As long as any state of the document is in the cache,
@@ -35,6 +39,7 @@ declare type CacheItem<RxDocType, OrmMethods> = [
 declare type FinalizationRegistryValue = {
     docId: string;
     revisionHeight: number;
+    lwt: number;
 };
 /**
  * The DocumentCache stores RxDocument objects

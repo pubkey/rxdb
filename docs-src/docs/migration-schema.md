@@ -123,7 +123,9 @@ const messageCol = await myDatabase.addCollections({
 
 // check if migration is needed
 const needed = await messageCol.migrationNeeded();
-if(needed == false) return;
+if(needed === false) {
+  return;
+}
 
 // start the migration
 messageCol.startMigration(10); // 10 is the batch-size, how many docs will run at parallel
@@ -146,13 +148,13 @@ migrationState.$.subscribe({
       percent: 0   // percentage [0-100]
     }
 }
-
 ```
 
 If you don't want to show the state to the user, you can also use `.migratePromise()`:
+
 ```js
-  const migrationPromise = messageCol.migratePromise(10);
-  await migratePromise;
+const migrationPromise = messageCol.migratePromise(10);
+await migratePromise;
 ```
 
 

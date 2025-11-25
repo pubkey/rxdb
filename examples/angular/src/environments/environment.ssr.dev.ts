@@ -1,4 +1,3 @@
-import { EnvironmentParams } from './environment.d';
 import {
     getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
@@ -13,6 +12,7 @@ import {
 import {
     addRxPlugin
 } from 'rxdb';
+import { EnvironmentParams } from './environment-type';
 
 
 export const environment: EnvironmentParams = {

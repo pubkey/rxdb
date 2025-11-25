@@ -17,14 +17,12 @@ export var SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export function getConnectionHandlerSimplePeer({
-  signalingServerUrl,
+  signalingServerUrl = DEFAULT_SIGNALING_SERVER,
   wrtc,
   config,
-  webSocketConstructor
+  webSocketConstructor = WebSocket
 }) {
   ensureProcessNextTickIsSet();
-  signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
-  webSocketConstructor = webSocketConstructor ? webSocketConstructor : WebSocket;
   if (signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) && !defaultServerWarningShown) {
     defaultServerWarningShown = true;
     console.warn(['RxDB Warning: You are using the RxDB WebRTC replication plugin', 'but you did not specify your own signaling server url.', 'By default it will use a signaling server provided by RxDB at ' + DEFAULT_SIGNALING_SERVER, 'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.', 'In production you must always use your own signaling server instead.', 'Learn how to run your own server at https://rxdb.info/replication-webrtc.html', 'Also leave a ⭐ at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'].join(' '));

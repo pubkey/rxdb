@@ -14,6 +14,7 @@ import {
     isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer,
     SimplePeer,
+    SimplePeerWebSocketConstructor,
     SimplePeerWrtc
 } from '../../plugins/replication-webrtc/index.mjs';
 import {
@@ -44,7 +45,7 @@ describe('replication-webrtc.test.ts', function () {
     }
 
     let wrtc: SimplePeerWrtc;
-    let webSocketConstructor: WebSocket;
+    let webSocketConstructor: SimplePeerWebSocketConstructor;
 
     const signalingServerUrl: string = 'ws://localhost:18006';
     // const signalingServerUrl: string = 'wss://signaling.rxdb.info/';
@@ -57,7 +58,7 @@ describe('replication-webrtc.test.ts', function () {
                 wrtc = wrtcModule.default as any;
 
                 const wsModule = await import('ws');
-                webSocketConstructor = wsModule.WebSocket as any;
+                webSocketConstructor = wsModule.WebSocket as unknown as SimplePeerWebSocketConstructor;
             }
         });
     });

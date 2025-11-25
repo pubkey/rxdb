@@ -118,11 +118,11 @@ export function observeSingle<RxDocType>(
  * the document state from some, but not all shards.
  */
 export function stackCheckpoints<CheckpointType>(
-    checkpoints: CheckpointType[]
+    checkpoints: (CheckpointType | undefined)[]
 ): CheckpointType {
     return Object.assign(
         {},
-        ...checkpoints
+        ...checkpoints.filter(x => !!x)
     );
 }
 

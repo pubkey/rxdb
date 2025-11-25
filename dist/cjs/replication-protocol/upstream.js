@@ -137,7 +137,7 @@ async function startReplicationUpstream(state) {
        * Merge/filter all open tasks
        */
       var docs = [];
-      var checkpoint = {};
+      var checkpoint;
       while (openTasks.length > 0) {
         var taskWithTime = (0, _index.ensureNotFalsy)(openTasks.shift());
         /**

@@ -1,5 +1,4 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
@@ -7,12 +6,7 @@ const FILE_EVENT_ID = 'paid-meeting-link-clicked-starter-pack';
 
 export default function Meeting() {
     const { siteConfig } = useDocusaurusContext();
-
-    const isBrowser = useIsBrowser();
     useEffect(() => {
-        if (!isBrowser) {
-            return;
-        }
         (() => {
             triggerTrackingEvent(FILE_EVENT_ID, 100, 1);
         })();

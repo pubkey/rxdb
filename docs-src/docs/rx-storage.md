@@ -11,7 +11,7 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 
 ## Quick Recommendations
 
-- In the Browser: Use the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/), otherwise use the [LocalStorage](./rx-storage-localstorage.md) storage.
+- In the Browser: Use the [LocalStorage](./rx-storage-localstorage.md) storage for simple setup and small build size. For bigger datasets, use either the [dexie.js storage](./rx-storage-dexie.md) (free) or the [IndexedDB RxStorage](./rx-storage-indexeddb.md) if you have [👑 premium access](/premium/) which is a bit faster and has a smaller build size.
 - In [Electron](./electron-database.md) and [ReactNative](./react-native-database.md): Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/) or the [trial-SQLite RxStorage](./rx-storage-sqlite.md) for tryouts.
 - In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [👑 premium access](/premium/), otherwise use the [localStorage](./rx-storage-localstorage.md) storage.
 
@@ -46,7 +46,7 @@ const myDatabase = await createRxDatabase({
 
 ### High query Load
 
-Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the shardingstorage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the [localstorage-meta-optimizer](./rx-storage-localstorage-meta-optimizer.md) to improve initialization time.
+Also we can utilize a combination of storages to create a database that is optimized to run complex queries on the data really fast. Here we use the sharding storage together with the worker storage. This allows to run queries in parallel multithreading instead of a single JavaScript process. Because the worker initialization can slow down the initial page load, we also use the [localstorage-meta-optimizer](./rx-storage-localstorage-meta-optimizer.md) to improve initialization time.
 
 ```ts
 import { getRxStorageSharding } from 'rxdb-premium/plugins/storage-sharding';

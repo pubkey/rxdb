@@ -7,7 +7,7 @@ export declare function replicateWebRTC<RxDocType, PeerType>(options: SyncOption
  * we use a Pool instead of returning a single replication state.
  */
 export declare class RxWebRTCReplicationPool<RxDocType, PeerType> {
-    readonly collection: RxCollection<RxDocType>;
+    readonly collection: RxCollection<RxDocType, any, any, any>;
     readonly options: SyncOptionsWebRTC<RxDocType, PeerType>;
     readonly connectionHandler: WebRTCConnectionHandler<PeerType>;
     peerStates$: BehaviorSubject<Map<PeerType, WebRTCPeerState<RxDocType, PeerType>>>;
@@ -15,7 +15,7 @@ export declare class RxWebRTCReplicationPool<RxDocType, PeerType> {
     masterReplicationHandler: RxReplicationHandler<RxDocType, WebRTCReplicationCheckpoint>;
     subs: Subscription[];
     error$: Subject<RxError | RxTypeError>;
-    constructor(collection: RxCollection<RxDocType>, options: SyncOptionsWebRTC<RxDocType, PeerType>, connectionHandler: WebRTCConnectionHandler<PeerType>);
+    constructor(collection: RxCollection<RxDocType, any, any, any>, options: SyncOptionsWebRTC<RxDocType, PeerType>, connectionHandler: WebRTCConnectionHandler<PeerType>);
     addPeer(peer: PeerType, replicationState?: RxWebRTCReplicationState<RxDocType>): void;
     removePeer(peer: PeerType): void;
     awaitFirstPeer(): Promise<Map<PeerType, WebRTCPeerState<RxDocType, PeerType>>>;

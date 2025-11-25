@@ -60,6 +60,7 @@ export declare const basePrototype: {
     incrementalUpdate(_updateObj: UpdateQuery<any>): never;
     updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
     putAttachment(): never;
+    putAttachmentBase64(): never;
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
@@ -148,6 +149,7 @@ export declare function createRxDocumentConstructor(proto?: {
     incrementalUpdate(_updateObj: UpdateQuery<any>): never;
     updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
     putAttachment(): never;
+    putAttachmentBase64(): never;
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
@@ -237,6 +239,7 @@ export declare function createRxDocumentConstructor(proto?: {
         incrementalUpdate(_updateObj: UpdateQuery<any>): never;
         updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): never;
         putAttachment(): never;
+        putAttachmentBase64(): never;
         getAttachment(): never;
         allAttachments(): never;
         readonly allAttachments$: void;

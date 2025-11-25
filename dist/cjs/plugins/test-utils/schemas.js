@@ -12,6 +12,7 @@ var _asyncTestUtil = _interopRequireDefault(require("async-test-util"));
 var _overwritable = require("../../overwritable.js");
 var _rxSchema = require("../../rx-schema.js");
 var _index = require("../utils/index.js");
+var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var humanSchemaLiteral = exports.humanSchemaLiteral = _overwritable.overwritable.deepFreezeWhenDevMode({
   title: 'human schema',
   description: 'describes a human being',
@@ -1000,7 +1001,7 @@ var humanWithTimestamp = exports.humanWithTimestamp = _overwritable.overwritable
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: _rxSchemaHelper.META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1029,7 +1030,7 @@ var humanWithTimestampNested = exports.humanWithTimestampNested = _overwritable.
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: _rxSchemaHelper.META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1094,7 +1095,7 @@ var humanWithTimestampAllIndex = exports.humanWithTimestampAllIndex = _overwrita
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: _rxSchemaHelper.META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     deletedAt: {
@@ -1126,13 +1127,13 @@ var humanWithSimpleAndCompoundIndexes = exports.humanWithSimpleAndCompoundIndexe
     createdAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: _rxSchemaHelper.META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     },
     updatedAt: {
       type: 'number',
       minimum: 0,
-      maximum: 10000000000000000,
+      maximum: _rxSchemaHelper.META_LWT_UNIX_TIME_MAX,
       multipleOf: 1
     }
   },

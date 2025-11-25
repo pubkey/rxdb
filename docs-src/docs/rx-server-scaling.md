@@ -26,7 +26,7 @@ Another way to increases the server capacity is to put the storage into a [Worke
 
 ### Use an in-memory storage at the user facing level
 
-Another way to serve more requests to your end users, is to use an [in-memory](./rx-storage-memory.md) storage that has the [best](./rx-storage-performance.md) read- and write performance. It outperformans persistent storages by a factor of 10x.
+Another way to serve more requests to your end users, is to use an [in-memory](./rx-storage-memory.md) storage that has the [best](./rx-storage-performance.md) read- and write performance. It outperforms persistent storages by a factor of 10x.
 So instead of directly serving requests from the persistence layer, you add an in-memory layer on top of that. You could either do a [replication](./replication.md) from your memory database to the persistent one, or you use the [memory mapped](./rx-storage-memory-mapped.md) storage which has this build in.
 
 ```ts

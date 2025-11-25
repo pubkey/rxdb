@@ -150,7 +150,7 @@ function getCRDTSchemaPart() {
       time: {
         type: 'number',
         minimum: 1,
-        maximum: 1000000000000000,
+        maximum: _index2.META_LWT_UNIX_TIME_MAX,
         multipleOf: 0.01
       }
     },

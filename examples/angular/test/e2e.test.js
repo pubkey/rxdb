@@ -1,5 +1,6 @@
 import {
-    Selector
+    Selector,
+    ClientFunction
 } from 'testcafe';
 import AsyncTestUtil from 'async-test-util';
 
@@ -10,12 +11,25 @@ fixture`Example page`
 
 
 test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
+
+    // check if pouchdb server is up
+    console.log('Try reaching pouchdb server...');
+    const res = await fetch('http://localhost:10101/');
+    const data = await res.json();
+    if (!data.version) {
+        throw new Error('pouchdb-server not up ' + JSON.stringify(data));
+    }
+    console.log('PouchDB server is up with version ' + data.version);
+
+
     // clear previous heroes
     const heroElements = Selector('.hero-list-component mat-list-item');
+    console.log('Angular first render done');
     const amount = heroElements.count;
     for (let i = 0; i < amount; i++) {
         await t.click('.delete-button');
     }
+    console.log('deleted all previous entries');
 
     // input name
     const heroNameInput = Selector('.hero-insert-component #insert-name');

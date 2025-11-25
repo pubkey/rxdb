@@ -8,7 +8,9 @@ import {
     getPassword,
     getEncryptedStorage,
     EncryptedHumanDocumentType,
-    randomStringWithSpecialChars
+    randomStringWithSpecialChars,
+    getPullHandler,
+    getPushHandler
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -33,7 +35,6 @@ import {
     decryptString
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
-import { getPullHandler, getPushHandler } from './replication.test.ts';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
@@ -343,7 +344,7 @@ describeParallel('encryption.test.ts', () => {
                 replicationIdentifier: randomToken(10),
                 live: true,
                 pull: {
-                    handler: getPullHandler<EncryptedHumanDocumentType>(remoteCollection as any)
+                    handler: getPullHandler<EncryptedHumanDocumentType, any>(remoteCollection as any)
                 },
                 push: {
                     handler: getPushHandler(remoteCollection as any)

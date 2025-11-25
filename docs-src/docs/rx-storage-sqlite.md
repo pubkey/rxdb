@@ -42,9 +42,11 @@ import {
     getSQLiteBasicsNodeNative
 } from 'rxdb/plugins/storage-sqlite';
 
-// Create a Storage for it
+// Create a Storage for it, here we use the nodejs-native SQLite module
+// other SQLite modules can be used with a different sqliteBasics adapter
+import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLiteTrial({
-    sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+    sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 
 // Create a Database with the Storage
@@ -63,9 +65,11 @@ import {
     getSQLiteBasicsNodeNative
 } from 'rxdb-premium/plugins/storage-sqlite';
 
-// Create a Storage for it
+// Create a Storage for it, here we use the nodejs-native SQLite module
+// other SQLite modules can be used with a different sqliteBasics adapter
+import { DatabaseSync } from 'node:sqlite';
 const storage = getRxStorageSQLite({
-    sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+    sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 
 // Create a Database with the Storage
@@ -135,11 +139,11 @@ import {
     getRxStorageSQLite,
     getSQLiteBasicsNodeNative
 } from 'rxdb-premium/plugins/storage-sqlite';
-import sqlite from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',
     storage: getRxStorageSQLite({
-        sqliteBasics: getSQLiteBasicsNodeNative(sqlite.DatabaseSync)
+        sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
     })
 });
 ```
@@ -366,6 +370,15 @@ const storage = getRxStorageSQLite({
     sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor),
     // pass log function
     log: console.log.bind(console)
+});
+```
+
+- By default, all tables will be created with the `WITHOUT ROWID` flag. Some tools like drizzle do not support tables with that option. You can disable it by setting `withoutRowId: false` when calling `getRxStorageSQLite()`:
+
+```ts
+const storage = getRxStorageSQLite({
+    sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor),
+    withoutRowId: false
 });
 ```
 

@@ -170,7 +170,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                 },
                 hasPersistence: true,
                 hasMultiInstance: isNode ? false : true,
-                hasAttachments: false,
+                hasAttachments: true,
                 hasReplication: true
             };
             break;
