@@ -16,7 +16,8 @@ import {
     humansCollection,
     ensureReplicationHasNoErrors,
     ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType
+    SimpleHumanDocumentType,
+    PrimaryHumanDocType
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import config from './unit/config.ts';
@@ -492,6 +493,41 @@ describe('replication-supabase.test.ts', function () {
 
             await collectionA.database.close();
             await collectionB.database.close();
+        });
+    });
+
+    describe('issues', () => {
+        it('#7513 push.modifier is never applied', async () => {
+            await cleanUpServer();
+
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+
+
+            const replicationState = replicateSupabase<PrimaryHumanDocType>({
+                tableName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                pull: {
+                    batchSize
+                },
+                push: {
+                    batchSize,
+                    modifier: d => {
+                        d.lastName = 'push-modified';
+                        return d;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await collection.insert(schemaObjects.humanData('aaaa'));
+            await replicationState.awaitInSync();
+            const serverState = await getServerState();
+            const firstDoc = ensureNotFalsy(serverState[0]);
+            assert.strictEqual(firstDoc.lastName, 'push-modified');
+
+            await collection.database.close();
         });
     });
 
