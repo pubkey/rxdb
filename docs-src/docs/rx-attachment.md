@@ -1,6 +1,7 @@
 ---
 title: Attachments
 slug: rx-attachment.html
+description: Learn how to store and manage binary data like images or files in RxDB using attachments. Discover features, performance benefits, encryption, compression, and usage examples with code.
 ---
 
 # Attachments
@@ -69,6 +70,24 @@ const attachment = await myDocument.putAttachment(
     }
 );
 ```
+
+:::warning
+Expo/React-Native does not support the `Blob` API natively. Make sure you use your own polyfill that properly supports `blob.arrayBuffer()` when using RxAttachments or use the `putAttachmentBase64()` and `getDataBase64()` so that you do not have to create blobs.
+:::
+
+## putAttachmentBase64()
+
+Same as `putAttachment()` but accepts a plain base64 string instead of a `Blob`.
+
+```ts
+const attachment = await doc.putAttachmentBase64({
+    id: 'cat.txt',
+    length: 4,
+    data: 'bWVvdw==',
+    type: 'text/plain'
+});
+```
+
 
 ## getAttachment()
 
@@ -144,7 +163,16 @@ Returns a Promise which resolves the attachment's data as `Blob`. (async)
 
 ```javascript
 const attachment = myDocument.getAttachment('cat.jpg');
-const blob = await attachment.getData();
+const blob = await attachment.getData(); // Blob
+```
+
+## getDataBase64()
+
+Returns a Promise which resolves the attachment's data as **base64** `string`.
+
+```javascript
+const attachment = myDocument.getAttachment('cat.jpg');
+const base64Database = await attachment.getDataBase64(); // 'bWVvdw=='
 ```
 
 ## getStringData()
@@ -153,7 +181,7 @@ Returns a Promise which resolves the attachment's data as `string`.
 
 ```javascript
 const attachment = await myDocument.getAttachment('cat.jpg');
-const data = await attachment.getStringData();
+const data = await attachment.getStringData(); // 'meow'
 ```
 
 

@@ -4,6 +4,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.createLocalDocStateByParent = createLocalDocStateByParent;
 exports.createRxLocalDocument = createRxLocalDocument;
 exports.getRxDatabaseFromLocalDocument = getRxDatabaseFromLocalDocument;
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
@@ -16,6 +17,8 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _index = require("../../plugins/utils/index.js");
 var _localDocumentsHelper = require("./local-documents-helper.js");
 var _rxDatabase = require("../../rx-database.js");
+var _docCache = require("../../doc-cache.js");
+var _incrementalWrite = require("../../incremental-write.js");
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
   function RxLocalDocumentClass(id, jsonData, parent) {
@@ -169,7 +172,7 @@ var _init = () => {
       functionName: k
     });
   };
-  ['populate', 'update', 'putAttachment', 'getAttachment', 'allAttachments'].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
+  ['populate', 'update', 'putAttachment', 'putAttachmentBase64', 'getAttachment', 'allAttachments'].forEach(k => RxLocalDocumentPrototype[k] = getThrowingFun(k));
 };
 function createRxLocalDocument(data, parent) {
   _init();
@@ -185,5 +188,70 @@ function getRxDatabaseFromLocalDocument(doc) {
   } else {
     return parent.database;
   }
+}
+function createLocalDocStateByParent(parent) {
+  var database = parent.database ? parent.database : parent;
+  var collectionName = parent.database ? parent.name : '';
+  var statePromise = (async () => {
+    var storageInstance = await (0, _localDocumentsHelper.createLocalDocumentStorageInstance)(database.token, database.storage, database.name, collectionName, database.instanceCreationOptions, database.multiInstance);
+    storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(database, storageInstance, _localDocumentsHelper.RX_LOCAL_DOCUMENT_SCHEMA);
+    var docCache = new _docCache.DocumentCache('id', database.eventBulks$.pipe((0, _rxjs.filter)(changeEventBulk => {
+      var ret = false;
+      if (
+      // parent is database
+      collectionName === '' && !changeEventBulk.collectionName ||
+      // parent is collection
+
+      collectionName !== '' && changeEventBulk.collectionName === collectionName) {
+        ret = true;
+      }
+      return ret && changeEventBulk.isLocal;
+    }), (0, _rxjs.map)(b => b.events)), docData => createRxLocalDocument(docData, parent));
+    var incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(storageInstance, 'id', () => {}, () => {});
+
+    /**
+     * Emit the changestream into the collections change stream
+     */
+    var databaseStorageToken = await database.storageToken;
+    var subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+      var events = new Array(eventBulk.events.length);
+      var rawEvents = eventBulk.events;
+      var collectionName = parent.database ? parent.name : undefined;
+      for (var index = 0; index < rawEvents.length; index++) {
+        var event = rawEvents[index];
+        events[index] = {
+          documentId: event.documentId,
+          collectionName,
+          isLocal: true,
+          operation: event.operation,
+          documentData: _overwritable.overwritable.deepFreezeWhenDevMode(event.documentData),
+          previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(event.previousDocumentData)
+        };
+      }
+      var changeEventBulk = {
+        id: eventBulk.id,
+        isLocal: true,
+        internal: false,
+        collectionName: parent.database ? parent.name : undefined,
+        storageToken: databaseStorageToken,
+        events,
+        databaseToken: database.token,
+        checkpoint: eventBulk.checkpoint,
+        context: eventBulk.context
+      };
+      database.$emit(changeEventBulk);
+    });
+    parent._subs.push(subLocalDocs);
+    var state = {
+      database,
+      parent,
+      storageInstance,
+      docCache,
+      incrementalWriteQueue
+    };
+    _localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED.set(parent, state);
+    return state;
+  })();
+  _localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
 }
 //# sourceMappingURL=rx-local-document.js.map

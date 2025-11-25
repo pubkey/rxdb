@@ -28,7 +28,7 @@ import {
     RxHeroDocumentType
 } from '../schemas/hero.schema';
 
-import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
+import { startSync } from './replication';
 
 const collectionSettings = {
     [HERO_COLLECTION_NAME]: {
@@ -88,7 +88,7 @@ async function _create(injector: Injector): Promise<RxHeroesDatabase> {
         multiInstance: environment.multiInstance,
         reactivity: reactivityFactory
         // password: 'myLongAndStupidPassword' // no password needed
-    });
+    }) as RxHeroesDatabase;
     console.log('DatabaseService: created database');
 
     if (!environment.isServerSideRendering) {
@@ -131,54 +131,10 @@ async function _create(injector: Injector): Promise<RxHeroesDatabase> {
 
     // sync with server
     if (doSync()) {
-        console.log('DatabaseService: sync');
-        await Promise.all(
-            Object.values(db.collections).map(async (col) => {
-                try {
-                    // create the CouchDB database
-                    await fetch(
-                        environment.rxdbSyncUrl + col.name + '/',
-                        {
-                            method: 'PUT'
-                        }
-                    );
-                } catch (err) { }
-            })
+        await startSync(
+            db,
+            environment
         );
-        /**
-         * For server side rendering,
-         * we just run a one-time replication to ensure the client has the same data as the server.
-         */
-        if (environment.isServerSideRendering) {
-            console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await replicateCouchDB({
-                replicationIdentifier: 'couch-server-side-sync',
-                collection: db.hero,
-                url: environment.rxdbSyncUrl + db.hero.name + '/',
-                live: false,
-                pull: {},
-                push: {}
-            });
-            await firstReplication.awaitInitialReplication();
-        }
-
-        /**
-         * we start a live replication which also sync the ongoing changes
-         */
-        console.log('DatabaseService: start ongoing replication');
-        const ongoingReplication = replicateCouchDB({
-            replicationIdentifier: 'couch-client-side-sync',
-            collection: db.hero,
-            url: environment.rxdbSyncUrl + db.hero.name + '/',
-            live: true,
-            pull: {},
-            push: {}
-        });
-        ongoingReplication.error$.subscribe(err => {
-            console.log('Got replication error:');
-            console.dir(err);
-            console.error(err);
-        });
     }
 
 

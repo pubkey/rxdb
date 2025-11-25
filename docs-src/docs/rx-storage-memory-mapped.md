@@ -101,3 +101,14 @@ const storage = getMemoryMappedRxStorage({
 });
 ```
 
+## Block Size Limit
+
+During cleanup, the memory-mapped storage will merge many small write-blocks into single big blocks for better initial load performance.
+The `blockSizeLimit` defines the maximum of how many documents get stored in a single block. The default is `10000`.
+
+```ts
+const storage = getMemoryMappedRxStorage({
+    blockSizeLimit: 1000,
+    storage: getRxStorageIndexedDB()
+});
+```

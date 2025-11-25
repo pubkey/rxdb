@@ -279,6 +279,66 @@ If you can have cases where user interaction is required to correctly merge conf
 
 Also when CRDTs are used, it is no longer allowed to do non-CRDT writes to the document properties.
 
+## CRDT Alternative
+
+While the CRDT plugin can automatically merge concurrent document updates, it is not the only way to resolve conflicts in RxDB.
+An alternative approach to CRDT is to use RxDB's built-in [conflict handling system](./transactions-conflicts-revisions.md).
+
+> Why use conflict handlers instead of CRDT?
+
+Conflict handlers offer a **simpler and more flexible** way to manage data conflicts. Instead of encoding changes as CRDT operations, you define how RxDB should decide which document version "wins" with plain JavaScript code. This approach is easier to reason about because it works directly with your domain logic. For example, you can compare timestamps, prioritize certain fields, or even involve user interaction to resolve conflicts.
+
+Conflict handlers are:
+
+*   **Easier to understand**: you work with plain document states instead of CRDT operations.
+*   **Fully customizable**: you can define any merge strategy, from simple last-write-wins to complex rule-based logic.
+*   **Compatible with all data types**: unlike CRDTs, which are best suited for numeric or set-based updates.
+*   **Transparent**: you always know which state is being written and why.
+
+### Downsides of CRDTs
+
+CRDTs are powerful for automatic conflict-free merging, but they also come with trade-offs:
+
+*   **Higher conceptual complexity**: CRDTs require understanding of operation semantics, version vectors, and merge determinism.
+*   **Limited flexibility**: you can only express changes that fit the supported JSON-style update operators.
+*   **Difficult debugging**: when merges don't behave as expected, it can be hard to trace the sequence of CRDT operations that led to a state.
+*   **Overhead for simple cases**: if your data rarely conflicts or needs human oversight, using CRDTs can add unnecessary complexity.
+    
+
+### When to choose conflict handlers
+
+Use conflict handlers as CRDT alternative if:
+*   You want full control over merge logic.
+*   Your data model includes contextual or user-specific decisions.
+*   You prefer a straightforward, rule-based resolution system over automatic merges.
+
+Use CRDTs if:
+*   Your app performs frequent offline writes that can be merged deterministically.
+*   Your data can be represented as additive, numeric, or array-based updates.
+*   You want minimal manual intervention during replication.
+
+
+Both methods are first-class citizens in RxDB. CRDTs focus on **automatic, deterministic merging**, while conflict handlers emphasize **clarity, flexibility, and control**.
+
+### Example: merging different fields with conflict handlers instead of CRDT
+
+For example, imagine two users edit different fields of the same document at the same time. One updates a `name`, the other updates a `score`. A custom conflict handler can merge both changes so no data is lost:
+
+```ts
+const mergeFieldsHandler = {
+  isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+  resolve: (input) => {
+    return {
+      ...input.realMasterState,
+      name: input.newDocumentState.name ?? input.realMasterState.name,
+      score: Math.max(input.newDocumentState.score, input.realMasterState.score)
+    };
+  }
+};
+```
+
+In this example, if the two versions change different properties, the final merged document includes both updates. This kind of logic is often easier to reason about than designing equivalent CRDT operations.
+
 
 <!--
 ## TODOs

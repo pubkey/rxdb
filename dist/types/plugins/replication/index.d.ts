@@ -13,7 +13,7 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
      * and to identify which documents state came from the remote.
      */
     readonly replicationIdentifier: string;
-    readonly collection: RxCollection<RxDocType>;
+    readonly collection: RxCollection<RxDocType, unknown, unknown, unknown>;
     readonly deletedField: string;
     readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
     readonly push?: ReplicationPushOptions<RxDocType> | undefined;
@@ -40,19 +40,25 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
         schema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>>;
     }>;
     startPromise: Promise<void>;
+    /**
+     * start/pause/cancel/remove must never run
+     * in parallel to avoid a wide range of bugs.
+     */
+    startQueue: Promise<any>;
     onCancel: (() => void)[];
     constructor(
     /**
      * The identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, toggleOnDocumentVisible?: boolean | undefined);
+    replicationIdentifier: string, collection: RxCollection<RxDocType, unknown, unknown, unknown>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, toggleOnDocumentVisible?: boolean | undefined);
     private callOnStart;
     internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
     metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
     start(): Promise<void>;
-    pause(): void;
+    _start(): Promise<void>;
+    pause(): Promise<any>;
     isPaused(): boolean;
     isStopped(): boolean;
     isStoppedOrPaused(): boolean;
@@ -70,8 +76,9 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     awaitInSync(): Promise<true>;
     reSync(): void;
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>): void;
-    cancel(): Promise<any>;
-    remove(): Promise<void>;
+    cancel(): Promise<void>;
+    _cancel(doNotClose?: boolean): Promise<any>;
+    remove(): Promise<any>;
 }
 export declare function replicateRxCollection<RxDocType, CheckpointType>({ replicationIdentifier, collection, deletedField, pull, push, live, retryTime, waitForLeadership, autoStart, toggleOnDocumentVisible }: ReplicationOptions<RxDocType, CheckpointType>): RxReplicationState<RxDocType, CheckpointType>;
 export declare function startReplicationOnLeaderShip(waitForLeadership: boolean, replicationState: RxReplicationState<any, any>): Promise<void>;

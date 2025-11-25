@@ -53,7 +53,7 @@ export function areRxDocumentArraysEqual(primaryPath, ar1, ar2) {
     var row1 = ar1[i];
     var row2 = ar2[i];
     i++;
-    if (row1._rev !== row2._rev || row1[primaryPath] !== row2[primaryPath]) {
+    if (row1[primaryPath] !== row2[primaryPath] || row1._rev !== row2._rev || row1._meta.lwt !== row2._meta.lwt) {
       return false;
     }
   }

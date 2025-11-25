@@ -4,27 +4,26 @@ import Head from '@docusaurus/Head';
 
 import {
   ensureNotFalsy,
-  promiseWait,
-  ucfirst,
-  hashStringToNumber
+  promiseWait
 } from '../../../';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
-import { TagCloud } from 'react-tagcloud';
-import { DevicesSync } from '../components/devices-sync';
-import { ObserveCodeExample } from '../components/observe-code-example';
 import useIsBrowser from '@docusaurus/useIsBrowser';
-import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
-import { getTestGroup } from '../components/a-b-tests';
 import { SyncSection } from '../components/sync-section';
-// import PriceTag from '../components/price-tag';
-// import { Modal } from 'antd';
+import { OfflineSection } from '../components/offline-section';
+import { PartnerTrophy, SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { IconNewsletter } from '../components/icons/newsletter';
+import { Button } from '../components/button';
+import { IconDiscord } from '../components/icons/discord';
+import { IconPremium } from '../components/icons/premium';
+import { IconCode } from '../components/icons/code';
+import { IconQuickstart } from '../components/icons/quickstart';
+import { FeaturesSection } from '../components/features-section';
+import { getTestGroup } from '../components/a-b-tests';
 
 
 export const colors = [
@@ -33,7 +32,6 @@ export const colors = [
   '#5f2688'
 ];
 
-// const STARTER_PACK_PRICE = 24;
 
 let animationStarted = false;
 function startLandingpageAnimation() {
@@ -209,104 +207,10 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
+  // must be directly called here first, before any A/B-Test content is rendered
   getTestGroup(props.sem ? props.sem.id : '');
-  const { siteConfig } = useDocusaurusContext();
 
-  const [tags] = useState([
-    {
-      value: 'attachments',
-      count: 38,
-      url: '/rx-attachment.html'
-    },
-    {
-      value: 'server',
-      count: 38,
-      url: '/rx-server.html'
-    },
-    {
-      value: 'migration',
-      count: 38,
-      url: '/migration-schema.html'
-    },
-    {
-      value: 'schema Validation',
-      count: 38,
-      url: '/schema-validation.html'
-    },
-    {
-      value: 'signals',
-      count: 38,
-      url: '/reactivity.html'
-    },
-    {
-      value: 'state',
-      count: 38,
-      url: '/rx-state.html'
-    },
-    {
-      value: 'local Documents',
-      count: 38,
-      url: '/rx-local-document.html'
-    },
-    {
-      value: 'encryption',
-      count: 38,
-      url: '/encryption.html'
-    },
-    {
-      value: 'compression',
-      count: 38,
-      url: '/key-compression.html'
-    },
-    {
-      value: 'backup',
-      count: 38,
-      url: '/backup.html'
-    },
-    {
-      value: 'middleware',
-      count: 38,
-      url: '/middleware.html'
-    },
-    {
-      value: 'CRDT',
-      count: 38,
-      url: '/crdt.html'
-    },
-    {
-      value: 'population',
-      count: 38,
-      url: '/population.html'
-    },
-    {
-      value: 'ORM',
-      count: 38,
-      url: '/orm.html'
-    },
-    {
-      value: 'logging',
-      count: 38,
-      url: '/logger.html'
-    },
-    {
-      value: 'conflict Handling',
-      count: 10,
-      url: '/transactions-conflicts-revisions.html'
-    },
-    {
-      value: 'replication',
-      count: 10,
-      url: '/replication.html'
-    },
-    {
-      value: 'storages',
-      count: 10,
-      url: '/rx-storage.html'
-    }
-  ].map((i: any) => {
-    i.count = hashStringToNumber(i.value) % 54;
-    return i;
-  }));
+  const { siteConfig } = useDocusaurusContext();
 
   const isBrowser = useIsBrowser();
   useEffect(() => {
@@ -325,6 +229,13 @@ export default function Home(props: {
   const replicationRef = useRef<HTMLDivElement>(null);
   const offlineRef = useRef<HTMLDivElement>(null);
   const runtimesRef = useRef<HTMLDivElement>(null);
+  // const refs = {
+  //   reviewsRef,
+  //   realtimeRef,
+  //   replicationRef,
+  //   offlineRef,
+  //   runtimesRef
+  // };
 
   function scrollToSection(section: Section) {
     switch (section) {
@@ -369,9 +280,6 @@ export default function Home(props: {
         <main>
 
           <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
-          {/* <HeroSection_C sem={props.sem} scrollToSection={scrollToSection} />
-          <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
-          <HeroSection_A sem={props.sem} scrollToSection={scrollToSection} /> */}
 
           {
             props.sem && props.sem.blocks ?
@@ -380,553 +288,75 @@ export default function Home(props: {
               </> : ''
           }
 
+          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
 
-          <VideoSection sem={props.sem} />
 
-          <div className="block second dark" id="realtime" ref={realtimeRef}>
-            <div className="content">
-              <h2>
-                Realtime Applications <b className="underline">made easy</b>
-              </h2>
-              <p>
-                In RxDB, everything is observable. <b>Query Results</b>, <b>Documents</b>, <b>Document Fields</b>, <b>Events</b>.
-              </p>
-              <ul className="checked">
-                <li>Whenever data changes, the UI updates.</li>
-                <li>Realtime events across components, browser tabs and user devices</li>
-                {
-                  props.sem && props.sem.appName ?
-                    <li>Supports {props.sem.appName} and all major frameworks:</li> :
-                    ''
-                }
-              </ul>
-              <div className="inner">
-                {/*
-          Use https://www.programiz.com/html/online-compiler/
-          to craft html from code. (inspect the element)
-      */}
-                <div className="code half">
-                  <ObserveCodeExample sem={props.sem} />
-                </div>
-                <div className="canvas half">
-                  <DevicesSync sem={props.sem} />
-                </div>
-              </div>
-            </div>
-          </div>
 
           <Trophy
             href="/code/"
             title="GitHub"
-            subTitle='Open Source on'
+            subTitle='Open Source'
             value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
+            icon="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'
           />
 
-          <SyncSection sem={props.sem} replicationRef={replicationRef} />
+          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
 
+          <PartnerTrophy
+            href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+            title="MongoDB"
+            imgUrl="/files/icons/mongodb-icon.svg"
+          />
+
+          <VideoSection sem={props.sem} dark={false} />
 
           <Trophy
             href="/chat/"
             title="Discord"
             subTitle='Chat on'
             value={SOCIAL_PROOF_VALUES.discord}
-            imgUrl="/files/icons/discord.svg"
+            icon="/files/icons/discord.svg"
             valueTitle='members'
           />
 
-          <div className="block offline-first dark" id="offline" ref={offlineRef}>
-            <div className="offline-image-wrapper">
-              <img
-                src="/files/icons/wifi/wifi_1a202c.svg"
-                className="offline-image beating-second"
-                loading="lazy"
-                alt="offline"
-              />
-            </div>
-            <div className="content">
-              <h2>
-                Online <b className="underline">is Optional</b>
-              </h2>
-              <div className="full-width">
-                <div className="half left">
-                  <p>
-                    RxDB adopts an <a href="/offline-first.html" target="_blank">offline-first</a> approach, keeping your app fully functional even without a connection.
-                    Data is stored locally on the {getAppName(props)} client and seamlessly <b>replicated in the background</b>, and you can even skip the backend entirely if you choose.
-                  </p>
-                </div>
-                <div className="half right">
-                  <ul className="checked">
-                    <li>
-                      Keep your {getAppName(props)} app running <b>offline</b>
-                    </li>
-                    <li>
-                      Run local queries with <a href="https://rxdb.info/articles/zero-latency-local-first.html" target="_blank"><b>zero latency</b></a>
-                    </li>
-                    <li>
-                      Simplify and <b>speed up development</b>
-                    </li>
-                    <li>
-                      Reduces backend load and <b>scales better</b>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="block frameworks" id="runtimes" ref={runtimesRef}>
-            <div className="content">
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/angular"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '-10%', left: '10%' }}
-                >
-                  <img loading="lazy" src="/files/icons/angular.svg" alt="angular database" />
-                  Angular
-                </div>
-              </a>
-              <a
-                href="https://rxdb.info/capacitor-database.html#rxdb"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '10%', left: '58%' }}
-                >
-                  <img loading="lazy" src="/files/icons/capacitor.svg" alt="capacitor database" />
-                  Capacitor
-                </div>
-              </a>
-              <a
-                href="https://rxdb.info/rx-storage-denokv.html"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                  style={{ top: '-4%', left: '44%' }}
-                >
-                  <img loading="lazy" src="/files/icons/deno.svg" alt="deno database" />
-                  Deno
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/node"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '-5%', left: '85%' }}
-                >
-                  <img loading="lazy" src="/files/icons/nodejs.svg" alt="Node.js database" />
-                  Node.js
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/react"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '4%', left: '26%' }}
-                >
-                  <img loading="lazy" src="/files/icons/react.svg" alt="React database" />
-                  React
-                </div>
-              </a>
-              <a
-                href="https://github.com/pubkey/rxdb/tree/master/examples/svelte"
-                target="_blank"
-              >
-                <div
-                  className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                  style={{ top: '15%', left: '90%', marginLeft: '-35px' }}
-                >
-                  <img loading="lazy" src="/files/icons/svelte.svg" alt="Svelte database" />
-                  Svelte
-                </div>
-              </a>
-              <br />
-              <br />
-              <br />
-              <br />
-              <br />
-              <h2>
-                Runs in <b className="underline">Any JavaScript Runtime</b>
-              </h2>
+          <FeaturesSection dark={true} />
 
-
-              <p>
-                RxDB's modular storage architecture adapts to any JavaScript runtime — <a href="/rx-storage-indexeddb.html" target="_blank">Browsers</a>
-                , <a
-                  href="/rx-storage-sqlite.html"
-                  target="_blank"
-                >React Native</a>, <a href="/rx-storage-filesystem-node.html" target="_blank">Node.js</a>, <a
-                  href="/electron.html"
-                  target="_blank"
-                >Electron</a>, and beyond.
-                Simply switch the storage plugin to reuse the same database and replication logic across all your {getAppName(props)} apps, saving time and ensuring consistency.
-              </p>
-              <div className="below-text">
-                <a
-                  href="/electron-database.html#rxdb"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '2%', left: '18%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/electron.svg" alt="electron database" />
-                    Electron
-                  </div>
-                </a>
-                <a
-                  href="/articles/vue-database.html"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '3%', left: '45%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/vuejs.svg" alt="Vue.js database" />
-                    Vue.js
-                  </div>
-                </a>
-                <a
-                  href="/articles/ionic-storage.html"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '2%', left: '71%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/ionic.svg" alt="ionic database" />
-                    Ionic
-                  </div>
-                </a>
-                <a
-                  href="https://github.com/herefishyfish/rxdb-nativescript"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                    style={{ top: '46%', left: '11%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/nativescript.svg" alt="NativeScript database" />
-                    NativeScript
-                  </div>
-                </a>
-                <a
-                  href="/react-native-database.html#rxdb"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                    style={{ top: '45%', left: '35%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/react.svg" alt="React Native database" />
-                    React Native
-                  </div>
-                </a>
-                <div
-                  className="neumorphism-circle-m circle centered enlarge-on-mouse"
-                  style={{ top: '45%', left: '62%' }}
-                >
-                  <img loading="lazy" src="/files/icons/nextjs.svg" alt="Next.js database" />
-                  Next.js
-                </div>
-                <a
-                  href="https://github.com/pubkey/rxdb/tree/master/examples/flutter"
-                  target="_blank"
-                >
-                  <div
-                    className="neumorphism-circle-s circle centered enlarge-on-mouse"
-                    style={{ top: '40%', left: '86%' }}
-                  >
-                    <img loading="lazy" src="/files/icons/flutter.svg" alt="Flutter database" />
-                    Flutter
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
 
           <Trophy
             href="https://twitter.com/intent/user?screen_name=rxdbjs"
             title="Twitter"
             subTitle='Follow on'
             value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
+            icon="/files/icons/twitter-blue.svg"
             valueTitle='followers'
           />
 
-          <div className="block features dark">
-            <div className="content">
-              <h2>All the <b className="underline">Features</b> You'll Ever Need</h2>
-              <p>
-                Since its creation in 2018,
-                RxDB has evolved into a powerhouse of features and plugins, offering an all-inclusive,
-                future-proof solution for any type of {getAppName(props)} application. Whatever you need now or might need down the road, is already built in.
-                Giving you the confidence to create robust, scalable apps with ease.
-              </p>
-              <div style={{
-                marginTop: 65,
-                marginBottom: 5,
-                width: '100%',
-                maxWidth: 1200,
-                padding: 10
-              }}>
 
-                <TagCloud
-                  minSize={18}
-                  maxSize={55}
-                  tags={tags}
-                  randomSeed={145}
-                  renderer={(tag, size, _color) => {
-                    return (
-                      <a key={tag.value}
-                        style={{
-                          color: 'white',
-                          fontSize: size,
-                          margin: '0px ' + size + 'px',
-                          verticalAlign: 'middle',
-                          display: 'inline-block'
-                        }}
-                        className="tag-cloud-tag"
-                        href={tag.url}
-                      >
-                        {ucfirst(tag.value)}
-                      </a>
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </div>
 
-          <div className="block reviews" id="reviews" ref={reviewsRef}>
+          <div className="block reviews trophy-before trophy-after" id="reviews" ref={reviewsRef} >
             <div className="content centered">
+              <h2>
+                Used by <b>Thousands Worldwide</b>
+              </h2>
               <div className="inner">
-                <h2>
-                  Used by <b className="underline">Thousands Worldwide</b>
-                </h2>
-                <p>
-                  RxDB is a proven, battle-tested solution used by countless developers across the globe.
-                  With its flexibility, RxDB is used in a vast spectrum of {getAppName(props)} apps and services — from real-time collaboration tools to mission-critical enterprise systems:
-                </p>
-                <br /><br />
-              </div>
-            </div>
-            <ReviewsBlock></ReviewsBlock>
-          </div>
-
-          {/* <div className="block fifth dark">
-            <div className="content centered">
-              <div className="inner">
-                <h2>
-                  Trusted and <b className="underline">open source</b>
-                </h2>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/github-star.svg" alt="github star" />
-                  <div className="label">Github Stars</div>
-                  <a
-                    className="value"
-                    href="/code/"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    20172
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/download.svg" alt="npm downloads" />
-                  <div className="label">npm downloads</div>
-                  <a
-                    className="value beating-number"
-                    href="https://www.npmjs.com/package/rxdb"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    238572
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/person.svg" alt="contributor" />
-                  <div className="label">Contributors</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/graphs/contributors"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    211
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/commit.svg" alt="commit" />
-                  <div className="label">Commits</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/commits/master"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    10409
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/gear.svg" alt="gear" />
-                  <div className="label">RxDB made Projects</div>
-                  <a
-                    className="value"
-                    href="https://github.com/pubkey/rxdb/network/dependents?package_id=UGFja2FnZS0xODM0NzAyMw%3D%3D"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    1402
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="box dark">
-                  <img loading="lazy" src="files/icons/twitter.svg" alt="twitter" />
-                  <div className="label">Twitter followers</div>
-                  <a
-                    className="value"
-                    href="https://twitter.com/intent/user?screen_name=rxdbjs"
-                    rel="noopener"
-                    target="_blank"
-                  >
-                    2925
-                  </a>
-                  <div className="clear" />
-                </div>
-                <div className="clear" />
-              </div>
-            </div>
-          </div> */}
-
-          <div className="block dark sixth">
-            <div className="content">
-              <h2>Free <b className='underline'>Open Core</b> Model</h2>
-              <br />
-              <div className="inner">
-                <div className="buy-options">
-                  <div className="buy-option bg-gradient-left-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Open Source Core</h2>
-                        <div className="price">for Hobbyists and Prototypes</div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          The RxDB Open Core provides a robust and reliable database engine
-                          that's freely accessible to everyone.
-                          <br />
-                          This core includes all the essential features you need to develop efficient,
-                          real-time {getAppName(props)} applications like storages, replication and other plugins.
-                          <br />
-                          <br />
-                          Our open-core approach encourages a vibrant community of developers,
-                          fostering collaboration and innovation.
-                        </p>
-                        <br />
-
-                      </div>
-                      <a
-                        href="/code/"
-                        target="_blank"
-                        rel="noopener"
-                        onClick={() => triggerTrackingEvent('get_the_code_main_page', 0.8)}
-                      >
-                        <div className="buy-option-action bg-top hover-shadow-top">
-                          Get the Code
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="buy-option bg-gradient-right-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Premium Plugins</h2>
-                        <div className="price">
-                          for professional Developers
-                        </div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          Our Premium Plugins are essential for professionals using RxDB.
-                          They boost the basic features of RxDB with significant performance improvements and reduced bundle size.
-                        </p>
-                        <ul>
-                          <li>
-                            <b>Enhanced Storage Plugins</b> to speed up data processing significantly.
-                          </li>
-                          <li>
-                            <b>Robust Encryption</b> secures your data with state-of-the-art encryption methods.
-                          </li>
-                          <li>
-                            <b>Advanced Metrics Logging</b> provides detailed insights for performance monitoring.
-                          </li>
-                        </ul>
-                        <br />
-
-                      </div>
-                      <a
-                        href="/premium/"
-                        onClick={() => triggerTrackingEvent('request_premium_main_page', 3)}
-                      >
-                        <div className="buy-option-action bg-middle hover-shadow-middle">
-                          Get Premium
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                  <div className="buy-option bg-gradient-left-top">
-                    <div className="buy-option-inner">
-                      <div className="buy-option-title">
-                        <h2>Consulting</h2>
-                        <div className="price">Get Professional Support</div>
-                      </div>
-                      <div className="buy-option-features">
-                        <p>
-                          Using new technologies can be hard. If you lack the capacity or skill to build your application, we are here to help.
-                          <br />
-                          <br />
-                          From quick <b>one-time support sessions</b> to <b>full project</b> development and <b>custom feature</b> implementation,
-                          we're here to ensure your project's success. Let's build something incredible together.
-                          <br />
-                          <br />
-                        </p>
-                      </div>
-                      <a
-                        href="/consulting/"
-                        onClick={() => triggerTrackingEvent('consulting_session_request_main_page', 4)}
-                      >
-                        <div className="buy-option-action bg-bottom hover-shadow-bottom">
-                          Get in Contact
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
+                <ReviewsBlock></ReviewsBlock>
               </div>
             </div>
           </div>
 
-          <div className="block last">
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
+
+
+          <div className="block last trophy-before dark">
             <div className="content">
               <h2>
-                Start using <b className="underline">RxDB</b> today
+                Start using <b >RxDB</b> today
               </h2>
               <div className="buttons full-width">
                 <a
@@ -935,11 +365,19 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('start_now_main_bottom', 0.40)}
                 >
-                  <div
-                    className="button get-premium"
-                    style={{ left: '50%', top: '20%', marginLeft: '-122px' }}
-                  >
-                    Quickstart
+                  <div style={{
+                    width: 186,
+                    left: '50%',
+                    top: '23%',
+                    marginLeft: '-93px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconQuickstart />}
+                      primary
+                    >
+                      Quickstart
+                    </Button>
                   </div>
                 </a>
                 <a
@@ -948,9 +386,22 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('newsletter_main_bottom', 0.40)}
                 >
-                  <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
-                    Get the Newsletter
+
+                  <div style={{
+                    left: '29%',
+                    width: 361,
+                    marginLeft: '-180px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconNewsletter />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Subscribe to the</span> Newsletter
+                    </Button>
                   </div>
+                  {/* <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
+                    <IconNewsletter />
+                    <span className='hide-mobile'>Subscribe to the</span> Newsletter
+                  </div> */}
                 </a>
                 <a
                   href="/chat/"
@@ -958,19 +409,31 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('join_chat_main_bottom', 0.40)}
                 >
-                  <div
-                    className="button"
-                    style={{ left: '77%', top: '6%', marginLeft: '-70.5px' }}
-                  >
-                    Join the Chat
+                  <div style={{
+                    width: 221,
+                    left: '76%',
+                    top: '6%',
+                    marginLeft: '-110.5px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconDiscord />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Join the</span>Chat
+                    </Button>
                   </div>
                 </a>
                 <a href="/premium/" onClick={() => triggerTrackingEvent('get_premium_main_bottom', 0.40)}>
-                  <div
-                    className="button"
-                    style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
-                  >
-                    Get Premium
+                  <div style={{
+                    width: 220,
+                    top: '44%',
+                    left: '26%',
+                    marginLeft: '-100px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconPremium />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Get</span>Premium
+                    </Button>
                   </div>
                 </a>
                 <a
@@ -979,11 +442,17 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('follow_twitter_main_bottom', 0.40)}
                 >
-                  <div
-                    className="button"
-                    style={{ top: '44%', left: '73%', marginLeft: '-85px' }}
-                  >
-                    Follow on Twitter
+                  <div style={{
+                    width: 258,
+                    top: '40%',
+                    left: '75%',
+                    marginLeft: '-129px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon="/files/icons/twitter-blue.svg" >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Follow on</span>Twitter
+                    </Button>
                   </div>
                 </a>
                 <a
@@ -992,11 +461,17 @@ export default function Home(props: {
                   target="_blank"
                   onClick={() => triggerTrackingEvent('get_code_main_bottom', 0.40)}
                 >
-                  <div
-                    className="button"
-                    style={{ top: '54%', left: '32%', marginLeft: '-70px' }}
-                  >
-                    Get the Code
+                  <div style={{
+                    width: 209,
+                    top: '64%',
+                    left: '43%',
+                    marginLeft: '-104px',
+                    position: 'absolute',
+                    textAlign: 'center'
+                  }}>
+                    <Button icon={<IconCode />} >
+                      <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Get the</span>Code
+                    </Button>
                   </div>
                 </a>
               </div>

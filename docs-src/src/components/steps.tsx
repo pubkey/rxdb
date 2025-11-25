@@ -30,7 +30,7 @@ export function Steps(props: { children: JSX.Element[]; }) {
             {steps.map((step, index) => (
                 <div key={index} style={styles.stepWrapper}>
                     <div style={styles.stepIndicator}>
-                        <div style={styles.stepNumber}>{index + 1}.</div>
+                        <div style={styles.stepNumber}>{index + 1}</div>
                         <div style={styles.verticalLine} />
                     </div>
 
@@ -71,14 +71,14 @@ const styles = {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        width: '32px',
+        width: '33px',
         marginRight: '1rem',
         // Ensure the left indicator area also allows shrinking, if needed
         minWidth: 0,
     },
     stepNumber: {
-        width: '32px',
-        height: '32px',
+        width: '33px',
+        height: '33px',
         borderRadius: '50%',
         backgroundColor: 'var(--color-middle)',
         border: '3px solid #391a3b',
@@ -90,7 +90,7 @@ const styles = {
     },
     verticalLine: {
         position: 'absolute',
-        top: '32px',
+        top: '33px',
         bottom: '0',
         left: '50%',
         width: '1px',

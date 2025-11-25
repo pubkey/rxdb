@@ -83,8 +83,8 @@ const dumpRxCollection = async function (
         this
     );
     return queryCollection(query)
-        .then((docs: any) => {
-            json.docs = docs.map((docData: any) => {
+        .then((result) => {
+            json.docs = result.docs.map((docData: any) => {
                 docData = flatClone(docData);
                 delete docData._rev;
                 delete docData._attachments;

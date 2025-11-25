@@ -2,12 +2,83 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
+- FIX(docs) search visibility and positioning
+- ADD(storage-localstorage) attachment support.
+- FIX error in dev mode when writing object with no prototype [#7530](https://github.com/pubkey/rxdb/pull/7530)
+- FIX findOne subscription + exec returns wrong results [#7497](https://github.com/pubkey/rxdb/pull/7497)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.20.0 (20 October 2025)
+
+- FIX(types) pull handler can return `undefined` as checkpoint.
+- FIX Issue running rxdb dev mode plugin on latest react native [#7421](https://github.com/pubkey/rxdb/issues/7421)
+- DOCS add info about non allowed top level properties [#7449](https://github.com/pubkey/rxdb/issues/7449)
+
+### 16.19.1 (24 September 2025)
+
+### 16.19.0 (4 September 2025)
+
+- ADD [Supabase Replication Plugin](https://rxdb.info/replication-supabase.html) (beta)
+
+### 16.18.0 (26 August 2025)
+
+- FIX "when a push handler is interrupted mid-way by a reload, after the reload retry doesn't happen" [via discord](https://discord.com/channels/969553741705539624/1059149217718861935/threads/1407063219062702111)
+- FIX query hanging after local document inserted [#7349](https://github.com/pubkey/rxdb/pull/7349)
+- FIX(sqlite-storage) query $or with null returns wrong results [#7356](https://github.com/pubkey/rxdb/issues/7356)
+
+### 16.17.2 (15 August 2025)
+
+- FIX credentials header in RxServer [#283](https://github.com/pubkey/rxdb-server/pull/283)
+
+### 16.17.1 (15 August 2025)
+
+- UPDATE express to v5 in RxServer
+
+### 16.17.0 (13 August 2025)
+
+- ADD `blockSizeLimit` to memory mapped storage.
+- FIX cleanup of a collection must also run the cleanup of the meta data of replications.
+- FIX type of SimplePeerConnectionHandlerOptions.webSocketConstructor [#7311](https://github.com/pubkey/rxdb/pull/7311)
+
+### 16.16.0 (16 July 2025)
+
+- FIX updates not working after migration of replication state [#7260](https://github.com/pubkey/rxdb/issues/7260)
+- FIX on ReplicationState.pause(),  `ensureNotFalsy()` throws [#7264](https://github.com/pubkey/rxdb/issues/7264)
+
+### 16.15.0 (17 June 2025)
+
+- ADD option to remove and update a document in the same atomic write operation.
+- ADD option to disable `WITHOUT ROWID` in the SQLite RxStorage.
+- FIX ajv-validation must know about the `date-time` format by default [#7253](https://github.com/pubkey/rxdb/issues/7253)
+- FIX db.addCollections fails after it failed for a missing migration strategy [#7226](https://github.com/pubkey/rxdb/pull/7226)
+- FIX SQLite storage fails while querying with null [#7236](https://github.com/pubkey/rxdb/pull/7236)
+
+### 16.13.0 (30 May 2025)
+
+- FIX queue start/stop/cancel operations in the replication state to ensure operations do not intersect and cause errors.
+- FIX real-time query ignoring the latest changes after deleting and purging data [#7187](https://github.com/pubkey/rxdb/pull/7187)
+- ADD `putAttachmentBase64()` and `getDataBase64()` to the attachments API so that attachments can be stored and read in runtimes that do not support `Blob`.
+- FIX schema migration failing when returning null [#7204](https://github.com/pubkey/rxdb/pull/7204)
+
+### 16.12.0 (10 May 2025)
+
+- FIX migration-schema error: "more then one meta info found".
+- FIX state get changes from other state will get error [#7097](https://github.com/pubkey/rxdb/pull/7097)
+- FIX toggleOnDocumentVisible isVisible not always truthy [#7095](https://github.com/pubkey/rxdb/pull/7095)
+- IMPROVE error message when `crypto.subtle.digest` is not defined.
+
+### 16.11.0 (16 April 2025)
+
+- FIX MigrationStrategies type not generic [#7055](https://github.com/pubkey/rxdb/pull/7055)
+- FIX Full text search ajv validation issue [#4](https://github.com/pubkey/rxdb-premium-issues/pull/4)
+- Full text search with encryption issue [#5](https://github.com/pubkey/rxdb-premium-issues/pull/5)
+- Published the [Appwrite Replication Plugin](https://rxdb.info/replication-appwrite.html) in beta mode
+- UPDATE the `ws` package to the latest version.
 
 ### 16.9.0 (1 April 2025)
 

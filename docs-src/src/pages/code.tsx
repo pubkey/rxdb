@@ -1,18 +1,13 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useIsBrowser from '@docusaurus/useIsBrowser';
 import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
 export default function Home() {
     const { siteConfig } = useDocusaurusContext();
-
-    const isBrowser = useIsBrowser();
     useEffect(() => {
- if (isBrowser) {
-    triggerTrackingEvent('goto_code', 0.40);
-}
-});
+        triggerTrackingEvent('goto_code', 0.40);
+    });
 
 
     return (

@@ -20,7 +20,7 @@ const sidebars = {
   tutorialSidebar: [
     {
       type: 'category',
-      label: 'Getting Started with RxDB',
+      label: 'Getting Started',
       collapsed: false,
       items: [
         {
@@ -37,7 +37,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Core Entities',
-      collapsed: false,
+      collapsed: true,
       items: [
         {
           type: 'doc',
@@ -78,17 +78,17 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-localstorage',
-          label: 'LocalStorage'
+          label: 'LocalStorage (Browser)'
         },
         {
           type: 'doc',
           id: 'rx-storage-indexeddb',
-          label: 'IndexedDB 👑'
+          label: 'IndexedDB 👑 (Browser, Capacitor)'
         },
         {
           type: 'doc',
           id: 'rx-storage-opfs',
-          label: 'OPFS 👑'
+          label: 'OPFS 👑 (Browser)'
         },
         {
           type: 'doc',
@@ -98,18 +98,17 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-filesystem-node',
-          label: 'Filesystem Node 👑'
+          label: 'Filesystem Node 👑 (Node.js)'
+        },
+        {
+          type: 'doc',
+          id: 'rx-storage-sqlite',
+          label: 'SQLite (Capacitor, React-Native, Expo, Tauri, Electron, Node.js)'
         },
         {
           type: 'category',
           label: 'Third Party Storages',
           items: [
-
-            {
-              type: 'doc',
-              id: 'rx-storage-sqlite',
-              label: 'SQLite'
-            },
             {
               type: 'doc',
               id: 'rx-storage-dexie',
@@ -241,9 +240,24 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'replication-mongodb',
+          label: 'MongoDB Replication'
+        },
+        {
+          type: 'doc',
+          id: 'replication-supabase',
+          label: 'Supabase Replication'
+        },
+        {
+          type: 'doc',
           id: 'replication-nats',
           label: 'NATS Replication'
-        }
+        },
+        {
+          type: 'doc',
+          id: 'replication-appwrite',
+          label: 'Appwrite Replication'
+        },
       ],
     },
     {
@@ -552,17 +566,12 @@ const sidebars = {
         },
       ],
     },
-    {
-      type: 'category',
-      label: 'Pre-Alpha Features',
-      items: [
-        {
-          type: 'doc',
-          id: 'replication-appwrite',
-          label: 'Appwrite Replication'
-        }
-      ],
-    },
+    // {
+    //   type: 'category',
+    //   label: 'Beta',
+    //   items: [
+    //   ]
+    // }
   ],
 };
 

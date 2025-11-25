@@ -16,28 +16,39 @@ import {
     newRxError,
     newRxTypeError
 } from '../../rx-error.ts';
-import { getWrittenDocumentsFromBulkWriteResponse, writeSingle } from '../../rx-storage-helper.ts';
+import {
+    getWrappedStorageInstance,
+    getWrittenDocumentsFromBulkWriteResponse,
+    writeSingle
+} from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentModifyFunction,
+    LocalDocumentParent,
+    RxChangeEventBulk,
     RxCollection,
     RxDatabase,
     RxDocument,
     RxDocumentData,
-    RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
-} from '../../types/index.d.ts';
+} from '../../types/';
 import {
     ensureNotFalsy,
     flatClone,
-    getDefaultRevision,
-    getDefaultRxDocumentMeta,
     getFromMapOrThrow,
     getProperty,
     RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../plugins/utils/index.ts';
-import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper.ts';
+import {
+    createLocalDocumentStorageInstance,
+    getLocalDocStateByParent,
+    LOCAL_DOC_STATE_BY_PARENT,
+    LOCAL_DOC_STATE_BY_PARENT_RESOLVED,
+    RX_LOCAL_DOCUMENT_SCHEMA
+} from './local-documents-helper.ts';
 import { isRxDatabase } from '../../rx-database.ts';
+import { DocumentCache } from '../../doc-cache.ts';
+import { IncrementalWriteQueue } from '../../incremental-write.ts';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
@@ -245,6 +256,7 @@ const _init = () => {
         'populate',
         'update',
         'putAttachment',
+        'putAttachmentBase64',
         'getAttachment',
         'allAttachments'
     ].forEach((k: string) => RxLocalDocumentPrototype[k] = getThrowingFun(k));
@@ -272,3 +284,102 @@ export function getRxDatabaseFromLocalDocument(doc: RxLocalDocument<any> | RxLoc
         return (parent as RxCollection).database;
     }
 }
+
+export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
+    const database: RxDatabase = parent.database ? parent.database : parent as any;
+    const collectionName = parent.database ? parent.name : '';
+    const statePromise = (async () => {
+        let storageInstance = await createLocalDocumentStorageInstance(
+            database.token,
+            database.storage,
+            database.name,
+            collectionName,
+            database.instanceCreationOptions,
+            database.multiInstance
+        );
+        storageInstance = getWrappedStorageInstance(
+            database,
+            storageInstance,
+            RX_LOCAL_DOCUMENT_SCHEMA
+        );
+
+        const docCache = new DocumentCache<RxLocalDocumentData, {}>(
+            'id',
+            database.eventBulks$.pipe(
+                filter(changeEventBulk => {
+                    let ret = false;
+                    if (
+                        // parent is database
+                        (
+                            collectionName === '' &&
+                            !changeEventBulk.collectionName
+                        ) ||
+                        // parent is collection
+                        (
+                            collectionName !== '' &&
+                            changeEventBulk.collectionName === collectionName
+                        )
+                    ) {
+                        ret = true;
+                    }
+                    return ret && changeEventBulk.isLocal;
+                }),
+                map(b => b.events)
+            ),
+            docData => createRxLocalDocument(docData, parent) as any
+        );
+
+        const incrementalWriteQueue = new IncrementalWriteQueue(
+            storageInstance,
+            'id',
+            () => { },
+            () => { }
+        );
+
+        /**
+         * Emit the changestream into the collections change stream
+         */
+        const databaseStorageToken = await database.storageToken;
+        const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+            const events = new Array(eventBulk.events.length);
+            const rawEvents = eventBulk.events;
+            const collectionName = parent.database ? parent.name : undefined;
+            for (let index = 0; index < rawEvents.length; index++) {
+                const event = rawEvents[index];
+                events[index] = {
+                    documentId: event.documentId,
+                    collectionName,
+                    isLocal: true,
+                    operation: event.operation,
+                    documentData: overwritable.deepFreezeWhenDevMode(event.documentData) as any,
+                    previousDocumentData: overwritable.deepFreezeWhenDevMode(event.previousDocumentData) as any
+                };
+            }
+            const changeEventBulk: RxChangeEventBulk<RxLocalDocumentData> = {
+                id: eventBulk.id,
+                isLocal: true,
+                internal: false,
+                collectionName: parent.database ? parent.name : undefined,
+                storageToken: databaseStorageToken,
+                events,
+                databaseToken: database.token,
+                checkpoint: eventBulk.checkpoint,
+                context: eventBulk.context
+            };
+            database.$emit(changeEventBulk);
+        });
+        parent._subs.push(subLocalDocs);
+
+        const state = {
+            database,
+            parent,
+            storageInstance,
+            docCache,
+            incrementalWriteQueue
+        };
+        LOCAL_DOC_STATE_BY_PARENT_RESOLVED.set(parent, state);
+        return state;
+    })();
+    LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
+}
+

@@ -15,7 +15,7 @@ In difference to the JavaScript runtime of browsers, React Native does not suppo
 Instead a different storage solution must be chosen that does not come directly with React Native itself but has to be installed as a library or plugin.
 
 <p align="center">
-  <img src="./files/icons/react-native.png" alt="React Native" width="20" />
+  <img src="./files/icons/react.svg" alt="React Native" width="20" />
 </p>
 
 ## Database Solutions for React-Native
@@ -90,7 +90,7 @@ Overall, SQLite can be a good solution for straightforward, local-only data stor
 ### PouchDB
 
 <p align="center">
-  <img src="./files/icons/pouchdb.png" alt="PouchDB" width="40" />
+  <img src="./files/icons/pouchdb.svg" alt="PouchDB" width="40" />
 </p>
 
 PouchDB is a JavaScript NoSQL database that follows the API of the [Apache CouchDB](https://couchdb.apache.org/) server database.

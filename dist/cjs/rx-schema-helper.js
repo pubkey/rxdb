@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_META_SCHEMA = exports.DEFAULT_CHECKPOINT_SCHEMA = void 0;
+exports.RX_META_SCHEMA = exports.META_LWT_UNIX_TIME_MAX = exports.DEFAULT_CHECKPOINT_SCHEMA = void 0;
 exports.fillObjectWithDefaults = fillObjectWithDefaults;
 exports.fillPrimaryKey = fillPrimaryKey;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
@@ -239,6 +239,7 @@ function fillWithDefaultSettings(schemaObj) {
   schemaObj.indexes = useIndexes;
   return schemaObj;
 }
+var META_LWT_UNIX_TIME_MAX = exports.META_LWT_UNIX_TIME_MAX = 1000000000000000;
 var RX_META_SCHEMA = exports.RX_META_SCHEMA = {
   type: 'object',
   properties: {
@@ -252,7 +253,7 @@ var RX_META_SCHEMA = exports.RX_META_SCHEMA = {
        * We use 1 as minimum so that the value is never falsy.
        */
       minimum: _index.RX_META_LWT_MINIMUM,
-      maximum: 1000000000000000,
+      maximum: META_LWT_UNIX_TIME_MAX,
       multipleOf: 0.01
     }
   },

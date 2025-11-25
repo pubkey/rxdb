@@ -1,11 +1,21 @@
 import { ScrollToSection, SemPage } from '@site/src/pages';
 import { triggerTrackingEvent } from '../trigger-event';
-import { DevicesSync } from '../devices-sync';
+import { CheckedList } from '../checked-list';
+import { Button } from '../button';
+import { HeroRuntimes } from '../runtimes';
+import { EmojiChatStateful } from '../emoji-chat';
+import { PixelToggle } from '../toggle';
+import { useState } from 'react';
+import { IconWifi } from '../icons/wifi';
+import { IframeFormModal } from '../modal';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
+
+    const [online, setOnline] = useState(true);
+    const [openDemo, setOpenDemo] = useState(false);
 
     return <div className="block first hero centered dark">
         <div className="content">
@@ -20,114 +30,123 @@ export function HeroSection_B(props: {
             }
             <h1 style={{
                 textAlign: 'center',
-                paddingBottom: 40
             }}>
                 {
-                    props.sem ? props.sem.title : <>The easiest way to <b className="underline">store</b> and <b className="underline">sync</b> Data inside of your App</>
+                    props.sem ? props.sem.title : <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>
                 }
             </h1>
             <div className="inner">
-                <div className="half left">
-                    <ul className="checked">
-                        <li>
-                            Build apps that work <b className="underline" onClick={() => props.scrollToSection('offline')}>Offline</b>
-                        </li>
-                        <li>
-                            Sync with <b className="underline" onClick={() => props.scrollToSection('replication')}>any Backend</b>
-                        </li>
-                        <li>
-                            Observable <b className="underline" onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
-                        </li>
-                        <li>
-                            All JavaScript <b className="underline" onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
-                        </li>
-                    </ul>
-                    {/* <div className="text">
-                        {
-                            props.sem && props.sem.text ? props.sem.text : <>Store data locally to build high performance realtime {getAppName(props)} applications that sync data with the backend and even work when offline.</>
-                        }
-                    </div> */}
+                <div className="half left" style={{}}>
+                    <p style={{
+                        marginTop: 0,
+                        marginBottom: 0
+                    }} className='centered-mobile-p'>
+                        RxDB is a NoSQL database for JavaScript that runs directly in your app. With a <a href="/articles/local-first-future.html" target="_blank">local-first</a> design, it delivers zero-latency queries even offline, and syncs seamlessly with many backends. With observable queries, your UI updates instantly as data changes.
+                    </p>
+                    <CheckedList className='centered-mobile padding-right-20-0' style={{
+                        paddingTop: 35,
+                        paddingLeft: 0,
+                        paddingBottom: 0,
+                        maxWidth: 360
+                    }}>
+                        <>
+                            Build apps that work <b onClick={() => props.scrollToSection('offline')}>offline</b>
+                        </>
+                        <>
+                            Sync with <b onClick={() => props.scrollToSection('replication')}>any Backend</b>
+                        </>
+                        <>
+                            Observable <b onClick={() => props.scrollToSection('realtime')}>Realtime Queries</b>
+                        </>
+                        <>
+                            All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
+                        </>
+                    </CheckedList>
 
-                    <br />
-                    <br />
-
-
-                    <div className="hero-action">
-                        <div
-                            className="button button-empty"
+                    <div style={{
+                        marginTop: 60,
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 10,
+                        maxWidth: 500,
+                    }} className='hero-action-buttons centered-smaller-mobile'>
+                        <Button className="hero-action"
                             onClick={() => {
-                                triggerTrackingEvent('hero_section_how_others', 0.4);
-                                props.scrollToSection('reviews');
+                                setOpenDemo(true);
+                                triggerTrackingEvent('hero_section_demo_open', 0.4);
                             }}
-                        >
-                            How others use it
-                        </div>
-                    </div>
-                    <div className="hero-action">
-                        <a
-                            className="button"
+                        >Schedule a Demo</Button>
+                        <IframeFormModal
+                            iframeUrl='https://webforms.pipedrive.com/f/6Fz0viOs1HDtaA9sgYbt29eTE4tsxrW29hQbk8hGIvr1Bzl8NJrZNhcGWQlLcN1Dxh'
+                            open={openDemo}
+                            onClose={() => setOpenDemo(false)}
+                        />
+                        <Button primary
+                            className="hero-action"
                             href="/quickstart.html"
-                            target="_blank"
+                            target='_blank'
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
-                        >
-                            Get Started For Free &#x27A4;<br />
-                        </a>
-                        <a
-                            href="/premium/"
-                            target="_blank"
-                            onClick={() => triggerTrackingEvent('hero_section_get_premium', 0.4)}
-                        >
-                            <div className="buy-option-action">
-                                (Get Premium)
-                            </div>
-                        </a>
-
+                        >Get Started For Free</Button>
                     </div>
-
-
-
-                    {/* <a
-            className="button light"
-            href="/code/"
-            target="_blank"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 16 16"
-              className="star-icon"
-              aria-hidden="true"
-              fill="currentColor"
-              style={{ width: 14, marginRight: 8, marginLeft: -6, float: 'left', marginTop: 2 }}
-            >
-              <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" />
-            </svg>
-            Star (20,172)
-          </a> */}
-
-                    <div className="clear" />
-                    <br />
                 </div>
                 <div
-                    className="half right"
-                    style={{
+                    className="half right justify-center-mobile grid-2-mobile grid-3"
+                >
+
+                    <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        justifyItems: 'center',
                         alignSelf: 'start',
-                        paddingLeft: '6%',
-                        marginTop: 40,
-                        paddingRight: '2%'
-                    }}
-                >
-                    <DevicesSync sem={props.sem} />
-                </div>
+                        flexDirection: 'row',
+                        gap: 20,
+                    }} className='flex-end-center'
+                    >
+                        <EmojiChatStateful
+                            dark={true}
+                            online={online}
+                            chatId='hero_left'
+                            simulateClicks={true}
+                        />
+                        <div
+                            className='hide-mobile'
+                            style={{
+                                textAlign: 'center',
+                            }}>
+                            <IconWifi style={{
+                                width: '100%',
+                                paddingBottom: 3
+                            }} />
+                            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+                        </div>
+                        <EmojiChatStateful
+                            dark={true}
+                            online={online}
+                            chatId='hero_right'
+                            buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
+                            simulateClicks={true}
+                        />
+                    </div>
 
-                <div className='clear'></div>
+                    <div
+                        className='hide-desktop'
+                        style={{
+                            textAlign: 'center',
+                            justifyContent: 'center', // horizontally center the pair
+                            alignItems: 'center',     // vertically center (optional)
+                            gap: '1rem',
+                            marginTop: 19,
+                        }}>
+                        <IconWifi style={{
+                            height: 20
+                        }} />
+                        <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+                    </div>
+
+
+                </div>
             </div>
+            <HeroRuntimes></HeroRuntimes>
         </div>
-        <br />
-        <br />
-        <br />
-        <br />
     </div >;
 }

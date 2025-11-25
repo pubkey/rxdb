@@ -134,6 +134,7 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
+            return;
             if (location.pathname.includes('premium')) {
                 return;
             }
@@ -213,7 +214,7 @@ export default function Root({ children }) {
                             triggerTrackingEvent('notification_call_to_action', 0.40);
                             // track the ids also so we can delete the ones with a low clickrate.
                             triggerTrackingEvent(
-                                'notification_' + NOTIFICATION_SPLIT_TEST_VERSION + '_call_to_action_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
+                                'noti_' + NOTIFICATION_SPLIT_TEST_VERSION + '_CTA_cid_' + showPopup.callToActionId + '_tid_' + showPopup.titleId,
                                 0.01
                             );
                             closePopup();
@@ -231,6 +232,7 @@ export default function Root({ children }) {
 }
 
 function addCallToActionButton() {
+    return;
     // do only show on docs-pages, not on landingpages like premium or consulting page.
     if (!location.pathname.includes('.html')) {
         return;
@@ -300,6 +302,7 @@ function triggerClickEventWhenFromCode() {
     if (!urlParams.has('console')) {
         return;
     }
+    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID, 10);
     triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10);
 }
 
@@ -364,10 +367,12 @@ function startAnalytics() {
      * but only run trigger these once per page load
      */
     let trackScrollPercentages = new Set([25, 50, 75, 90]);
-    (window as any).navigation.addEventListener('navigate', () => {
-        // reset if url changes
-        trackScrollPercentages = new Set([25, 50, 75, 90]);
-    });
+    if ((window as any).navigation) {
+        (window as any).navigation.addEventListener('navigate', () => {
+            // reset if url changes
+            trackScrollPercentages = new Set([25, 50, 75, 90]);
+        });
+    }
     let nextScrollTimestamp = 0;
     if (location.pathname === '/' || location.pathname.includes('/sem/')) {
         window.addEventListener('scroll', (event) => {

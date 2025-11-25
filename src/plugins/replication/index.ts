@@ -40,6 +40,7 @@ import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
+    PROMISE_RESOLVE_VOID,
     toArray,
     toPromise
 } from '../../plugins/utils/index.ts';
@@ -94,6 +95,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
     public startPromise: Promise<void>;
 
+    /**
+     * start/pause/cancel/remove must never run
+     * in parallel to avoid a wide range of bugs.
+     */
+    public startQueue: Promise<any> = PROMISE_RESOLVE_VOID;
+
     public onCancel: (() => void)[] = [];
 
     constructor(
@@ -102,7 +109,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
          * and to identify which documents state came from the remote.
          */
         public readonly replicationIdentifier: string,
-        public readonly collection: RxCollection<RxDocType>,
+        public readonly collection: RxCollection<RxDocType, unknown, unknown, unknown>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -155,7 +162,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
-    public async start(): Promise<void> {
+
+    public start(): Promise<void> {
+        this.startQueue = this.startQueue.then(() => {
+            return this._start();
+        });
+        return this.startQueue;
+    }
+
+    public async _start(): Promise<void> {
         if (this.isStopped()) {
             return;
         }
@@ -204,7 +219,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             )
         ]);
         this.metaInstance = metaInstance;
-
 
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -367,6 +381,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 }
             }
         });
+
         this.subs.push(
             this.internalReplicationState.events.error.subscribe(err => {
                 this.subjects.error.next(err);
@@ -412,24 +427,30 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         if (!this.live) {
             await awaitRxStorageReplicationFirstInSync(this.internalReplicationState);
             await awaitRxStorageReplicationInSync(this.internalReplicationState);
-            await this.cancel();
+            await this._cancel();
         }
         this.callOnStart();
     }
 
     pause() {
-        ensureNotFalsy(this.internalReplicationState).events.paused.next(true);
+        this.startQueue = this.startQueue.then(() => {
+            /**
+             * It must be possible to .pause() the replication
+             * at any time, even if it has not been started yet.
+             */
+            if (this.internalReplicationState) {
+                this.internalReplicationState.events.paused.next(true);
+            }
+        });
+        return this.startQueue;
     }
 
     isPaused(): boolean {
-        return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+        return !!(this.internalReplicationState && this.internalReplicationState.events.paused.getValue());
     }
 
     isStopped(): boolean {
-        if (this.subjects.canceled.getValue()) {
-            return true;
-        }
-        return false;
+        return !!this.subjects.canceled.getValue();
     }
 
     isStoppedOrPaused() {
@@ -490,7 +511,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.remoteEvents$.next(ev);
     }
 
-    async cancel(): Promise<any> {
+
+    async cancel() {
+        this.startQueue = this.startQueue.catch(() => { }).then(async () => {
+            await this._cancel();
+        });
+        await this.startQueue;
+    }
+
+    async _cancel(doNotClose = false): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -500,7 +529,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         if (this.internalReplicationState) {
             await cancelRxStorageReplication(this.internalReplicationState);
         }
-        if (this.metaInstance) {
+        if (this.metaInstance && !doNotClose) {
             promises.push(
                 ensureNotFalsy(this.internalReplicationState).checkpointQueue
                     .then(() => ensureNotFalsy(this.metaInstance).close())
@@ -520,14 +549,18 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     async remove() {
-        await ensureNotFalsy(this.metaInstance).remove();
-        const metaInfo = await this.metaInfoPromise;
-        await this.cancel();
-        await removeConnectedStorageFromCollection(
-            this.collection,
-            metaInfo.collectionName,
-            metaInfo.schema
-        );
+        this.startQueue = this.startQueue.then(async () => {
+            const metaInfo = await this.metaInfoPromise;
+            await this._cancel(true);
+            await ensureNotFalsy(this.internalReplicationState).checkpointQueue
+                .then(() => ensureNotFalsy(this.metaInstance).remove());
+            await removeConnectedStorageFromCollection(
+                this.collection,
+                metaInfo.collectionName,
+                metaInfo.schema
+            );
+        });
+        return this.startQueue;
     }
 }
 
@@ -585,7 +618,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
             if (replicationState.isStopped()) {
                 return;
             }
-            const isVisible = document.visibilityState;
+            const isVisible = document.visibilityState === 'visible';
             if (isVisible) {
                 replicationState.start();
             } else {

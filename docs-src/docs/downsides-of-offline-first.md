@@ -4,14 +4,18 @@ slug: downsides-of-offline-first.html
 description: Discover the hidden pitfalls of local-first apps. Learn about storage limits, conflicts, and real-time illusions before building your offline solution.
 ---
 
-
+import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # Downsides of Local First / Offline First
 
 So you have read [all these things](./offline-first.md) about how the [local-first](./articles/local-first-future.md) (aka offline-first) paradigm makes it easy to create realtime web applications that even work when the user has no internet connection.
 But there is no free lunch. The offline first paradigm is not the perfect approach for all kinds of apps.
 
-> **You fully understood a technology when you know when not to use it**
+<QuoteBlock 
+  author="Daniel"
+  year="2024"
+  sourceLink="https://github.com/pubkey"
+>You fully understood a technology when you know when <b>not</b> to use it</QuoteBlock>
 
 In the following I will point out the limitations you need to know before you decide to use [RxDB](https://github.com/pubkey/rxdb) or even before you decide to create an offline first application.
 
@@ -140,7 +144,7 @@ You have a PostgreSQL database and run a query over 1000ths of rows, which takes
 
 I started creating [RxDB](https://github.com/pubkey/rxdb) many years ago and while still maintaining it, I often worked with all these other offline first databases out there. RxDB and all of these other ones, are based on some kind of document databases similar to NoSQL. Often people want to have a relational database like the SQL one they use at the backend. 
 
-So why are there no real relations in offline first databases? I could answer with these arguments like how JavaScript works better with document based data, how performance is better when having no joins or even how NoSQL queries are more composable. But the truth is, everything is NoSQL because it makes replication easy. An SQL query that mutates data in different tables based on some selects and joins, cannot be partially replicated without breaking the client. You have foreign keys that point to other rows and if these rows are not replicated yet, you have a problem. To implement a robust [Sync Engine](./replication.md) for relational data, you need some stuff like a [reliable atomic clock](https://www.theverge.com/2012/11/26/3692392/google-spanner-atomic-clocks-GPS) and you have to block queries over multiple tables while a transaction replicated. [Watch this guy](https://youtu.be/iEFcmfmdh2w?t=607) implementing offline first replication on top of SQLite or read this [discussion](https://github.com/supabase/supabase/discussions/357) about implementing [offline first in supabase](https://github.com/pubkey/rxdb/tree/master/examples/supabase).
+So why are there no real relations in offline first databases? I could answer with these arguments like how JavaScript works better with document based data, how performance is better when having no joins or even how NoSQL queries are more composable. But the truth is, everything is NoSQL because it makes replication easy. An SQL query that mutates data in different tables based on some selects and joins, cannot be partially replicated without breaking the client. You have foreign keys that point to other rows and if these rows are not replicated yet, you have a problem. To implement a robust [Sync Engine](./replication.md) for relational data, you need some stuff like a [reliable atomic clock](https://www.theverge.com/2012/11/26/3692392/google-spanner-atomic-clocks-GPS) and you have to block queries over multiple tables while a transaction replicated. [Watch this guy](https://youtu.be/iEFcmfmdh2w?t=607) implementing offline first replication on top of SQLite or read this [discussion](https://github.com/supabase/supabase/discussions/357) about implementing [offline first in supabase](./replication-supabase.md).
 
 So creating replication for an SQL offline first database is way more work than just adding some network protocols on top of PostgreSQL. It might not even be possible for clients that have no reliable clock.
 

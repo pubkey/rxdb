@@ -22,7 +22,7 @@ export declare function observeSingle<RxDocType>(storageInstance: RxStorageInsta
  * like the sharding plugin, where a checkpoint only represents
  * the document state from some, but not all shards.
  */
-export declare function stackCheckpoints<CheckpointType>(checkpoints: CheckpointType[]): CheckpointType;
+export declare function stackCheckpoints<CheckpointType>(checkpoints: (CheckpointType | undefined)[]): CheckpointType;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType, any, any>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
 /**
  * Analyzes a list of BulkWriteRows and determines

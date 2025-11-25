@@ -20,6 +20,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
   UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
   UT7: 'attachments.compression is enabled but no attachment-compression plugin is used',
+  UT8: 'crypto.subtle.digest is not available in your runtime. For expo/react-native see https://discord.com/channels/969553741705539624/1341392686267109458/1343639513850843217 ',
   // plugins
   PL1: 'Given plugin is not RxDB plugin.',
   // removed in 14.0.0 - PouchDB RxStorage was removed - PL2: 'You tried importing a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
@@ -185,7 +186,7 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   SC14: 'SchemaCheck: primary is always unique, do not declare it as index',
   SC15: 'SchemaCheck: primary cannot be encrypted',
   SC16: 'SchemaCheck: primary must have type: string',
-  SC17: 'SchemaCheck: top-level fieldname is not allowed',
+  SC17: 'SchemaCheck: top-level fieldname is not allowed. See https://rxdb.info/rx-schema.html#non-allowed-properties ',
   SC18: 'SchemaCheck: indexes must be an array',
   SC19: 'SchemaCheck: indexes must contain strings or arrays of strings',
   SC20: 'SchemaCheck: indexes.array must contain strings',
@@ -241,6 +242,8 @@ var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   SQL3: 'The trial version of the SQLite storage is limited to running 110 operations',
   // plugins/storage-remote
   RM1: 'Cannot communicate with a remote that was build on a different RxDB version. Did you forget to rebuild your workers when updating RxDB?',
+  // plugins/replication-mongodb
+  MG1: 'If _id is used as primaryKey, all documents in the MongoDB instance must have a string-value as _id, not an ObjectId or number',
   /**
    * Should never be thrown, use this for
    * null checks etc. so you do not have to increase the

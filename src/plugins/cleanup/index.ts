@@ -5,7 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
 import { startCleanupForRxState } from './cleanup-state.ts';
-import { startCleanupForRxCollection } from './cleanup.ts';
+import { cleanupRxCollection, startCleanupForRxCollection } from './cleanup.ts';
 
 export const RxDBCleanupPlugin: RxPlugin = {
     name: 'cleanup',
@@ -24,15 +24,7 @@ export const RxDBCleanupPlugin: RxPlugin = {
                 }
 
                 // run cleanup() until it returns true
-                let isDone = false;
-                while (!isDone && !this.closed) {
-                    isDone = await this.storageInstance.cleanup(minimumDeletedTime);
-                }
-
-                await runAsyncPluginHooks('postCleanup', {
-                    collectionName: this.name,
-                    databaseName: this.database.name
-                });
+                await cleanupRxCollection(this, cleanupPolicy);
             };
         }
     },

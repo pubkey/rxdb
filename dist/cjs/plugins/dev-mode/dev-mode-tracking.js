@@ -43,7 +43,7 @@ async function addDevModeTrackingIframe() {
    * Only run this in browser AND localhost AND dev-mode.
    * Make sure this is never used in production by someone.
    */
-  if (iframeShown || typeof window === 'undefined' || typeof location === 'undefined'
+  if (iframeShown || typeof window === 'undefined' || typeof location === 'undefined' || typeof document === 'undefined'
   // !isLocalHost()
   ) {
     return;

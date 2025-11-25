@@ -190,6 +190,33 @@ To fully purge a document, use the [cleanup plugin](./cleanup.md).
 myDocument.remove();
 ```
 
+### Remove and update in a single atomic operation
+
+Sometimes you want to change a documents value and also remove it in the same operation. For example this can be useful when you use [replication](./replication.md) and want to set a `deletedAt` timestamp. Then you might have to ensure that setting this timestamp and deleting the document happens in the same atomic operation.
+
+To do this the modifying operations of a document accept setting the `_deleted` field. For example:
+
+```ts
+
+// update() and remove()
+await doc.update({
+  $set: {
+    deletedAt: new Date().getTime(),
+    _deleted: true
+  }
+});
+
+// modify() and remove()
+await doc.modify(data => {
+  data.age = 1;
+  data._deleted = true;
+  return data;
+});
+```
+
+
+
+
 ### deleted$
 Emits a boolean value, depending on whether the RxDocument is deleted or not.
 

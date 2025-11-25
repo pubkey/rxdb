@@ -8,6 +8,7 @@ exports.getAjv = getAjv;
 exports.getValidator = getValidator;
 exports.wrappedValidateAjvStorage = void 0;
 var _ajv = _interopRequireDefault(require("ajv"));
+var _ajvFormats = _interopRequireDefault(require("ajv-formats"));
 var _pluginHelpers = require("../../plugin-helpers.js");
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
@@ -33,6 +34,7 @@ function getAjv() {
     ajv.addKeyword('attachments');
     ajv.addKeyword('ref');
     ajv.addKeyword('crdt');
+    (0, _ajvFormats.default)(ajv);
   }
   return ajv;
 }

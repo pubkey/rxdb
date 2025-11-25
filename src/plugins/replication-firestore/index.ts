@@ -91,7 +91,7 @@ export class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<R
 export function replicateFirestore<RxDocType>(
     options: SyncOptionsFirestore<RxDocType>
 ): RxFirestoreReplicationState<RxDocType> {
-    const collection: RxCollection<RxDocType> = options.collection;
+    const collection: RxCollection<RxDocType, any, any> = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, FirestoreCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined;
@@ -193,7 +193,7 @@ export function replicateFirestore<RxDocType>(
 
                 if (useDocs.length === 0) {
                     return {
-                        checkpoint: lastPulledCheckpoint ?? null,
+                        checkpoint: lastPulledCheckpoint ?? undefined,
                         documents: []
                     };
                 }

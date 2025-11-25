@@ -1,5 +1,6 @@
 import { getLocal, getLocal$, insertLocal, upsertLocal } from "./local-documents.js";
-import { closeStateByParent, createLocalDocStateByParent, removeLocalDocumentsStorageInstance } from "./local-documents-helper.js";
+import { closeStateByParent, removeLocalDocumentsStorageInstance } from "./local-documents-helper.js";
+import { createLocalDocStateByParent } from "./rx-local-document.js";
 export * from "./local-documents-helper.js";
 export * from "./local-documents.js";
 export * from "./rx-local-document.js";

@@ -1,23 +1,23 @@
 ---
 title: Appwrite Realtime Sync for Local-First Apps
 slug: replication-appwrite.html
-description: Leverage RxDB to enable real-time, offline-first replication with Firestore. Cut cloud costs, resolve conflicts, and speed up your app.
+description: Sync RxDB with Appwrite for local-first apps. Supports real-time updates, offline mode, conflict resolution, and secure push/pull replication.
 ---
 
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
-import {YouTubeVideoBox} from '@site/src/components/youtube-video-box';
+import {VideoBox} from '@site/src/components/video-box';
+import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
 
+# RxDB Appwrite Replication (beta)
 
-# RxDB Appwrite Replication (Pre Alpha)
-
-This replication plugin allows you to synchronize documents between RxDB and an [Appwrite](https://appwrite.io/) server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
+This replication plugin allows you to synchronize documents between RxDB and an <a href="https://appwrite.io/" rel="noopener nofollow">Appwrite</a> server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
 
 <br />
 <center>
-    <YouTubeVideoBox videoId="L07xPMyL8sY" title="Appwrite in 100 Seconds" duration="2:35" />
+    <VideoBox videoId="L07xPMyL8sY" title="Appwrite in 100 Seconds" duration="2:35" />
 </center>
 
 
@@ -41,15 +41,12 @@ Combining the two provides several benefits:
 <br />
 <br />
 
-<p align="center">
-  <img src="./files/icons/appwrite.svg" alt="Appwrite Sync" 
-  height="60" />
-</p>
+<RxdbMongoDiagramPlain showServer={false} dbIcon="/files/icons/appwrite.svg" dbLabel="" />
 
 
 ## Preparing the Appwrite Server
 
-You can either use the appwrite cloud or [self-host the Appwrite server](https://appwrite.io/docs/advanced/self-hosting). In this tutorial we use the Cloud which is recommended for beginners because it is way easier to set up. You can later decide to self-host if needed.
+You can either use the appwrite cloud or <a href="https://appwrite.io/docs/advanced/self-hosting" rel="noopener nofollow">self-host the Appwrite server</a>. In this tutorial we use the Cloud which is recommended for beginners because it is way easier to set up. You can later decide to self-host if needed.
 
 <Steps>
 
@@ -102,11 +99,11 @@ docker-compose up
 
 ##### Create a Cloud Account
 
-Got to the [Appwrite Console](https://cloud.appwrite.io/console/login), create an account and login.
+Got to the <a href="ttps://cloud.appwrite.io/console/login" rel="noopener nofollow">Appwrite Console</a>, create an account and login.
 
 #### Create a Project
 
-At the [console](https://cloud.appwrite.io/console/) click the `+ Create Project` button to create a new project. Remember the `project-id` which will be used later.
+At the <a href="https://cloud.appwrite.io/console/" rel="noopener nofollow">console</a> click the `+ Create Project` button to create a new project. Remember the `project-id` which will be used later.
 
 </Steps>
 
@@ -115,16 +112,16 @@ At the [console](https://cloud.appwrite.io/console/) click the `+ Create Project
 
 ### Create an Appwrite Database and Collection
 
-After creating an Appwrite project you have to create an Appwrite Database and a collection, you can either do this in code with the [node-appwrite SDK](https://appwrite.io/docs/products/databases/databases) or in the [Appwrite Console](https://cloud.appwrite.io/console/) as shown in this video:
+After creating an Appwrite project you have to create an Appwrite Database and a collection, you can either do this in code with the <a href="https://appwrite.io/docs/products/databases/databases" rel="noopener nofollow">node-appwrite SDK</a> or in the <a href="https://cloud.appwrite.io/console/" rel="noopener nofollow">Appwrite Console</a> as shown in this video:
 
 <center>
-    <YouTubeVideoBox videoId="HGlBpna17LQ" title="Appwrite Database Tutorial" duration="9:47" startAt={328} />
+    <VideoBox videoId="HGlBpna17LQ" title="Appwrite Database Tutorial" duration="9:47" startAt={328} />
 </center>
 <br />
 
 ### Add your documents attributes
 
-In the appwrite collection, create all [attributes](https://appwrite.io/docs/products/databases/collections#attributes) of your documents. You have to define all the fields that your document in your [RxDB schema](./rx-schema.md) knows about. Notice that Appwrite does not allow for nested attributes. So when you use RxDB with Appwrite, you should also not have nested attributes in your RxDB schema.
+In the appwrite collection, create all <a href="https://appwrite.io/docs/products/databases/collections#attributes" rel="noopener nofollow">attributes</a> of your documents. You have to define all the fields that your document in your [RxDB schema](./rx-schema.md) knows about. Notice that Appwrite does not allow for nested attributes. So when you use RxDB with Appwrite, you should also not have nested attributes in your RxDB schema.
 
 ### Add a `deleted` attribute
 
@@ -259,10 +256,17 @@ The `RxAppwriteReplicationState` which is returned from `replicateAppwrite()` al
 
 </Steps>
 
+<p align="center">
+  <img src="./files/icons/appwrite.svg" alt="Appwrite Sync" 
+  height="60" />
+</p>
+
+
+
 ## Limitations of the Appwrite Replication Plugin
 
 - Appwrite primary keys only allow for the characters `a-z`, `A-Z`, `0-9`, and underscore `_` (They cannot start with a leading underscore). Also the primary key has a max length of 36 characters.
 - The Appwrite replication **only works on browsers**. This is because the Appwrite SDK does not support subscriptions in Node.js.
 - Appwrite does not allow for bulk write operations so on push one HTTP request will be made per document. Reads run in bulk so this is mostly not a problem.
 - Appwrite does not allow for transactions or "update-if" calls which can lead to overwriting documents instead of properly handling [conflicts](./transactions-conflicts-revisions.md#conflicts) when multiple clients edit the same document in parallel. This is not a problem for inserts because "insert-if-not" calls are made.
-- Nested attributes in Appwrite collections are only possible via experimental [relationship attributes](https://appwrite.io/docs/products/databases/relationships), and compatibility with RxDB is not tested. Users opting to use these experimental relationship attributes with RxDB do so at their own risk.
+- Nested attributes in Appwrite collections are only possible via experimental <a href="https://appwrite.io/docs/products/databases/relationships" rel="noopener nofollow">relationship attributes</a>, and compatibility with RxDB is not tested. Users opting to use these experimental relationship attributes with RxDB do so at their own risk.

@@ -1,4 +1,3 @@
-import { EnvironmentParams } from './environment.d';
 import {
     getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
@@ -6,6 +5,7 @@ import {
     SYNC_PORT,
     DATABASE_NAME
 } from '../shared';
+import { EnvironmentParams } from './environment-type';
 
 export const environment: EnvironmentParams = {
     name: 'ssr-prod',

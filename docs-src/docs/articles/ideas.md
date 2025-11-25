@@ -86,3 +86,6 @@ X- "reactjs storage"
 ## Non Seo
 
 - "Local-First Partial Sync with RxDB"
+- "why the indexeddb API is almost perfekt"
+- "how to do auth with RxDB"
+- "Where to store that JWT token?"

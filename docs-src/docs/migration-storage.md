@@ -1,6 +1,7 @@
 ---
 title: Migration Storage
 slug: migration-storage.html
+description: Effortlessly migrate your data between storages in RxDB using the Storage Migration plugin. Retain your documents when switching storages or major versions.
 ---
 
 # Storage Migration
@@ -53,6 +54,14 @@ await migrateStorage({
 });
 ```
 
+:::note
+Only collections that exist in the new database at the time you call migrateStorage() will have their data migrated.
+
+- If your old database had collections `['users', 'posts', 'comments']` but your new database only defines `['users', 'posts']`, then only users and posts data will be migrated.
+- Any collections missing from the new database will simply be skipped - no data for them will be read or written.
+
+This allows you to selectively migrate only certain collections if desired, by choosing which collections to define before invoking `migrateStorage()`.
+:::
 
 ## Migrate from a previous RxDB major version
 
@@ -118,8 +127,4 @@ import {
     disableVersionCheck
 } from 'rxdb-premium-old/dist/lib/shared/version-check.js';
 disableVersionCheck();
-
-
-
-
-``````
+```

@@ -15,26 +15,16 @@ To ensure there are not multiple people working on the same task, before you sta
 
 ## Open Tasks (pick one and work on it)
 
-- Update the `ws` package to the latest version and ensure that the CI tests still work.
-- Publish an article about RxDB on the english wikipedia. (Must not be long, anything that is not deleted by the moderators is ok).
+- Change the docusuaurs config to use server rendered codeblocks instead of loading the big prismjs into the main.js javascript bundle (use sth like Shiki instead).
 - Create a `rxdb/plugins/react` plugins with a `useRxDatabase` provider and similiar functions like `useRxQuery`, `useRxCollection` and TypeScript support. (Should later replace the outdated [rxdb-hooks](https://github.com/cvara/rxdb-hooks) library).
 - Add server-side-rendering to the angular example, this was disabled when upgrading from angular v16 to v17: https://github.com/pubkey/rxdb/pull/5800
-- Update the [foundationdb package](https://github.com/search?q=repo%3Apubkey%2Frxdb+%22npm%20install%20foundationdb%22+path%3A.github%2Fworkflows%2Fmain.yml&type=code) to the newest version while ensuring the tests still work.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
 ```ts
 const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
 const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
 ```
-- Add granular [binary operations to expo-file-system](https://expo.canny.io/feature-requests/p/add-granular-binary-operations-to-expo-file-system)
-- Add a tauri [hero-example](https://github.com/pubkey/rxdb/tree/master/examples) that uses the [SQLite-trial storage](https://rxdb.info/rx-storage-sqlite.html) with [tauri:sql](https://v2.tauri.app/plugin/sql/)
+- 📢 Give an in-person talk about RxDB at a conference or meetup with at least 25 real, physically present attendees (no online-only events)
 
 ## Tasks already in progress (do no work on these!)
 
 - [#3935](https://github.com/pubkey/rxdb/pull/3935) Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
-
-## Solved Tasks (do no work on these!)
-
-- Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage https://github.com/pubkey/rxdb/pull/5429https://github.com/pubkey/rxdb/pull/5429
-- Fix the flaky tests for the "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version. https://github.com/pubkey/rxdb/pull/5469
-- UPDATE node.js in the `.nvmrc` file to version 22 and fix all CI issues that come with that. [#6231](https://github.com/pubkey/rxdb/pull/6231)
-- Update eslint to the latest version [#6115](https://github.com/pubkey/rxdb/pull/6115) solved at [#6353](https://github.com/pubkey/rxdb/pull/6353)

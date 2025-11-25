@@ -29,7 +29,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set prerelease variable
         id: vars
@@ -48,7 +48,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4.3.0
+        uses: actions/setup-node@v6.0.0
         with:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"
@@ -116,7 +116,7 @@ jobs:
       # because it otherwise does not know
       # about the tag and add the old source code to the release.
       # This might be a bug.
-      - uses: ncipollo/release-action@v1.16.0
+      - uses: ncipollo/release-action@v1.20.0
         with:
           prerelease: ${{ steps.vars.outputs.prerelease }}
           tag: ${{github.event.inputs.version}}

@@ -7,15 +7,19 @@ exports.defaultConflictHandler = void 0;
 var _index = require("../plugins/utils/index.js");
 var _rxStorageHelper = require("../rx-storage-helper.js");
 var defaultConflictHandler = exports.defaultConflictHandler = {
-  isEqual(a, b) {
+  isEqual(a, b, _ctx) {
+    a = addAttachmentsIfNotExists(a);
+    b = addAttachmentsIfNotExists(b);
+
     /**
      * If the documents are deep equal,
      * we have no conflict.
      * On your custom conflict handler you might only
      * check some properties, like the updatedAt time,
      * for better performance, because deepEqual is expensive.
-     */
-    return (0, _index.deepEqual)((0, _rxStorageHelper.stripAttachmentsDataFromDocument)(a), (0, _rxStorageHelper.stripAttachmentsDataFromDocument)(b));
+    */
+    var ret = (0, _index.deepEqual)((0, _rxStorageHelper.stripAttachmentsDataFromDocument)(a), (0, _rxStorageHelper.stripAttachmentsDataFromDocument)(b));
+    return ret;
   },
   resolve(i) {
     /**
@@ -25,4 +29,11 @@ var defaultConflictHandler = exports.defaultConflictHandler = {
     return i.realMasterState;
   }
 };
+function addAttachmentsIfNotExists(d) {
+  if (!d._attachments) {
+    d = (0, _index.flatClone)(d);
+    d._attachments = {};
+  }
+  return d;
+}
 //# sourceMappingURL=default-conflict-handler.js.map

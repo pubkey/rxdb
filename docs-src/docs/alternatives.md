@@ -132,7 +132,7 @@ Horizon is the client side library for RethinkDB which provides useful functions
 ### Supabase
 
 <p align="center">
-  <img src="./files/alternatives/supabase.svg" alt="Supabase alternative" height="60" class="img-padding" />
+  <img src="./files/icons/supabase.svg" alt="Supabase alternative" height="60" class="img-padding" />
 </p>
 
 

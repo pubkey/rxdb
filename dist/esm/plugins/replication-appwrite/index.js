@@ -51,7 +51,7 @@ export function replicateAppwrite(options) {
       var newCheckpoint = lastDoc ? {
         id: lastDoc.$id,
         updatedAt: lastDoc.$updatedAt
-      } : null;
+      } : undefined;
       var resultDocs = result.documents.map(doc => {
         return appwriteDocToRxDB(doc, primaryKey, options.deletedField);
       });

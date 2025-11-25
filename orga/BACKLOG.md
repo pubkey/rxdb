@@ -3,6 +3,19 @@
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
 
+## RxServer MCP Server endpoint
+
+https://news.ycombinator.com/item?id=45622604
+
+## database viewer plugin
+
+Something where devs can open a UI to inspect the locally stored data.
+
+
+## Storage based on ReactNative-MMKV
+
+https://github.com/mrousavy/react-native-mmkv
+
 ## PostgreSQL RxStorage
 
 https://github.com/thomas4019/mongo-query-to-postgres-jsonb
@@ -27,6 +40,10 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 ## refactor middleware to not be based on side effects
 
 [See](https://github.com/pubkey/rxdb/issues/3426)
+
+## tool to generate sync enpoints in swagger
+
+## update+delete in one operation
 
 ## Redis Sync
 

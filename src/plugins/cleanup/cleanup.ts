@@ -1,5 +1,5 @@
 import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
-import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../../plugins/utils/index.ts';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
 import { runAsyncPluginHooks } from '../../hooks.ts';
@@ -52,7 +52,7 @@ export async function initialCleanupWait(collection: RxCollection, cleanupPolicy
         return;
     }
 
-    if (cleanupPolicy.waitForLeadership) {
+    if (collection.database.multiInstance && cleanupPolicy.waitForLeadership) {
         await collection.database.waitForLeadership();
     }
 }
@@ -71,16 +71,18 @@ export async function cleanupRxCollection(
     let isDone = false;
     while (!isDone && !rxCollection.closed) {
         if (cleanupPolicy.awaitReplicationsInSync) {
-            const replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-            if (replicationStates) {
-                await Promise.all(
-                    replicationStates.map(replicationState => {
-                        if (!replicationState.isStopped()) {
-                            return replicationState.awaitInSync();
-                        }
-                    })
-                );
-            }
+            const replicationStates = getFromMapOrCreate(
+                REPLICATION_STATE_BY_COLLECTION,
+                rxCollection,
+                () => []
+            );
+            await Promise.all(
+                replicationStates.map(replicationState => {
+                    if (!replicationState.isStopped()) {
+                        return replicationState.awaitInSync();
+                    }
+                })
+            );
         }
         if (rxCollection.closed) {
             return;
@@ -91,7 +93,22 @@ export async function cleanupRxCollection(
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
-                return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
+                const allDone: Promise<boolean>[] = [];
+                allDone.push(storageInstance.cleanup(cleanupPolicy.minimumDeletedTime));
+                const replicationStates = getFromMapOrCreate(
+                    REPLICATION_STATE_BY_COLLECTION,
+                    rxCollection,
+                    () => []
+                );
+                for (const replicationState of replicationStates) {
+                    const meta = replicationState.metaInstance;
+                    if (meta) {
+                        allDone.push(meta.cleanup(cleanupPolicy.minimumDeletedTime));
+                    }
+                }
+
+                const hasFalse = (await Promise.all(allDone)).find(v => !v);
+                return !hasFalse;
             });
         isDone = await RXSTORAGE_CLEANUP_QUEUE;
     }

@@ -18,7 +18,8 @@ import type {
     RxDocumentData,
     RxAttachmentCreator,
     RxAttachmentWriteData,
-    RxCollection
+    RxCollection,
+    RxAttachmentCreatorBase64
 } from '../../types/index.ts';
 import {
     assignMethodsToAttachment,
@@ -67,11 +68,7 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<Blob> {
-        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
-            this.doc.primary,
-            this.id,
-            this.digest
-        );
+        const plainDataBase64 = await this.getDataBase64();
         const ret = await createBlobFromBase64(
             plainDataBase64,
             this.type as any
@@ -83,6 +80,15 @@ export class RxAttachment {
         const data = await this.getData();
         const asString = await blobToString(data);
         return asString;
+    }
+
+    async getDataBase64(): Promise<string> {
+        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
+            this.doc.primary,
+            this.id,
+            this.digest
+        );
+        return plainDataBase64;
     }
 }
 
@@ -110,11 +116,25 @@ export async function putAttachment<RxDocType>(
 
     const dataSize = getBlobSize(attachmentData.data);
     const dataString = await blobToBase64String(attachmentData.data);
-    const digest = await this.collection.database.hashFunction(dataString);
+
+    return this.putAttachmentBase64({
+        id: attachmentData.id,
+        length: dataSize,
+        type: attachmentData.type,
+        data: dataString
+    }) as any;
+}
+
+export async function putAttachmentBase64<RxDocType>(
+    this: RxDocument<RxDocType>,
+    attachmentData: RxAttachmentCreatorBase64
+) {
+    ensureSchemaSupportsAttachments(this);
+    const digest = await this.collection.database.hashFunction(attachmentData.data);
 
     const id = attachmentData.id;
     const type = attachmentData.type;
-    const data = dataString;
+    const data = attachmentData.data;
 
     return this.collection.incrementalWriteQueue.addWrite(
         this._data,
@@ -122,7 +142,7 @@ export async function putAttachment<RxDocType>(
             docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             docWriteData._attachments[id] = {
-                length: dataSize,
+                length: attachmentData.length,
                 type,
                 data,
                 digest
@@ -234,6 +254,7 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
     prototypes: {
         RxDocument: (proto: any) => {
             proto.putAttachment = putAttachment;
+            proto.putAttachmentBase64 = putAttachmentBase64;
             proto.getAttachment = getAttachment;
             proto.allAttachments = allAttachments;
             Object.defineProperty(proto, 'allAttachments$', {

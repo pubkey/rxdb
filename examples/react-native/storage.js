@@ -10,7 +10,7 @@ import * as SQLite from 'expo-sqlite';
 
 export const STORAGE_SQLITE = wrappedValidateAjvStorage({
     storage: getRxStorageSQLiteTrial({
-        sqliteBasics: getSQLiteBasicsExpoSQLiteAsync(SQLite.openDatabaseAsync, undefined, './')
+        sqliteBasics: getSQLiteBasicsExpoSQLiteAsync(SQLite.openDatabaseAsync)
     })
 });
 

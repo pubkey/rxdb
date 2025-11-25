@@ -1,6 +1,6 @@
 import { PROMISE_RESOLVE_VOID, promiseWait, errorToPlainJson } from "../../index.js";
 export var NON_IMPLEMENTED_OPERATOR_QUERY_BATCH_SIZE = 50;
-var DATABASE_STATE_BY_NAME = new Map();
+export var DATABASE_STATE_BY_NAME = new Map();
 export var RX_STORAGE_NAME_SQLITE = 'sqlite';
 
 /**

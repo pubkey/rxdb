@@ -274,7 +274,7 @@ export function isDatabaseStateVersionCompatibleWithDatabaseCode(
 
 
 export async function addConnectedStorageToCollection(
-    collection: RxCollection<any>,
+    collection: RxCollection<any, unknown, unknown, unknown>,
     storageCollectionName: string,
     schema: RxJsonSchema<any>
 ) {
@@ -335,7 +335,7 @@ export async function addConnectedStorageToCollection(
 }
 
 export async function removeConnectedStorageFromCollection(
-    collection: RxCollection<any>,
+    collection: RxCollection<any, unknown, unknown, unknown>,
     storageCollectionName: string,
     schema: RxJsonSchema<any>
 ) {

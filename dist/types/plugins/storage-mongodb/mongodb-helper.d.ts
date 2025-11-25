@@ -2,6 +2,12 @@ import type { FilledMangoQuery, MangoQuerySelector, MangoQuerySortPart, RxDocume
 import { Sort as MongoSort } from 'mongodb';
 import { MongoDBPreparedQuery, MongoQuerySelector } from './mongodb-types.ts';
 export declare const RX_STORAGE_NAME_MONGODB = "mongodb";
+export declare const MONGO_OPTIONS_DRIVER_INFO: {
+    driverInfo: {
+        name: string;
+        version: string;
+    };
+};
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)
  * so we have to substitute the _id field if

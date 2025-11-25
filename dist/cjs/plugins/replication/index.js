@@ -26,6 +26,11 @@ var _hooks = require("../../hooks.js");
 
 var REPLICATION_STATE_BY_COLLECTION = exports.REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
+  /**
+   * start/pause/cancel/remove must never run
+   * in parallel to avoid a wide range of bugs.
+   */
+
   function RxReplicationState(
   /**
    * The identifier, used to flag revisions
@@ -50,6 +55,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.canceled$ = this.subjects.canceled.asObservable();
     this.active$ = this.subjects.active.asObservable();
     this.wasStarted = false;
+    this.startQueue = _index2.PROMISE_RESOLVE_VOID;
     this.onCancel = [];
     this.callOnStart = undefined;
     this.remoteEvents$ = new _rxjs.Subject();
@@ -90,7 +96,13 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.startPromise = startPromise;
   }
   var _proto = RxReplicationState.prototype;
-  _proto.start = async function start() {
+  _proto.start = function start() {
+    this.startQueue = this.startQueue.then(() => {
+      return this._start();
+    });
+    return this.startQueue;
+  };
+  _proto._start = async function _start() {
     if (this.isStopped()) {
       return;
     }
@@ -290,21 +302,27 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     if (!this.live) {
       await (0, _index3.awaitRxStorageReplicationFirstInSync)(this.internalReplicationState);
       await (0, _index3.awaitRxStorageReplicationInSync)(this.internalReplicationState);
-      await this.cancel();
+      await this._cancel();
     }
     this.callOnStart();
   };
   _proto.pause = function pause() {
-    (0, _index2.ensureNotFalsy)(this.internalReplicationState).events.paused.next(true);
+    this.startQueue = this.startQueue.then(() => {
+      /**
+       * It must be possible to .pause() the replication
+       * at any time, even if it has not been started yet.
+       */
+      if (this.internalReplicationState) {
+        this.internalReplicationState.events.paused.next(true);
+      }
+    });
+    return this.startQueue;
   };
   _proto.isPaused = function isPaused() {
-    return this.internalReplicationState ? this.internalReplicationState.events.paused.getValue() : false;
+    return !!(this.internalReplicationState && this.internalReplicationState.events.paused.getValue());
   };
   _proto.isStopped = function isStopped() {
-    if (this.subjects.canceled.getValue()) {
-      return true;
-    }
-    return false;
+    return !!this.subjects.canceled.getValue();
   };
   _proto.isStoppedOrPaused = function isStoppedOrPaused() {
     return this.isPaused() || this.isStopped();
@@ -359,6 +377,12 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     this.remoteEvents$.next(ev);
   };
   _proto.cancel = async function cancel() {
+    this.startQueue = this.startQueue.catch(() => {}).then(async () => {
+      await this._cancel();
+    });
+    await this.startQueue;
+  };
+  _proto._cancel = async function _cancel(doNotClose = false) {
     if (this.isStopped()) {
       return _index2.PROMISE_RESOLVE_FALSE;
     }
@@ -366,7 +390,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     if (this.internalReplicationState) {
       await (0, _index3.cancelRxStorageReplication)(this.internalReplicationState);
     }
-    if (this.metaInstance) {
+    if (this.metaInstance && !doNotClose) {
       promises.push((0, _index2.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(() => (0, _index2.ensureNotFalsy)(this.metaInstance).close()));
     }
     this.subs.forEach(sub => sub.unsubscribe());
@@ -379,10 +403,13 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
     return Promise.all(promises);
   };
   _proto.remove = async function remove() {
-    await (0, _index2.ensureNotFalsy)(this.metaInstance).remove();
-    var metaInfo = await this.metaInfoPromise;
-    await this.cancel();
-    await (0, _rxDatabaseInternalStore.removeConnectedStorageFromCollection)(this.collection, metaInfo.collectionName, metaInfo.schema);
+    this.startQueue = this.startQueue.then(async () => {
+      var metaInfo = await this.metaInfoPromise;
+      await this._cancel(true);
+      await (0, _index2.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(() => (0, _index2.ensureNotFalsy)(this.metaInstance).remove());
+      await (0, _rxDatabaseInternalStore.removeConnectedStorageFromCollection)(this.collection, metaInfo.collectionName, metaInfo.schema);
+    });
+    return this.startQueue;
   };
   return RxReplicationState;
 }();
@@ -419,7 +446,7 @@ function replicateRxCollection({
       if (replicationState.isStopped()) {
         return;
       }
-      var isVisible = document.visibilityState;
+      var isVisible = document.visibilityState === 'visible';
       if (isVisible) {
         replicationState.start();
       } else {
