@@ -342,7 +342,7 @@ jobs:
             ${{ runner.os }}-npm-storage-mongodb-x4-
 
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.12.0
+        uses: supercharge/mongodb-github-action@1.12.1
         with:
           mongodb-version: 8.0.4
           mongodb-replica-set: rs0
