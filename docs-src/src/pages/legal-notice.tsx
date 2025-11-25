@@ -23,10 +23,9 @@ export default function LegalNotice() {
                         </a>
                         <h1><a href="https://rxdb.info/">RxDB</a> Legal Notice</h1>
                         <p>
-                            Daniel Meyer<br />
-                            c/o Grosch Postflex #1154<br />
-                            Emsdettener Str. 10<br />
-                            48268 Greven<br />
+                            Daniel Meyer - RxDB<br />
+                            Friedrichstraße 13<br />
+                            70174 Stuttgart<br />
                             Email: <br />
                             <img src="/files/imprint-email.png" alt="RxDB Email" />
                         </p>

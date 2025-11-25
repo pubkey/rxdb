@@ -4,6 +4,8 @@ slug: jquery-database.html
 description: Level up your jQuery-based projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
 ---
 
+import {VideoBox} from '@site/src/components/video-box';
+
 # RxDB as a Database in a jQuery Application
 
 In the early days of dynamic web development, **jQuery** emerged as a popular library that simplified DOM manipulation and AJAX requests. Despite the rise of modern frameworks, many developers still maintain or extend existing jQuery projects, or leverage jQuery in specific contexts. As jQuery applications grow in complexity, they often require efficient data handling, offline support, and synchronization capabilities. This is where [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md), steps in.
@@ -39,7 +41,7 @@ RxDB (short for Reactive Database) is built on top of [IndexedDB](./browser-data
 - **Multi-Tab Support**: If a user opens your jQuery application in multiple tabs, RxDB keeps data in sync across all sessions.
 
 <center>
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/qHWrooWyCYg" title="RxDB jQuery Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <VideoBox videoId="qHWrooWyCYg" title="This solved a problem I've had in Angular for years" duration="3:45" />
 </center>
 
 ## Getting Started with RxDB
