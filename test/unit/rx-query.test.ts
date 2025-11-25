@@ -904,20 +904,15 @@ describe('rx-query.test.ts', () => {
          * @link https://github.com/pubkey/rxdb/pull/7497
          */
         it('#7497 findOne subscription + exec does not return correct result', async () => {
-            await promiseWait(300);
             const c = await humansCollection.create(1);
-
             const doc = await c.findOne().exec(true);
-
-
             const query = c.findOne().sort({ age: 'asc' });
 
-            const subscription = query.$.subscribe((result) => {
+            const subscription = query.$.subscribe(() => {
             });
 
             await doc.remove();
 
-            // now execute the query
             const foundDoc = await query.exec();
 
 
