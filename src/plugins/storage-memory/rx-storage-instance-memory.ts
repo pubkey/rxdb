@@ -363,8 +363,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         return Promise.resolve({
             documents: rows
-        }).then(x => {
-            return x;
         });
     }
 
