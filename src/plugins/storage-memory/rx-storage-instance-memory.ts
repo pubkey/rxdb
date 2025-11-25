@@ -149,6 +149,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             };
             internals.changes$.next(categorized.eventBulk);
         }
+
         return awaitMe;
     }
 
@@ -359,8 +360,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
+
         return Promise.resolve({
             documents: rows
+        }).then(x => {
+            return x;
         });
     }
 
