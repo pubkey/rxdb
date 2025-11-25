@@ -901,6 +901,37 @@ describe('rx-query.test.ts', () => {
     });
     describeParallel('issues', () => {
         /**
+         * @link https://github.com/pubkey/rxdb/pull/7497
+         */
+        it('#7497 findOne subscription + exec does not return correct result', async () => {
+            await promiseWait(300);
+            const c = await humansCollection.create(1);
+
+            const doc = await c.findOne().exec(true);
+
+
+            const query = c.findOne().sort({ age: 'asc' });
+
+            const subscription = query.$.subscribe((result) => {
+            });
+
+            await doc.remove();
+
+            // now execute the query
+            const foundDoc = await query.exec();
+
+
+            if (foundDoc !== null) {
+                throw new Error(
+                    'BUG REPRODUCED: Query returned a document when it should return null after removal. Document: ' +
+                    JSON.stringify(foundDoc?.toJSON())
+                );
+            }
+
+            subscription.unsubscribe();
+            c.database.close();
+        });
+        /**
          * @link https://github.com/pubkey/rxdb/issues/6792#issuecomment-2624555824
          */
         it('#6792 queries must never contain an undefined property', async () => {

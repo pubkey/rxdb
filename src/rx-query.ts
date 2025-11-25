@@ -523,14 +523,6 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
         await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
     }
 
-    // Optimisation shortcut
-    if (
-        rxQuery.collection.database.closed ||
-        _isResultsInSync(rxQuery)
-    ) {
-        return false;
-    }
-
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
         .then(() => __ensureEqual(rxQuery));
     return rxQuery._ensureEqualQueue;
