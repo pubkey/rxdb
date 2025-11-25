@@ -4,6 +4,7 @@ slug: angular-database.html
 description: Level up your Angular projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
 ---
 
+import {VideoBox} from '@site/src/components/video-box';
 
 # RxDB as a Database in an Angular Application
 
@@ -26,8 +27,9 @@ RxDB stands for Reactive Database and is built on the principles of reactive pro
 
 
 <center>
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/qHWrooWyCYg" title="RxDB Angular Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <VideoBox videoId="qHWrooWyCYg" title="This solved a problem I've had in Angular for years" duration="3:45" />
 </center>
+
 
 ## Getting Started with RxDB
 To begin our journey with RxDB, let's understand its key concepts and features.
