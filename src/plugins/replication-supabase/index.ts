@@ -148,6 +148,9 @@ export function replicateSupabase<RxDocType>(
     }
 
     const replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined = options.push ? {
+        batchSize: options.push.batchSize,
+        initialCheckpoint: options.push.initialCheckpoint,
+        modifier: options.push.modifier,
         async handler(
             rows: RxReplicationWriteToMasterRow<RxDocType>[]
         ) {
