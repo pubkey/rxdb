@@ -228,15 +228,15 @@ export class RxQueryBase<
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
-            const result = await this.collection.storageInstance.count(preparedQuery);
-            if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
+            const countResult = await this.collection.storageInstance.count(preparedQuery);
+            if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
                 });
             } else {
                 return {
-                    result: result.count,
+                    result: countResult.count,
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
