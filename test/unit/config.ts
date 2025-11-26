@@ -59,6 +59,9 @@ export function getStorage(storageKey: string): RxTestStorage {
         return CUSTOM_STORAGE;
     }
 
+    const delayFn = () => randomNumber(10, 50);
+    // const delayFn = () => 150;
+
     switch (storageKey) {
         case 'memory':
             return {
@@ -82,9 +85,6 @@ export function getStorage(storageKey: string): RxTestStorage {
          */
         case 'memory-random-delay':
 
-            const delayFn = () => randomNumber(10, 50);
-            // const delayFn = () => 150;
-
             return {
                 name: storageKey,
                 getStorage: () => wrappedValidateAjvStorage({
@@ -103,6 +103,37 @@ export function getStorage(storageKey: string): RxTestStorage {
                             }),
                             delayTimeBefore: delayFn,
                             delayTimeAfter: delayFn
+                        })
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
+                hasReplication: true
+            };
+            break;
+        case 'memory-long-query-delay':
+
+            return {
+                name: storageKey,
+                getStorage: () => wrappedValidateAjvStorage({
+                    storage: randomDelayStorage({
+                        storage: getRxStorageMemory({
+                        }),
+                        delayTimeBefore: delayFn,
+                        delayTimeAfter: delayFn,
+                        longQueryTime: 2000,
+                    })
+                }),
+                getPerformanceStorage() {
+                    return {
+                        description: 'memory-long-query-delay',
+                        storage: randomDelayStorage({
+                            storage: getRxStorageMemory({
+                            }),
+                            delayTimeBefore: delayFn,
+                            delayTimeAfter: delayFn,
+                        longQueryTime: 2000,
                         })
                     };
                 },
