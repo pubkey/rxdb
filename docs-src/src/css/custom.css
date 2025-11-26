@@ -4460,6 +4460,7 @@ footer a:visited {
 /* Fix for search dropdown clipping and stacking context */
 .theme-doc-sidebar-container {
   clip-path: none !important;
+  z-index: 5;
 }
 
 /* Mobile search dropdown fix - use relative positioning like desktop */
