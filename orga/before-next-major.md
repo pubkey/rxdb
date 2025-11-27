@@ -2,6 +2,11 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+
+## Do not require WeakRef types
+
+This is just another painful setup step. Find a way to not require devs to add the WeakRef types here: https://rxdb.info/tutorials/typescript.html#known-problems
+
 ## no longer ship the dist-folder in the repo
 
 Same for /docs, use a different branch for that.
