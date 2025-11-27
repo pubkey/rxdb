@@ -576,7 +576,7 @@
     "exists-file": "3.0.2",
     "express": "5.1.0",
     "fake-indexeddb": "6.2.5",
-    "firebase-tools": "14.23.0",
+    "firebase-tools": "14.26.0",
     "get-port": "5.1.1",
     "globals": "16.5.0",
     "graphql-http": "1.22.4",
