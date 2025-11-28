@@ -318,6 +318,7 @@ export default function Home(props: {
             value={SOCIAL_PROOF_VALUES.discord}
             icon="/files/icons/discord.svg"
             valueTitle='members'
+            black={true}
           />
 
 

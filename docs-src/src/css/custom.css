@@ -51,7 +51,7 @@ pre code {
 
     --ifm-heading-margin-bottom: 40px;
 
-    --bg-color: #2C3547;
+    --bg-color: #20293C;
     --bg-color-dark: #0D0F18;
     --bg-color-darkest: #0D0F18;
     --bg-color-code: #282330;
@@ -1873,6 +1873,7 @@ ul.checked li:before {
 
 .trophy.mongodb {
     color: #00A35C;
+    background-color: var(--bg-color-dark);
 }
 
 .trophy.mongodb:hover {

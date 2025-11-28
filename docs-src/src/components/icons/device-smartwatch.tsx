@@ -50,7 +50,7 @@ export function IconDeviceSmartwatch({
       />
       <path
         d="M37.33 18.37H10.67C6.98626 18.37 4 21.3563 4 25.04V54.96C4 58.6437 6.98626 61.63 10.67 61.63H37.33C41.0137 61.63 44 58.6437 44 54.96V25.04C44 21.3563 41.0137 18.37 37.33 18.37Z"
-        fill={dark ? '#2C3547' : '#0D0F18'}
+        fill={dark ? '#20293C' : '#0D0F18'}
         stroke="white"
         strokeWidth="4"
         strokeLinecap="round"

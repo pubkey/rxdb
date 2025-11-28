@@ -18,6 +18,11 @@ type TrophyProps = {
     icon: string | React.ReactNode; // can be URL or React component
     value: number;
     order?: number;
+    /**
+     * Some icons need a fully-black background
+     * to be more readable
+     */
+    black?: boolean;
 };
 
 export function Trophy({
@@ -27,7 +32,8 @@ export function Trophy({
     valueTitle,
     icon,
     value,
-    order
+    order,
+    black
 }: TrophyProps) {
     const isIconUrl = typeof icon === 'string';
 
@@ -41,7 +47,12 @@ export function Trophy({
             rel="noopener noreferrer"
             style={{ order }}
         >
-            <div className={'trophy ' + title.toLowerCase()}>
+            <div
+                className={'trophy ' + title.toLowerCase()}
+                style={{
+                    backgroundColor: black ? '#000' : undefined,
+                }}
+            >
                 {isIconUrl ? (
                     <img loading="lazy" src={icon} alt={'RxDB ' + title} />
                 ) : (
