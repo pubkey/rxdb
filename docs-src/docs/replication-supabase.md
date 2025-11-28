@@ -197,6 +197,12 @@ const replication = replicateSupabase({
       if (!doc.age) delete doc.age;
       return doc;
     }
+    // optional: customize the pull query before fetching
+    queryBuilder: ({ query }) => {
+      // Add filters, joins, or other PostgREST query modifiers
+      // This runs before checkpoint filtering and ordering
+      return query.eq("status", "active");
+    },
   },
   push: {
     batchSize: 50

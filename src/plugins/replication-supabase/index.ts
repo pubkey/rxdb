@@ -106,6 +106,18 @@ export function replicateSupabase<RxDocType>(
                 let query = options.client
                     .from(options.tableName)
                     .select('*');
+
+                if (options.pull?.queryBuilder) {
+                    const maybeNewQuery = options.pull.queryBuilder({
+                        query,
+                        lastPulledCheckpoint,
+                        batchSize,
+                    });
+                    if (maybeNewQuery) {
+                        query = maybeNewQuery;
+                    }
+                }
+
                 if (lastPulledCheckpoint) {
                     const { modified, id } = lastPulledCheckpoint;
 
