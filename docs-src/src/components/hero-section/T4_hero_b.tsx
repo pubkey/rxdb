@@ -8,13 +8,12 @@ import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
 import { IframeFormModal } from '../modal';
+import { ABTestContent } from '../a-b-tests';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
-
-    const [online, setOnline] = useState(true);
     const [openDemo, setOpenDemo] = useState(false);
 
     return <div className="block first hero centered dark">
@@ -93,55 +92,7 @@ export function HeroSection_B(props: {
                     className="half right justify-center-mobile grid-2-mobile grid-3"
                 >
 
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyItems: 'center',
-                        alignSelf: 'start',
-                        flexDirection: 'row',
-                        gap: 20,
-                    }} className='flex-end-center'
-                    >
-                        <EmojiChatStateful
-                            dark={true}
-                            online={online}
-                            chatId='hero_left'
-                            simulateClicks={true}
-                        />
-                        <div
-                            className='hide-mobile'
-                            style={{
-                                textAlign: 'center',
-                            }}>
-                            <IconWifi style={{
-                                width: '100%',
-                                paddingBottom: 3
-                            }} />
-                            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
-                        </div>
-                        <EmojiChatStateful
-                            dark={true}
-                            online={online}
-                            chatId='hero_right'
-                            buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
-                            simulateClicks={true}
-                        />
-                    </div>
-
-                    <div
-                        className='hide-desktop'
-                        style={{
-                            textAlign: 'center',
-                            justifyContent: 'center', // horizontally center the pair
-                            alignItems: 'center',     // vertically center (optional)
-                            gap: '1rem',
-                            marginTop: 19,
-                        }}>
-                        <IconWifi style={{
-                            height: 20
-                        }} />
-                        <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
-                    </div>
+                    <ABTestContent />
 
 
                 </div>
@@ -149,4 +100,60 @@ export function HeroSection_B(props: {
             <HeroRuntimes></HeroRuntimes>
         </div>
     </div >;
+}
+
+
+export function HeroEmojiChat() {
+    const [online, setOnline] = useState(true);
+    return <>
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyItems: 'center',
+            alignSelf: 'start',
+            flexDirection: 'row',
+            gap: 20,
+        }} className='flex-end-center'
+        >
+            <EmojiChatStateful
+                dark={true}
+                online={online}
+                chatId='hero_left'
+                simulateClicks={true}
+            />
+            <div
+                className='hide-mobile'
+                style={{
+                    textAlign: 'center',
+                }}>
+                <IconWifi style={{
+                    width: '100%',
+                    paddingBottom: 3
+                }} />
+                <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+            </div>
+            <EmojiChatStateful
+                dark={true}
+                online={online}
+                chatId='hero_right'
+                buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
+                simulateClicks={true}
+            />
+        </div>
+
+        <div
+            className='hide-desktop'
+            style={{
+                textAlign: 'center',
+                justifyContent: 'center', // horizontally center the pair
+                alignItems: 'center',     // vertically center (optional)
+                gap: '1rem',
+                marginTop: 19,
+            }}>
+            <IconWifi style={{
+                height: 20
+            }} />
+            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+        </div>
+    </>;
 }

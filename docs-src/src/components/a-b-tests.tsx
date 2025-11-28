@@ -1,4 +1,6 @@
 import { randomOfArray } from '../../../plugins/utils';
+import { HeroEmojiChat } from './hero-section/T4_hero_b';
+import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
 // import { OfflineSection } from './offline-section';
 // import { RealtimeSection } from './realtime-section';
@@ -14,18 +16,16 @@ const CURRENT_TEST_RUN = {
     /**
      * @link https://docs.google.com/spreadsheets/d/1ryPOhhwFHIqkVnIlpup6neV7u1FDnPMTlgzbvE62kB8/edit?gid=1330239462#gid=1330239462
      */
-    id: 'T8',
+    id: 'T9',
     /**
      * @link https://chatgpt.com/c/68d532de-4844-8331-8a2f-9a14b2d08cd9
      */
     variations: {
-        A: 'RxDB is a JavaScript NoSQL database that lives inside your application. It enables local-first, offline-ready apps with instant queries and seamless sync across multiple backends.',
-        B: 'RxDB is a NoSQL database for JavaScript that runs directly inside your app. It\'s local-first, keeps working offline, offers observable queries, and syncs with a wide range of backends.',
-        C: 'A JavaScript NoSQL database built for offline-ready apps. RxDB runs in the client, provides instant local queries, observable state, and seamless backend sync.',
-        D: 'RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with many backends. With observable queries, your UI updates instantly as data changes.',
-        E: 'RxDB is a NoSQL database for JavaScript that runs directly inside your app. It keeps data available offline and syncs with a wide range of backends when online.',
-        F: 'RxDB powers local-first apps by embedding a NoSQL JavaScript database directly into your app, with robust sync support for a wide range of backend systems.',
-        G: ''
+        A: <HeroEmojiChat />,
+        B: <>
+            <br className='hide-mobile' />
+            <ReplicationDiagram dark={true} />
+        </>,
     }
 };
 
