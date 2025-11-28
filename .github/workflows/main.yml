@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -63,7 +63,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -249,7 +249,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -296,7 +296,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -323,7 +323,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -361,7 +361,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
@@ -421,7 +421,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -460,7 +460,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -531,7 +531,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -566,7 +566,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -611,7 +611,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -649,7 +649,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -678,7 +678,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
@@ -713,7 +713,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
@@ -747,7 +747,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
@@ -780,7 +780,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Chrome to specific version
         id: chrome
         uses: browser-actions/setup-chrome@v2
@@ -864,7 +864,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
@@ -950,7 +950,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set node version
         uses: actions/setup-node@v6
         with:
