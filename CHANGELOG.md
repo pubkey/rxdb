@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- feat: replication-supabase querybuilder [#7566](https://github.com/pubkey/rxdb/pull/7566)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
