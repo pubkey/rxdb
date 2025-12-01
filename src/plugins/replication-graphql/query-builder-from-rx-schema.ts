@@ -173,7 +173,7 @@ function generateGQLOutputFields(options: GenerateGQLOutputFieldsOptions) {
         if (value.type === "array" && value.items) {
             outputFields.push(
                 LINE_SPACING + NESTED_SPACING + key + " {",
-                generateGQLOutputFields({ schema: value.items, spaceCount, depth: depth + 1 }),
+                generateGQLOutputFields({ schema: value.items as any, spaceCount, depth: depth + 1 }),
                 LINE_SPACING + NESTED_SPACING + "}"
             );
         }
