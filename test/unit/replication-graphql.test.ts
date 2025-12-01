@@ -2072,6 +2072,22 @@ describe('replication-graphql.test.ts', () => {
                 assert.ok(parsed);
                 assert.equal(normalizeString(output.query), normalizeString(want));
             });
+            it('issue #7532 Array type is omitted in GraphQL query builder', async () => {
+                const builder = pullQueryBuilderFromRxSchema(
+                    'human', {
+                    schema: schemas.heroArray,
+                    checkpointFields: [
+                        'id',
+                        'updatedAt'
+                    ]
+                });
+
+                const output = await builder(null, batchSize);
+                assert.ok(output.query.includes('damage'));
+
+                const parsed = parseQuery(output.query);
+                assert.ok(parsed);
+            });
         });
         describeParallel('.pullStreamBuilderFromRxSchema()', () => {
             it('should create a valid builder', async () => {
