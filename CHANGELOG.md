@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - feat: replication-supabase querybuilder [#7566](https://github.com/pubkey/rxdb/pull/7566)
-- FIX Array type is omitted in GraphQL query builde [#7532](https://github.com/pubkey/rxdb/issues/7532)
+- FIX Array type is omitted in GraphQL query builder [#7532](https://github.com/pubkey/rxdb/issues/7532)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
