@@ -127,6 +127,7 @@ export default function Root({ children }) {
 
         setTimeout(() => {
             startAnalytics();
+            trackReturnAfter3to14Days();
             addCallToActionButton();
             triggerClickEventWhenFromCode();
         }, 0);
@@ -560,4 +561,41 @@ function startAnalytics() {
 
 
 
+}
+
+
+/**
+ * Tracks if a user returns after at least 3 days but not more than 14 days.
+ */
+function trackReturnAfter3to14Days() {
+    const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000; // 72 hours
+    const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000; // 336 hours
+
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+
+    const now = Date.now();
+    const key = 'first_visit_time';
+    const saved = localStorage.getItem(key);
+
+
+    if (!saved) {
+        localStorage.setItem(key, now.toString());
+        return;
+    }
+
+    const firstVisit = Number(saved);
+    if (isNaN(firstVisit)) {
+        // Reset if corrupted
+        localStorage.setItem(key, now.toString());
+        return;
+    }
+
+    const diff = now - firstVisit;
+
+    // Only trigger conversion if between 3 and 14 days
+    if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
+        triggerTrackingEvent('revisit_3_days', 0.5)
+    }
 }
