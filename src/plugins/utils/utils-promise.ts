@@ -6,7 +6,7 @@ export function nextTick(): Promise<void> {
 }
 
 export function promiseWait(ms: number = 0): Promise<void> {
-    return new Promise(res => setTimeout(res, ms));
+    return new Promise(res => setTimeout(res, 200));
 }
 
 export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
