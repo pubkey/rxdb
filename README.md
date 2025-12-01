@@ -119,7 +119,7 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="./examples/angular">Browsers</a>
   <img height="13" src="docs-src/static/files/icons/nodejs.svg" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/static/files/icons/react-native.svg" />
+  <img height="13" src="docs-src/static/files/icons/react.svg" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
