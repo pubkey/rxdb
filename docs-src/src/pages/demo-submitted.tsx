@@ -8,7 +8,7 @@ export default function DemoSubmitted() {
 
     useEffect(() => {
         (() => {
-            triggerTrackingEvent('request-demo-sub', 50, 1);
+            triggerTrackingEvent('request-demo-sub', 2, 1);
         })();
     });
 
