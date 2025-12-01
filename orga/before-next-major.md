@@ -2,6 +2,10 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+## Limit the maximum length of indexed strings
+
+Some people set a really big value like `10000000` for convenience. But this will break on some storages or cause really bad performance. Indexed strings should have a limit of like 500 chars because otherwise it makes no sense to index them anyways. Add this check in dev-mode.
+
 
 ## Do not require WeakRef types
 
