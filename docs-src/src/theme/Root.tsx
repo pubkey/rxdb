@@ -596,6 +596,6 @@ function trackReturnAfter3to14Days() {
 
     // Only trigger conversion if between 3 and 14 days
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
-        triggerTrackingEvent('revisit_3_days', 0.5)
+        triggerTrackingEvent('revisit_3_days', 0.5);
     }
 }
