@@ -54,7 +54,12 @@ export function Trophy({
                 }}
             >
                 {isIconUrl ? (
-                    <img loading="lazy" src={icon} alt={'RxDB ' + title} />
+                    <img
+                        draggable={false}
+                        loading="lazy"
+                        src={icon}
+                        alt={'RxDB ' + title}
+                    />
                 ) : (
                     <div className="trophy-icon">{icon}</div>
                 )}
@@ -92,7 +97,12 @@ export function PartnerTrophy(props: {
         <div className={'trophy ' + props.title.toLowerCase()} style={{
             width: 'auto'
         }}>
-            <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
+            <img
+                draggable={false}
+                loading="lazy"
+                src={props.imgUrl}
+                alt={'RxDB ' + props.title}
+            />
             <div style={{ flex: 1 }}>
                 <div className="subtitle">Official Partner</div>
                 <div className="title">{props.title}</div>

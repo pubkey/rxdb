@@ -111,6 +111,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
         <div style={badgeInnerStyle}>
           {currentUrl && (
             <img
+              draggable={false}
               src={currentUrl}
               alt="icon"
               style={iconStyle}

@@ -46,6 +46,7 @@ export function Tag(props: {
             {hasImg &&
                 (typeof props.img === 'string' ? (
                     <img
+                        draggable={false}
                         src={props.img}
                         loading="lazy"
                         alt=""
