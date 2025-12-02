@@ -64,6 +64,16 @@ export function replicateSupabase(options) {
     replicationPrimitivesPull = {
       async handler(lastPulledCheckpoint, batchSize) {
         var query = options.client.from(options.tableName).select('*');
+        if (options.pull?.queryBuilder) {
+          var maybeNewQuery = options.pull.queryBuilder({
+            query,
+            lastPulledCheckpoint,
+            batchSize
+          });
+          if (maybeNewQuery) {
+            query = maybeNewQuery;
+          }
+        }
         if (lastPulledCheckpoint) {
           var {
             modified,

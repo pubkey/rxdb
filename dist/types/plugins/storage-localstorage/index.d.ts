@@ -4,7 +4,7 @@ export * from './localstorage-mock.ts';
 export declare class RxStorageLocalstorage implements RxStorage<LocalstorageStorageInternals, LocalstorageInstanceCreationOptions> {
     settings: LocalstorageStorageSettings;
     name: string;
-    readonly rxdbVersion = "16.21.0";
+    readonly rxdbVersion = "16.21.1";
     constructor(settings: LocalstorageStorageSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LocalstorageInstanceCreationOptions>): Promise<RxStorageInstanceLocalstorage<RxDocType>>;
 }

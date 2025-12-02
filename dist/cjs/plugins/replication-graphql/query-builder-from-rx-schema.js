@@ -119,6 +119,13 @@ function generateGQLOutputFields(options) {
       continue;
     }
     var value = properties[key];
+    if (value.type === "array" && value.items) {
+      outputFields.push(LINE_SPACING + NESTED_SPACING + key + " {", generateGQLOutputFields({
+        schema: value.items,
+        spaceCount,
+        depth: depth + 1
+      }), LINE_SPACING + NESTED_SPACING + "}");
+    }
     if (value.type === "object") {
       outputFields.push(LINE_SPACING + NESTED_SPACING + key + " {", generateGQLOutputFields({
         schema: value,

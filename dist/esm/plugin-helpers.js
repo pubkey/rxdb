@@ -65,9 +65,9 @@ validatorKey) {
                 status: 422,
                 isError: true,
                 documentId,
-                writeRow: row,
                 validationErrors,
-                schema: instance.schema
+                schema: instance.schema,
+                writeRow: row
               });
             } else {
               continueWrites.push(row);

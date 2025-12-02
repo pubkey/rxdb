@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- feat: replication-supabase querybuilder [#7566](https://github.com/pubkey/rxdb/pull/7566)
-- FIX Array type is omitted in GraphQL query builder [#7532](https://github.com/pubkey/rxdb/issues/7532)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 16.21.1 (2 December 2025)
+
+- feat: replication-supabase querybuilder [#7566](https://github.com/pubkey/rxdb/pull/7566)
+- FIX Array type is omitted in GraphQL query builder [#7532](https://github.com/pubkey/rxdb/issues/7532)
 
 ### 16.21.0 (25 November 2025)
 
