@@ -11,10 +11,11 @@ interface CloudProps {
   darkMode?: boolean;
   style?: CSSProperties;
   className?: string;
+  hasIcon?: boolean;
 }
 
 // No animations: just swap the icon
-export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) => {
+export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className, hasIcon = true }) => {
   const [, setIconIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState<string>(replicationLinks[0].iconUrl);
 
@@ -107,7 +108,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
           strokeWidth={4}
         />
       </svg>
-      <div style={badgeStyle}>
+      {hasIcon && <div style={badgeStyle}>
         <div style={badgeInnerStyle}>
           {currentUrl && (
             <img
@@ -118,7 +119,7 @@ export const Cloud: FC<CloudProps> = ({ darkMode = false, style, className }) =>
             />
           )}
         </div>
-      </div>
+      </div>}
     </div>
   );
 };

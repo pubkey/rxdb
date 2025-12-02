@@ -24,7 +24,7 @@ const CURRENT_TEST_RUN = {
         A: <HeroEmojiChat />,
         B: <>
             <br className='hide-mobile' />
-            <ReplicationDiagram dark={true} />
+            <ReplicationDiagram dark={true} hasIcon={false} />
         </>,
     }
 };
