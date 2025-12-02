@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
