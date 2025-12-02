@@ -194,7 +194,7 @@ export function Slider({ items, width = 300, initialOffsetPx = -30 }: SliderProp
       userSelect: 'none',
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
-      touchAction: 'pan-y' as any,
+      touchAction: 'none' as any,
       overscrollBehaviorX: 'contain' as any,
       overscrollBehaviorY: 'auto' as any,
       maskImage: `-webkit-gradient(linear,
