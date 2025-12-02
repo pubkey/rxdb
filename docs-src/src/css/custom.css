@@ -1853,12 +1853,12 @@ ul.checked li:before {
 
 
 .trophy.discord {
-    color: #5962ee;
+    color: #878EF2;
     background-color: var(--bg-color-dark);
 }
 
 .trophy.discord:hover {
-    box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee;
+    box-shadow: 2px 2px 13px #878EF2, -2px -1px 14px #878EF2;
 }
 
 .trophy.supabase {
