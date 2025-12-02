@@ -575,7 +575,7 @@ describeParallel('encryption.test.ts', () => {
 
                 const resultsAll = await queryAll.exec();
                 assert.strictEqual(resultsAll.length, 0);
-                db.remove();
+                await db.remove();
             });
         });
     });
