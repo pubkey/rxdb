@@ -40,6 +40,12 @@ export function startTestServers() {
     app.get('/', (_req: any, res: any) => {
         res.send('Hello World!');
     });
+    app.get('/teapot', (_req, res) => {
+        res.status(418).send("I'm a teapot");
+    });
+    app.get('/fail', (req, res) => {
+        res.status(500).send("Something went wrong");
+    });
     app.use('/files', express.static(staticFilesPath));
     app.get('/base64/:filename', async (req: any, res: any) => {
         const filename = req.params.filename;
