@@ -576,7 +576,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         retryTime = 1000 * 5,
         waitForLeadership = true,
         autoStart = true,
-        toggleOnDocumentVisible = false
+        toggleOnDocumentVisible = true
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);

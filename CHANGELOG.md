@@ -7,6 +7,7 @@
 - ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
 - We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
 - ADD `context` field to all RxDB write errors for easier debugging.
+- CHANGE `toggleOnDocumentVisible` is now `true` by default.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

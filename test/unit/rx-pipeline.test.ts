@@ -221,8 +221,8 @@ describe('rx-pipeline.test.js', () => {
                 'myErrorAsync'
             );
             await pipeline.close();
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
     });
     describeParallel('checkpoints', () => {
@@ -288,8 +288,8 @@ describe('rx-pipeline.test.js', () => {
             assert.ok(runAt.length > 0);
             runAt.forEach(i => assert.strictEqual(i, 'c1'));
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('should halt reads on other tab while pipeline is running', async () => {
             const identifier = randomToken(10);
@@ -322,8 +322,8 @@ describe('rx-pipeline.test.js', () => {
 
             assert.deepStrictEqual(runAt, ['doneInsert', 'c1.1', 'c1.2', 'doneQuery']);
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
     });
     describeParallel('transactional behavior', () => {
@@ -347,8 +347,8 @@ describe('rx-pipeline.test.js', () => {
             await c1.insert(schemaObjects.humanData('foobar'));
             await pipeline.awaitIdle();
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('should not block reads that come from inside the pipeline handler when already cached outside', async () => {
             const c1 = await humansCollection.create(0);
@@ -368,8 +368,8 @@ describe('rx-pipeline.test.js', () => {
             await c1.insert(schemaObjects.humanData('foobar'));
             await pipeline.awaitIdle();
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('should be able to do writes dependent on reads', async () => {
             const c1 = await humansCollection.create(0);
@@ -394,8 +394,8 @@ describe('rx-pipeline.test.js', () => {
             assert.strictEqual(c2After.firstName, 'foobar');
 
 
-            c1.database.close();
-            c2.database.close();
+            await c1.database.close();
+            await c2.database.close();
         });
         it('should not block reads when localDocument inserted', async () => {
             const c1 = await humansCollection.create(0);
