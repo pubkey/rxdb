@@ -164,6 +164,12 @@ export type RxStorageWriteErrorBase<RxDocType> = {
 
     // the original document data that should have been written.
     writeRow: BulkWriteRow<RxDocType>;
+
+    /**
+     * The context which was given to bulkWrite(),
+     * used for debugging.
+     */
+    context: string;
 };
 
 export type RxStorageWriteErrorConflict<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {

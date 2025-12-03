@@ -11,7 +11,7 @@ Some people set a really big value like `10000000` for convenience. But this wil
 
 This is just another painful setup step. Find a way to not require devs to add the WeakRef types here: https://rxdb.info/tutorials/typescript.html#known-problems
 
-## no longer ship the dist-folder in the repo
+## no longer ship the dist-folder in the repo [DONE]
 
 Same for /docs, use a different branch for that.
 

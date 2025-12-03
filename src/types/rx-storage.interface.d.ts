@@ -27,7 +27,6 @@ import type {
  * @link https://github.com/pubkey/rxdb/issues/1636
  */
 
-
 /**
  * A RxStorage is a module that acts
  * as a factory that can create multiple RxStorageInstance
