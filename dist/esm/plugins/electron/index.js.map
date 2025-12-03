@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","names":[],"sources":["../../../../src/plugins/electron/index.ts"],"sourcesContent":["export * from './rx-storage-ipc-renderer.ts';\nexport * from './rx-storage-ipc-main.ts';\nexport * from './electron-helper.ts';\n"],"mappings":"AAAA,cAAc,8BAA8B;AAC5C,cAAc,0BAA0B;AACxC,cAAc,sBAAsB","ignoreList":[]}

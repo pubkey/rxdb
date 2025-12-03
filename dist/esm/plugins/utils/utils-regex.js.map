@@ -1,1 +1,0 @@
-{"version":3,"file":"utils-regex.js","names":["REGEX_ALL_DOTS","REGEX_ALL_PIPES"],"sources":["../../../../src/plugins/utils/utils-regex.ts"],"sourcesContent":["export const REGEX_ALL_DOTS = /\\./g;\nexport const REGEX_ALL_PIPES = /\\|/g;\n"],"mappings":"AAAA,OAAO,IAAMA,cAAc,GAAG,KAAK;AACnC,OAAO,IAAMC,eAAe,GAAG,KAAK","ignoreList":[]}

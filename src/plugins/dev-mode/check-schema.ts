@@ -398,6 +398,13 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                                 schema: jsonSchema
                             });
                         }
+                        if (maxLength > 1000) {
+                            throw newRxError('SC42', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
                         break;
                     case 'number':
                     case 'integer':

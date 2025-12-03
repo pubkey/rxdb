@@ -2,37 +2,37 @@
 
 This list contains things that have to be done but will create breaking changes.
 
-## Limit the maximum length of indexed strings
+## Limit the maximum length of indexed strings [DONE]
 
 Some people set a really big value like `10000000` for convenience. But this will break on some storages or cause really bad performance. Indexed strings should have a limit of like 500 chars because otherwise it makes no sense to index them anyways. Add this check in dev-mode.
 
 
-## Do not require WeakRef types
+## Do not require WeakRef types [DONE]
 
 This is just another painful setup step. Find a way to not require devs to add the WeakRef types here: https://rxdb.info/tutorials/typescript.html#known-problems
 
-## no longer ship the dist-folder in the repo
+## no longer ship the dist-folder in the repo [DONE]
 
 Same for /docs, use a different branch for that.
 
-## Add `context` string to all write errors
+## Add `context` string to all write errors [DONE]
 We already pass the context string to `storageInstance.bulkWrite()` and when we include it into bulk-write errors, debugging becomes way easier.
 
-## Add databaseNamePrefix to premium sqlite storage
+## (premium) Add databaseNamePrefix to premium sqlite storage
 
-## Merge memory-mapped fix BREAKING: deleted docs must be purged
+## (premium) Merge memory-mapped fix BREAKING: deleted docs must be purged
 
 https://github.com/pubkey/rxdb-premium-dev/pull/480
 
-## Merge OPFS fix BREAKING: FIX memory and cleanup leak
+## (premium) Merge OPFS fix BREAKING: FIX memory and cleanup leak
 
 https://github.com/pubkey/rxdb-premium-dev/pull/477
 
-## `toggleOnDocumentVisible` should default to `true`
+## `toggleOnDocumentVisible` should default to `true` [DONE]
 
 https://github.com/pubkey/rxdb/issues/6810
 
-## Final fields should not be automatically required
+## Final fields should not be automatically required [done]
 
 https://discord.com/channels/969553741705539624/1237000453791678487/threads/1327921349808885831
 

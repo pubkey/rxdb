@@ -21,7 +21,7 @@ pouch__all_dbs__/
 isolate-*
 release-body.md
 /test-db-*
-dist/typings
+dist/
 *-debug.log
 .vscode
 ai-context.txt
