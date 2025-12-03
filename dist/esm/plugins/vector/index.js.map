@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","names":[],"sources":["../../../../src/plugins/vector/index.ts"],"sourcesContent":["export type * from './types.ts';\nexport * from './vector-distance.ts';\n"],"mappings":"AACA,cAAc,sBAAsB","ignoreList":[]}
