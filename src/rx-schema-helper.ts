@@ -10,7 +10,6 @@ import type {
     StringKeys
 } from './types/index.d.ts';
 import {
-    appendToArray,
     ensureNotFalsy,
     flatClone,
     getProperty,
