@@ -4,7 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
-
+- ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

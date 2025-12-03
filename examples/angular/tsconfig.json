@@ -19,8 +19,7 @@
     ],
     "lib": [
       "es2020",
-      "dom",
-      "ES2021.WeakRef"
+      "dom"
     ]
   },
   "angularCompilerOptions": {
