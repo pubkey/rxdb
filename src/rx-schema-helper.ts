@@ -224,9 +224,6 @@ export function fillWithDefaultSettings<T = any>(
     (schemaObj.required as string[]).push('_meta');
     (schemaObj.required as string[]).push('_attachments');
 
-    // final fields are always required
-    const finalFields = getFinalFields(schemaObj);
-    appendToArray(schemaObj.required as any, finalFields);
     schemaObj.required = schemaObj.required
         .filter((field: string) => !field.includes('.'))
         .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;

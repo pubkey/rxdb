@@ -28,7 +28,7 @@ https://github.com/pubkey/rxdb-premium-dev/pull/480
 
 https://github.com/pubkey/rxdb-premium-dev/pull/477
 
-## `toggleOnDocumentVisible` should default to `true`
+## `toggleOnDocumentVisible` should default to `true` [DONE]
 
 https://github.com/pubkey/rxdb/issues/6810
 
