@@ -32,7 +32,7 @@ https://github.com/pubkey/rxdb-premium-dev/pull/477
 
 https://github.com/pubkey/rxdb/issues/6810
 
-## Final fields should not be automatically required
+## Final fields should not be automatically required [done]
 
 https://discord.com/channels/969553741705539624/1237000453791678487/threads/1327921349808885831
 
