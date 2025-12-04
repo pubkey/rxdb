@@ -8,6 +8,9 @@
 - ADD `context` field to all RxDB write errors for easier debugging.
 - CHANGE `toggleOnDocumentVisible` is now `true` by default.
 - CHANGE final fields no longer must be `required`.
+- FIX OPFS-Storage memory and cleanup leaking
+- FIXmemory-mapped-storage: deleted docs must be purged
+- FIX `RxCollection.cleanup()` does not respect the provided `minimumDeletedTime`.
 
 <!-- ADD new changes here! -->
 

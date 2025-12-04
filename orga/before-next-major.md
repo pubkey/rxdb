@@ -36,19 +36,9 @@ https://github.com/pubkey/rxdb/issues/6810
 
 https://discord.com/channels/969553741705539624/1237000453791678487/threads/1327921349808885831
 
-## Move `final` definitions to the top level
-
-This should be done similar to where indexes or `encryption` fields are defined. This would 
-then allow to have `final` be also set for nested properties.
-
 
 ---------------------------------
 ## Maybe later (not sure if should be done)
-
-
-## Suggestions from #6787
-
-See https://github.com/pubkey/rxdb/pull/6787
 
 
 ## Do not allow type mixing
