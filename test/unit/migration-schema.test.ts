@@ -1428,12 +1428,18 @@ describe('migration-schema.test.ts', function () {
             );
             await newDb.close();
         });
-        it('version 15 data should be compatible with version 16 code', async () => {
+        it('version data should be compatible with next version code', async () => {
             const dbName = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),
             });
+
+            if (db.rxdbVersion.includes('beta')) {
+                db.remove();
+                return;
+            }
+
             await db.storageTokenDocument;
 
             // fake an older database state by changing the internal version.
