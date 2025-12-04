@@ -2,6 +2,15 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
+- ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
+- We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
+- ADD `context` field to all RxDB write errors for easier debugging.
+- CHANGE `toggleOnDocumentVisible` is now `true` by default.
+- CHANGE final fields no longer must be `required`.
+- FIX OPFS-Storage memory and cleanup leaking
+- FIXmemory-mapped-storage: deleted docs must be purged
+- FIX `RxCollection.cleanup()` does not respect the provided `minimumDeletedTime`.
 
 <!-- ADD new changes here! -->
 
