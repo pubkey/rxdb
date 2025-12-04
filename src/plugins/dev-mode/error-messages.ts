@@ -264,7 +264,7 @@ export const ERROR_MESSAGES = {
     // plugins/storage-sqlite-trial/
     SQL1: 'The trial version of the SQLite storage does not support attachments.',
     SQL2: 'The trial version of the SQLite storage is limited to contain 300 documents',
-    SQL3: 'The trial version of the SQLite storage is limited to running 110 operations',
+    SQL3: 'The trial version of the SQLite storage is limited to running 500 operations',
 
 
     // plugins/storage-remote
