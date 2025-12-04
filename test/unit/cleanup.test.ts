@@ -212,7 +212,7 @@ describeParallel('cleanup.test.js', () => {
             storageInstance.cleanup = (t) => {
                 calls.push(t);
                 return cleanupBefore(t);
-            }
+            };
 
             await col.cleanup(0);
             await col.cleanup(5);
