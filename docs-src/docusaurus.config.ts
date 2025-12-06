@@ -7,10 +7,13 @@
 import type { Config } from '@docusaurus/types';
 import rehypePrettyCode from 'rehype-pretty-code';
 import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
-import { rxDbDraculaModifiedTheme } from './src/theme/shiki-dracula';
+import fs from 'fs';
+import path from 'path';
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
-    theme: rxDbDraculaModifiedTheme,
+    theme: JSON.parse(
+        fs.readFileSync(path.join(__dirname, './src/theme/shiki-dracula.json'), 'utf-8')
+    ),
     bypassInlineCode: true,
 };
 
