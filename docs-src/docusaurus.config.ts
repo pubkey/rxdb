@@ -12,7 +12,7 @@ import path from 'path';
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
     theme: JSON.parse(
-        fs.readFileSync(path.join(__dirname, './src/theme/shiki-dracula.json'), 'utf-8')
+        fs.readFileSync(path.join(__dirname, './src/theme/shiki-rxdb-dracula.json'), 'utf-8')
     ),
     bypassInlineCode: true,
 };
