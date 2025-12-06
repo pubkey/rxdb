@@ -11,11 +11,11 @@ import WordWrapButton from '@theme-original/CodeBlock/Buttons/WordWrapButton';
 import buttonGroupStyles from '@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/styles.module.css';
 import containerStyles from '@docusaurus/theme-classic/lib/theme/CodeBlock/Container/styles.module.css';
 
-// css variables for buttons theme (normally set by prism)
-const codeBlockContainerStyle: React.CSSProperties = {
+const codeBlockContainerStyle = {
     position: 'relative',
-    '--prism-background-color': '#282A36',
-    '--prism-color': '#F8F8F2',
+    // css variables for buttons theme (normally set by prism)
+    '--prism-background-color': 'var(--bg-color-code)',
+    '--prism-color': 'var(--shiki-foreground)',
 } as React.CSSProperties;
 
 /**
@@ -34,11 +34,9 @@ function useShikiWordWrap(): WordWrap {
         if (!codeElement) return;
 
         if (isEnabled) {
-            // Remove word wrap styles
             codeElement.style.whiteSpace = '';
             codeElement.style.overflowWrap = '';
         } else {
-            // Apply word wrap styles
             codeElement.style.whiteSpace = 'pre-wrap';
             codeElement.style.overflowWrap = 'anywhere';
         }
@@ -49,7 +47,6 @@ function useShikiWordWrap(): WordWrap {
     const updateCodeIsScrollable = useCallback(() => {
         if (!codeBlockRef.current) return;
         const { scrollWidth, clientWidth } = codeBlockRef.current;
-        // Only check actual overflow, not inline styles (Shiki uses them for highlighting)
         setIsCodeScrollable(scrollWidth > clientWidth);
     }, []);
 
@@ -80,7 +77,7 @@ export default function CodeBlock({
         }
     }, [children]);
 
-    const metadata: CodeBlockMetadata = {
+    const metadata = {
         codeInput: code,
         code,
         className: 'language-text',
@@ -88,7 +85,7 @@ export default function CodeBlock({
         title: undefined,
         lineNumbersStart: undefined,
         lineClassNames: {},
-    };
+    } satisfies CodeBlockMetadata;
 
     if (typeof children === 'string') {
         // fallback for string children (no props)

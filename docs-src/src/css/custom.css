@@ -62,7 +62,7 @@ pre code {
     --shiki-token-string-expression: #FF79C6;
     --shiki-token-constant: #8BE9FD;
     --shiki-token-parameter: #FFB86C;
-    --shiki-token-punctuation: #F8F8F2;
+    --shiki-token-punctuation: var(--shiki-foreground);
     --shiki-line-highlight: rgba(0, 0, 0, 0.3);
 
     --fontSizes-xxs: 0.6rem;
