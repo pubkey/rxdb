@@ -4,8 +4,15 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
+import rehypePrettyCode from 'rehype-pretty-code';
+import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
+import { rxDbDraculaModifiedTheme } from './src/theme/shiki-dracula';
+
+const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
+    theme: rxDbDraculaModifiedTheme,
+    bypassInlineCode: true,
+};
 
 /** @type {import('@docusaurus/types').Config} */
 const config: Config = {
@@ -57,6 +64,13 @@ const config: Config = {
                 name: 'custom-webpack-tweaks',
                 configureWebpack(_config, _isServer, _utils) {
                     return {
+                        resolve: {
+                            alias: {
+                                // we no longer use prism, and highlight with Shiki on the server
+                                // alias the built-in prism-react-renderer with empty stub to reduce bundle size
+                                'prism-react-renderer': require.resolve('./src/prism-stub'),
+                            },
+                        },
                         module: {
                             /**
                              * Disable file hashing of fonts so we can
@@ -129,6 +143,9 @@ const config: Config = {
                     breadcrumbs: false,
                     // I disabled the editUrl because it just confuses users and does not look professional
                     // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
+                    beforeDefaultRehypePlugins: [
+                        [rehypePrettyCode, rehypePrettyCodeOptions],
+                    ],
                 },
                 // blog: {
                 //   showReadingTime: true,
@@ -218,11 +235,6 @@ const config: Config = {
             style: 'dark',
             links: [],
             copyright: ' ',
-        },
-        prism: {
-            theme: prismThemes.dracula,
-            darkTheme: prismThemes.dracula,
-            additionalLanguages: ['bash', 'json', 'graphql', 'typescript', 'javascript'],
         },
     },
 };

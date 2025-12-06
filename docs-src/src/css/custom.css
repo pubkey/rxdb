@@ -4492,3 +4492,36 @@ footer a:visited {
     display: none;
   }
 }
+
+figure[data-rehype-pretty-code-figure] {
+    margin: 0 0 var(--ifm-leading);
+    padding: 0;
+}
+
+pre[data-theme] {
+  padding: 0;
+  margin: 0;
+  background-color: var(--bg-color-code) !important;
+  border-radius: var(--ifm-code-border-radius);
+  overflow-x: auto;
+}
+
+pre[data-theme] code {
+  display: block !important;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  font-size: var(--ifm-code-font-size);
+  line-height: var(--ifm-pre-line-height);
+}
+
+pre[data-theme] code [data-highlighted-line] {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure proper display of inline code vs block code */
+:not(pre) > code {
+  background-color: var(--ifm-code-background);
+  border-radius: var(--ifm-code-border-radius);
+  padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
+}
