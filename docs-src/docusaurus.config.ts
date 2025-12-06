@@ -6,14 +6,17 @@
 
 import type { Config } from '@docusaurus/types';
 import rehypePrettyCode from 'rehype-pretty-code';
-import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
-import fs from 'fs';
-import path from 'path';
+import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
+import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
 
 const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
-    theme: JSON.parse(
-        fs.readFileSync(path.join(__dirname, './src/theme/shiki-rxdb-dracula.json'), 'utf-8')
-    ),
+    theme: createCssVariablesTheme({
+        name: 'css-variables',
+        variablePrefix: '--shiki-',
+        fontStyle: true,
+        // rehype-pretty-code expects "settings" to always be available,
+        // but shiki doesn't always provide it.
+    }) satisfies ThemeRegistrationAny as Theme,
     bypassInlineCode: true,
 };
 

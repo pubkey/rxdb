@@ -17,7 +17,6 @@
     --ifm-color-primary-lighter: #32d8b4;
     --ifm-color-primary-lightest: #4fddbf;
     --ifm-code-font-size: var(--fontSizes-s);
-    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -29,8 +28,6 @@
     --ifm-color-primary-light: #29d5b0;
     --ifm-color-primary-lighter: #32d8b4;
     --ifm-color-primary-lightest: #4fddbf;
-    /* --ifm-code-font-size: 95%; */
-    --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
 html[data-theme="dark"] {
@@ -55,6 +52,18 @@ pre code {
     --bg-color-dark: #0D0F18;
     --bg-color-darkest: #0D0F18;
     --bg-color-code: #282330;
+
+    --shiki-background: var(--bg-color-code);
+    --shiki-foreground: #F8F8F2;
+    --shiki-token-comment: #6272A4;
+    --shiki-token-keyword: #BD93F9;
+    --shiki-token-function: #50FA7B;
+    --shiki-token-string: #F1FA8C;
+    --shiki-token-string-expression: #FF79C6;
+    --shiki-token-constant: #8BE9FD;
+    --shiki-token-parameter: #FFB86C;
+    --shiki-token-punctuation: #F8F8F2;
+    --shiki-line-highlight: rgba(0, 0, 0, 0.3);
 
     --fontSizes-xxs: 0.6rem;
     --fontSizes-xs: 0.75rem;
@@ -4499,11 +4508,7 @@ figure[data-rehype-pretty-code-figure] {
 }
 
 pre[data-theme] {
-  padding: 0;
-  margin: 0;
-  background-color: var(--bg-color-code) !important;
-  border-radius: var(--ifm-code-border-radius);
-  overflow-x: auto;
+    padding: 0;
 }
 
 pre[data-theme] code {
@@ -4516,10 +4521,13 @@ pre[data-theme] code {
 }
 
 pre[data-theme] code [data-highlighted-line] {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--shiki-line-highlight);
 }
 
-/* Ensure proper display of inline code vs block code */
+pre[data-theme] span[style*="--shiki-token-keyword"] {
+    font-style: italic;
+}
+
 :not(pre) > code {
   background-color: var(--ifm-code-background);
   border-radius: var(--ifm-code-border-radius);
