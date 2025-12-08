@@ -4,7 +4,7 @@ slug: rx-storage-mongodb.html
 description: Combine RxDB's real-time sync with MongoDB's scalability. Harness the MongoDB RxStorage to seamlessly expand your database capabilities.
 ---
 
-# MongoDB RxStorage (beta)
+# MongoDB RxStorage
 
 RxDB MongoDB RxStorage is an RxDB [RxStorage](./rx-storage.md) that allows you to use [MongoDB](https://www.mongodb.com/) as the underlying storage engine for your RxDB database. With this you can take advantage of MongoDB's features and scalability while benefiting from RxDB's real-time data synchronization capabilities.
 

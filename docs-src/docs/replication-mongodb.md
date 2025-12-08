@@ -258,11 +258,6 @@ const replicationState = replicateServer({
 </Steps>
 
 
-:::note Beta
-The MongoDB Replication Plugin for RxDB is currently in **beta**.  
-While it is production-capable, the API and internal behavior may change before the stable release. We recommend thoroughly testing your integration and reviewing the changelog when upgrading to newer versions.
-:::
-
 
 ## Follow Up
 

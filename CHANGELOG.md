@@ -23,6 +23,16 @@
 - ADD `context` field to all RxDB write errors for easier debugging.
 - CHANGE `toggleOnDocumentVisible` is now `true` by default.
 - CHANGE final fields no longer must be `required`.
+- The following plugins are no longer in beta mode:
+  - Replication Appwrite
+  - RxStorage MongoDB
+  - RxStorage Filesystem Node
+  - Attachment replication
+  - Replication Supabase
+  - RxPipeline
+  - RxStorage DenoKV
+  - CRDT Plugin
+  - Replication MongoDB
 
 <!-- /CHANGELOG NEWEST -->
 

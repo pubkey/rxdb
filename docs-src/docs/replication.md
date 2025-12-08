@@ -602,7 +602,7 @@ const replicationState = replicateRxCollection({
 });
 ```
 
-## Attachment replication (beta)
+## Attachment replication
 
 Attachment replication is supported in the RxDB Sync Engine itself. However not all replication plugins support it.
 If you start the replication with a collection which has [enabled RxAttachments](./rx-attachment.md) attachments data will be added to all push- and write data.
