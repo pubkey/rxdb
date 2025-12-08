@@ -16,7 +16,9 @@ export function HeroSection_B(props: {
 }) {
     const [openDemo, setOpenDemo] = useState(false);
 
-    return <div className="block first hero centered dark">
+    return <div className="block first hero centered dark" style={{
+        background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)'
+    }}>
         <div className="content">
             {
                 props.sem && props.sem.iconUrl ? (
@@ -112,7 +114,7 @@ export function HeroEmojiChat() {
             justifyItems: 'center',
             alignSelf: 'start',
             flexDirection: 'row',
-            gap: 20,
+            gap: 20
         }} className='flex-end-center'
         >
             <EmojiChatStateful

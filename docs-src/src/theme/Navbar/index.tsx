@@ -1,7 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from '@theme-original/Navbar';
+import React, { useEffect, useState, type ReactNode } from 'react';
+import NavbarLayout from '@theme/Navbar/Layout';
+import NavbarContent from '@theme/Navbar/Content';
 
-export default function NavbarWrapper(props) {
+
+const styles = {
+  scrollIndicator: {
+    position: 'fixed',
+    left: 0,
+    zIndex: 10,
+    height: 2,
+    width: '100vw',
+    backgroundColor: 'var(--color-top)',
+    borderTopRightRadius: 2,
+    borderBottomRightRadius: 2,
+    transformOrigin: 'left center',
+    willChange: 'transform',
+    backfaceVisibility: 'hidden',
+    contain: 'layout',
+  },
+};
+
+export default function Navbar(): ReactNode {
   const [scrollPosition, setScrollPosition] = useState(0); // number 0..100
 
   useEffect(() => {
@@ -11,34 +30,18 @@ export default function NavbarWrapper(props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const styles = {
-    scrollIndicator: {
-      position: 'fixed',
-      left: 0,
-      zIndex: 10,
-      height: 1.5,
-      width: '100vw',                 // fixed visual width
-      backgroundColor: 'var(--color-top)',
-      borderTopRightRadius: 2,
-      borderBottomRightRadius: 2,
-      transformOrigin: 'left center', // scale from left
-      willChange: 'transform',
-      backfaceVisibility: 'hidden',
-      contain: 'layout',              // isolate layout work
-    },
-  };
-
   return (
-    <>
-      <Navbar {...props} />
+    <NavbarLayout>
+      <NavbarContent />
       <div
         className="navbar-line"
         style={{
           ...styles.scrollIndicator,
           transform: `scaleX(${Math.max(0, Math.min(1, scrollPosition / 100))})`,
-        }}
+        } as any}
       />
-    </>
+
+    </NavbarLayout>
   );
 }
 
