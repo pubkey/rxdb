@@ -22,7 +22,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import type { DenoKVIndexMeta, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
-import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
+import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, commitWithRetry, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
@@ -291,7 +291,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         for await (const row of range) {
             rangeCount = rangeCount + 1;
             const docId = row.value;
+            console.log('--- 0');
             const docDataResult = await kv.get([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], this.kvOptions);
+            console.log('--- 1');
             if (!docDataResult.value) {
                 continue;
             }
@@ -303,16 +305,17 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 continue;
             }
 
+            console.log('--- 2');
 
-            let tx = kv.atomic();
-            tx = tx.check(docDataResult);
-            tx = tx.delete([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
-            Object
-                .values(this.internals.indexes)
-                .forEach(indexMetaInner => {
+            await commitWithRetry(() => {
+                let tx = kv.atomic();
+                tx = tx.check(docDataResult);
+                tx = tx.delete([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
+                Object.values(this.internals.indexes).forEach(indexMetaInner => {
                     tx = tx.delete([this.keySpace, indexMetaInner.indexId, docId]);
                 });
-            await tx.commit();
+                return tx;
+            });
         }
         return noMoreUndeleted;
     }
