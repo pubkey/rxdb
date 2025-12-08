@@ -401,7 +401,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                                 schema: jsonSchema
                             });
                         }
-                        if (maxLength > 1000) {
+                        if (maxLength > 2048) {
                             throw newRxError('SC42', {
                                 index,
                                 field: fieldName,

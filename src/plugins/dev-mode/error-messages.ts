@@ -228,7 +228,7 @@ export const ERROR_MESSAGES = {
     SC40: '$ref fields in the schema are not allowed. RxDB cannot resolve related schemas because it would have a negative performance impact.' +
         'It would have to run http requests on runtime. $ref fields should be resolved during build time.',
     SC41: 'minimum, maximum and maxLength values for indexes must be real numbers, not Infinity or -Infinity',
-    SC42: 'Primary key and also indexed fields which are strings, must have a maxLength that is <= 1000. Notice that having a big maxLength can negatively affect the performance. Only set it as big as it has to be.',
+    SC42: 'Primary key and also indexed fields which are strings, must have a maxLength that is <= 2048. Notice that having a big maxLength can negatively affect the performance. Only set it as big as it has to be.',
 
 
     // plugins/dev-mode

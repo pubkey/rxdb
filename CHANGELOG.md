@@ -19,7 +19,7 @@
 - FIX short primary key lengths does not match replication schema [#7587](https://github.com/pubkey/rxdb/issues/7587)
 - FIX retry DenoKV commits on "database is locked" error
 
-- ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
+- ADD ensure indexes and primaryKey have a maximum `maxLength` of `2048`.
 - ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
 - We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
 - ADD `context` field to all RxDB write errors for easier debugging.
