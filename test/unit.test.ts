@@ -70,3 +70,5 @@ import './unit/import-export.test.ts';
 import './unit/database-lifecycle.ts';
 import './unit/plugin.test.ts';
 import './unit/last.test.ts';
+import './unit/deep-incremental-patch.test.ts';
+
