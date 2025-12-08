@@ -9,7 +9,7 @@ import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
-# MongoDB Replication Plugin for RxDB — Real-Time, Offline-First Sync
+# MongoDB Replication Plugin for RxDB - Real-Time, Offline-First Sync
 
 
 <p align="center">
