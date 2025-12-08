@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 
 
-export function NavbarDropdown(props: { which: 'sync' | 'storages' }) {
+export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
     switch (props.which) {
         case 'sync':
             return <div className="dropdown-content dropdown-content-sync" >

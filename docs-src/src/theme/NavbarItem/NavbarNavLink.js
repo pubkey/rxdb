@@ -5,7 +5,7 @@ import isInternalUrl from '@docusaurus/isInternalUrl';
 import { isRegexpStringMatch } from '@docusaurus/theme-common';
 import IconExternalLink from '@theme/Icon/ExternalLink';
 import { triggerTrackingEvent } from '../../components/trigger-event';
-import { NavbarDropdown } from '../../components/navbar-dropdowns'
+import { NavbarDropdown } from '../../components/navbar-dropdowns';
 
 
 export default function NavbarNavLink({

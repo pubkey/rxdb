@@ -1,18 +1,24 @@
-import React, {version, type ReactNode} from 'react';
+import React, { version, type ReactNode } from 'react';
 import clsx from 'clsx';
-import {useNavbarSecondaryMenu} from '@docusaurus/theme-common/internal';
-import {ThemeClassNames} from '@docusaurus/theme-common';
-import type {Props} from '@theme/Navbar/MobileSidebar/Layout';
+import { useNavbarSecondaryMenu } from '@docusaurus/theme-common/internal';
+import { ThemeClassNames } from '@docusaurus/theme-common';
+import type { Props } from '@theme/Navbar/MobileSidebar/Layout';
 
 // TODO Docusaurus v4: remove temporary inert workaround
 //  See https://github.com/facebook/react/issues/17157
 //  See https://github.com/radix-ui/themes/pull/509
 function inertProps(inert: boolean) {
-  const isBeforeReact19 = parseInt(version!.split('.')[0]!, 10) < 19;
-  if (isBeforeReact19) {
-    return {inert: inert ? '' : undefined};
+
+  if (!version) {
+    throw new Error('version is missing');
   }
-  return {inert};
+
+  const major = parseInt(version.split('.')[0], 10);
+  const isBeforeReact19 = major < 19;
+  if (isBeforeReact19) {
+    return { inert: inert ? '' : undefined };
+  }
+  return { inert };
 }
 
 function NavbarMobileSidebarPanel({
@@ -39,7 +45,7 @@ export default function NavbarMobileSidebarLayout({
   primaryMenu,
   secondaryMenu,
 }: Props): ReactNode {
-  const {shown: secondaryMenuShown} = useNavbarSecondaryMenu();
+  const { shown: secondaryMenuShown } = useNavbarSecondaryMenu();
   return (
     <div
       className={clsx(
