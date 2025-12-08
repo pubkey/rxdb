@@ -5,7 +5,7 @@ description: Learn how RxDB's CRDT Plugin resolves document conflicts automatica
 ---
 
 
-# RxDB CRDT Plugin (beta)
+# RxDB CRDT Plugin
 
 Whenever there are multiple instances in a distributed system, data writes can cause conflicts. Two different clients could do a write to the same document at the same time or while they are both offline. When the clients replicate the document state with the server, a conflict emerges that must be resolved by the system.
 

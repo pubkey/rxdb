@@ -16,13 +16,25 @@
 - FIX OPFS-Storage memory and cleanup leaking
 - FIXmemory-mapped-storage: deleted docs must be purged
 - FIX `RxCollection.cleanup()` does not respect the provided `minimumDeletedTime`.
+- FIX short primary key lengths does not match replication schema [#7587](https://github.com/pubkey/rxdb/issues/7587)
+- FIX retry DenoKV commits on "database is locked" error
 
-- ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
+- ADD ensure indexes and primaryKey have a maximum `maxLength` of `2048`.
 - ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
 - We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
 - ADD `context` field to all RxDB write errors for easier debugging.
 - CHANGE `toggleOnDocumentVisible` is now `true` by default.
 - CHANGE final fields no longer must be `required`.
+- The following plugins are no longer in beta mode:
+  - Replication Appwrite
+  - RxStorage MongoDB
+  - RxStorage Filesystem Node
+  - Attachment replication
+  - Replication Supabase
+  - RxPipeline
+  - RxStorage DenoKV
+  - CRDT Plugin
+  - Replication MongoDB
 
 <!-- /CHANGELOG NEWEST -->
 

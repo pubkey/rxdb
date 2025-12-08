@@ -3,7 +3,7 @@ import { IconAttachment } from './icons/attachment';
 import { IconCompression } from './icons/compression';
 import { IconEncryption } from './icons/encryption';
 import { IconReplication } from './icons/replication';
-import { IconServer } from './icons/server';
+import ServerIcon from '@site/static/files/icons/server.svg';
 import { Tag } from './tag';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import { SemPage } from '../pages';
@@ -20,7 +20,7 @@ const tags: {
         { value: 'Backup', url: '/backup.html' },
         { value: 'Encryption', url: '/encryption.html', img: <IconEncryption /> },
         { value: 'Middleware', url: '/middleware.html' },
-        { value: 'Server', url: '/rx-server.html', img: <IconServer /> },
+        { value: 'Server', url: '/rx-server.html', img: <ServerIcon /> },
         { value: 'Compression', url: '/key-compression.html', img: <IconCompression /> },
         { value: 'Signals', url: '/reactivity.html' },
         { value: 'Storages', url: '/rx-storage.html' },

@@ -185,19 +185,20 @@ const config: Config = {
                 {
                     href: '/overview.html',
                     label: 'Docs',
-                    position: 'left',
+                    position: 'left'
                 },
                 {
                     href: '/replication.html',
                     label: 'Sync',
                     position: 'left',
+                    dropdown: 'sync'
                 },
                 {
                     href: '/rx-storage.html',
                     label: 'Storages',
                     position: 'left',
+                    dropdown: 'storages'
                 },
-
                 {
                     href: '/premium/',
                     label: 'Premium',

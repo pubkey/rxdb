@@ -4,7 +4,7 @@ slug: rx-pipeline.html
 description: Discover how RxPipeline automates your data workflows. Seamlessly process writes, manage leader election, and ensure crash-safe operations in RxDB.
 ---
 
-# RxPipeline (beta)
+# RxPipeline
 
 The RxPipeline plugin enables you to run operations depending on writes to a collection.
 Whenever a write happens on the source collection of a pipeline, a handler is called to process the writes and run operations on another collection.
@@ -52,10 +52,6 @@ const pipeline = await mySourceCollection.addPipeline({
     }
 });
 ```
-
-:::warning beta
-The pipeline plugin is in **beta** mode and the API might be changed without a major RxDB release.
-:::
 
 
 ## Pipeline handlers must be idempotent

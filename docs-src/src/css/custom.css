@@ -81,7 +81,8 @@ pre code {
     --space-between-blocks: 0px;
 
     --fontColor-white: #ffffff;
-    --fontColor-offwhite: #e0e0e0;
+    --fontColor-offwhite: #fff;
+    --ifm-hero-text-color: #fff;
     --fontColor-gray: lightgray;
 
     --color-top: #ED168F;
@@ -416,7 +417,8 @@ p b {
 
 .markdown a,
 p a,
-td a {
+td a,
+.underline-link {
     /* color: var(--color-top); */
     color: white;
     font-weight: 600;
@@ -542,7 +544,7 @@ body {
     font-weight: 500;
 }
 
-.navbar__items a:hover {
+.navbar__link:hover {
     color: white;
     text-decoration: underline;
     text-decoration-color: var(--color-top);
@@ -3738,7 +3740,8 @@ footer a:visited {
     margin-top: 130px;
 }
 
-.footer-community-links svg, .footer-community-links img {
+.footer-community-links svg,
+.footer-community-links img {
     height: 22px;
     filter: grayscale(100%) brightness(1.8);
 }
@@ -4454,6 +4457,114 @@ footer a:visited {
 }
 
 
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    position: fixed;
+
+    top: 82px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: red;
+    padding: 10px;
+    z-index: 13;
+
+
+
+    width: 809px;
+    padding: 32px;
+
+
+    border: 1px solid #666;
+    background: var(--bg-color-dark);
+    box-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30);
+
+}
+
+.dropdown-content-storages {
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(4, max-content);
+    column-gap: 32px;
+    padding: 13px 16px 24px 16px;
+}
+
+.dropdown-grid-top {
+    padding-bottom: 6px;
+    border-bottom: 2px solid #666;
+}
+
+.dropdown-grid-top-title {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 21px;
+}
+
+.dropdown-grid-top-sub {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    white-space: nowrap;
+}
+
+.dropdown-grid-top-links {
+    list-style-type: none;
+    padding-left: 14px;
+}
+
+.dropdown-grid-top-links li {
+    padding-top: 14px;
+
+}
+
+.dropdown-wrapper:hover .dropdown-content {
+    display: grid;
+}
+
+.dropdown-content-sync {
+    padding: 32px;
+}
+
+.dropdown-content-sync-card {
+    border: 2px solid #fff;
+    padding: 10px 14px 0px 14px;
+    justify-content: center;
+}
+
+.dropdown-content-sync-card:hover {
+    filter: invert(1);
+    background-color: black;
+}
+
+.dropdown-content-sync-title {
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.dropdown-content-sync-subtitle {
+    margin-top: 10px;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+}
+
+.dropdown-content-sync-integrations {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px 40px;
+}
+
+.dropdown-content-sync-integration {
+    float: left;
+}
+
 
 .chat-background {
     background-size: 50%;
@@ -4469,37 +4580,37 @@ footer a:visited {
 
 /* Fix for search dropdown clipping and stacking context */
 .theme-doc-sidebar-container {
-  clip-path: none !important;
-  z-index: 5;
+    clip-path: none !important;
+    z-index: 5;
 }
 
 /* Mobile search dropdown fix - use relative positioning like desktop */
 @media (max-width: 1000px) {
-  .navbar__search-input {
-    width: 100% !important;
-  }
+    .navbar__search-input {
+        width: 100% !important;
+    }
 
-  /* Fix parent positioning so dropdown scrolls with menu */
-  .algolia-autocomplete.algolia-autocomplete-left {
-    position: static !important;
-  }
+    /* Fix parent positioning so dropdown scrolls with menu */
+    .algolia-autocomplete.algolia-autocomplete-left {
+        position: static !important;
+    }
 
-  /* Override algolia.css fixed positioning */
-  .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu {
-    position: relative !important;
-    left: 0 !important;
-    top: -6px !important;
-  }
+    /* Override algolia.css fixed positioning */
+    .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu {
+        position: relative !important;
+        left: 0 !important;
+        top: -6px !important;
+    }
 
-  /* Fix ::before arrow positioning - remove right constraint and set left */
-  .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu::before {
-    left: 1rem;
-  }
+    /* Fix ::before arrow positioning - remove right constraint and set left */
+    .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu::before {
+        left: 1rem;
+    }
 
-  /* Hide caret when not showing search results */
-  .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu:not(:has(.ds-suggestion))::before {
-    display: none;
-  }
+    /* Hide caret when not showing search results */
+    .algolia-autocomplete.algolia-autocomplete-left .ds-dropdown-menu:not(:has(.ds-suggestion))::before {
+        display: none;
+    }
 }
 
 figure[data-rehype-pretty-code-figure] {

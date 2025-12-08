@@ -8,7 +8,7 @@ import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
 import { IframeFormModal } from '../modal';
-import { ABTestContent } from '../a-b-tests';
+import { ReplicationDiagram } from '../replication-diagram';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -16,7 +16,9 @@ export function HeroSection_B(props: {
 }) {
     const [openDemo, setOpenDemo] = useState(false);
 
-    return <div className="block first hero centered dark">
+    return <div className="block first hero centered dark" style={{
+        background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)'
+    }}>
         <div className="content">
             {
                 props.sem && props.sem.iconUrl ? (
@@ -91,10 +93,8 @@ export function HeroSection_B(props: {
                 <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
                 >
-
-                    <ABTestContent />
-
-
+                    <br className='hide-mobile' />
+                    <ReplicationDiagram dark={true} hasIcon={false} />
                 </div>
             </div>
             <HeroRuntimes></HeroRuntimes>
@@ -112,7 +112,7 @@ export function HeroEmojiChat() {
             justifyItems: 'center',
             alignSelf: 'start',
             flexDirection: 'row',
-            gap: 20,
+            gap: 20
         }} className='flex-end-center'
         >
             <EmojiChatStateful
