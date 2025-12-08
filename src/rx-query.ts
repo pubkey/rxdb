@@ -558,16 +558,15 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
 
     let ret = false;
     let mustReExec = false; // if this becomes true, a whole execution over the database is made
+    let changePoint = rxQuery._latestChangeEvent + 1;
     if (rxQuery._latestChangeEvent === -1) {
         // have not executed yet -> must run
         mustReExec = true;
+        changePoint = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter() + 1;
     }
 
-    /**
-     * try to use EventReduce to calculate the new results
-     */
-    if (!mustReExec) {
-        const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+    function caluateChanges(trust: boolean = true) {
+        const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(changePoint);
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
@@ -600,7 +599,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 // 'find' or 'findOne' query
                 const eventReduceResult = calculateNewResults(
                     rxQuery as any,
-                    runChangeEvents
+                    runChangeEvents, { idempotentCheck: trust }
                 );
                 if (eventReduceResult.runFullQueryAgain) {
                     // could not calculate the new results, execute must be done
@@ -612,6 +611,15 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 }
             }
         }
+
+    }
+
+    /**
+     * try to use EventReduce to calculate the new results
+     */
+    if (!mustReExec) {
+        rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.getCounter();
+        caluateChanges();
     }
 
     // oh no we have to re-execute the whole query over the database
@@ -635,6 +643,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                     ) {
                         ret = true;
                         rxQuery._setResultData(newResultData as any);
+                        caluateChanges(false);
                     }
                     return ret;
                 }
@@ -648,6 +657,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
                 ) {
                     ret = true; // true because results changed
                     rxQuery._setResultData(newResultData as any);
+                    caluateChanges(false);
                 }
                 return ret;
             });
