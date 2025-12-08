@@ -291,9 +291,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         for await (const row of range) {
             rangeCount = rangeCount + 1;
             const docId = row.value;
-            console.log('--- 0');
             const docDataResult = await kv.get([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], this.kvOptions);
-            console.log('--- 1');
             if (!docDataResult.value) {
                 continue;
             }
@@ -304,8 +302,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             ) {
                 continue;
             }
-
-            console.log('--- 2');
 
             await commitWithRetry(() => {
                 let tx = kv.atomic();
