@@ -8,7 +8,7 @@ import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
 import { IframeFormModal } from '../modal';
-import { ABTestContent } from '../a-b-tests';
+import { ReplicationDiagram } from '../replication-diagram';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
@@ -93,10 +93,8 @@ export function HeroSection_B(props: {
                 <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
                 >
-
-                    <ABTestContent />
-
-
+                    <br className='hide-mobile' />
+                    <ReplicationDiagram dark={true} hasIcon={false} />
                 </div>
             </div>
             <HeroRuntimes></HeroRuntimes>
