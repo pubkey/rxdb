@@ -5,7 +5,10 @@
 import {
     newRxError
 } from '../../rx-error.ts';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper.ts';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper.ts';
 import type {
     CompositePrimaryKey,
     JsonSchema,
