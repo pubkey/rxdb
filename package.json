@@ -619,7 +619,7 @@
     "stream": "0.0.3",
     "supabase": "2.63.1",
     "terser": "5.44.1",
-    "terser-webpack-plugin": "5.3.14",
+    "terser-webpack-plugin": "5.3.15",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
     "walk-sync": "3.0.0",
