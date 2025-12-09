@@ -66,6 +66,10 @@ export default function FooterWrapper() {
         label: 'Our Customers',
         href: '/#reviews',
       },
+      {
+        label: 'Become a Partner',
+        href: '/consulting#become-partner',
+      },
       // {
       //   label: 'About us',
       //   target: '_blank',
