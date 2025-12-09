@@ -221,7 +221,7 @@ export default function Consulting() {
                     </div>
 
 
-                    <div className="block centered" style={{
+                    <div className="block centered" id="become-partner" style={{
                         paddingBottom: 124
                     }}>
                         <div className="content">
