@@ -1,6 +1,6 @@
 import { SemPage } from '../pages';
 import CodeBlock from '../theme/CodeBlock';
-import { TabsNew } from './tabs-new';
+import { Tabs } from './tabs';
 
 const items = [
     {
@@ -109,17 +109,16 @@ export function CoreConceptSection(props: {
             <h2 style={{ textAlign: 'center' }}>
                 <b>Core</b> Concepts
             </h2>
-        </div>
-        <div style={{
-            width: '90%',
-            marginLeft: '5%'
-        }}>
-            <TabsNew
-                dark={props.dark}
-                items={items}
-                defaultActiveKey="schema-language"
-                onChange={(key) => console.log('tab changed to', key)}
-            />
+            <div style={{
+                margin: '35px auto 0px',
+                padding: 30,
+            }}>
+                <Tabs
+                    dark={props.dark}
+                    items={items}
+                    defaultActiveKey="business"
+                />
+            </div>
         </div>
     </div>
         ;

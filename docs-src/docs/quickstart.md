@@ -36,6 +36,7 @@ npm install rxdb rxjs
 
 RxDB is able to run in a wide range of JavaScript runtimes like browsers, mobile apps, desktop and servers. Therefore different storage engines exist that ensure the best performance depending on where RxDB is used.
 
+
 <Tabs>
 
 #### LocalStorage

@@ -54,7 +54,7 @@ You can either use the appwrite cloud or <a href="https://appwrite.io/docs/advan
 
 <Tabs>
 
-#### Self-Hosted Appwrite Instance
+#### Self-Hosted
 
 <Steps>
 

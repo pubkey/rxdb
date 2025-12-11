@@ -906,17 +906,6 @@ body {
     margin-top: 125px;
 }
 
-.flex-direction-default-column {}
-
-.flex-direction-default-row {}
-
-.gap-20-0 {
-    gap: 20px;
-}
-
-.display-flex-grid {
-    display: flex;
-}
 
 @media (max-width: 900px) {
     .display-flex-grid {
@@ -932,9 +921,6 @@ body {
         flex-direction: column;
     }
 
-    .flex-direction-default-row {
-        flex-direction: row !important;
-    }
 
     .margin-top-125-0 {
         margin-top: 0px;
@@ -3319,6 +3305,7 @@ footer a:visited {
 
 .side-tabs {
     display: flex;
+    max-width: 100%;
 }
 
 /* left list */
@@ -3326,11 +3313,14 @@ footer a:visited {
     display: flex;
     flex-direction: column;
     min-width: 220px;
+    flex: 0 0 auto;
     gap: 4px;
 }
 
 .side-tabs__tab {
+    display: flex;
     height: 52px;
+    gap: 0px;
     align-items: center;
     align-self: stretch;
     font-weight: 500;
@@ -3385,64 +3375,69 @@ footer a:visited {
     left: -4px;
 }
 
-@media (max-width: 900px) {
-    .side-tabs__tab--active .side-tabs__indicator {
-        position: relative;
-        height: 3px;
-        width: calc(100% + 4px);
-        left: -2px;
-        top: -3px;
-    }
 
-    .side-tabs__content {
-        margin-left: 0px !important;
-    }
-
-    .side-tabs__list {
-        mask-image: -webkit-gradient(linear,
-                left top,
-                right top,
-                from(rgb(0, 0, 0)),
-                /* fully visible at left */
-                color-stop(70%, rgb(0, 0, 0)),
-                /* stay visible until near right side */
-                to(rgba(0, 0, 0, 0))
-                /* fade out at right edge */
-            );
-        padding-right: 80px;
-
-
-        overflow-x: auto;
-        /* enable horizontal scroll */
-        overflow-y: hidden;
-        white-space: nowrap;
-        /* keep items on one line */
-        scroll-snap-type: x mandatory;
-        cursor: grab;
-        scrollbar-width: none;
-    }
-
-    .side-tabs__list.is-dragging {
-        cursor: grabbing;
-    }
-
-    /* optional: prevent text selection during drag globally in this area */
-    .side-tabs__list.is-dragging,
-    .side-tabs__list.is-dragging * {
-        user-select: none;
-    }
-
-    .side-tabs__tab {
-        border-right-style: solid;
-        border-bottom-style: none;
-        align-items: stretch;
-
-        flex: 0 0 auto;
-        /* prevent shrinking, allow horizontal scrolling */
-    }
-
-
+.side-tabs.small {
+    flex-direction: column;
 }
+
+/* active indicator */
+.side-tabs.small .side-tabs__tab--active .side-tabs__indicator {
+    position: relative;
+    height: 3px;
+    width: calc(100% + 4px);
+    left: -2px;
+    top: -3px;
+}
+
+/* content area */
+.side-tabs.small .side-tabs__content {
+    margin-left: 0px !important;
+    padding: 20px;
+    flex: 1;
+}
+
+/* list area */
+.side-tabs.small .side-tabs__list {
+    flex-direction: row !important;
+    mask-image: -webkit-gradient(
+        linear,
+        left top,
+        right top,
+        from(rgb(0, 0, 0)),
+        color-stop(70%, rgb(0, 0, 0)),
+        to(rgba(0, 0, 0, 0))
+    );
+    padding-right: 80px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scroll-snap-type: x mandatory;
+    cursor: grab;
+    scrollbar-width: none;
+}
+
+/* dragging cursor */
+.side-tabs.small .side-tabs__list.is-dragging {
+    cursor: grabbing;
+}
+
+/* prevent selection while dragging */
+.side-tabs.small .side-tabs__list.is-dragging,
+.side-tabs.small .side-tabs__list.is-dragging * {
+    user-select: none;
+}
+
+/* tab styling */
+.side-tabs.small .side-tabs__tab {
+    gap: 0px;
+    display: grid;
+    border-right-style: solid;
+    border-bottom-style: none;
+    align-items: stretch;
+    flex: 0 0 auto;
+}
+
 
 /* label */
 .side-tabs__label {
@@ -3454,7 +3449,9 @@ footer a:visited {
 
 /* right content */
 .side-tabs__content {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0; 
+    overflow-x: auto;  
     font-size: 16px;
     font-weight: 500;
     line-height: 25px;
