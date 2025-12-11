@@ -4,8 +4,14 @@ import { TabsNew } from './tabs-new';
 
 const items = [
     {
+        key: 'business', label: 'Business Model', children: <>
+            <p>RxDB follows a proven, sustainable business model centered around its <a target="_blank" href="/premium/">Premium Packages</a> rather than relying on VC funding. This independence ensures long-term stability and removes the risk of the project collapsing when investment dries up.</p>
+            <p>There is no cloud service and no vendor lock-in; developers remain free to sync RxDB with any backend of their choice. Unlike many open-source projects that disappear when maintainers can no longer work for free, RxDB has operated as a healthy business for nearly a decade and is built to continue far into the future.</p>
+        </>
+    },
+    {
         key: 'schema-language',
-        label: 'Schemas',
+        label: 'Schema',
         children: (
             <>
                 <p>
@@ -89,12 +95,6 @@ const items = [
         key: 'type-safety', label: 'TypeScript', children: <>
             <p>RxDB offers full <a target="_blank" href="/tutorials/typescript.html">TypeScript support</a>, giving developers strong typing across schemas, documents, collections, and queries. Types are derived automatically from the schema, eliminating the need for any separate build steps or code generation.</p>
             <p>This results in a natural, frictionless development workflow where your schema remains the single source of truth, and your IDE provides instant, precise type safety.</p>
-        </>
-    },
-    {
-        key: 'business', label: 'Business Model', children: <>
-            <p>RxDB follows a proven, sustainable business model centered around its <a target="_blank" href="/premium/">Premium Packages</a> rather than relying on VC funding. This independence ensures long-term stability and removes the risk of the project collapsing when investment dries up.</p>
-            <p>There is no cloud service and no vendor lock-in; developers remain free to sync RxDB with any backend of their choice. Unlike many open-source projects that disappear when maintainers can no longer work for free, RxDB has operated as a healthy business for nearly a decade and is built to continue far into the future.</p>
         </>
     },
 ];
