@@ -92,8 +92,11 @@ export function HeroSection_B(props: {
                 </div>
                 <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}
                 >
-                    <br className='hide-mobile' />
                     <ReplicationDiagram dark={true} hasIcon={false} />
                 </div>
             </div>
