@@ -2,6 +2,14 @@
 
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
+## google-drive and dropbox-sync
+
+so that users can provide their own sync backend.
+
+
+## expo-fs RxStorage
+
+Based on the node-filesystem storage. Use the new expo filesystem api for that.
 
 ## RxServer MCP Server endpoint
 
