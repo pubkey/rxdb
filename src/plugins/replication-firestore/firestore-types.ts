@@ -11,6 +11,7 @@ import type {
     Firestore,
     QueryDocumentSnapshot,
     QueryFieldFilterConstraint,
+    QueryFilterConstraint,
     QuerySnapshot
 } from 'firebase/firestore';
 
@@ -39,7 +40,7 @@ export type FirestoreOptions<RxDocType> = {
 export type FirestoreSyncPullOptions<RxDocType> =
     Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>
     & {
-        filter?: QueryFieldFilterConstraint | QueryFieldFilterConstraint[];
+        filter?: QueryFilterConstraint | QueryFilterConstraint[];
     };
 
 export type FirestoreSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'>
