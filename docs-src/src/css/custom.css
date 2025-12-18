@@ -3478,6 +3478,14 @@ footer a:visited {
     border-radius: 0px;
 }
 
+.alert.alert--info summary::before {
+    border-color: transparent transparent transparent
+    var(--color-top);   
+}
+
+.alert.alert--info div div {
+    border-color: var(--color-middle);
+}
 
 .chat-background {
     background-size: 50%;
