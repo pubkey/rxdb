@@ -112,6 +112,9 @@ pre code {
     padding: 1rem 1rem 1rem 2rem;
 }
 
+.theme-doc-sidebar-item-link-level-2 {
+    font-size: 85%;
+}
 
 
 /* Breakpoint for mobile */
@@ -407,7 +410,7 @@ p {
 .markdown h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: whitesmoke;
+    margin-bottom: 20px;
 }
 
 .markdown b,
@@ -2241,17 +2244,16 @@ a:hover {
 }
 
 .price-calculator {
-    border-radius: 6px;
     padding: 3px;
     width: 80%;
     margin-top: 20px;
-    border-style: solid;
+    /* border-style: solid; */
+    border-style: none;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.3);
     font-size: 120%;
 
     background-color: var(--bg-color);
-    box-shadow: 0px 0px 12px 8px var(--bg-color);
 }
 
 @media (max-width: 800px) {
@@ -2275,16 +2277,25 @@ a:hover {
 }
 
 .package {
-    border-radius: 6px;
+    border-radius: 0px;
     padding: 3px;
     margin-top: 10px;
     margin-bottom: 10px;
 }
 
 .package-inner {
-    background-color: var(--bg-color);
-    padding: 10px;
-    border-radius: 4px;
+    /* border-style: solid; */
+    border-style: none;
+    border-width: 1px;
+    border-color: var(--fontColor-gray);
+
+    /* box-shadow: 0 8px 6px 4px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.20); */
+    /* box-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30); */
+
+    background-color: var(--bg-color-dark);
+    /* background-color: var(--bg-color); */
+    padding: 16px;
+    border-radius: 16px;
     position: relative;
 }
 
@@ -2298,6 +2309,7 @@ a:hover {
 
 .price-calculator h4 {
     margin-top: 0px;
+    margin-bottom: 20px;
 }
 
 .price-calculator .field {
@@ -2362,9 +2374,7 @@ a:hover {
     height: 1px;
 }
 
-.price-calculator .packages {
-    margin-top: 60px;
-}
+.price-calculator .packages {}
 
 .price-calculator .package-checkbox {
     width: 50px;
@@ -2373,6 +2383,7 @@ a:hover {
     border-radius: 5px;
     background-color: white;
     cursor: pointer;
+    accent-color: var(--color-middle);
 }
 
 .price-calculator .package ul li {
@@ -2428,14 +2439,6 @@ a:hover {
     border-bottom: double 3px;
 }
 
-#price-calculator-block .button {
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-    margin: 0;
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
 
 #price-calculator-result a {
     color: white;
@@ -2449,7 +2452,7 @@ a:hover {
     text-align: left;
     width: 60%;
     padding-bottom: 25px;
-    font-size: 120%;
+    font-size: var(--fontSizes-m);
     text-align: justify;
 }
 
@@ -3399,14 +3402,12 @@ footer a:visited {
 /* list area */
 .side-tabs.small .side-tabs__list {
     flex-direction: row !important;
-    mask-image: -webkit-gradient(
-        linear,
-        left top,
-        right top,
-        from(rgb(0, 0, 0)),
-        color-stop(70%, rgb(0, 0, 0)),
-        to(rgba(0, 0, 0, 0))
-    );
+    mask-image: -webkit-gradient(linear,
+            left top,
+            right top,
+            from(rgb(0, 0, 0)),
+            color-stop(70%, rgb(0, 0, 0)),
+            to(rgba(0, 0, 0, 0)));
     padding-right: 80px;
 
     overflow-x: auto;
@@ -3450,8 +3451,8 @@ footer a:visited {
 /* right content */
 .side-tabs__content {
     flex: 1 1 0;
-    min-width: 0; 
-    overflow-x: auto;  
+    min-width: 0;
+    overflow-x: auto;
     font-size: 16px;
     font-weight: 500;
     line-height: 25px;
@@ -3467,6 +3468,13 @@ footer a:visited {
 .side-tabs__content strong {
     font-weight: 600;
     color: #f9fafb;
+}
+
+
+.alert.alert--info {
+    border-color: var(--color-middle);
+    background-color: var(--bg-color);
+    border-radius: 0px;
 }
 
 
@@ -3533,10 +3541,17 @@ pre[data-theme] code {
     border: none;
     font-size: var(--ifm-code-font-size);
     line-height: var(--ifm-pre-line-height);
+    border-radius: 0px !important;
 }
 
-pre[data-theme] code [data-highlighted-line] {
-    background-color: var(--shiki-line-highlight);
+
+.theme-code-block pre {
+    border-radius: 0px;
+    border: 2px solid #666;
+}
+
+.theme-code-block {
+    border-radius: 0px !important;
 }
 
 pre[data-theme] span[style*="--shiki-token-keyword"] {
@@ -3545,6 +3560,6 @@ pre[data-theme] span[style*="--shiki-token-keyword"] {
 
 :not(pre)>code {
     background-color: var(--ifm-code-background);
-    border-radius: var(--ifm-code-border-radius);
+    border-radius: 0px !important;
     padding: var(--ifm-code-padding-vertical) var(--ifm-code-padding-horizontal);
 }
