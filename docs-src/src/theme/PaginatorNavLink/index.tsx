@@ -5,7 +5,7 @@ import type { Props } from '@theme/PaginatorNavLink';
 import { Button } from '@site/src/components/button';
 
 export default function PaginatorNavLink(props: Props): ReactNode {
-  const { permalink, title, subLabel, isNext } = props;
+  const { permalink, title, isNext } = props;
   return <Button
     style={{
       textAlign: isNext ? 'right' : 'left',

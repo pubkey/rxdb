@@ -16,7 +16,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                     href="/replication.html"
                     target="_blank"
                 >
-                    <p className="dropdown-content-sync-card">
+                    <div className="dropdown-content-sync-card">
                         <span
                             className="dropdown-content-sync-title underline-link"
                         >
@@ -28,11 +28,11 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                             realtime between the clients and the server. The backend server does not
                             have to be ...
                         </p>
-                    </p>
+                    </div>
                 </a>
                 <div className="dropdown-content-sync-integrations">
                     {replicationLinks.map((item) => (
-                        <SyncTag img={item.iconUrl} href={item.url}>{item.label}</SyncTag>
+                        <SyncTag img={item.iconUrl} href={item.url} key={item.label}>{item.label}</SyncTag>
                     ))}
                     <div className='clear'></div>
                 </div>
@@ -141,7 +141,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                             ]
                         },
                     ].map(({ icon, title, sub, links }) => {
-                        return <div>
+                        return <div key={title}>
                             <div className="dropdown-grid-top">
                                 <div style={{
                                     height: 53,
@@ -163,7 +163,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                             </div>
                             <ul className="dropdown-grid-top-links">
                                 {links.map(({ href, text }) => {
-                                    return <li>
+                                    return <li key={text}>
                                         <a
                                             href={href}
                                             target="_blank"

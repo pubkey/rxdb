@@ -3273,6 +3273,7 @@ footer a:visited {
     border: 2px solid #fff;
     padding: 10px 14px 0px 14px;
     justify-content: center;
+    margin-bottom: var(--ifm-paragraph-margin-bottom);
 }
 
 .dropdown-content-sync-card:hover {
