@@ -231,7 +231,7 @@ const replicationState = await replicateRxCollection({
 
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation). This brings the realtime replication to RxDB where changes on the server or on a client will directly get propagated to the other instances.
 
-On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#push-from-the-client-to-the-server) to fetch all ongoing events and respond them to the client. Here we use Server-End-Events which is the most common used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
+On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#push-from-the-client-to-the-server) to fetch all ongoing events and respond them to the client. Here we use Server-Sent-Events (SSE) which is the most common used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
 
 ```ts
 // > server.ts
