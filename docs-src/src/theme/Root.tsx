@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { randomNumber } from '../../../plugins/utils';
-
+import { IconClose } from '../components/icons/close';
+import { Button } from '../components/button';
+import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
+import { IconNewsletter } from '../components/icons/newsletter';
 
 type CallToActionItem = {
     /**
@@ -12,7 +15,7 @@ type CallToActionItem = {
     text: string;
     keyword: string;
     url: string;
-    icon: string;
+    icon: any;
 };
 const callToActions: CallToActionItem[] = [
     {
@@ -27,7 +30,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Star',
         keyword: '@github',
         url: 'https://rxdb.info/code/',
-        icon: '🐙💻',
+        icon: <span className="navbar-icon-github" style={{ width: 22, height: 22, display: 'inline-block' }}></span>,
     },
     {
         title: [
@@ -41,7 +44,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@twitter',
         url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-        icon: '🐦',
+        icon: '/files/icons/twitter-blue.svg',
     },
     {
         title: [
@@ -55,7 +58,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/company/rxdb',
-        icon: '[in]',
+        icon: <LinkedInLogo style={{ width: 20, height: 20 }}></LinkedInLogo>,
     },
     {
         title: [
@@ -69,7 +72,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/in/danielmeyerdev/',
-        icon: '[in]',
+        icon: <LinkedInLogo style={{ width: 20, height: 20 }}></LinkedInLogo>,
     },
     {
         title: [
@@ -83,7 +86,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Chat',
         keyword: '@discord',
         url: 'https://rxdb.info/chat/',
-        icon: '💬',
+        icon: <span className="navbar-icon-discord" style={{ width: 22, height: 22, display: 'inline-block' }}></span>,
     },
     {
         title: [
@@ -97,7 +100,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Subscribe',
         keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter',
-        icon: '📰',
+        icon: <IconNewsletter />,
     },
     // {
     //     title: 'RxDB needs your feedback, please take part in our user Survey',
@@ -135,7 +138,6 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
-            return;
             if (location.pathname.includes('premium')) {
                 return;
             }
@@ -206,10 +208,10 @@ export default function Root({ children }) {
             {
                 showPopup ? <>
                     <h3>{showPopup.callToAction.title[showPopup.titleId]}</h3>
-                    <a
+                    <Button
+                        primary
                         href={showPopup.callToAction.url}
-                        className='hover-shadow-top'
-                        id="rxdb-call-to-action-button"
+                        icon={showPopup.callToAction.icon}
                         target="_blank"
                         onClick={() => {
                             triggerTrackingEvent('notification_call_to_action', 0.40);
@@ -220,13 +222,11 @@ export default function Root({ children }) {
                             );
                             closePopup();
                         }}
-                    >
-                        {showPopup.callToAction.text} {showPopup.callToAction.keyword}
-                    </a>
+                    >{showPopup.callToAction.text} {showPopup.callToAction.keyword}</Button>
                 </> : ''
             }
-            <div className='close' onClick={() => closePopup()}>
-                <div className='text'>&#x2715;</div>
+            <div className='close-popup' onClick={() => closePopup()}>
+                <IconClose clickable />
             </div>
         </div>
     </>;

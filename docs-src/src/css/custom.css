@@ -2597,25 +2597,23 @@ footer a:visited {
 
 .call-to-action-popup {
     position: fixed;
-    width: 550px;
+    width: 560px;
     max-width: 90%;
-    min-height: 200px;
     background-color: white;
-    bottom: 20px;
+    bottom: 0px;
 
     left: 50%;
     transform: translateX(-50%) translateY(200%);
 
     margin-bottom: 20px;
-    border-radius: var(--ifm-pre-border-radius);
-    border: 1px solid var(--color-top);
-    background-color: var(--bg-color);
     will-change: transform;
     text-align: center;
-    padding: 20px;
+    padding: 16px;
     z-index: 20;
 
-    box-shadow: 2px 2px 6px var(--color-top), -2px -1px 10px var(--color-top);
+    border: 1px solid var(--40-grey, #666);
+    background: var(--bg-color-dark);
+    box-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.30);
 }
 
 @media (max-width: 700px) {
@@ -2643,51 +2641,32 @@ footer a:visited {
 
 .call-to-action-popup h3 {
     width: calc(100% - 30px);
+    margin-top: 14px;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
 }
 
-.call-to-action-popup .close {
+.call-to-action-popup .close-popup {
     position: absolute;
-    right: 5px;
-    top: 5px;
-    border-radius: 50%;
-    background-color: grey;
-    width: 30px;
-    height: 30px;
+    right: 0px;
+    top: 0px;
+    padding: 16px;
     overflow: hidden;
     text-align: center;
     align-items: center;
     justify-content: center;
     display: flex;
     cursor: pointer;
-    transform: translate(-10% -10%);
-
 }
 
 .call-to-action-popup .close .text {
     margin-top: 2px;
 }
 
-.call-to-action-popup a {
-    cursor: pointer;
-    box-sizing: content-box;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    border: 1px solid var(--color-top);
-    border-radius: 1rem;
-    transition: all 0.2s ease;
-    font-size: var(--fontSizes-xl);
-    height: 2rem;
-    line-height: 2rem;
-    color: white;
-    margin-top: 20px;
-    display: inline-block;
-    vertical-align: middle;
-    width: auto;
-}
-
-.call-to-action-popup a:hover {
-    text-decoration: underline;
-}
+.call-to-action-popup a {}
 
 @media (max-width: 340px) {
     .navbar .text {
@@ -3479,8 +3458,7 @@ footer a:visited {
 }
 
 .alert.alert--info summary::before {
-    border-color: transparent transparent transparent
-    var(--color-top);   
+    border-color: transparent transparent transparent var(--color-top);
 }
 
 .alert.alert--info div div {
