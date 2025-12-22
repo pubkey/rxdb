@@ -14,7 +14,7 @@
 - CHANGE `toggleOnDocumentVisible` is now `true` by default.
 - CHANGE final fields no longer must be `required`.
 - FIX OPFS-Storage memory and cleanup leaking
-- FIXmemory-mapped-storage: deleted docs must be purged
+- FIX memory-mapped-storage: deleted docs must be purged
 - FIX `RxCollection.cleanup()` does not respect the provided `minimumDeletedTime`.
 - FIX short primary key lengths does not match replication schema [#7587](https://github.com/pubkey/rxdb/issues/7587)
 - FIX retry DenoKV commits on "database is locked" error
