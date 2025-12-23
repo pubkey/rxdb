@@ -1,5 +1,5 @@
 import { NgModule, APP_INITIALIZER, Injector } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, provideClientHydration } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -64,7 +64,8 @@ import {
       provide: MatDialogRef,
       useValue: {}
     },
-    { provide: MAT_DIALOG_DATA, useValue: {} }
+    { provide: MAT_DIALOG_DATA, useValue: {} },
+    provideClientHydration()
   ],
   exports: [],
   bootstrap: [AppComponent]
