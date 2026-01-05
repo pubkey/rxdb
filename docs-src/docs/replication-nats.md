@@ -4,6 +4,8 @@ slug: replication-nats.html
 description: Seamlessly sync your RxDB data with NATS for real-time, two-way replication. Handle conflicts, errors, and retries with ease.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # Replication with NATS
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
@@ -26,6 +28,16 @@ The easiest way to start a compatible NATS server is to use the official docker 
 
 ## Usage
 
+<Steps>
+
+### Install the nats package
+
+```bash
+npm install nats --save
+```
+
+### Start the Replication
+
 To start the replication, import the `replicateNats()` method from the RxDB plugin and call it with the collection
 that must be replicated.
 The replication runs *per RxCollection*, you can replicate multiple RxCollections by starting a new replication for each of them.
@@ -42,7 +54,8 @@ const replicationState = replicateNats({
     streamName: 'stream-for-replication-A',
     /**
      * The subject prefix determines how the documents are stored in NATS.
-     * For example the document with id 'alice' will have the subject 'foobar.alice'
+     * For example the document with id 'alice'
+     * will have the subject 'foobar.alice'
      */
     subjectPrefix: 'foobar',
     connection: { servers: 'localhost:4222' },
@@ -55,6 +68,9 @@ const replicationState = replicateNats({
     }
 });
 ```
+
+</Steps>
+
 
 ## Handling deletes
 

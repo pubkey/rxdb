@@ -419,7 +419,7 @@ function startAnalytics() {
         }
         const version = hasCookie.split('=')[1];
         console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
-        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1);
+        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1, true);
         triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, 1);
     }
     checkDevModeEvent();
@@ -594,6 +594,6 @@ function trackReturnAfter3to14Days() {
 
     // Only trigger conversion if between 3 and 14 days
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
-        triggerTrackingEvent('revisit_3_days', 3.5);
+        triggerTrackingEvent('revisit_3_days', 3.5, 1, true);
     }
 }
