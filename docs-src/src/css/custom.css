@@ -3414,6 +3414,7 @@ footer a:visited {
     gap: 0px;
     display: grid;
     border-right-style: solid;
+    border-right-width: 2px;
     border-bottom-style: none;
     align-items: stretch;
     flex: 0 0 auto;
@@ -3426,7 +3427,15 @@ footer a:visited {
     flex: 1;
     margin-left: 22px;
     margin-right: 22px;
+    position: absolute;
 }
+.side-tabs.small .side-tabs__label {
+    position: relative;
+}
+.side-tabs.small .side-tabs__tab--active .side-tabs__label {
+    margin-top: -3px;
+}
+
 
 /* right content */
 .side-tabs__content {

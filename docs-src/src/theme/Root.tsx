@@ -125,9 +125,7 @@ export default function Root({ children }) {
     }>();
     const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
-
         // addCommunityChatButton();
-
         setTimeout(() => {
             startAnalytics();
             trackReturnAfter3to14Days();
