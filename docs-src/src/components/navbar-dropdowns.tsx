@@ -6,6 +6,14 @@ import { replicationLinks } from './sync-section';
 import { useState } from 'react';
 
 
+export function NavbarDropdownSyncList() {
+    return <div className="dropdown-content-sync-integrations">
+        {replicationLinks.map((item) => (
+            <SyncTag img={item.iconUrl} href={item.url} key={item.label}>{item.label}</SyncTag>
+        ))}
+        <div className='clear'></div>
+    </div>;
+}
 
 export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
     switch (props.which) {
@@ -14,7 +22,6 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                 <a
                     className="dropdown-content-sync-title"
                     href="/replication.html"
-                    target="_blank"
                 >
                     <div className="dropdown-content-sync-card">
                         <span
@@ -30,12 +37,7 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                         </p>
                     </div>
                 </a>
-                <div className="dropdown-content-sync-integrations">
-                    {replicationLinks.map((item) => (
-                        <SyncTag img={item.iconUrl} href={item.url} key={item.label}>{item.label}</SyncTag>
-                    ))}
-                    <div className='clear'></div>
-                </div>
+                <NavbarDropdownSyncList />
             </div>;
         case 'storages':
             return <div className="dropdown-content dropdown-content-storages">
@@ -166,7 +168,6 @@ export function NavbarDropdown(props: { which: 'sync' | 'storages'; }) {
                                     return <li key={text}>
                                         <a
                                             href={href}
-                                            target="_blank"
                                             className='navbar__link'
                                         >{text}</a>
                                     </li>;
@@ -194,7 +195,6 @@ export function SyncTag(props: {
     return (
         <a
             href={props.href}
-            target="_blank"
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -209,6 +209,7 @@ export function SyncTag(props: {
                 userSelect: 'none',
                 transition: 'all 0.2s ease-in-out',
                 lineHeight: '100%',
+                textDecoration: 'none'
             }}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}

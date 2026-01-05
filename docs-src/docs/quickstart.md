@@ -7,6 +7,7 @@ description: Learn how to build a realtime app with RxDB. Follow this quickstart
 import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
+import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
 
 <TriggerEvent type="page_quickstart" value={0.5} maxPerUser={1} primary={true} />
 
@@ -281,52 +282,6 @@ RxDB has multiple [replication plugins](./replication.md) to replicate database 
 
 <Tabs>
 
-#### WebRTC (P2P)
-
-The easiest way to replicate data between your clients' devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything:
-
-```ts
-import {
-    replicateWebRTC,
-    getConnectionHandlerSimplePeer
-} from 'rxdb/plugins/replication-webrtc';
-replicateWebRTC({
-    collection: myDatabase.todos,
-    connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
-    topic: '', // <- set any app-specific room id here.
-    secret: 'mysecret',
-    pull: {},
-    push: {}
-})
-```
-
-#### GraphQL
-
-```ts
-import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
-
-replicateGraphQL({
-    collection: db.todos,
-    url: 'https://example.com/graphql',
-    push: { batchSize: 50 },
-    pull: { batchSize: 50 }
-});
-```
-
-#### CouchDB
-
-
-```ts
-import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
-
-replicateCouchDB({
-    collection: db.todos,
-    url: 'http://example.com/todos/',
-    push: {},
-    pull: {}
-});
-```
-
 #### HTTP
 
 ```ts
@@ -351,16 +306,71 @@ replicateHTTP({
     handler: async (lastCheckpoint) => {
       return fetch(
         "https://example.com/api/todos/pull?" +
-          new URLSearchParams({ checkpoint: JSON.stringify(lastCheckpoint) }),
+        new URLSearchParams({
+          checkpoint: JSON.stringify(lastCheckpoint)
+        }),
       ).then((res) => res.json());
     },
   },
 });
 ```
 
+
+#### GraphQL
+
+```ts
+import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
+
+replicateGraphQL({
+    collection: db.todos,
+    url: 'https://example.com/graphql',
+    push: { batchSize: 50 },
+    pull: { batchSize: 50 }
+});
+```
+
+
+#### WebRTC (P2P)
+
+The easiest way to replicate data between your clients' devices is the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything:
+
+```ts
+import {
+    replicateWebRTC,
+    getConnectionHandlerSimplePeer
+} from 'rxdb/plugins/replication-webrtc';
+replicateWebRTC({
+    collection: myDatabase.todos,
+    connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
+    topic: '', // <- set any app-specific room id here.
+    secret: 'mysecret',
+    pull: {},
+    push: {}
+})
+```
+
+
+#### CouchDB
+
+
+```ts
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
+
+replicateCouchDB({
+    collection: db.todos,
+    url: 'http://example.com/todos/',
+    push: {},
+    pull: {}
+});
+```
+
+
 #### And more...
 
 Explore all [replication plugins](/replication.html), including advanced conflict handling and custom protocols.
+
+<NavbarDropdownSyncList />
+
 </Tabs>
 </Steps>
 
