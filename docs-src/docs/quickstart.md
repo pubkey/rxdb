@@ -8,7 +8,7 @@ import {Steps} from '@site/src/components/steps';
 import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 
-<TriggerEvent type="page_quickstart" value={0.5} maxPerUser={1}/>
+<TriggerEvent type="page_quickstart" value={0.5} maxPerUser={1} primary={true} />
 
 # RxDB Quickstart
 

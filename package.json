@@ -369,7 +369,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
+    "// postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
     "test:fast": "npm run test:fast:memory && npm run test:fast:dexie",
@@ -482,7 +482,21 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.2",
+    "firebase": "11.10.0",
+    "mongodb": "6.21.0",
+    "nats": "2.29.3"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    },
+    "mongodb": {
+      "optional": true
+    },
+    "nats": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@babel/runtime": "7.28.4",
@@ -500,7 +514,6 @@
     "custom-idle-queue": "4.1.0",
     "dexie": "4.0.10",
     "event-reduce-js": "5.2.7",
-    "firebase": "11.10.0",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "16.12.0",
     "graphql-ws": "5.16.2",
@@ -509,8 +522,6 @@
     "js-base64": "3.7.8",
     "jsonschema-key-compression": "1.7.0",
     "mingo": "6.5.6",
-    "mongodb": "6.21.0",
-    "nats": "2.29.3",
     "oblivious-set": "1.4.0",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
@@ -519,6 +530,9 @@
     "z-schema": "6.0.2"
   },
   "devDependencies": {
+    "firebase": "11.10.0",
+    "mongodb": "6.21.0",
+    "nats": "2.29.3",
     "@babel/cli": "7.28.3",
     "@babel/core": "7.28.5",
     "@babel/plugin-external-helpers": "7.27.1",
