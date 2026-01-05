@@ -35,7 +35,7 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 npm install firebase
 ```
 
-### Iniitalize your Firestore Database
+### Initialize your Firestore Database
 
 ```ts
 import * as firebase from 'firebase/app';
