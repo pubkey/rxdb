@@ -1,6 +1,6 @@
 import { randomOfArray } from '../../../plugins/utils';
-import { HeroEmojiChat } from './hero-section/T4_hero_b';
-import { ReplicationDiagram } from './replication-diagram';
+// import { HeroEmojiChat } from './hero-section/T4_hero_b';
+// import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
 // import { OfflineSection } from './offline-section';
 // import { RealtimeSection } from './realtime-section';
@@ -16,16 +16,16 @@ const CURRENT_TEST_RUN = {
     /**
      * @link https://docs.google.com/spreadsheets/d/1ryPOhhwFHIqkVnIlpup6neV7u1FDnPMTlgzbvE62kB8/edit?gid=1330239462#gid=1330239462
      */
-    id: 'TX',
-    /**
-     * @link https://chatgpt.com/c/68d532de-4844-8331-8a2f-9a14b2d08cd9
-     */
+    id: 'T10',
     variations: {
-        A: <HeroEmojiChat />,
-        B: <>
-            <br className='hide-mobile' />
-            <ReplicationDiagram dark={true} hasIcon={false} />
-        </>,
+        A: <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>,
+        B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
+        C: <>The Local-First <b>Database</b> for Reactive <b>JavaScript</b> Applications</>,
+        D: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
+        E: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
+        F: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>,
+        G: <>A Local-First <b>Database</b> for Offline-Capable, Real-Time Apps</>,
+        H: <>A Client-Side <b>Database</b> Designed for High-Performance, Offline-First Apps</>
     }
 };
 
