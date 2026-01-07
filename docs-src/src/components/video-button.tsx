@@ -26,8 +26,8 @@ export function VideoPlayButton({ size = 50, onClick }: VideoPlayButtonProps) {
         },
     };
     return (
-        <div style={styles.container} onClick={onClick}>
-            <VideoPlayButtonArrow />
+        <div onClick={onClick}>
+            <VideoPlayButtonArrow style={styles.container} />
         </div>
     );
 }
