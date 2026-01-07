@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react';
+import { IconProps } from './arrow-right';
 
 type VideoPlayButtonProps = {
     size?: number; // diameter in px
@@ -26,13 +27,19 @@ export function VideoPlayButton({ size = 50, onClick }: VideoPlayButtonProps) {
     };
     return (
         <div style={styles.container} onClick={onClick}>
-
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="25" viewBox="0 0 15 25" fill="none" style={{
-                marginLeft: 3,
-                height: '100%'
-            }}>
-                <path d="M10 10V5H5V0H0V5V20V25H5V20H10V15H15V10H10Z" fill="white" />
-            </svg>
+            <VideoPlayButtonArrow />
         </div>
     );
+}
+
+
+export function VideoPlayButtonArrow({ style, className }: IconProps) {
+    return <div style={style} className={className}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="25" viewBox="0 0 15 25" fill="none" style={{
+            marginLeft: 3,
+            height: '100%'
+        }}>
+            <path d="M10 10V5H5V0H0V5V20V25H5V20H10V15H15V10H10Z" fill="white" />
+        </svg>
+    </div>;
 }

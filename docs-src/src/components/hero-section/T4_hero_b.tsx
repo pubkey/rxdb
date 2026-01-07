@@ -9,12 +9,16 @@ import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
 import { IframeFormModal } from '../modal';
 import { ReplicationDiagram } from '../replication-diagram';
+import { VideoBox, VideoModal } from '../video-box';
+import { YOUTUBE_VIDEO_MAIN } from '../video-section';
+import { VideoPlayButtonArrow } from '../video-button';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
     const [openDemo, setOpenDemo] = useState(false);
+    const [openVideo, setOpenVideo] = useState(false);
 
     return <div className="block first hero centered dark" style={{
         background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)'
@@ -73,19 +77,36 @@ export function HeroSection_B(props: {
                     }} className='hero-action-buttons centered-smaller-mobile'>
                         <Button className="hero-action"
                             onClick={() => {
+                                setOpenVideo(true);
+                                triggerTrackingEvent('hero_section_video_open', 0.4);
+                            }}
+                            icon=<VideoPlayButtonArrow style={{
+                                transform: 'scale(0.70)'
+                            }} />
+                        >Watch Video</Button>
+                        <VideoModal
+                            open={openVideo}
+                            videoId={YOUTUBE_VIDEO_MAIN.videoId}
+                            title={YOUTUBE_VIDEO_MAIN.title}
+                            startAt={YOUTUBE_VIDEO_MAIN.startAt}
+                            onClose={() => setOpenVideo(false)}
+                        />
+                        {/* <Button className="hero-action"
+                            onClick={() => {
                                 setOpenDemo(true);
                                 triggerTrackingEvent('hero_section_demo_open', 0.4);
                             }}
-                        >Schedule a Demo</Button>
-                        <IframeFormModal
+                        >Schedule a Demo</Button> */}
+                        {/* <IframeFormModal
                             iframeUrl='https://webforms.pipedrive.com/f/6Fz0viOs1HDtaA9sgYbt29eTE4tsxrW29hQbk8hGIvr1Bzl8NJrZNhcGWQlLcN1Dxh'
                             open={openDemo}
                             onClose={() => setOpenDemo(false)}
-                        />
+                        /> */}
+
+
                         <Button primary
                             className="hero-action"
                             href="/quickstart.html"
-                            target='_blank'
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>

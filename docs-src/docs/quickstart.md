@@ -45,7 +45,9 @@ RxDB is able to run in a wide range of JavaScript runtimes like browsers, mobile
 Use this for the simplest browser setup and very small datasets. It has a tiny bundle size and works anywhere [localStorage](./articles/localstorage.md) is available, but is not optimized for large data or heavy writes.
 
 ```ts
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
+import {
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 
 let storage = getRxStorageLocalstorage();
 ```
@@ -56,7 +58,9 @@ let storage = getRxStorageLocalstorage();
 The premium [IndexedDB storage](./rx-storage-indexeddb.md) is a high-performance, browser-native storage with a smaller bundle and faster startup compared to Dexie-based IndexedDB. Recommended when you have [👑 premium](/premium/) access and care about performance and bundle size.
 
 ```ts
-import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+import {
+    getRxStorageIndexedDB
+} from 'rxdb-premium/plugins/storage-indexeddb';
 
 let storage = getRxStorageDexie();
 ```
@@ -67,7 +71,9 @@ let storage = getRxStorageDexie();
 [Dexie.js](./rx-storage-dexie.md) is a friendly wrapper around IndexedDB and is a great default for browser apps when you don’t use premium. It’s reliable, works well for medium-sized datasets, and is free to use.
 
 ```ts
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import {
+    getRxStorageDexie
+} from 'rxdb/plugins/storage-dexie';
 
 let storage = getRxStorageDexie();
 ```
@@ -81,8 +87,8 @@ let storage = getRxStorageDexie();
 
 ```ts
 import {
-getRxStorageSQLite,
-getSQLiteBasicsNode
+    getRxStorageSQLite,
+    getSQLiteBasicsNode
 } from 'rxdb-premium/plugins/storage-sqlite';
 
 // Provide the sqliteBasics adapter for your runtime, e.g. Node.js, React Native, etc.
@@ -98,8 +104,8 @@ const storage = getRxStorageSQLite({
 
 ```ts
 import {
-getRxStorageSQLiteTrial,
-getSQLiteBasicsNodeNative
+    getRxStorageSQLiteTrial,
+    getSQLiteBasicsNodeNative
 } from 'rxdb/plugins/storage-sqlite';
 import { DatabaseSync } from 'node:sqlite';
 
