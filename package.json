@@ -483,9 +483,9 @@
   ],
   "peerDependencies": {
     "rxjs": "^7.8.2",
-    "firebase": "11.10.0",
-    "mongodb": "6.21.0",
-    "nats": "2.29.3"
+    "firebase": "^11.10.0",
+    "mongodb": "^6.21.0",
+    "nats": "^2.29.3"
   },
   "peerDependenciesMeta": {
     "firebase": {
