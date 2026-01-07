@@ -564,7 +564,7 @@ function startAnalytics() {
 
 /**
  * Tracks if a user copies anything on the page.
- * Usefull because normal devs often copy parts of the
+ * Useful because normal devs often copy parts of the
  * code from the docs, so we have a good way to measure real
  * engagement.
  */
@@ -583,7 +583,7 @@ function trackCopy() {
 
 /**
  * Tracks the already visited urls on the page.
- * Usefull because normal devs browse multiple docs pages
+ * Useful because normal devs browse multiple docs pages
  * so we can track "real" engagement.
  */
 function trackUrlChanges() {
