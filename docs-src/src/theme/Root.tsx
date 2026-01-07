@@ -129,6 +129,8 @@ export default function Root({ children }) {
         setTimeout(() => {
             startAnalytics();
             trackReturnAfter3to14Days();
+            trackCopy();
+            trackUrlChanges();
             addCallToActionButton();
             triggerClickEventWhenFromCode();
         }, 0);
@@ -557,8 +559,86 @@ function startAnalytics() {
     // }
     // historyHack();
 
+}
 
 
+/**
+ * Tracks if a user copies anything on the page.
+ * Usefull because normal devs often copy parts of the
+ * code from the docs, so we have a good way to measure real
+ * engagement.
+ */
+function trackCopy() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    function onCopy() {
+        triggerTrackingEvent('copy_on_page', 1.5, 1, true);
+    }
+
+    document.addEventListener('copy', onCopy);
+}
+
+
+/**
+ * Tracks the already visited urls on the page.
+ * Usefull because normal devs browse multiple docs pages
+ * so we can track "real" engagement.
+ */
+function trackUrlChanges() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const STORAGE_KEY = 'visited_urls';
+    const URL_EVENT_COUNT = 5;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const visitedUrls = new Set<string>(stored ? JSON.parse(stored) : []);
+
+    function normalizeUrl(url: string) {
+        try {
+            const u = new URL(url);
+            return u.origin + u.pathname;
+        } catch {
+            return url.split('?')[0].split('#')[0];
+        }
+    }
+
+    function rememberAndLog() {
+        const normalized = normalizeUrl(location.href);
+
+        if (!visitedUrls.has(normalized)) {
+            visitedUrls.add(normalized);
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(Array.from(visitedUrls))
+            );
+            console.log('New URL visited:', normalized);
+
+            if (visitedUrls.size >= URL_EVENT_COUNT) {
+                triggerTrackingEvent('visit_x_urls', 1.5, 1, true);
+                triggerTrackingEvent('visit_' + URL_EVENT_COUNT + '_urls', 0, 1, false);
+            }
+        }
+    }
+
+    rememberAndLog();
+
+    window.addEventListener('popstate', rememberAndLog);
+
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function (...args) {
+        originalPushState.apply(this, args);
+        rememberAndLog();
+    };
+
+    history.replaceState = function (...args) {
+        originalReplaceState.apply(this, args);
+        rememberAndLog();
+    };
 }
 
 

@@ -7,9 +7,9 @@ import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
-import { IframeFormModal } from '../modal';
+// import { IframeFormModal } from '../modal';
 import { ReplicationDiagram } from '../replication-diagram';
-import { VideoBox, VideoModal } from '../video-box';
+import { VideoModal } from '../video-box';
 import { YOUTUBE_VIDEO_MAIN } from '../video-section';
 import { VideoPlayButtonArrow } from '../video-button';
 
@@ -17,7 +17,7 @@ export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
-    const [openDemo, setOpenDemo] = useState(false);
+    // const [openDemo, setOpenDemo] = useState(false);
     const [openVideo, setOpenVideo] = useState(false);
 
     return <div className="block first hero centered dark" style={{

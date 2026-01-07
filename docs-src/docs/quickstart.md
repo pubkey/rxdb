@@ -9,7 +9,7 @@ import {TriggerEvent} from '@site/src/components/trigger-event';
 import {Tabs} from '@site/src/components/tabs';
 import {NavbarDropdownSyncList} from '@site/src/components/navbar-dropdowns';
 
-<TriggerEvent type="page_quickstart" value={0.5} maxPerUser={1} primary={true} />
+<TriggerEvent type="page_quickstart" value={0.2} maxPerUser={1} primary={false} />
 
 # RxDB Quickstart
 
