@@ -42,7 +42,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                     padding: 16,
                     paddingTop: 12,
                     width: '90vw',
-                    maxWidth: '100%'
+                    maxWidth: '100%',
+                    maxHeight: '90vh'
                 },
                 header: { margin: 0, padding: '16px 20px', borderBottom: '1px solid #f0f0f0' },
                 body: { padding: 0 },

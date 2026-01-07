@@ -139,14 +139,20 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                     footer={null}
                     width={'auto'}
                     style={{
-                        maxWidth: 800,
+                        maxWidth: '90%',
                     }}
                     title={title}
                 >
                     <center>
                         <iframe
-                            style={{ borderRadius: '0px', width: '90vw', maxWidth: '100%' }}
-                            height="515"
+                            style={{
+                                width: '100%',
+                                maxWidth: '90vw',
+                                maxHeight: '80vh',
+                                aspectRatio: '16 / 9',
+                                height: 'auto',
+                                borderRadius: '0px',
+                            }}
                             src={
                                 'https://www.youtube.com/embed/' +
                                 videoId +
