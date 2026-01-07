@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 17.0.0-beta.2 (4 December 2025)
+### 17.0.0-beta.3 (7 January 2026)
 
 - CHANGE These dependencies are now optional peer dependencies: `firebase`, `mongodb`, `nats`
 - ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
