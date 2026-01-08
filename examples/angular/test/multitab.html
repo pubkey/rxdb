@@ -21,6 +21,9 @@
             var id = document.querySelector('#removeId').value;
             var frame = document.querySelector('#frame_' + id);
             console.log(frame);
+            if (frame == null) {
+                return;
+            }
             frame.parentNode.removeChild(frame);
         }
     </script>

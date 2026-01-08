@@ -1,39 +1,41 @@
 <div class="hero-insert-component">
-    <mat-form-field>
-        <input
-            matInput
-            id="insert-name"
-            #input
-            [(ngModel)]="name"
-            [autofocus]="true"
-            [name]="'name_' + randomString()"
-            placeholder="Name"
-        />
-    </mat-form-field>
+  <mat-form-field>
+    <input
+      matInput
+      id="insert-name"
+      #input
+      [(ngModel)]="name"
+      [autofocus]="true"
+      [name]="'name_' + randomString()"
+      placeholder="Name"
+      />
+  </mat-form-field>
+  @if (errors.name) {
     <div
-        class="error"
-        *ngIf="errors.name"
+      class="error"
     >{{errors.name}}</div>
-    <br />
-    <mat-form-field>
-        <input
-            matInput
-            id="insert-color"
-            [(ngModel)]="color"
-            [name]="'color_' + randomString()"
-            placeholder="Color"
-            autocomplete="off"
-        />
-    </mat-form-field>
+  }
+  <br />
+  <mat-form-field>
+    <input
+      matInput
+      id="insert-color"
+      [(ngModel)]="color"
+      [name]="'color_' + randomString()"
+      placeholder="Color"
+      autocomplete="off"
+      />
+  </mat-form-field>
+  @if (errors.color) {
     <div
-        class="error"
-        *ngIf="errors.color"
+      class="error"
     >{{errors.color}}</div>
-    <br />
-    <button
-        mat-raised-button
-        color="primary"
-        (click)=submit()
-        autocomplete="off"
-    >insert</button>
+  }
+  <br />
+  <button
+    mat-raised-button
+    color="primary"
+    (click)=submit()
+    autocomplete="off"
+  >insert</button>
 </div>
