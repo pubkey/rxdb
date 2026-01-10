@@ -1,69 +1,67 @@
-<mat-card
-    *ngIf="data.hero"
+@if (data.hero) {
+  <mat-card
     class="hero-edit-component"
->
-
+    >
     <mat-card-header>
-        <div
-            mat-card-avatar
-            [style.background-color]="data.hero.color"
-            class="hero-color"
-        ></div>
-        <mat-card-title>{{this.data.hero.name}}</mat-card-title>
-        <mat-card-subtitle>Edit</mat-card-subtitle>
+      <div
+        mat-card-avatar
+        [style.background-color]="data.hero.color"
+        class="hero-color"
+      ></div>
+      <mat-card-title>{{this.data.hero.name}}</mat-card-title>
+      <mat-card-subtitle>Edit</mat-card-subtitle>
     </mat-card-header>
-
     <mat-card-content>
-
+      @if (!synced) {
         <div
-            class="alert"
-            *ngIf="!synced"
-        >
-            <h4>Warning:</h4>
-            <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
-            <button
-                mat-raised-button
-                color="primary"
-                (click)=resync()
-            >resync</button>
-        </div>
-
-        <div
-            class="alert deleted"
-            *ngIf="(data.hero.deleted$ | async)"
-        >
-            <h4>Error:</h4>
-            <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
-        </div>
-
-        <mat-form-field>
-            <input
-                matInput
-                type="number"
-                [(ngModel)]="formValue"
-                min="0"
-                [max]="100"
-                name="hp"
-                placeholder="Healthpoints"
-            />
-            <mat-error *ngIf="error">{{error}}</mat-error>
-        </mat-form-field>
-
-        <br />
-        <br />
-
-        <button
+          class="alert"
+          >
+          <h4>Warning:</h4>
+          <p>Someone else has <b>changed</b> this document. If you click save, you will overwrite the changes.</p>
+          <button
             mat-raised-button
             color="primary"
-            (click)="cancel()"
-        >cancel</button>
+            (click)=resync()
+          >resync</button>
+        </div>
+      }
+      @if ((data.hero.deleted$ | async)) {
+        <div
+          class="alert deleted"
+          >
+          <h4>Error:</h4>
+          <p>Someone else has <b>deleted</b> this document. You can not save anymore.</p>
+        </div>
+      }
+      <mat-form-field>
+        <input
+          matInput
+          type="number"
+          [(ngModel)]="formValue"
+          min="0"
+          [max]="100"
+          name="hp"
+          placeholder="Healthpoints"
+          />
+        @if (error) {
+          <mat-error>{{error}}</mat-error>
+        }
+      </mat-form-field>
+      <br />
+      <br />
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="cancel()"
+      >cancel</button>
+      @if (!(data.hero.deleted$ | async)) {
         <button
-            *ngIf="!(data.hero.deleted$ | async)"
-            class="submitButton"
-            mat-raised-button
-            color="primary"
-            (click)=submit()
+          class="submitButton"
+          mat-raised-button
+          color="primary"
+          (click)=submit()
         >submit</button>
-
+      }
     </mat-card-content>
-</mat-card>
+  </mat-card>
+}

@@ -3,8 +3,7 @@ import {
     Output,
     EventEmitter,
     ChangeDetectionStrategy,
-    NgZone,
-    Inject
+    Signal
 } from '@angular/core';
 import type {
     Observable
@@ -21,12 +20,19 @@ import type {
 
 import { MatDialog } from '@angular/material/dialog';
 import { HeroEditDialogComponent } from '../hero-edit/hero-edit.component';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatList, MatListItem, MatDivider } from '@angular/material/list';
+import { AsyncPipe } from '@angular/common';
+import { MatMiniFabButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+
 @Component({
     selector: 'heroes-list',
     templateUrl: './heroes-list.component.html',
     styleUrls: ['./heroes-list.component.less'],
     providers: [DatabaseService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatProgressSpinner, MatList, MatListItem, MatDivider, MatMiniFabButton, MatIcon, AsyncPipe]
 })
 export class HeroesListComponent {
 
@@ -37,7 +43,7 @@ export class HeroesListComponent {
      * You can also get singals instead of observables
      * @link https://rxdb.info/reactivity.html
      */
-    public heroCount$$ = this.dbService.db.hero.count().$$;
+    public heroCount$$: Signal<unknown>;
 
     @Output('edit') editChange: EventEmitter<RxHeroDocument> = new EventEmitter();
 
@@ -45,6 +51,7 @@ export class HeroesListComponent {
         private dbService: DatabaseService,
         private dialog: MatDialog
     ) {
+        this.heroCount$$ = dbService.db.hero.count().$$;
         this.heroes$ = this.dbService
             .db.hero                // collection
             .find({                 // query
@@ -54,13 +61,6 @@ export class HeroesListComponent {
             .$                      // observable
             .pipe(
                 tap(() => {
-                    /**
-                     * Ensure that this observable runs inside of angulars zone
-                     * otherwise there is a bug that needs to be fixed inside of RxDB
-                     * You do not need this check in your own app.
-                     */
-                    NgZone.assertInAngularZone();
-
                     /**
                      * hide loading icon on first emit
                      */

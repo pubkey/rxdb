@@ -1,49 +1,47 @@
-<div
-  class="loading"
-  *ngIf="!emittedFirst"
-  class="hero-list-component"
->
+@if (!emittedFirst) {
+<div class="loading" class="hero-list-component">
   <mat-spinner class="app-spinner"></mat-spinner>
 </div>
+}
 <mat-list class="hero-list-component">
-  <mat-list-item
-    *ngFor="let hero of heroes$ | async as heroes; index as i; let last = last"
-    class="listHero"
-  >
-    <mat-divider *ngIf="!last"></mat-divider>
-    <div
-      class="color-box"
-      [style.background-color]="hero.color"
-    ></div>
-    <div class="name">
-      {{hero.name}}
-      <div class="life">
-        <div
-          class="currentPercent"
-          [style.width]="hero.hpPercent() + '%'"
-        ></div>
+  @for (hero of heroes$ | async; track hero.name; let i = $index; let last = $last) {
+    <mat-list-item>
+      <div class="listHero">
+        @if (!last) {
+          <mat-divider></mat-divider>
+        }
+        <div class="color-box" [style.background-color]="hero.color"></div>
+        <div class="name">
+          {{ hero.name }}
+          <div class="life">
+            <div
+                class="currentPercent"
+                [style.width]="hero.hpPercent() + '%'"
+            ></div>
+          </div>
+        </div>
+          <div class="actions">
+            <button
+                mat-mini-fab
+                color="primary"
+                aria-label="edit hero"
+                class="edit-button"
+                (click)="editHero(hero)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+                mat-mini-fab
+                color="primary"
+                aria-label="delete hero"
+                class="delete-button"
+                (click)="deleteHero(hero)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
       </div>
-    </div>
-    <div class="actions">
-      <button
-        mat-mini-fab
-        color="primary"
-        aria-label="edit hero"
-        class="edit-button"
-        (click)="editHero(hero)"
-      >
-        <mat-icon>edit</mat-icon>
-      </button>
-      <button
-        mat-mini-fab
-        color="primary"
-        aria-label="delete hero"
-        class="delete-button"
-        (click)="deleteHero(hero)"
-      >
-        <mat-icon>delete</mat-icon>
-      </button>
-    </div>
-  </mat-list-item>
-  <div>Count: {{heroCount$$()}}</div>
+    </mat-list-item>
+  }
+  <div>Count: {{ heroCount$$() }}</div>
 </mat-list>
