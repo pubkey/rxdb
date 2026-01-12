@@ -154,7 +154,12 @@ export default function Root({ children }) {
                  */
                 const closedAt = localStorage.getItem('notification_popup_closed_at');
                 const closedToday = localStorage.getItem('notification_popup_closed_today');
+                const weeklyCloseCountKey = getWeeklyCloseCountKey();
+                const closedCountThisWeek = Number(localStorage.getItem(weeklyCloseCountKey) || '0');
+
                 if (
+                    // more than 5 times in a week => do not show again for that week
+                    closedCountThisWeek > 3 ||
                     (closedAt && (Date.now() - Number(closedAt)) < POPUP_DISABLED_IF_CLOSED_TIME) ||
                     /**
                      * If it was closed today, only show it when the browser tab is not active.
@@ -201,6 +206,11 @@ export default function Root({ children }) {
         document.title = document.title.replace(DOC_TITLE_PREFIX, '');
         localStorage.setItem('notification_popup_closed_at', Date.now().toString());
         localStorage.setItem('notification_popup_closed_today', new Date().getDay() + '');
+
+        // weekly close counter
+        const key = getWeeklyCloseCountKey();
+        const prev = Number(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, String(prev + 1));
     }
     return <>
         {children}
@@ -676,4 +686,30 @@ function trackReturnAfter3to14Days() {
     if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
         triggerTrackingEvent('revisit_3_days', 3.5, 1, true);
     }
+}
+
+/**
+ * Returns a unique-per-week identifier
+ * that looks like 2026_24 (year+week)
+ */
+function getWeekKey(date: Date = new Date()): string {
+    const d = new Date(Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    ));
+
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+
+    const weekNo = Math.ceil(
+        ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+    );
+
+    return `${d.getUTCFullYear()}_${weekNo}`;
+}
+
+function getWeeklyCloseCountKey() {
+    return `notification_popup_closed_count_${getWeekKey()}`;
 }
