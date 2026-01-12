@@ -19,12 +19,19 @@ import {
     ensureNotFalsy,
     RxError
 } from 'rxdb';
+import { MatCard, MatCardHeader, MatCardAvatar, MatCardTitle, MatCardSubtitle, MatCardContent } from '@angular/material/card';
+import { MatButton } from '@angular/material/button';
+import { MatFormField, MatError } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'hero-edit',
     templateUrl: './hero-edit.component.html',
     styleUrls: ['./hero-edit.component.less'],
     providers: [],
+    imports: [MatCard, MatCardHeader, MatCardAvatar, MatCardTitle, MatCardSubtitle, MatCardContent, MatButton, MatFormField, MatInput, FormsModule, MatError, AsyncPipe]
 })
 export class HeroEditDialogComponent implements OnInit {
     public synced: boolean = true;

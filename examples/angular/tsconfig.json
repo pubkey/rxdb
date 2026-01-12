@@ -5,21 +5,15 @@
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    // do not set this to true!, RxDB must work without it
-    "allowSyntheticDefaultImports": false,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "es2022",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "strict": true,
-    "target": "es2020",
+    "target": "es2022",
     "typeRoots": [
       "node_modules/@types"
-    ],
-    "lib": [
-      "es2020",
-      "dom"
     ]
   },
   "angularCompilerOptions": {
