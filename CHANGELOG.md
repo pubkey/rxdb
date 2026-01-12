@@ -7,6 +7,7 @@
 
 ### 17.0.0-beta.3 (7 January 2026)
 
+- ADD [llms.txt](https://rxdb.info/llms.txt)
 - CHANGE These dependencies are now optional peer dependencies: `firebase`, `mongodb`, `nats`
 - ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
 - ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
