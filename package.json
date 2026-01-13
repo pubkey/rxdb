@@ -494,11 +494,11 @@
     "lint"
   ],
   "peerDependencies": {
+    "@preact/signals-core": "*",
     "firebase": "^11.10.0",
     "mongodb": "^6.21.0",
     "nats": "^2.29.3",
     "rxjs": "^7.8.2",
-    "@preact/signals-core": "*",
     "vue": "*"
   },
   "peerDependenciesMeta": {
@@ -657,6 +657,7 @@
     "terser-webpack-plugin": "5.3.16",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
+    "vue": "3.5.26",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
     "webpack": "5.104.1",

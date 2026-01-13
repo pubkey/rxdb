@@ -3,7 +3,11 @@ import type {
     Observable,
     Subscription
 } from 'rxjs';
-import type { RxReactivityFactory } from '../../types';
+import type {
+    WeakRef,
+    FinalizationRegistry,
+    RxReactivityFactory
+} from '../../types/index.d.ts';
 
 export type PreactSignal<T = any> = Signal<T>;
 
@@ -33,7 +37,7 @@ function cleanupCallback(sub: Subscription) {
     removeSubscription(sub);
 }
 
-const cleanupRegistry = new FinalizationRegistry(cleanupCallback);
+const cleanupRegistry: FinalizationRegistry<Subscription> = new FinalizationRegistry(cleanupCallback) as any;
 
 export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignal> = {
     fromObservable<Data, InitData>(
@@ -41,7 +45,7 @@ export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignal>
         initialValue: InitData
     ): PreactSignal<Data | InitData> {
         const mySignal = signal<Data | InitData>(initialValue);
-        const sigRef = new WeakRef(mySignal);
+        const sigRef: WeakRef = new WeakRef(mySignal);
         const sub = obs.subscribe(value => {
             const sig = PREACT_SIGNAL_STATE.signalBySubscription.get(sub);
             if (sig && sigRef.deref()) {
