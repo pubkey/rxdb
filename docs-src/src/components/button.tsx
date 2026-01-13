@@ -8,11 +8,12 @@ import {
 type ButtonProps = {
   children: ReactNode;
   primary?: boolean;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | string;
   onClick?: MouseEventHandler<HTMLDivElement | HTMLAnchorElement>;
   style?: CSSProperties;
   className?: string;
   href?: string;
+  target?: '_blank';
 };
 
 const styles: Record<string, CSSProperties> = {
@@ -63,6 +64,7 @@ export function Button({
   style,
   className,
   href,
+  target
 }: ButtonProps) {
   const [hovered, setHovered] = useState(false);
   const [mousePos, setMousePos] = useState<{ x: number; y: number; } | null>(
@@ -122,14 +124,27 @@ export function Button({
 
   const content = (
     <>
-      {icon && <span style={iconStyle}>{icon}</span>}
+      {icon && (
+        <span style={iconStyle}>
+          {typeof icon === 'string' ? (
+            <img
+              src={icon}
+              alt=""
+              style={{ width: 20, height: 20, display: 'inline-block' }}
+              loading="lazy"
+            />
+          ) : (
+            icon
+          )}
+        </span>
+      )}
       {children}
     </>
   );
 
   if (href) {
     return (
-      <a href={href} onClick={onClick} {...commonProps}>
+      <a href={href} target={target} onClick={onClick} {...commonProps}>
         {content}
       </a>
     );

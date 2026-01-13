@@ -255,17 +255,3 @@ console.log(amount);
  */
 myDatabase.close();
 ```
-
-
-
-## Known Problems
-
-RxDB uses the [WeakRef API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef). If your typescript bundler throws the error `TS2304: Cannot find name 'WeakRef'`, you have to add `ES2021.WeakRef` to `compilerOptions.lib` in your `tsconfig.json`.
-
-```json
-{
-    "compilerOptions": {
-        "lib": ["ES2020", "ES2021.WeakRef"]
-    }
-}
-```

@@ -2,6 +2,19 @@
 
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
+## google-drive and dropbox-sync
+
+so that users can provide their own sync backend.
+
+
+## expo-fs RxStorage
+
+Based on the node-filesystem storage. Use the new expo filesystem api for that.
+
+## RxServer MCP Server endpoint
+
+https://news.ycombinator.com/item?id=45622604
+
 ## database viewer plugin
 
 Something where devs can open a UI to inspect the locally stored data.
@@ -14,6 +27,8 @@ https://github.com/mrousavy/react-native-mmkv
 ## PostgreSQL RxStorage
 
 https://github.com/thomas4019/mongo-query-to-postgres-jsonb
+
+https://news.ycombinator.com/item?id=45885768
 
 ## PGLite RxStorage
 

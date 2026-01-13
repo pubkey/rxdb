@@ -168,7 +168,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
   'http://127.0.0.1:54321',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 );
 ```
 
@@ -197,6 +197,12 @@ const replication = replicateSupabase({
       if (!doc.age) delete doc.age;
       return doc;
     }
+    // optional: customize the pull query before fetching
+    queryBuilder: ({ query }) => {
+      // Add filters, joins, or other PostgREST query modifiers
+      // This runs before checkpoint filtering and ordering
+      return query.eq("status", "active");
+    },
   },
   push: {
     batchSize: 50
@@ -223,12 +229,6 @@ The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` al
 
 
 </Steps>
-
-
-:::note Beta
-The Supabase Replication Plugin for RxDB is currently in **beta**.  
-While it is production-capable, the API and internal behavior may change before the stable release. We recommend thoroughly testing your integration and reviewing the changelog when upgrading to newer versions.
-:::
 
 
 ## Follow Up

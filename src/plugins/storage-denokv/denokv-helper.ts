@@ -22,3 +22,23 @@ export const CLEANUP_INDEX: string[] = ['_deleted', '_meta.lwt'];
 export function getDenoGlobal(): any {
     return (globalThis as any).Deno;
 }
+
+
+export async function commitWithRetry(buildTx: () => any) {
+    let attempt = 0;
+
+    while (true) {
+        const tx = buildTx();
+        try {
+            return await tx.commit();
+        } catch (err) {
+            const locked = err && String((err as any).message).includes('database is locked');
+            if (locked && attempt < 3) {
+                attempt++;
+                await new Promise(res => setTimeout(res, 5 * attempt));
+                continue;
+            }
+            throw err;
+        }
+    }
+}

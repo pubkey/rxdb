@@ -3,7 +3,7 @@ title: DenoKV RxStorage
 slug: rx-storage-denokv.html
 ---
 
-# RxDB Database on top of Deno Key Value Store (beta)
+# RxDB Database on top of Deno Key Value Store
 
 With the DenoKV [RxStorage](./rx-storage.md) layer for [RxDB](https://rxdb.info), you can run a fully featured **NoSQL database** on top of the [DenoKV API](https://docs.deno.com/kv/manual).
 This gives you the benefits and features of the RxDB JavaScript Database, combined with the global availability and distribution features of the DenoKV.
@@ -106,11 +106,3 @@ const db = await createRxDatabase({
   multiInstance: false
 });
 ```
-
-
-
-
-
-## Limitations
-
-- The DenoKV RxStorage is in currently in beta mode. There might be breaking changes without a major RxDB version release.

@@ -15,7 +15,7 @@
   "devDependencies": {
     "react-scripts": "5.0.1",
     "rimraf": "5.0.10",
-    "testcafe": "3.7.2",
+    "testcafe": "3.7.3",
     "local-web-server": "5.4.0",
     "ajv": "8.17.1"
   },
@@ -29,7 +29,7 @@
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "server": "pouchdb-server --host 0.0.0.0 -p 10102 -m -d /tmp/pouchdb-server/ -n true",
     "test:react": "react-scripts test --env=jsdom",
-    "test": "testcafe chromium -e test/e2e.test.js --hostname localhost --selector-timeout 30000 --ajax-request-timeout 1000",
+    "test": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/e2e.test.js --hostname localhost --selector-timeout 30000 --ajax-request-timeout 1000 --disable-features=LocalNetworkAccessChecks",
     "test:build": "npm run build && concurrently \"npm run server\" \"npm run build:serve\" \"npm run test\" --kill-others --success first"
   },
   "browserslist": {

@@ -5,8 +5,8 @@ export default function Page() {
         sem: {
             id: 'gads',
             metaTitle: 'The modern alternative for NeDB',
-            title: <>The <b className="underline">modern</b> alternative for{' '}
-                <b className="underline">NeDB</b></>,
+            title: <>The <b >modern</b> alternative for{' '}
+                <b >NeDB</b></>,
             appName: 'Browser',
         }
     });

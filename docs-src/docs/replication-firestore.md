@@ -4,6 +4,8 @@ slug: replication-firestore.html
 description: Leverage RxDB to enable real-time, offline-first replication with Firestore. Cut cloud costs, resolve conflicts, and speed up your app.
 ---
 
+import {Steps} from '@site/src/components/steps';
+
 # Replication with Firestore from Firebase
 
 With the `replication-firestore` plugin you can do a two-way realtime replication
@@ -25,8 +27,15 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 
 ## Usage
 
+<Steps>
 
-First initialize your Firestore database like you would do without RxDB.
+### Install the firebase package
+
+```bash
+npm install firebase
+```
+
+### Initialize your Firestore Database
 
 ```ts
 import * as firebase from 'firebase/app';
@@ -45,48 +54,54 @@ const firestoreDatabase = getFirestore(app);
 const firestoreCollection = collection(firestoreDatabase, 'my-collection-name');
 ```
 
-Then you can start the replication by calling `replicateFirestore()` on your [RxCollection](./rx-collection.md).
+### Start the Replication
+
+Start the replication by calling `replicateFirestore()` on your [RxCollection](./rx-collection.md).
 
 ```ts
-const replicationState = replicateFirestore(
-    {
-        replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
-        collection: myRxCollection,
-        firestore: {
-            projectId,
-            database: firestoreDatabase,
-            collection: firestoreCollection
-        },
-        /**
-         * (required) Enable push and pull replication with firestore by
-         * providing an object with optional filter for each type of replication desired.
-         * [default=disabled]
-         */
-        pull: {},
-        push: {},
-        /**
-         * Either do a live or a one-time replication
-         * [default=true]
-         */
-        live: true,
-        /**
-         * (optional) likely you should just use the default.
-         *
-         * In firestore it is not possible to read out
-         * the internally used write timestamp of a document.
-         * Even if we could read it out, it is not indexed which
-         * is required for fetch 'changes-since-x'.
-         * So instead we have to rely on a custom user defined field
-         * that contains the server time which is set by firestore via serverTimestamp()
-         * Notice that the serverTimestampField MUST NOT be part of the collections RxJsonSchema!
-         * [default='serverTimestamp']
-         */
-        serverTimestampField: 'serverTimestamp'
-    }
-);
+const replicationState = replicateFirestore({
+    replicationIdentifier: `https://firestore.googleapis.com/${projectId}`,
+    collection: myRxCollection,
+    firestore: {
+        projectId,
+        database: firestoreDatabase,
+        collection: firestoreCollection
+    },
+    /**
+     * (required) Enable push and pull replication with firestore by
+     * providing an object with optional filter
+     * for each type of replication desired.
+     * [default=disabled]
+     */
+    pull: {},
+    push: {},
+    /**
+     * Either do a live or a one-time replication
+     * [default=true]
+     */
+    live: true,
+    /**
+     * (optional) likely you should just use the default.
+     *
+     * In firestore it is not possible to read out
+     * the internally used write timestamp of a document.
+     * Even if we could read it out, it is not indexed which
+     * is required for fetch 'changes-since-x'.
+     * So instead we have to rely on a custom user defined field
+     * that contains the server time
+     * which is set by firestore via serverTimestamp()
+     * Notice that the serverTimestampField MUST NOT be
+     * part of the collections RxJsonSchema!
+     * [default='serverTimestamp']
+     */
+    serverTimestampField: 'serverTimestamp'
+});
 ```
 
 To observe and cancel the replication, you can use any other methods from the [ReplicationState](./replication.md) like `error$`, `cancel()` and `awaitInitialReplication()`.
+
+
+</Steps>
 
 ## Handling deletes
 

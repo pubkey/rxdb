@@ -1,7 +1,6 @@
 import React from 'react';
 import { IconNewsletter } from '../../components/icons/newsletter';
-import { IconTwitter } from '../../components/icons/twitter';
-import { IconLinkedIn } from '../../components/icons/linkedin';
+import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
 
 export default function FooterWrapper() {
 
@@ -34,20 +33,20 @@ export default function FooterWrapper() {
       {
         label: 'Newsletter',
         target: '_blank',
-        href: '/chat/',
+        href: '/newsletter/',
         logo: <IconNewsletter />,
       },
       {
         label: 'Twitter',
         href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
         target: '_blank',
-        logo: <IconTwitter />,
+        logo: '/files/icons/twitter-blue.svg',
       },
       {
         label: 'LinkedIn',
         href: 'https://www.linkedin.com/company/rxdb',
         target: '_blank',
-        logo: <IconLinkedIn />,
+        logo: <LinkedInLogo />,
       },
       {
         label: 'Github',
@@ -66,6 +65,10 @@ export default function FooterWrapper() {
       {
         label: 'Our Customers',
         href: '/#reviews',
+      },
+      {
+        label: 'Become a Partner',
+        href: '/consulting#become-partner',
       },
       // {
       //   label: 'About us',
@@ -107,8 +110,17 @@ export default function FooterWrapper() {
                       variant="text"
                       href={link.href}
                       target={link.target ? '_blank' : ''}
+                      aria-label={link.label}
                     >
-                      {link.logo}
+                      {typeof link.logo === 'string' ? (
+                        <img
+                          src={link.logo}
+                          alt={link.label}
+                          loading="lazy"
+                        />
+                      ) : (
+                        link.logo
+                      )}
                     </a>
                   ))}
                 </div>

@@ -6,7 +6,8 @@ import {
     schemaObjects,
     schemas,
     isFastMode,
-    HumanDocumentType
+    HumanDocumentType,
+    humansCollection
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
@@ -21,6 +22,7 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { DEFAULT_CLEANUP_POLICY } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
 describeParallel('cleanup.test.js', () => {
@@ -200,6 +202,29 @@ describeParallel('cleanup.test.js', () => {
         });
     });
     describe('issues', () => {
+        it('minimumDeletedTime not respected', async () => {
+            const col = await humansCollection.create(0);
+
+            const storageInstance = col.storageInstance.originalStorageInstance;
+            const cleanupBefore = storageInstance.cleanup.bind(storageInstance);
+
+            const calls: number[] = [];
+            storageInstance.cleanup = (t) => {
+                calls.push(t);
+                return cleanupBefore(t);
+            };
+
+            await col.cleanup(0);
+            await col.cleanup(5);
+            await col.cleanup();
+
+
+            assert.strictEqual(calls[0], 0);
+            assert.strictEqual(calls[1], 5);
+            assert.strictEqual(calls[2], DEFAULT_CLEANUP_POLICY.minimumDeletedTime);
+
+            col.database.remove();
+        });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {
                 id: string;

@@ -1,19 +1,20 @@
 import { SemPage } from '../pages';
-// import Slider from 'react-slick';
 import { VideoBox, VideoBoxProps } from './video-box';
 import { IconArrowLeft } from './icons/arrow-left';
 import { IconArrowRight } from './icons/arrow-right';
 import { Slider } from './slider';
 
 
-const YOUTUBE_VIDEOS: VideoBoxProps[] = [
-    {
-        videoId: 'tDWmfenF2AM',
-        title: 'The Easiest Way to Store Data',
-        duration: '04:28',
-        startAt: 8
 
-    },
+export const YOUTUBE_VIDEO_MAIN: Omit<VideoBoxProps, 'dark'> = {
+    videoId: 'tDWmfenF2AM',
+    title: 'The Easiest Way to Store Data',
+    duration: '04:28',
+    startAt: 8
+};
+
+const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
+    YOUTUBE_VIDEO_MAIN,
     {
         videoId: 'qHWrooWyCYg',
         title: 'This solved a problem I\'ve had in Angular for years',
@@ -93,12 +94,11 @@ export function PrevArrow(props) {
     );
 }
 
-const padding = 50;
-
-export function VideoSection(_props: {
+export function VideoSection(props: {
+    dark: boolean;
     sem?: SemPage;
 }) {
-    return <div className="block reviews trophy-after" id="videos" style={{ paddingTop: padding }}>
+    return <div className={'block reviews trophy-before trophy-after ' + (props.dark ? ' dark ' : '')} id="videos">
         <div className="content centered" style={{
             marginBottom: 50
         }}>
@@ -114,7 +114,7 @@ export function VideoSection(_props: {
                             <div key={item.videoId} style={{
                                 float: 'left',
                             }}>
-                                <VideoBox videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
+                                <VideoBox dark={props.dark} videoId={item.videoId} duration={item.duration} title={item.title} startAt={item.startAt} />
                             </div>
                         ))
                     }

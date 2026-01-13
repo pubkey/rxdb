@@ -9,24 +9,22 @@ import {
 import React, { useEffect, useRef } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import { ReviewsBlock } from '../components/review-block';
 import useIsBrowser from '@docusaurus/useIsBrowser';
 import { VideoSection } from '../components/video-section';
 import { HeroSection_B } from '../components/hero-section/T4_hero_b';
 import { SyncSection } from '../components/sync-section';
 import { OfflineSection } from '../components/offline-section';
-import { SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
+import { PartnerTrophy, SOCIAL_PROOF_VALUES, Trophy } from '../components/trophy';
 import { IconNewsletter } from '../components/icons/newsletter';
 import { Button } from '../components/button';
 import { IconDiscord } from '../components/icons/discord';
 import { IconPremium } from '../components/icons/premium';
-import { IconTwitter } from '../components/icons/twitter';
 import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
-// import { HeroSection_A } from '../components/hero-section/T4_hero_a';
+import { getTestGroup } from '../components/a-b-tests';
+import { CoreConceptSection } from '../components/core-concept-section';
 
 
 export const colors = [
@@ -210,7 +208,9 @@ export type SemPage = {
 export default function Home(props: {
   sem?: SemPage;
 }) {
-  // getTestGroup(props.sem ? props.sem.id : '');
+  // must be directly called here first, before any A/B-Test content is rendered
+  getTestGroup(props.sem ? props.sem.id : '');
+
   const { siteConfig } = useDocusaurusContext();
 
   const isBrowser = useIsBrowser();
@@ -280,7 +280,6 @@ export default function Home(props: {
         description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
         <main>
 
-          {/* <HeroSection_A sem={props.sem} scrollToSection={scrollToSection} /> */}
           <HeroSection_B sem={props.sem} scrollToSection={scrollToSection} />
 
           {
@@ -290,45 +289,55 @@ export default function Home(props: {
               </> : ''
           }
 
+          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={false} />
 
-          <VideoSection sem={props.sem} />
+
+
           <Trophy
             href="/code/"
             title="GitHub"
             subTitle='Open Source'
             value={SOCIAL_PROOF_VALUES.github}
-            imgUrl="/files/icons/github-star-with-logo.svg"
+            icon="/files/icons/github-star-with-logo.svg"
             valueTitle='stars'
           />
-          <SyncSection sem={props.sem} replicationRef={replicationRef} dark={true} />
 
-          <Trophy
-            href="https://twitter.com/intent/user?screen_name=rxdbjs"
-            title="Twitter"
-            subTitle='Follow on'
-            value={SOCIAL_PROOF_VALUES.twitter}
-            imgUrl="/files/icons/twitter-blue.svg"
-            valueTitle='followers'
+          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={true} />
+
+          <PartnerTrophy
+            href="https://www.mongodb.com/company/blog/innovation/from-local-global-scalable-edge-apps-rxdb"
+            title="MongoDB"
+            imgUrl="/files/icons/mongodb-icon.svg"
           />
 
-          <OfflineSection sem={props.sem} offlineRef={offlineRef} dark={false} />
+          <VideoSection sem={props.sem} dark={false} />
 
           <Trophy
             href="/chat/"
             title="Discord"
             subTitle='Chat on'
             value={SOCIAL_PROOF_VALUES.discord}
-            imgUrl="/files/icons/discord.svg"
+            icon="/files/icons/discord.svg"
             valueTitle='members'
+            black={true}
           />
 
 
+          <FeaturesSection dark={true} />
 
-          <FeaturesSection />
 
-          <div className="block reviews" id="reviews" ref={reviewsRef} style={{
-            paddingTop: 50
-          }}>
+
+          <Trophy
+            href="https://twitter.com/intent/user?screen_name=rxdbjs"
+            title="Twitter"
+            subTitle='Follow on'
+            value={SOCIAL_PROOF_VALUES.twitter}
+            icon="/files/icons/twitter-blue.svg"
+            valueTitle='followers'
+          />
+
+
+          <div className="block reviews trophy-before trophy-after" id="reviews" ref={reviewsRef} >
             <div className="content centered">
               <h2>
                 Used by <b>Thousands Worldwide</b>
@@ -340,9 +349,16 @@ export default function Home(props: {
           </div>
 
 
-          <div className="block last dark" style={{
-            paddingTop: 50
-          }}>
+          <PartnerTrophy
+            href="https://supabase.com/partners/integrations/rxdb"
+            title="Supabase"
+            imgUrl="/files/icons/supabase.svg"
+          />
+
+
+          <CoreConceptSection dark={true} />
+
+          <div className="block last trophy-before">
             <div className="content">
               <h2>
                 Start using <b >RxDB</b> today
@@ -439,7 +455,7 @@ export default function Home(props: {
                     position: 'absolute',
                     textAlign: 'center'
                   }}>
-                    <Button icon={<IconTwitter />} >
+                    <Button icon="/files/icons/twitter-blue.svg" >
                       <span className='hide-mobile' style={{ whiteSpace: 'nowrap' }}>Follow on</span>Twitter
                     </Button>
                   </div>

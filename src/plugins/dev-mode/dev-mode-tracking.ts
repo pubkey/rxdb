@@ -62,7 +62,8 @@ export async function addDevModeTrackingIframe() {
     if (
         iframeShown ||
         typeof window === 'undefined' ||
-        typeof location === 'undefined'
+        typeof location === 'undefined' ||
+        typeof document === 'undefined'
         // !isLocalHost()
     ) {
         return;

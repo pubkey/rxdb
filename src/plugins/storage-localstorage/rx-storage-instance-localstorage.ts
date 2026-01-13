@@ -2,9 +2,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import {
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    RXDB_VERSION,
     ensureNotFalsy,
-    lastOfArray,
     now,
     toArray
 } from '../utils/index.ts';
@@ -17,7 +15,6 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
@@ -28,14 +25,17 @@ import type {
     StringKeys
 } from '../../types/index';
 import {
-    categorizeBulkWriteRows,
-    ensureRxStorageInstanceParamsAreCorrect
+    categorizeBulkWriteRows
 } from '../../rx-storage-helper.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 import type { RxStorageLocalstorage } from './index.ts';
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index.ts';
+import {
+    getIndexableStringMonad,
+    getStartIndexStringFromLowerBound,
+    getStartIndexStringFromUpperBound
+} from '../../custom-index.ts';
 import { pushAtSortPosition } from 'array-push-at-sort-position';
 import { boundEQ, boundGE, boundGT, boundLE, boundLT } from '../storage-memory/binary-search-bounds.ts';
 
@@ -107,6 +107,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
      * inside of the localstorage.
      */
     public readonly docsKey: string;
+    public readonly attachmentsKey: string;
     public readonly changestreamStorageKey: string;
     public readonly indexesKey: string;
     private changeStreamSub: Subscription;
@@ -128,11 +129,12 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         public readonly multiInstance: boolean,
         public readonly databaseInstanceToken: string
     ) {
-        this.localStorage = settings.localStorage ? settings.localStorage : window.localStorage;
+        this.localStorage = settings.localStorage ? settings.localStorage : (typeof window !== 'undefined' ? window.localStorage : undefined as any);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
         this.docsKey = 'RxDB-ls-doc-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
         this.changestreamStorageKey = 'RxDB-ls-changes-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
         this.indexesKey = 'RxDB-ls-idx-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
+        this.attachmentsKey = 'RxDB-ls-attachment-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
 
         this.changeStreamSub = getStorageEventStream().subscribe((ev) => {
             if (
@@ -283,6 +285,31 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             this.setIndex(index[i].index, indexValue);
         });
 
+        // attachments
+        categorized.attachmentsAdd.forEach(attachment => {
+            this.localStorage.setItem(
+                this.attachmentsKey +
+                '-' + attachment.documentId +
+                '||' + attachment.attachmentId,
+                attachment.attachmentData.data
+            );
+        });
+        categorized.attachmentsUpdate.forEach(attachment => {
+            this.localStorage.setItem(
+                this.attachmentsKey +
+                '-' + attachment.documentId +
+                '||' + attachment.attachmentId,
+                attachment.attachmentData.data
+            );
+        });
+        categorized.attachmentsRemove.forEach(attachment => {
+            this.localStorage.removeItem(
+                this.attachmentsKey +
+                '-' + attachment.documentId +
+                '||' + attachment.attachmentId
+            );
+        });
+
         if (categorized.eventBulk.events.length > 0) {
             const lastState = ensureNotFalsy(categorized.newestRow).document;
             categorized.eventBulk.checkpoint = {
@@ -324,7 +351,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async query(
+    query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const queryPlan = preparedQuery.queryPlan;
@@ -487,8 +514,9 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return PROMISE_RESOLVE_TRUE;
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
-        throw newRxError('SNH');
+    async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
+        const data = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
+        return ensureNotFalsy(data);
     }
 
     remove(): Promise<void> {

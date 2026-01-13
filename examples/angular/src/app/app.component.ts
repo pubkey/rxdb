@@ -10,11 +10,15 @@ import {
  * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
  */
  import 'zone.js/plugins/zone-patch-rxjs';
+import { MatCard, MatCardSubtitle } from '@angular/material/card';
+import { HeroesListComponent } from './components/heroes-list/heroes-list.component';
+import { HeroInsertComponent } from './components/hero-insert/hero-insert.component';
  
  @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.less'],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.less'],
+    imports: [MatCard, MatCardSubtitle, HeroesListComponent, HeroInsertComponent]
 })
 export class AppComponent {
   title = 'angular';

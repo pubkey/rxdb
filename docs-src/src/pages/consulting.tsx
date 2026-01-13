@@ -1,22 +1,15 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import BrowserOnly from '@docusaurus/BrowserOnly';
 
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 
-import React, { useEffect } from 'react';
-
-import { Tabs } from 'antd';
-import { Collapse } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 const FILE_EVENT_ID = 'consulting-link-clicked';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-
-import { ReviewsBlock } from '../components/review-block';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { Modal } from '../components/modal';
+import { IframeFormModal } from '../components/modal';
+import { Button } from '../components/button';
 
 export default function Consulting() {
     const { siteConfig } = useDocusaurusContext();
@@ -26,14 +19,8 @@ export default function Consulting() {
         })();
     });
 
-    // for dialog
-    const [open, setOpen] = React.useState(false);
-    const handleOpenDialog = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
+    const [openForm, setOpenForm] = useState(false);
+    const [openPartnerForm, setOpenPartnerForm] = useState(false);
 
     return (
         <>
@@ -46,15 +33,236 @@ export default function Consulting() {
                 description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js"
             >
                 <main>
-                    <div className="block first centered dark">
-                        <HeroBlock onOpenDialog={handleOpenDialog}></HeroBlock>
+
+                    <div className="block">
+                        <div className="content">
+                            <h2 style={{
+                                textAlign: 'center'
+                            }}>You've got <b>questions</b>?</h2>
+                            <div className="inner">
+                                <div className="half left" style={{}}>
+                                    <p className='centered-mobile-p'>
+                                        The RxDB core maintainer has the answers.
+                                        Schedule a compact consultancy session for quick fixes and
+                                        suggestions on how you should use RxDB or related technologies.
+                                    </p>
+                                    <p style={{
+                                        fontSize: 20,
+                                        fontWeight: 700
+                                    }}>180€ / 1 hour session</p>
+                                    <div className="text-center-mobile" style={{
+                                    }}>
+                                        <Button
+                                            primary
+                                            style={{
+                                            }}
+                                            href='https://buy.stripe.com/14kdU1dN05SAfMA4gg'
+                                            target='_blank'
+
+                                        >Schedule a call</Button>
+                                    </div>
+                                </div>
+                                <div
+                                    className="half right justify-center-mobile grid-2-mobile grid-3"
+                                >
+                                    <div style={{
+                                        width: 330,
+                                        marginLeft: 'auto',
+                                        marginRight: 'auto',
+                                        marginTop: 22,
+                                        marginBottom: 60
+                                    }}>
+                                        <div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="176" height="176" viewBox="0 0 176 176" fill="none">
+                                                <path d="M15.9335 122.733C17.1098 125.7 17.3717 128.951 16.6855 132.069L8.16553 158.388C7.891 159.723 7.96198 161.106 8.37173 162.406C8.78148 163.705 9.51642 164.879 10.5068 165.815C11.4973 166.751 12.7104 167.418 14.0311 167.754C15.3518 168.089 16.7364 168.082 18.0535 167.732L45.3572 159.748C48.299 159.165 51.3454 159.42 54.1492 160.484C71.2321 168.462 90.5838 170.15 108.79 165.25C126.996 160.35 142.887 149.178 153.658 133.704C164.429 118.229 169.389 99.4481 167.663 80.6734C165.936 61.8987 157.634 44.337 144.221 31.0869C130.808 17.8369 113.146 9.74985 94.3519 8.25272C75.5575 6.7556 56.8382 11.9446 41.4968 22.9041C26.1554 33.8637 15.1777 49.8896 10.5007 68.1542C5.82359 86.4188 7.74768 105.748 15.9335 122.733Z" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M64.7188 63.9966C66.5996 58.65 70.3119 54.1416 75.1983 51.2698C80.0847 48.398 85.8298 47.3483 91.416 48.3064C97.0022 49.2646 102.069 52.1689 105.719 56.5049C109.369 60.8409 111.367 66.3288 111.358 71.9966C111.358 87.9964 87.3586 95.9964 87.3586 95.9964" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M87.998 127.995H88.078" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                        <div style={{
+                                            position: 'absolute',
+                                            marginLeft: 191,
+                                            marginTop: -90
+                                        }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="132" height="132" viewBox="0 0 132 132" fill="none">
+                                                <path d="M53.9979 47.9966L35.998 65.9964L53.9979 83.9963" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M77.998 83.9963L95.9979 65.9964L77.998 47.9966" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M120.049 92.0495C119.167 94.275 118.97 96.7135 119.485 99.0515L125.875 118.791C126.081 119.792 126.028 120.829 125.72 121.804C125.413 122.779 124.862 123.659 124.119 124.361C123.376 125.063 122.466 125.563 121.476 125.815C120.485 126.067 119.447 126.061 118.459 125.799L97.9811 119.811C95.7748 119.374 93.49 119.565 91.3871 120.363C78.5749 126.347 64.0611 127.612 50.4065 123.938C36.7519 120.263 24.834 111.883 16.7555 100.278C8.67699 88.672 4.95705 74.5861 6.252 60.505C7.54694 46.424 13.7735 33.2528 23.8332 23.3152C33.893 13.3776 47.1393 7.31238 61.2351 6.18954C75.3309 5.0667 89.3703 8.95843 100.876 17.1781C112.382 25.3978 120.616 37.4172 124.124 51.1156C127.631 64.8141 126.188 79.3113 120.049 92.0495Z" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="block packages centered" id="packages">
+                    <div className="block dark">
+                        <div className="content">
+                            <h2 style={{
+                                textAlign: 'center'
+                            }}>Need someone that <b>builds for you</b>?</h2>
+                            <div className="inner">
+                                <div className="half left" style={{}}>
+                                    <p className='centered-mobile-p margin-top-125-0'>
+                                        Our trusted partners handle the full
+                                        development and implementation
+                                        of your local JavaScript database solution. You can relax while they
+                                        bring your vision to life.
+                                    </p>
+                                    <div className="text-center-mobile" style={{
+                                    }}>
+                                        <Button primary onClick={() => {
+                                            setOpenForm(true);
+                                            triggerTrackingEvent('consulting_form_open', 0.4);
+                                        }}>Get started</Button>
+                                    </div>
+                                </div>
+                                <div
+                                    className="half right justify-center-mobile grid-2-mobile grid-3 centered-mobile-p"
+                                >
+                                    {
+                                        [
+                                            {
+                                                title: 'Share your project',
+                                                text: 'Tell us what you\'re aiming to achieve and what technical details matter most, so we can get a clear picture of your requirements.'
+                                            },
+                                            {
+                                                title: 'Get paired',
+                                                text: 'We\'ll match you with a reliable RxDB expert or partner whose skills fit your project\'s needs.'
+                                            },
+                                            {
+                                                title: 'Build and collaborate',
+                                                text: 'Your partner will team up with you to create, refine, and deliver the solution you’re looking for.'
+                                            }
+                                        ].map((row, i) => {
+                                            return <>
+                                                <div style={{
+                                                    backgroundColor: '#20293C',
+                                                    padding: '16px 16px 16px 0px',
+                                                    width: '100%',
+                                                    display: 'flex'
+                                                }}>
+                                                    <div style={{
+                                                        borderStyle: 'solid',
+                                                        borderWidth: 4,
+                                                        borderRadius: 10,
+                                                        borderColor: 'white',
+                                                        textAlign: 'center',
+                                                        width: 60,
+                                                        height: 60,
+                                                        boxSizing: 'initial',
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        flexDirection: 'column',
+                                                        fontSize: 30,
+                                                        fontWeight: 800,
+                                                        float: 'left',
+                                                        margin: 32
+                                                    }}>{i + 1}</div>
+                                                    <div style={{
+                                                        width: 436,
+                                                        float: 'right',
+                                                        marginTop: 10
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: 16,
+                                                            fontStyle: 'normal',
+                                                            fontWeight: 700,
+                                                            lineHeight: '25px',
+                                                            textAlign: 'left'
+                                                        }}>{row.title}</div><br />
+                                                        <div style={{
+                                                            fontSize: 14,
+                                                            fontStyle: 'normal',
+                                                            fontWeight: 500,
+                                                            lineHeight: '21px',
+                                                            textAlign: 'left'
+                                                        }}>{row.text}</div>
+                                                    </div>
+                                                    <div className='clear'></div>
+                                                </div>
+                                                <div style={{
+                                                    width: '100%',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    {
+                                                        i !== 2 ? <div style={{
+                                                            width: 4,
+                                                            height: 24,
+                                                            backgroundColor: 'var(--color-top)',
+                                                            margin: '0 auto'
+                                                        }}></div> : <div style={{
+                                                            width: 4,
+                                                            height: 68,
+                                                            margin: '0 auto',
+                                                            background: `repeating-linear-gradient(
+                                                                to bottom,
+                                                                var(--color-top) 0 8px,     /* short dot */
+                                                                transparent 8px 16px,
+                                                                var(--color-top) 16px 28px, /* long dot */
+                                                                transparent 28px 36px
+                                                              )`,
+                                                            maskImage: `linear-gradient(
+                                                                to bottom,
+                                                                rgba(0,0,0,1) 60%,
+                                                                rgba(0,0,0,0) 100%
+                                                              )`
+                                                        }}>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </>;
+                                        })
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div className="block centered" id="become-partner" style={{
+                        paddingBottom: 124
+                    }}>
+                        <div className="content">
+                            <h2 style={{
+                                textAlign: 'center'
+                            }}><b>Become</b> a Partner?</h2>
+                            <div className="inner centered" style={{
+                                flexDirection: 'column'
+                            }}>
+                                <p className='centered-mobile-p'>
+                                    Become part of our partner network for freelance developers and agencies. Get in touch with clients seeking skilled experts to build their apps based on RxDB.
+                                </p>
+                                <Button primary onClick={() => {
+                                    setOpenPartnerForm(true);
+                                    triggerTrackingEvent('consulting_form_open', 0.4);
+                                }}>Apply as a partner</Button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <IframeFormModal
+                        iframeUrl='https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F'
+                        open={openForm}
+                        onClose={() => setOpenForm(false)}
+                    />
+                    <IframeFormModal
+                        iframeUrl='https://webforms.pipedrive.com/f/6Nat9OkpDOaCdE5GC1wVp9GrJxaMLIwosu7wrdf9CnVDq5kEgtbmf4hTGeZVUd7bVx'
+                        open={openPartnerForm}
+                        onClose={() => setOpenPartnerForm(false)}
+                    />
+
+                    {/* <div className="block packages centered" id="packages">
                         <PackagesBlock
                             onOpenDialog={handleOpenDialog}
                         ></PackagesBlock>
                     </div>
+
+                    <div className="block first centered dark">
+                        <HeroBlock onOpenDialog={handleOpenDialog}></HeroBlock>
+                    </div>
+
 
                     <div className="block benefits centered" id="benefits">
                         <BenefitsBlock></BenefitsBlock>
@@ -94,620 +302,9 @@ export default function Consulting() {
                         <ContactBlock></ContactBlock>
                     </div>
 
-                    <FormDialog open={open} onClose={handleClose} />
+                    <FormDialog open={open} onClose={handleClose} /> */}
                 </main>
             </Layout>
         </>
-    );
-}
-
-// blocks
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function NavBarBlock({ onOpenDialog }) {
-    const items = [
-        {
-            to: '/consulting/#packages',
-            label: 'Packages',
-            position: 'left',
-        },
-        {
-            to: '/consulting/#benefits',
-            label: 'Benefits',
-            position: 'left',
-        },
-        {
-            to: '/consulting/#steps',
-            label: 'How it works',
-            position: 'left',
-        },
-        {
-            to: '/consulting/#faq',
-            label: 'FAQs',
-            position: 'left',
-        },
-        {
-            to: '/consulting/#contact',
-            label: 'Contact us',
-            position: 'left',
-        },
-    ];
-
-    return (
-        <>
-            <nav className="navbar-home navbar--fixed-top">
-                <div className="navbar__inner">
-                    <div className="navbar-home-links">
-                        <a className="nav-logo-consulting" href="/">
-                            <img src="/files/logo/logo.svg" alt="RxDB" />
-                            RxDB
-                        </a>
-
-                        <span className="navbar-home-links-mobile">
-                            {items.map((item) => (
-                                <a
-                                    className="navbar-home-links-mobile consulting-nav-links"
-                                    href={item.to}
-                                    key={item.label}
-                                >
-                                    {item.label}
-                                </a>
-                            ))}
-                        </span>
-                    </div>
-
-                    <a
-                        className="nav-button"
-                        onClick={onOpenDialog}
-                        style={{ maxWidth: '123px' }}
-                    >
-                        Get started
-                    </a>
-                </div>
-            </nav>
-        </>
-    );
-}
-
-function HeroBlock({ onOpenDialog }) {
-    const title = 'Expert support for local database applications';
-    const description = `We offer custom solutions to streamline your data
-    management or revolutionize your local first project.
-    Our team is here to guide you at every step.`;
-
-    return (
-        <>
-            <div className="content flex-row">
-                <div className="half">
-                    <h1>{title}</h1>
-                    <h3>{description}</h3>
-
-                    <div
-                        className="flex-row hero-buttons"
-                        style={{
-                            alignItems: 'center',
-                            gap: '16px',
-                            marginTop: '40px',
-                            marginBottom: '10px',
-                        }}
-                    >
-                        <a className="button" onClick={onOpenDialog}>
-                            Get started
-                        </a>
-                        <a className="button-empty" href="/consulting/#steps">
-                            See how it works
-                        </a>
-                    </div>
-                </div>
-                <div
-                    className="half"
-                    style={{
-                        paddingTop: '42px',
-                        paddingBottom: '42px',
-                    }}
-                >
-                    <img
-                        src="/img/hero.svg"
-                        className="hero-img"
-                        alt="rxdb-image"
-                    />
-                </div>
-            </div>
-            <div className="hero-bottom-group">
-                <img src="/img/hero-group.svg" alt="columns" />
-                <img src="/img/hero-group.svg" alt="columns" />
-            </div>
-            <div className="hero-bottom-group-mobile">
-                <img src="/img/hero-group-mobile.svg" alt="columns" />
-            </div>
-        </>
-    );
-}
-
-function PackagesBlock({ onOpenDialog }) {
-    const title = 'Our Service Packages';
-    const description = `We offer tailored solutions to meet your needs. Whether
-    you're looking to streamline your data management
-    process or revolutionize your project's backend, our
-    team is here to guide you every step of the way.`;
-
-    const packageItems = [
-        {
-            index: '1',
-            label: 'Quick Consulting Session',
-            price: '180€',
-            description:
-                'Schedule a quick consultancy session where the RxDB core maintainer answers all your questions and gives suggestions on how you should use RxDB or related technologies.',
-            cta: 'Schedule a call',
-            href: 'https://buy.stripe.com/14kdU1dN05SAfMA4gg',
-            target: '_blank',
-            rel: '',
-            iframe: false,
-        },
-        {
-            index: '2',
-            label: 'We build it for you',
-            price: '',
-            description: `Let our expert team handle the heavy lifting.
-            With Package 2, we take full responsibility for
-            building and implementing your local JavaScript
-            database solution. Sit back, relax, and watch as
-            we transform your vision into reality.`,
-            cta: 'Get started',
-            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
-            target: '_blank',
-            rel: 'nofollow',
-            iframe: true,
-        },
-        {
-            index: '3',
-            label: 'We build it with you',
-            price: '',
-            description:
-                'Prefer a more hands-on approach? Package 3 allows you to collaborate closely with our team throughout the development process. Together, we\'ll fine-tune every aspect of your solution to ensure it aligns perfectly with your goals and requirements.',
-            cta: 'Get started',
-            href: 'https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F',
-            target: '_blank',
-            rel: 'nofollow',
-            iframe: true,
-        },
-    ];
-
-    return (
-        <>
-            <div className="content centered">
-                <div className="inner">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                </div>
-                <div
-                    className="flex-row"
-                    style={{
-                        flexWrap: 'wrap',
-                        alignItems: 'stretch',
-                    }}
-                >
-                    {packageItems.map((item, index) => (
-                        <div
-                            key={item.label + index}
-                            className={
-                                index < 1
-                                    ? 'item-package flex-row'
-                                    : 'item-package flex-column'
-                            }
-                            style={{
-                                // maxWidth: index > 0 ? "48.5%" : "unset",
-                                height: 'auto',
-                                border:
-                                    index < 1 ? 'solid 1px #E6008D' : 'none',
-                            }}
-                        >
-                            <div
-                                className="flex-column"
-                                style={{
-                                    maxWidth: index < 1 ? '70%' : 'unset',
-                                }}
-                            >
-                                <h6>Package {item.index}</h6>
-                                <div
-                                    className="flex-row"
-                                    style={{
-                                        alignItems: 'center',
-                                        gap: '16px',
-                                    }}
-                                >
-                                    <h4>{item.label}</h4>
-                                    {item.price ? (
-                                        <span className="item-label">
-                                            Fixed {item.price} fee
-                                        </span>
-                                    ) : null}
-                                </div>
-
-                                <p>{item.description}</p>
-                            </div>
-
-                            <div
-                                className="flex-row"
-                                style={{
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    width: 'auto',
-                                }}
-                            >
-                                <a
-                                    onClick={() =>
-                                        item.iframe ? onOpenDialog() : null
-                                    }
-                                    href={item.iframe ? null : item.href}
-                                    target={
-                                        item.target && !item.iframe
-                                            ? '_blank'
-                                            : '_self'
-                                    }
-                                >
-                                    {item.cta}
-                                    <svg
-                                        width="17"
-                                        height="17"
-                                        viewBox="0 0 17 17"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <path
-                                            d="M9.25 16.0781L7.64063 14.4844L12.4609 9.66406H0.75V7.33594H12.4609L7.64063 2.52344L9.25 0.921875L16.8281 8.5L9.25 16.0781Z"
-                                            fill="#E6008D"
-                                        />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
-}
-
-function BenefitsBlock() {
-    const title = 'How we help you';
-    const description =
-        'Any type of support is possible: from full development to only helping support or code review. We can do Custom RxDB features.';
-
-    const benefitsPanels = [
-        {
-            label: 'Expert Guidance',
-            text: `We have years of experience with local first
-            projects and can provide expert guidance. We
-            can provide an optimal concept for the best
-            solution for your specific use case.`,
-            name: 'quidance',
-        },
-        {
-            label: 'Development support',
-            text: `Either you have your own team of developers
-            or we can provide expert developers or we
-            can have a mix where we provide some of the
-            developers and the customer provides the
-            others.`,
-            name: 'support',
-        },
-        {
-            label: 'Project review',
-            text: `We can review your code and project and
-            ensure that it uses best practices and has
-            optimal performance. This can be done once
-            before your big release or as an ongoing
-            support.`,
-            name: 'review',
-        },
-        {
-            label: 'Tailored features',
-            text: `We can developer tailored features for RxDB
-            that are optimized for your specific use
-            case.`,
-            name: 'feature',
-        },
-    ];
-
-    const items = [
-        {
-            key: '0',
-            label: benefitsPanels[0].label,
-            children: <BenefitTabPanel item={benefitsPanels[0]} />,
-        },
-        {
-            key: '1',
-            label: benefitsPanels[1].label,
-            children: <BenefitTabPanel item={benefitsPanels[1]} />,
-        },
-        {
-            key: '2',
-            label: benefitsPanels[2].label,
-            children: <BenefitTabPanel item={benefitsPanels[2]} />,
-        },
-        {
-            key: '3',
-            label: benefitsPanels[3].label,
-            children: <BenefitTabPanel item={benefitsPanels[3]} />,
-        },
-    ];
-
-    return (
-        <>
-            <div className="content centered">
-                <div className="inner">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                </div>
-
-                <Tabs defaultActiveKey="1" items={items} />
-            </div>
-        </>
-    );
-}
-
-function StepsBlock({ onOpenDialog }) {
-    const title = 'How it works';
-    const description =
-        'Here you\'ll find an overview of the steps involved, offering insight into how we make the complex simple, from consultation to implementation.';
-
-    const stepsItems = [
-        {
-            label: 'Initial contact',
-            text: `We talk about your needs and give suggestions
-            for an optimal collaboration with us.`,
-        },
-        {
-            label: 'Specification Design',
-            text: 'We specify the collaboration between you and RxDB and define a roadmap.',
-        },
-        {
-            label: 'Development',
-            text: 'Realization of the roadmap.',
-        },
-        {
-            label: 'Ongoing support',
-            text: 'Regular project reviews and guidance when adding new features.',
-        },
-    ];
-    return (
-        <>
-            <div className="content">
-                <div className="inner">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                    <a className="button desktop-img" onClick={onOpenDialog}>
-                        Get started
-                    </a>
-                </div>
-                <div className="steps-container">
-                    {stepsItems.map((item, index) => (
-                        <div className="step-item" key={item.label}>
-                            <div className="step-line">
-                                <span className="step-number">{index + 1}</span>
-                                {index < stepsItems.length - 1 ? (
-                                    <span className="step-number-line"></span>
-                                ) : null}
-                            </div>
-                            <div className="step-content">
-                                <h5>{item.label}</h5>
-                                <p>{item.text}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <a className="button mobile-button" onClick={onOpenDialog}>
-                    Get started
-                </a>
-                <img
-                    className="mobile-button"
-                    src="/img/steps-column.svg"
-                    alt="columns"
-                />
-            </div>
-        </>
-    );
-}
-
-function FaqBlock() {
-    const title = 'FAQs';
-    const description = `Have questions? We've got answers. Explore our FAQs to
-    learn more about our services, pricing, and approach to
-    local JavaScript database solutions.`;
-
-    const items = [
-        {
-            key: '1',
-            label: 'Which frameworks can you support ?',
-            children: 'Everything from react to Vue to Angular to Svelte. We know all frameworks and how to use them efficiently with RxDB.',
-        },
-        {
-            key: '2',
-            label: 'Which platforms are supported?',
-            children: 'We can build web-apps for browsers, hybrid apps and progressive web apps. Even server-side RxDB projects can be realized.',
-        },
-        {
-            key: '3',
-            label: 'How much does it cost?',
-            children: `This depends on:
-            - How much of the work is provided by us
-            - Which type of development support do you need
-            - How much of the development will be done by yourside\n
-            We can offer in-house developers, near-shore and off-shore developers.`,
-        },
-        {
-            key: '4',
-            label: 'Do you provide 24/7 emergency support?',
-            children: 'No, sorry. This is not provided by default but we can figure out a way with you that fits your problems.',
-        },
-    ];
-
-    return (
-        <>
-            <div className="content">
-                <div className="inner">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                </div>
-
-                <div className="faq-container">
-                    <Collapse
-                        className="faq-collapse"
-                        items={items}
-                        bordered={false}
-                        expandIcon={({ isActive }) => (
-                            <ArrowDownwardIcon rotate={isActive ? 90 : 0} />
-                        )}
-                    />
-                </div>
-            </div>
-        </>
-    );
-}
-
-function NextBlock({ onOpenDialog }) {
-    const title = 'Ready to take the next step?';
-    const description = `Transform your project with RxDB. Schedule your
-    consultancy session today and discover the power of
-    local JavaScript database solutions.`;
-
-    return (
-        <>
-            <div className="content">
-                <div className="inner centered">
-                    <h2>{title}</h2>
-                    <h3>{description}</h3>
-                    <a className="button " onClick={onOpenDialog}>
-                        Get started
-                    </a>
-                </div>
-            </div>
-            <img src="/img/next-column.svg" alt="columns" />
-        </>
-    );
-}
-function ContactBlock() {
-    const title = 'Still have questions?';
-    const description = `Get in touch with us today to schedule your
-    consultancy session or discuss your project
-    requirements. Fill out the form below, and a
-    member of our team will be in contact with
-    you shortly.`;
-
-    return (
-        <>
-            <div className="content">
-                <div className="iframe-form">
-                    <div className="inner centered">
-                        <h2>{title}</h2>
-                        <h3>{description}</h3>
-                    </div>
-                    <BrowserOnly>
-                        {() => {
-                            return (
-                                <iframe
-                                    style={{
-                                        width: '100%',
-                                        margin: '0 auto',
-                                        maxWidth: '708px',
-                                        borderRadius: '32px',
-                                    }}
-                                    src="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
-                                >
-                                    Your browser doesn't support iframes,{' '}
-                                    <a
-                                        href="https://webforms.pipedrive.com/f/6q8inTHyEUIvXxoWQGwymSc8VfEj3cUgikIf9IibvPWkJJYGI8gYEzXP89VJTwhdZx"
-                                        target="_blank"
-                                        rel="nofollow"
-                                    >
-                                        go here
-                                    </a>
-                                </iframe>
-                            );
-                        }}
-                    </BrowserOnly>
-                </div>
-            </div>
-        </>
-    );
-}
-
-// components
-function FormDialog({ onClose, open }) {
-    const handleClose = () => {
-        onClose();
-    };
-    return (
-        <Modal
-            className="modal-consulting-page"
-            open={open}
-            width={'auto'}
-            onCancel={handleClose}
-            footer={null}
-        >
-            <br />
-            <br />
-            <iframe
-                style={{
-                    width: '100%',
-                    height: '70vh',
-                    borderRadius: '32px',
-                }}
-                id="request-project-form"
-                src="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
-            >
-                Your browser doesn't support iframes,{' '}
-                <a
-                    href="https://webforms.pipedrive.com/f/6UUQvwSg3cy0wizvNdC3pmT378WEHYcwv6tdTlPNRl2HtVm0JjBbj5MQjqVj7ePW3F"
-                    target="_blank"
-                    rel="nofollow"
-                >
-                    Click here
-                </a>
-            </iframe>
-        </Modal>
-    );
-}
-function ArrowDownwardIcon({ rotate }) {
-    const style = {
-        transform: rotate ? 'rotate(180deg)' : '',
-        transition: 'transform 150ms ease',
-    };
-
-    return (
-        <div style={style}>
-            <svg
-                width="18"
-                height="11"
-                viewBox="0 0 18 11"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M9.52831 9.88389C9.23541 10.1768 8.76061 10.1768 8.46771 9.88389L0.82123 2.23739C0.52834 1.94449 0.52834 1.46969 0.82123 1.17679L1.17479 0.823191C1.46768 0.530291 1.94255 0.530291 2.23545 0.823191L8.99801 7.58579L15.7606 0.823191C16.0535 0.530291 16.5283 0.530291 16.8212 0.823191L17.1748 1.17679C17.4677 1.46969 17.4677 1.94449 17.1748 2.23739L9.52831 9.88389Z"
-                    fill="#F6F6F7"
-                />
-            </svg>
-        </div>
-    );
-}
-function BenefitTabPanel({ item }) {
-    return (
-        <div className="panel">
-            <img
-                src="/img/benefits-column.svg"
-                className="desktop-img"
-                alt="columns"
-            />
-            <div className="mobile-img">
-                <img src="/img/benefits-column-mobile.svg" alt="columns" />
-            </div>
-            <div className="panel-content">
-                <h3>{item.label}</h3>
-                <h6>{item.text}</h6>
-            </div>
-        </div>
     );
 }

@@ -18,7 +18,8 @@ import {
     RxStorageCountResult,
     promiseWait,
     getQueryMatcher,
-    PreparedQuery
+    PreparedQuery,
+    hasPremiumFlag
 } from '../../index.ts';
 import { BehaviorSubject, Observable, Subject, filter, firstValueFrom } from 'rxjs';
 import type { RxStorageSQLiteTrial } from './index.ts';
@@ -42,8 +43,9 @@ import type {
 } from './sqlite-types.ts';
 import { getSortComparator } from '../../rx-query-helper.ts';
 import { newRxError } from '../../rx-error.ts';
-
+let shownNonPremiumLog = false;
 let instanceId = 0;
+
 export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
     RxDocType,
     SQLiteInternals,
@@ -96,7 +98,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         }
 
         this.opCount = this.opCount + 1;
-        if (this.opCount > 110) {
+        if (this.opCount > 500) {
             throw newRxError('SQL3');
         }
 
@@ -117,6 +119,26 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         };
         const writePromises: Promise<any>[] = [];
         let categorized: CategorizeBulkWriteRowsOutput<RxDocType> = {} as any;
+
+        if (
+            !shownNonPremiumLog &&
+            !(await hasPremiumFlag())
+        ) {
+            console.warn(
+                [
+                    '-------------- RxDB SQLite Trial Storage ---------------------------------',
+                    'You are using the free *trial* SQLite-based RxStorage implementation: https://rxdb.info/rx-storage-sqlite.html?console=sqlite-trial',
+                    'This storage is intended only for evaluation purposes and comes with strict limitations (no indexes, no attachments, and a ~300-document cap).',
+                    'For production use and optimal performance, we strongly recommend upgrading to the premium SQLite storage.',
+                    'Premium version: https://rxdb.info/premium/?console=sqlite',
+                    'If you already have premium access, you can disable this message by calling setPremiumFlag() from rxdb-premium/plugins/shared.',
+                    '----------------------------------------------------------------------------'
+                ].join('\n')
+            );
+            shownNonPremiumLog = true;
+        } else {
+            shownNonPremiumLog = true;
+        }
 
         await sqliteTransaction(
             database,

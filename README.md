@@ -62,7 +62,7 @@
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a <a href="https://rxdb.info/articles/local-first-future.html">local-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps, Deno and <a href="https://rxdb.info/nodejs-database.html">Node.js</a>.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
-  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or one of the plugins for <a href="https://rxdb.info/replication-http.html">HTTP</a>, <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC</a>, <a href="https://github.com/marceljuenemann/rxdb-supabase">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a>, <a href="https://rxdb.info/replication-nats.html">NATS</a>.<br />
+  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or one of the plugins for <a href="https://rxdb.info/replication-http.html">HTTP</a>, <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC</a>, <a href="https://rxdb.info/replication-supabase.html">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a>, <a href="https://rxdb.info/replication-nats.html">NATS</a>.<br />
   RxDB is based on a storage interface that enables you to swap out the underlying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
@@ -97,7 +97,7 @@ RxDB is a proven technology used by [thousands of developers](https://github.com
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html">Sync Engine</a> for <a href="https://rxdb.info/articles/realtime-database.html">realtime</a> replication with your existing infrastructure.<br />
 You do not have to use a specific cloud or backend database. The protocol works by implementing three simple HTTP endpoints.
-There are also production-ready plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC (P2P)</a>,<a href="https://github.com/marceljuenemann/rxdb-supabase">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
+There are also production-ready plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC (P2P)</a>,<a href="https://rxdb.info/replication-supabase.html">Supabase</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
 
 
 <h2>
@@ -117,9 +117,9 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
   <a href="./examples/angular">Browsers</a>
-  <img height="13" src="docs-src/static/files/icons/nodejs.png" />
+  <img height="13" src="docs-src/static/files/icons/nodejs.svg" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/static/files/icons/react-native.png" />
+  <img height="13" src="docs-src/static/files/icons/react.svg" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
@@ -127,7 +127,7 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
   <img height="13" src="docs-src/static/files/icons/flutter.svg" />
   <a href="./examples/flutter">Flutter</a>
-  or as an <img height="13" src="docs-src/static/files/icons/electron.png" />
+  or as an <img height="13" src="docs-src/static/files/icons/electron.svg" />
   <a href="https://rxdb.info/electron-database.html">Electron Database</a>
 </h4>
 

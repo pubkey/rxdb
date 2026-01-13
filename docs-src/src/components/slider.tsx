@@ -11,7 +11,7 @@ export type SliderProps = {
   initialOffsetPx?: number;
 };
 
-export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProps) {
+export function Slider({ items, width = 300, initialOffsetPx = -30 }: SliderProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef({ active: false, startX: 0, startY: 0, scrollStart: 0, distance: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -39,7 +39,7 @@ export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProp
 
   // Derived sizing
   const BASE_COUNT = Math.max(1, content.length);
-  const COPIES = 3;
+  const COPIES = BASE_COUNT > 10 ? 1 : 3;
   const WIDTH = width;
   const ITEM_SPACE = WIDTH + gap;
   const BAND = ITEM_SPACE * BASE_COUNT;
@@ -98,7 +98,7 @@ export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProp
     if (el && e && 'pointerId' in e) {
       try {
         el.releasePointerCapture((e as any).pointerId);
-      } catch {}
+      } catch { }
     }
   };
 
@@ -110,7 +110,7 @@ export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProp
     downTimeRef.current = Date.now();
     try {
       el.setPointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -194,7 +194,7 @@ export function Slider({ items, width = 275, initialOffsetPx = -30 }: SliderProp
       userSelect: 'none',
       scrollSnapType: 'none',
       scrollbarWidth: 'none' as any,
-      touchAction: 'pan-y' as any,
+      touchAction: 'none' as any,
       overscrollBehaviorX: 'contain' as any,
       overscrollBehaviorY: 'auto' as any,
       maskImage: `-webkit-gradient(linear,

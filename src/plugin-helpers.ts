@@ -117,9 +117,10 @@ export function wrappedValidateStorageFactory(
                                     status: 422,
                                     isError: true,
                                     documentId,
-                                    writeRow: row,
                                     validationErrors,
-                                    schema: instance.schema
+                                    schema: instance.schema,
+                                    writeRow: row,
+                                    context
                                 });
                             } else {
                                 continueWrites.push(row);

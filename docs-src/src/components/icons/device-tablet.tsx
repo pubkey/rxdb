@@ -4,11 +4,13 @@ type IconDeviceTabletProps = React.SVGProps<SVGSVGElement> & {
   iconUrl?: string;
   /** Icon size in viewBox units (default ~14) */
   iconVb?: number;
+  dark?: boolean;
 };
 
 export function IconDeviceTablet({
   iconUrl,
   iconVb = 24,
+  dark,
   ...props
 }: IconDeviceTabletProps) {
   // Tablet screen rectangle from path: x=2..52.4, y=2..74 → width ~50.4, height ~72
@@ -36,7 +38,7 @@ export function IconDeviceTablet({
       <g clipPath="url(#clip0_752_214)">
         <path
           d="M45.7 2H8.7C4.99969 2 2 4.99969 2 8.7V67.3C2 71.0003 4.99969 74 8.7 74H45.7C49.4003 74 52.4 71.0003 52.4 67.3V8.7C52.4 4.99969 49.4003 2 45.7 2Z"
-          fill="#2C3547"
+          fill={dark ? '#20293C' : '#0D0F18'}
           stroke="white"
           strokeWidth="4"
           strokeMiterlimit="10"

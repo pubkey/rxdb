@@ -11,7 +11,7 @@ import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 
 
 
-# RxDB Appwrite Replication (beta)
+# RxDB Appwrite Replication
 
 This replication plugin allows you to synchronize documents between RxDB and an <a href="https://appwrite.io/" rel="noopener nofollow">Appwrite</a> server. It supports both push and pull replication, live updates via Appwrite's real-time subscriptions, [offline-capability](./offline-first.md) and [conflict resolution](./transactions-conflicts-revisions.md).
 
@@ -54,7 +54,7 @@ You can either use the appwrite cloud or <a href="https://appwrite.io/docs/advan
 
 <Tabs>
 
-#### Self-Hosted Appwrite Instance
+#### Self-Hosted
 
 <Steps>
 

@@ -9,7 +9,7 @@
     "refresh": "rimraf -r node_modules/rxdb/ && npm i ",
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
-    "test:e2e": "testcafe chromium -e test/ --hostname localhost",
+    "test:e2e": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --disable-features=LocalNetworkAccessChecks",
     "test:pouchdb": "STORAGE=pouchdb concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first",
     "test:localstorage": "STORAGE=localstorage concurrently \"npm run server\" \"npm run build:serve\" \"sleep 10 && npm run test:e2e\" --kill-others --success first"
   },
@@ -42,15 +42,15 @@
     "eslint": "8.57.1",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
-    "html-webpack-plugin": "5.6.4",
+    "html-webpack-plugin": "5.6.5",
     "mini-css-extract-plugin": "2.9.4",
     "ncp": "2.0.0",
     "rimraf": "5.0.10",
     "source-map-loader": "5.0.0",
     "style-loader": "4.0.0",
-    "testcafe": "3.7.2",
-    "testcafe-hammerhead": "31.7.5",
-    "webpack": "5.101.3",
+    "testcafe": "3.7.3",
+    "testcafe-hammerhead": "31.7.6",
+    "webpack": "5.104.1",
     "webpack-cli": "6.0.1",
     "webpack-dev-server": "5.2.2"
   }

@@ -4,12 +4,14 @@ type PixelToggleProps = {
   checked?: boolean;
   onChange?: (next: boolean) => void;
   className?: string;
+  label: string;
 };
 
 export function PixelToggle({
   checked = false,
   onChange,
   className,
+  label
 }: PixelToggleProps) {
   const handleToggle = useCallback(() => {
     onChange?.(!checked);
@@ -49,6 +51,7 @@ export function PixelToggle({
     <div
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       tabIndex={0}
       onClick={handleToggle}
       onKeyDown={(e) => {

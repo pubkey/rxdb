@@ -3,9 +3,10 @@ import { IconAttachment } from './icons/attachment';
 import { IconCompression } from './icons/compression';
 import { IconEncryption } from './icons/encryption';
 import { IconReplication } from './icons/replication';
-import { IconServer } from './icons/server';
+import ServerIcon from '@site/static/files/icons/server.svg';
 import { Tag } from './tag';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import { SemPage } from '../pages';
 
 const tags: {
     value: string;
@@ -13,26 +14,29 @@ const tags: {
     img?: string | React.ReactNode;
 }[] = [
         { value: 'Logging', url: '/logger.html' },
-        { value: 'Attachments', url: '/rx-attachment.html', img: <IconAttachment /> },
+        { value: 'Replication', url: '/replication.html', img: <IconReplication /> },
         { value: 'ORM', url: '/orm.html' },
         { value: 'Conflict Handling', url: '/transactions-conflicts-revisions.html' },
         { value: 'Backup', url: '/backup.html' },
+        { value: 'Encryption', url: '/encryption.html', img: <IconEncryption /> },
         { value: 'Middleware', url: '/middleware.html' },
+        { value: 'Server', url: '/rx-server.html', img: <ServerIcon /> },
+        { value: 'Compression', url: '/key-compression.html', img: <IconCompression /> },
         { value: 'Signals', url: '/reactivity.html' },
-        { value: 'Server', url: '/rx-server.html', img: <IconServer /> },
         { value: 'Storages', url: '/rx-storage.html' },
-        { value: 'Replication', url: '/replication.html', img: <IconReplication /> },
         { value: 'Local Documents', url: '/rx-local-document.html' },
         { value: 'Schema Validation', url: '/schema-validation.html' },
+        { value: 'Attachments', url: '/rx-attachment.html', img: <IconAttachment /> },
         { value: 'State', url: '/rx-state.html' },
         { value: 'Migration', url: '/migration-schema.html' },
         { value: 'CRDT', url: '/crdt.html' },
-        { value: 'Compression', url: '/key-compression.html', img: <IconCompression /> },
         { value: 'Population', url: '/population.html' },
-        { value: 'Encryption', url: '/encryption.html', img: <IconEncryption /> },
     ];
 
-export function FeaturesSection() {
+export function FeaturesSection(props: {
+    dark: boolean;
+    sem?: SemPage;
+}) {
     const [isMobile, setIsMobile] = useState(() => ExecutionEnvironment.canUseDOM ? window.innerWidth < 900 : false);
     const [showMore, setShowMore] = useState(false);
 
@@ -63,7 +67,7 @@ export function FeaturesSection() {
     }
 
     return (
-        <div className="block features dark trophy-before">
+        <div className={'block features trophy-before trophy-after' + (props.dark ? ' dark ' : '')}>
             <div className="content">
                 <h2 style={{ textAlign: 'center' }}>
                     All the <b>Features</b> You'll Ever Need
@@ -82,7 +86,7 @@ export function FeaturesSection() {
                     {visibleTags.map((tag, i) => {
                         const el = (
                             <a key={i} href={tag.url} target="_blank" style={{ color: 'white' }}>
-                                <Tag img={tag.img} wideMode={true}>{tag.value}</Tag>
+                                <Tag img={tag.img} wideMode={true} dark={props.dark}>{tag.value}</Tag>
                             </a>
                         );
                         return el;

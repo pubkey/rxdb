@@ -14,7 +14,8 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 // } from 'antd';
 import { distinctUntilChanged, map } from 'rxjs';
 import { triggerTrackingEvent } from '../components/trigger-event';
-import { Modal } from '../components/modal';
+import { IframeFormModal } from '../components/modal';
+import { Button } from '../components/button';
 
 export type FormValueDocData = {
     developers: number;
@@ -41,10 +42,7 @@ let formValueDocPromiseCache: Promise<RxLocalDocument<RxDatabase<CollectionsOfDa
 function getFormValueDoc() {
     if (!formValueDocPromiseCache) {
         formValueDocPromiseCache = (async () => {
-            console.log('### FIND formValueDocPromise :;!!!!!!!!!!!!!!!!!!!!!!!!!!!!1');
             const dbModule = await import('../components/database.module');
-            console.log('aaaaaa dbmodule:');
-            console.dir(dbModule);
             const database = await dbModule.getDatabase();
             let formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             if (!formValueDoc) {
@@ -56,8 +54,6 @@ function getFormValueDoc() {
                     ]
                 });
             }
-            console.log('form value doc:');
-            console.dir(formValueDoc);
             return formValueDoc;
         })();
     }
@@ -80,7 +76,7 @@ function PackageCheckbox(props: {
         checked={props.formValue?.packages.includes(props.packageName) ? true : false}
         readOnly
         onClick={() => {
-            triggerTrackingEvent('calculate_premium_price', 3, 1);
+            triggerTrackingEvent('calculate_premium_price', 3, 1, true);
             props.onToggle();
         }}
     />;
@@ -240,7 +236,7 @@ export default function Premium() {
                         <div className="content centered">
 
                             <h2>
-                                RxDB <b className="underline">Premium</b>
+                                RxDB <b>Premium</b>
                             </h2>
 
                             <p style={{ width: '80%' }}>
@@ -361,8 +357,8 @@ export default function Premium() {
                                             </div>
                                         </div> */}
                                         <div className="packages">
-                                            <h3>Packages:</h3>
-                                            <div className="package bg-gradient-left-top">
+                                            <h3>Choose your Packages</h3>
+                                            <div className="package">
                                                 <div className="package-inner">
                                                     <PackageCheckbox packageName='browser' onToggle={() => togglePackage('browser')} formValue={formValue} />
                                                     <h4>Browser Package</h4>
@@ -390,7 +386,7 @@ export default function Premium() {
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div className="package bg-gradient-left-top">
+                                            <div className="package">
                                                 <div className="package-inner">
                                                     <PackageCheckbox packageName='native' onToggle={() => togglePackage('native')} formValue={formValue} />
                                                     <h4>Native Package</h4>
@@ -411,7 +407,7 @@ export default function Premium() {
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div className="package bg-gradient-left-top">
+                                            <div className="package">
                                                 <div className="package-inner">
                                                     <PackageCheckbox packageName='performance' onToggle={() => togglePackage('performance')} formValue={formValue} />
                                                     <h4>Performance Package</h4>
@@ -447,7 +443,7 @@ export default function Premium() {
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div className="package bg-gradient-left-top">
+                                            <div className="package">
                                                 <div className="package-inner">
                                                     <PackageCheckbox packageName='server' onToggle={() => togglePackage('server')} formValue={formValue} />
                                                     <h4>Server Package</h4>
@@ -465,7 +461,7 @@ export default function Premium() {
                                                     </ul>
                                                 </div>
                                             </div>
-                                            <div className="package bg-gradient-left-top">
+                                            <div className="package">
                                                 <div className="package-inner">
                                                     <input
                                                         name="package-utilities"
@@ -587,10 +583,7 @@ export default function Premium() {
                             <div className="price-calculator" id="price-calculator-result" style={{ marginBottom: 90, display: 'none' }}>
                                 <div className="price-calculator-inner">
                                     <h4>Calculated Price:</h4>
-
-                                    <br />
                                     <div className="inner">
-
                                         <span className="price-label">&euro;</span>
                                         <span id="total-per-project-per-month">XX</span>
                                         <span className="per-month">/month</span>
@@ -600,10 +593,26 @@ export default function Premium() {
                                         (billed yearly: <span id="total-per-project-per-year"></span> &euro;)
                                     </div>
                                     <br />
-                                    <br />
                                     <div className='clear'></div>
-                                    <div className="button" onClick={handleOpenDialog}>Buy Now »</div>
-                                    <div style={{ fontSize: '70%', textAlign: 'center' }}>If you have any questions, see the FAQ below or fill out the Buy-Now Form to get in contact</div>
+                                    <Button
+                                        primary
+                                        style={{
+                                            width: '100%'
+                                        }}
+                                        onClick={handleOpenDialog}
+                                    >Buy Now »</Button>
+                                    <div style={{
+                                        fontSize: '70%',
+                                        textAlign: 'center',
+                                        marginTop: 16
+                                    }}>If you have any questions, see the FAQ below or fill out the <b
+                                        style={{
+                                            color: 'white',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer'
+                                        }}
+                                        onClick={handleOpenDialog}
+                                    >Buy-Now Form</b> to get in contact.</div>
                                     {/* <div className="button" onClick={handleOpenDialog}>Ask questions</div> */}
                                     <div className='clear'></div>
                                 </div>
@@ -625,49 +634,20 @@ export default function Premium() {
                             <details>
                                 <summary>What is the process for making a purchase?</summary>
                                 <ul>
-                                    <li>Fill out the <b>Buy now</b> form below.</li>
+                                    <li>Fill out the <b
+                                        style={{
+                                            color: 'white',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer'
+                                        }}
+                                        onClick={handleOpenDialog}
+                                    >Buy now form</b>.</li>
                                     <li>You will get a license agreement that you can sign online.</li>
                                     <li>You will get an invoice via stripe.com.</li>
                                     <li>After payment you get the access token that you can use to add the Premium plugins to your project with <a href="https://www.npmjs.com/package/rxdb-premium" target="_blank">these instructions</a>.</li>
                                 </ul>
                             </details>
-                            <details>
-                                <summary>Can I get a discount?</summary>
-                                There are multiple ways to get a discount:
-                                <ul>
-                                    <li>
-                                        <h5>Contribute to the RxDB github repository</h5>
-                                        <p>If you have made significant contributions to the RxDB github repository, you can apply for a discount depending on your contribution.</p>
-                                    </li>
-                                    <li>
-                                        <h5>Get 25% off by writing about how you use RxDB</h5>
-                                        <p>
-                                            On your company/project website, publish an article/blogpost about how you use RxDB in your project.
-                                            Include how your setup looks like,
-                                            how you use RxDB in that setup and what problems you had and how did you overcome them.
-                                            You also need to link to the RxDB website or documentation pages.
-                                        </p>
-                                    </li>
-                                    <li>
-                                        <h5>Be active in the RxDB community</h5>
-                                        <p>If you are active in the RxDB community and discord channel by helping others out or creating educational content like videos and tutorials, feel free to apply for a discount.</p>
-                                    </li>
-                                    <li>
-                                        <h5>Solve one of the free-premium-tasks</h5>
-                                        <p>
-                                            For private personal projects there is the
-                                            option to solve one of the
-                                            {' '}<a
-                                                href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
-                                                target="_blank"
-                                            >
-                                                Premium Tasks
-                                            </a>{' '}
-                                            to get a free 2 years access to the Premium Plugins.
-                                        </p>
-                                    </li>
-                                </ul>
-                            </details>
+
                             <details>
                                 <summary>Do I need the Premium Plugins?</summary>
                                 RxDB Core is open source and many use cases can be implemented with the Open Core part of
@@ -780,6 +760,53 @@ export default function Premium() {
                                 you build your application with RxDB and deploy it to production, it
                                 will not make requests from your users to any RxDB server.
                             </details>
+                            <details>
+                                <summary>
+                                    Can I add more Premium Packages later if I've already purchased some?
+                                </summary>
+                                Yes! You can upgrade or add additional Premium Packages at any time.
+                                When you decide to purchase more, we'll calculate a fair upgrade price,
+                                meaning you only pay the difference between your existing purchase and the new package total.
+                                <br />
+                                Your previous payments are fully credited, so you never pay twice for the same plugins.
+                            </details>
+                            <details>
+                                <summary>Can I get a discount?</summary>
+                                There are multiple ways to get a discount:
+                                <ul>
+                                    <li>
+                                        <h5>Contribute to the RxDB github repository</h5>
+                                        <p>If you have made significant contributions to the RxDB github repository, you can apply for a discount depending on your contribution.</p>
+                                    </li>
+                                    <li>
+                                        <h5>Get 25% off by writing about how you use RxDB</h5>
+                                        <p>
+                                            On your company/project website, publish an article/blogpost about how you use RxDB in your project.
+                                            Include how your setup looks like,
+                                            how you use RxDB in that setup and what problems you had and how did you overcome them.
+                                            You also need to link to the RxDB website or documentation pages.
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <h5>Be active in the RxDB community</h5>
+                                        <p>If you are active in the RxDB community and discord channel by helping others out or creating educational content like videos and tutorials, feel free to apply for a discount.</p>
+                                    </li>
+                                    <li>
+                                        <h5>Solve one of the free-premium-tasks</h5>
+                                        <p>
+                                            For private personal projects there is the
+                                            option to solve one of the
+                                            {' '}<a
+                                                href="https://github.com/pubkey/rxdb/blob/master/orga/premium-tasks.md"
+                                                target="_blank"
+                                            >
+                                                Premium Tasks
+                                            </a>{' '}
+                                            to get a free 2 years access to the Premium Plugins.
+                                        </p>
+                                    </li>
+                                </ul>
+                            </details>
                         </div>
                     </div>
 
@@ -806,7 +833,7 @@ export default function Premium() {
                     <div className="block dark">
                         <div className="content centered">
                             <h2>
-                                RxDB Premium Plugins <b className="underline">Overview</b>
+                                RxDB Premium Plugins <b>Overview</b>
                             </h2>
                             {/* <p style={{ width: '80%' }}>
                                 RxDB's premium plugins offer advanced features and optimizations that enhance application <b>performance</b>{' '}
@@ -1012,35 +1039,9 @@ export default function Premium() {
 
 // components
 function BuyFormDialog({ onClose, open }) {
-    const handleClose = () => {
-        onClose();
-    };
-    return (
-        <Modal
-            className="modal-consulting-page"
-            open={open}
-            width={'auto'}
-            onCancel={handleClose}
-            footer={null}
-        >
-            <iframe
-                style={{
-                    width: '100%',
-                    height: '70vh',
-                    borderRadius: '32px',
-                }}
-                id="request-project-form"
-                src="https://webforms.pipedrive.com/f/ccHQ5wi8dHxdFgcxEnRfXaXv2uTGnLNwP4tPAGO3hgSFan8xa5j7Kr3LH5OXzWQo2T"
-            >
-                Your browser doesn't support iframes,{' '}
-                <a
-                    href="https://webforms.pipedrive.com/f/ccHQ5wi8dHxdFgcxEnRfXaXv2uTGnLNwP4tPAGO3hgSFan8xa5j7Kr3LH5OXzWQo2T"
-                    target="_blank"
-                    rel="nofollow"
-                >
-                    Click here
-                </a>
-            </iframe>
-        </Modal>
-    );
+    return <IframeFormModal
+        onClose={onClose}
+        open={open}
+        iframeUrl='https://webforms.pipedrive.com/f/ccHQ5wi8dHxdFgcxEnRfXaXv2uTGnLNwP4tPAGO3hgSFan8xa5j7Kr3LH5OXzWQo2T'
+    />;
 }

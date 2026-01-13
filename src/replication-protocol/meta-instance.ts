@@ -28,6 +28,14 @@ export function getRxReplicationMetaInstanceSchema<RxDocType, CheckpointType>(
 ): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>>> {
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
+    const minItemIdLength = 4; // 'DOWN' must fit into this
+    const minIdLength = minItemIdLength + 2; // 'DOWN|1' must fit into this
+    // add +1 for the '|' and +1 for the 'isCheckpoint' flag
+    let idLength = parentPrimaryKeyLength + 2;
+    if (idLength < minIdLength) {
+        idLength = minIdLength;
+    }
+
     const baseSchema: RxJsonSchema<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
         title: META_INSTANCE_SCHEMA_TITLE,
         primaryKey: {
@@ -45,8 +53,7 @@ export function getRxReplicationMetaInstanceSchema<RxDocType, CheckpointType>(
             id: {
                 type: 'string',
                 minLength: 1,
-                // add +1 for the '|' and +1 for the 'isCheckpoint' flag
-                maxLength: parentPrimaryKeyLength + 2
+                maxLength: idLength
             },
             isCheckpoint: {
                 type: 'string',
@@ -63,7 +70,7 @@ export function getRxReplicationMetaInstanceSchema<RxDocType, CheckpointType>(
                  * ensure that all values of RxStorageReplicationDirection ('DOWN' has 4 chars) fit into it
                  * because checkpoints use the itemId field for that.
                  */
-                maxLength: parentPrimaryKeyLength > 4 ? parentPrimaryKeyLength : 4
+                maxLength: parentPrimaryKeyLength > minItemIdLength ? parentPrimaryKeyLength : minItemIdLength
             },
             checkpointData: {
                 type: 'object',

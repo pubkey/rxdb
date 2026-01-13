@@ -27,6 +27,7 @@ export default function PremiumSubmitted() {
             triggerTrackingEvent(
                 'premium_lead',
                 Math.floor(price.totalPrice / 3), // assume lead-to-sale-rate is 33%.
+                1,
                 true
             );
         })();
