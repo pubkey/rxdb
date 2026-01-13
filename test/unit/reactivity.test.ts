@@ -161,7 +161,7 @@ describeParallel('reactivity.test.ts', () => {
              * This test can take very long because we await the garbage collection
              * of the signal.
              */
-            if (isFastMode()) {
+            if (isFastMode() || !(global as any).gc) {
                 return;
             }
 
