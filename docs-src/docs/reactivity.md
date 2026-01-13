@@ -21,7 +21,9 @@ RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-databas
 
 <Tabs>
 
-### Angular (Signals)
+### Angular
+
+In angular we use [Angular Signals](https://angular.dev/guide/signals) as custom reactivity objects.
 
 <Steps>
 
@@ -42,13 +44,45 @@ const database = await createRxDatabase({
     storage: getRxStorageLocalstorage(),
     reactivity: createReactivityFactory(inject(Injector))
 });
+
+// add collections/sync etc...
+```
+
+#### Use the Signal in an Angular component
+
+```ts
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DbService } from '../db.service';
+
+@Component({
+  selector: 'app-todos-list',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+      <ul>
+        <li
+          *ngFor="let t of todosSignal();"
+        >{{ t.title }}</li>
+      </ul>
+  `,
+})
+export class TodosListComponent {
+  private dbService = inject(DbService);
+
+  // RxDB query - Angular Signal
+  readonly todosSignal = this.dbService.db.todos.find().$$;
+}
+
 ```
 
 </Steps>
 
 An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/app/components/heroes-list/heroes-list.component.ts#L46)
 
-### React (Preact Signals)
+### React
+
+For React, we use the [Preact Signals](https://preactjs.com/guide/v10/signals/) for custom reactivity.
 
 <Steps>
 
@@ -74,12 +108,46 @@ const database = await createRxDatabase({
     storage: getRxStorageLocalstorage(),
     reactivity: PreactSignalsRxReactivityFactory
 });
+
+// add collections/sync etc...
+```
+
+#### Use the Signal in a React component
+
+```tsx
+import { useEffect, useState } from 'preact/hooks';
+import { getDatabase } from './db';
+
+export function TodosList() {
+  const [db, setDb] = useState(null);
+
+  useEffect(() => {
+    getDatabase().then(setDb);
+  }, []);
+
+  if (!db) return null;
+
+  // RxQuery -> Preact Signal
+  const todosSignal = db.todos.find().$$;
+
+  return (
+    <ul>
+      {todosSignal.value.map((doc: any) => (
+        <li key={doc.primary}>
+            {doc.title}
+        </li>
+      ))}
+    </ul>
+  );
+}
 ```
 
 </Steps>
 
 
-### Vue (Shallow Refs)
+### Vue
+
+For Vue, we use the [Vue Shallow Refs](https://vuejs.org/api/reactivity-advanced) for custom reactivity.
 
 <Steps>
 
@@ -96,6 +164,29 @@ const database = await createRxDatabase({
     storage: getRxStorageLocalstorage(),
     reactivity: VueRxReactivityFactory
 });
+
+// add collections/sync etc...
+```
+
+#### Use the Shallow Ref in a Vue component
+
+```html
+<script setup lang="ts">
+import { getDatabase } from './db';
+
+const db = getDatabase();
+
+// RxQuery to Vue shallowRef signal
+const todosSignal = db.todos.find().$$;
+</script>
+
+<template>
+  <ul>
+    <li v-for="t in todosSignal" :key="t.primary">
+      <label>{{ t.title }}</label>
+    </li>
+  </ul>
+</template>
 ```
 
 </Steps>
