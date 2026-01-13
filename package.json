@@ -366,6 +366,12 @@
       "import": "./dist/esm/plugins/reactivity-vue/index.js",
       "default": "./dist/esm/plugins/reactivity-vue/index.js"
     },
+    "./plugins/reactivity-angular": {
+      "types": "./dist/types/plugins/reactivity-angular/index.d.ts",
+      "require": "./dist/cjs/plugins/reactivity-angular/index.js",
+      "import": "./dist/esm/plugins/reactivity-angular/index.js",
+      "default": "./dist/esm/plugins/reactivity-angular/index.js"
+    },
     "./plugins/reactivity-preact-signals": {
       "types": "./dist/types/plugins/reactivity-preact-signals/index.d.ts",
       "require": "./dist/cjs/plugins/reactivity-preact-signals/index.js",
@@ -439,7 +445,7 @@
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/cjs/index.js ./dist/cjs/plugins/validate-is-my-json-valid/index.js ./dist/cjs/plugins/attachments-compression/index.js ./dist/cjs/plugins/validate-ajv/index.js ./dist/cjs/plugins/update/index.js ./dist/cjs/plugins/key-compression/index.js ./dist/cjs/plugins/dev-mode/index.js ./dist/cjs/plugins/encryption-crypto-js/index.js ./dist/cjs/plugins/replication-graphql/index.js ./dist/cjs/plugins/replication-webrtc/index.js ./dist/cjs/plugins/replication-websocket/index.js ./dist/cjs/plugins/replication-firestore/index.js ./dist/cjs/plugins/replication-nats/index.js ./dist/cjs/plugins/validate-z-schema/index.js ./dist/cjs/plugins/storage-dexie/index.js ./dist/cjs/plugins/storage-memory/index.js ./dist/cjs/plugins/storage-mongodb/index.js ./dist/cjs/plugins/reactivity-vue/index.js ./dist/cjs/plugins/reactivity-preact-signals/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/cjs/index.js ./dist/cjs/plugins/validate-is-my-json-valid/index.js ./dist/cjs/plugins/attachments-compression/index.js ./dist/cjs/plugins/validate-ajv/index.js ./dist/cjs/plugins/update/index.js ./dist/cjs/plugins/key-compression/index.js ./dist/cjs/plugins/dev-mode/index.js ./dist/cjs/plugins/encryption-crypto-js/index.js ./dist/cjs/plugins/replication-graphql/index.js ./dist/cjs/plugins/replication-webrtc/index.js ./dist/cjs/plugins/replication-websocket/index.js ./dist/cjs/plugins/replication-firestore/index.js ./dist/cjs/plugins/replication-nats/index.js ./dist/cjs/plugins/validate-z-schema/index.js ./dist/cjs/plugins/storage-dexie/index.js ./dist/cjs/plugins/storage-memory/index.js ./dist/cjs/plugins/storage-mongodb/index.js ./dist/cjs/plugins/reactivity-angular/index.js ./dist/cjs/plugins/reactivity-vue/index.js ./dist/cjs/plugins/reactivity-preact-signals/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
     "test:circular": "npm run build && madge --circular ./dist/esm/index.js && madge --circular ./dist/esm/plugins/storage-dexie/index.js && madge --circular test_tmp",
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.cjs --single-run",
     "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.cjs --single-run",
@@ -499,7 +505,8 @@
     "mongodb": "^6.21.0",
     "nats": "^2.29.3",
     "rxjs": "^7.8.2",
-    "vue": "*"
+    "vue": "*",
+    "@angular/core": "*"
   },
   "peerDependenciesMeta": {
     "firebase": {
@@ -515,6 +522,9 @@
       "optional": true
     },
     "vue": {
+      "optional": true
+    },
+    "@angular/core": {
       "optional": true
     }
   },
@@ -550,6 +560,7 @@
     "z-schema": "6.0.2"
   },
   "devDependencies": {
+    "@angular/core": "21.0.8",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.28.6",
     "@babel/plugin-external-helpers": "7.27.1",

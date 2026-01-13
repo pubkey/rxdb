@@ -1,5 +1,5 @@
-import { Injectable, Signal, untracked } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Injectable, Injector, inject } from '@angular/core';
+import { createReactivityFactory } from 'rxdb/plugins/reactivity-angular';
 
 // import typings
 import {
@@ -13,7 +13,6 @@ import {
 } from '../../environments/environment';
 
 import {
-    RxReactivityFactory,
     createRxDatabase
 } from 'rxdb/plugins/core';
 
@@ -62,27 +61,11 @@ async function _create(): Promise<RxHeroesDatabase> {
 
     console.log('DatabaseService: creating database..');
 
-    /**
-     * Add the Reactivity Factory so that we can get angular Signals
-     * instead of observables.
-     * @link https://rxdb.info/reactivity.html
-     */
-    const reactivityFactory: RxReactivityFactory<Signal<any>> = {
-        fromObservable(obs, initialValue: any) {
-            return untracked(() =>
-                toSignal(obs, {
-                    initialValue,
-                })
-            );
-        }
-    }
-
-
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
         storage: environment.getRxStorage(),
         multiInstance: environment.multiInstance,
-        reactivity: reactivityFactory,
+        reactivity: createReactivityFactory(inject(Injector)),
         ignoreDuplicate: !environment.production && environment.isServerSideRendering,
         // password: 'myLongAndStupidPassword' // no password needed
     }) as RxHeroesDatabase;
