@@ -27,7 +27,7 @@
     "examples/tauri/src-tauri/"
   ],
   "rebaseStalePrs": true,
-  "prConcurrentLimit": 8,
+  "prConcurrentLimit": 10,
   "prHourlyLimit": 2,
   "dependencyDashboard": false
 }
