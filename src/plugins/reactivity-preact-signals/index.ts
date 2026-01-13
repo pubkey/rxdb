@@ -1,9 +1,9 @@
 import { signal, Signal } from "@preact/signals-core";
-import { RxReactivityFactory } from 'rxdb/plugins/core';
 import type {
     Observable,
     Subscription
 } from 'rxjs';
+import type { RxReactivityFactory } from '../../types';
 
 export type PreactSignal<T = any> = Signal<T>;
 

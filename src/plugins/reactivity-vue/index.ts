@@ -4,10 +4,10 @@ import {
     onScopeDispose,
     Ref
 } from 'vue';
-import { RxReactivityFactory } from 'rxdb/plugins/core';
 import type {
     Observable
 } from 'rxjs';
+import type { RxReactivityFactory } from '../../types';
 
 export type VueRef<T = any> = Ref<T>;
 
