@@ -170,7 +170,7 @@ describeParallel('reactivity.test.ts', () => {
                 (global as any).gc();
             }, 200);
 
-            const db = await createRxDatabase<{ docs: any }, any, any, PreactSignal>({
+            const db = await createRxDatabase<{ docs: any; }, any, any, PreactSignal>({
                 name: randomToken(10),
                 storage: getConfig().storage.getStorage(),
                 reactivity: PreactSignalsRxReactivityFactory
@@ -194,7 +194,7 @@ describeParallel('reactivity.test.ts', () => {
 
             // ensure unsubscribe is called when signal gets garbage collected
             querySignal = {} as any;
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return PREACT_SIGNAL_STATE.subscribeCount === 0;
             }, undefined, 200);
 
