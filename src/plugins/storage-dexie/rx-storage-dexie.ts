@@ -15,7 +15,6 @@ import {
 } from './rx-storage-instance-dexie.ts';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
-import { getSchemaByObjectPath } from '../../rx-schema-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 
 

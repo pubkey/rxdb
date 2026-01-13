@@ -106,6 +106,18 @@ export function replicateSupabase<RxDocType>(
                 let query = options.client
                     .from(options.tableName)
                     .select('*');
+
+                if (options.pull?.queryBuilder) {
+                    const maybeNewQuery = options.pull.queryBuilder({
+                        query,
+                        lastPulledCheckpoint,
+                        batchSize,
+                    });
+                    if (maybeNewQuery) {
+                        query = maybeNewQuery;
+                    }
+                }
+
                 if (lastPulledCheckpoint) {
                     const { modified, id } = lastPulledCheckpoint;
 
@@ -148,6 +160,9 @@ export function replicateSupabase<RxDocType>(
     }
 
     const replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined = options.push ? {
+        batchSize: options.push.batchSize,
+        initialCheckpoint: options.push.initialCheckpoint,
+        modifier: options.push.modifier,
         async handler(
             rows: RxReplicationWriteToMasterRow<RxDocType>[]
         ) {

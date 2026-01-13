@@ -14,7 +14,7 @@ SEO Keywords:
 
 
 
-
+import {VideoBox} from '@site/src/components/video-box';
 
 
 
@@ -71,9 +71,11 @@ The best way to handle real-world usage is to test for low storage conditions an
 
 Real-time usage monitors or dashboards can keep track of your `navigator.storage.estimate()` results, letting you see how close you are to the max limit in production. Developer tools in Chrome or Firefox can simulate limited storage situations, which is crucial for QA:
 
+
 <center>
-<iframe width="315" height="360" src="https://www.youtube.com/embed/Nf37yutU8y4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <VideoBox videoId="Nf37yutU8y4" title="Simulate low storage quota with DevTools " duration="0:42" />
 </center>
+<br />
 
 This short tutorial shows how you can artificially reduce available storage in Google Chrome’s dev tools to see how your app behaves when nearing or exceeding the quota.
 

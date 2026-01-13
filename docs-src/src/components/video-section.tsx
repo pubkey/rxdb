@@ -5,13 +5,16 @@ import { IconArrowRight } from './icons/arrow-right';
 import { Slider } from './slider';
 
 
+
+export const YOUTUBE_VIDEO_MAIN: Omit<VideoBoxProps, 'dark'> = {
+    videoId: 'tDWmfenF2AM',
+    title: 'The Easiest Way to Store Data',
+    duration: '04:28',
+    startAt: 8
+};
+
 const YOUTUBE_VIDEOS: Omit<VideoBoxProps, 'dark'>[] = [
-    {
-        videoId: 'tDWmfenF2AM',
-        title: 'The Easiest Way to Store Data',
-        duration: '04:28',
-        startAt: 8
-    },
+    YOUTUBE_VIDEO_MAIN,
     {
         videoId: 'qHWrooWyCYg',
         title: 'This solved a problem I\'ve had in Angular for years',

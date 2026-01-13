@@ -1,7 +1,9 @@
 import type {
     RxDocument,
     RxDocumentData,
-    RxStorageChangeEvent
+    RxStorageChangeEvent,
+    WeakRef,
+    FinalizationRegistry
 } from './types/index.d.ts';
 import {
     getFromMapOrThrow,
@@ -98,7 +100,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
                     this.cacheItemByDocId.delete(docId);
                 }
             }
-        }) :
+        }) as any :
         undefined;
 
     constructor(

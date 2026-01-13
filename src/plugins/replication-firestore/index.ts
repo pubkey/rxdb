@@ -23,7 +23,8 @@ import {
     QueryDocumentSnapshot,
     waitForPendingWrites,
     documentId,
-    FirestoreError
+    FirestoreError,
+    QueryConstraint
 } from 'firebase/firestore';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
@@ -116,8 +117,8 @@ export function replicateFirestore<RxDocType>(
         });
     }
 
-    const pullFilters = options.pull?.filter !== undefined
-        ? toArray(options.pull.filter)
+    const pullFilters: QueryConstraint[] = options.pull?.filter !== undefined
+        ? toArray(options.pull.filter) as QueryConstraint[]
         : [];
 
     const pullQuery = query(options.firestore.collection, ...pullFilters);

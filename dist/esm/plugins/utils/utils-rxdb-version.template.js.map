@@ -1,1 +1,0 @@
-{"version":3,"file":"utils-rxdb-version.template.js","names":["RXDB_VERSION"],"sources":["../../../../src/plugins/utils/utils-rxdb-version.template.ts"],"sourcesContent":["/**\n * This file is replaced in the 'npm run build:version' script.\n */\nexport const RXDB_VERSION = '|PLACEHOLDER|';\n"],"mappings":"AAAA;AACA;AACA;AACA,OAAO,IAAMA,YAAY,GAAG,eAAe","ignoreList":[]}

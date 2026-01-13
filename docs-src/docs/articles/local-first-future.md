@@ -7,6 +7,7 @@ description: Discover how local-first transforms web apps, boosts offline resili
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 import {QuoteBlock} from '@site/src/components/quoteblock';
+import {VideoBox} from '@site/src/components/video-box';
 
 # Why Local-First Software Is the Future and what are its Limitations
 
@@ -544,12 +545,10 @@ This **chunk-based** or **scope-based** replication pattern keeps your local sto
 
 In the early days of offline-capable web apps (around 2014), the common phrase was **"Offline-First"**. Tools like **PouchDB** popularized the notion that developers should assume devices are often offline or have flaky connections, so apps must continue to work seamlessly without a network. The guiding principle was *"apps should treat being online as optional."* If a user has no internet access, the application's core features still function, saving or queuing data locally, and automatically synchronizing once connectivity is restored.
 
-<center>
-<h4>This is one of the "early" offline-first videos:</h4>
-<iframe className="img-radius" style={{width: '100%'}} height="315" src="https://www.youtube.com/embed/bWXAZboHZN8?si=hWIBOE9gPk0Quef0" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
-</center>
 
-<br />
+<center>
+    <VideoBox videoId="bWXAZboHZN8" title="What is Offline First?" duration="4:18" />
+</center>
 <br />
 
 Over time, this focus on offline support evolved into the broader concept of **"Local-First Software,"** (see [Ink&Switch](https://martin.kleppmann.com/papers/local-first.pdf)) emphasizing not just offline operation but also the technical underpinnings of **storing data locally** in the client application. While offline-first is primarily about resilience to network loss, local-first highlights ownership, privacy, and performance benefits of keeping the primary data on the user's device. Most tools these days extended the original offline-first concepts, adding real-time reactivity, custom sync, and more nuances like conflict resolution or encryption.

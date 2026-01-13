@@ -129,7 +129,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         public readonly multiInstance: boolean,
         public readonly databaseInstanceToken: string
     ) {
-        this.localStorage = settings.localStorage ? settings.localStorage : window.localStorage;
+        this.localStorage = settings.localStorage ? settings.localStorage : (typeof window !== 'undefined' ? window.localStorage : undefined as any);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey) as any;
         this.docsKey = 'RxDB-ls-doc-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
         this.changestreamStorageKey = 'RxDB-ls-changes-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
@@ -351,7 +351,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async query(
+    query(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const queryPlan = preparedQuery.queryPlan;

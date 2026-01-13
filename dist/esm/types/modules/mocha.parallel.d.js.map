@@ -1,1 +1,0 @@
-{"version":3,"file":"mocha.parallel.d.js","names":[],"sources":["../../../../src/types/modules/mocha.parallel.d.ts"],"sourcesContent":["declare module 'mocha.parallel';\n"],"mappings":"","ignoreList":[]}

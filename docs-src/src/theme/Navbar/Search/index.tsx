@@ -5,7 +5,6 @@ import type {Props} from '@theme/Navbar/Search';
 import styles from './styles.module.css';
 
 export default function NavbarSearch({children, className}: Props): ReactNode {
-  return null;
   return (
     <div className={clsx(className, styles.navbarSearchContainer)}>
       {children}

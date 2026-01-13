@@ -235,6 +235,58 @@ describeParallel('rx-schema.test.ts', () => {
                 it('break when index does not exist in schema properties', () => {
                     assert.throws(() => checkSchema(schemas.notExistingIndex));
                 });
+                it('break when index is string but too long', async () => {
+                    await AsyncTestUtil.assertThrows(
+                        () => checkSchema({
+                            title: 'schema',
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                firstName: {
+                                    type: 'string',
+                                    maxLength: 10000000
+                                }
+                            },
+                            indexes: [
+                                'firstName'
+                            ],
+                            required: ['firstName']
+                        }),
+                        'RxError',
+                        'SC42'
+                    );
+                });
+                it('break when primaryKey maxLength string but too long', async () => {
+                    await AsyncTestUtil.assertThrows(
+                        () => checkSchema({
+                            title: 'schema',
+                            version: 0,
+                            primaryKey: 'id',
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    maxLength: 10000000
+                                },
+                                firstName: {
+                                    type: 'string',
+                                    maxLength: 10000000
+                                }
+                            },
+                            indexes: [
+                                'firstName'
+                            ],
+                            required: ['firstName']
+                        }),
+                        'RxError',
+                        'SC42'
+                    );
+                });
                 it('break compoundIndex key is no string', () => {
                     assert.throws(() => checkSchema(schemas.compoundIndexNoString));
                 });

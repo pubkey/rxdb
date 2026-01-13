@@ -16,7 +16,8 @@ import {
     humansCollection,
     ensureReplicationHasNoErrors,
     ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType
+    SimpleHumanDocumentType,
+    PrimaryHumanDocType
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import config from './unit/config.ts';
@@ -242,7 +243,46 @@ describe('replication-supabase.test.ts', function () {
             const docAfter = await collection.findOne(firstDoc.primary).exec(true);
             assert.strictEqual(docAfter.lastName, 'foobar');
 
+            await collection.database.remove();
+        });
+    });
+    describe('pull query builder', () => {
+        it('should allow restricting the pull query', async () => {
+            await cleanUpServer();
+            await insertDocument(
+                schemaObjects.humanData('builder-allowed', undefined, 'allowed')
+            );
+            await insertDocument(
+                schemaObjects.humanData('builder-blocked', undefined, 'blocked')
+            );
 
+            const collection = await humansCollection.createPrimary(
+                0,
+                undefined,
+                false
+            );
+            const replicationState = replicateSupabase<TestDocType>({
+                tableName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                live: false,
+                pull: {
+                    batchSize,
+                    queryBuilder: ({ query }) =>
+                        query.eq('firstName', 'allowed'),
+                },
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            const docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(ensureNotFalsy(docs[0]).firstName, 'allowed');
+
+            await replicationState.cancel();
             await collection.database.remove();
         });
     });
@@ -492,6 +532,41 @@ describe('replication-supabase.test.ts', function () {
 
             await collectionA.database.close();
             await collectionB.database.close();
+        });
+    });
+
+    describe('issues', () => {
+        it('#7513 push.modifier is never applied', async () => {
+            await cleanUpServer();
+
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+
+
+            const replicationState = replicateSupabase<PrimaryHumanDocType>({
+                tableName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                pull: {
+                    batchSize
+                },
+                push: {
+                    batchSize,
+                    modifier: d => {
+                        d.lastName = 'push-modified';
+                        return d;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await collection.insert(schemaObjects.humanData('aaaa'));
+            await replicationState.awaitInSync();
+            const serverState = await getServerState();
+            const firstDoc = ensureNotFalsy(serverState[0]);
+            assert.strictEqual(firstDoc.lastName, 'push-modified');
+
+            await collection.database.close();
         });
     });
 

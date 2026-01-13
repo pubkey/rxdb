@@ -8,23 +8,22 @@ import { HighlightSearchResults } from "./HighlightSearchResults";
 const Search = props => {
   const initialized = useRef(false);
   const searchBarRef = useRef(null);
-  const [indexReady, setIndexReady] = useState(false);
   const history = useHistory();
   const { siteConfig = {} } = useDocusaurusContext();
   const pluginConfig = (siteConfig.plugins || []).find(plugin => Array.isArray(plugin) && typeof plugin[0] === "string" && plugin[0].includes("docusaurus-lunr-search"))
   const isBrowser = useIsBrowser();
   const { baseUrl } = siteConfig;
   const assetUrl = pluginConfig && pluginConfig[1]?.assetUrl || baseUrl;
-  const [isDocsPage, setIsDocsPage] = useState(false);
-  useEffect(() => {
-    setIsDocsPage(location.pathname.includes('.html'));
-  }, []);
   const initAlgolia = (searchDocs, searchIndex, DocSearch, options) => {
     new DocSearch({
       searchDocs,
       searchIndex,
       baseUrl,
       inputSelector: "#search_input_react",
+      autocompleteOptions: {
+        hint: false,
+        appendTo: '.navbar__search',
+      },
       // Override algolia's default selection event, allowing us to do client-side
       // navigation and avoiding a full page refresh.
       handleSelected: (_input, _event, suggestion) => {
@@ -73,6 +72,7 @@ const Search = props => {
 
   const loadAlgolia = () => {
     if (!initialized.current) {
+      initialized.current = true;
       Promise.all([
         getSearchDoc(),
         getLunrIndex(),
@@ -86,7 +86,6 @@ const Search = props => {
         initAlgolia(searchDocs, searchIndex, DocSearch, options);
         setIndexReady(true);
       });
-      initialized.current = true;
     }
   };
 
@@ -105,10 +104,6 @@ const Search = props => {
   if (isBrowser) {
     placeholder = window.navigator.platform.startsWith("Mac") ?
       'Search ⌘+K' : 'Search Ctrl+K'
-  }
-
-  if (!isDocsPage) {
-    return;
   }
 
   return (
@@ -138,7 +133,7 @@ const Search = props => {
         onFocus={toggleSearchIconClick}
         onBlur={toggleSearchIconClick}
         ref={searchBarRef}
-        disabled={!indexReady}
+        // disabled={!indexReady}
         style={{
           marginLeft: 'auto',
           marginRight: 'auto',

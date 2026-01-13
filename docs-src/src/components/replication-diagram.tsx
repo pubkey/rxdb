@@ -13,7 +13,7 @@ export type DeviceType = 'smartwatch' | 'phone' | 'desktop' | 'tablet';
  * Container width & height are calculated from element positions,
  * and the inner diagram div is right-aligned inside the outer container.
  */
-export function ReplicationDiagram({ scale: scaleProp = 1, dark }: { scale?: number; dark: boolean; }) {
+export function ReplicationDiagram({ scale: scaleProp = 1, dark, hasIcon = true }: { scale?: number; dark: boolean; hasIcon?: boolean; }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // trigger rerender on resize so scaling updates correctly if font/zoom changes
@@ -172,9 +172,13 @@ export function ReplicationDiagram({ scale: scaleProp = 1, dark }: { scale?: num
             transformStyle: 'preserve-3d',
           }}
         >
-          <Cloud darkMode={dark} style={{
-            width: '100%'
-          }} />
+          <Cloud
+            darkMode={dark}
+            style={{
+              width: '100%'
+            }}
+            hasIcon={hasIcon}
+          />
         </div>
 
         {/* Lines & devices */}

@@ -1428,18 +1428,19 @@ describe('migration-schema.test.ts', function () {
             );
             await newDb.close();
         });
-        it('version 15 data should be compatible with version 16 code', async () => {
+        it('version data should be compatible with next version code', async () => {
             const dbName = randomToken(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),
             });
+
             await db.storageTokenDocument;
 
             // fake an older database state by changing the internal version.
             const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
             const newTokenDoc = clone(tokenDoc);
-            newTokenDoc.data.rxdbVersion = '15.x.x';
+            newTokenDoc.data.rxdbVersion = '16.x.x';
 
             const writeResponse = await db.internalStore.bulkWrite([{
                 previous: tokenDoc,

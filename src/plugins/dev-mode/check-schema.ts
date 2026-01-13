@@ -5,7 +5,10 @@
 import {
     newRxError
 } from '../../rx-error.ts';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper.ts';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper.ts';
 import type {
     CompositePrimaryKey,
     JsonSchema,
@@ -393,6 +396,13 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                         const maxLength = schemaPart.maxLength;
                         if (!maxLength) {
                             throw newRxError('SC34', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
+                        if (maxLength > 2048) {
+                            throw newRxError('SC42', {
                                 index,
                                 field: fieldName,
                                 schema: jsonSchema

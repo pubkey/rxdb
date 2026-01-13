@@ -18,7 +18,7 @@ import { Request, Response, NextFunction } from 'express';
 import express from 'express';
 // we need cors because this server is also used in browser-tests
 import cors from 'cors';
-import { graphqlHTTP } from 'express-graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
 
 import {
     GRAPHQL_PATH,
@@ -284,11 +284,13 @@ export async function spawn(
         }
     });
 
-    app.use(GRAPHQL_PATH, graphqlHTTP({
-        schema: schema,
-        rootValue: root,
-        graphiql: true,
-    }));
+    app.use(
+        GRAPHQL_PATH,
+        createHandler({
+            schema,
+            rootValue: root,
+        })
+    );
 
     const httpUrl = 'http://localhost:' + port + GRAPHQL_PATH;
     const clientState: RxGraphQLReplicationClientState = {
