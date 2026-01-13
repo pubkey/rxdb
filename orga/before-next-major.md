@@ -20,11 +20,11 @@ We already pass the context string to `storageInstance.bulkWrite()` and when we 
 
 ## (premium) Add databaseNamePrefix to premium sqlite storage
 
-## (premium) Merge memory-mapped fix BREAKING: deleted docs must be purged
+## (premium) Merge memory-mapped fix BREAKING: deleted docs must be purged [DONE]
 
 https://github.com/pubkey/rxdb-premium-dev/pull/480
 
-## (premium) Merge OPFS fix BREAKING: FIX memory and cleanup leak
+## (premium) Merge OPFS fix BREAKING: FIX memory and cleanup leak [DONE]
 
 https://github.com/pubkey/rxdb-premium-dev/pull/477
 
