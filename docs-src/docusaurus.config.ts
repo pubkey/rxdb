@@ -60,6 +60,61 @@ const config: Config = {
     },
     plugins: [
         [
+            'docusaurus-plugin-llms',
+            {
+                // Options here
+                generateLLMsTxt: true,
+                generateLLMsFullTxt: true,
+                docsDir: 'docs',
+                    /**
+                     * Add deprecated stuff here
+                     */
+                    ignoreFiles: [
+                    'docs/adapters.md',
+                    'docs/rx-storage-lokijs.md'
+                ],
+                title: 'RxDB Documentation',
+                description: 'Authoritative reference documentation for RxDB, a reactive, local-first NoSQL database for JavaScript with offline support and explicit replication.',
+                // includeBlog: true,
+                // Content cleaning options
+                excludeImports: false,
+                removeDuplicateHeadings: true,
+                // Generate individual markdown files following llmstxt.org specification
+                generateMarkdownFiles: true,
+                // Control documentation order
+                // includeOrder: [
+                //     'getting-started/*',
+                //     'guides/*',
+                //     'api/*',
+                // ],
+                includeUnmatchedLast: true,
+                // Path transformation options
+                pathTransformation: {
+                    // Paths to ignore when constructing URLs (will be removed if found)
+                    ignorePaths: ['docs'],
+                    // // Paths to add when constructing URLs (will be prepended if not already present)
+                    // addPaths: ['api'],
+                },
+                // Custom LLM files for specific documentation sections
+                // customLLMFiles: [
+                //     {
+                //         filename: 'llms-python.txt',
+                //         includePatterns: ['api/python/**/*.md', 'guides/python/*.md'],
+                //         fullContent: true,
+                //         title: 'Python API Documentation',
+                //         description: 'Complete reference for Python API'
+                //     },
+                //     {
+                //         filename: 'llms-tutorials.txt',
+                //         includePatterns: ['tutorials/**/*.md'],
+                //         fullContent: false,
+                //         title: 'Tutorial Documentation',
+                //         description: 'All tutorials in a single file'
+                //     }
+                // ],
+            },
+        ],
+        [
             './docusaurus-lunr-search-main/src/',
             {
                 excludeRoutes: ['blog', 'releases'],

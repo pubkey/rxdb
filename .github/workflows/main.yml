@@ -408,9 +408,9 @@ jobs:
           working-directory: ./examples/angular
           run: npm run test:build
 
-      # - name: angular test ssr
-      #   working-directory: ./examples/angular
-      #   run: npm run test:ssr
+      - name: angular test ssr
+        working-directory: ./examples/angular
+        run: npm run test:ssr
 
       - name: Capacitor build
         working-directory: ./examples/angular

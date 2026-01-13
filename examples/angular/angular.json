@@ -15,14 +15,14 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/angular/browser",
+            "outputPath": "dist/angular",
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.app.json",
-            "aot": false,
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -32,12 +32,11 @@
               "src/styles.less"
             ],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -51,10 +50,7 @@
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
@@ -67,11 +63,74 @@
                   "maximumError": "10kb"
                 }
               ],
-              "serviceWorker": true,
-              "ngswConfigPath": "ngsw-config.json"
+              "serviceWorker": "ngsw-config.json"
+            },
+            "ssr-dev": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.ssr.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "outputHashing": "all",
+              "sourceMap": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ],
+              "serviceWorker": "ngsw-config.json",
+              "server": "src/main.server.ts",
+              "prerender": true,
+              "ssr": {
+                "entry": "server.ts"
+              }
+            },
+            "ssr-prod": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.ssr.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ],
+              "serviceWorker": "ngsw-config.json",
+              "server": "src/main.server.ts",
+              "prerender": true,
+              "ssr": {
+                "entry": "server.ts"
+              }
             },
             "capacitor": {
-              "outputPath": "dist/angular/capacitor",
+              "outputPath": {
+                "base": "dist/angular/capacitor"
+              },
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -83,8 +142,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "statsJson": false,
               "budgets": [
                 {
@@ -104,39 +161,96 @@
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
             "buildTarget": "angular:build"
           },
           "configurations": {
             "production": {
               "buildTarget": "angular:build:production"
+            },
+            "ssr-dev": {
+              "buildTarget": "angular:build:ssr-dev"
+            },
+            "ssr-prod": {
+              "buildTarget": "angular:build:ssr-prod"
             }
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "angular:build"
           }
         },
-        "prerender": {
-          "builder": "@angular-devkit/build-angular:prerender",
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
           "options": {
-            "browserTarget": "angular:build:production",
-            "serverTarget": "angular:server:production",
-            "routes": [
-              "/"
-            ]
+            "outputPath": "dist/angular/server",
+            "main": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "optimization": false,
+            "sourceMap": true,
+            "extractLicenses": false
           },
           "configurations": {
-            "production": {}
-          }
+            "production": {
+              "outputHashing": "media",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true
+            },
+            "capacitor": {
+              "outputHashing": "media",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.capacitor.ts"
+                }
+              ],
+              "optimization": true,
+              "sourceMap": false,
+              "extractLicenses": true
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }
   },
   "cli": {
     "analytics": false
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
   }
 }
