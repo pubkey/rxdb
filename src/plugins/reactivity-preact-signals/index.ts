@@ -48,7 +48,7 @@ export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignal>
                 sig.value = value;
             } else {
                 /**
-                 * The callback of FinalizationRegistry is not relyable by definition
+                 * The callback of FinalizationRegistry is not reliable by definition
                  * so we have this fallback to still clean unused signals subscriptions
                  * when they emit but the signal is already not used anymore.
                  * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry#notes_on_cleanup_callbacks
