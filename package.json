@@ -360,6 +360,18 @@
       "import": "./dist/esm/plugins/validate-z-schema/index.js",
       "default": "./dist/esm/plugins/validate-z-schema/index.js"
     },
+    "./plugins/reactivity-vue": {
+      "types": "./dist/types/plugins/reactivity-vue/index.d.ts",
+      "require": "./dist/cjs/plugins/reactivity-vue/index.js",
+      "import": "./dist/esm/plugins/reactivity-vue/index.js",
+      "default": "./dist/esm/plugins/reactivity-vue/index.js"
+    },
+    "./plugins/reactivity-preact-signals": {
+      "types": "./dist/types/plugins/reactivity-preact-signals/index.d.ts",
+      "require": "./dist/cjs/plugins/reactivity-preact-signals/index.js",
+      "import": "./dist/esm/plugins/reactivity-preact-signals/index.js",
+      "default": "./dist/esm/plugins/reactivity-preact-signals/index.js"
+    },
     "./plugins/test-utils": {
       "types": "./dist/types/plugins/test-utils/index.d.ts",
       "require": "./dist/cjs/plugins/test-utils/index.js",
@@ -482,10 +494,12 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^7.8.2",
     "firebase": "^11.10.0",
     "mongodb": "^6.21.0",
-    "nats": "^2.29.3"
+    "nats": "^2.29.3",
+    "rxjs": "^7.8.2",
+    "@preact/signals-core": "*",
+    "vue": "*"
   },
   "peerDependenciesMeta": {
     "firebase": {
@@ -495,6 +509,12 @@
       "optional": true
     },
     "nats": {
+      "optional": true
+    },
+    "@preact/signals-core": {
+      "optional": true
+    },
+    "vue": {
       "optional": true
     }
   },
@@ -530,9 +550,6 @@
     "z-schema": "6.0.2"
   },
   "devDependencies": {
-    "firebase": "11.10.0",
-    "mongodb": "6.21.0",
-    "nats": "2.29.3",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.28.6",
     "@babel/plugin-external-helpers": "7.27.1",
@@ -554,6 +571,7 @@
     "@eslint/eslintrc": "3.3.3",
     "@eslint/js": "9.39.2",
     "@firebase/rules-unit-testing": "4.0.1",
+    "@preact/signals-core": "1.12.1",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-node-resolve": "16.0.3",
     "@stylistic/eslint-plugin": "5.7.0",
@@ -590,6 +608,7 @@
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
+    "firebase": "11.10.0",
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
     "globals": "16.5.0",
@@ -615,6 +634,8 @@
     "mini-css-extract-plugin": "2.9.4",
     "mocha": "11.7.5",
     "mocha.parallel": "0.15.6",
+    "mongodb": "6.21.0",
+    "nats": "2.29.3",
     "nconf": "0.13.0",
     "node-appwrite": "17.2.0",
     "node-datachannel": "0.31.0",

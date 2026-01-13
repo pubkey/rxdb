@@ -7,6 +7,7 @@
 
 ### 17.0.0-beta.3 (7 January 2026)
 
+- CHANGE moved `reactivity-vue` and `reactivity-preact-signals` from premium to core.
 - ADD `databaseNamePrefix` option to premium SQLite RxStorage
 - ADD [llms.txt](https://rxdb.info/llms.txt)
 - CHANGE These dependencies are now optional peer dependencies: `firebase`, `mongodb`, `nats`

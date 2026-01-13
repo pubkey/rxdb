@@ -57,13 +57,11 @@ An example of how signals are used in angular with RxDB, can be found at the [Rx
 
 When adding custom reactivity for other JavaScript frameworks or libraries, make sure to correctly unsubscribe whenever you call `observable.subscribe()` in the `fromObservable()` method.
 
-There are also some [👑 Premium Plugins](/premium/) that can be used with other (non-angular frameworks):
-
-### Vue Shallow Refs
+### Vue Shallow Refs (for Vue.js)
 
 ```ts
 // npm install vue --save
-import { VueRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-vue';
+import { VueRxReactivityFactory } from 'rxdb/plugins/reactivity-vue';
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const database = await createRxDatabase({
@@ -73,11 +71,11 @@ const database = await createRxDatabase({
 });
 ```
 
-### Preact Signals
+### Preact Signals (for React)
 
 ```ts
 // npm install @preact/signals-core --save
-import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
+import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
 import { createRxDatabase } from 'rxdb/plugins/core';
 const database = await createRxDatabase({
     name: 'mydb',
@@ -93,22 +91,38 @@ All observable data in RxDB is marked by the single dollar sign `$` like `RxColl
 
 ```ts
 // RxDocument
-const signal = myRxDocument.get$$('foobar'); // get signal that represents the document field 'foobar'
-const signal = myRxDocument.foobar$$; // same as above
-const signal = myRxDocument.$$; // get signal that represents whole document over time
-const signal = myRxDocument.deleted$$; // get signal that represents the deleted state of the document
+
+// get signal that represents the document field 'foobar'
+const signal = myRxDocument.get$$('foobar');
+
+// same as above
+const signal = myRxDocument.foobar$$;
+
+// get signal that represents whole document over time
+const signal = myRxDocument.$$;
+
+// get signal that represents the deleted state of the document
+const signal = myRxDocument.deleted$$;
 ```
 
 ```ts
 // RxQuery
-const signal = collection.find().$$; // get signal that represents the query result set over time
-const signal = collection.findOne().$$; // get signal that represents the query result set over time
+
+// get signal that represents the query result set over time
+const signal = collection.find().$$;
+
+// get signal that represents the query result set over time
+const signal = collection.findOne().$$;
 ```
 
 ```ts
 // RxLocalDocument
-const signal = myRxLocalDocument.$$; // get signal that represents the whole local document state
-const signal = myRxLocalDocument.get$$('foobar'); // get signal that represents the foobar field
+
+// get signal that represents the whole local document state
+const signal = myRxLocalDocument.$$;
+
+// get signal that represents the foobar field
+const signal = myRxLocalDocument.get$$('foobar');
 ```
 
 ## Limitations
