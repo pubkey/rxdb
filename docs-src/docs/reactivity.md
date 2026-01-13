@@ -4,6 +4,9 @@ slug: reactivity.html
 description: Level up reactivity with Angular signals, Vue refs, or Preact signals in RxDB. Learn how to integrate custom reactivity to power your dynamic UI.
 ---
 
+import {Tabs} from '@site/src/components/tabs';
+import {Steps} from '@site/src/components/steps';
+
 # Signals & Co. - Custom reactivity adapters instead of RxJS Observables
 
 RxDB internally uses the [rxjs library](https://rxjs.dev/) for observables and streams. All functionalities of RxDB like [query](./rx-query.md#observe) results or [document fields](./rx-document.md#observe) that expose values that change over time return a rxjs `Observable` that allows you to observe the values and update your UI accordingly depending on the changes to the database state.
@@ -13,37 +16,27 @@ However there are many reasons to use other reactivity libraries that use a diff
 RxDB allows you to pass a custom reactivity factory on [RxDatabase](./rx-database.md) creation so that you can easily access values wrapped with your custom datatype in a convenient way.
 
 
-## Adding a custom reactivity factory (in angular projects)
+## Adding a reactivity factory
 
-If you have an angular project, to get custom reactivity objects out of RxDB, you have to pass a `RxReactivityFactory` during database creation. The `RxReactivityFactory` has the `fromObservable()` method that creates your custom reactivity object based on an observable and an initial value.
 
-For example to use signals in angular, you can use the angular [toSignal](https://angular.io/api/core/rxjs-interop/toSignal) function:
+<Tabs>
+
+### Angular (Signals)
+
+<Steps>
+
+#### Import
 
 ```ts
-import { RxReactivityFactory } from 'rxdb/plugins/core';
-import { Signal, untracked } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-
-export function createReactivityFactory(injector: Injector): RxReactivityFactory<Signal<any>> {
-  return {
-    fromObservable(observable$, initialValue: any) {
-      return untracked(() =>
-        toSignal(observable$, {
-          initialValue,
-          injector,
-          rejectErrors: true
-        })
-      );
-    }
-  };
-}
+import { createReactivityFactory } from 'rxdb/plugins/reactivity-angular';
+import { Injectable, inject } from '@angular/core';
 ```
 
-Then you can pass this factory when you create the [RxDatabase](./rx-database.md):
+#### Set the reactivity factory
+
+Set the factory as `reactivity` option when calling `createRxDatabase`.
 
 ```ts
-import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 const database = await createRxDatabase({
     name: 'mydb',
     storage: getRxStorageLocalstorage(),
@@ -51,32 +44,31 @@ const database = await createRxDatabase({
 });
 ```
 
-An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/tree/master/examples/angular/src/app/components/heroes-list)
+</Steps>
 
-## Adding reactivity for other Frameworks
+An example of how signals are used in angular with RxDB, can be found at the [RxDB Angular Example](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/app/components/heroes-list/heroes-list.component.ts#L46)
 
-When adding custom reactivity for other JavaScript frameworks or libraries, make sure to correctly unsubscribe whenever you call `observable.subscribe()` in the `fromObservable()` method.
+### React (Preact Signals)
 
-### Vue Shallow Refs (for Vue.js)
+<Steps>
 
-```ts
-// npm install vue --save
-import { VueRxReactivityFactory } from 'rxdb/plugins/reactivity-vue';
-import { createRxDatabase } from 'rxdb/plugins/core';
-import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-const database = await createRxDatabase({
-    name: 'mydb',
-    storage: getRxStorageLocalstorage(),
-    reactivity: VueRxReactivityFactory
-});
+#### Install Preact Signals
+
+```bash
+npm install @preact/signals-core --save
 ```
 
-### Preact Signals (for React)
+#### Import
 
 ```ts
-// npm install @preact/signals-core --save
-import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
-import { createRxDatabase } from 'rxdb/plugins/core';
+import {
+  PreactSignalsRxReactivityFactory
+} from 'rxdb/plugins/reactivity-preact-signals';
+```
+
+#### Set the reactivity factory
+
+```ts
 const database = await createRxDatabase({
     name: 'mydb',
     storage: getRxStorageLocalstorage(),
@@ -84,6 +76,32 @@ const database = await createRxDatabase({
 });
 ```
 
+</Steps>
+
+
+### Vue (Shallow Refs)
+
+<Steps>
+
+#### Import
+```ts
+import { VueRxReactivityFactory } from 'rxdb/plugins/reactivity-vue';
+```
+
+#### Set the reactivity factory
+
+```ts
+const database = await createRxDatabase({
+    name: 'mydb',
+    storage: getRxStorageLocalstorage(),
+    reactivity: VueRxReactivityFactory
+});
+```
+
+</Steps>
+
+
+</Tabs>
 
 ## Accessing custom reactivity objects
 
@@ -124,8 +142,3 @@ const signal = myRxLocalDocument.$$;
 // get signal that represents the foobar field
 const signal = myRxLocalDocument.get$$('foobar');
 ```
-
-## Limitations
-
-- TypeScript typings are not fully implemented, make a PR if something is missing or not working for you.
-- Currently not all observables things in RxDB are implemented to work with custom reactivity. Please make a PR if you have the need for any missing one.

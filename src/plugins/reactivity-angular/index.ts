@@ -5,8 +5,7 @@ import type { RxReactivityFactory } from '../../types';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 export function createReactivityFactory(
-    injector: Injector,
-    toSignal: (source: any, options?: any) => Signal<any>
+    injector: Injector
 ): RxReactivityFactory<Signal<any>> {
     return {
         fromObservable(observable$: any, initialValue: any) {
