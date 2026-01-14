@@ -87,7 +87,7 @@ export function getReplicationHandlerByCollection<RxDocType>(
 
 export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
     const { database, ...wsOptions } = options;
-    const serverState = startSocketServer(wsOptions);
+    const serverState = startSocketServer(wsOptions as any);
 
     // auto close when the database gets closed
     database.onClose.push(() => serverState.close());
