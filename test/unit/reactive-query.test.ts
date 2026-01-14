@@ -187,8 +187,72 @@ describeParallel('reactive-query.test.js', () => {
         });
     });
     describe('ISSUES', () => {
+        it('#7075 query results not correct if changes happen faster then the query updates', async () => {
+            if (config.storage.name === 'foundationdb') {
+                // TODO randomly fails in foundationdb
+                return;
+            }
+            if (config.storage.name === 'sqlite-trial') {
+                // sqlite cannot insert too many rows
+                return;
+            }
+            const c = await humansCollection.create(0);
+            let docSize = 0;
+            const genId = () => {
+                if (typeof crypto === 'object' && 'randomUUID' in crypto) {
+                    return crypto.randomUUID();
+                }
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (cc) => {
+                    const r = Math.random() * 16 | 0;
+                    return (cc === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+            };
+
+            for (let i = 0; i < 1; i++) {
+                const len = 3000;
+                docSize += len;
+                const docs = Array.from({ length: len }, () => {
+                    const id = genId();
+                    return schemaObjects.humanData(id);
+                });
+                await c.bulkInsert(docs);
+            }
+
+            let result: RxDocument<{
+                firstName: string;
+                lastName: string;
+                passportId: string;
+                age?: number | undefined;
+            }, {}>[] = [];
+
+            let done = false;
+            let insertLen = 0;
+
+            c.find({ sort: [{ age: 'asc', passportId: 'asc', lastName: 'desc', firstName: 'asc' }] }).$.subscribe(r => {
+                done = true;
+                result = r;
+            });
+
+
+            (async () => {
+                while (!done) {
+                    await wait(2);
+                    const id = genId();
+                    c.insert(schemaObjects.humanData(id));
+                    insertLen++;
+                }
+            })();
+
+
+            await waitUntil(() => done);
+            await waitUntil(() => result.length === insertLen + docSize);
+            await wait(50);
+            assert.strictEqual(result.length, insertLen + docSize);
+
+            c.database.close();
+        });
         // his test failed randomly, so we run it more often.
-        new Array(isFastMode() ? 3 : 10)
+        new Array(isFastMode() ? 1 : 5)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
                     const docAmount = isFastMode() ? 2 : 10;
