@@ -1,4 +1,4 @@
-import { useOperators } from 'mingo/core';
+import { Context } from 'mingo/core';
 import { Query } from 'mingo/query';
 import type { MangoQuerySelector } from './types/index.d.ts';
 import {
@@ -6,35 +6,39 @@ import {
     $sort
 } from 'mingo/operators/pipeline';
 import {
-    $and,
-    $not,
-    $or,
-    $nor
-} from 'mingo/operators/query/logical';
+
+} from 'mingo/operators/expression';
 import {
+} from 'mingo/operators/projection';
+import {
+    $elemMatch,
     $eq,
+    $nor,
+    $exists,
+    $regex,
     $ne,
-    $gt,
     $gte,
     $lt,
     $lte,
     $nin,
-    $in
-} from 'mingo/operators/query/comparison';
-import {
-    $regex,
+    $in,
+    $gt,
+    $or,
+    $and,
+    $not,
+    $type,
+    $size,
     $mod
+} from 'mingo/operators/query';
+import {
 } from 'mingo/operators/query/evaluation';
 import {
-    $elemMatch,
-    $size
 } from 'mingo/operators/query/array';
 import {
-    $exists,
-    $type
 } from 'mingo/operators/query/element';
 
 let mingoInitDone = false;
+let context: Context;
 
 
 /**
@@ -48,31 +52,36 @@ export function getMingoQuery<RxDocType>(
     selector?: MangoQuerySelector<RxDocType>
 ) {
     if (!mingoInitDone) {
-        useOperators('pipeline' as any, {
-            $sort,
-            $project
-        } as any);
-        useOperators('query' as any, {
-            $and,
-            $eq,
-            $elemMatch,
-            $exists,
-            $gt,
-            $gte,
-            $in,
-            $lt,
-            $lte,
-            $ne,
-            $nin,
-            $mod,
-            $nor,
-            $not,
-            $or,
-            $regex,
-            $size,
-            $type,
-        } as any);
+        context = Context.init({
+            pipeline: {
+                $sort,
+                $project
+            },
+            query: {
+                $elemMatch,
+                $eq,
+                $nor,
+                $exists,
+                $regex,
+                $and,
+                $gt,
+                $gte,
+                $in,
+                $lt,
+                $lte,
+                $ne,
+                $nin,
+                $mod,
+                $not,
+                $or,
+                $size,
+                $type,
+            },
+        });
         mingoInitDone = true;
     }
-    return new Query(selector as any);
+
+    return new Query(selector as any, {
+        context
+    });
 }
