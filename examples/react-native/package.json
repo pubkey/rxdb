@@ -38,7 +38,7 @@
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
     "expo-crypto": "15.0.8",
-    "expo-sqlite": "15.2.14",
+    "expo-sqlite": "16.0.10",
     "rxdb": "file:rxdb-local.tgz"
   }
 }
