@@ -6,7 +6,8 @@ import {
     schemaObjects,
     schemas,
     getConfig,
-    SimpleHumanAgeDocumentType
+    SimpleHumanAgeDocumentType,
+    isFastMode,
 } from '../../plugins/test-utils/index.mjs';
 
 import { waitUntil } from 'async-test-util';
@@ -21,6 +22,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+import { PREACT_SIGNAL_STATE, PreactSignal, PreactSignalsRxReactivityFactory } from '../../plugins/reactivity-preact-signals/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 
@@ -30,7 +32,7 @@ addRxPlugin(RxDBQueryBuilderPlugin);
  * double dollar sign $.
  * Used for stuff like signals etc.
  */
-describeParallel('reactivity.test.js', () => {
+describeParallel('reactivity.test.ts', () => {
     type ReactivityType = {
         obs: Observable<any>;
         init: any;
@@ -151,6 +153,53 @@ describeParallel('reactivity.test.js', () => {
             signal.obs.subscribe((v: boolean) => lastEmit = v);
             await waitUntil(() => !!lastEmit);
             collection.database.close();
+        });
+    });
+    describe('preact-signals.test.ts', () => {
+        it('should get the signal and clean up correctly', async function () {
+            /**
+             * This test can take very long because we await the garbage collection
+             * of the signal.
+             */
+            if (isFastMode() || !(global as any).gc) {
+                return;
+            }
+
+            // trigger garbace collector very often to speed up the test
+            const intervalId = setInterval(() => {
+                (global as any).gc();
+            }, 200);
+
+            const db = await createRxDatabase<{ docs: any; }, any, any, PreactSignal>({
+                name: randomToken(10),
+                storage: getConfig().storage.getStorage(),
+                reactivity: PreactSignalsRxReactivityFactory
+            });
+            const collections = await db.addCollections({
+                docs: {
+                    schema: schemas.human
+                }
+            });
+            const collection = collections.docs;
+
+            // create signal and add it to memory
+            let querySignal = collection.find().$$;
+            assert.strictEqual(PREACT_SIGNAL_STATE.subscribeCount, 1);
+
+            // check correct values
+            await waitUntil(() => !!querySignal.value);
+            assert.deepStrictEqual(querySignal.value, []);
+            await collection.insert(schemaObjects.humanData());
+            assert.deepStrictEqual(querySignal.value.length, 1);
+
+            // ensure unsubscribe is called when signal gets garbage collected
+            querySignal = {} as any;
+            await waitUntil(() => {
+                return PREACT_SIGNAL_STATE.subscribeCount === 0;
+            }, undefined, 200);
+
+            clearInterval(intervalId);
+            await db.close();
         });
     });
     describe('issues', () => { });

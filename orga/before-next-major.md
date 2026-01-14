@@ -18,7 +18,7 @@ Same for /docs, use a different branch for that.
 ## Add `context` string to all write errors [DONE]
 We already pass the context string to `storageInstance.bulkWrite()` and when we include it into bulk-write errors, debugging becomes way easier.
 
-## (premium) Add databaseNamePrefix to premium sqlite storage
+## (premium) Add databaseNamePrefix to premium sqlite storage [DONE]
 
 ## (premium) Merge memory-mapped fix BREAKING: deleted docs must be purged [DONE]
 

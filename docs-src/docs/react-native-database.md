@@ -304,12 +304,6 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 | **Schema Handling**     | None                                 | SQL schema, migrations needed           | No formal schema, doc-based               | Optional JSON-Schema, typed checks, compression            | Declarative schema, migration needed          | No strict schema; rules in console mostly                 |
 | **Usage Cases**         | Store small user settings            | Local structured data, moderate queries | Basic doc store, synergy with CouchDB     | Reactive offline-first for large or dynamic data           | Local object DB, locked to MongoDB realm sync | Real-time Google backend, partial offline, vendor lock-in |
 
-<!-- TODO
-## Realm
-
-- bound to mongodb cloud replication
--->
-
 
 ## Follow up
 

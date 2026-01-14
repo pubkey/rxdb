@@ -10,7 +10,6 @@ import type {
     RxStorageChangeEvent
 } from './types/index.d.ts';
 import {
-    appendToArray,
     requestIdlePromiseNoQueue
 } from './plugins/utils/index.ts';
 
@@ -76,7 +75,7 @@ export class ChangeEventBuffer<RxDocType> {
         if (events.length > this.limit) {
             this.buffer = events.slice(events.length * -1);
         } else {
-            appendToArray(this.buffer, events);
+            this.buffer = this.buffer.concat(events);
             this.buffer = this.buffer.slice(this.limit * -1);
         }
         const counterBase = counterBefore + 1;

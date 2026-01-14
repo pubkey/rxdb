@@ -170,7 +170,7 @@ RxDB typically exposes reactivity via RxJS observables. However, some developers
 ```ts
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
-import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
+import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
 
 (async function setUpRxDBWithSignals() {
   const db = await createRxDatabase({
@@ -186,11 +186,11 @@ import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivit
 })();
 ```
 
-Preact Signals rely on “signals” instead of Observables—some developers find them more straightforward to adopt, especially for fine-grained reactivity. In ReactJS, you might still prefer RxJS-based subscriptions unless you add bridging code for signals.
+Preact Signals rely on `signals` instead of `Observables`. Some developers find them more straightforward to adopt, especially for fine-grained reactivity. In ReactJS, you might still prefer RxJS-based subscriptions unless you add bridging code for signals.
 
 ## Part 5: Encrypting the Storage with RxDB
 
-For more advanced ReactJS storage needs—especially when sensitive user data is involved—you might want to encrypt stored documents at rest. RxDB provides a robust [encryption plugin](../encryption.md):
+For more advanced ReactJS storage needs—especially when sensitive user data is involved - you might want to encrypt stored documents at rest. RxDB provides a robust [encryption plugin](../encryption.md):
 
 ```ts
 import { createRxDatabase } from 'rxdb';

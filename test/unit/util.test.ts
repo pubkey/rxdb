@@ -25,8 +25,7 @@ import {
     stringToArrayBuffer,
     arrayBufferToString,
     clone,
-    errorToPlainJson,
-    appendToArray
+    errorToPlainJson
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -178,20 +177,6 @@ describe('util.test.js', () => {
                 }
             });
 
-        });
-    });
-    describe('.appendToArray()', () => {
-        it('should correctly merge the arrays', () => {
-            const base = [1, 2, 3];
-            const add = [4, 5, 6];
-            appendToArray(base, add);
-            assert.deepStrictEqual(base, [1, 2, 3, 4, 5, 6]);
-        });
-        it('should correctly merge the arrays', () => {
-            const base = [1, 2, 3];
-            const add: number[] = [];
-            appendToArray(base, add);
-            assert.deepStrictEqual(base, [1, 2, 3]);
         });
     });
     describe('base64 helpers', () => {

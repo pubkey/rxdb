@@ -17,8 +17,9 @@ import type {
     TopLevelProperty
 } from '../../types/index.d.ts';
 import {
-    appendToArray,
-    flattenObject, getProperty, isMaybeReadonlyArray,
+    flattenObject,
+    getProperty,
+    isMaybeReadonlyArray,
     trimDots
 } from '../../plugins/utils/index.ts';
 import { rxDocumentProperties } from './entity-properties.ts';
@@ -512,7 +513,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     (jsonSchema.indexes || [])
         .reduce((indexPaths: string[], currentIndex) => {
             if (isMaybeReadonlyArray(currentIndex)) {
-                appendToArray(indexPaths, currentIndex);
+                indexPaths = indexPaths.concat(currentIndex);
             } else {
                 indexPaths.push(currentIndex);
             }

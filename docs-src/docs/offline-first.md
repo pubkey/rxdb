@@ -107,13 +107,6 @@ On offline first apps, your global state is already there in a single place stor
 You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.
 
 
-<!--
- TODO topics
- - you might not need a backend
-   - nothing to sync
-   - sync can be done webrtc https://hypercore-protocol.org/
--->
-
 
 ## Follow up
 
