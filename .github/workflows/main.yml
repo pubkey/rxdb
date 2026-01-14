@@ -37,7 +37,7 @@ jobs:
           npm -v
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -75,7 +75,7 @@ jobs:
           npm -v
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -104,7 +104,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -130,7 +130,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -172,7 +172,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -221,7 +221,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -256,7 +256,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder and docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -303,7 +303,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -330,7 +330,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -373,7 +373,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -427,7 +427,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -466,7 +466,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -956,7 +956,7 @@ jobs:
           node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-node-modules
         with:
@@ -1001,7 +1001,7 @@ jobs:
 
       # deno (must be last because it messes up with file permissions)
       - name: Reuse deno cache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-deno-modules
         with:
