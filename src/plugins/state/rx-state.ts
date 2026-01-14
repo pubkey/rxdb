@@ -23,7 +23,6 @@ import {
     getProperty,
     setProperty,
     PROMISE_RESOLVE_VOID,
-    appendToArray,
     clone,
     randomToken,
     deepEqual,
@@ -135,7 +134,7 @@ export class RxStateBase<T, Reactivity = unknown> {
             let done = false;
             while (!done) {
                 const lastIdDoc = await this._lastIdQuery.exec();
-                appendToArray(useWrites, this._nonPersisted);
+                useWrites = useWrites.concat(this._nonPersisted);
                 this._nonPersisted = [];
                 const nextId = nextRxStateId(lastIdDoc ? lastIdDoc.id : undefined);
                 try {

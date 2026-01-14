@@ -4,7 +4,9 @@ slug: rx-storage-mongodb.html
 description: Combine RxDB's real-time sync with MongoDB's scalability. Harness the MongoDB RxStorage to seamlessly expand your database capabilities.
 ---
 
-# MongoDB RxStorage (beta)
+import {Steps} from '@site/src/components/steps';
+
+# MongoDB RxStorage
 
 RxDB MongoDB RxStorage is an RxDB [RxStorage](./rx-storage.md) that allows you to use [MongoDB](https://www.mongodb.com/) as the underlying storage engine for your RxDB database. With this you can take advantage of MongoDB's features and scalability while benefiting from RxDB's real-time data synchronization capabilities.
 
@@ -22,6 +24,17 @@ The storage is made to work with any plain MongoDB Server, [MongoDB Replica Set]
 
 
 ## Using the MongoDB RxStorage
+
+
+<Steps>
+
+### Install the mongodb package
+
+```bash
+npm install mongodb --save
+```
+
+### Setups the MongoDB RxStorage
 
 To use the storage, you simply import the `getRxStorageMongoDB` method and use that when creating the [RxDatabase](./rx-database.md). The `connection` parameter contains the [MongoDB connection string](https://www.mongodb.com/docs/manual/reference/connection-string/).
 
@@ -44,3 +57,5 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 ```
+
+</Steps>

@@ -150,3 +150,20 @@ export type Leaves<T, D extends number = 10> = [D] extends [never] ? never : T e
     { [K in keyof T]-?: Join<K, Leaves<T[K], Prev[D]>> }[keyof T] : '';
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
     11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]];
+
+
+
+/**
+ * In the past, users had to add WeakRef to their typescript config.
+ * To create an easier setup, we use our own typings instead, because WeakRef
+ * is used internally only anyways.
+ */
+
+export interface WeakRef<T extends object = any> {
+    deref(): T | undefined;
+}
+
+export interface FinalizationRegistry<T> {
+    register(target: object, heldValue: T, unregisterToken?: object): void;
+    unregister(unregisterToken: object): boolean;
+}

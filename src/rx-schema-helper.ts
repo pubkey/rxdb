@@ -10,7 +10,6 @@ import type {
     StringKeys
 } from './types/index.d.ts';
 import {
-    appendToArray,
     ensureNotFalsy,
     flatClone,
     getProperty,
@@ -224,9 +223,9 @@ export function fillWithDefaultSettings<T = any>(
     (schemaObj.required as string[]).push('_meta');
     (schemaObj.required as string[]).push('_attachments');
 
-    // final fields are always required
-    const finalFields = getFinalFields(schemaObj);
-    appendToArray(schemaObj.required as any, finalFields);
+    // primaryKey is always required
+    (schemaObj.required as any).push(primaryPath);
+
     schemaObj.required = schemaObj.required
         .filter((field: string) => !field.includes('.'))
         .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;

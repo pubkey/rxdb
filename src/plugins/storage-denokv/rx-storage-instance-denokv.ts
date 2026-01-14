@@ -22,9 +22,9 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import type { DenoKVIndexMeta, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
-import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
+import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, commitWithRetry, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.ts";
-import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
+import { batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
@@ -189,7 +189,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                     }
                 }
                 if (txResult && txResult.ok) {
-                    appendToArray(ret.error, categorized.errors);
+                    ret.error = ret.error.concat(categorized.errors);
                     if (categorized.eventBulk.events.length > 0) {
                         const lastState = ensureNotFalsy(categorized.newestRow).document;
                         categorized.eventBulk.checkpoint = {
@@ -303,16 +303,15 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 continue;
             }
 
-
-            let tx = kv.atomic();
-            tx = tx.check(docDataResult);
-            tx = tx.delete([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
-            Object
-                .values(this.internals.indexes)
-                .forEach(indexMetaInner => {
+            await commitWithRetry(() => {
+                let tx = kv.atomic();
+                tx = tx.check(docDataResult);
+                tx = tx.delete([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
+                Object.values(this.internals.indexes).forEach(indexMetaInner => {
                     tx = tx.delete([this.keySpace, indexMetaInner.indexId, docId]);
                 });
-            await tx.commit();
+                return tx;
+            });
         }
         return noMoreUndeleted;
     }

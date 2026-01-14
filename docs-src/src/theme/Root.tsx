@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { triggerTrackingEvent } from '../components/trigger-event';
 import { randomNumber } from '../../../plugins/utils';
-
+import { IconClose } from '../components/icons/close';
+import { Button } from '../components/button';
+import LinkedInLogo from '@site/static/img/community-links/linkedin-logo.svg';
+import { IconNewsletter } from '../components/icons/newsletter';
 
 type CallToActionItem = {
     /**
@@ -12,7 +15,7 @@ type CallToActionItem = {
     text: string;
     keyword: string;
     url: string;
-    icon: string;
+    icon: any;
 };
 const callToActions: CallToActionItem[] = [
     {
@@ -27,7 +30,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Star',
         keyword: '@github',
         url: 'https://rxdb.info/code/',
-        icon: '🐙💻',
+        icon: <span className="navbar-icon-github" style={{ width: 22, height: 22, display: 'inline-block' }}></span>,
     },
     {
         title: [
@@ -41,7 +44,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@twitter',
         url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
-        icon: '🐦',
+        icon: '/files/icons/twitter-blue.svg',
     },
     {
         title: [
@@ -55,7 +58,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/company/rxdb',
-        icon: '[in]',
+        icon: <LinkedInLogo style={{ width: 20, height: 20 }}></LinkedInLogo>,
     },
     {
         title: [
@@ -69,7 +72,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Follow',
         keyword: '@LinkedIn',
         url: 'https://www.linkedin.com/in/danielmeyerdev/',
-        icon: '[in]',
+        icon: <LinkedInLogo style={{ width: 20, height: 20 }}></LinkedInLogo>,
     },
     {
         title: [
@@ -83,7 +86,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Chat',
         keyword: '@discord',
         url: 'https://rxdb.info/chat/',
-        icon: '💬',
+        icon: <span className="navbar-icon-discord" style={{ width: 22, height: 22, display: 'inline-block' }}></span>,
     },
     {
         title: [
@@ -97,7 +100,7 @@ const callToActions: CallToActionItem[] = [
         text: 'Subscribe',
         keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter',
-        icon: '📰',
+        icon: <IconNewsletter />,
     },
     // {
     //     title: 'RxDB needs your feedback, please take part in our user Survey',
@@ -122,11 +125,12 @@ export default function Root({ children }) {
     }>();
     const DOC_TITLE_PREFIX = '(1) ';
     useEffect(() => {
-
         // addCommunityChatButton();
-
         setTimeout(() => {
             startAnalytics();
+            trackReturnAfter3to14Days();
+            trackCopy();
+            trackUrlChanges();
             addCallToActionButton();
             triggerClickEventWhenFromCode();
         }, 0);
@@ -134,7 +138,6 @@ export default function Root({ children }) {
         const showTime = location.pathname.includes('.html') ? 30 : 60;
         // const showTime = 1;
         const intervalId = setInterval(() => {
-            return;
             if (location.pathname.includes('premium')) {
                 return;
             }
@@ -151,7 +154,12 @@ export default function Root({ children }) {
                  */
                 const closedAt = localStorage.getItem('notification_popup_closed_at');
                 const closedToday = localStorage.getItem('notification_popup_closed_today');
+                const weeklyCloseCountKey = getWeeklyCloseCountKey();
+                const closedCountThisWeek = Number(localStorage.getItem(weeklyCloseCountKey) || '0');
+
                 if (
+                    // more than 5 times in a week => do not show again for that week
+                    closedCountThisWeek > 3 ||
                     (closedAt && (Date.now() - Number(closedAt)) < POPUP_DISABLED_IF_CLOSED_TIME) ||
                     /**
                      * If it was closed today, only show it when the browser tab is not active.
@@ -198,6 +206,11 @@ export default function Root({ children }) {
         document.title = document.title.replace(DOC_TITLE_PREFIX, '');
         localStorage.setItem('notification_popup_closed_at', Date.now().toString());
         localStorage.setItem('notification_popup_closed_today', new Date().getDay() + '');
+
+        // weekly close counter
+        const key = getWeeklyCloseCountKey();
+        const prev = Number(localStorage.getItem(key) || '0');
+        localStorage.setItem(key, String(prev + 1));
     }
     return <>
         {children}
@@ -205,10 +218,10 @@ export default function Root({ children }) {
             {
                 showPopup ? <>
                     <h3>{showPopup.callToAction.title[showPopup.titleId]}</h3>
-                    <a
+                    <Button
+                        primary
                         href={showPopup.callToAction.url}
-                        className='hover-shadow-top'
-                        id="rxdb-call-to-action-button"
+                        icon={showPopup.callToAction.icon}
                         target="_blank"
                         onClick={() => {
                             triggerTrackingEvent('notification_call_to_action', 0.40);
@@ -219,13 +232,11 @@ export default function Root({ children }) {
                             );
                             closePopup();
                         }}
-                    >
-                        {showPopup.callToAction.text} {showPopup.callToAction.keyword}
-                    </a>
+                    >{showPopup.callToAction.text} {showPopup.callToAction.keyword}</Button>
                 </> : ''
             }
-            <div className='close' onClick={() => closePopup()}>
-                <div className='text'>&#x2715;</div>
+            <div className='close-popup' onClick={() => closePopup()}>
+                <IconClose clickable />
             </div>
         </div>
     </>;
@@ -302,7 +313,7 @@ function triggerClickEventWhenFromCode() {
     if (!urlParams.has('console')) {
         return;
     }
-    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID, 10);
+    triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID, 10, 1);
     triggerTrackingEvent(TRIGGER_CONSOLE_EVENT_ID + '_' + urlParams.get('console'), 10);
 }
 
@@ -420,7 +431,7 @@ function startAnalytics() {
         }
         const version = hasCookie.split('=')[1];
         console.log(DEV_MODE_EVENT_ID + ': track me version ' + version);
-        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1);
+        triggerTrackingEvent(DEV_MODE_EVENT_ID, 10, 1, true);
         triggerTrackingEvent(DEV_MODE_EVENT_ID + '_' + version, 10, 1);
     }
     checkDevModeEvent();
@@ -558,6 +569,147 @@ function startAnalytics() {
     // }
     // historyHack();
 
+}
 
 
+/**
+ * Tracks if a user copies anything on the page.
+ * Useful because normal devs often copy parts of the
+ * code from the docs, so we have a good way to measure real
+ * engagement.
+ */
+function trackCopy() {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    function onCopy() {
+        triggerTrackingEvent('copy_on_page', 1.5, 1, true);
+    }
+
+    document.addEventListener('copy', onCopy);
+}
+
+
+/**
+ * Tracks the already visited urls on the page.
+ * Useful because normal devs browse multiple docs pages
+ * so we can track "real" engagement.
+ */
+function trackUrlChanges() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const STORAGE_KEY = 'visited_urls';
+    const URL_EVENT_COUNT = 5;
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const visitedUrls = new Set<string>(stored ? JSON.parse(stored) : []);
+
+    function normalizeUrl(url: string) {
+        try {
+            const u = new URL(url);
+            return u.origin + u.pathname;
+        } catch {
+            return url.split('?')[0].split('#')[0];
+        }
+    }
+
+    function rememberAndLog() {
+        const normalized = normalizeUrl(location.href);
+
+        if (!visitedUrls.has(normalized)) {
+            visitedUrls.add(normalized);
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(Array.from(visitedUrls))
+            );
+            console.log('New URL visited:', normalized);
+
+            if (visitedUrls.size >= URL_EVENT_COUNT) {
+                triggerTrackingEvent('visit_x_urls', 1.5, 1, true);
+                triggerTrackingEvent('visit_' + URL_EVENT_COUNT + '_urls', 0, 1, false);
+            }
+        }
+    }
+
+    rememberAndLog();
+
+    window.addEventListener('popstate', rememberAndLog);
+
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function (...args) {
+        originalPushState.apply(this, args);
+        rememberAndLog();
+    };
+
+    history.replaceState = function (...args) {
+        originalReplaceState.apply(this, args);
+        rememberAndLog();
+    };
+}
+
+
+/**
+ * Tracks if a user returns after at least 3 days but not more than 14 days.
+ */
+function trackReturnAfter3to14Days() {
+    const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000; // 72 hours
+    const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000; // 336 hours
+
+    if (typeof localStorage === 'undefined') {
+        return;
+    }
+
+    const now = Date.now();
+    const key = 'first_visit_time';
+    const saved = localStorage.getItem(key);
+
+
+    if (!saved) {
+        localStorage.setItem(key, now.toString());
+        return;
+    }
+
+    const firstVisit = Number(saved);
+    if (isNaN(firstVisit)) {
+        // Reset if corrupted
+        localStorage.setItem(key, now.toString());
+        return;
+    }
+
+    const diff = now - firstVisit;
+
+    // Only trigger conversion if between 3 and 14 days
+    if (diff >= THREE_DAYS_MS && diff <= FOURTEEN_DAYS_MS) {
+        triggerTrackingEvent('revisit_3_days', 3.5, 1, true);
+    }
+}
+
+/**
+ * Returns a unique-per-week identifier
+ * that looks like 2026_24 (year+week)
+ */
+function getWeekKey(date: Date = new Date()): string {
+    const d = new Date(Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    ));
+
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+
+    const weekNo = Math.ceil(
+        ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+    );
+
+    return `${d.getUTCFullYear()}_${weekNo}`;
+}
+
+function getWeeklyCloseCountKey() {
+    return `notification_popup_closed_count_${getWeekKey()}`;
 }

@@ -589,9 +589,11 @@ const replicationState = replicateRxCollection({
 
 ### toggleOnDocumentVisible
 
-`(experimental)`
 
-Set this to true to ensure the replication also runs if the tab is currently `visbile`. This fixes problem in browsers where the replicating leader-elected tab becomes stale or hibernated by the browser to save battery life. If the tab is losing visibility, the replication will be paused automatically and then restarted if either the tab becomes leader or the tab becomes visible again.
+Ensures replication continues running when the document is `visible`. This helps avoid situations where the leader-elected tab becomes stale or is hibernated by the browser to save battery.  
+When the tab becomes hidden, replication is automatically paused; when the tab becomes visible again (or the instance becomes leader), replication resumes.
+
+**Default:** `true`
 
 ```ts
 const replicationState = replicateRxCollection({
@@ -600,7 +602,7 @@ const replicationState = replicateRxCollection({
 });
 ```
 
-## Attachment replication (beta)
+## Attachment replication
 
 Attachment replication is supported in the RxDB Sync Engine itself. However not all replication plugins support it.
 If you start the replication with a collection which has [enabled RxAttachments](./rx-attachment.md) attachments data will be added to all push- and write data.

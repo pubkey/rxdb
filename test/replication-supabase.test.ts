@@ -243,7 +243,46 @@ describe('replication-supabase.test.ts', function () {
             const docAfter = await collection.findOne(firstDoc.primary).exec(true);
             assert.strictEqual(docAfter.lastName, 'foobar');
 
+            await collection.database.remove();
+        });
+    });
+    describe('pull query builder', () => {
+        it('should allow restricting the pull query', async () => {
+            await cleanUpServer();
+            await insertDocument(
+                schemaObjects.humanData('builder-allowed', undefined, 'allowed')
+            );
+            await insertDocument(
+                schemaObjects.humanData('builder-blocked', undefined, 'blocked')
+            );
 
+            const collection = await humansCollection.createPrimary(
+                0,
+                undefined,
+                false
+            );
+            const replicationState = replicateSupabase<TestDocType>({
+                tableName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                live: false,
+                pull: {
+                    batchSize,
+                    queryBuilder: ({ query }) =>
+                        query.eq('firstName', 'allowed'),
+                },
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+
+            const docs = await collection.find().exec();
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(ensureNotFalsy(docs[0]).firstName, 'allowed');
+
+            await replicationState.cancel();
             await collection.database.remove();
         });
     });

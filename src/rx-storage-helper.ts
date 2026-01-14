@@ -35,7 +35,6 @@ import {
     PROMISE_RESOLVE_TRUE,
     RXDB_VERSION,
     RX_META_LWT_MINIMUM,
-    appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -257,7 +256,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                                 isError: true,
                                 status: 510,
                                 writeRow,
-                                attachmentId
+                                attachmentId,
+                                context
                             };
                             errors.push(attachmentError);
                         } else {
@@ -317,7 +317,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                     status: 409,
                     documentId: docId,
                     writeRow: writeRow,
-                    documentInDb
+                    documentInDb,
+                    context
                 };
                 errors.push(err);
                 continue;
@@ -358,7 +359,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                                     isError: true,
                                     status: 510,
                                     writeRow,
-                                    attachmentId
+                                    attachmentId,
+                                    context
                                 };
                             }
                             return true;
@@ -655,7 +657,8 @@ export function getWrappedStorageInstance<
                     )
                 );
 
-                appendToArray(useWriteResult.error, subResult.error);
+
+                useWriteResult.error = useWriteResult.error.concat(subResult.error);
                 const successArray = getWrittenDocumentsFromBulkWriteResponse(
                     primaryPath,
                     toStorageWriteRows,
@@ -667,9 +670,10 @@ export function getWrappedStorageInstance<
                     reInserts,
                     subResult
                 );
-                appendToArray(successArray, subSuccess);
+                successArray.push(...subSuccess);
                 return useWriteResult;
             }
+
             return useWriteResult;
         },
         query(preparedQuery) {

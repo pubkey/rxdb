@@ -2,11 +2,11 @@ import { triggerTrackingEvent } from './trigger-event';
 
 export const SOCIAL_PROOF_VALUES = {
     // @link https://www.star-history.com/#pubkey/rxdb&Date
-    github: 22590,
+    github: 22869,
     // @link https://x.com/rxdbjs
-    twitter: 3003,
-    // @link https://discord.com/invite/tqt9ZttJfD
-    discord: 1251
+    twitter: 3039,
+    // @link https://discord.gg/krNZtjZtpu
+    discord: 1321
 } as const;
 
 
@@ -18,6 +18,11 @@ type TrophyProps = {
     icon: string | React.ReactNode; // can be URL or React component
     value: number;
     order?: number;
+    /**
+     * Some icons need a fully-black background
+     * to be more readable
+     */
+    black?: boolean;
 };
 
 export function Trophy({
@@ -27,7 +32,8 @@ export function Trophy({
     valueTitle,
     icon,
     value,
-    order
+    order,
+    black
 }: TrophyProps) {
     const isIconUrl = typeof icon === 'string';
 
@@ -41,9 +47,19 @@ export function Trophy({
             rel="noopener noreferrer"
             style={{ order }}
         >
-            <div className={'trophy ' + title.toLowerCase()}>
+            <div
+                className={'trophy ' + title.toLowerCase()}
+                style={{
+                    backgroundColor: black ? '#000' : undefined,
+                }}
+            >
                 {isIconUrl ? (
-                    <img loading="lazy" src={icon} alt={'RxDB ' + title} />
+                    <img
+                        draggable={false}
+                        loading="lazy"
+                        src={icon}
+                        alt={'RxDB ' + title}
+                    />
                 ) : (
                     <div className="trophy-icon">{icon}</div>
                 )}
@@ -81,7 +97,12 @@ export function PartnerTrophy(props: {
         <div className={'trophy ' + props.title.toLowerCase()} style={{
             width: 'auto'
         }}>
-            <img loading="lazy" src={props.imgUrl} alt={'RxDB ' + props.title} />
+            <img
+                draggable={false}
+                loading="lazy"
+                src={props.imgUrl}
+                alt={'RxDB ' + props.title}
+            />
             <div style={{ flex: 1 }}>
                 <div className="subtitle">Official Partner</div>
                 <div className="title">{props.title}</div>

@@ -47,10 +47,8 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
 import {
-    appendToArray,
     batchArray,
     ensureNotFalsy,
-    lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
     toArray
@@ -106,7 +104,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     const attachmentTx = tx.at(dbs.attachments.subspace);
                     const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
                     /**
-                     * TODO this might be faster if fdb
+                     * This might be faster if fdb
                      * any time adds a bulk-fetch-by-key method.
                      */
                     await Promise.all(
@@ -122,7 +120,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         writeBatch,
                         context
                     );
-                    appendToArray(ret.error, categorized.errors);
+                    ret.error = ret.error.concat(categorized.errors);
 
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {

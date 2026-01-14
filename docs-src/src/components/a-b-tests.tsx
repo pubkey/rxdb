@@ -1,4 +1,6 @@
 import { randomOfArray } from '../../../plugins/utils';
+// import { HeroEmojiChat } from './hero-section/T4_hero_b';
+// import { ReplicationDiagram } from './replication-diagram';
 // import { ScrollToSection, SemPage } from '../pages';
 // import { OfflineSection } from './offline-section';
 // import { RealtimeSection } from './realtime-section';
@@ -14,18 +16,16 @@ const CURRENT_TEST_RUN = {
     /**
      * @link https://docs.google.com/spreadsheets/d/1ryPOhhwFHIqkVnIlpup6neV7u1FDnPMTlgzbvE62kB8/edit?gid=1330239462#gid=1330239462
      */
-    id: 'T8',
-    /**
-     * @link https://chatgpt.com/c/68d532de-4844-8331-8a2f-9a14b2d08cd9
-     */
+    id: 'T10',
     variations: {
-        A: 'RxDB is a JavaScript NoSQL database that lives inside your application. It enables local-first, offline-ready apps with instant queries and seamless sync across multiple backends.',
-        B: 'RxDB is a NoSQL database for JavaScript that runs directly inside your app. It\'s local-first, keeps working offline, offers observable queries, and syncs with a wide range of backends.',
-        C: 'A JavaScript NoSQL database built for offline-ready apps. RxDB runs in the client, provides instant local queries, observable state, and seamless backend sync.',
-        D: 'RxDB is a NoSQL database for JavaScript that runs directly in your app. With a local-first design, it delivers zero-latency queries even offline, and syncs seamlessly with many backends. With observable queries, your UI updates instantly as data changes.',
-        E: 'RxDB is a NoSQL database for JavaScript that runs directly inside your app. It keeps data available offline and syncs with a wide range of backends when online.',
-        F: 'RxDB powers local-first apps by embedding a NoSQL JavaScript database directly into your app, with robust sync support for a wide range of backend systems.',
-        G: ''
+        A: <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>,
+        B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
+        C: <>The Local-First <b>Database</b> for Reactive <b>JavaScript</b> Applications</>,
+        D: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
+        E: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
+        F: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>,
+        G: <>A Local-First <b>Database</b> for Offline-Capable, Real-Time Apps</>,
+        H: <>A Client-Side <b>Database</b> Designed for High-Performance, Offline-First Apps</>
     }
 };
 

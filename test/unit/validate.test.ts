@@ -409,7 +409,7 @@ validationImplementations.forEach(
                     assert.ok(message.includes('dditional'));
                     await instance.close();
                 });
-                it('final fields should be required', async () => {
+                it('final fields should NOT be required', async () => {
                     const instance = await getRxStorageInstance(schemas.humanFinal);
                     const obj = {
                         passportId: 'foobar',
@@ -420,11 +420,8 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj) as any
                     }], testContext);
-                    const err = result.error[0];
-                    const deepParam = (err as any).validationErrors[0];
-                    assert.ok(
-                        JSON.stringify(deepParam).includes('age')
-                    );
+                    assert.deepStrictEqual(result.error, []);
+
                     await instance.close();
                 });
             });

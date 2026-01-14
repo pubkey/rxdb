@@ -6,6 +6,7 @@
 - Performance and quality of vector comparison functions (euclideanDistance etc)
 - performance and quality of vector indexing methods
 - What is new in IndexedDB 3.0
+- how progressive syncing beats client-server architecture
 
 ## Seo keywords:
 
@@ -81,6 +82,7 @@ X- "reactjs storage"
 - "sqlite typescript" - 260
 
 - "sync engine" - 390
+- "indexeddb alternative" - 70
 
 
 ## Non Seo

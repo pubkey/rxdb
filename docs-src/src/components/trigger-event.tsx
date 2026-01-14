@@ -10,7 +10,8 @@ export function triggerTrackingEvent(
      * This helps to prevent polluting the stats when a singler user
      * does something many many times.
      */
-    maxPerUser: number = 5
+    maxPerUser: number = 5,
+    primary: boolean = false
 ) {
     if (!ExecutionEnvironment.canUseDOM) {
         return;
@@ -24,10 +25,17 @@ export function triggerTrackingEvent(
     }
     localStorage.setItem(prefix + type, (triggeredBefore + 1) + '');
 
-    console.log('triggerTrackingEvent(' + type + ', ' + value + ', ' + triggeredBefore + '/' + maxPerUser + ')');
+    console.log('triggerTrackingEvent(' + type + ', ' + value + ', primary=' + primary + ' ' + triggeredBefore + '/' + maxPerUser + ')');
 
-    // reddit
-    if (typeof (window as any).rdt === 'function') {
+    /**
+     * Reddit does not have a concept of conversion-value
+     * so we only track primary events because otherwise everything would
+     * be counted as equally worthy conversion.
+     */
+    if (
+        primary &&
+        typeof (window as any).rdt === 'function'
+    ) {
         try {
             (window as any).rdt('track', 'Lead', {
                 transactionId: type + '-' + new Date().getTime(),
@@ -82,7 +90,8 @@ export function TriggerEvent(props) {
         triggerTrackingEvent(
             props.type,
             props.value,
-            props.maxPerUser
+            props.maxPerUser,
+            props.primary
         );
     }, []);
     return <></>;

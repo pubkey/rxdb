@@ -9,6 +9,7 @@
     ],
     "version": "0.1.0",
     "orientation": "portrait",
+    "jsEngine": "jsc",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",

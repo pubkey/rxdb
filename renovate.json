@@ -19,6 +19,7 @@
     "docs-src/docusaurus-lunr-search-main/package.json",
     "docs/files/logo/package.json",
     "examples/ionic2/package.json",
+    "examples/tauri/package.json",
     "examples/flutter/pubspec.yaml",
     "src/plugins/flutter/dart/pubspec.yaml",
     "config/appwrite/docker-compose.yml",
@@ -26,7 +27,7 @@
     "examples/tauri/src-tauri/"
   ],
   "rebaseStalePrs": true,
-  "prConcurrentLimit": 8,
+  "prConcurrentLimit": 10,
   "prHourlyLimit": 2,
   "dependencyDashboard": false
 }

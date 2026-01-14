@@ -179,7 +179,7 @@ This component subscribes to the collection's changes, updating the UI automatic
 
 ### With Preact Signals
 
-RxDB also supports Preact Signals for reactivity, which can be integrated into React applications via a [premium plugin](/premium/). Preact Signals offer a modern, fine-grained reactivity model.
+RxDB also supports Preact Signals for reactivity, which can be integrated into React applications. Preact Signals offer a modern, fine-grained reactivity model.
 
 First, install the necessary package:
 ```bash
@@ -188,7 +188,7 @@ npm install @preact/signals-core --save
 Set up RxDB with Preact Signals reactivity:
 
 ```ts
-import { PreactSignalsRxReactivityFactory } from 'rxdb-premium/plugins/reactivity-preact-signals';
+import { PreactSignalsRxReactivityFactory } from 'rxdb/plugins/reactivity-preact-signals';
 import { createRxDatabase } from 'rxdb/plugins/core';
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 

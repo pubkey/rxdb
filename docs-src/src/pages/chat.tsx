@@ -27,9 +27,9 @@ export default function Chat() {
                         <b>You will be redirected in a few seconds.</b>
                     </p>
                     <p>
-                        <a href="https://discord.gg/tqt9ZttJfD">Click here to open Chat</a>
+                        <a href="https://discord.gg/krNZtjZtpu">Click here to open Chat</a>
                     </p>
-                    <meta httpEquiv="Refresh" content="1; url=https://discord.gg/tqt9ZttJfD" />
+                    <meta httpEquiv="Refresh" content="1; url=https://discord.gg/krNZtjZtpu" />
                 </div>
             </main>
         </Layout >

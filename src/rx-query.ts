@@ -19,8 +19,7 @@ import {
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
-    areRxDocumentArraysEqual,
-    appendToArray
+    areRxDocumentArraysEqual
 } from './plugins/utils/index.ts';
 import {
     newRxError,
@@ -700,7 +699,7 @@ export async function queryCollection<RxDocType>(
             // otherwise get from storage
             if (docIds.length > 0) {
                 const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
-                appendToArray(docs, docsFromStorage);
+                docs = docs.concat(docsFromStorage);
             }
         } else {
             const docId = rxQuery.isFindOneByIdQuery;

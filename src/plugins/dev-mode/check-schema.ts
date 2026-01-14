@@ -5,7 +5,10 @@
 import {
     newRxError
 } from '../../rx-error.ts';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper.ts';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper.ts';
 import type {
     CompositePrimaryKey,
     JsonSchema,
@@ -14,8 +17,9 @@ import type {
     TopLevelProperty
 } from '../../types/index.d.ts';
 import {
-    appendToArray,
-    flattenObject, getProperty, isMaybeReadonlyArray,
+    flattenObject,
+    getProperty,
+    isMaybeReadonlyArray,
     trimDots
 } from '../../plugins/utils/index.ts';
 import { rxDocumentProperties } from './entity-properties.ts';
@@ -398,6 +402,13 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                                 schema: jsonSchema
                             });
                         }
+                        if (maxLength > 2048) {
+                            throw newRxError('SC42', {
+                                index,
+                                field: fieldName,
+                                schema: jsonSchema
+                            });
+                        }
                         break;
                     case 'number':
                     case 'integer':
@@ -502,7 +513,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     (jsonSchema.indexes || [])
         .reduce((indexPaths: string[], currentIndex) => {
             if (isMaybeReadonlyArray(currentIndex)) {
-                appendToArray(indexPaths, currentIndex);
+                indexPaths = indexPaths.concat(currentIndex);
             } else {
                 indexPaths.push(currentIndex);
             }

@@ -1,4 +1,4 @@
-import { CSSProperties, useState } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
 import { triggerTrackingEvent } from './trigger-event';
 import { VideoPlayButton } from './video-button';
 import { Modal } from './modal';
@@ -11,6 +11,15 @@ export type VideoBoxProps = {
     // in seconds
     startAt?: number;
 };
+
+type VideoModalProps = {
+    open: boolean;
+    videoId: string;
+    title: string;
+    startAt?: number;
+    onClose: (e: React.MouseEvent) => void;
+};
+
 
 const styles: Record<string, CSSProperties> = {
     container: {
@@ -84,8 +93,6 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
             onMouseLeave={() => setIsHovered(false)}
             onClick={() => {
                 setIsOpen(true);
-                triggerTrackingEvent('open_video', 0.10);
-                triggerTrackingEvent('open_video_' + videoId, 0.05, 1);
             }}
         >
             <div style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -122,46 +129,98 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
             </div>
 
             {isOpen ? (
-                <Modal
+                <VideoModal
                     open={isOpen}
-                    onCancel={(e) => {
-                        e.stopPropagation();
-                        setIsOpen(false);
-                    }}
+                    videoId={videoId}
+                    title={title}
+                    startAt={startAt}
                     onClose={(e) => {
                         e.stopPropagation();
                         setIsOpen(false);
                     }}
-                    onOk={(e) => {
-                        e.stopPropagation();
-                        setIsOpen(false);
-                    }}
-                    footer={null}
-                    width={'auto'}
-                    style={{
-                        maxWidth: 800,
-                    }}
-                    title={title}
-                >
-                    <center>
-                        <iframe
-                            style={{ borderRadius: '0px', width: '90vw', maxWidth: '100%' }}
-                            height="515"
-                            src={
-                                'https://www.youtube.com/embed/' +
-                                videoId +
-                                '?autoplay=1&start=' +
-                                (startAt ? startAt : 0)
-                            }
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            allowFullScreen
-                        ></iframe>
-                    </center>
-                </Modal>
+                />
             ) : null}
         </div>
+    );
+}
+
+
+
+export function VideoModal({ open, videoId, title, startAt, onClose }: VideoModalProps) {
+    const watchTimeoutRef = useRef<number | null>(null);
+    const openedTrackedRef = useRef(false);
+    const watchSeconds = 20;
+
+    // Track "open_video" once per open session + start the 20s timer
+    useEffect(() => {
+        if (!open) {
+            // reset per-session state when closed
+            openedTrackedRef.current = false;
+
+            if (watchTimeoutRef.current !== null) {
+                clearTimeout(watchTimeoutRef.current);
+                watchTimeoutRef.current = null;
+            }
+            return;
+        }
+
+        // modal just opened (or is open)
+        if (!openedTrackedRef.current) {
+            openedTrackedRef.current = true;
+            triggerTrackingEvent('open_video', 0.10);
+            triggerTrackingEvent('open_video_' + videoId, 0.05, 1);
+        }
+
+        watchTimeoutRef.current = window.setTimeout(() => {
+            triggerTrackingEvent('watch_video_x_secs', 1, 3, true);
+            triggerTrackingEvent('watch_video_' + watchSeconds + '_secs', 1, 0);
+            triggerTrackingEvent('watch_video_' + videoId + '_' + watchSeconds + '_secs', 1, 0);
+        }, watchSeconds * 1000);
+
+        return () => {
+            if (watchTimeoutRef.current !== null) {
+                clearTimeout(watchTimeoutRef.current);
+                watchTimeoutRef.current = null;
+            }
+        };
+    }, [open, videoId]);
+
+    if (!open) return null;
+
+    return (
+        <Modal
+            open={open}
+            onCancel={onClose}
+            onClose={onClose}
+            onOk={onClose}
+            footer={null}
+            width="auto"
+            style={{ maxWidth: '90%' }}
+            title={title}
+        >
+            <center>
+                <iframe
+                    style={{
+                        width: '100%',
+                        maxWidth: '90vw',
+                        maxHeight: '80vh',
+                        aspectRatio: '16 / 9',
+                        height: 'auto',
+                        borderRadius: '0px',
+                    }}
+                    src={
+                        'https://www.youtube.com/embed/' +
+                        videoId +
+                        '?autoplay=1&modestbranding=1&rel=0&start=' +
+                        (startAt ? startAt : 0)
+                    }
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                />
+            </center>
+        </Modal>
     );
 }

@@ -4,8 +4,21 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
+import rehypePrettyCode from 'rehype-pretty-code';
+import type { Options as RehypePrettyCodeOptions, Theme } from 'rehype-pretty-code';
+import { createCssVariablesTheme, ThemeRegistrationAny } from 'shiki';
+
+const rehypePrettyCodeOptions: RehypePrettyCodeOptions = {
+    theme: createCssVariablesTheme({
+        name: 'css-variables',
+        variablePrefix: '--shiki-',
+        fontStyle: true,
+        // rehype-pretty-code expects "settings" to always be available,
+        // but shiki doesn't always provide it.
+    }) satisfies ThemeRegistrationAny as Theme,
+    bypassInlineCode: true,
+};
 
 /** @type {import('@docusaurus/types').Config} */
 const config: Config = {
@@ -47,6 +60,61 @@ const config: Config = {
     },
     plugins: [
         [
+            'docusaurus-plugin-llms',
+            {
+                // Options here
+                generateLLMsTxt: true,
+                generateLLMsFullTxt: true,
+                docsDir: 'docs',
+                    /**
+                     * Add deprecated stuff here
+                     */
+                    ignoreFiles: [
+                    'docs/adapters.md',
+                    'docs/rx-storage-lokijs.md'
+                ],
+                title: 'RxDB Documentation',
+                description: 'Authoritative reference documentation for RxDB, a reactive, local-first NoSQL database for JavaScript with offline support and explicit replication.',
+                // includeBlog: true,
+                // Content cleaning options
+                excludeImports: false,
+                removeDuplicateHeadings: true,
+                // Generate individual markdown files following llmstxt.org specification
+                generateMarkdownFiles: true,
+                // Control documentation order
+                // includeOrder: [
+                //     'getting-started/*',
+                //     'guides/*',
+                //     'api/*',
+                // ],
+                includeUnmatchedLast: true,
+                // Path transformation options
+                pathTransformation: {
+                    // Paths to ignore when constructing URLs (will be removed if found)
+                    ignorePaths: ['docs'],
+                    // // Paths to add when constructing URLs (will be prepended if not already present)
+                    // addPaths: ['api'],
+                },
+                // Custom LLM files for specific documentation sections
+                // customLLMFiles: [
+                //     {
+                //         filename: 'llms-python.txt',
+                //         includePatterns: ['api/python/**/*.md', 'guides/python/*.md'],
+                //         fullContent: true,
+                //         title: 'Python API Documentation',
+                //         description: 'Complete reference for Python API'
+                //     },
+                //     {
+                //         filename: 'llms-tutorials.txt',
+                //         includePatterns: ['tutorials/**/*.md'],
+                //         fullContent: false,
+                //         title: 'Tutorial Documentation',
+                //         description: 'All tutorials in a single file'
+                //     }
+                // ],
+            },
+        ],
+        [
             './docusaurus-lunr-search-main/src/',
             {
                 excludeRoutes: ['blog', 'releases'],
@@ -57,6 +125,13 @@ const config: Config = {
                 name: 'custom-webpack-tweaks',
                 configureWebpack(_config, _isServer, _utils) {
                     return {
+                        resolve: {
+                            alias: {
+                                // we no longer use prism, and highlight with Shiki on the server
+                                // alias the built-in prism-react-renderer with empty stub to reduce bundle size
+                                'prism-react-renderer': require.resolve('./src/prism-stub'),
+                            },
+                        },
                         module: {
                             /**
                              * Disable file hashing of fonts so we can
@@ -129,6 +204,9 @@ const config: Config = {
                     breadcrumbs: false,
                     // I disabled the editUrl because it just confuses users and does not look professional
                     // editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
+                    beforeDefaultRehypePlugins: [
+                        [rehypePrettyCode, rehypePrettyCodeOptions],
+                    ],
                 },
                 // blog: {
                 //   showReadingTime: true,
@@ -162,19 +240,20 @@ const config: Config = {
                 {
                     href: '/overview.html',
                     label: 'Docs',
-                    position: 'left',
+                    position: 'left'
                 },
                 {
                     href: '/replication.html',
                     label: 'Sync',
                     position: 'left',
+                    dropdown: 'sync'
                 },
                 {
                     href: '/rx-storage.html',
                     label: 'Storages',
                     position: 'left',
+                    dropdown: 'storages'
                 },
-
                 {
                     href: '/premium/',
                     label: 'Premium',
@@ -218,11 +297,6 @@ const config: Config = {
             style: 'dark',
             links: [],
             copyright: ' ',
-        },
-        prism: {
-            theme: prismThemes.dracula,
-            darkTheme: prismThemes.dracula,
-            additionalLanguages: ['bash', 'json', 'graphql', 'typescript', 'javascript'],
         },
     },
 };

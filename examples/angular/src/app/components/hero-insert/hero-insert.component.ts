@@ -6,13 +6,18 @@ import {
 } from '@angular/core';
 import { ensureNotFalsy, RxError } from 'rxdb';
 import { DatabaseService } from '../../services/database.service';
+import { MatFormField } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
 
 @Component({
     selector: 'hero-insert',
     templateUrl: './hero-insert.component.html',
     styleUrls: ['./hero-insert.component.less'],
     providers: [DatabaseService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [MatFormField, MatInput, FormsModule, MatButton]
 })
 export class HeroInsertComponent {
 

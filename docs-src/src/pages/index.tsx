@@ -24,6 +24,7 @@ import { IconCode } from '../components/icons/code';
 import { IconQuickstart } from '../components/icons/quickstart';
 import { FeaturesSection } from '../components/features-section';
 import { getTestGroup } from '../components/a-b-tests';
+import { CoreConceptSection } from '../components/core-concept-section';
 
 
 export const colors = [
@@ -318,10 +319,12 @@ export default function Home(props: {
             value={SOCIAL_PROOF_VALUES.discord}
             icon="/files/icons/discord.svg"
             valueTitle='members'
+            black={true}
           />
 
 
           <FeaturesSection dark={true} />
+
 
 
           <Trophy
@@ -332,7 +335,6 @@ export default function Home(props: {
             icon="/files/icons/twitter-blue.svg"
             valueTitle='followers'
           />
-
 
 
           <div className="block reviews trophy-before trophy-after" id="reviews" ref={reviewsRef} >
@@ -346,6 +348,7 @@ export default function Home(props: {
             </div>
           </div>
 
+
           <PartnerTrophy
             href="https://supabase.com/partners/integrations/rxdb"
             title="Supabase"
@@ -353,7 +356,9 @@ export default function Home(props: {
           />
 
 
-          <div className="block last trophy-before dark">
+          <CoreConceptSection dark={true} />
+
+          <div className="block last trophy-before">
             <div className="content">
               <h2>
                 Start using <b >RxDB</b> today

@@ -7,17 +7,22 @@ import { EmojiChatStateful } from '../emoji-chat';
 import { PixelToggle } from '../toggle';
 import { useState } from 'react';
 import { IconWifi } from '../icons/wifi';
-import { IframeFormModal } from '../modal';
+// import { IframeFormModal } from '../modal';
+import { ReplicationDiagram } from '../replication-diagram';
+import { VideoModal } from '../video-box';
+import { YOUTUBE_VIDEO_MAIN } from '../video-section';
+import { VideoPlayButtonArrow } from '../video-button';
 
 export function HeroSection_B(props: {
     sem?: SemPage;
     scrollToSection: ScrollToSection;
 }) {
+    // const [openDemo, setOpenDemo] = useState(false);
+    const [openVideo, setOpenVideo] = useState(false);
 
-    const [online, setOnline] = useState(true);
-    const [openDemo, setOpenDemo] = useState(false);
-
-    return <div className="block first hero centered dark">
+    return <div className="block first hero centered dark" style={{
+        background: 'linear-gradient(to bottom, rgba(15, 23, 42, 0.8), #05060a)'
+    }}>
         <div className="content">
             {
                 props.sem && props.sem.iconUrl ? (
@@ -72,81 +77,107 @@ export function HeroSection_B(props: {
                     }} className='hero-action-buttons centered-smaller-mobile'>
                         <Button className="hero-action"
                             onClick={() => {
+                                setOpenVideo(true);
+                                triggerTrackingEvent('hero_section_video_open', 0.4);
+                            }}
+                            icon=<VideoPlayButtonArrow style={{
+                                transform: 'scale(0.70)'
+                            }} />
+                        >Watch Video</Button>
+                        <VideoModal
+                            open={openVideo}
+                            videoId={YOUTUBE_VIDEO_MAIN.videoId}
+                            title={YOUTUBE_VIDEO_MAIN.title}
+                            startAt={YOUTUBE_VIDEO_MAIN.startAt}
+                            onClose={() => setOpenVideo(false)}
+                        />
+                        {/* <Button className="hero-action"
+                            onClick={() => {
                                 setOpenDemo(true);
                                 triggerTrackingEvent('hero_section_demo_open', 0.4);
                             }}
-                        >Schedule a Demo</Button>
-                        <IframeFormModal
+                        >Schedule a Demo</Button> */}
+                        {/* <IframeFormModal
                             iframeUrl='https://webforms.pipedrive.com/f/6Fz0viOs1HDtaA9sgYbt29eTE4tsxrW29hQbk8hGIvr1Bzl8NJrZNhcGWQlLcN1Dxh'
                             open={openDemo}
                             onClose={() => setOpenDemo(false)}
-                        />
+                        /> */}
+
+
                         <Button primary
                             className="hero-action"
                             href="/quickstart.html"
-                            target='_blank'
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>
                 </div>
                 <div
                     className="half right justify-center-mobile grid-2-mobile grid-3"
-                >
-
-                    <div style={{
+                    style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyItems: 'center',
-                        alignSelf: 'start',
-                        flexDirection: 'row',
-                        gap: 20,
-                    }} className='flex-end-center'
-                    >
-                        <EmojiChatStateful
-                            dark={true}
-                            online={online}
-                            chatId='hero_left'
-                            simulateClicks={true}
-                        />
-                        <div
-                            className='hide-mobile'
-                            style={{
-                                textAlign: 'center',
-                            }}>
-                            <IconWifi style={{
-                                width: '100%',
-                                paddingBottom: 3
-                            }} />
-                            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
-                        </div>
-                        <EmojiChatStateful
-                            dark={true}
-                            online={online}
-                            chatId='hero_right'
-                            buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
-                            simulateClicks={true}
-                        />
-                    </div>
-
-                    <div
-                        className='hide-desktop'
-                        style={{
-                            textAlign: 'center',
-                            justifyContent: 'center', // horizontally center the pair
-                            alignItems: 'center',     // vertically center (optional)
-                            gap: '1rem',
-                            marginTop: 19,
-                        }}>
-                        <IconWifi style={{
-                            height: 20
-                        }} />
-                        <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
-                    </div>
-
-
+                    }}
+                >
+                    <ReplicationDiagram dark={true} hasIcon={false} />
                 </div>
             </div>
             <HeroRuntimes></HeroRuntimes>
         </div>
     </div >;
+}
+
+
+export function HeroEmojiChat() {
+    const [online, setOnline] = useState(true);
+    return <>
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyItems: 'center',
+            alignSelf: 'start',
+            flexDirection: 'row',
+            gap: 20
+        }} className='flex-end-center'
+        >
+            <EmojiChatStateful
+                dark={true}
+                online={online}
+                chatId='hero_left'
+                simulateClicks={true}
+            />
+            <div
+                className='hide-mobile'
+                style={{
+                    textAlign: 'center',
+                }}>
+                <IconWifi style={{
+                    width: '100%',
+                    paddingBottom: 3
+                }} />
+                <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+            </div>
+            <EmojiChatStateful
+                dark={true}
+                online={online}
+                chatId='hero_right'
+                buttonEmojis={['🧩', '👩🏼‍💻', '🔥']}
+                simulateClicks={true}
+            />
+        </div>
+
+        <div
+            className='hide-desktop'
+            style={{
+                textAlign: 'center',
+                justifyContent: 'center', // horizontally center the pair
+                alignItems: 'center',     // vertically center (optional)
+                gap: '1rem',
+                marginTop: 19,
+            }}>
+            <IconWifi style={{
+                height: 20
+            }} />
+            <PixelToggle checked={online} onChange={setOnline} label='online/offline' />
+        </div>
+    </>;
 }

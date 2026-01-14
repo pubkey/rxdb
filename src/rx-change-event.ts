@@ -15,7 +15,7 @@ import type {
     RxDocumentData,
     RxStorageChangeEvent
 } from './types/index.d.ts';
-import { appendToArray, getFromMapOrCreate } from './plugins/utils/index.ts';
+import { getFromMapOrCreate } from './plugins/utils/index.ts';
 
 export function getDocumentDataOfRxChangeEvent<T>(
     rxChangeEvent: RxStorageChangeEvent<T>
@@ -68,11 +68,11 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
 export function flattenEvents<EventType>(
     input: EventBulk<EventType, any> | EventBulk<EventType, any>[] | EventType | EventType[]
 ): EventType[] {
-    const output: EventType[] = [];
+    let output: EventType[] = [];
     if (Array.isArray(input)) {
         input.forEach(inputItem => {
             const add = flattenEvents(inputItem);
-            appendToArray(output, add);
+            output = output.concat(add);
         });
     } else {
         if ((input as any).id && (input as any).events) {

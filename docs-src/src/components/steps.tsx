@@ -58,7 +58,7 @@ const styles = {
     stepWrapper: {
         display: 'flex',
         alignItems: 'stretch',
-        marginBottom: '1rem',
+        marginBottom: '1.5rem',
         position: 'relative',
         // Allow the .stepContent (to the right) to shrink without pushing the layout horizontally
         minWidth: 0,
@@ -80,22 +80,22 @@ const styles = {
         width: '33px',
         height: '33px',
         borderRadius: '50%',
-        backgroundColor: 'var(--color-middle)',
-        border: '3px solid #391a3b',
+        backgroundColor: 'var(--color-top)',
         color: '#fff',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontWeight: 'bold',
+        marginTop: -4
     },
     verticalLine: {
         position: 'absolute',
-        top: '33px',
+        top: 29,
         bottom: '0',
         left: '50%',
         width: '1px',
         background:
-            'linear-gradient(to bottom, var(--color-middle) 0%, var(--color-middle) 80%, rgba(0,0,0,0) 100%)',
+            'linear-gradient(to bottom, var(--color-top) 0%, var(--color-top) 80%, rgba(0,0,0,0) 100%)',
         transform: 'translateX(-50%)',
     },
     stepContent: {
