@@ -502,7 +502,7 @@
   "peerDependencies": {
     "@preact/signals-core": "*",
     "firebase": "^11.10.0",
-    "mongodb": "^6.21.0",
+    "mongodb": "^6.21.0 || ^7.0.0",
     "nats": "^2.29.3",
     "rxjs": "^7.8.2",
     "vue": "*",
@@ -645,7 +645,7 @@
     "mini-css-extract-plugin": "2.9.4",
     "mocha": "11.7.5",
     "mocha.parallel": "0.15.6",
-    "mongodb": "6.21.0",
+    "mongodb": "7.0.0",
     "nats": "2.29.3",
     "nconf": "0.13.0",
     "node-appwrite": "17.2.0",
