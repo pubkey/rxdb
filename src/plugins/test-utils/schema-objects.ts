@@ -4,7 +4,6 @@
 import { HumanDocumentType } from './schemas.ts';
 import * as schemas from './schemas.ts';
 import {
-    appendToArray,
     ensureNotFalsy,
     lastOfArray,
     randomNumber
@@ -20,8 +19,8 @@ export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DAT
 const someEmojisArr = ['😊', '💩', '👵', '🍌', '🏳️‍🌈', '😃'];
 
 const baseChars = TEST_DATA_CHARSET.split('');
-const allChars = baseChars.slice(0);
-appendToArray(allChars, someEmojisArr);
+let allChars = baseChars.slice(0);
+allChars = allChars.concat(someEmojisArr);
 
 export function randomStringWithSpecialChars(
     minLength: number,

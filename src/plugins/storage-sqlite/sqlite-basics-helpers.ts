@@ -546,7 +546,7 @@ export function webSQLExecuteQuery(
 
 
 /**
- * TODO the wa-sqlite module has problems
+ * The wa-sqlite module has problems
  * when running prepared statements with params
  * in parallel. So we de-parrallel the runs here.
  * This is bad for performance and should be fixed at the
