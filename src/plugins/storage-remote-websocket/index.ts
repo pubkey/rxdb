@@ -29,7 +29,7 @@ export function startRxStorageRemoteWebsocketServer(
 ): RxStorageRemoteWebsocketServerState {
 
     (options as any).perMessageDeflate = true;
-    const serverState = startSocketServer(options);
+    const serverState = startSocketServer(options as any);
 
     const websocketByConnectionId = new Map<string, WebSocket>();
     const messages$ = new Subject<MessageToRemote>();

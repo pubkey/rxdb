@@ -5,7 +5,7 @@
         "target": "es2022",
         // Search under node_modules for non-relative imports.
         // https://www.youtube.com/watch?v=H91aqUHn8sE
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "module": "es2022",
         // Process & infer types from .js files.
         "allowJs": false,
