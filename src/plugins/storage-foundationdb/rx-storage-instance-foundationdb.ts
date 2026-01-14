@@ -106,7 +106,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     const attachmentTx = tx.at(dbs.attachments.subspace);
                     const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
                     /**
-                     * TODO this might be faster if fdb
+                     * This might be faster if fdb
                      * any time adds a bulk-fetch-by-key method.
                      */
                     await Promise.all(
