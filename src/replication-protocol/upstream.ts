@@ -18,7 +18,6 @@ import type {
     WithDeleted
 } from '../types/index.d.ts';
 import {
-    appendToArray,
     batchArray,
     clone,
     ensureNotFalsy,
@@ -217,7 +216,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             /**
              * Merge/filter all open tasks
              */
-            const docs: RxDocumentData<RxDocType>[] = [];
+            let docs: RxDocumentData<RxDocType>[] = [];
             let checkpoint: CheckpointType | undefined;
             while (openTasks.length > 0) {
                 const taskWithTime = ensureNotFalsy(openTasks.shift());
@@ -243,12 +242,9 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                  * to have the correct checkpoint set.
                  */
                 if (taskWithTime.task.context !== await state.downstreamBulkWriteFlag) {
-                    appendToArray(
-                        docs,
-                        taskWithTime.task.events.map(r => {
-                            return r.documentData as any;
-                        })
-                    );
+                    docs = docs.concat(taskWithTime.task.events.map(r => {
+                        return r.documentData as any;
+                    }));
                 }
                 checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
             }

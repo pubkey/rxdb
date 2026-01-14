@@ -47,10 +47,8 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
 import {
-    appendToArray,
     batchArray,
     ensureNotFalsy,
-    lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
     toArray
@@ -122,7 +120,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         writeBatch,
                         context
                     );
-                    appendToArray(ret.error, categorized.errors);
+                    ret.error = ret.error.concat(categorized.errors);
 
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {

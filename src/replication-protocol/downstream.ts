@@ -18,7 +18,6 @@ import type {
     RxError
 } from '../types/index.d.ts';
 import {
-    appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -219,14 +218,14 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
     function downstreamProcessChanges(tasks: Task[]) {
         state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
-        const docsOfAllTasks: WithDeleted<RxDocType>[] = [];
+        let docsOfAllTasks: WithDeleted<RxDocType>[] = [];
         let lastCheckpoint: CheckpointType | undefined = null as any;
 
         tasks.forEach(task => {
             if (task === 'RESYNC') {
                 throw new Error('SNH');
             }
-            appendToArray(docsOfAllTasks, task.documents);
+            docsOfAllTasks = docsOfAllTasks.concat(task.documents);
             lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
         });
         return persistFromMaster(

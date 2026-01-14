@@ -35,7 +35,6 @@ import {
     PROMISE_RESOLVE_TRUE,
     RXDB_VERSION,
     RX_META_LWT_MINIMUM,
-    appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -658,7 +657,8 @@ export function getWrappedStorageInstance<
                     )
                 );
 
-                appendToArray(useWriteResult.error, subResult.error);
+
+                useWriteResult.error = useWriteResult.error.concat(subResult.error);
                 const successArray = getWrittenDocumentsFromBulkWriteResponse(
                     primaryPath,
                     toStorageWriteRows,
@@ -670,9 +670,10 @@ export function getWrappedStorageInstance<
                     reInserts,
                     subResult
                 );
-                appendToArray(successArray, subSuccess);
+                successArray.push(...subSuccess);
                 return useWriteResult;
             }
+
             return useWriteResult;
         },
         query(preparedQuery) {
