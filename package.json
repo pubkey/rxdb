@@ -669,7 +669,7 @@
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
     "vue": "3.5.26",
-    "walk-sync": "3.0.0",
+    "walk-sync": "4.0.1",
     "watch": "1.0.2",
     "webpack": "5.104.1",
     "webpack-bundle-analyzer": "4.10.2",
