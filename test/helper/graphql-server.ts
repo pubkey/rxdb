@@ -302,7 +302,7 @@ export async function spawn(
 
             const wsPort = port + 500;
             const wss = createServer(server);
-            const wsServer = new ws.Server({
+            const wsServer = new (ws as any).Server({
                 server: wss,
                 path: GRAPHQL_SUBSCRIPTION_PATH,
             });
