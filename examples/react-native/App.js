@@ -2,9 +2,9 @@ import './shim';
 import 'react-native-get-random-values';
 
 import React, {useEffect, useState} from 'react';
+import { RxDatabaseProvider } from 'rxdb/plugins/react';
 import Heroes from './Heroes';
 import initializeDb from './initializeDb';
-import { AppContext } from "./context";
 
 export const App = () => {
     const [db, setDb] = useState(null);
@@ -14,13 +14,16 @@ export const App = () => {
             const _db = await initializeDb(true);
             setDb(_db);
         };
-        initDB().then();
+        initDB();
     }, []);
 
+    if (db == null) {
+        return null;
+    }
     return (
-        <AppContext.Provider value={{ db }}>
+        <RxDatabaseProvider database={ db }>
             <Heroes />
-        </AppContext.Provider>
+        </RxDatabaseProvider>
     );
 };
 
