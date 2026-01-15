@@ -6,6 +6,6 @@
   float: right;
 }
 
-i {
+i, .delete {
   cursor: pointer;
 }
