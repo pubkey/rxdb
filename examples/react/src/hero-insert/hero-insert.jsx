@@ -1,47 +1,43 @@
-import React, { Component } from 'react';
-import * as Database from '../Database';
+import React, { Component, useState } from 'react';
+import { useRxCollection } from 'rxdb/plugins/react';
 
-class HeroInsert extends Component {
-    state = {
-        name: '',
-        color: ''
-    }
-    subs = []
 
-    addHero = async (event) => {
+const HeroInsert = () => {
+    const collection = useRxCollection('heroes');
+
+    const [ name, setName ] = useState('');
+    const [ color, setColor ] = useState('');
+
+    const addHero = async (event) => {
         event.preventDefault();
-        const { name, color } = this.state;
-        const db = await Database.get();
+        if (collection == null) {
+            return;
+        }
 
         const addData = {
             name,
             color
         };
-        await db.heroes.insert(addData);
-        this.setState({
-            name: '',
-            color: ''
-        });
-    }
-    handleNameChange = (event) => {
-        this.setState({ name: event.target.value });
-    }
-    handleColorChange = (event) => {
-        this.setState({ color: event.target.value });
-    }
 
-    render() {
-        return (
-            <div id="insert-box" className="box">
-                <h3>Add Hero</h3>
-                <form onSubmit={this.addHero}>
-                    <input name="name" type="text" placeholder="Name" value={this.state.name} onChange={this.handleNameChange} />
-                    <input name="color" type="text" placeholder="Color" value={this.state.color} onChange={this.handleColorChange} />
-                    <button type="submit">Insert a Hero</button>
-                </form>
-            </div>
-        );
-    }
-}
+        await collection.insert(addData);
+        setName('');
+        setColor('');
+    };
+
+    const handleNameChange = (event) => setName(event.target.value);
+
+    const handleColorChange = (event) => setColor(event.target.value);
+
+    return (
+        <div id="insert-box" className="box">
+            <h3>Add Hero</h3>
+            <form onSubmit={addHero}>
+                <input name="name" type="text" placeholder="Name" value={name} onChange={handleNameChange} />
+                <input name="color" type="text" placeholder="Color" value={color} onChange={handleColorChange} />
+                <button type="submit">Insert a Hero</button>
+            </form>
+        </div>
+    );
+};
 
 export default HeroInsert;
