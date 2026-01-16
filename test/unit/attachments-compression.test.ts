@@ -7,7 +7,8 @@ import {
     schemas,
     humansCollection,
     HumanDocumentType,
-    isBun
+    isBun,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
 import {
     clone,
@@ -143,6 +144,10 @@ modes.forEach(mode => {
         });
         describe('compare size', () => {
             it('should have a smaller size when compression is used', async () => {
+                if (isDeno) {
+                    // too slow on deno
+                    return;
+                }
                 const c = await createCompressedAttachmentsCollection(1);
                 const c2 = await humansCollection.createAttachments(1);
 
