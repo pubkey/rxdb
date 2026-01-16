@@ -198,25 +198,18 @@ describeParallel('reactive-query.test.js', () => {
             }
             const c = await humansCollection.create(0);
             let docSize = 0;
-            const genId = () => {
-                if (typeof crypto === 'object' && 'randomUUID' in crypto) {
-                    return crypto.randomUUID();
-                }
-                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (cc) => {
-                    const r = Math.random() * 16 | 0;
-                    return (cc === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
-            };
+            console.log('----------------------------------------------');
+            console.log('----------------------------------------------');
+            console.log('----------------------------------------------');
 
-            for (let i = 0; i < 1; i++) {
-                const len = 3000;
-                docSize += len;
-                const docs = Array.from({ length: len }, () => {
-                    const id = genId();
-                    return schemaObjects.humanData(id);
-                });
-                await c.bulkInsert(docs);
-            }
+
+            const len = 3000;
+            docSize += len;
+            const docs = new Array(len).fill(0).map((_, i) => {
+                const id = 'base_' + ((i + 1) + '').padStart(5, '0');
+                return schemaObjects.humanData(id);
+            });
+            await c.bulkInsert(docs);
 
             let result: RxDocument<{
                 firstName: string;
@@ -227,28 +220,55 @@ describeParallel('reactive-query.test.js', () => {
 
             let done = false;
             let insertLen = 0;
+            let addCount = 0;
 
-            c.find({ sort: [{ age: 'asc', passportId: 'asc', lastName: 'desc', firstName: 'asc' }] }).$.subscribe(r => {
+            console.log('start sub');
+            const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' }] });
+            const sub = query.$.subscribe(r => {
+                console.log('find emit (' + r.length + ')' + done);
+                console.dir(r.slice(Math.max(r.length - 5, 0)).map(d => d.primary));
                 done = true;
                 result = r;
             });
 
-
+            console.log('start inserts');
             (async () => {
-                while (!done) {
+                while (!done && insertLen < 10) {
                     await wait(2);
-                    const id = genId();
-                    c.insert(schemaObjects.humanData(id));
+                    const useCount = addCount++;
+                    const id = 'z_add_ ' + useCount;
+                    console.log('insert one! (' + useCount + ')');
+                    c.insert(schemaObjects.humanData(id)).then(() => {
+                        console.log('inserted ' + useCount);
+                    });
                     insertLen++;
                 }
             })();
 
 
+            console.log('wait 0');
             await waitUntil(() => done);
-            await waitUntil(() => result.length === insertLen + docSize);
+            console.log('wait 1');
+            await waitUntil(() => {
+                const should = insertLen + docSize;
+                console.log('result.length: ' + result.length + ' (insertLen: ' + insertLen + ' docSize: ' + docSize + ')');
+                return result.length === should;
+            });
+            console.log('wait 2');
             await wait(50);
+            console.log('wait 3');
             assert.strictEqual(result.length, insertLen + docSize);
+            console.log('wait 4');
 
+            console.log('WORKS NOW!');
+
+
+            // adding a new doc now should still work
+            await c.insert(schemaObjects.humanData('last'));
+            const endResult = await query.exec();
+            assert.ok(endResult.find(d => d.primary === 'last'), 'must have last doc');
+
+            sub.unsubscribe();
             c.database.close();
         });
         // his test failed randomly, so we run it more often.
