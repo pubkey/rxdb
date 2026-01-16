@@ -222,7 +222,7 @@ export function getStorage(storageKey: string): RxTestStorage {
 
             // use a dynamic import so it does not break browser bundling
 
-            const mongoConnectionString = 'mongodb://localhost:27017';
+            const mongoConnectionString = 'mongodb://localhost:27017/?directConnection=true';
             let getStorageFnMongo: any;
             return {
                 async init() {

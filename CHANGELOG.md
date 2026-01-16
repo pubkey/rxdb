@@ -7,6 +7,7 @@
 
 ### 17.0.0-beta.3 (7 January 2026)
 
+- FIX query results not correct if changes happen faster then the query updates [#7067](https://github.com/pubkey/rxdb/issues/7067)
 - Replace `appendToArray()` with `Array.concat()` which is nowadays optimized by browsers and faster.
 - ADD  `reactivity-angular` package.
 - CHANGE moved `reactivity-vue` and `reactivity-preact-signals` from premium to core.

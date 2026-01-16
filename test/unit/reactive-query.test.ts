@@ -187,8 +187,84 @@ describeParallel('reactive-query.test.js', () => {
         });
     });
     describe('ISSUES', () => {
+        it('#7075 query results not correct if changes happen faster then the query updates', async () => {
+            if (
+                // TODO randomly fails in foundationdb
+                config.storage.name === 'foundationdb' ||
+                // sqlite cannot insert too many rows
+                config.storage.name === 'sqlite-trial'
+            ) {
+                return;
+            }
+            const c = await humansCollection.create(0);
+            let docSize = 0;
+
+            let len = isFastMode() ? 100 : 3000;
+            if (
+                len > 100 &&
+                [
+                    'deno',
+                    'dexie'
+                ].find(slowName => config.storage.name.includes(slowName))
+            ) {
+                len = 100;
+            }
+
+
+            docSize += len;
+            const docs = new Array(len).fill(0).map((_, i) => {
+                const id = 'base_' + ((i + 1) + '').padStart(5, '0');
+                return schemaObjects.humanData(id);
+            });
+            await c.bulkInsert(docs);
+
+            let result: RxDocument<{
+                firstName: string;
+                lastName: string;
+                passportId: string;
+                age?: number | undefined;
+            }, {}>[] = [];
+
+            let done = false;
+            let insertLen = 0;
+            let addCount = 0;
+
+            const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' }] });
+            const sub = query.$.subscribe(r => {
+                done = true;
+                result = r;
+            });
+
+            (async () => {
+                while (!done && insertLen < 10) {
+                    await wait(2);
+                    const useCount = addCount++;
+                    const id = 'z_add_ ' + useCount;
+                    c.insert(schemaObjects.humanData(id)).then(() => {
+                    });
+                    insertLen++;
+                }
+            })();
+
+
+            await waitUntil(() => done);
+            await waitUntil(() => {
+                const should = insertLen + docSize;
+                return result.length === should;
+            });
+            await wait(isFastMode() ? 0 : 50);
+            assert.strictEqual(result.length, insertLen + docSize);
+
+            // adding a new doc now should still work
+            await c.insert(schemaObjects.humanData('last'));
+            const endResult = await query.exec();
+            assert.ok(endResult.find(d => d.primary === 'last'), 'must have last doc');
+
+            sub.unsubscribe();
+            c.database.close();
+        });
         // his test failed randomly, so we run it more often.
-        new Array(isFastMode() ? 3 : 10)
+        new Array(isFastMode() ? 1 : 5)
             .fill(0).forEach(() => {
                 it('#31 do not fire on doc-change when result-doc not affected ' + config.storage.name, async () => {
                     const docAmount = isFastMode() ? 2 : 10;

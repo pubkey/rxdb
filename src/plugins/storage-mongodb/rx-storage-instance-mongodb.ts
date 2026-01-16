@@ -53,7 +53,6 @@ import {
     swapMongoToRxDoc,
     swapRxDocToMongo
 } from './mongodb-helper.ts';
-import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
