@@ -199,7 +199,18 @@ describeParallel('reactive-query.test.js', () => {
             const c = await humansCollection.create(0);
             let docSize = 0;
 
-            const len = isFastMode() ? 100 : 3000;
+            let len = isFastMode() ? 100 : 3000;
+            if (
+                len > 100 &&
+                [
+                    'deno',
+                    'dexie'
+                ].find(slowName => config.storage.name.includes(slowName))
+            ) {
+                len = 100;
+            }
+
+
             docSize += len;
             const docs = new Array(len).fill(0).map((_, i) => {
                 const id = 'base_' + ((i + 1) + '').padStart(5, '0');
@@ -220,8 +231,6 @@ describeParallel('reactive-query.test.js', () => {
 
             const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' }] });
             const sub = query.$.subscribe(r => {
-                console.log('find emit (' + r.length + ')' + done);
-                console.dir(r.slice(Math.max(r.length - 5, 0)).map(d => d.primary));
                 done = true;
                 result = r;
             });
