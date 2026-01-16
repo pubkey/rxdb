@@ -1017,7 +1017,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "2.6.4"
+          deno-version: "2.6.5"
       - name: run deno tests:dexie
         run: |
           sudo npm i -g cross-env
