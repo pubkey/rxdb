@@ -734,7 +734,7 @@ export async function queryCollection<RxDocType>(
          * This lead to cases where the query results where outdated but RxDB thought
          * that the changeevents must not be processed.
          * To fix this we re-run the query if a change happens directly during the query run.
-         * 
+         *
          * @link https://github.com/pubkey/rxdb/issues/7067
          */
         if (c > 0) {

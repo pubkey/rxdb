@@ -188,22 +188,18 @@ describeParallel('reactive-query.test.js', () => {
     });
     describe('ISSUES', () => {
         it('#7075 query results not correct if changes happen faster then the query updates', async () => {
-            if (config.storage.name === 'foundationdb') {
+            if (
                 // TODO randomly fails in foundationdb
-                return;
-            }
-            if (config.storage.name === 'sqlite-trial') {
+                config.storage.name === 'foundationdb' ||
                 // sqlite cannot insert too many rows
+                config.storage.name === 'sqlite-trial'
+            ) {
                 return;
             }
             const c = await humansCollection.create(0);
             let docSize = 0;
-            console.log('----------------------------------------------');
-            console.log('----------------------------------------------');
-            console.log('----------------------------------------------');
 
-
-            const len = 3000;
+            const len = isFastMode() ? 100 : 3000;
             docSize += len;
             const docs = new Array(len).fill(0).map((_, i) => {
                 const id = 'base_' + ((i + 1) + '').padStart(5, '0');
@@ -222,7 +218,6 @@ describeParallel('reactive-query.test.js', () => {
             let insertLen = 0;
             let addCount = 0;
 
-            console.log('start sub');
             const query = c.find({ sort: [{ passportId: 'asc', lastName: 'desc', firstName: 'asc' }] });
             const sub = query.$.subscribe(r => {
                 console.log('find emit (' + r.length + ')' + done);
@@ -231,37 +226,25 @@ describeParallel('reactive-query.test.js', () => {
                 result = r;
             });
 
-            console.log('start inserts');
             (async () => {
                 while (!done && insertLen < 10) {
                     await wait(2);
                     const useCount = addCount++;
                     const id = 'z_add_ ' + useCount;
-                    console.log('insert one! (' + useCount + ')');
                     c.insert(schemaObjects.humanData(id)).then(() => {
-                        console.log('inserted ' + useCount);
                     });
                     insertLen++;
                 }
             })();
 
 
-            console.log('wait 0');
             await waitUntil(() => done);
-            console.log('wait 1');
             await waitUntil(() => {
                 const should = insertLen + docSize;
-                console.log('result.length: ' + result.length + ' (insertLen: ' + insertLen + ' docSize: ' + docSize + ')');
                 return result.length === should;
             });
-            console.log('wait 2');
-            await wait(50);
-            console.log('wait 3');
+            await wait(isFastMode() ? 0 : 50);
             assert.strictEqual(result.length, insertLen + docSize);
-            console.log('wait 4');
-
-            console.log('WORKS NOW!');
-
 
             // adding a new doc now should still work
             await c.insert(schemaObjects.humanData('last'));
