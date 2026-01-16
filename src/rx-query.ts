@@ -677,6 +677,21 @@ export async function queryCollection<RxDocType>(
     const collection = rxQuery.collection;
 
     /**
+     * If a change happens during the query-run,
+     * we do not know for 100% if that change is already included
+     * into the query results or not. The storage itself does not give that information.
+     * This lead to cases where the query results where outdated but RxDB thought
+     * that the changeevents must not be processed.
+     * To fix this we re-run the query if a change happens directly during the query run.
+     *
+     * @link https://github.com/pubkey/rxdb/issues/7067
+     */
+    let eventsDuringQueryRun = 0;
+    const sub = collection.eventBulks$.subscribe(() => {
+        eventsDuringQueryRun++;
+    });
+
+    /**
      * Optimizations shortcut.
      * If query is find-one-document-by-id,
      * then we do not have to use the slow query() method
@@ -719,30 +734,17 @@ export async function queryCollection<RxDocType>(
             }
         }
     } else {
-        let c = 0;
-        const sub = collection.eventBulks$.subscribe(() => {
-            c++;
-        });
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
-        sub.unsubscribe();
-
-        /**
-         * If a change happens during the query-run,
-         * we do not know for 100% if that change is already included
-         * into the query results or not. The storage itself does not give that information.
-         * This lead to cases where the query results where outdated but RxDB thought
-         * that the changeevents must not be processed.
-         * To fix this we re-run the query if a change happens directly during the query run.
-         *
-         * @link https://github.com/pubkey/rxdb/issues/7067
-         */
-        if (c > 0) {
-            await promiseWait(0);
-            return queryCollection(rxQuery);
-        }
         docs = queryResult.documents;
     }
+
+    sub.unsubscribe();
+    if (eventsDuringQueryRun > 0) {
+        await promiseWait(0);
+        return queryCollection(rxQuery);
+    }
+
     return {
         docs,
         counter: collection._changeEventBuffer.getCounter()
