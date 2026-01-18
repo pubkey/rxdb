@@ -208,7 +208,6 @@ const collection = db.humans;
 ```ts
 const client = new Client();
 client.setEndpoint('https://cloud.appwrite.io/v1');
-client.setEndpointRealtime('https://cloud.appwrite.io/v1');
 client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```
 
@@ -217,7 +216,6 @@ client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```ts
 const client = new Client();
 client.setEndpoint('http://localhost/v1');
-client.setEndpointRealtime('http://localhost/v1');
 client.setProject('YOUR_APPWRITE_PROJECT_ID');
 ```
 
