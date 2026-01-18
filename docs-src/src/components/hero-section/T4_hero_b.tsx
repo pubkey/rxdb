@@ -67,9 +67,22 @@ export function HeroSection_B(props: {
                             All JavaScript <b onClick={() => props.scrollToSection('runtimes')}>Runtimes</b> Supported
                         </>
                     </CheckedList>
+                </div>
 
+                <div
+                    className="half right justify-center-mobile grid-2-mobile grid-3"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}
+                >
+                    <ReplicationDiagram dark={true} hasIcon={false} />
+                </div>
+            </div>
+            <div className="flex-start-center" style={{display: 'flex'}}>
+                <div className="half left" style={{}}>
                     <div style={{
-                        marginTop: 60,
+                        marginTop: 44,
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: 10,
@@ -110,15 +123,6 @@ export function HeroSection_B(props: {
                             onClick={() => triggerTrackingEvent('hero_section_start_now', 0.4)}
                         >Get Started For Free</Button>
                     </div>
-                </div>
-                <div
-                    className="half right justify-center-mobile grid-2-mobile grid-3"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                    }}
-                >
-                    <ReplicationDiagram dark={true} hasIcon={false} />
                 </div>
             </div>
             <HeroRuntimes></HeroRuntimes>

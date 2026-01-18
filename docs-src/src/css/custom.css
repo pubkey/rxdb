@@ -905,6 +905,10 @@ body {
     justify-content: end;
 }
 
+.flex-start-center {
+    justify-content: start;
+}
+
 .margin-top-125-0 {
     margin-top: 125px;
 }
@@ -927,6 +931,10 @@ body {
 
     .margin-top-125-0 {
         margin-top: 0px;
+    }
+
+    .flex-start-center {
+        justify-content: center;
     }
 
     .flex-end-center {
