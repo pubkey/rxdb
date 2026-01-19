@@ -241,7 +241,7 @@ const is = isRxDatabase(myObj);
 
 ### collections$
 
-Emits events whenever a [RxCollection](./rx-collection.md) is added or removed to the instance of the RxDatabase. Notice that this only emits the JavaScript instance of the RxCollection class, it does not emit events accross browser tabs.
+Emits events whenever a [RxCollection](./rx-collection.md) is added or removed to the instance of the RxDatabase. Notice that this only emits the JavaScript instance of the RxCollection class, it does not emit events across browser tabs.
 
 ```javascript
 const sub = myDatabase.collections$.subscribe(event => {
