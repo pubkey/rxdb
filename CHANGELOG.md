@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 17.0.0-beta.3 (7 January 2026)
+### 17.0.0-beta.4 (19 January 2026)
 
 - A list of changes for RxDB v17 can be found [here](https://rxdb.info/releases/17.0.0.html)
 
