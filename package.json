@@ -502,7 +502,7 @@
   "peerDependencies": {
     "@angular/core": "*",
     "@preact/signals-core": "*",
-    "firebase": "^11.10.0",
+    "firebase": "^11.10.0 || ^12.0.0",
     "mongodb": "^6.21.0 || ^7.0.0",
     "nats": "^2.29.3",
     "rxjs": "^7.8.2",
@@ -620,7 +620,7 @@
     "exists-file": "3.0.2",
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
-    "firebase": "11.10.0",
+    "firebase": "12.8.0",
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
     "globals": "17.0.0",
