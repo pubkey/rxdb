@@ -82,7 +82,7 @@
     "copyfiles": "2.4.1",
     "less": "^4.2.0",
     "local-web-server": "5.4.0",
-    "testcafe": "3.7.3",
+    "testcafe": "3.7.4",
     "ts-mocha": "11.1.0",
     "ts-node": "10.9.2",
     "tslint": "6.1.3",
