@@ -668,7 +668,7 @@
     "terser-webpack-plugin": "5.3.16",
     "ts-loader": "9.5.4",
     "typescript": "5.9.3",
-    "vue": "3.5.26",
+    "vue": "3.5.27",
     "walk-sync": "4.0.1",
     "watch": "1.0.2",
     "webpack": "5.104.1",
