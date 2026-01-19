@@ -17,7 +17,7 @@
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
     "copyfiles": "2.4.1",
-    "testcafe": "3.7.3",
+    "testcafe": "3.7.4",
     "typescript": "5.9.3",
     "vite": "7.3.1"
   },
