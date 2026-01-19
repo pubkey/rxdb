@@ -619,7 +619,7 @@ describeParallel('rx-database.test.ts', () => {
              */
             return;
         }
-        it('should automatically cleanup after scope whne "using" is used', async () => {
+        it('should automatically cleanup after scope when "using" is used', async () => {
             const dbName = randomToken();
             (async () => {
                 await using db = await createRxDatabase({
