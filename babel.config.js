@@ -1,4 +1,5 @@
 const plugins = [
+    '@babel/plugin-transform-explicit-resource-management',
     '@babel/plugin-transform-typescript',
     'transform-class-properties',
     ['@babel/transform-template-literals', {
