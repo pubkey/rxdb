@@ -216,6 +216,14 @@ export class RxDatabaseBase<
     public states: { [name: string]: RxState<any, Reactivity>; } = {};
 
     /**
+     * Support for `using` / `await using` (ECMAScript explicit resource management).
+     * This allows: `await using db = await createRxDatabase(...)`
+     */
+    public async [Symbol.asyncDispose](): Promise<void> {
+        await this.close();
+    }
+
+    /**
      * Internally only use eventBulks$
      * Do not use .$ or .observable$ because that has to transform
      * the events which decreases performance.

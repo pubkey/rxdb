@@ -22,7 +22,7 @@
     "random-int": "3.1.0",
     "register-service-worker": "1.7.2",
     "rxjs": "7.8.2",
-    "vue": "3.5.26",
+    "vue": "3.5.27",
     "vue-router": "4.6.4"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "@vue/cli-plugin-pwa": "5.0.9",
     "@vue/cli-plugin-typescript": "5.0.9",
     "@vue/cli-service": "5.0.9",
-    "@vue/compiler-sfc": "3.5.26",
+    "@vue/compiler-sfc": "3.5.27",
     "@vue/eslint-config-typescript": "13.0.0",
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
@@ -45,7 +45,7 @@
     "local-web-server": "5.4.0",
     "node-sass": "9.0.0",
     "sass-loader": "16.0.6",
-    "testcafe": "3.7.3",
+    "testcafe": "3.7.4",
     "typescript": "5.9.3"
   },
   "eslintConfig": {

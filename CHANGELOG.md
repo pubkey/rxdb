@@ -7,41 +7,7 @@
 
 ### 17.0.0-beta.3 (7 January 2026)
 
-- FIX query results not correct if changes happen faster then the query updates [#7067](https://github.com/pubkey/rxdb/issues/7067)
-- Replace `appendToArray()` with `Array.concat()` which is nowadays optimized by browsers and faster.
-- ADD  `reactivity-angular` package.
-- CHANGE moved `reactivity-vue` and `reactivity-preact-signals` from premium to core.
-- ADD `databaseNamePrefix` option to premium SQLite RxStorage
-- ADD [llms.txt](https://rxdb.info/llms.txt)
-- CHANGE These dependencies are now optional peer dependencies: `firebase`, `mongodb`, `nats`
-- ADD ensure indexes and primaryKey have a maximum `maxLength` of `1000`.
-- ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
-- We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
-- ADD `context` field to all RxDB write errors for easier debugging.
-- CHANGE `toggleOnDocumentVisible` is now `true` by default.
-- CHANGE final fields no longer must be `required`.
-- FIX OPFS-Storage memory and cleanup leaking
-- FIX memory-mapped-storage: deleted docs must be purged
-- FIX `RxCollection.cleanup()` does not respect the provided `minimumDeletedTime`.
-- FIX short primary key lengths does not match replication schema [#7587](https://github.com/pubkey/rxdb/issues/7587)
-- FIX retry DenoKV commits on "database is locked" error
-- Add QueryCompositeFilterConstraint support to Firestore replication plugin [#7616](https://github.com/pubkey/rxdb/pull/7616)
-- ADD ensure indexes and primaryKey have a maximum `maxLength` of `2048`.
-- ADD use internal types for `WeakRef` so people do not have to add `ES2021.WeakRef` to their TypeScript config.
-- We no longer have the `dist` folder in the github repository. Either install RxDB from npm, or run the build scripts locally.
-- ADD `context` field to all RxDB write errors for easier debugging.
-- CHANGE `toggleOnDocumentVisible` is now `true` by default.
-- CHANGE final fields no longer must be `required`.
-- The following plugins are no longer in beta mode:
-  - Replication Appwrite
-  - RxStorage MongoDB
-  - RxStorage Filesystem Node
-  - Attachment replication
-  - Replication Supabase
-  - RxPipeline
-  - RxStorage DenoKV
-  - CRDT Plugin
-  - Replication MongoDB
+- A list of changes for RxDB v17 can be found [here](https://rxdb.info/releases/17.0.0.html)
 
 <!-- /CHANGELOG NEWEST -->
 

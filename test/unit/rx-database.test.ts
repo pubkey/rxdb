@@ -10,15 +10,17 @@ import {
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256,
     prepareQuery,
-    RxCollectionEvent
+    RxCollectionEvent,
+    dbCount
 } from '../../plugins/core/index.mjs';
 
-import AsyncTestUtil from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 import {
     schemaObjects,
     schemas,
     humansCollection,
-    getPassword
+    getPassword,
+    isFastMode
 } from '../../plugins/test-utils/index.mjs';
 import {
     getRxStorageMemory
@@ -648,6 +650,31 @@ describeParallel('rx-database.test.ts', () => {
             assert.strictEqual(hasLocal, null);
 
             await db2.remove();
+        });
+    });
+    describe('using', () => {
+        if (isFastMode()) {
+            /**
+             * Do not run this on fast-mode
+             * because test cannot be run parallel
+             */
+            return;
+        }
+        it('should automatically cleanup after scope when "using" is used', async () => {
+            const dbName = randomToken();
+            (async () => {
+                await using db = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage()
+                });
+
+                await db.addCollections({
+                    human0: { schema: schemas.human }
+                });
+            })();
+
+
+            await waitUntil(() => dbCount() === 0);
         });
     });
 });
