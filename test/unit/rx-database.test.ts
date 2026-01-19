@@ -9,7 +9,8 @@ import {
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256,
-    prepareQuery
+    prepareQuery,
+    RxCollectionEvent
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
@@ -561,6 +562,46 @@ describeParallel('rx-database.test.ts', () => {
                 await db.close();
                 assert.strictEqual(db.closed, true);
             });
+        });
+    });
+    describe('.collections$', () => {
+        it('should emit when adding collections', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            const emitted: RxCollectionEvent[] = [];
+            db.collections$.subscribe(ev => emitted.push(ev));
+
+            await db.addCollections({
+                foobar: {
+                    schema: schemas.human
+                }
+            });
+            assert.strictEqual(emitted.length, 1);
+            assert.strictEqual(emitted[0].collection.name, 'foobar');
+            assert.strictEqual(emitted[0].type, 'ADDED');
+            await db.close();
+        });
+        it('should emit when closing collections', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage()
+            });
+            await db.addCollections({
+                foobar: {
+                    schema: schemas.human
+                }
+            });
+
+            const emitted: RxCollectionEvent[] = [];
+            db.collections$.subscribe(ev => emitted.push(ev));
+            await db.foobar.close();
+
+            assert.strictEqual(emitted.length, 1);
+            assert.strictEqual(emitted[0].collection.name, 'foobar');
+            assert.strictEqual(emitted[0].type, 'CLOSED');
+            await db.close();
         });
     });
     describe('.remove()', () => {

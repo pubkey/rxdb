@@ -102,3 +102,22 @@ export interface RxDumpDatabase<Col> extends RxDumpDatabaseBase {
 export interface RxDumpDatabaseAny<Col> extends RxDumpDatabaseBase {
     collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDTcol<Col[keyof Col]>>>[];
 }
+
+
+
+export type RxCollectionCreatedEvent = {
+    type: 'ADDED';
+    collection: RxCollection;
+};
+
+export type RxCollectionClosedEvent = {
+    type: 'CLOSED';
+    collection: RxCollection;
+};
+
+/**
+ * Fired on RxDatabase.collection$
+ */
+export type RxCollectionEvent =
+    | RxCollectionCreatedEvent
+    | RxCollectionClosedEvent;

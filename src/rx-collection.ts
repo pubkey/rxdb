@@ -979,6 +979,10 @@ export class RxCollectionBase<
                 this._subs.forEach(sub => sub.unsubscribe());
 
                 delete this.database.collections[this.name];
+                this.database.collectionsSubject$.next({
+                    collection: this.asRxCollection,
+                    type: 'CLOSED'
+                });
                 return runAsyncPluginHooks('postCloseRxCollection', this).then(() => true);
             });
     }
