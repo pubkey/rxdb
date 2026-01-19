@@ -27,7 +27,8 @@ import type {
     RxError,
     HashFunction,
     MaybePromise,
-    RxState
+    RxState,
+    RxCollectionEvent
 } from './types/index.d.ts';
 
 import {
@@ -178,6 +179,15 @@ export class RxDatabaseBase<
         return this.observable$;
     }
 
+    /**
+     * Emits events whenever a JavaScript instance
+     * of RxCollection is added or removed on the RxDatabase instance.
+     * Does not emit anything across browser-tabs!
+     */
+    get collections$(): Observable<RxCollectionEvent> {
+        return this.collectionsSubject$.asObservable();
+    }
+
     public getReactivityFactory(): RxReactivityFactory<Reactivity> {
         if (!this.reactivity) {
             throw newRxError('DB14', { database: this.name });
@@ -222,6 +232,7 @@ export class RxDatabaseBase<
 
     private closePromise: Promise<boolean> | null = null;
 
+    public collectionsSubject$ = new Subject<RxCollectionEvent>();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
             mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
@@ -410,6 +421,10 @@ export class RxDatabaseBase<
 
                 // set as getter to the database
                 (this.collections as any)[collectionName] = collection;
+                this.collectionsSubject$.next({
+                    collection,
+                    type: 'ADDED'
+                });
                 if (!(this as any)[collectionName]) {
                     Object.defineProperty(this, collectionName, {
                         get: () => (this.collections as any)[collectionName]
@@ -502,6 +517,7 @@ export class RxDatabaseBase<
              * to stop all subscribers who forgot to unsubscribe.
              */
             this.eventBulks$.complete();
+            this.collectionsSubject$.complete();
 
             DB_COUNT--;
             this._subs.map(sub => sub.unsubscribe());
@@ -574,7 +590,7 @@ function throwIfDatabaseNameUsed(
 }
 
 /**
- * ponyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
+ * Polyfill for https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers
  */
 function createPromiseWithResolvers<T>() {
     let resolve!: (value: T | PromiseLike<T>) => void;
