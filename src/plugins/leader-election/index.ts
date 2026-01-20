@@ -49,9 +49,18 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
      * Clean up the reference on RxDatabase.close()
      */
     const oldClose = this.close.bind(this);
-    this.close = function () {
+    this.close = async function () {
+        /**
+         * It is very important that we remove the
+         * potential leader elected broadcast channel
+         * AFTER the database is closed. Otherwise an
+         * instance running in another browser tab can
+         * already start working on stuff and interfering
+         * with a half-closed database and its collections.
+         */
+        const ret = await oldClose();
         removeBroadcastChannelReference(this.token, this);
-        return oldClose();
+        return ret;
     };
 
 
