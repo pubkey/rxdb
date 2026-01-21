@@ -104,9 +104,6 @@ export const Tabs: React.FC<SideTabsProps> = ({
         const el = rootRef.current;
         if (!el) return;
 
-
-        console.log('aaaa ' + el.getBoundingClientRect);
-
         setIsSmall(el.clientWidth <= smallAt);
 
         const observer = new ResizeObserver(entries => {
