@@ -35,9 +35,9 @@ if (!isNode) {
         try {
             console.dir(await p);
         } catch (err) {
-            console.log((error as any).stack);
-            console.dir(error);
             console.log('------- COULD NOT AWAIT p');
+            logUnknownError(err);
+            logUnknownError(error);
             process.exit(5);
         }
         console.dir((error as any).stack);
@@ -52,6 +52,19 @@ if (!isNode) {
     console.dir(process.versions.node);
 }
 
+function logUnknownError(err: any) {
+    if (err instanceof Error) {
+        console.error(err.stack || err.message);
+    } else {
+        console.error('Non-Error rejection:', err);
+        console.error(err.stack || err.message);
+        try {
+            console.error(JSON.stringify(err, null, 2));
+        } catch {
+            console.error(String(err));
+        }
+    }
+}
 
 
 describe('init.test.ts', () => {
