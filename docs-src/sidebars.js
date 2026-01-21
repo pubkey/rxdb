@@ -445,6 +445,11 @@ const sidebars = {
       items: [
         {
           type: 'doc',
+          id: 'releases/17.0.0',
+          label: '17.0.0'
+        },
+        {
+          type: 'doc',
           id: 'releases/16.0.0',
           label: '16.0.0'
         },
