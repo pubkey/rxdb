@@ -5,8 +5,7 @@ import {
     wait,
     waitUntil
 } from 'async-test-util';
-import pkg from 'isomorphic-ws';
-const { WebSocket: IsomorphicWebSocket } = pkg;
+import { WebSocket } from 'ws';
 
 
 import {
@@ -310,7 +309,7 @@ describe('replication-graphql.test.ts', () => {
                 const client = createClient({
                     url: endpointUrl,
                     shouldRetry: () => false,
-                    webSocketImpl: IsomorphicWebSocket,
+                    webSocketImpl: WebSocket,
                 });
 
                 const query = `subscription onHumanChanged {
