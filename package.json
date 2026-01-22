@@ -673,7 +673,7 @@
     "walk-sync": "4.0.1",
     "watch": "1.0.2",
     "webpack": "5.104.1",
-    "webpack-bundle-analyzer": "5.1.1",
+    "webpack-bundle-analyzer": "5.2.0",
     "webpack-cli": "6.0.1",
     "webpack-dev-server": "5.2.3"
   },
