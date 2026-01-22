@@ -1,10 +1,6 @@
-import { MutableRefObject, useState } from 'react';
+import { MutableRefObject } from 'react';
 import { SemPage, getAppName } from '../pages';
 import { CheckedList } from './checked-list';
-import { IconWifi } from './icons/wifi';
-import { PixelToggle } from './toggle';
-import { EmojiChatStateful } from './emoji-chat';
-import { Cloud } from './cloud';
 import { ReplicationDiagram } from './replication-diagram';
 
 export function OfflineSection(props: {
@@ -13,8 +9,6 @@ export function OfflineSection(props: {
   order?: number;
   offlineRef: MutableRefObject<HTMLDivElement>;
 }) {
-  const [online, setOnline] = useState(true);
-
   return (
     <div
       className={'block offline-first ' + (props.dark ? 'dark' : '') + ' trophy-before trophy-after'}
