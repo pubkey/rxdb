@@ -16,16 +16,13 @@ const CURRENT_TEST_RUN = {
     /**
      * @link https://docs.google.com/spreadsheets/d/1ryPOhhwFHIqkVnIlpup6neV7u1FDnPMTlgzbvE62kB8/edit?gid=1330239462#gid=1330239462
      */
-    id: 'T10',
+    id: 'T11',
     variations: {
         A: <>The easiest way to <b>store</b> and <b>sync</b> Data inside of your App</>,
         B: <>The local-first <b>Database</b> for <b>JavaScript</b> Applications</>,
-        C: <>The Local-First <b>Database</b> for Reactive <b>JavaScript</b> Applications</>,
-        D: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
-        E: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
-        F: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>,
-        G: <>A Local-First <b>Database</b> for Offline-Capable, Real-Time Apps</>,
-        H: <>A Client-Side <b>Database</b> Designed for High-Performance, Offline-First Apps</>
+        C: <>The Reactive Local-First <b>Database</b> for Modern <b>JavaScript</b> Apps</>,
+        D: <>The Local-First Database to <b>Store</b> and <b>Sync</b> App Data</>,
+        E: <>The Local-First <b>Database</b> for <b>JavaScript</b> Apps</>
     }
 };
 
