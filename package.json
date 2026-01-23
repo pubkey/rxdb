@@ -586,7 +586,7 @@
     "@preact/signals-core": "1.12.2",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@stylistic/eslint-plugin": "5.7.0",
+    "@stylistic/eslint-plugin": "5.7.1",
     "@supabase/supabase-js": "2.91.1",
     "@types/assert": "1.5.11",
     "@types/core-js": "2.5.8",
