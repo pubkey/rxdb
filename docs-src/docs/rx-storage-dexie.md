@@ -16,6 +16,7 @@ While Dexie.js [RxStorage](./rx-storage.md) can be used for free, most professio
 
 - It is faster and reduces build size by up to **36%**.
 - It has a way [better performance](./rx-storage-performance.md) on reads and writes.
+- It stores attachments data as binary instead of base64 which reduces used space by 33%.
 - It does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 - It supports **non-required indexes** which is [not possible](https://github.com/pubkey/rxdb/pull/6643#issuecomment-2505310082) with Dexie.js.
 - It runs in a **WAL-like mode** (similar to SQLite) for faster writes and improved responsiveness.
