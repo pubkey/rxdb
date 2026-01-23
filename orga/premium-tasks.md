@@ -17,6 +17,7 @@ To ensure there are not multiple people working on the same task, before you sta
 
 - Change the docusuaurs config to use server rendered codeblocks instead of loading the big prismjs into the main.js javascript bundle (use sth like Shiki instead).
 - Create a `rxdb/plugins/react` plugins with a `useRxDatabase` provider and similiar functions like `useRxQuery`, `useRxCollection` and TypeScript support. (Should later replace the outdated [rxdb-hooks](https://github.com/cvara/rxdb-hooks) library).
+- Rework the [RxStorage Interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.d.ts#L149) do consume attachments data directly as `Blob` instead of a base64 string to improve performance.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
 ```ts
 const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
