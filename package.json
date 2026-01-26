@@ -512,9 +512,13 @@
     "mongodb": "^6.21.0 || ^7.0.0",
     "nats": "^2.29.3",
     "rxjs": "^7.8.2",
-    "vue": "*"
+    "vue": "*",
+    "react": "*"
   },
   "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
     "firebase": {
       "optional": true
     },
@@ -530,7 +534,7 @@
     "vue": {
       "optional": true
     },
-    "@angular/core": {
+    "react": {
       "optional": true
     }
   },
