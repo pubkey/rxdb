@@ -4,12 +4,11 @@ import type {
     RxReplicationHandler
 } from '../../types/index.d.ts';
 
-import type {
-    WebSocket,
-    ServerOptions
-} from 'isomorphic-ws';
-import pkg from 'isomorphic-ws';
-const { WebSocketServer } = pkg;
+import {
+    type WebSocket,
+    WebSocketServer,
+    type ServerOptions,
+} from 'ws';
 
 import type {
     WebsocketMessageResponseType,
