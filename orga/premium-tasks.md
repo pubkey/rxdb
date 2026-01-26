@@ -18,10 +18,23 @@ To ensure there are not multiple people working on the same task, before you sta
 - Change the docusuaurs config to use server rendered codeblocks instead of loading the big prismjs into the main.js javascript bundle (use sth like Shiki instead).
 - Rework the [RxStorage Interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.d.ts#L149) do consume attachments data directly as `Blob` instead of a base64 string to improve performance.
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
-```ts
-const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
-const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
-```
+    ```ts
+    const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
+    const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
+    ```
+- To improve vibe-coding with RxDB, all [error-messages](https://github.com/pubkey/rxdb/blob/master/src/plugins/dev-mode/error-messages.ts) must:
+  - Be added to an `ERROR-MESSAGES.md` that is generated on build time into the package root folder
+  - Must contain `cause`, `fix` and `docs` properties like:
+    ```js
+        const error = {
+          "code": "RXDB_MISSING_INDEX",
+          "message": "object does not match schema",
+          "cause": "RxCollection.insert()",
+          "fix": "Do not store data that does not match the collections schema",
+          "docs": "https://rxdb.info/schema-validation.html"
+        }
+    ```
+
 - 📢 Give an in-person talk about RxDB at a conference or meetup with at least 25 real, physically present attendees (no online-only events)
 
 ## Tasks already in progress (do no work on these!)
