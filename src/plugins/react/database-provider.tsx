@@ -2,6 +2,7 @@ import React, { type ReactElement } from 'react';
 import { isRxDatabase } from '../../rx-database.ts';
 import type { RxDatabase } from '../../types/index';
 import { Provider } from './database-context.ts';
+import { newRxError } from '../../rx-error.ts';
 
 export type RxDatabaseProviderProps = {
     database: RxDatabase;
@@ -29,7 +30,9 @@ export function RxDatabaseProvider({
     database,
 }: RxDatabaseProviderProps): ReactElement<typeof Provider> {
     if (!isRxDatabase(database)) {
-        throw new Error('You must provide a valid RxDatabase to the the RxDatabaseProvider');
+        throw newRxError('R1', {
+            database
+        });
     }
     return <Provider value={database}>{children}</Provider>;
 }

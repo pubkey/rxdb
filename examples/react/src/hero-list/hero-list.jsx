@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { useRxQuery } from 'rxdb/plugins/react';
+import { useLiveRxQuery } from 'rxdb/plugins/react';
 
 import './hero-list.css';
 
@@ -11,12 +11,11 @@ const query = {
     query: {
         selector: {},
         sort: [{ name: 'asc' }],
-    },
-    live: true,
+    }
 };
 
 const HeroList = () => {
-    const { results, loading } = useRxQuery(query);
+    const { results, loading } = useLiveRxQuery(query);
 
     const deleteHero = async (hero) => {
         console.log('delete hero:');

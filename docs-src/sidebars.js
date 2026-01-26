@@ -414,6 +414,25 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Integrations',
+      items: [
+        {
+          type: 'doc',
+          id: 'react',
+          label: 'React'
+        },
+        {
+          type: 'link',
+          label: 'TanStack DB',
+          href: 'https://tanstack.com/db/latest/docs/collections/rxdb-collection',
+          customProps: {
+            target: '_blank'
+          }
+        }
+      ]
+    },
+    {
+      type: 'category',
       label: 'Performance',
       items: [
         {
