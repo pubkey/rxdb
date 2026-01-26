@@ -37,20 +37,9 @@ export type WebsocketClient = {
 };
 
 
-/**
- * Copied and adapted from the 'reconnecting-websocket' npm module.
- */
-export function ensureIsWebsocket(w: typeof WebSocket) {
-    const is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
-    if (!is) {
-        console.dir(w);
-        throw new Error('websocket not valid');
-    }
-}
 
 
 export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
-    ensureIsWebsocket(WebSocket);
     const wsClient = new ReconnectingWebSocket(
         options.url,
         [],
