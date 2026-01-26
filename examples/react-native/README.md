@@ -1,4 +1,4 @@
-# RxDB React example
+# RxDB React-Native example
 
 This is an example usage of RxDB with React-native. It implements a simple heroes-list which can be filled by the user.
 
