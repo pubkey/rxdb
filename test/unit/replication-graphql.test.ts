@@ -798,6 +798,7 @@ describe('replication-graphql.test.ts', () => {
                 firstDoc.updatedAt = Date.now();
                 firstDoc.deleted = true;
 
+                console.log('writing delete to server START');
                 await server.setDocument(firstDoc);
 
                 await replicationState.reSync();
@@ -805,7 +806,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const docs2 = await c.find().exec();
 
-                assert.strictEqual(docs2.length, amount - 1);
+                assert.strictEqual(docs2.length, amount - 1, 'must have replicated the deletion');
 
                 server.close();
                 c.database.close();

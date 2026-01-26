@@ -346,13 +346,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         }
                         if (
                             (
-                                forkStateFullDoc &&
-                                assumedMaster &&
-                                isAssumedMasterEqualToForkState === false
-                            ) ||
-                            (
-                                forkStateFullDoc && !assumedMaster
-                            )
+                                (
+                                    forkStateFullDoc &&
+                                    assumedMaster &&
+                                    isAssumedMasterEqualToForkState === false
+                                ) ||
+                                (
+                                    forkStateFullDoc && !assumedMaster
+                                )
+                            ) && !state.skipStoringPullMeta
                         ) {
                             /**
                              * We have a non-upstream-replicated
