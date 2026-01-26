@@ -37,8 +37,6 @@ export type WebsocketClient = {
 };
 
 
-
-
 export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
     const wsClient = new ReconnectingWebSocket(
         options.url,
