@@ -346,13 +346,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         }
                         if (
                             (
-                                forkStateFullDoc &&
-                                assumedMaster &&
-                                isAssumedMasterEqualToForkState === false
-                            ) ||
-                            (
-                                forkStateFullDoc && !assumedMaster
-                            )
+                                (
+                                    forkStateFullDoc &&
+                                    assumedMaster &&
+                                    isAssumedMasterEqualToForkState === false
+                                ) ||
+                                (
+                                    forkStateFullDoc && !assumedMaster
+                                )
+                            ) && !state.skipStoringPullMeta
                         ) {
                             /**
                              * We have a non-upstream-replicated
@@ -494,7 +496,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     });
                 }
             }).then(() => {
-                if (useMetaWriteRows.length > 0) {
+                if (!state.skipStoringPullMeta && useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(
                         stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'

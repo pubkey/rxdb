@@ -165,6 +165,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     waitBeforePersist?: () => Promise<any>;
 
     hashFunction: HashFunction;
+    skipStoringPullMeta: boolean;
 
     initialCheckpoint?: {
         upstream?: any;
@@ -177,7 +178,6 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
     primaryPath: string;
     hasAttachments: boolean;
     input: RxStorageInstanceReplicationInput<RxDocType>;
-
     events: {
         /**
          * Streams all document writes that have successfully
@@ -256,6 +256,14 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * to upstream these documents again.
      */
     downstreamBulkWriteFlag: Promise<string>;
+
+    /**
+     * If this is set to true, we do not store the documents
+     * assumed server state. This is set on pull-only replications
+     * we because when we do not push anyway, we do not have to store
+     * the server state of any document.
+     */
+    skipStoringPullMeta: boolean;
 
     /**
      * Tracks if the streams have been in sync

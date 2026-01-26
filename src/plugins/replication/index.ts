@@ -230,6 +230,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             forkInstance: this.collection.storageInstance,
             metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,
+            skipStoringPullMeta: this.push ? false : true,
             identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {

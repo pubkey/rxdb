@@ -433,7 +433,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 return false;
             }
 
-            if (useWriteRowsToMeta.length > 0) {
+            if (!state.skipStoringPullMeta && useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
                     stripAttachmentsDataFromMetaWriteRows(state, useWriteRowsToMeta),
                     'replication-up-write-meta'

@@ -374,6 +374,7 @@ export class RxMigrationState {
 
         const replicationState = replicateRxStorageInstance({
             keepMeta: true,
+            skipStoringPullMeta: false,
             identifier: [
                 'rx-migration-state',
                 oldStorage.collectionName,
