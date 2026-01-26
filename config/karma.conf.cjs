@@ -112,6 +112,7 @@ module.exports = async function (config) {
             env: process.env
         },
         browserDisconnectTimeout: 120000,
+        browserNoActivityTimeout: 120000,
         processKillTimeout: 120000,
         singleRun: true,
 
