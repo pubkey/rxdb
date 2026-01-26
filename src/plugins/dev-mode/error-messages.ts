@@ -273,6 +273,11 @@ export const ERROR_MESSAGES = {
     // plugins/replication-mongodb
     MG1: 'If _id is used as primaryKey, all documents in the MongoDB instance must have a string-value as _id, not an ObjectId or number',
 
+    // plugins/react
+    R1: 'You must provide a valid RxDatabase to the the RxDatabaseProvider',
+    R2: 'Could not find database in context, please ensure the component is wrapped in a <RxDatabaseProvider>',
+    R3: 'The provided value for the collection parameter is not a valid RxCollection',
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

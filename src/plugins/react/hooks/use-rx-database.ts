@@ -5,6 +5,7 @@ import type {
     RxDatabase,
 } from '../../../types/index.d.ts';
 import { RxDatabaseContext } from '../database-context.ts';
+import { newRxError } from '../../../rx-error.ts';
 
 /**
  * The `useRxDatabase` hook retrieves the RxDB database instance from context.
@@ -27,9 +28,7 @@ export function useRxDatabase<
     >;
 
     if (database == null) {
-        throw new Error(
-            'Could not find database in context, please ensure the component is wrapped in a <RxDatabaseProvider>',
-        );
+        throw newRxError('R2');
     }
 
     return database;

@@ -7,6 +7,7 @@ import type {
 } from '../../../types/index.d.ts';
 import { isRxCollection } from '../../../rx-collection.ts';
 import { useRxCollection } from './use-rx-collection.ts';
+import { newRxError } from '../../../rx-error.ts';
 
 export type UseRxQueryOptions<
     RxDocumentType = any,
@@ -16,16 +17,15 @@ export type UseRxQueryOptions<
     Reactivity = unknown,
 > = {
     collection:
-        | string
-        | RxCollection<
-              RxDocumentType,
-              OrmMethods,
-              StaticMethods,
-              InstanceCreationOptions,
-              Reactivity
-          >;
+    | string
+    | RxCollection<
+        RxDocumentType,
+        OrmMethods,
+        StaticMethods,
+        InstanceCreationOptions,
+        Reactivity
+    >;
     query: MangoQuery<RxDocumentType>;
-    live?: boolean;
 };
 
 export type UseRxQueryResult<RxDocumentType = any, OrmMethods = {}> = {
@@ -44,7 +44,7 @@ export type UseRxQueryResult<RxDocumentType = any, OrmMethods = {}> = {
  *
  * @returns {UseRxQueryResult<RxDocumentType, OrmMethods>} The query result, loading state, and error.
  */
-export function useRxQuery<
+export function useRxQueryBase<
     RxDocumentType = any,
     OrmMethods = {},
     StaticMethods = {},
@@ -60,7 +60,7 @@ export function useRxQuery<
     StaticMethods,
     InstanceCreationOptions,
     Reactivity
->): UseRxQueryResult<RxDocumentType, OrmMethods> {
+> & { live: boolean }): UseRxQueryResult<RxDocumentType, OrmMethods> {
     const [results, setResults] = useState(
         [] as RxDocument<RxDocumentType, OrmMethods>[],
     );
@@ -84,9 +84,9 @@ export function useRxQuery<
         >(collection);
     } else {
         if (!isRxCollection(collection)) {
-            throw new Error(
-                'The provided value for the collection parameter is not a valid RxCollection',
-            );
+            throw newRxError('R3', {
+                collection
+            });
         }
         dbCollection = collection;
     }
@@ -140,4 +140,29 @@ export function useRxQuery<
     }, [runQuery]);
 
     return { results, loading, error };
+}
+
+
+
+export function useRxQuery<
+    RxDocumentType = any,
+    OrmMethods = {},
+    StaticMethods = {},
+    InstanceCreationOptions = {},
+    Reactivity = unknown,
+>({
+    collection,
+    query,
+}: UseRxQueryOptions<
+    RxDocumentType,
+    OrmMethods,
+    StaticMethods,
+    InstanceCreationOptions,
+    Reactivity
+>): UseRxQueryResult<RxDocumentType, OrmMethods> {
+    return useRxQueryBase({
+        collection,
+        query,
+        live: false
+    });
 }
