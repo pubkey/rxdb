@@ -74,6 +74,7 @@ This file contains links to documentation sections following the llmstxt.org sta
 - [Optimize Client-Side Queries with RxDB](https://rxdb.info/query-optimizer.md): Harness real-world data to fine-tune queries. The build-time RxDB Optimizer finds the perfect index, boosting query speed in any environment.
 - [🚀 Quickstart](https://rxdb.info/quickstart.md): Learn how to build a realtime app with RxDB. Follow this quickstart for setup, schema creation, data operations, and real-time syncing.
 - [React Native Database - Sync & Store Like a Pro](https://rxdb.info/react-native-database.md): Discover top React Native local database solutions - AsyncStorage, SQLite, RxDB, and more. Build offline-ready apps for iOS, Android, and Windows w...
+- [React](https://rxdb.info/react.md): import {Tabs} from '@site/src/components/tabs';
 - [Signals & Custom Reactivity with RxDB](https://rxdb.info/reactivity.md): Level up reactivity with Angular signals, Vue refs, or Preact signals in RxDB. Learn how to integrate custom reactivity to power your dynamic UI.
 - [RxDB 10.0.0 - Built for the Future](https://rxdb.info/releases/10.0.0.md): Experience faster, future-proof data handling in RxDB 10.0. Explore new storage interfaces, composite keys, and major performance upgrades.
 - [RxDB 11 - WebWorker Support & More](https://rxdb.info/releases/11.0.0.md): RxDB 11.0 brings Worker-based storage for multi-core performance gains. Explore the major changes and migrate seamlessly to harness new speeds.
