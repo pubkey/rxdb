@@ -1,9 +1,7 @@
 import { Client, createClient } from 'graphql-ws';
 import { getFromMapOrCreate, getFromMapOrThrow } from '../../plugins/utils/index.ts';
-import ws from 'isomorphic-ws';
+import { WebSocket } from 'ws';
 import { RxGraphQLPullWSOptions } from '../../types';
-
-const { WebSocket: IsomorphicWebSocket } = ws;
 
 export type WebsocketWithRefCount = {
     url: string;
@@ -29,7 +27,7 @@ export function getGraphQLWebSocket(
                 ...options,
                 url,
                 shouldRetry: () => true,
-                webSocketImpl: IsomorphicWebSocket,
+                webSocketImpl: WebSocket,
                 connectionParams: options.connectionParams || connectionParamsHeaders,
             });
             return {

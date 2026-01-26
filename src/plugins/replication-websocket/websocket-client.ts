@@ -9,7 +9,7 @@ import {
 
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
-import IsomorphicWebSocket from 'isomorphic-ws';
+import { WebSocket } from 'ws';
 import {
     errorToPlainJson,
     randomToken,
@@ -39,11 +39,8 @@ export type WebsocketClient = {
 
 /**
  * Copied and adapted from the 'reconnecting-websocket' npm module.
- * Some bundlers have problems with bundling the isomorphic-ws plugin
- * so we directly check the correctness in RxDB to ensure that we can
- * throw a helpful error.
  */
-export function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
+export function ensureIsWebsocket(w: typeof WebSocket) {
     const is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
     if (!is) {
         console.dir(w);
@@ -53,13 +50,11 @@ export function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
 
 
 export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
-    ensureIsWebsocket(IsomorphicWebSocket);
+    ensureIsWebsocket(WebSocket);
     const wsClient = new ReconnectingWebSocket(
         options.url,
         [],
-        {
-            WebSocket: IsomorphicWebSocket
-        }
+        { WebSocket }
     );
     const connected$ = new BehaviorSubject<boolean>(false);
     const message$ = new Subject<any>();

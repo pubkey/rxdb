@@ -558,7 +558,6 @@
     "graphql": "16.12.0",
     "graphql-ws": "5.16.2",
     "is-my-json-valid": "2.20.6",
-    "isomorphic-ws": "5.0.0",
     "js-base64": "3.7.8",
     "jsonschema-key-compression": "1.7.0",
     "mingo": "7.1.1",
