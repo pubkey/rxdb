@@ -27,7 +27,7 @@ To ensure there are not multiple people working on the same task, before you sta
   - Must contain `cause`, `fix` and `docs` properties like:
     ```js
         const error = {
-          "code": "RXDB_MISSING_INDEX",
+          "code": "VD2",
           "message": "object does not match schema",
           "cause": "RxCollection.insert()",
           "fix": "Do not store data that does not match the collections schema",
