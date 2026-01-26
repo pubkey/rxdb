@@ -1073,6 +1073,43 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
     });
+    describeParallel('pull-only', () => {
+        it('should not store document metadata on pull only replications', async () => {
+            const startDocsAmount = 2;
+            const { localCollection, remoteCollection } = await getTestCollections({ local: startDocsAmount, remote: startDocsAmount });
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            await remoteCollection.insert(schemaObjects.humanWithTimestampData({ id: 'insert-after-sync' }));
+            await replicationState.awaitInSync();
+
+
+            const metaInstance = ensureNotFalsy(replicationState.metaInstance);
+            const prepared = prepareQuery(
+                metaInstance.schema,
+                normalizeMangoQuery(
+                    metaInstance.schema,
+                    {}
+                )
+            );
+            const result = await metaInstance.query(prepared);
+
+            const nonCheckpointMetaDocs = result.documents.filter(d => d.isCheckpoint === '0');
+            assert.deepStrictEqual(nonCheckpointMetaDocs, [], 'must not have non-checkpoint meta documents');
+
+            localCollection.database.close();
+            remoteCollection.database.close();
+        });
+    });
     describeParallel('issues', () => {
         it('#7587 should correctly handle short primary key lengths', async () => {
             type CollectionCheckpoint = { Checkpoint: number; };
@@ -1367,6 +1404,12 @@ describe('replication.test.ts', () => {
                         return d;
                     },
                 },
+                push: {
+                    handler: async () => {
+                        await wait(0);
+                        return [];
+                    }
+                }
             });
             ensureReplicationHasNoErrors(replicationStateBefore);
 
@@ -1635,6 +1678,12 @@ describe('replication.test.ts', () => {
                             };
                         }
                     },
+                    push: {
+                        handler: async () => {
+                            await wait(0);
+                            return [];
+                        },
+                    }
                 });
                 ensureReplicationHasNoErrors(replicationState);
                 return replicationState;

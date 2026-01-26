@@ -617,6 +617,9 @@ With this data, the backend can decide onto which attachments must be deleted, a
 
 Accordingly, the pulled document must contain the same data, if the backend has a new document state with updated attachments.
 
+## Pull-Only Replication
+
+With the replication protocol it is possible to do pull only replications where data is pulled from a backend but not pushed from the client. RxDB implements some performance optimizations for these like not storing server metadata on pull only streams.
 
 ## Partial Sync with RxDB
 
@@ -679,6 +682,7 @@ function onPlayerMove(neighboringChunkIds) {
 ```
 
 ### Diffy-Sync when Revisiting a Chunk
+
 An added benefit of this multi-replication-state design is checkpointing. Each replication state has a unique "replication identifier," so the next time the player returns to `chunk-123`, the local database knows what it already has and only fetches the differences without the need to re-download the entire chunk.
 
 ### Partial Sync in a Local-First Business Application

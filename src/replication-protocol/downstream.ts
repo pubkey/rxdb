@@ -494,7 +494,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     });
                 }
             }).then(() => {
-                if (useMetaWriteRows.length > 0) {
+                if (!state.skipStoringPullMeta && useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(
                         stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
