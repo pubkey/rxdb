@@ -317,6 +317,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     ),
                     forkInstance,
                     metaInstance,
+                    skipStoringPullMeta: false,
                     pullBatchSize: 100,
                     pushBatchSize: 100,
                     conflictHandler: THROWING_CONFLICT_HANDLER,
@@ -382,6 +383,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 ),
                 forkInstance,
                 metaInstance,
+                skipStoringPullMeta: false,
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
@@ -423,6 +425,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 metaInstance,
                 pullBatchSize: 100,
                 pushBatchSize: 100,
+                skipStoringPullMeta: false,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
@@ -460,6 +463,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 metaInstance,
                 pullBatchSize: 100,
                 pushBatchSize: 100,
+                skipStoringPullMeta: false,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
@@ -543,6 +547,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 metaInstance: metaInstanceA,
                 pullBatchSize: 100,
                 pushBatchSize: 100,
+                skipStoringPullMeta: false,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
@@ -554,6 +559,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 metaInstance: metaInstanceB,
                 pullBatchSize: 100,
                 pushBatchSize: 100,
+                skipStoringPullMeta: false,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
@@ -597,6 +603,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             const replicationStateBtoC = replicateRxStorageInstance({
@@ -607,6 +614,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             const replicationStateCtoMaster = replicateRxStorageInstance({
@@ -617,6 +625,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
 
@@ -708,6 +717,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             const replicationStateBtoMaster = replicateRxStorageInstance({
@@ -718,6 +728,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
 
@@ -764,6 +775,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256,
                 initialCheckpoint: {
                     upstream: lastForkCheckpoint
@@ -802,6 +814,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -846,6 +859,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
 
@@ -903,6 +917,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
 
@@ -946,6 +961,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: Math.ceil(writeAmount / 4),
                 pushBatchSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 /**
                  * To give the fork some time to do additional writes
                  * before the persistence is running,
@@ -1046,6 +1062,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -1066,6 +1083,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -1153,6 +1171,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 metaInstance,
                 pullBatchSize: 8,
                 pushBatchSize: 8,
+                skipStoringPullMeta: false,
                 conflictHandler,
                 hashFunction: defaultHashSha256,
             });
@@ -1202,6 +1221,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     pullBatchSize: Math.ceil(writeAmount / 4),
                     pushBatchSize: Math.ceil(writeAmount / 4),
                     conflictHandler,
+                    skipStoringPullMeta: false,
                     hashFunction: defaultHashSha256,
                 });
                 // TODO why does this throw an an error with the foundationdb RxStorage?
@@ -1303,6 +1323,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER as any,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -1361,6 +1382,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
+                skipStoringPullMeta: false,
                 hashFunction: defaultHashSha256
             });
             ensureReplicationHasNoErrors(replicationState);
