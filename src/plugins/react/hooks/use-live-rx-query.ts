@@ -1,40 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { UseRxQueryOptions, UseRxQueryResult, useRxQueryBase } from './use-rx-query.ts';
 
-import type {
-    MangoQuery,
-    RxCollection,
-    RxDocument,
-} from '../../../types/index.d.ts';
-import { isRxCollection } from '../../../rx-collection.ts';
-import { useRxCollection } from './use-rx-collection.ts';
-import { newRxError } from '../../../rx-error.ts';
-import { useRxQueryBase } from './use-rx-query.ts';
-
-export type UseRxQueryOptions<
-    RxDocumentType = any,
-    OrmMethods = {},
-    StaticMethods = {},
-    InstanceCreationOptions = {},
-    Reactivity = unknown,
-> = {
-    collection:
-    | string
-    | RxCollection<
-        RxDocumentType,
-        OrmMethods,
-        StaticMethods,
-        InstanceCreationOptions,
-        Reactivity
-    >;
-    query: MangoQuery<RxDocumentType>;
-    live?: boolean;
-};
-
-export type UseRxQueryResult<RxDocumentType = any, OrmMethods = {}> = {
-    results: RxDocument<RxDocumentType, OrmMethods>[];
-    loading: boolean;
-    error: string | null;
-};
 
 /**
  * React hook to query an RxDB collection with Mango queries.
