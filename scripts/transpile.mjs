@@ -77,7 +77,7 @@ async function transpileFile(
         ' babel ' +
         srcLocations.join(' ') +
         ' --source-maps' +
-        ' --extensions ".ts,.js"' +
+        ' --extensions ".ts,.tsx,.js"' +
         ' --out-dir ' +
         outDir;
 
@@ -119,7 +119,7 @@ async function getFiles() {
                 const srcFolder = transpileFolder.source;
                 return walkSync.entries(srcFolder)
                     .filter(entry => !entry.isDirectory())
-                    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts'))
+                    .filter(entry => entry.relativePath.endsWith('.js') || entry.relativePath.endsWith('.ts') || entry.relativePath.endsWith('.tsx'))
                     .filter(entry => !entry.relativePath.includes('/node_modules/'))
                     .map(fileEntry => {
                         // ensure goal-file-ending is .js

@@ -3,21 +3,24 @@
   "version": "3.0.0",
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
-    "rxdb": "file:rxdb-local.tgz",
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.1",
     "async-test-util": "2.5.0",
     "babel-polyfill": "6.26.0",
     "concurrently": "9.2.1",
     "pouchdb-server": "4.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2"
   },
   "devDependencies": {
+    "ajv": "8.17.1",
+    "local-web-server": "5.4.0",
     "react-scripts": "5.0.1",
     "rimraf": "6.1.2",
-    "testcafe": "3.7.4",
-    "local-web-server": "5.4.0",
-    "ajv": "8.17.1"
+    "testcafe": "3.7.4"
   },
   "scripts": {
     "preinstall": "npm run preinstall:rxdb",

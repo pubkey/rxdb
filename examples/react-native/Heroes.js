@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Alert,
     Dimensions,
@@ -11,10 +11,19 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { AppContext } from './context';
+import { useRxCollection, useRxQuery } from 'rxdb/plugins/react';
 import { HeroesCollectionName } from "./initializeDb";
 
 const { width } = Dimensions.get('window');
+
+const query = {
+    collection: HeroesCollectionName,
+    query: {
+        selector: {},
+        sort: [{ name: 'asc' }],
+    },
+    live: true,
+};
 
 const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -24,30 +33,15 @@ const getRandomColor = () => {
 };
 
 export const Heroes = () => {
-    const { db } = useContext(AppContext);
-    const [name, setName] = useState('');
-    const [heroes, setHeroes] = useState([]);
-
-    useEffect(() => {
-        let sub;
-        if (db && db[HeroesCollectionName]) {
-            sub = db[HeroesCollectionName]
-                .find()
-                .sort({ name: 1 })
-                .$.subscribe((rxdbHeroes) => {
-                    setHeroes(rxdbHeroes);
-                });
-        }
-        return () => {
-            if (sub && sub.unsubscribe) sub.unsubscribe();
-        };
-    }, [db]);
+    const [ name, setName ] = useState('');
+    const { results } = useRxQuery(query);
+    const collection = useRxCollection(HeroesCollectionName);
 
     const addHero = async () => {
         console.log('addHero: ' + name);
         const color = getRandomColor();
         console.log('color: ' + color);
-        await db[HeroesCollectionName].insert({ name, color });
+        await collection.insert({ name, color });
         setName('');
     };
 
@@ -98,8 +92,8 @@ export const Heroes = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                {heroes.length === 0 && <Text>No heroes to display ...</Text>}
-                {heroes.map((hero, index) => (
+                {results.length === 0 && <Text>No heroes to display ...</Text>}
+                {results.map((hero, index) => (
                     <View style={styles.card} key={index}>
                         <View
                             style={[
