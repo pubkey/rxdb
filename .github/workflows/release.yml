@@ -78,6 +78,7 @@ jobs:
           node set-version.mjs ${{github.event.inputs.version}}
 
       - run: npm run build
+      - run: npm run generate:error-messages
 
       - name: build docs
         if: steps.vars.outputs.prerelease == 'false'

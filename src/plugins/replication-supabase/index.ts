@@ -107,6 +107,7 @@ export function replicateSupabase<RxDocType>(
                     .from(options.tableName)
                     .select('*');
 
+
                 if (options.pull?.queryBuilder) {
                     const maybeNewQuery = options.pull.queryBuilder({
                         query,

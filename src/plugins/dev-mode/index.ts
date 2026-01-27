@@ -95,14 +95,29 @@ export const RxDBDevModePlugin: RxPlugin = {
         },
         deepFreezeWhenDevMode,
         tunnelErrorMessage(code: RxErrorKey) {
-            if (!ERROR_MESSAGES[code]) {
+            const err = ERROR_MESSAGES[code];
+            if (!err) {
                 console.error('RxDB: Error-Code not known: ' + code);
                 throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
             }
-            const errorMessage = ERROR_MESSAGES[code];
-            return `
-Error message: ${errorMessage}
+            let errorMessage = `
+Error message: ${err.message}
 Error code: ${code}`;
+
+            if (err.cause) {
+                errorMessage += `
+Cause: ${err.cause}`;
+            }
+            if (err.fix) {
+                errorMessage += `
+Fix: ${err.fix}`;
+            }
+            if (err.docs) {
+                errorMessage += `
+Docs: ${err.docs}`;
+            }
+
+            return errorMessage;
         }
     },
     hooks: {

@@ -1,6 +1,19 @@
 node_modules/
-npm-debug.log
+docs/
+plugins/
+config/appwrite/
+config/supabase/
+docs-src/.docusaurus
+docs-src/build
+docs-src/node_modules
+docs-src/static
+examples/
+ERROR-MESSAGES.md
+LICENSE.txt
+CHANGELOG.md
+test/helper/
 test_tmp/
+npm-debug.log
 psrqlbn-db/
 coverage/
 log.txt
@@ -25,4 +38,3 @@ dist/
 *-debug.log
 .vscode
 ai-context.txt
-ERROR-MESSAGES.md

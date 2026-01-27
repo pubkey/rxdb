@@ -45,19 +45,47 @@ export function ErrorMessages() {
                     id={errorCode}
                     style={location.hash === '#' + errorCode ? { ...styles.li, ...styles.liHighlight } : styles.li}
                 >
-                    <h6 style={styles.errorCode}>Code: <a href={'#' + errorCode}>{errorCode}</a></h6>
-                    {ucfirst(errorMessage)}
-                    <ul style={styles.innerUl}>
-                        <li>
-                            <a href={'https://github.com/pubkey/rxdb/search?q=' + errorCode + '&type=code'} target="_blank">Search In Code</a>
-                        </li>
-                        <li>
-                            <a href={'https://github.com/pubkey/rxdb/search?q=' + errorCode + '&type=issues'} target="_blank">Search In Issues</a>
-                        </li>
-                        <li>
-                            <a href='/chat/' target="_blank">Search In Chat</a>
-                        </li>
-                    </ul>
+                    <h6 style={styles.errorCode}>
+                        <a href={'#' + errorCode} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            #{errorCode}
+                        </a>
+                    </h6>
+                    <div style={{ marginBottom: 18 }}>
+                        {ucfirst(errorMessage.message)}
+                    </div>
+                    {
+                        errorMessage.cause &&
+                        <div style={{ marginBottom: 18 }}>
+                            <b>Cause:</b><br />
+                            {errorMessage.cause}
+                        </div>
+                    }
+                    {
+                        errorMessage.fix &&
+                        <div style={{ marginBottom: 18 }}>
+                            <b>Fix:</b><br />
+                            {errorMessage.fix}
+                        </div>
+                    }
+                    {
+                        errorMessage.docs &&
+                        <div style={{ marginBottom: 18 }}>
+                            <b>Docs:</b><br />
+                            <a href={errorMessage.docs} target="_blank">{errorMessage.docs}</a>
+                        </div>
+                    }
+
+
+                    <div style={{ marginBottom: 18 }}>
+                        <ul style={{ paddingLeft: 20 }}>
+                            <li>
+                                <a href={'https://github.com/pubkey/rxdb/search?q=' + errorCode + '&type=code'} target="_blank">Search In Code</a>
+                            </li>
+                            <li>
+                                <a href={'https://github.com/pubkey/rxdb/search?q=' + errorCode + '&type=issues'} target="_blank">Search In Issues</a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>;
             })
         }
