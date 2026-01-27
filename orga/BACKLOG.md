@@ -42,7 +42,6 @@ https://www.youtube.com/watch?v=hAxdOUgjctk&ab_channel=Syntax
 
 See [#494](https://github.com/pubkey/rxdb/issues/494)
 
-
 ## import/export with attachments
 
 See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
@@ -58,6 +57,12 @@ See [#1396](https://github.com/pubkey/rxdb/pull/1396#issuecomment-523014106)
 ## Redis Sync
 
 Similar to the NATS replication plugin.
+
+## Use zero-copy datastructures when return data from OPFS
+
+This might be faster because we have binary arrays already in OPFS and then we
+do not have to transfer big json strings to the main thread. Must be tested for performance first.
+
 
 ## query normalization and optimization
 
