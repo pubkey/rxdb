@@ -222,6 +222,26 @@ Supabase returns `null` for nullable columns, but in RxDB you often model those 
 :::
 
 
+## Using Joins
+
+You can use the `pull.queryBuilder` to use joins and also pull data from related tables.
+To do that, you have to create a **new** query object in the `pull.queryBuilder` with the `.select()` method and return it.
+
+```ts
+const replication = replicateSupabase({
+    pull: {
+        queryBuilder: (/* ignore the passed query instance from here */) => {
+            /**
+             * Create a totally new query instance
+             * and return that.
+             */
+            return supabase.from('humans').select('*, pets(*), toys(*)');
+        }
+    }
+});
+```
+
+
 ### Do other things with the replication state
 
 The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` allows you to run all functionality of the normal [RxReplicationState](./replication.md).
