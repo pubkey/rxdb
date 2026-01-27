@@ -1,0 +1,11 @@
+{
+    "buildCommand": "npm run build",
+    "testCommand": "npm run test:fast:memory",
+    "lintCommand": "npm run lint",
+    "permissions": {
+        "allow": [
+            "Bash(npm run lint*)",
+            "Bash(npm run test*)"
+        ]
+    }
+}
