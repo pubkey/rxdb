@@ -27,3 +27,4 @@ dist/
 .vscode
 ai-context.txt
 ERROR-MESSAGES.md
+plugins/

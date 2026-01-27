@@ -6,6 +6,11 @@
         "allow": [
             "Bash(npm run lint*)",
             "Bash(npm run test*)"
+        ],
+        "deny": [
+            "Write(plugins/**)",
+            "Edit(plugins/**)",
+            "Delete(plugins/**)"
         ]
     }
 }
