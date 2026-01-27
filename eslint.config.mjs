@@ -22,6 +22,7 @@ export default [
     {
         ignores: [
             'test/playground/*',
+            '.claude/*',
             'test/tutorials',
             '**/test_tmp/',
             '**/tmp/',
@@ -80,17 +81,17 @@ export default [
             '@stylistic/type-annotation-spacing': 'error',
             '@stylistic/indent': 'off',
             '@stylistic/member-delimiter-style': [
-               'error',
-               {
-                   multiline: {
-                       delimiter: 'semi',
-                       requireLast: true,
-                   },
-                   singleline: {
-                       delimiter: 'semi',
-                       requireLast: true,
-                   },
-               },
+                'error',
+                {
+                    multiline: {
+                        delimiter: 'semi',
+                        requireLast: true,
+                    },
+                    singleline: {
+                        delimiter: 'semi',
+                        requireLast: true,
+                    },
+                },
             ],
             '@typescript-eslint/no-redundant-type-constituents': 'off',
             '@typescript-eslint/consistent-type-definitions': 'off',

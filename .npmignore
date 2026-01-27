@@ -1,6 +1,10 @@
 .git/
 config/
 examples/
+.agent/
+.claude/
+.aiexclude
+.claudeignore
 docs/
 docs-src/
 orga/
