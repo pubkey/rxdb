@@ -72,6 +72,7 @@ const db1 = await createRxDatabase({
     storage: getRxStorageMemory(),
     ignoreDuplicate: true // must be set to true
 });
+await db1.addCollections({ ... });
 
 // Simulate Tab 2
 const db2 = await createRxDatabase({
@@ -79,12 +80,14 @@ const db2 = await createRxDatabase({
     storage: getRxStorageMemory(),
     ignoreDuplicate: true // must be set to true
 });
-
-await db1.addCollections({ ... });
 await db2.addCollections({ ... });
 
-// valid because both point to the same storage state
-assert.strictEqual(db1.storage, db2.storage); 
+// insert at "tab one"
+await db1.todos.insert({ id: "foobar"});
+
+// read at "tab two"
+const doc = await db2.todos.findOne("foobar").exec(true);
+assert.ok(doc);
 ```
 
 This works because the `memory` storage (and others) are shared within the same JavaScript process.
