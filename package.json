@@ -500,7 +500,8 @@
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
-    "cloud-signaling-server": "node ./scripts/start-cloud-signaling-server.mjs --max-old-space-size=2048"
+    "cloud-signaling-server": "node ./scripts/start-cloud-signaling-server.mjs --max-old-space-size=2048",
+    "generate:error-messages": "node scripts/generate-error-messages.mjs"
   },
   "pre-commit": [
     "lint"

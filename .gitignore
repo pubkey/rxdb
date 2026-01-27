@@ -25,3 +25,4 @@ dist/
 *-debug.log
 .vscode
 ai-context.txt
+ERROR-MESSAGES.md
