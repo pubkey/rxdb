@@ -306,6 +306,11 @@ const sidebars = {
       label: 'Advanced Features',
       items: [
         {
+          type: 'doc',
+          id: 'testing',
+          label: 'Testing'
+        },
+        {
           type: 'category',
           label: 'Migration',
           items: [
