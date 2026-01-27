@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { triggerTrackingEvent } from '../components/trigger-event';
+import { onCopy, triggerTrackingEvent } from '../components/trigger-event';
 import { randomNumber } from '../../../plugins/utils';
 import { IconClose } from '../components/icons/close';
 import { Button } from '../components/button';
@@ -582,13 +582,9 @@ function trackCopy() {
     if (typeof document === 'undefined') {
         return;
     }
-
-    function onCopy() {
-        triggerTrackingEvent('copy_on_page', 1.5, 1, true);
-    }
-
     document.addEventListener('copy', onCopy);
 }
+
 
 
 /**

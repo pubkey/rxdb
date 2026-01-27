@@ -10,6 +10,7 @@ import CopyButton from '@theme-original/CodeBlock/Buttons/CopyButton';
 import WordWrapButton from '@theme-original/CodeBlock/Buttons/WordWrapButton';
 import buttonGroupStyles from '@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/styles.module.css';
 import containerStyles from '@docusaurus/theme-classic/lib/theme/CodeBlock/Container/styles.module.css';
+import { onCopy } from '@site/src/components/trigger-event';
 
 const codeBlockContainerStyle = {
     position: 'relative',
@@ -97,7 +98,11 @@ export default function CodeBlock({
                     </pre>
                     <div className={buttonGroupStyles.buttonGroup}>
                         <WordWrapButton />
-                        <CopyButton />
+                        <span onClick={() => {
+                            onCopy();
+                        }}>
+                            <CopyButton />
+                        </span>
                     </div>
                 </div>
             </CodeBlockContextProvider>
@@ -127,7 +132,11 @@ export default function CodeBlock({
                     />
                     <div className={buttonGroupStyles.buttonGroup}>
                         <WordWrapButton />
-                        <CopyButton />
+                        <span onClick={() => {
+                            onCopy();
+                        }}>
+                            <CopyButton />
+                        </span>
                     </div>
                 </div>
             </CodeBlockContextProvider>

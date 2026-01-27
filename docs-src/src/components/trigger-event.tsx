@@ -96,3 +96,7 @@ export function TriggerEvent(props) {
     }, []);
     return <></>;
 }
+
+export function onCopy() {
+    triggerTrackingEvent('copy_on_page', 1.5, 1, true);
+}
