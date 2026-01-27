@@ -22,19 +22,6 @@ To ensure there are not multiple people working on the same task, before you sta
     const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>
     const signal = collection.find().$$; // <- This has the type Signal<any[]> but should have Signal<MyDocumentType[]>
     ```
-- To improve vibe-coding with RxDB, all [error-messages](https://github.com/pubkey/rxdb/blob/master/src/plugins/dev-mode/error-messages.ts) must:
-  - Be added to an `ERROR-MESSAGES.md` that is generated on build time into the package root folder
-  - Must contain `cause`, `fix` and `docs` properties like:
-    ```js
-        const error = {
-          "code": "VD2",
-          "message": "object does not match schema",
-          "cause": "RxCollection.insert()",
-          "fix": "Do not store data that does not match the collections schema",
-          "docs": "https://rxdb.info/schema-validation.html"
-        }
-    ```
-
 - 📢 Give an in-person talk about RxDB at a conference or meetup with at least 25 real, physically present attendees (no online-only events)
 
 ## Tasks already in progress (do no work on these!)
