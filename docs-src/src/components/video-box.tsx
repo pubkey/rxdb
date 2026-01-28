@@ -100,7 +100,11 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                     <img
                         src={`https://i3.ytimg.com/vi/${videoId}/mqdefault.jpg`}
                         alt={title}
-                        style={styles.thumbnail}
+                        style={{
+                            ...styles.thumbnail,
+                            transform: `scale(${isHovered ? 1.1 : 1})`,
+                            transition: 'transform 0.2s ease-in-out',
+                        }}
                         loading="lazy"
                         decoding="async"
                         referrerPolicy="no-referrer"
@@ -110,8 +114,6 @@ export function VideoBox({ videoId, title, duration, startAt, dark }: VideoBoxPr
                     <div
                         style={{
                             ...styles.playButton,
-                            transform: `translate(-50%, -50%) scale(${isHovered ? 1.2 : 1})`,
-                            transition: 'transform 0.1s ease-in-out',
                         }}
                     >
                         <VideoPlayButton />
