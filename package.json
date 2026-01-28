@@ -561,7 +561,7 @@
     "is-my-json-valid": "2.20.6",
     "js-base64": "3.7.8",
     "jsonschema-key-compression": "1.7.0",
-    "mingo": "7.1.1",
+    "mingo": "7.2.0",
     "oblivious-set": "2.0.0",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
