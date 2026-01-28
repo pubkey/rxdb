@@ -31,7 +31,7 @@ With JavaScript, it is not possible to count references to variables. Therefore 
 A cache replacement policy is a normal JavaScript function according to the type `RxCacheReplacementPolicy`.
 It gets the `RxCollection` as first parameter and the `QueryCache` as second. Then it iterates over the cached `RxQuery` instances and uncaches the desired ones with `uncacheRxQuery(rxQuery)`. When you create your custom policy, you should have a look at the [default](https://github.com/pubkey/rxdb/blob/master/src/query-cache.ts).
 
-To apply a custom policy to a `RxCollection`, add the function as attribute `cacheReplacementPolicy`.
+To apply a custom policy to a `[RxCollection](./rx-collection.md)`, add the function as attribute `cacheReplacementPolicy`.
 
 ```ts
 const collection = await myDatabase.addCollections({

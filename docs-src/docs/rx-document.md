@@ -5,7 +5,7 @@ description: Master RxDB's RxDocument - Insert, find, update, remove, and more f
 ---
 
 # RxDocument
-A RxDocument is a object which represents the data of a single JSON document is stored in a collection. It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts/updates, or as result-set of [queries](./rx-query.md).
+A RxDocument is a object which represents the data of a single JSON document is stored in a [collection](./rx-collection.md). It can be compared to a single record in a relational database table. You get an `RxDocument` either as return on inserts/updates, or as result-set of [queries](./rx-query.md).
 
 RxDB works on RxDocuments instead of plain JSON data to have more convenient operations on the documents. Also Documents that are fetched multiple times by different queries or operations are automatically de-duplicated by RxDB in memory.
 

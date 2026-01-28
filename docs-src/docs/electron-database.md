@@ -30,7 +30,7 @@ Because Electron runs on a desktop computer, you might think that it should be p
 
 ### Localstorage / IndexedDB / WebSQL as alternatives to SQLite in Electron
 
-Because Electron uses a common Chrome web browser in the renderer process, you can access the common Web Storage APIs like [Localstorage](./articles/localstorage.md), IndexedDB and WebSQL. This is easy to set up and storing small sets of data can be achieved in a short span of time. 
+Because Electron uses a common Chrome web browser in the renderer process, you can access the common Web Storage APIs like [Localstorage](./articles/localstorage.md), [IndexedDB](./rx-storage-indexeddb.md) and WebSQL. This is easy to set up and storing small sets of data can be achieved in a short span of time. 
 
 But as soon as your application goes beyond a simple todo-app, there are multiple obstacles that come in your way. One thing is the bad multi-tab support. If you have more than one *renderer* process, it becomes hard to manage database writes between them. Each *browser tab* could modify the database state while the others do not know of the changes and keep an outdated UI.
 
@@ -43,7 +43,7 @@ Another thing is performance. [IndexedDB is slow](./slow-indexeddb.md), mostly b
 </p>
 
 
-[RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has encryption and compression features and most important it has a battle tested [Sync Engine](./replication.md) that can be used to do a realtime sync with your backend.
+[RxDB](https://rxdb.info/) is a NoSQL database for JavaScript applications. It has many features that come in handy when RxDB is used with UI based applications like your Electron app. For example, it is able to subscribe to query results of single fields of documents. It has [encryption](./encryption.md) and [compression](./key-compression.md) features and most important it has a battle tested [Sync Engine](./replication.md) that can be used to do a realtime sync with your backend.
 
 Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of RxDB, there are many options on how to use it with Electron:
 

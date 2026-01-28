@@ -68,7 +68,7 @@ SQL databases designed for server-side usage tend to have larger build sizes and
 ### Build size considerations
 Server-side SQL databases typically come with a significant build size, which can be impractical for browser applications where code size optimization is crucial. Frontend databases, on the other hand, are specifically designed to operate within the constraints of browser environments, ensuring efficient resource utilization and smaller build sizes.
 
-For example the SQLite Webassembly file alone has a size of over 0.8 Megabyte with an additional 0.2 Megabyte in JavaScript code for connection.
+For example the [SQLite](../rx-storage-sqlite.md) Webassembly file alone has a size of over 0.8 Megabyte with an additional 0.2 Megabyte in JavaScript code for connection.
 
 ## Why RxDB is a good fit for the frontend
 RxDB is a powerful frontend JavaScript database that addresses the limitations of SQL databases and provides an optimal solution for frontend [data storage](./browser-storage.md). Let's explore why RxDB is an excellent fit for frontend applications:
@@ -86,7 +86,7 @@ RxDB adopts a [NoSQL approach](./in-memory-nosql-database.md), using [JSON docum
 ### Better TypeScript support compared to SQL
 TypeScript has become increasingly popular for building frontend applications. RxDB provides excellent [TypeScript support](../tutorials/typescript.md), allowing developers to leverage static typing and benefit from enhanced code quality and tooling. This is particularly advantageous when compared to SQL databases, which often have limited TypeScript support.
 
-### Observable Queries for automatic UI updates
+### [Observable Queries](../rx-query.md) for automatic UI updates
 RxDB introduces the concept of observable queries, powered by RxJS. Observable queries automatically update the UI whenever there are changes in the underlying data. This reactive approach eliminates the need for manual UI updates and ensures that the frontend remains synchronized with the database state.
 
 <p align="center">

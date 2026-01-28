@@ -24,7 +24,7 @@ const query = myCollection
 ```
 
 ## findOne()
-A findOne-query has only a single `RxDocument` or `null` as result-set.
+A findOne-query has only a single `[RxDocument](./rx-document.md)` or `null` as result-set.
 
 ```js
 // find alice

@@ -17,7 +17,7 @@ import {RxdbMongoDiagramPlain} from '@site/src/components/mongodb-sync';
 </p>
 
 
-The [MongoDB](https://www.mongodb.com/) Replication Plugin for RxDB delivers seamless, two-way synchronization between MongoDB and RxDB, enabling [real-time](./articles/realtime-database.md) updates and [offline-first](./offline-first.md) functionality for your applications. Built on **MongoDB Change Streams**, it supports both Atlas and self-hosted deployments, ensuring your data stays consistent across every device and service.
+The [MongoDB](https://www.mongodb.com/) Replication Plugin for RxDB delivers seamless, two-way synchronization between [MongoDB](./rx-storage-mongodb.md) and RxDB, enabling [real-time](./articles/realtime-database.md) updates and [offline-first](./offline-first.md) functionality for your applications. Built on **MongoDB Change Streams**, it supports both Atlas and self-hosted deployments, ensuring your data stays consistent across every device and service.
 
 
 Behind the scenes, the plugin is powered by the RxDB [Sync Engine](./replication.md), which manages the complexities of real-world data replication for you. It automatically handles [conflict detection and resolution](./transactions-conflicts-revisions.md), maintains precise checkpoints for incremental updates, and gracefully manages transitions between offline and online states. This means you don't need to manually implement retry logic, reconcile divergent changes, or worry about data loss during connectivity drops, the Sync Engine ensures consistency and reliability in every sync cycle.

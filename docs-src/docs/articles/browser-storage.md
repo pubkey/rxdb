@@ -58,7 +58,7 @@ While browser storage, such as Localstorage and IndexedDB, offers many advantage
 - **Storage Space Limitations**: Browsers [impose restrictions on the amount of data that can be stored locally](./indexeddb-max-storage-limit.md). This limitation can be problematic for applications with extensive data storage requirements, potentially necessitating creative solutions to manage data effectively.
 
 ## Why SQL Databases Like SQLite Aren't a Good Fit for the Browser
-SQL databases like SQLite, while powerful in server environments, may not be the best choice for browser-based applications due to various reasons:
+SQL databases like [SQLite](../rx-storage-sqlite.md), while powerful in server environments, may not be the best choice for browser-based applications due to various reasons:
 
 ### Push/Pull Based vs. Reactive
 SQL databases often use a push/pull model for data synchronization. This approach is less reactive and may not align well with the real-time nature of web applications, where immediate updates to the user interface are crucial.

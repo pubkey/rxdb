@@ -138,7 +138,7 @@ A---B1---C1---X    master/server state
 ```
 
 In the case above, the client would tell the master to move the document state from `B1` to `C2` by calling `pushHandler()`. But because the actual master state is `C1` and not `B1`, the master would reject the write by sending back the actual master state `C1`. 
-**RxDB resolves all conflicts on the client** so it would call the conflict handler of the `RxCollection` and create a new document state `D` that can then be written to the master.
+**RxDB resolves all conflicts on the client** so it would call the conflict handler of the `[RxCollection](./rx-collection.md)` and create a new document state `D` that can then be written to the master.
 
 ```
 A---B1---C1---X---D    master/server state
@@ -379,7 +379,7 @@ The remote instance must be designed to handle this properly and to not crash on
 Depending on your use case, it might be ok to just write the duplicate document data again.
 But for a more resilient error handling you could compare the last write timestamps or add a unique write id field to the document. This field can then be used to detect duplicates and ignore re-send data.
 
-Also the replication has an `.error$` stream that emits all `RxError` objects that arise during replication.
+Also the replication has an `.error$` stream that emits all `[RxError](./errors.md)` objects that arise during replication.
 Notice that these errors contain an inner `.parameters.errors` field that contains the original error. Also they contain a `.parameters.direction` field that indicates if the error was thrown during `pull` or `push`. You can use these to properly handle errors. For example when the client is outdated, the server might respond with a `426 Upgrade Required` error code that can then be used to force a page reload.
 
 

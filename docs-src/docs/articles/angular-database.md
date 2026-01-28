@@ -8,7 +8,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 # RxDB as a Database in an Angular Application
 
-In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the browser, node.js, and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
+In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent [storage](./browser-storage.md) and efficient data handling, choosing the right database solution is crucial. One such solution is [RxDB](https://rxdb.info/), a reactive JavaScript database for the [browser](./browser-database.md), [node.js](../nodejs-database.md), and [mobile devices](./mobile-database.md). In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.
 
 <center>
     <a href="https://rxdb.info/">
@@ -57,7 +57,7 @@ One of the standout features of RxDB is its offline-first approach. It allows yo
 RxDB provides built-in support for data replication between clients and servers. This means you can synchronize data across multiple devices or instances of your application effortlessly. RxDB handles conflict resolution and ensures that data remains consistent across all connected clients.
 
 ### Observable Queries
-RxDB offers a powerful querying mechanism with support for observable queries. This allows you to create dynamic queries that automatically update when the underlying data changes. By leveraging RxDB's observable queries, you can build reactive UI components that respond to data changes in real-time.
+RxDB offers a powerful querying mechanism with support for [observable queries](../rx-query.md). This allows you to create dynamic queries that automatically update when the underlying data changes. By leveraging RxDB's observable queries, you can build reactive UI components that respond to data changes in real-time.
 
 ### Multi-Tab Support
 RxDB provides out-of-the-box support for multi-tab scenarios. This means that if your Angular application is running in multiple browser tabs, RxDB automatically keeps the data in sync across all tabs. It ensures that changes made in one tab are immediately reflected in others, providing a seamless user experience.

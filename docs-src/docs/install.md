@@ -33,7 +33,7 @@ import '@babel/polyfill';
 
 ## Polyfill the `global` variable
 
-When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error `Uncaught ReferenceError: global is not defined`.
+When you use RxDB with [angular](./articles/angular-database.md) or other **webpack** based frameworks, you might get the error `Uncaught ReferenceError: global is not defined`.
 This is because some dependencies of RxDB assume a Node.js-specific `global` variable that is not added to browser runtimes by some bundlers.
 You have to add them by your own, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
 
@@ -68,7 +68,7 @@ To import `rxdb`, add this to your JavaScript file to import the default bundle 
 
 ```typescript
 import {
-  createRxDatabase,
+  createRxDatabase,       // ./rx-database.md
   /* ... */
 } from 'rxdb';
 ```

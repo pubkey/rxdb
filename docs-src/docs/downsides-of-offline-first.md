@@ -8,7 +8,7 @@ import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # Downsides of Local First / Offline First
 
-So you have read [all these things](./offline-first.md) about how the [local-first](./articles/local-first-future.md) (aka offline-first) paradigm makes it easy to create realtime web applications that even work when the user has no internet connection.
+So you have read [all these things](./offline-first.md) about how the [local-first](./articles/local-first-future.md) (aka offline-first) paradigm makes it easy to create [realtime](./articles/realtime-database.md) web applications that even work when the user has no internet connection.
 But there is no free lunch. The offline first paradigm is not the perfect approach for all kinds of apps.
 
 <QuoteBlock 
@@ -121,12 +121,12 @@ With offline first applications, it is even more fun. You do not only have to mi
 
 When you create a web based offline first app, you cannot store data directly on the users filesystem. In fact there are many layers between your JavaScript code and the filesystem of the operation system. Let's say you insert a document in [RxDB](https://github.com/pubkey/rxdb):
   - You call the RxDB API to validate and store the data
-  - RxDB calls the underlying RxStorage, for example PouchDB.
+  - RxDB calls the underlying RxStorage, for example [PouchDB](./rx-storage-pouchdb.md).
   - Pouchdb calls its underlying storage adapter
   - The storage adapter calls IndexedDB
   - The browser runs its internal handling of the IndexedDB API
   - In most browsers IndexedDB is implemented on [top of SQLite](https://hackaday.com/2021/08/24/sqlite-on-the-web-absurd-sql/)
-  - SQLite calls the OS to store the data in the filesystem
+  - [SQLite](./rx-storage-sqlite.md) calls the OS to store the data in the filesystem
 
 All these layers are abstractions. They are not build for exactly that one use case, so you lose some performance to tunnel the data through the layer itself, and you also lose some performance because the abstraction does not exactly provide the functions that are needed by the layer above and it will overfetch data.
 

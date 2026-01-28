@@ -24,7 +24,7 @@ This replication plugin allows you to synchronize documents between RxDB and an 
 ## Why you should use RxDB with Appwrite?
 
 **Appwrite** is a secure, open-source backend server that simplifies backend tasks like user authentication, storage, database management, and real-time APIs.  
-**RxDB** is a reactive database for the frontend that offers offline-first capabilities and rich client-side data handling.
+**[RxDatabase](./rx-database.md)** is a reactive database for the frontend that offers offline-first capabilities and rich client-side data handling.
 
 Combining the two provides several benefits:
 

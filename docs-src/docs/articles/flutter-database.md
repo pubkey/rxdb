@@ -57,7 +57,7 @@ RxDB follows an offline-first approach, making it ideal for building Flutter app
 ### Data Replication
 Data replication is a critical aspect of building distributed applications. RxDB provides robust replication capabilities that enable synchronization of data between different clients and servers. With its replication plugins, RxDB simplifies the process of setting up real-time data synchronization, ensuring consistency across all connected devices.
 
-### Observable Queries
+### [Observable Queries](../rx-query.md)
 RxDB introduces the concept of observable queries, which are queries that automatically update when the underlying data changes. This feature is particularly useful for keeping the UI up to date with the latest data. By subscribing to an observable query, developers can receive real-time updates and reflect them in the user interface without manual intervention.
 
 ### RxDB vs. Other Flutter Database Options

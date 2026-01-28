@@ -26,7 +26,7 @@ Additionally, RxDB eliminates disk I/O bottlenecks that are typically associated
 
 
 ## Persistence Options
-While RxDB offers an [in-memory](../rx-storage-memory.md) storage adapter, it also offers [persistence storages](../rx-storage.md). Adapters such as [IndexedDB](../rx-storage-indexeddb.md), [SQLite](../rx-storage-sqlite.md), and [OPFS](../rx-storage-opfs.md) enable developers to persist data locally in the browser, making applications accessible even when offline. This hybrid approach combines the benefits of in-memory performance with data durability, providing the best of both worlds. Developers can choose the adapter that best suits their needs, balancing the speed of in-memory storage with the long-term data persistence required for certain applications.
+While RxDB offers an [in-memory](../rx-storage-memory.md) storage adapter, it also offers [persistence storages](../rx-storage.md). Adapters such as [IndexedDB](../rx-storage-indexeddb.md), [SQLite](../rx-storage-sqlite.md), and [OPFS](../rx-storage-opfs.md) enable developers to persist data locally in the browser, making applications accessible even when [offline](../offline-first.md). This hybrid approach combines the benefits of in-memory performance with data durability, providing the best of both worlds. Developers can choose the adapter that best suits their needs, balancing the speed of in-memory storage with the long-term data persistence required for certain applications.
 
 ```javascript
 import {

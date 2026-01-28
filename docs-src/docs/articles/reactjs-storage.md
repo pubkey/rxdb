@@ -72,7 +72,7 @@ While localStorage is simple, it’s limited to string-based key-value lookups a
 
 **IndexedDB:**
 
-- Stores [large](./indexeddb-max-storage-limit.md) JSON objects, able to index by multiple fields
+- Stores [large](./indexeddb-max-storage-limit.md) [JSON](./json-database.md) objects, able to index by multiple fields
 - Asynchronous and usually more scalable
 - More complicated to use directly (i.e., not as simple as .getItem())
 [RxDB](/), as you’ll see, simplifies [IndexedDB](../rx-storage-indexeddb.md) usage in ReactJS by adding a more intuitive layer for queries, reactivity, and advanced capabilities like [encryption](../encryption.md).

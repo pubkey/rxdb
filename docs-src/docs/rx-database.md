@@ -6,7 +6,7 @@ description: Get started with RxDatabase and integrate multiple storages. Learn 
 
 # RxDatabase
 
-A RxDatabase-Object contains your collections and handles the synchronization of change-events.
+A RxDatabase-Object contains your [collections](./rx-collection.md) and handles the synchronization of change-events.
 
 ## Creation
 

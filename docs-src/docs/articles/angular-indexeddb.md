@@ -46,7 +46,7 @@ Despite the advantages, directly working with IndexedDB has several drawbacks:
 
 - **Advanced Features Missing**: IndexedDB lacks built-in support for encryption, compression, or other advanced data management features.
 
-- **Browser-Only**: IndexedDB works in the browser but not in environments like React Native or Electron. RxDB offers storage adapters to seamlessly reuse the same code on different platforms.
+- **Browser-Only**: IndexedDB works in the browser but not in environments like [React Native](../react-native-database.md) or [Electron](../electron-database.md). RxDB offers storage adapters to seamlessly reuse the same code on different platforms.
 
 <center>
     <a href="https://rxdb.info/">

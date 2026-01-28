@@ -4,7 +4,7 @@ slug: nosql-performance-tips.html
 description: Skyrocket your NoSQL speed with RxDB tips. Learn about bulk writes, optimized queries, and lean plugin usage for peak performance.
 ---
 
-# Performance tips for RxDB and other NoSQL databases
+# Performance tips for RxDB and other [NoSQL](./articles/in-memory-nosql-database.md) databases
 
 In this guide, you'll find techniques to improve the performance of RxDB operations and queries. Notice that all your performance optimizations should be done with a correct tracking of the metrics, otherwise you might change stuff into the wrong direction.
 
@@ -138,7 +138,7 @@ Notice that RxDB has the [Query Optimizer Plugin](./query-optimizer.md) that can
 
 Having a query where the up-to-date result set is needed more than once, you might want to make the query "hot" by permanently subscribing to it. This ensures that the query result is kept up to date by RxDB ant the [EventReduce algorithm](https://github.com/pubkey/event-reduce) at any time so that at the moment you need the current results, it has them already.
 
-For example when you use RxDB at Node.js for a webserver, you should use an outer "hot" query instead of running the same query again on every request to a route.
+For example when you use RxDB at [Node.js](./nodejs-database.md) for a webserver, you should use an outer "hot" query instead of running the same query again on every request to a route.
 
 
 ```ts

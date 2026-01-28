@@ -51,7 +51,7 @@ Typical apps require numerous REST endpoints and possibly a client-side state ma
 
 ## Introducing RxDB – A Powerful Offline Database Solution
 
-**RxDB (Reactive Database)** is a **NoSQL** JavaScript database that lives entirely in your client environment. It’s optimized for:
+**RxDB (Reactive Database)** is a **[NoSQL](./in-memory-nosql-database.md)** JavaScript database that lives entirely in your client environment. It’s optimized for:
 
 - **Offline-first usage**
 - **Reactive queries** (your UI updates in real time)
@@ -63,7 +63,7 @@ You can run RxDB in:
 - **Mobile hybrid apps** ([Ionic](./ionic-database.md), [Capacitor](../capacitor-database.md))
 - **Native modules** ([React Native](../react-native-database.md))
 - **Desktop environments** ([Electron](../electron-database.md))
-- **Node.js** [Servers](../rx-server.md) or Scripts 
+- **[Node.js](../nodejs-database.md)** [Servers](../rx-server.md) or Scripts 
 
 Wherever your JavaScript executes, RxDB can serve as a robust offline database.
 

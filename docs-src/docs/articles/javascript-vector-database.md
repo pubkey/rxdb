@@ -22,11 +22,11 @@ But here's where things get even more exciting: when building [local-first](./lo
 
 Enter **vector databases**, the game-changers for searching data by meaning! They have unlocked these new possibilities for storing and querying data, especially in tasks requiring **semantic search** and **similarity-based** queries. With the help of a **machine learning model**, data is transformed into a vector representation that can be stored, queried and compared in a database.
 
-But unfortunately, most vector databases are designed for server-side use, typically running in large cloud clusters, not to run on a users device. To fix that, in this article, we will combine **RxDB** and **transformers.js** to create a local vector database running in the **browser** with **JavaScript**. It stores data in **IndexedDB**, and uses a machine learning model with **WebAssembly** locally, without the need for external servers.
+But unfortunately, most vector databases are designed for server-side use, typically running in large cloud clusters, not to run on a users device. To fix that, in this article, we will combine **RxDB** and **transformers.js** to create a local vector database running in the **browser** with **JavaScript**. It stores data in **[IndexedDB](../rx-storage-indexeddb.md)**, and uses a machine learning model with **WebAssembly** locally, without the need for external servers.
 
 - [transformers.js](https://github.com/xenova/transformers.js) is a powerful framework that allows machine learning models to run directly within JavaScript using WebAssembly or WebGPU.
 
-- [RxDB](https://rxdb.info/) is a NoSQL, local-first database with a flexible storage layer that can run on any JavaScript runtime, including browsers and mobile environments. (You are reading this article on the RxDB docs).
+- [RxDB](https://rxdb.info/) is a [NoSQL](./in-memory-nosql-database.md), local-first database with a flexible storage layer that can run on any JavaScript runtime, including browsers and mobile environments. (You are reading this article on the RxDB docs).
 
 A local vector database offers several key benefits:
 

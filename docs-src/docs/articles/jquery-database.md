@@ -37,7 +37,7 @@ RxDB (short for Reactive Database) is built on top of [IndexedDB](./browser-data
 - **Reactive Data Handling**: RxDB emits real-time updates whenever your data changes, allowing you to instantly reflect these changes in the DOM with jQuery.
 - **Offline-First Approach**: Keep your application usable even when the user's network is unavailable. Data is automatically synchronized once connectivity is restored.
 - **Data Replication**: Enable multi-device or multi-tab synchronization with minimal effort.
-- **Observable Queries**: Reduce code complexity by subscribing to queries instead of constantly polling for changes.
+- **[Observable Queries](../rx-query.md)**: Reduce code complexity by subscribing to queries instead of constantly polling for changes.
 - **Multi-Tab Support**: If a user opens your jQuery application in multiple tabs, RxDB keeps data in sync across all sessions.
 
 <center>

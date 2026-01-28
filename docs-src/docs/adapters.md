@@ -8,7 +8,7 @@ slug: adapters.html
 
 
 When you use PouchDB `RxStorage`, there are many adapters that define where the data has to be stored.
-Depending on which environment you work in, you can choose between different adapters. For example, in the browser you want to store the data inside of IndexedDB but on NodeJS you want to store the data on the filesystem.
+Depending on which environment you work in, you can choose between different adapters. For example, in the browser you want to store the data inside of [IndexedDB](./rx-storage-indexeddb.md) but on [NodeJS](./nodejs-database.md) you want to store the data on the filesystem.
 
 This page is an overview over the different adapters with recommendations on what to use where.
 
@@ -253,7 +253,7 @@ const database = await createRxDatabase({
 
 ## cordova-sqlite
 
-Uses cordova's global `cordova.sqlitePlugin`. It can be used with cordova and capacitor.
+Uses cordova's global `cordova.sqlitePlugin`. It can be used with cordova and [capacitor](./capacitor-database.md).
 
 ```js
 // npm install pouchdb-adapter-cordova-sqlite --save

@@ -29,7 +29,7 @@ In a traditional architecture, each user action triggers requests to a server fo
 
 ## RxDB: Your Key to Zero-Latency Local First Apps
 
-**RxDB** is a JavaScript-based NoSQL database designed for offline-first and real-time replication scenarios. It supports a range of environments - browsers (IndexedDB or OPFS), mobile ([Ionic](./ionic-storage.md), [React Native](../react-native-database.md)), [Electron](../electron-database.md), Node.js - and is built around:
+**RxDB** is a JavaScript-based [NoSQL](./in-memory-nosql-database.md) database designed for offline-first and real-time replication scenarios. It supports a range of environments - browsers (IndexedDB or OPFS), mobile ([Ionic](./ionic-storage.md), [React Native](../react-native-database.md)), [Electron](../electron-database.md), Node.js - and is built around:
 
 - **Reactive Queries** that trigger UI updates upon data changes
 - **Schema-based NoSQL Documents** for flexible but robust data models

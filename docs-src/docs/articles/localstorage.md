@@ -88,7 +88,7 @@ While localStorage offers convenience, it may not be suitable for every use case
 
 ### localStorage vs IndexedDB
 
-While **localStorage** serves as a reliable storage solution for simpler data needs, it's essential to explore alternatives like **IndexedDB** when dealing with more complex requirements. **IndexedDB** is designed to store not only key-value pairs but also JSON documents. Unlike localStorage, which usually has a storage limit of around 5-10MB per domain, IndexedDB can handle significantly larger datasets. IndexDB with its support for indexing facilitates efficient querying, making range queries possible. However, it's worth noting that IndexedDB lacks observability, which is a feature unique to localStorage through the `storage` event. Also, 
+While **localStorage** serves as a reliable storage solution for simpler data needs, it's essential to explore alternatives like **[IndexedDB](../rx-storage-indexeddb.md)** when dealing with more complex requirements. **IndexedDB** is designed to store not only key-value pairs but also JSON documents. Unlike localStorage, which usually has a storage limit of around 5-10MB per domain, IndexedDB can handle significantly larger datasets. IndexDB with its support for indexing facilitates efficient querying, making range queries possible. However, it's worth noting that IndexedDB lacks observability, which is a feature unique to localStorage through the `storage` event. Also, 
 complex queries can pose a challenge with IndexedDB, and while its performance is acceptable, IndexedDB can be [too slow](../slow-indexeddb.md) for some use cases.
 
 ```js
@@ -122,11 +122,11 @@ WebSQL, despite offering a SQL-based interface for client-side data storage, is 
 In scenarios where data persistence beyond a session is unnecessary, developers often turn to sessionStorage. This storage mechanism retains data only for the duration of a tab or browser session. It survives page reloads and restores, providing a handy solution for temporary data needs. However, it's important to note that sessionStorage is limited in scope and may not suit all use cases.
 
 ### AsyncStorage for React Native
-For React Native developers, the [AsyncStorage API](https://reactnative.dev/docs/asyncstorage) is the go-to solution, mirroring the behavior of localStorage but with asynchronous support. Since not all JavaScript runtimes support localStorage, AsyncStorage offers a seamless alternative for data persistence in React Native applications.
+For [React Native](../react-native-database.md) developers, the [AsyncStorage API](https://reactnative.dev/docs/asyncstorage) is the go-to solution, mirroring the behavior of localStorage but with asynchronous support. Since not all JavaScript runtimes support localStorage, AsyncStorage offers a seamless alternative for data persistence in React Native applications.
 
 ### `node-localstorage` for Node.js
 
-Because native localStorage is absent in the **Node.js** JavaScript runtime, you will get the error `ReferenceError: localStorage is not defined` in Node.js or node based runtimes like Next.js. The [node-localstorage npm package](https://github.com/lmaccherone/node-localstorage) bridges the gap. This package replicates the browser's localStorage API within the Node.js environment, ensuring consistent and compatible data storage capabilities.
+Because native localStorage is absent in the **[Node.js](../nodejs-database.md)** JavaScript runtime, you will get the error `ReferenceError: localStorage is not defined` in Node.js or node based runtimes like Next.js. The [node-localstorage npm package](https://github.com/lmaccherone/node-localstorage) bridges the gap. This package replicates the browser's localStorage API within the Node.js environment, ensuring consistent and compatible data storage capabilities.
 
 ## localStorage in browser extensions
 

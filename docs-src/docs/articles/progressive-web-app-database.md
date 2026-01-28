@@ -13,7 +13,7 @@ Progressive Web Apps are the future of web development, seamlessly combining the
 PWAs bring a plethora of advantages to the table. They eliminate the hassle of app store installations and updates, reduce dependency on network connectivity, and prioritize fast loading times. By harnessing the power of service workers and intelligent caching mechanisms, PWAs ensure users can access content even in offline mode. Furthermore, PWAs are device-agnostic, seamlessly adapting to various devices, from desktops to smartphones.
 
 ## Introducing RxDB as a Client-Side Database for PWAs
-At the heart of PWAs lies efficient data management, and RxDB steps in as a reliable ally. As a client-side NoSQL database, RxDB seamlessly integrates into web applications, offering real-time data synchronization and manipulation capabilities. This article sheds light on the transformative potential of RxDB as it collaborates harmoniously with PWAs, enabling local-first strategies and elevating user interactions to a whole new level.
+At the heart of PWAs lies efficient data management, and RxDB steps in as a reliable ally. As a client-side [NoSQL](./in-memory-nosql-database.md) database, RxDB seamlessly integrates into web applications, offering real-time data synchronization and manipulation capabilities. This article sheds light on the transformative potential of RxDB as it collaborates harmoniously with PWAs, enabling local-first strategies and elevating user interactions to a whole new level.
 
 <center>
     <a href="https://rxdb.info/">
@@ -51,7 +51,7 @@ RxDB extends its prowess to multi-tab scenarios, guaranteeing data consistency a
 
 
 ### Using RxDB in a Progressive Web App
-Integrating RxDB into a Progressive Web App, driven by technologies like React, is a straightforward process. By configuring RxDB and installing the necessary packages, developers establish a solid foundation for robust data management within their PWA.
+Integrating RxDB into a Progressive Web App, driven by technologies like [React](./react-database.md), is a straightforward process. By configuring RxDB and installing the necessary packages, developers establish a solid foundation for robust data management within their PWA.
 
 ## Exploring Different RxStorage Layers
 RxDB caters to diverse needs through its various RxStorage layers:

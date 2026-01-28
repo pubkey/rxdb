@@ -9,7 +9,7 @@ description: An in-depth exploration of local databases and why RxDB excels as a
 
 A **local database** is a data storage system residing on a user's device, allowing applications to store, query, and manipulate information without needing continuous network access. This approach prioritizes quick data retrieval, efficient updates, and the ability to function in [offline-first](../offline-first.md) scenarios. In contrast, server-based databases require an active internet connection for each request and response cycle, making them more vulnerable to latency, network disruptions, and downtime.
 
-Local databases often leverage technologies such as **IndexedDB**, **SQLite**, or **WebSQL** (though WebSQL has been deprecated). These technologies manage both structured data (like relational tables) and unstructured data (such as JSON documents). When connectivity is restored, local databases typically sync their changes back to a central server-side database, maintaining consistent and up-to-date records across multiple devices.
+Local databases often leverage technologies such as **IndexedDB**, **SQLite**, or **WebSQL** (though WebSQL has been deprecated). These technologies manage both structured data (like relational tables) and unstructured data (such as [JSON documents](./json-database.md)). When connectivity is restored, local databases typically sync their changes back to a central server-side database, maintaining consistent and up-to-date records across multiple devices.
 
 ### Use Cases of Local Databases
 
@@ -92,7 +92,7 @@ You can fine-tune RxDB to your exact needs, avoiding the performance overhead of
 RxDB is a perfect fit for cross-platform development, as it supports numerous environments:
 
 - **Browsers (IndexedDB)**: For web and PWA projects.
-- **Node.js**: Ideal for server-side rendering or background services.
+- **[Node.js](../nodejs-database.md)**: Ideal for server-side rendering or background services.
 - **React Native**: Leverage SQLite or other adapters for mobile app development.
 - [Electron](../electron-database.md): Create offline-capable desktop apps with a unified codebase.
 

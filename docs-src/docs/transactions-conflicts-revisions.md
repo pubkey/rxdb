@@ -19,7 +19,7 @@ As soon as you have to split your database on **multiple servers**, transaction 
 
 But with RxDB you have **multiple clients** that can go randomly online or offline. The users can have different devices and the clock of these devices can go off by any time. To support ACID transactions here, RxDB would have to make the whole world stand still for all clients, while one client is doing a write operation. And even that can only work when all clients are online. Implementing that might be possible, but at the cost of an unpredictable amount of performance loss and not being able to support [offline-first](./offline-first.md).
 
-> A single write operation to a document is the only atomic thing you can do in RxDB.
+> A single write operation to a document is the only atomic thing you can do in [RxDatabase](./rx-database.md).
 
 The benefits of not having to support transactions:
 

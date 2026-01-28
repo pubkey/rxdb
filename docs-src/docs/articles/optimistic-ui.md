@@ -39,7 +39,7 @@ Now that we know what an optimistic UI is, lets build one with RxDB.
 
 ### Local Database: The Backbone of an Optimistic UI
 
-A local database is the heart of an Optimistic UI. With RxDB, **all application state** is stored locally, ensuring seamless and instant updates. You can choose from multiple storage backends based on your runtime - check out [RxDB Storage Options](../rx-storage.md) to see which engines (IndexedDB, SQLite, or custom) suit your environment best.
+A local database is the heart of an Optimistic UI. With RxDB, **all application state** is stored locally, ensuring seamless and instant updates. You can choose from multiple storage backends based on your runtime - check out [RxDB Storage Options](../rx-storage.md) to see which engines (IndexedDB, [SQLite](../rx-storage-sqlite.md), or custom) suit your environment best.
 
 - **Instant Writes**: When users perform an action (like clicking a button or submitting a form), the changes are written directly to the local RxDB database. This immediate local write makes the UI feel snappy and removes the dependency on instantaneous server responses.
 

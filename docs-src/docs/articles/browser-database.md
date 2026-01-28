@@ -42,7 +42,7 @@ Storing data in the browser reduces the initial application start time. Instead 
 Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as [Angular](./angular-database.md), [React.js](./react-database.md), [Vue.js](./vue-database.md), and Svelte. This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.
 
 ### Store local data with encryption
-Security is a crucial aspect of data storage, especially when handling sensitive information. Browser databases, like RxDB, offer the capability to store local data with encryption, ensuring the confidentiality and protection of sensitive user data.
+Security is a crucial aspect of data storage, especially when handling sensitive information. Browser databases, like RxDB, offer the capability to store local data with [encryption](../encryption.md), ensuring the confidentiality and protection of sensitive user data.
 
 ### Using a local database for state management
 Utilizing a local browser database for state management eliminates the need for traditional state management libraries like Redux or NgRx. This approach simplifies the application's architecture by leveraging the database's capabilities to handle state-related operations efficiently.
@@ -58,7 +58,7 @@ When data is stored in the browser, it becomes portable and always accessible by
 
 
 ## Why SQL databases like SQLite are not a good fit for the browser
-While SQL databases, such as SQLite, excel in server-side scenarios, they are not always the optimal choice for browser-based applications. Here are some reasons why SQL databases may not be the best fit for the browser:
+While SQL databases, such as [SQLite](../rx-storage-sqlite.md), excel in server-side scenarios, they are not always the optimal choice for browser-based applications. Here are some reasons why SQL databases may not be the best fit for the browser:
 
 ### Push/Pull based vs. reactive
 SQL databases typically rely on a push/pull mechanism, where the server pushes updates to the client or the client pulls data from the server. This approach is not inherently reactive and requires additional effort to implement real-time data updates. In contrast, browser databases like [RxDB](https://rxdb.info/) provide built-in reactive mechanisms, allowing the application to react to data changes seamlessly.

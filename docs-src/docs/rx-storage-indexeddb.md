@@ -6,8 +6,8 @@ description: Choose IndexedDB RxStorage for unmatched speed and minimal build si
 
 # IndexedDB RxStorage
 
-The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or hybrid apps.
-Compared to other browser based storages, the IndexedDB storage has the smallest write- and read latency, the fastest initial page load
+The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or [hybrid apps](./articles/mobile-database.md).
+Compared to other [browser based storages](./articles/browser-database.md), the IndexedDB storage has the smallest write- and read latency, the fastest initial page load
 and the smallest build size. Only for big datasets (more than 10k documents), the [OPFS storage](./rx-storage-opfs.md) is better suited.
 
 While the IndexedDB API itself can be very slow, the IndexedDB storage uses many tricks and performance optimizations, some of which are described [here](./slow-indexeddb.md). For example it uses custom index strings instead of the native IndexedDB indexes, batches cursor for faster bulk reads and many other improvements. The IndexedDB storage also operates on [Write-ahead logging](https://en.wikipedia.org/wiki/Write-ahead_logging) similar to SQLite, to improve write latency while still ensuring consistency on writes.
@@ -51,7 +51,7 @@ const db = await createRxDatabase({
 
 ## Overwrite/Polyfill the native IndexedDB
 
-Node.js has no IndexedDB API. To still run the IndexedDB `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
+[Node.js](./nodejs-database.md) has no IndexedDB API. To still run the IndexedDB `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
 You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB) module and pass it to the `getRxStorageIndexedDB()` function.
 
 ```ts

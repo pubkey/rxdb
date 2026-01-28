@@ -18,7 +18,7 @@ I wrote a follow-up version of offline/first local first about [Why Local-First 
 :::
 
 While in the past, internet connection was an unstable, things are changing especially for mobile devices.
-Mobile networks become better and having no internet becomes less common even in remote locations.
+[Mobile](./articles/mobile-database.md) networks become better and having no internet becomes less common even in remote locations.
 So if we did not care about offline first applications in the past, why should we even care now?
 In the following I will point out why offline first applications are better, not because they support offline usage, but because of other reasons.
 
@@ -85,7 +85,7 @@ Once that data is transferred to the client, the user can do as many interaction
 ## Modern apps have longer runtimes
 
 In the past you used websites only for a short time. You open it, perform some action and then close it again. This made the first load time the important metric when evaluating page speed.
-Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, PWAs and hybrid apps. All of these were made to have long runtimes.
+Today web applications have changed and with it the way we use them. Single page applications are opened once and then used over the whole day. Chat apps, email clients, [PWAs](./articles/progressive-web-app-database.md) and hybrid apps. All of these were made to have long runtimes.
 This makes the time for user interactions more important than the initial loading time. Offline first applications benefit from that because there is often no loading time on user actions while loading the initial state to the client is not that relevant.
 
 

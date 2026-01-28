@@ -40,7 +40,7 @@ npm install nats --save
 
 To start the replication, import the `replicateNats()` method from the RxDB plugin and call it with the collection
 that must be replicated.
-The replication runs *per RxCollection*, you can replicate multiple RxCollections by starting a new replication for each of them.
+The replication runs *per [RxCollection](./rx-collection.md)*, you can replicate multiple RxCollections by starting a new replication for each of them.
 
 ```typescript
 import {

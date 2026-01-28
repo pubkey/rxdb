@@ -43,7 +43,7 @@ At its core, [RxDB](https://rxdb.info/) is a **NoSQL** database that operates wi
 The [local-first](../offline-first.md) approach adopted by RxDB is a game-changer for hybrid applications. Storing data locally allows your app to function seamlessly without an internet connection, providing users with uninterrupted access to their data. When connectivity is restored, RxDB handles the synchronization of data, ensuring that any changes made offline are appropriately propagated.
 
 ### Observable Queries
-One of RxDB's standout features is its implementation of observable queries. This concept allows your app's user interface to be dynamically updated in real time as data changes within the database. RxDB's observables create a bridge between your database and user interface, keeping them in sync effortlessly.
+One of RxDB's standout features is its implementation of [observable queries](../rx-query.md). This concept allows your app's user interface to be dynamically updated in real time as data changes within the database. RxDB's observables create a bridge between your database and user interface, keeping them in sync effortlessly.
 
 <p align="center">
   <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" />
@@ -68,7 +68,7 @@ RxDB introduces a concept called [EventReduce](https://github.com/pubkey/event-r
 
 
 ## Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite
-When it comes to choosing the right database solution for your client-side applications, NoSQL RxDB presents compelling advantages over traditional options like SQLite. Let's delve into the key reasons why NoSQL RxDB is a superior fit for your ionic hybrid app development.
+When it comes to choosing the right database solution for your client-side applications, NoSQL RxDB presents compelling advantages over traditional options like [SQLite](../rx-storage-sqlite.md). Let's delve into the key reasons why NoSQL RxDB is a superior fit for your ionic hybrid app development.
 
 ### Easier Document-Based Replication
 NoSQL databases, like RxDB, inherently embrace a document-based approach to [data storage](./ionic-storage.md). This design choice simplifies data [replication](../replication.md) between clients and servers. With documents representing discrete units of data, you can easily synchronize individual pieces of information without the complexity that can arise when dealing with rows and tables in a relational database like SQLite. This document-centric replication model streamlines the synchronization process and ensures that your app's data remains consistent across devices.

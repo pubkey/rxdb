@@ -20,7 +20,7 @@ import {VideoBox} from '@site/src/components/video-box';
 
 # IndexedDB Max Storage Size Limit
 
-IndexedDB is widely known as the primary browser-based storage API for large client-side data, particularly valuable for modern offline-first applications. These apps aim to keep everything functional and interactive even without an internet connection, which naturally demands substantial local storage. However, IndexedDB has various size limits depending on the browser, disk space, and user settings. Being aware of these constraints is crucial so you can avoid quota errors and deliver a seamless user experience without unexpected data loss.
+IndexedDB is widely known as the primary browser-based storage API for large client-side data, particularly valuable for modern [offline-first](../offline-first.md) applications. These apps aim to keep everything functional and interactive even without an internet connection, which naturally demands substantial local storage. However, IndexedDB has various size limits depending on the browser, disk space, and user settings. Being aware of these constraints is crucial so you can avoid quota errors and deliver a seamless user experience without unexpected data loss.
 
 Offline-first apps have grown in popularity because they provide immediate feedback, zero-latency interactions, and resilience in poor network conditions. Storing big data sets, or even entire data models, in IndexedDB has become far more common than in the era of small localStorage or cookie usage. But all this local data is subject to quotas, and that’s exactly what this guide will help you understand and manage.
 

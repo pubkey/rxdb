@@ -10,7 +10,7 @@ import {Steps} from '@site/src/components/steps';
 
 RxDB provides first-class support for both React and React Native via a dedicated React integration. This integration makes it possible to use RxDB inside functional components using React Context and hooks, without manually subscribing to observables or managing cleanup logic.
 
-The same APIs work in **React** for the web and in [React Native](./react-native-database.md). The only difference between platforms is the storage and environment setup. The React integration itself behaves identically in both.
+The same APIs work in **React** for the web and in [React Native](./react-native-database.md). The only difference between platforms is the [storage](./rx-storage.md) and environment setup. The React integration itself behaves identically in both.
 
 ## General concept
 
@@ -33,7 +33,7 @@ npm install rxdb react react-dom
 
 ### Database creation
 
-Database creation is not part of the React integration itself. RxDB is created in the same way as in non-React applications, including storage selection, plugins, replication, hooks, and schema definitions.
+Database creation is not part of the React integration itself. RxDB is created in the same way as in non-React applications, including storage selection, plugins, [replication](./replication.md), hooks, and [schema](./rx-schema.md) definitions.
 
 This separation is intentional. React components should never be responsible for creating or configuring the database. They should only consume it.
 
@@ -70,7 +70,7 @@ async function getDatabase() {
 
 ### Providing the database
 
-To use RxDB in a React or React Native application, the database instance must be provided via a context. This is done using `RxDatabaseProvider`.
+To use RxDB in a React or React Native application, the database instance must be provided via a context. This is done using `[RxDatabaseProvider](./rx-database.md)`.
 
 The database itself is created outside of React, usually in a separate module. The provider is only responsible for making the database available to components once it has been initialized.
 

@@ -27,7 +27,7 @@ Traditional SQL tables enforce rigid column definitions and demand explicit sche
 
 ### Aligned With Evolving User Interfaces
 
-As modern UIs frequently manipulate deeply nested or changing data, developers find it easier to store whole objects directly, saving time that might otherwise be spent performing complex joins or normalizing data. For instance, frameworks like React, Vue, or Angular are inherently comfortable with nested JSON structures, which map more directly to NoSQL’s “document” approach than to relational tables.
+As modern UIs frequently manipulate deeply nested or changing data, developers find it easier to store whole objects directly, saving time that might otherwise be spent performing complex joins or normalizing data. For instance, frameworks like [React](./react-database.md), [Vue](./vue-database.md), or [Angular](./angular-database.md) are inherently comfortable with nested JSON structures, which map more directly toNoSQL’s “document” approach than to relational tables.
 
 
 ## Is NoSQL “Better” Than SQL?
@@ -99,7 +99,7 @@ Databases—relational or NoSQL—solve these issues by handling concurrency, en
 
 ## RxDB: A JSON-Focused Database for JavaScript Apps
 
-Many NoSQL databases operate on the server, whereas RxDB is built for client-side usage—browsers, mobile apps, or Node.js. It specializes in JSON documents and embraces an [offline-first](../offline-first.md) philosophy.
+Many NoSQL databases operate on the server, whereas RxDB is built for client-side usage—browsers, mobile apps, or [Node.js](../nodejs-database.md). It specializes in JSON documents and embraces an [offline-first](../offline-first.md) philosophy.
 
 ### Key Characteristics
 1. **Local JSON Storage**

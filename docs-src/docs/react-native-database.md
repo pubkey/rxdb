@@ -24,7 +24,7 @@ RxDB covers all of these requirements out of the box. It is a [local-first](./ar
 
 ## The Storage Layer: SQLite
 
-React Native does not have a native database engine. To store data persistently and efficiently, RxDB uses **SQLite** under the hood. SQLite is available on all mobile platforms (iOS, Android) and offers great performance.
+React Native does not have a native database engine. To store data persistently and efficiently, RxDB uses **[SQLite](./rx-storage-sqlite.md)** under the hood. SQLite is available on all mobile platforms (iOS, Android) and offers great performance.
 
 RxDB abstracts the complex SQL commands away and provides a simple, **[NoSQL JSON document API](./rx-database.md)** that is easy to use for JavaScript developers.
 

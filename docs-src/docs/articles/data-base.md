@@ -25,7 +25,7 @@ RxDB, short for Reactive data base, is a client-side data base solution designed
 
 ## Getting Started with RxDB
 ### What is RxDB?
-RxDB is an open-source JavaScript data base that leverages reactive programming and provides a seamless API for handling data. It is built on top of existing popular data base technologies, such as IndexedDB, and adds a layer of reactive features to enable real-time data updates and synchronization.
+RxDB is an open-source JavaScript data base that leverages reactive programming and provides a seamless API for handling data. It is built on top of existing popular data base technologies, such as [IndexedDB](../rx-storage-indexeddb.md), and adds a layer of reactive features to enable real-time data updates and synchronization.
 
 ### Reactive Data Handling
 One of the standout features of RxDB is its reactive data handling. It utilizes observables to provide a stream of data that automatically updates whenever a change occurs. This reactive approach allows developers to build applications that respond instantly to data changes, ensuring a highly interactive and real-time user experience.

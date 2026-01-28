@@ -109,7 +109,7 @@ RxDB requires you to never [fully delete documents](./replication.md#data-layout
 
 ## Do not set `enableIndexedDbPersistence()`
 
-Firestore has the `enableIndexedDbPersistence()` feature which caches document states locally to IndexedDB. This is not needed when you replicate your Firestore with RxDB because RxDB itself will store the data locally already.
+Firestore has the `enableIndexedDbPersistence()` feature which caches document states locally to [IndexedDB](./rx-storage-indexeddb.md). This is not needed when you replicate your Firestore with RxDB because RxDB itself will store the data locally already.
 
 ## Using the replication with an already existing Firestore Database State
 

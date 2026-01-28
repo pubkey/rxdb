@@ -14,7 +14,7 @@ This is useful to:
   - Consume the database content with other software that cannot replicate with RxDB
   - Write a backup of the database to a remote server by mounting the backup folder on the other server.
 
-The backup plugin works only in node.js, not in a browser. It is intended to have a backup strategy when using RxDB on the server side like with the [RxServer](./rx-server.md). To run backups on the client side, you should use one of the [replication](./replication.md) plugins instead.
+The backup plugin works only in [node.js](./nodejs-database.md), not in a browser. It is intended to have a backup strategy when using RxDB on the server side like with the [RxServer](./rx-server.md). To run backups on the client side, you should use one of the [replication](./replication.md) plugins instead.
 
 ## Installation
 

@@ -6,7 +6,7 @@ description: Learn how to reference and link documents across collections in RxD
 
 # Population
 
-There are no joins in RxDB but sometimes we still want references to documents in other collections. This is where population comes in. You can specify a relation from one RxDocument to another RxDocument in the same or another RxCollection of the same database.
+There are no joins in RxDB but sometimes we still want references to documents in other collections. This is where population comes in. You can specify a relation from one [RxDocument](./rx-document.md) to another [RxDocument](./rx-document.md) in the same or another [RxCollection](./rx-collection.md) of the same database.
 Then you can get the referenced document with the population-getter.
 
 This works exactly like population with [mongoose](http://mongoosejs.com/docs/populate.html).

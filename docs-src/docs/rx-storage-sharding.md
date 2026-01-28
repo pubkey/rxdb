@@ -68,7 +68,7 @@ const mySchema = {
 
 
 /**
- * Create the RxDatabase with the wrapped RxStorage. 
+ * Create the [RxDatabase](./rx-database.md) with the wrapped RxStorage. 
  */
 const database = await createRxDatabase({
     name: 'mydatabase',

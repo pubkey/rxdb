@@ -39,7 +39,7 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Lack of Observable API**: IndexedDB doesn't provide an observable API out of the box. RxDB solves this by enabling you to observe query results or specific document fields.
 - **Cross-Tab Communication**: Managing cross-tab updates in plain IndexedDB is difficult. RxDB handles this seamlessly-changes in one tab automatically affect observed data in others.
 - **Missing Advanced Features**: Features like encryption or compression aren't built into IndexedDB, but they are available via RxDB.
-- **Limited Platform Support**: IndexedDB exists only in the browser. In contrast, RxDB offers swappable storages to use the same code in React Native, Capacitor, or Electron.
+- **Limited Platform Support**: IndexedDB exists only in the browser. In contrast, RxDB offers swappable storages to use the same code in [React Native](../react-native-database.md), [Capacitor](../capacitor-database.md), or [Electron](../electron-database.md).
 
 <center>
     <a href="https://rxdb.info/">

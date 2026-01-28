@@ -158,7 +158,7 @@ You can await the idleness of a pipeline with `await myRxPipeline.awaitIdle()`. 
 
 ### close()
 
-`await myRxPipeline.close()` stops the pipeline so that it is no longer doing stuff. This is automatically called when the RxCollection or RxDatabase of the pipeline is closed.
+`await myRxPipeline.close()` stops the pipeline so that it is no longer doing stuff. This is automatically called when the RxCollection or [RxDatabase](./rx-database.md) of the pipeline is closed.
 
 ### remove()
 

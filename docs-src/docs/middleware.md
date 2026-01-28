@@ -56,7 +56,7 @@ An insert-hook receives the data-object of the new document.
 - new document is written to database
 - postInsert series-hooks
 - postInsert parallel-hooks
-- event is emitted to RxDatabase and RxCollection
+- event is emitted to [RxDatabase](./rx-database.md) and [RxCollection](./rx-collection.md)
 
 #### preInsert
 

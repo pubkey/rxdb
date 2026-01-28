@@ -261,7 +261,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 #### Create a Database
 
-Here we use the [localstoarge](../rx-storage-localstorage.md) based storage for RxDB which stores data inside of localstorage in a **browser**. There is a wide range of other [storages](../rx-storage.md) for example in **React Native** you would use the [SQLite storage](../rx-storage-sqlite.md) instead.
+Here we use the [localstoarge](../rx-storage-localstorage.md) based storage for RxDB which stores data inside of localstorage in a **browser**. There is a wide range of other [storages](../rx-storage.md) for example in **[React Native](../react-native-database.md)** you would use the [SQLite storage](../rx-storage-sqlite.md) instead.
 
 ```ts
 const db = await createRxDatabase({

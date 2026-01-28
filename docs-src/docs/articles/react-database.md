@@ -38,7 +38,7 @@ RxDB embraces a [local-first](../offline-first.md) methodology, enabling applica
 Data replication is a cornerstone of modern applications that require synchronization between multiple clients and servers. RxDB provides robust data replication mechanisms that facilitate real-time synchronization between different instances of the database. This ensures that changes made on one client are promptly propagated to others, contributing to a cohesive and unified user experience.
 
 ### Observable Queries
-RxDB extends the concept of observables beyond data changes. It introduces observable queries, allowing developers to observe the results of database queries. This feature enables automatic updates to query results whenever relevant data changes occur. Observable queries simplify state management by eliminating the need to manually trigger updates in response to changing data.
+RxDB extends the concept of observables beyond data changes. It introduces observable queries, allowing developers to observe the results of database queries. This feature enables automatic updates to query results whenever relevant data changes occur. [Observable queries](../rx-query.md) simplify state management by eliminating the need to manually trigger updates in response to changing data.
 
 ```ts
 await db.heroes.find({

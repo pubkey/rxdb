@@ -13,7 +13,7 @@ In today's digital landscape, mobile applications have become an integral part o
 
 Mobile databases are specialized software systems designed to handle data storage and management for mobile applications. These databases are optimized for the unique requirements of mobile environments, which often include limited device resources, fluctuations in network connectivity, and the need for offline functionality.
 
-There are various types of mobile databases available, each with its own strengths and use cases. Local databases, such as SQLite and Realm, reside directly on the user's device, providing offline capabilities and faster data access. Cloud-based databases, like [Firebase Realtime Database](./realtime-database.md) and Amazon DynamoDB, rely on remote servers to store and retrieve data, enabling synchronization across multiple devices. Hybrid databases, as the name suggests, combine the benefits of both local and cloud-based approaches, offering a balance between offline functionality and data synchronization.
+There are various types of mobile databases available, each with its own strengths and use cases. Local databases, such as [SQLite](../rx-storage-sqlite.md) and Realm, reside directly on the user's device, providing offline capabilities and faster data access. Cloud-based databases, like [Firebase Realtime Database](./realtime-database.md) and Amazon DynamoDB, rely on remote servers to store and retrieve data, enabling synchronization across multiple devices. Hybrid databases, as the name suggests, combine the benefits of both local and cloud-based approaches, offering a balance between offline functionality and data synchronization.
 
 ## Introducing RxDB: A Paradigm Shift in Mobile Database Solutions
 

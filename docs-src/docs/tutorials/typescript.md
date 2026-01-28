@@ -109,7 +109,7 @@ export type HeroDocMethods = {
 };
 ```
 
-## Create RxDocument Type
+## Create [RxDocument](../rx-document.md) Type
 
 We can merge these into our HeroDocument.
 
@@ -117,7 +117,7 @@ We can merge these into our HeroDocument.
 export type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
 ```
 
-## Create RxCollection Type
+## Create [RxCollection](../rx-collection.md) Type
 
 Now we can define type for the collection which contains the documents.
 
@@ -136,7 +136,7 @@ export type HeroCollection = RxCollection<
 >;
 ```
 
-## Create RxDatabase Type
+## Create [RxDatabase](../rx-database.md) Type
 
 Before we can define the database, we make a helper-type which contains all collections of it.
 

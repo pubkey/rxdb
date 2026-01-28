@@ -7,7 +7,7 @@ description: Discover how RxDB merges realtime replication and dynamic updates t
 
 # What is a realtime database?
 
-I have been building [RxDB](https://rxdb.info/), a NoSQL **realtime** JavaScript database for many years.
+I have been building [RxDB](https://rxdb.info/), a [NoSQL](./in-memory-nosql-database.md) **realtime** JavaScript database for many years.
 Often people get confused by the word **realtime database**, because the word **realtime** is so vaguely defined that it can mean everything and nothing at the same time.
 
 In this article we will explore what a realtime database is, and more important, what it is not.
@@ -42,7 +42,7 @@ Often they mean a very specific product which is the **Firebase Realtime Databas
 
 In the context of the Firebase Realtime Database, "realtime" means that data changes are synchronized and delivered to all connected clients or devices as soon as they occur, typically within milliseconds. This means that when any client updates, adds, or removes data in the database, all other clients that are connected to the same database instance receive those updates instantly, without the need for manual polling or frequent HTTP requests.
 
-In short, when replicating data between databases, instead of polling, we use a [websocket connection](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) to live-stream all changes between the server and the clients, this is labeled as "realtime database". A similar thing can be done with RxDB and the [RxDB Replication Plugins](../replication.md).
+In short, when replicating data between databases, instead of polling, we use a [websocket connection](./websockets-sse-polling-webrtc-webtransport.md) to live-stream all changes between the server and the clients, this is labeled as "realtime database". A similar thing can be done with RxDB and the [RxDB Replication Plugins](../replication.md).
 
 <p align="center">
     <a href="https://rxdb.info/replication.html">
