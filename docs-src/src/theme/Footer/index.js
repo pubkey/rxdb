@@ -80,6 +80,11 @@ export default function FooterWrapper() {
         target: '_blank',
         href: '/legal-notice/',
       },
+      {
+        label: 'llms.txt',
+        target: '_blank',
+        href: '/llms.txt',
+      },
     ],
   };
 
