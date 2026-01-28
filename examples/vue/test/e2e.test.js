@@ -52,6 +52,7 @@ test.page('http://localhost:8888/multitab.html?frames=2')('multitab: insert hero
 
   // check if in other iframe
   await t.switchToIframe('#frame_1');
+  await AsyncTestUtil.wait(300);
   await Selector('#list-box .hero-name');
   const heroListElement = Selector('#list-box .hero-name');
   await t.expect(heroListElement.textContent).contains('Irwin', 'list-item contains name');
