@@ -2,6 +2,7 @@
 title: RxDB Dexie.js Database - Fast, Reactive, Sync with Any Backend
 slug: rx-storage-dexie.html
 description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie addons, and reliable storage for small apps or prototypes.
+image: /headers/rx-storage-dexie.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

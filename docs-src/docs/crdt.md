@@ -2,6 +2,7 @@
 title: CRDT - Conflict-free replicated data type Database
 slug: crdt.html
 description: Learn how RxDB's CRDT Plugin resolves document conflicts automatically in distributed systems, ensuring seamless merges and consistent data.
+image: /headers/crdt.jpg
 ---
 
 

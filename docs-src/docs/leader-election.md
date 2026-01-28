@@ -1,6 +1,7 @@
 ---
 title: Leader Election
 slug: leader-election.html
+image: /headers/leader-election.jpg
 ---
 
 # Leader-Election

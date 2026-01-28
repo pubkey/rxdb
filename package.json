@@ -501,7 +501,9 @@
     "dev": "watch 'npm run test:node:memory' src/ test/",
     "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
     "cloud-signaling-server": "node ./scripts/start-cloud-signaling-server.mjs --max-old-space-size=2048",
-    "generate:error-messages": "node scripts/generate-error-messages.mjs"
+    "generate:error-messages": "node scripts/generate-error-messages.mjs",
+    "generate:headers": "rimraf -rf ./docs-src/static/headers/* && npx tsx scripts/generate-all-headers.ts",
+    "generate:headers:test": "npx tsx scripts/generate-all-headers.ts schema-validation"
   },
   "pre-commit": [
     "lint"
@@ -512,9 +514,9 @@
     "firebase": "^11.10.0",
     "mongodb": "^6.21.0 || ^7.0.0",
     "nats": "^2.29.3",
+    "react": "*",
     "rxjs": "^7.8.2",
-    "vue": "*",
-    "react": "*"
+    "vue": "*"
   },
   "peerDependenciesMeta": {
     "@angular/core": {
@@ -608,6 +610,7 @@
     "@types/react": "19.2.10",
     "@types/request": "2.48.13",
     "@types/request-promise-native": "1.0.21",
+    "@types/sharp": "0.31.1",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.54.0",
     "@typescript-eslint/parser": "8.54.0",
@@ -674,6 +677,7 @@
     "rollup": "4.57.0",
     "rxdb-old": "npm:rxdb@16.21.1",
     "rxjs": "7.8.2",
+    "sharp": "0.34.5",
     "shelljs": "0.10.0",
     "source-map-support": "0.5.21",
     "stream": "0.0.3",

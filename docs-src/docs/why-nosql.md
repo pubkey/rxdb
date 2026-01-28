@@ -2,6 +2,7 @@
 title: Why NoSQL Powers Modern UI Apps
 slug: why-nosql.html
 description: Discover how NoSQL enables offline-first UI apps. Learn about easy replication, conflict resolution, and why relational data isn't always necessary.
+image: /headers/why-nosql.jpg
 ---
 
 import {VideoBox} from '@site/src/components/video-box';

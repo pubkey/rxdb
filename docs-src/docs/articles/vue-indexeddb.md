@@ -2,6 +2,7 @@
 title: IndexedDB Database in Vue Apps - The Power of RxDB
 slug: vue-indexeddb.html
 description: Learn how RxDB simplifies IndexedDB in Vue, offering reactive queries, offline-first capabilities, encryption, compression, and effortless integration.
+image: /headers/vue-indexeddb.jpg
 ---
 
 # IndexedDB Database in Vue Apps - The Power of RxDB

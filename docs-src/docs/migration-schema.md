@@ -2,6 +2,7 @@
 title: Seamless Schema Data Migration with RxDB
 slug: migration-schema.html
 description: Upgrade your RxDB collections without losing data. Learn how to seamlessly migrate schema changes and keep your apps running smoothly.
+image: /headers/migration-schema.jpg
 ---
 
 # Migrate Database Data on schema changes

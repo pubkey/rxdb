@@ -2,6 +2,7 @@
 title: React Native Database - Sync & Store Like a Pro
 slug: react-native-database.html
 description: The ultimate React Native Database guide. Build offline-first, real-time apps with RxDB. SQLite storage, easy sync, and React hooks included.
+image: /headers/react-native-database.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

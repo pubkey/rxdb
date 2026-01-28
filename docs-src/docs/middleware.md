@@ -2,6 +2,7 @@
 title: Streamlined RxDB Middleware
 slug: middleware.html
 description: Enhance your RxDB workflow with pre and post hooks. Quickly add custom validations, triggers, and events to streamline your asynchronous operations.
+image: /headers/middleware.jpg
 ---
 
 # Middleware

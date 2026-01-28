@@ -2,6 +2,7 @@
 title: Error Messages
 slug: errors.html
 description: Learn how RxDB throws RxErrors with codes and parameters. Keep builds lean, yet unveil full messages in development via the DevMode plugin.
+image: /headers/errors.jpg
 ---
 
 

@@ -2,6 +2,7 @@
 title: WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 slug: websockets-sse-polling-webrtc-webtransport.html
 description: Learn the unique benefits and pitfalls of each real-time tech. Make informed decisions on WebSockets, SSE, Polling, WebRTC, and WebTransport.
+image: /headers/websockets-sse-polling-webrtc-webtransport.jpg
 ---
 # WebSockets vs Server-Sent-Events vs Long-Polling vs WebRTC vs WebTransport
 
