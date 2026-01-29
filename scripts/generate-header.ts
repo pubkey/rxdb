@@ -69,7 +69,7 @@ export async function generateHeader(
         <rect width="100%" height="100%" fill="url(#grad1)" />
         
         <text x="50%" y="${height - 120}" width="1000" class="title">
-            ${escapeXml(title).split(' ').map((word, i, arr) => {
+            ${escapeXml(title).split(' ').map((_word, _i, _arr) => {
         // Wrap every 3 words roughly, or just fit?
         // For centered text, simple tspans with dy works but we need to calculate lines
         // Simplification: Let's assume max 6 words fits in 2 lines max
@@ -89,7 +89,7 @@ export async function generateHeader(
     `;
 
     // Process with Sharp
-    let pipeline = sharp(Buffer.from(svgImage));
+    const pipeline = sharp(Buffer.from(svgImage));
 
     const composites: sharp.OverlayOptions[] = [];
 

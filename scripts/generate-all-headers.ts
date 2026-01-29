@@ -50,7 +50,7 @@ function walk(dir: string, callback: (filePath: string) => void) {
         if (titleMatch) {
             let title = titleMatch[1].trim();
             // remove quotes if any
-            if ((title.startsWith('"') && title.endsWith('"')) || (title.startsWith("'") && title.endsWith("'"))) {
+            if ((title.startsWith('"') && title.endsWith('"')) || (title.startsWith('\'') && title.endsWith('\''))) {
                 title = title.slice(1, -1);
             }
 
