@@ -610,7 +610,7 @@
     "@types/react": "19.2.10",
     "@types/request": "2.48.13",
     "@types/request-promise-native": "1.0.21",
-    "@types/sharp": "0.31.1",
+    "@types/sharp": "0.32.0",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.54.0",
     "@typescript-eslint/parser": "8.54.0",
