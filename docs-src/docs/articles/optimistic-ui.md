@@ -2,6 +2,7 @@
 title: Building an Optimistic UI with RxDB
 slug: optimistic-ui.html
 description: Learn how to build an Optimistic UI with RxDB for instant and reliable UI updates on user interactions
+image: /headers/optimistic-ui.jpg
 ---
 
 

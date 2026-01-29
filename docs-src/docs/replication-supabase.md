@@ -2,6 +2,7 @@
 title: Supabase Replication Plugin for RxDB - Real-Time, Offline-First Sync
 slug: replication-supabase.html
 description: Build real-time, offline-capable apps with RxDB + Supabase. Push/pull changes via PostgREST, stream updates with Realtime, and keep data in sync across devices.
+image: /headers/replication-supabase.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';

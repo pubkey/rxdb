@@ -2,6 +2,7 @@
 title: What Really Is a Realtime Database?
 slug: realtime-database.html
 description: Discover how RxDB merges realtime replication and dynamic updates to deliver seamless data sync across browsers, devices, and servers - instantly.
+image: /headers/realtime-database.jpg
 ---
 
 

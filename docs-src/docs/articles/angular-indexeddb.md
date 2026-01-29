@@ -2,6 +2,7 @@
 title: Build Smarter Offline-First Angular Apps - How RxDB Beats IndexedDB Alone
 slug: angular-indexeddb.html
 description: Discover how to harness IndexedDB in Angular with RxDB for robust offline apps. Learn reactive queries, advanced features, and more.
+image: /headers/angular-indexeddb.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';

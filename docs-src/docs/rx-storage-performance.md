@@ -2,6 +2,7 @@
 title: 📈 Discover RxDB Storage Benchmarks
 slug: rx-storage-performance.html
 description: Explore real-world benchmarks comparing RxDB's persistent and semi-persistent storages. Discover which storage option delivers the fastest performance.
+image: /headers/rx-storage-performance.jpg
 ---
 
 ## RxStorage Performance comparison

@@ -2,6 +2,7 @@
 title: Blazing-Fast Node Filesystem Storage
 slug: rx-storage-filesystem-node.html
 description: Get up and running quickly with RxDB's Filesystem Node RxStorage. Store data in JSON, embrace multi-instance support, and enjoy a simpler database.
+image: /headers/rx-storage-filesystem-node.jpg
 ---
 
 # Filesystem Node RxStorage

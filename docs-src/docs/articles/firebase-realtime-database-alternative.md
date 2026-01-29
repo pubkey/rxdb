@@ -2,6 +2,7 @@
 title: RxDB - Firebase Realtime Database Alternative to Sync With Your Own Backend
 slug: firebase-realtime-database-alternative.html
 description: Looking for a Firebase Realtime Database alternative? RxDB offers a fully offline, vendor-agnostic NoSQL solution with advanced conflict resolution and multi-platform support.
+image: /headers/firebase-realtime-database-alternative.jpg
 ---
 
 # RxDB - The Firebase Realtime Database Alternative That Can Sync With Your Own Backend

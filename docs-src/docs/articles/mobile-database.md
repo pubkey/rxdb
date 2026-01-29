@@ -2,6 +2,7 @@
 title: Real-Time & Offline - RxDB for Mobile Apps
 slug: mobile-database.html
 description: Explore RxDB as your reliable mobile database. Enjoy offline-first capabilities, real-time sync, and seamless integration for hybrid app development.
+image: /headers/mobile-database.jpg
 ---
 
 # Mobile Database - RxDB as Database for Mobile Applications

@@ -2,6 +2,7 @@
 title: ⚙️ RxDB realtime Sync Engine for Local-First Apps
 slug: replication.html
 description: Replicate data in real-time with RxDB's offline-first Sync Engine. Learn about efficient syncing, conflict resolution, and advanced multi-tab support.
+image: /headers/replication.jpg
 ---
 
 # RxDB's realtime Sync Engine for Local-First Apps

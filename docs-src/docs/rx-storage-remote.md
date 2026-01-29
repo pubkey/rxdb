@@ -1,6 +1,7 @@
 ---
 title: Remote RxStorage
 slug: rx-storage-remote.html
+image: /headers/rx-storage-remote.jpg
 ---
 
 # Remote RxStorage

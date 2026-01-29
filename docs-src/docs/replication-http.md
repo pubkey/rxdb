@@ -2,6 +2,7 @@
 title: HTTP Replication
 slug: replication-http.html
 description: Learn how to establish HTTP replication between RxDB clients and a Node.js Express server for data synchronization.
+image: /headers/replication-http.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

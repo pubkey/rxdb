@@ -2,6 +2,7 @@
 title: Empower Web Apps with Reactive RxDB Data-base
 slug: data-base.html
 description: Explore RxDB's reactive data-base solution for web and mobile. Enable offline-first experiences, real-time syncing, and secure data handling with ease.
+image: /headers/data-base.jpg
 ---
 
 # RxDB as a data base: Empowering Web Applications with Reactive Data Handling

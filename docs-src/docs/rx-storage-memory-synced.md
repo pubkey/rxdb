@@ -2,6 +2,7 @@
 title: Instant Performance with Memory Synced RxStorage
 slug: rx-storage-memory-synced.html
 description: Accelerate RxDB with in-memory storage replicated to disk. Enjoy instant queries, faster loads, and unstoppable performance for your web apps.
+image: /headers/rx-storage-memory-synced.jpg
 ---
 
 # Memory Synced RxStorage

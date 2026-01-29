@@ -2,6 +2,7 @@
 title: Development Mode
 slug: dev-mode.html
 description: Enable checks & validations with RxDB Dev Mode. Ensure proper API use, readable errors, and schema validation during development. Avoid in production.
+image: /headers/dev-mode.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

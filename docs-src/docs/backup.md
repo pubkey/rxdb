@@ -2,6 +2,7 @@
 title: Backup
 slug: backup.html
 description: Easily back up your RxDB database to JSON files and attachments on the filesystem with the Backup Plugin - ensuring reliable Node.js data protection.
+image: /headers/backup.jpg
 ---
 
 

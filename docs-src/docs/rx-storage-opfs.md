@@ -2,6 +2,7 @@
 title: Supercharged OPFS Database with RxDB
 slug: rx-storage-opfs.html
 description: Discover how to harness the Origin Private File System with RxDB's OPFS RxStorage for unrivaled performance and security in client-side data storage.
+image: /headers/rx-storage-opfs.jpg
 ---
 
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage

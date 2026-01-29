@@ -2,6 +2,7 @@
 title: JSON-Based Databases - Why NoSQL and RxDB Simplify App Development
 slug: json-based-database.html
 description: Dive into how JSON-based databases power modern UI-centric apps, why NoSQL often outperforms SQL for dynamic data, how SQLite accommodates JSON, and why RxDB delivers a seamless offline-first solution for JavaScript with advanced JSON features.
+image: /headers/json-based-database.jpg
 ---
 
 # JSON-Based Databases: Why NoSQL and RxDB Simplify App Development
