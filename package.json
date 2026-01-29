@@ -570,7 +570,7 @@
     "z-schema": "6.0.2"
   },
   "devDependencies": {
-    "@angular/core": "21.1.1",
+    "@angular/core": "21.1.2",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.28.6",
     "@babel/plugin-external-helpers": "7.27.1",
