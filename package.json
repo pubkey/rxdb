@@ -635,7 +635,7 @@
     "firebase": "11.10.0",
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
-    "globals": "17.1.0",
+    "globals": "17.2.0",
     "graphql-http": "1.22.4",
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
