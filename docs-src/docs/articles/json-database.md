@@ -2,6 +2,7 @@
 title: RxDB - The JSON Database Built for JavaScript
 slug: json-database.html
 description: Experience a powerful JSON database with RxDB, built for JavaScript. Store, sync, and compress your data seamlessly across web and mobile apps.
+image: /headers/json-database.jpg
 ---
 
 # RxDB - JSON Database for JavaScript

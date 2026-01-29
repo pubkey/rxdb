@@ -2,6 +2,7 @@
 title: TypeScript Setup
 slug: typescript.html
 description: Use RxDB with TypeScript to define typed schemas, create typed collections, and build fully typed ORM methods. A quick step-by-step guide.
+image: /headers/typescript.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

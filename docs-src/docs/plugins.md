@@ -1,6 +1,7 @@
 ---
 title: Creating Plugins
 slug: plugins.html
+image: /headers/plugins.jpg
 ---
 
 # Creating Plugins

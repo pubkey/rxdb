@@ -2,6 +2,7 @@
 title: ReactJS Storage - From Basic LocalStorage to Advanced Offline Apps with RxDB
 slug: reactjs-storage.html
 description: Discover how to implement reactjs storage using localStorage for quick key-value data, then move on to more robust offline-first approaches with RxDB, IndexedDB, preact signals, encryption plugins, and more.
+image: /headers/reactjs-storage.jpg
 ---
 
 # ReactJS Storage – From Basic LocalStorage to Advanced Offline Apps with RxDB

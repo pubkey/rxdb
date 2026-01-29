@@ -2,6 +2,7 @@
 title: RxDB – The Ultimate Offline Database with Sync and Encryption
 slug: offline-database.html
 description: Discover how RxDB serves as a powerful offline database, offering real-time synchronization, secure encryption, and an offline-first approach for modern web and mobile apps.
+image: /headers/offline-database.jpg
 ---
 
 # RxDB – The Ultimate Offline Database with Sync and Encryption

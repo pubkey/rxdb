@@ -2,6 +2,7 @@
 title: LocalStorage vs. IndexedDB vs. Cookies vs. OPFS vs. WASM-SQLite
 slug: localstorage-indexeddb-cookies-opfs-sqlite-wasm.html
 description: Compare LocalStorage, IndexedDB, Cookies, OPFS, and WASM-SQLite for web storage, performance, limits, and best practices for modern web apps.
+image: /headers/localstorage-indexeddb-cookies-opfs-sqlite-wasm.jpg
 ---
 
 <!-- 

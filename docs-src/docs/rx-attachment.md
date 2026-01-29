@@ -2,6 +2,7 @@
 title: Attachments
 slug: rx-attachment.html
 description: Learn how to store and manage binary data like images or files in RxDB using attachments. Discover features, performance benefits, encryption, compression, and usage examples with code.
+image: /headers/rx-attachment.jpg
 ---
 
 # Attachments

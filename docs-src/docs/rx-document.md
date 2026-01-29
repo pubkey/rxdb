@@ -2,6 +2,7 @@
 title: RxDocument
 slug: rx-document.html
 description: Master RxDB's RxDocument - Insert, find, update, remove, and more for streamlined data handling in modern apps.
+image: /headers/rx-document.jpg
 ---
 
 # RxDocument

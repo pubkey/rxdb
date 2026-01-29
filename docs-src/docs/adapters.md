@@ -1,6 +1,7 @@
 ---
 title: PouchDB Adapters
 slug: adapters.html
+image: /headers/adapters.jpg
 ---
 
 # PouchDB Adapters

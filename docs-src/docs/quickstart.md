@@ -2,6 +2,7 @@
 title: 🚀 Quickstart
 slug: quickstart.html
 description: Learn how to build a realtime app with RxDB. Follow this quickstart for setup, schema creation, data operations, and real-time syncing.
+image: /headers/quickstart.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

@@ -2,6 +2,7 @@
 title: Why Local-First Software Is the Future and its Limitations
 slug: local-first-future.html
 description: Discover how local-first transforms web apps, boosts offline resilience, and why instant user feedback is becoming the new normal.
+image: /headers/local-first-future.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';

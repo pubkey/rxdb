@@ -1,6 +1,7 @@
 ---
 title: Sharding RxStorage 👑
 slug: rx-storage-sharding.html
+image: /headers/rx-storage-sharding.jpg
 ---
 
 # Sharding RxStorage

@@ -2,6 +2,7 @@
 title: Browser Storage - RxDB as a Database for Browsers
 slug: browser-storage.html
 description: Explore RxDB for browser storage its advantages, limitations, and why it outperforms SQL databases in web applications for enhanced efficiency
+image: /headers/browser-storage.jpg
 ---
 
 

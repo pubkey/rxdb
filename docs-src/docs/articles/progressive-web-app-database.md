@@ -2,6 +2,7 @@
 title: RxDB as a Database for Progressive Web Apps (PWA)
 slug: progressive-web-app-database.html
 description: Discover how RxDB supercharges Progressive Web Apps with real-time sync, offline-first capabilities, and lightning-fast data handling.
+image: /headers/progressive-web-app-database.jpg
 ---
 
 # RxDB as a Database for Progressive Web Apps (PWA)

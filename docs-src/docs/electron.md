@@ -2,6 +2,7 @@
 title: Seamless Electron Storage with RxDB
 slug: electron.html
 description: Use the RxDB Electron Plugin to share data between main and renderer processes. Enjoy quick queries, real-time sync, and robust offline support.
+image: /headers/electron.jpg
 ---
 
 

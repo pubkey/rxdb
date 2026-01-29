@@ -2,6 +2,7 @@
 title: Migration Storage
 slug: migration-storage.html
 description: Effortlessly migrate your data between storages in RxDB using the Storage Migration plugin. Retain your documents when switching storages or major versions.
+image: /headers/migration-storage.jpg
 ---
 
 # Storage Migration

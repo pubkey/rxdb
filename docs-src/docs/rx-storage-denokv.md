@@ -1,6 +1,7 @@
 ---
 title: DenoKV RxStorage
 slug: rx-storage-denokv.html
+image: /headers/rx-storage-denokv.jpg
 ---
 
 # RxDB Database on top of Deno Key Value Store

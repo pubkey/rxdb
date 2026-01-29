@@ -2,6 +2,7 @@
 title: What is a Local Database and Why RxDB is the Best Local Database for JavaScript Applications
 slug: local-database.html
 description: An in-depth exploration of local databases and why RxDB excels as a local-first solution for JavaScript applications.
+image: /headers/local-database.jpg
 ---
 
 

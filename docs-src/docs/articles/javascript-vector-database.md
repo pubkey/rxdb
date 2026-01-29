@@ -2,6 +2,7 @@
 title: Local JavaScript Vector Database that works offline
 slug: javascript-vector-database.html
 description: Create a blazing-fast vector database in JavaScript. Leverage RxDB and transformers.js for instant, offline semantic search - no servers required!
+image: /headers/javascript-vector-database.jpg
 ---
 
 

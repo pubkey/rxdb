@@ -2,6 +2,7 @@
 title: Fastest RxDB Starts - Localstorage Meta Optimizer
 slug: rx-storage-localstorage-meta-optimizer.html
 description: Wrap any RxStorage with localStorage metadata to slash initial load by up to 200ms. Unlock speed with this must-have RxDB Premium plugin.
+image: /headers/rx-storage-localstorage-meta-optimizer.jpg
 ---
 
 # RxStorage Localstorage Meta Optimizer

@@ -2,6 +2,7 @@
 title: RxDB on FoundationDB - Performance at Scale
 slug: rx-storage-foundationdb.html
 description: Combine FoundationDB's reliability with RxDB's indexing and schema validation. Build scalable apps with faster queries and real-time data.
+image: /headers/rx-storage-foundationdb.jpg
 ---
 
 # RxDB Database on top of FoundationDB

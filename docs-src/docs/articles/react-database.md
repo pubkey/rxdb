@@ -2,6 +2,7 @@
 title: RxDB as a Database for React Applications
 slug: react-database.html
 description: Learn how the RxDB database supercharges React apps with offline access, real-time updates, and smooth data flow. Boost performance and engagement.
+image: /headers/react-database.jpg
 ---
 
 # RxDB as a Database for React Applications

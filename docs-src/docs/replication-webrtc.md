@@ -2,6 +2,7 @@
 title: WebRTC P2P Replication with RxDB - Sync Browsers and Devices
 slug: replication-webrtc.html
 description: Learn to set up peer-to-peer WebRTC replication with RxDB. Bypass central servers and enjoy secure, low-latency data sync across all clients.
+image: /headers/replication-webrtc.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

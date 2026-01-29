@@ -2,6 +2,7 @@
 title: IndexedDB Alternative - Why RxDB is the Better Choice
 slug: indexeddb-alternative.html
 description: Looking for an IndexedDB alternative? Discover why RxDB offers superior performance, ease of use, and built-in reactivity compared to raw IndexedDB.
+image: /headers/indexeddb-alternative.jpg
 ---
 
 # IndexedDB Alternatives

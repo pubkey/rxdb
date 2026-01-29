@@ -2,6 +2,7 @@
 title: Signals & Custom Reactivity with RxDB
 slug: reactivity.html
 description: Level up reactivity with Angular signals, Vue refs, or Preact signals in RxDB. Learn how to integrate custom reactivity to power your dynamic UI.
+image: /headers/reactivity.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';
