@@ -2,6 +2,7 @@
 title: Empower RxDB with the LokiJS RxStorage
 slug: rx-storage-lokijs.html
 description: Discover the lightning-fast LokiJS RxStorage for RxDB. Explore in-memory speed, multi-tab support, and pros & cons of this unique storage solution.
+image: /headers/rx-storage-lokijs.jpg
 ---
 
 # RxStorage LokiJS

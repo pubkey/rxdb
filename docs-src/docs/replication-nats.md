@@ -2,6 +2,7 @@
 title: RxDB & NATS - Realtime Sync
 slug: replication-nats.html
 description: Seamlessly sync your RxDB data with NATS for real-time, two-way replication. Handle conflicts, errors, and retries with ease.
+image: /headers/replication-nats.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

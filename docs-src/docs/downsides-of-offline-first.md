@@ -2,6 +2,7 @@
 title: Downsides of Local First / Offline First
 slug: downsides-of-offline-first.html
 description: Discover the hidden pitfalls of local-first apps. Learn about storage limits, conflicts, and real-time illusions before building your offline solution.
+image: /headers/downsides-of-offline-first.jpg
 ---
 
 import {QuoteBlock} from '@site/src/components/quoteblock';

@@ -1,6 +1,7 @@
 ---
 title: ORM
 slug: orm.html
+image: /headers/orm.jpg
 ---
 
 # Object-Data-Relational-Mapping

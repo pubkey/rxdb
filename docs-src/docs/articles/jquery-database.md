@@ -2,6 +2,7 @@
 title: RxDB as a Database in a jQuery Application
 slug: jquery-database.html
 description: Level up your jQuery-based projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
+image: /headers/jquery-database.jpg
 ---
 
 import {VideoBox} from '@site/src/components/video-box';

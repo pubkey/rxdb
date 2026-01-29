@@ -2,6 +2,7 @@
 title: Instant Performance with IndexedDB RxStorage
 slug: rx-storage-indexeddb.html
 description: Choose IndexedDB RxStorage for unmatched speed and minimal build size. Perfect for fast-performing apps that demand reliable, lightweight data solutions.
+image: /headers/rx-storage-indexeddb.jpg
 ---
 
 # IndexedDB RxStorage

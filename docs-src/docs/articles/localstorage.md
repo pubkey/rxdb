@@ -2,6 +2,7 @@
 title: Using localStorage in Modern Applications - A Comprehensive Guide
 slug: localstorage.html
 description: This guide explores localStorage in JavaScript web apps, detailing its usage, limitations, and alternatives like IndexedDB and AsyncStorage.
+image: /headers/localstorage.jpg
 ---
 
 

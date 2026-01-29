@@ -2,6 +2,7 @@
 title: Boost Your RxDB with Powerful Third-Party Plugins
 slug: third-party-plugins.html
 description: Unleash RxDB's full power! Explore third-party plugins for advanced hooks, text search, Laravel Orion, Supabase replication, and more.
+image: /headers/third-party-plugins.jpg
 ---
 
 # Third Party Plugins

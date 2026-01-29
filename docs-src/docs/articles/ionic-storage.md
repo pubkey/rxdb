@@ -2,6 +2,7 @@
 title: RxDB - Local Ionic Storage with Encryption, Compression & Sync
 slug: ionic-storage.html
 description: The best Ionic storage solution? RxDB empowers your hybrid apps with offline-first capabilities, secure encryption, data compression, and seamless data syncing to any backend.
+image: /headers/ionic-storage.jpg
 ---
 
 

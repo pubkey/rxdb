@@ -1,6 +1,7 @@
 ---
 title: Schema Validation
 slug: schema-validation.html
+image: /headers/schema-validation.jpg
 ---
 
 # Schema validation

@@ -2,6 +2,7 @@
 title: RxDB Logger Plugin - Track & Optimize
 slug: logger.html
 description: Take control of your RxDatabase logs. Monitor every write, query, or attachment retrieval to swiftly diagnose and fix performance bottlenecks.
+image: /headers/logger.jpg
 ---
 
 

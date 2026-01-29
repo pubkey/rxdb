@@ -2,6 +2,7 @@
 title: Boost Performance with SharedWorker RxStorage
 slug: rx-storage-shared-worker.html
 description: Tap into single-instance storage with RxDB's SharedWorker. Improve efficiency, cut duplication, and keep your app lightning-fast across tabs.
+image: /headers/rx-storage-shared-worker.jpg
 ---
 
 # SharedWorker RxStorage 

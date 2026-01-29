@@ -1,6 +1,7 @@
 ---
 title: React
 slug: react.html
+image: /headers/react.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';

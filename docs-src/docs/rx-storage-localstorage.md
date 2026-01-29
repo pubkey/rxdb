@@ -2,6 +2,7 @@
 title: RxDB LocalStorage - The Easiest Way to Persist Data in Your Web App
 slug: rx-storage-localstorage.html
 description: Discover how to quickly set up RxDB's LocalStorage-based storage as the recommended default. Learn its benefits, limitations, and why it’s perfect for demos, prototypes, and lightweight applications.
+image: /headers/rx-storage-localstorage.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

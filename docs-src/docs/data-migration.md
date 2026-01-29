@@ -1,6 +1,7 @@
 ---
 title: Data Migration
 slug: data-migration.html
+image: /headers/data-migration.jpg
 ---
 
 This documentation page has been moved to [here](./migration-schema.md)

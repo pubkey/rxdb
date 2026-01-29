@@ -1,6 +1,7 @@
 ---
 title: RxDB Server Replication
 slug: replication-server.html
+image: /headers/replication-server.jpg
 ---
 
 # RxDB Server Replication

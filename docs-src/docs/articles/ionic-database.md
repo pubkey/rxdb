@@ -2,6 +2,7 @@
 title: RxDB - The Perfect Ionic Database
 slug: ionic-database.html
 description: Supercharge your Ionic hybrid apps with RxDB's offline-first database. Experience real-time sync, top performance, and easy replication.
+image: /headers/ionic-database.jpg
 ---
 
 # Ionic Storage - RxDB as database for hybrid apps

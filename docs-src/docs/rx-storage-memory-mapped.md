@@ -2,6 +2,7 @@
 title: Blazing-Fast Memory Mapped RxStorage
 slug: rx-storage-memory-mapped.html
 description: Boost your app's performance with Memory Mapped RxStorage. Query and write in-memory while seamlessly persisting data to your chosen storage.
+image: /headers/rx-storage-memory-mapped.jpg
 ---
 
 

@@ -2,6 +2,7 @@
 title: RxQuery
 slug: rx-query.html
 description: Master RxQuery in RxDB - find, update, remove documents using Mango syntax, chained queries, real-time observations, indexing, and more.
+image: /headers/rx-query.jpg
 ---
 
 # RxQuery

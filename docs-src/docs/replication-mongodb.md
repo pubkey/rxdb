@@ -2,6 +2,7 @@
 title: MongoDB Realtime Sync Engine for Local-First Apps
 slug: replication-mongodb.html
 description: Build real-time, offline-capable apps with RxDB + MongoDB replication. Push/pull changes, use change streams, and keep data in sync across devices.
+image: /headers/replication-mongodb.jpg
 ---
 
 import {Tabs} from '@site/src/components/tabs';

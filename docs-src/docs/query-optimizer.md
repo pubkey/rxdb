@@ -2,6 +2,7 @@
 title: Optimize Client-Side Queries with RxDB
 slug: query-optimizer.html
 description: Harness real-world data to fine-tune queries. The build-time RxDB Optimizer finds the perfect index, boosting query speed in any environment.
+image: /headers/query-optimizer.jpg
 ---
 
 # Query Optimizer

@@ -2,6 +2,7 @@
 title: Embedded Database, Real-time Speed - RxDB
 slug: embedded-database.html
 description: Unleash the power of embedded databases with RxDB. Explore real-time replication, offline access, and reactive queries for modern JavaScript apps.
+image: /headers/embedded-database.jpg
 ---
 
 # Using RxDB as an Embedded Database

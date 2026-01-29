@@ -2,6 +2,7 @@
 title: RxDB as a Database in a Vue.js Application
 slug: vue-database.html
 description: Level up your Vue projects with RxDB. Build real-time, resilient, and responsive apps powered by a reactive NoSQL database right in the browser.
+image: /headers/vue-database.jpg
 ---
 
 # RxDB as a Database in a Vue Application

@@ -2,6 +2,7 @@
 title: React Native Encryption and Encrypted Database/Storage
 slug: react-native-encryption.html
 description: Secure your React Native app with RxDB encryption. Learn why it matters, how to implement encrypted databases, and best practices to protect user data.
+image: /headers/react-native-encryption.jpg
 ---
 
 

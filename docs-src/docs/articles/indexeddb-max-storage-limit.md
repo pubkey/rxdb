@@ -2,6 +2,7 @@
 title: IndexedDB Max Storage Size Limit - Detailed Best Practices
 slug: indexeddb-max-storage-limit.html
 description: Learn how browsers enforce IndexedDB storage size limits, how to test and handle quota exceeded errors, and best practices for storing large amounts of data offline.
+image: /headers/indexeddb-max-storage-limit.jpg
 ---
 
 <!--

@@ -2,6 +2,7 @@
 title: RxDB Server - Deploy Your Data
 slug: rx-server.html
 description: Launch a secure, high-performance server on top of your RxDB database. Enable REST, replication endpoints, and seamless data syncing with RxServer.
+image: /headers/rx-server.jpg
 ---
 
 # RxDB Server

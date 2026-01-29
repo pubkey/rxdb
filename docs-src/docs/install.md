@@ -2,6 +2,7 @@
 title: Installation
 slug: install.html
 description: Learn how to install RxDB via npm, configure polyfills, and fix global variable errors in Angular or Webpack for a seamless setup.
+image: /headers/install.jpg
 ---
 
 

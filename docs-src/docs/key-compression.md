@@ -1,6 +1,7 @@
 ---
 title: Key Compression
 slug: key-compression.html
+image: /headers/key-compression.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

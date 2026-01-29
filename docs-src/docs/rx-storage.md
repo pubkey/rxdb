@@ -2,6 +2,7 @@
 title: ⚙️ RxStorage Layer - Choose the Perfect RxDB Storage for Every Use Case
 slug: rx-storage.html
 description: Discover how RxDB's modular RxStorage lets you swap engines and unlock top performance, no matter the environment or use case.
+image: /headers/rx-storage.jpg
 ---
 
 # RxStorage

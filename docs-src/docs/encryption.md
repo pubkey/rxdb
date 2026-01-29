@@ -2,6 +2,7 @@
 title: Encryption
 slug: encryption.html
 description: Explore RxDB's 🔒 encryption plugin for enhanced data security in web and native apps, featuring password-based encryption and secure storage.
+image: /headers/encryption.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

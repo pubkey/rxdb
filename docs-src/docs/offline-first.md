@@ -2,6 +2,7 @@
 title: Local First / Offline First
 slug: offline-first.html
 description: Local-First software stores data on client devices for seamless offline and online functionality, enhancing user experience and efficiency.
+image: /headers/offline-first.jpg
 ---
 
 # Local First / Offline First

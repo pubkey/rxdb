@@ -2,6 +2,7 @@
 title: RxDB - The Ultimate JS Frontend Database
 slug: frontend-database.html
 description: Discover how RxDB, a powerful JavaScript frontend database, boosts offline access, caching, and real-time updates to supercharge your web apps.
+image: /headers/frontend-database.jpg
 ---
 
 

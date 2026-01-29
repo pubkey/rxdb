@@ -2,6 +2,7 @@
 title: RxDB Tradeoffs - Why NoSQL Triumphs on the Client
 slug: rxdb-tradeoffs.html
 description: Uncover RxDB's approach to modern database needs. From JSON-based queries to conflict handling without transactions, learn RxDB's unique tradeoffs.
+image: /headers/rxdb-tradeoffs.jpg
 ---
 
 # RxDB Tradeoffs

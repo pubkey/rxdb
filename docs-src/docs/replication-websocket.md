@@ -1,6 +1,7 @@
 ---
 title: Websocket Replication
 slug: replication-websocket.html
+image: /headers/replication-websocket.jpg
 ---
 
 # Websocket Replication

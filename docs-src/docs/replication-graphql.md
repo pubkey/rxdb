@@ -1,6 +1,7 @@
 ---
 title: GraphQL Replication
 slug: replication-graphql.html
+image: /headers/replication-graphql.jpg
 ---
 
 # Replication with GraphQL

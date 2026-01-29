@@ -2,6 +2,7 @@
 title: Smooth Firestore Sync for Offline Apps
 slug: replication-firestore.html
 description: Leverage RxDB to enable real-time, offline-first replication with Firestore. Cut cloud costs, resolve conflicts, and speed up your app.
+image: /headers/replication-firestore.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

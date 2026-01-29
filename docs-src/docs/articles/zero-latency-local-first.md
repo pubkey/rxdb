@@ -2,6 +2,7 @@
 title: Zero Latency Local First Apps with RxDB – Sync, Encryption and Compression
 slug: zero-latency-local-first.html
 description: Build blazing-fast, zero-latency local first apps with RxDB. Gain instant UI responses, robust offline capabilities, end-to-end encryption, and data compression for streamlined performance.
+image: /headers/zero-latency-local-first.jpg
 ---
 
 # Zero Latency Local First Apps with RxDB – Sync, Encryption and Compression
