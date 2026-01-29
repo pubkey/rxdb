@@ -6,20 +6,20 @@ description: Learn how to define, secure, and validate your data in RxDB. Master
 
 # RxSchema
 
-Schemas define the structure of the documents of a collection. Which field should be used as primary, which fields should be used as indexes and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [jsonschema](https://json-schema.org/blog/posts/rxdb-case-study)-standard which you might know from other projects.
+Schemas define the structure of the documents of a collection. Which field should be used as the primary key, which fields should be used as indexes, and what should be encrypted. Every collection has its own schema. With RxDB, schemas are defined with the [JSON Schema](https://json-schema.org/blog/posts/rxdb-case-study) standard which you might know from other projects.
 
 ## Example
 
 In this example-schema we define a hero-collection with the following settings:
 
 - the version-number of the schema is 0
-- the name-property is the **primaryKey**. This means its a unique, indexed, required `string` which can be used to definitely find a single document.
+- the name-property is the **primaryKey**. This means it's a unique, indexed, required `string` which can be used to definitely find a single document.
 - the color-field is required for every document
 - the healthpoints-field must be a number between 0 and 100
 - the secret-field stores an encrypted value
 - the birthyear-field is final which means it is required and cannot be changed
-- the skills-attribute must be an array with objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
-- Allows adding attachments and store them encrypted
+- the skills-attribute must be an array of objects which contain the name and the damage-attribute. There is a maximum of 5 skills per hero.
+- Allows adding attachments and storing them encrypted
 
 
 
@@ -95,16 +95,16 @@ console.dir(myDatabase.heroes.name);
 
 ## version
 The `version` field is a number, starting with `0`.
-When the version is greater than 0, you have to provide the migrationStrategies to create a collection with this schema.
+When the version is greater than 0, you have to provide the `migrationStrategies` to create a collection with this schema.
 
 ## primaryKey
 
 The `primaryKey` field contains the fieldname of the property that will be used as primary key for the whole collection.
-The value of the primary key of the document must be a `string`, unique, final and is required.
+The value of the primary key of the document must be a `string`, unique, final and required.
 
 ### composite primary key
 
-You can define a composite primary key which gets composed from multiple properties of the document data.
+You can define a composite primary key which is composed from multiple properties of the document data.
 
 ```javascript
 const mySchema = {
@@ -167,10 +167,10 @@ const myRxDocument = myRxCollection.findOne(id).exec();
 ## Indexes
 RxDB supports secondary indexes which are defined at the schema-level of the collection.
 
-Index is only allowed on field types `string`, `integer` and `number`. Some RxStorages allow to use `boolean` fields as index.
+Indexes are only allowed on field types `string`, `integer` and `number`. Some RxStorages allow to use `boolean` fields as index.
 
 Depending on the field type, you must have set some meta attributes like `maxLength` or `minimum`. This is required so that RxDB
-is able to know the maximum string representation length of a field, which is needed to craft custom indexes on several `RxStorage` implementations.
+is able to know the maximum string representation length of a field, which is needed to craft custom indexes in several `RxStorage` implementations.
 
 :::note
 RxDB will always append the `primaryKey` to all indexes to ensure a deterministic sort order of query results. You do not have to add the `primaryKey` to any index.
@@ -225,7 +225,7 @@ const schemaWithIndexes = {
   },
   required: [
       'id',
-      'active' // <- boolean fields that are used in an index, must be required. 
+      'active' // <- boolean fields that are used in an index must be required. 
   ],
   indexes: [
     'firstName', // <- this will create a simple index for the `firstName` field
@@ -310,7 +310,7 @@ const schemaWithFinalAge = {
 
 ## Non allowed properties
 
-The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, keycompression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
+The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
 For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
 
 
@@ -363,7 +363,7 @@ Also the following class properties of `RxDocument` cannot be used as top level 
 <details>
     <summary>How can I store a Date?</summary>
 <div>
-    With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date()` is a mutable thing where changing it at any time might cause strange problem that are hard to debug.
+    With RxDB you can only store plain JSON data inside of a document. You cannot store a JavaScript `new Date()` instance directly. This is for performance reasons and because `Date` is a mutable object where changing it at any time might cause strange problems that are hard to debug.
 
     To store a date in RxDB, you have to define a string field with a `format` attribute:
     ```json
@@ -433,7 +433,7 @@ If RxDB didn't know about all top-level fields, the document type would effectiv
 
 This means you have created a collection before and added document-data to it.
 When you now just change the schema, it is likely that the new schema does not match the saved documents inside of the collection.
-This would cause strange bugs and would be hard to debug, so RxDB check's if your schema has changed and throws an error.
+This would cause strange bugs and would be hard to debug, so RxDB checks if your schema has changed and throws an error.
 
 To change the schema in **production**-mode, do the following steps:
 

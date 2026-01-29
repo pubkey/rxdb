@@ -70,7 +70,7 @@ async function getDatabase() {
 
 ### Providing the database
 
-To use RxDB in a React or React Native application, the database instance must be provided via a context. This is done using `[RxDatabaseProvider](./rx-database.md)`.
+To use RxDB in a React or React Native application, the database instance must be provided via a context. This is done using [RxDatabaseProvider](./rx-database.md).
 
 The database itself is created outside of React, usually in a separate module. The provider is only responsible for making the database available to components once it has been initialized.
 
@@ -203,6 +203,6 @@ In addition to the React hooks shown on this page, RxDB also supports alternativ
 
 ## Follow Up
 
-- RxDB includes a full [React example application](https://github.com/pubkey/rxdb/tree/master/examples/react) that demonstrates the patterns described on this page, including database creation outside of React, usage of `RxDatabaseProvider`, and data access via `useRxQuery`, `useLiveRxQuery`, and `useRxCollection.
+- RxDB includes a full [React example application](https://github.com/pubkey/rxdb/tree/master/examples/react) that demonstrates the patterns described on this page, including database creation outside of React, usage of `RxDatabaseProvider`, and data access via `useRxQuery`, `useLiveRxQuery`, and `useRxCollection`.
 
 - A corresponding [React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native) is also available and shows the same integration concepts applied in a mobile environment, with only the platform-specific storage and setup differing.

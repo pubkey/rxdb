@@ -196,7 +196,7 @@ const todosSignal = db.todos.find().$$;
 
 ## Accessing custom reactivity objects
 
-All observable data in RxDB is marked by the single dollar sign `$` like `[RxCollection](./rx-collection.md).$` for events or `[RxDocument](./rx-document.md).myField$` to get the observable for a document field. To make custom reactivity objects distinguable, they are marked with double-dollar signs `$$` instead. Here are some example on how to get custom reactivity objects from RxDB specific instances:
+All observable data in RxDB is marked by the single dollar sign `$` like [RxCollection](./rx-collection.md).$ for events or `RxDocument.myField$` to get the observable for a document field. To make custom reactivity objects distinguable, they are marked with double-dollar signs `$$` instead. Here are some example on how to get custom reactivity objects from RxDB specific instances:
 
 ```ts
 // RxDocument

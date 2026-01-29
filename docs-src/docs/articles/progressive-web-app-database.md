@@ -28,7 +28,7 @@ RxDB emerges as a reactive, schema-based NoSQL database crafted explicitly for c
 The cornerstone of RxDB's philosophy is the local-first approach, empowering PWAs to prioritize data storage and manipulation on the client side. This paradigm ensures that PWAs remain functional even when offline, allowing users to access and interact with data seamlessly. RxDB bridges any gaps in data synchronization once network connectivity is restored.
 
 #### Observable Queries
-Observable queries (aka **Live-Queries**) serve as the engine of RxDB's dynamic capabilities. By leveraging these queries, PWAs can monitor and respond to data changes in real time. The result is an engaging user interface with instantaneous updates that captivate users and keep them engaged.
+Observable queries (aka **Live Queries**) serve as the engine of RxDB's dynamic capabilities. By leveraging these queries, PWAs can monitor and respond to data changes in real time. The result is an engaging user interface with instantaneous updates that captivate users and keep them engaged.
 
 ```ts
 await db.heroes.find({
@@ -56,7 +56,7 @@ Integrating RxDB into a Progressive Web App, driven by technologies like [React]
 ## Exploring Different RxStorage Layers
 RxDB caters to diverse needs through its various RxStorage layers:
 
-- [localstorage RxStorage](../rx-storage-localstorage.md): Leveraging the capabilities of the browsers localstorage API for storage.
+- [LocalStorage RxStorage](../rx-storage-localstorage.md): Leveraging the capabilities of the browser's LocalStorage API for storage.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): Tapping into the browser's IndexedDB for efficient data storage.
 - [OPFS RxStorage](../rx-storage-opfs.md): Interfacing with the Offline-First Persistence System for seamless persistence.
 - [Memory RxStorage](../rx-storage-memory.md): Storing data in memory, ideal for temporary data requirements.

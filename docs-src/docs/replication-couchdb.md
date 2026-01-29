@@ -8,9 +8,9 @@ description: Replicate your RxDB collections with CouchDB the fast way. Enjoy fa
 
 A plugin to replicate between a [RxCollection](./rx-collection.md) and a CouchDB server.
 
-This plugins uses the RxDB [Sync Engine](./replication.md) to replicate with a CouchDB endpoint. This plugin **does NOT** use the official [CouchDB replication protocol](https://docs.couchdb.org/en/stable/replication/protocol.html) because the CouchDB protocol was optimized for server-to-server replication and is not suitable for fast client side applications, mostly because it has to run many HTTP-requests (at least one per document) and also it has to store the whole revision tree of the documents at the client. This makes initial replication and querying very slow.
+This plugin uses the RxDB [Sync Engine](./replication.md) to replicate with a CouchDB endpoint. This plugin **does NOT** use the official [CouchDB replication protocol](https://docs.couchdb.org/en/stable/replication/protocol.html) because the CouchDB protocol was optimized for server-to-server replication and is not suitable for fast client side applications, mostly because it has to run many HTTP-requests (at least one per document) and also it has to store the whole revision tree of the documents at the client. This makes initial replication and querying very slow.
 
-Because the way how RxDB handles revisions and documents is very similar to CouchDB, using the RxDB replication with a CouchDB endpoint is pretty straightforward.
+Because the way RxDB handles revisions and documents is very similar to CouchDB, using the RxDB replication with a CouchDB endpoint is pretty straightforward.
 
 ## Pros
 
@@ -97,7 +97,7 @@ When conflicts appear during replication, the `conflictHandler` of the `RxCollec
 
 ## Auth example
 
-Lets say for authentication you need to add a [bearer token](https://swagger.io/docs/specification/authentication/bearer-authentication/) as HTTP header to each request. You can achieve that by crafting a custom `fetch()` method that add the header field.
+Lets say for authentication you need to add a [bearer token](https://swagger.io/docs/specification/authentication/bearer-authentication/) as HTTP header to each request. You can achieve that by crafting a custom `fetch()` method that adds the header field.
 
 
 ```ts
@@ -168,12 +168,12 @@ const replicationState = replicateCouchDB(
 
 ## Limitations
 
-Since CouchDB only allows synchronization through HTTP1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, [see here](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)).
+Since CouchDB only allows synchronization through HTTP/1.1 long polling requests there is a limitation of 6 active synchronization connections before the browser prevents sending any further request. This limitation is at the level of browser per tab per domain (some browser, especially older ones, might have a different limit, [see here](https://docs.pushtechnology.com/cloud/latest/manual/html/designguide/solution/support/connection_limitations.html)).
 
 Since this limitation is at the **browser** level there are several solutions:
  - Use only a single database for all entities and set a "type" field for each of the documents
  - Create multiple subdomains for CouchDB and use a max of 6 active synchronizations (or less) for each
- - Use a proxy (ex: HAProxy) between the browser and CouchDB and configure it to use HTTP2.0, since HTTP2.0 
+ - Use a proxy (ex: HAProxy) between the browser and CouchDB and configure it to use HTTP/2.0, since HTTP/2.0 multiplexes requests. 
 
 If you use nginx in front of your CouchDB, you can use these settings to enable http2-proxying to prevent the connection limit problem:
 ```

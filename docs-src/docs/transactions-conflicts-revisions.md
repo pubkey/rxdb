@@ -6,12 +6,12 @@ description: Learn RxDB's approach to local and replication conflicts. Discover 
 
 # Transactions, Conflicts and Revisions
 
-In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suit the offline-first, client side world where it is not possible to create a transaction between multiple maybe-offline client devices.
+In contrast to most SQL databases, RxDB does not have the concept of relational ACID transactions. Instead, RxDB has to apply different techniques that better suit the offline-first, client-side world where it is not possible to create a transaction between multiple maybe-offline client devices.
 
 ## Why RxDB does not have transactions
 
 When talking about transactions, we mean [ACID transactions](https://en.wikipedia.org/wiki/ACID) that guarantee the properties of atomicity, consistency, isolation and durability.
-With an ACID transaction you can mutate data dependent on the current state of the database. It is ensured that no other database operations happen in between your transaction and after the transaction has finished, it is guaranteed that the new data is actually written to the disc.
+With an ACID transaction you can mutate data dependent on the current state of the database. It is ensured that no other database operations happen in between your transaction and after the transaction has finished, it is guaranteed that the new data is actually written to the disk.
 
 To implement ACID transactions on a **single server**, the database has to keep track on who is running transactions and then schedule these transactions so that they can run in isolation.
 
@@ -31,7 +31,7 @@ The benefits of not having to support transactions:
 
 ## Revisions
 
-Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wins strategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
+Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client-side databases rely on a last-write-wins strategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
 
 Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control. Revisions work similar to [Lamport Clocks](https://martinfowler.com/articles/patterns-of-distributed-systems/lamport-clock.html).
 
@@ -57,9 +57,9 @@ Instead of handling local conflicts, in most cases it is easier to ensure that t
 
 A replication conflict appears when multiple clients write to the same documents at once and these documents are then replicated to the backend server. 
 
-When you replicate with the [Graphql replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
+When you replicate with the [GraphQL replication](./replication-graphql.md) and the [replication primitives](./replication.md), RxDB assumes that conflicts are **detected** and **resolved** at the client side.
 
-When a document is send to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication conflicts [here](./replication.md#conflict-handling).
+When a document is sent to the backend and the backend detected a conflict (by comparing revisions or other properties), the backend will respond with the actual document state so that the client can compare this with the local document state and create a new, resolved document state that is then pushed to the server again. You can read more about the replication conflicts [here](./replication.md#conflict-handling).
 
 
 ## Custom conflict handler
