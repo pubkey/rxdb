@@ -7,11 +7,11 @@ image: /headers/schema-validation.jpg
 # Schema validation
 
 RxDB has multiple validation implementations that can be used to ensure that your document data is always matching the provided JSON 
-schema of your `[RxCollection](./rx-collection.md)`.
+schema of your [RxCollection](./rx-collection.md).
 
 The schema validation is **not a plugin** but comes in as a wrapper around any other `RxStorage` and it will then validate all data that is written into that storage. This is required for multiple reasons:
 - It allows us to run the validation inside of a [Worker RxStorage](./rx-storage-worker.md) instead of running it in the main JavaScript process.
-- It allows us to configure which `[RxDatabase](./rx-database.md)` instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
+- It allows us to configure which [RxDatabase](./rx-database.md) instance must use the validation and which does not. In production it often makes sense to validate user data, but you might not need the validation for data that is only replicated from the backend.
 
 :::warning
 Schema validation can be **CPU expensive** and increases your build size. You should always use a schema validation in development mode. For most use cases, you **should not** use a validation in production for better performance.

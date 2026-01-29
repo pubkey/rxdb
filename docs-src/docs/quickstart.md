@@ -69,7 +69,7 @@ let storage = getRxStorageDexie();
 
 #### Dexie.js
 
-[Dexie.js](./rx-storage-dexie.md) is a friendly wrapper around IndexedDB and is a great default for browser apps when you don’t use premium. It’s reliable, works well for medium-sized datasets, and is free to use.
+[Dexie.js](./rx-storage-dexie.md) is a friendly wrapper around IndexedDB and is a great default for browser apps when you don't use premium. It's reliable, works well for medium-sized datasets, and is free to use.
 
 ```ts
 import {
@@ -128,8 +128,8 @@ There are many more storages such as [MongoDB](./rx-storage-mongodb.md), [DenoKV
         RxDB provides a wide range of storages depending on your JavaScript runtime and performance needs.
         <ul>
     <li>In the Browser: Use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage for simple setup and small build size. For bigger datasets, use either the <a href="/rx-storage-dexie.html">dexie.js storage</a> (free) or the <a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a> if you have <a href="/premium/">👑 premium access</a> which is a bit faster and has a smaller build size.</li>
-    <li>In <a href="/electron-database.html">Electron</a> and <a href="/react-native-database.html">ReactNative</a>: Use the <a href="./rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a> or the <a href="/rx-storage-sqlite.html">trial-SQLite RxStorage</a> for tryouts.</li>
-    <li>In Capacitor: Use the <a href="/rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a>, otherwise use the <a href="/rx-storage-localstorage.html">localStorage</a> storage.</li>
+    <li>In <a href="/electron-database.html">Electron</a> and <a href="/react-native-database.html">React Native</a>: Use the <a href="./rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a> or the <a href="/rx-storage-sqlite.html">SQLite Trial RxStorage</a> for tryouts.</li>
+    <li>In Capacitor: Use the <a href="/rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="/premium/">👑 premium access</a>, otherwise use the <a href="/rx-storage-localstorage.html">LocalStorage</a> storage.</li>
 </ul>
 
     </div>
@@ -206,7 +206,7 @@ await myDatabase.addCollections({
 });
 ```
 
-### Insert a document
+### Insert a Document
 
 Now that we have an RxCollection we can store some [documents](./rx-document.md) in it.
 
@@ -245,7 +245,7 @@ await firstDocument.patch({
 });
 ```
 
-### Delete a document
+### Delete a Document
 
 Delete the document so that it can no longer be found in queries:
 
@@ -271,7 +271,7 @@ observable.subscribe(notDoneDocs => {
 });
 ```
 
-### Observe a Document value
+### Observe a Document Value
 
 You can also subscribe to the fields of a single RxDocument. Add the `$` sign to the desired field and then subscribe to the returned observable.
 

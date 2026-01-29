@@ -10,17 +10,17 @@ import {Tabs} from '@site/src/components/tabs';
 
 # HTTP Replication from a custom server to RxDB clients
 
-While RxDB has a range of backend-specific replication plugins (like [GraphQL](./replication-graphql.md) or [Firestore](./replication-firestore.md)), the replication is build in a way to make it very easy to replicate data from a custom server to RxDB clients. 
+While RxDB has a range of backend-specific replication plugins (like [GraphQL](./replication-graphql.md) or [Firestore](./replication-firestore.md)), the replication is built in a way to make it very easy to replicate data from a custom server to RxDB clients. 
 
 <p align="center">
   <img src="./files/icons/with-gradient/replication.svg" alt="HTTP replication" height="60" />
 </p>
 
-Using **HTTP** as a transport protocol makes it simple to create a compatible backend on top of your existing infrastructure. For events that must be sent from the server to the client, we can use [Server Send Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
+Using **HTTP** as a transport protocol makes it simple to create a compatible backend on top of your existing infrastructure. For events that must be sent from the server to the client, we can use [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events).
 
 In this tutorial we will implement a HTTP replication between an RxDB client and a [MongoDB](./rx-storage-mongodb.md) express server. You can adapt this for any other backend database technology like PostgreSQL or even a non-Node.js server like go or java.
 
-To create a compatible server for replication, we will start a server and implement the correct HTTP routes and replication handlers. We need a push-handler, a pull-handler and for the ongoing changes `pull.stream` we use **Server Send Events**.
+To create a compatible server for replication, we will start a server and implement the correct HTTP routes and replication handlers. We need a push-handler, a pull-handler and for the ongoing changes `pull.stream` we use **Server-Sent Events**.
 
 ## Setup
 
@@ -92,7 +92,7 @@ app.get('/pull', (req, res) => {
                     updateAt: { $gt: updatedAt }
                 },
                 {
-                    updateAt: { $eq: updatedAt }
+                    updateAt: { $eq: updatedAt },
                     id: { $gt: id }
                 }
             ]
@@ -112,7 +112,7 @@ app.get('/pull', (req, res) => {
 
 ### Implement the Pull Handler
 
-On the client we add the `pull.handler` to the replication setting. The handler request the correct server url and fetches the documents.
+On the client we add the `pull.handler` to the replication setting. The handler requests the correct server url and fetches the documents.
 
 ```ts
 // > client.ts
@@ -140,7 +140,7 @@ const replicationState = await replicateRxCollection({
 
 ### Implement the Push Endpoint
 
-To send client side writes to the server, we have to implement the `push.handler`. It gets an array of change rows as input and has to return only the conflicting documents that did not have been written to the server. Each change row contains a `newDocumentState` and an optional `assumedMasterState`.
+To send client side writes to the server, we have to implement the `push.handler`. It gets an array of change rows as input and has to return only the conflicting documents that have not been written to the server. Each change row contains a `newDocumentState` and an optional `assumedMasterState`.
 
 For [conflict detection](./transactions-conflicts-revisions.md), on the server we first have to detect if the `assumedMasterState` is correct for each row. If yes, we have to write the new document state to the database, otherwise we have to return the "real" master state in the conflict array.
 
@@ -232,7 +232,7 @@ const replicationState = await replicateRxCollection({
 
 While the normal pull handler is used when the replication is in [iteration mode](./replication.md#checkpoint-iteration), we also need a stream of ongoing changes when the replication is in [event observation mode](./replication.md#event-observation). This brings the realtime replication to RxDB where changes on the server or on a client will directly get propagated to the other instances.
 
-On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#push-from-the-client-to-the-server) to fetch all ongoing events and respond them to the client. Here we use Server-Sent-Events (SSE) which is the most common used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
+On the server we have to implement the `pullStream` route and emit the events. We use the `pullStream$` observable from [above](#push-from-the-client-to-the-server) to fetch all ongoing events and respond them to the client. Here we use Server-Sent-Events (SSE) which is the most commonly used way to stream data from the server to the client. Other method also exist like [WebSockets or Long-Polling](./articles/websockets-sse-polling-webrtc-webtransport.md).
 
 ```ts
 // > server.ts
@@ -250,13 +250,13 @@ app.get('/pullStream', (req, res) => {
 ```
 
 :::note
-How the build the `pullStream$` Observable is not part of this tutorial. This heavily depends on your backend and infrastructure. Likely you have to observe the MongoDB event stream.
+How to build the `pullStream$` Observable is not part of this tutorial. This heavily depends on your backend and infrastructure. Likely you have to observe the MongoDB event stream.
 :::
 
 
 ### Implement the pullStream$ Handler
 
-From the client we can observe this endpoint and create a `pull.stream$` observable that emits all events that are send from the server to the client.
+From the client we can observe this endpoint and create a `pull.stream$` observable that emits all events that are sent from the server to the client.
 The client connects to an url and receives server-sent-events that contain all ongoing writes.
 
 ```ts
@@ -287,7 +287,7 @@ const replicationState = await replicateRxCollection({
 
 ### pullStream$ RESYNC flag
 
-In case the client looses the connection, the EventSource will automatically reconnect but there might have been some changes that have been missed out in the meantime. The replication has to be informed that it might have missed events by emitting a `RESYNC` flag from the `pull.stream$`.
+In case the client loses the connection, the EventSource will automatically reconnect but there might have been some changes that have been missed out in the meantime. The replication has to be informed that it might have missed events by emitting a `RESYNC` flag from the `pull.stream$`.
 The replication will then catch up by switching to the [iteration mode](./replication.md#checkpoint-iteration) until it is in sync with the server again.
 
 ```ts
@@ -324,4 +324,4 @@ In this tutorial we only covered the basics of doing a HTTP replication between 
 
 - Authentication: To authenticate the client on the server, you might want to send authentication headers with the HTTP requests
 - Skip events on the `pull.stream$` for the client that caused the changes to improve performance.
-- Version upgrades: You should add a version-flag to the endpoint urls. If you then update the version of your endpoints in any way, your old endpoints should emit a `Code 426` to outdated clients so that they can updated their client version. 
+- Version upgrades: You should add a version-flag to the endpoint urls. If you then update the version of your endpoints in any way, your old endpoints should emit a `Code 426` to outdated clients so that they can update their client version. 

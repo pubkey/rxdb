@@ -11,7 +11,7 @@ image: /headers/browser-storage.jpg
 
 **Storing Data in the Browser**
 
-When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are Localstorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.
+When it comes to building web applications, one essential aspect is the storage of data. Two common methods of storing data directly within the user's web browser are LocalStorage and [IndexedDB](../rx-storage-indexeddb.md). These browser-based storage options serve various purposes and cater to different needs in web development.
 
 <center>
     <a href="https://rxdb.info/">
@@ -20,8 +20,8 @@ When it comes to building web applications, one essential aspect is the storage 
 </center>
 
 
-### Localstorage
-[Localstorage](./localstorage.md) is a straightforward way to store small amounts of data in the user's web browser. It operates on a simple key-value basis and is relatively easy to use. While it has limitations, it is suitable for basic data storage requirements.
+### LocalStorage
+[LocalStorage](./localstorage.md) is a straightforward way to store small amounts of data in the user's web browser. It operates on a simple key-value basis and is relatively easy to use. While it has limitations, it is suitable for basic data storage requirements.
 
 ### IndexedDB
 IndexedDB, on the other hand, offers a more robust and structured approach to browser-based data storage. It can handle larger datasets and complex queries, making it a valuable choice for more advanced web applications.
@@ -38,7 +38,7 @@ One significant advantage of browser storage is that data becomes portable and r
 3. **Faster Real-time Applications**:
 For real-time applications, having data stored locally in the browser significantly enhances performance. Local data allows your application to respond faster to user interactions, creating a more seamless and responsive user interface.
 
-4. **Low Latency Queries**:
+4. **Low-Latency Queries**:
 When you run queries locally within the browser, you minimize the latency associated with network requests. This results in near-instant access to data, which is particularly crucial for applications that require rapid data retrieval.
 
 5. **Faster Initial Application Start Time**:
@@ -47,12 +47,12 @@ By preloading essential data into browser storage, you can reduce the initial lo
 6. **Store Local Data with Encryption**:
 For applications that deal with sensitive data, browser storage allows you to implement [encryption](../encryption.md) to secure the stored information. This ensures that even if data is stored on the user's device, it remains confidential and protected.
 
-In summary, storing data in the browser offers several advantages, including improved performance, offline access, and enhanced user experiences. Localstorage and IndexedDB are two valuable tools that developers can utilize to leverage these benefits and create web applications that are more responsive and user-friendly.
+In summary, storing data in the browser offers several advantages, including improved performance, offline access, and enhanced user experiences. LocalStorage and IndexedDB are two valuable tools that developers can utilize to leverage these benefits and create web applications that are more responsive and user-friendly.
 
 
 
 ## Browser Storage Limitations
-While browser storage, such as Localstorage and IndexedDB, offers many advantages, it's important to be aware of its limitations:
+While browser storage, such as LocalStorage and IndexedDB, offers many advantages, it's important to be aware of its limitations:
 
 - **Slower Performance Compared to Native Databases**: Browser-based storage solutions can't match the [performance](../rx-storage-performance.md) of native server-side databases. They may experience slower data retrieval and processing, especially for large datasets or complex operations.
 
@@ -130,7 +130,7 @@ For applications requiring multi-tab support, RxDB natively handles data consist
 Efficient data storage is achieved through [document compression](../key-compression.md), reducing storage space requirements and enhancing overall performance.
 
 ### Replication Algorithm for Compatibility with Any Backend
-RxDB's  [Replication Algorithm](../replication.md) facilitates compatibility with various backend systems, ensuring seamless data synchronization between the browser and server.
+RxDB's [Replication Algorithm](../replication.md) facilitates compatibility with various backend systems, ensuring seamless data synchronization between the browser and server.
 
 <p align="center">
   <img src="../files/database-replication.png" alt="database replication" width="200" />

@@ -10,7 +10,7 @@ A collection stores documents of the same type.
 
 
 ## Creating a Collection
-To create one or more collections you need a [RxDatabase](./rx-database.md) object which has the `.addCollections()`-method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
+To create one or more collections you need an [RxDatabase](./rx-database.md) object which has the `.addCollections()` method. Every collection needs a collection name and a valid [RxJsonSchema](./rx-schema.md). Other attributes are optional.
 
 ```js
 const myCollections = await myDatabase.addCollections({
@@ -42,7 +42,7 @@ The name uniquely identifies the collection and should be used to refine the col
 The schema defines how the documents of the collection are structured. RxDB uses a schema format, similar to [JSON schema](https://json-schema.org/). Read more about the RxDB schema format [here](./rx-schema.md).
 
 ### ORM-functions
-With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
+With the parameters `statics`, `methods` and `attachments`, you can define ORM functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
 
 ### Migration
 With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./migration-schema.md).
@@ -102,7 +102,7 @@ const doc = await myCollection.insertIfNotExists({
 ### bulkInsert()
 
 When you have to insert many documents at once, use bulk insert. This is much faster than calling `.insert()` multiple times.
-Returns an object with a `success`- and `error`-array.
+Returns an object with a `success` and `error` arrays.
 
 ```js
 const result = await myCollection.bulkInsert([{
@@ -121,7 +121,7 @@ const result = await myCollection.bulkInsert([{
 ```
 
 :::note
-`bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also the call to `bulkInsert()` it will not throw if a single document errors because of validation errors. Instead it will return the error in the `.error` property of the returned object.
+`bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also, the call to `bulkInsert()` will not throw if a single document errors because of validation errors. Instead it will return the error in the `.error` property of the returned object.
 :::
 
 ### bulkRemove()
@@ -261,7 +261,7 @@ The `Map` returned by `findByIds` is not guaranteed to return elements in the sa
 :::
 
 ### exportJSON()
-Use this function to create a json export from every document in the collection.
+Use this function to create a JSON export from every document in the collection.
 
 
 Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
@@ -278,7 +278,7 @@ myCollection.exportJSON()
 ```
 
 ### importJSON()
-To import the json dump into your collection, use this function.
+To import the JSON dump into your collection, use this function.
 ```js
 // import the dump to the database
 myCollection.importJSON(json)
@@ -297,7 +297,7 @@ await myCollection.remove();
 ```
 
 ### close()
-Removes the collection's object instance from the [RxDatabase](./rx-database.md). This is to free up memory and stop all observers and replications. It will not delete the collections data. When you create the collection again with `database.addCollections()`, the newly added collection will still have all data.
+Removes the collection's object instance from the [RxDatabase](./rx-database.md). This is to free up memory and stop all observers and replications. It will not delete the collection's data. When you create the collection again with `database.addCollections()`, the newly added collection will still have all data.
 ```js
 await myCollection.close();
 ```
@@ -305,7 +305,7 @@ await myCollection.close();
 ### onClose / onRemove()
 With these you can add a function that is run when the collection was closed or removed.
 This works even across multiple browser tabs so you can detect when another tab removes the collection
-and you application can behave accordingly.
+and your application can behave accordingly.
 
 ```js
 await myCollection.onClose(() => console.log('I am closed'));
@@ -328,7 +328,7 @@ const is = isRxCollection(myObj);
     <summary>When I reload the browser window, will my collections still be in the database?</summary>
     <div>
     No, the javascript instance of the collections will not automatically load into the database on page reloads.
-    You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will be automatically in your RxCollection each time you create it.
+    You have to call the `addCollections()` method each time you create your database. This will create the JavaScript object instance of the RxCollection so that you can use it in the RxDatabase. The persisted data will automatically be available in your RxCollection each time you create it.
     </div>
 </details>
 <details>

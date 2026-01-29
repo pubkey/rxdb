@@ -22,7 +22,7 @@ You also need to install the peer-dependency `rxjs` if you have not installed it
 
 ## polyfills
 
-RxDB is coded with es8 and transpiled to es5\. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
+RxDB is coded with ES8 and transpiled to ES5. This means you have to install [polyfills](https://developer.mozilla.org/en-US/docs/Glossary/Polyfill) to support older browsers. For example you can use the babel-polyfills with:
 
 `npm i @babel/polyfill --save`
 
@@ -34,9 +34,9 @@ import '@babel/polyfill';
 
 ## Polyfill the `global` variable
 
-When you use RxDB with [angular](./articles/angular-database.md) or other **webpack** based frameworks, you might get the error `Uncaught ReferenceError: global is not defined`.
+When you use RxDB with [Angular](./articles/angular-database.md) or other **Webpack** based frameworks, you might get the error `Uncaught ReferenceError: global is not defined`.
 This is because some dependencies of RxDB assume a Node.js-specific `global` variable that is not added to browser runtimes by some bundlers.
-You have to add them by your own, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
+You have to add them manually, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
 
 ```ts
 (window as any).global = window;
@@ -47,13 +47,13 @@ You have to add them by your own, like we do [here](https://github.com/pubkey/rx
 
 ## Project Setup and Configuration
 
-In the [examples](https://github.com/pubkey/rxdb/tree/master/examples) folder you can find CI tested projects for different frameworks and use cases, while in the [/config](https://github.com/pubkey/rxdb/tree/master/config) folder base configuration files for Webpack, Rollup, Mocha, Karma, Typescript are exposed.
+In the [examples](https://github.com/pubkey/rxdb/tree/master/examples) folder you can find CI tested projects for different frameworks and use cases, while in the [/config](https://github.com/pubkey/rxdb/tree/master/config) folder base configuration files for Webpack, Rollup, Mocha, Karma, TypeScript are exposed.
 
 Consult [package.json](https://github.com/pubkey/rxdb/blob/master/package.json) for the versions of the packages supported.
 
 ## Installing the latest RxDB build
 
-If you need the latest development state of RxDB, add it as git-dependency into your `package.json`.
+If you need the latest development state of RxDB, add it as git dependency into your `package.json`.
 
 ```json
   "dependencies": {

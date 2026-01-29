@@ -12,7 +12,7 @@ With the key compression plugin, documents will be stored in a compressed format
 For compression the npm module [jsonschema-key-compression](https://github.com/pubkey/jsonschema-key-compression) is used.
 It compresses json-data based on its json-schema while still having valid json. It works by compressing long attribute-names into smaller ones and backwards.
 
-The compression and decompression happens internally, so when you work with a `[RxDocument](./rx-document.md)`, you can access any property like normal.
+The compression and decompression happens internally, so when you work with a [RxDocument](./rx-document.md), you can access any property like normal.
 
 ## Enable key compression
 

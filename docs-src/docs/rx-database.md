@@ -7,7 +7,7 @@ image: /headers/rx-database.jpg
 
 # RxDatabase
 
-A RxDatabase-Object contains your [collections](./rx-collection.md) and handles the synchronization of change-events.
+An RxDatabase Object contains your [collections](./rx-collection.md) and handles the synchronization of change events.
 
 ## Creation
 
@@ -31,7 +31,7 @@ const db = await createRxDatabase({
 
 ### name
 
-The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
+The database name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
 Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
 
 
@@ -46,7 +46,7 @@ For example you can use the [LocalStorage RxStorage](./rx-storage-localstorage.m
 
 ```javascript
 
-// use the LocalStroage that stores data in the browser.
+// use the LocalStorage that stores data in the browser.
 import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
 
 const db = await createRxDatabase({
@@ -76,7 +76,7 @@ If you want to use encrypted fields in the collections of a database, you have t
 ### multiInstance
 `(optional=true)`
 When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
-`multiInstance` should be set to `false` when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window [electron](./electron-database.md) app which can decrease the startup time because no instance coordination has to be done.
+`multiInstance` should be set to `false` when you have single instances like a single Node.js process, a React Native app, a Cordova app or a single-window [Electron](./electron-database.md) app which can decrease the startup time because no instance coordination has to be done.
 
 ### eventReduce
 `(optional=false)`
@@ -90,7 +90,7 @@ For better performance, you should always set `eventReduce: true`. This will als
 `(optional=false)`
 If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
 To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
+In some rare cases like unit-tests, you want to do this intentionally by setting `ignoreDuplicate` to `true`. Because setting `ignoreDuplicate: true` in production will decrease the performance by having multiple instances of the same database, `ignoreDuplicate` is only allowed to be set in [dev-mode](./dev-mode.md).
 
 ```js
 const db1 = await createRxDatabase({
@@ -108,7 +108,7 @@ const db2 = await createRxDatabase({
 ### closeDuplicates
 `(optional=false)`
 
-Closes all other RxDatabases instances that have the same storage+name combination.
+Closes all other RxDatabase instances that have the same storage+name combination.
 
 ```js
 const db1 = await createRxDatabase({
@@ -129,7 +129,7 @@ const db2 = await createRxDatabase({
 
 ### hashFunction
 
-By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide an own hash function instead. A hash function gets a string as input and returns a `Promise` that resolves a string.
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a string as input and returns a `Promise` that resolves a string.
 
 ```ts
 // example hash function that runs in plain JavaScript
@@ -148,14 +148,14 @@ If you get the error message `TypeError: Cannot read properties of undefined (re
 ## Methods
 
 ### Observe with $
-Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
+Calling this will return an [RxJS Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
 
 ```javascript
 myDb.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
-Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
+Use this function to create a JSON export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data fields of your document.
 
 
 Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
@@ -173,7 +173,7 @@ myDatabase.exportJSON()
 ```
 
 ### importJSON()
-To import the json-dumps into your database, use this function.
+To import the JSON dumps into your database, use this function.
 
 ```javascript
 // import the dump to the database
@@ -189,7 +189,7 @@ Writes the current (or ongoing) database state to the filesystem. [Read more](./
 Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
 
 ### requestIdlePromise()
-Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
+Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idleness of the database instead of the CPU.
 Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.
 
 ```javascript
@@ -209,15 +209,15 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 ```
 
 ### close()
-Closes the databases object-instance. This is to free up memory and stop all observers and replications.
+Closes the database's object instance. This is to free up memory and stop all observers and replications.
 Returns a `Promise` that resolves when the database is closed.
-Closing a database will not remove the databases data. When you create the database again with `createRxDatabase()`, all data will still be there.
+Closing a database will not remove the database's data. When you create the database again with `createRxDatabase()`, all data will still be there.
 ```javascript
 await myDatabase.close();
 ```
 
 ### remove()
-Wipes all documents from the storage. Use this to free up disc space.
+Wipes all documents from the storage. Use this to free up disk space.
 
 ```javascript
 await myDatabase.remove();
@@ -225,7 +225,7 @@ await myDatabase.remove();
 ```
 
 
-You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the users state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
+You can also clear a database without removing its instance by using `removeRxDatabase()`. This is useful if you want to migrate data or reset the user's state by renaming the database. Then you can remove the previous data with `removeRxDatabase()` without creating a RxDatabase first. Notice that this will only remove the
 stored data on the storage. It will not clear the cache of any [RxDatabase](./rx-database.md) instances.
 ```javascript
 import { removeRxDatabase } from 'rxdb';
@@ -242,7 +242,7 @@ const is = isRxDatabase(myObj);
 
 ### collections$
 
-Emits events whenever a [RxCollection](./rx-collection.md) is added or removed to the instance of the RxDatabase. Notice that this only emits the JavaScript instance of the RxCollection class, it does not emit events across browser tabs.
+Emits events whenever an [RxCollection](./rx-collection.md) is added or removed to the instance of the RxDatabase. Notice that this only emits the JavaScript instance of the RxCollection class, it does not emit events across browser tabs.
 
 ```javascript
 const sub = myDatabase.collections$.subscribe(event => {

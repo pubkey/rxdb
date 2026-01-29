@@ -25,7 +25,7 @@ const query = myCollection
 ```
 
 ## findOne()
-A findOne-query has only a single `[RxDocument](./rx-document.md)` or `null` as result-set.
+A findOne-query has only a single [RxDocument](./rx-document.md) or `null` as result-set.
 
 ```js
 // find alice
@@ -211,7 +211,7 @@ const result = await query.exec();
 
 
 ## Query Examples
-Here some examples to fast learn how to write queries without reading the docs.
+Here some examples to learn quickly how to write queries without reading the docs.
 - [Pouch-find-docs](https://github.com/pouchdb/pouchdb/blob/master/packages/node_modules/pouchdb-find/README.md) - learn how to use mango-queries
 - [mquery-docs](https://github.com/aheckmann/mquery/blob/master/README.md) - learn how to use chained-queries
 
@@ -227,7 +227,7 @@ myCollection.find({
 
 /*
  * find by using sql equivalent '%like%' syntax
- * This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+ * This example will e.g. match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
  * Notice that in RxDB queries, a regex is represented as a $regex string with the $options parameter for flags.
  * Using a RegExp instance is not allowed because they are not JSON.stringify()-able and also
  * RegExp instances are mutable which could cause undefined behavior when the RegExp is mutated
@@ -286,7 +286,7 @@ const query = myCollection
        * Because the developer knows that 50% of the documents are 'male',
        * but only 20% are below age 18,
        * it makes sense to enforce using the ['gender', 'age'] index to improve performance.
-       * This could not be known by the query planer which might have chosen ['age', 'gender'] instead.
+       * This could not be known by the query planner which might have chosen ['age', 'gender'] instead.
        */
       index: ['gender', 'age']
     });
@@ -317,7 +317,7 @@ query.$.subscribe(amount => {
 ```
 
 :::note
-Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires to fetch and compare the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
+Count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is **not** possible to run a `count()` query with a selector that requires fetching and comparing the document data. So if your query selector **does not** fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.
 :::
 
 ```ts
@@ -378,7 +378,7 @@ const count$ = myCollection.find({
 
 /**
  * To allow non-fully-indexed count queries,
- * you can also specify that by setting allowSlowCount=true
+ * you can also specify that by setting allowanceSlowCount: true
  * when creating the database.
  */
 const database = await createRxDatabase({
@@ -391,13 +391,13 @@ const database = await createRxDatabase({
 ### `allowSlowCount`
 To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
 Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
-This is only recommended if the RxStorage is running remotely like in a WebWorker and you not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
+This is only recommended if the RxStorage is running remotely like in a WebWorker and you do not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
 
 
 
-## RxQuery's are immutable
-Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQuery's have to be immutable.
-This means, when you have a `RxQuery` and run a `.where()` on it, the original RxQuery-Object is not changed. Instead the where-function returns a new `RxQuery`-Object with the changed where-field. Keep this in mind if you create RxQuery's and change them afterwards.
+## RxQuery instances are immutable
+Because RxDB is a reactive database, we can do heavy performance-optimisation on query-results which change over time. To be able to do this, RxQueries have to be immutable.
+This means, when you have a `RxQuery` and run a `.where()` on it, the original RxQuery object is not changed. Instead the where-function returns a new `RxQuery`-Object with the changed where-field. Keep this in mind if you create RxQueries and change them afterwards.
 
 Example:
 
@@ -423,10 +423,10 @@ const is = isRxQuery(myObj);
 
 Like most other noSQL-Databases, RxDB uses the [mango-query-syntax](https://github.com/cloudant/mango) similar to MongoDB and others.
 
-- We use the JSON based Mango Query Syntax because:
+- We use the JSON-based Mango Query Syntax because:
   - Mango Queries work better with TypeScript compared to SQL strings.
   - Mango Queries are composable and easy to transform by code without joining SQL strings.
-  - Queries can be run very fast and efficient with only a minimal query planer to plan the best indexes and operations.
+  - Queries can be run very fast and efficient with only a minimal query planner to plan the best indexes and operations.
   - NoSQL queries can be optimized with the [EventReduce](https://github.com/pubkey/event-reduce) algorithm to improve performance of observed and cached queries.
 
 

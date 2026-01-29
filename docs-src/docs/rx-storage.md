@@ -7,7 +7,7 @@ image: /headers/rx-storage.jpg
 
 # RxStorage
 
-RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
+RxDB is not a self-contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the LocalStorage RxStorage to store data in localstorage in a browser-based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
 
 
 ## Quick Recommendations
@@ -23,7 +23,7 @@ The RxStorage layer of RxDB is very flexible. Here are some examples on how to c
 
 ### Storing much data in a browser securely
 
-Lets say you build a browser app that needs to store a big amount of data as secure as possible. Here we can use a combination of the storages (encryption, IndexedDB, compression, schema-checks) that increase security and reduce the stored data size.
+Lets say you build a browser app that needs to store a big amount of data as securely as possible. Here we can use a combination of the storages (encryption, IndexedDB, compression, schema-checks) that increase security and reduce the stored data size.
 
 We use the schema-validation on the top level to ensure schema-errors are clearly readable and do not contain [encrypted](./encryption.md)/[compressed](./key-compression.md) data. The encryption is used inside of the compression because encryption of compressed data is more efficient.
 
@@ -69,7 +69,7 @@ const myDatabase = await createRxDatabase({
 
 ### Low Latency on Writes and Simple Reads
 
-Here we create a storage configuration that is optimized to have a low latency on simple reads and writes. It uses the memory-mapped storage to fetch and store data in memory. For persistence the OPFS storage is used in the main thread which has lower latency for fetching big chunks of data when at initialization the data is loaded from disc into memory. We do not use workers because sending data from the main thread to workers and backwards would increase the latency.
+Here we create a storage configuration that is optimized to have a low latency on simple reads and writes. It uses the memory-mapped storage to fetch and store data in memory. For persistence the OPFS storage is used in the main thread which has lower latency for fetching big chunks of data when at initialization the data is loaded from disk into memory. We do not use workers because sending data from the main thread to workers and backwards would increase the latency.
 
 ```ts
 import { getLocalstorageMetaOptimizerRxStorage } from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
@@ -92,11 +92,11 @@ const myDatabase = await createRxDatabase({
 
 ### Memory
 
-A storage that stores the data in as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
+A storage that stores the data as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
 
 ### LocalStorage
 
-The localstroage based storage stores the data inside of a browsers [localStorage API](./articles/localstorage.md). It is the easiest to set up and has a small bundle size. **If you are new to RxDB, you should start with the LocalStorage RxStorage**. [Read more](./rx-storage-localstorage.md)
+The localStorage based storage stores the data inside of a browsers [localStorage API](./articles/localstorage.md). It is the easiest to set up and has a small bundle size. **If you are new to RxDB, you should start with the LocalStorage RxStorage**. [Read more](./rx-storage-localstorage.md)
 
 ### 👑 IndexedDB
 
@@ -130,7 +130,7 @@ On some `RxStorage` implementations (like IndexedDB), a huge performance improve
 #### 👑 Memory Mapped
 
 The memory-mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance stores its data in an underlying storage for persistence.
-The main reason to use this is to improve query/write performance while still having the data stored on disc. [Read more](./rx-storage-memory-mapped.md)
+The main reason to use this is to improve query/write performance while still having the data stored on disk. [Read more](./rx-storage-memory-mapped.md)
 
 #### 👑 Localstorage Meta Optimizer
 
@@ -153,7 +153,7 @@ The Dexie.js based storage is based on the Dexie.js IndexedDB wrapper library. [
 
 #### MongoDB
 
-To use RxDB on the server side, the MongoDB RxStorage provides a way of having a secure, scalable and performant storage based on the popular MongoDB NoSQL database [Read more](./rx-storage-mongodb.md)
+To use RxDB on the server side, the MongoDB RxStorage provides a way of having a secure, scalable and performant storage based on the popular MongoDB NoSQL database. [Read more](./rx-storage-mongodb.md)
 
 #### DenoKV
 

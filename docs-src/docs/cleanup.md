@@ -26,7 +26,7 @@ addRxPlugin(RxDBCleanupPlugin);
 
 ## Create a database with cleanup options
 
-You can set a specific cleanup policy when a `[RxDatabase](./rx-database.md)` is created. For most use cases, the defaults should be ok.
+You can set a specific cleanup policy when a [RxDatabase](./rx-database.md) is created. For most use cases, the defaults should be ok.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -79,7 +79,7 @@ const db = await createRxDatabase({
 
 ## Calling cleanup manually
 
-You can manually run a cleanup per collection by calling `[RxCollection](./rx-collection.md).cleanup()`.
+You can manually run a cleanup per collection by calling [RxCollection](./rx-collection.md).cleanup().
 
 ```ts
 
