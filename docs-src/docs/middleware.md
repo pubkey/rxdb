@@ -221,7 +221,7 @@ myCollection.postRemove(function(plainData, rxDocument){
 ### postCreate
 This hook is called whenever a `RxDocument` is constructed.
 You can use `postCreate` to modify every RxDocument-instance of the collection.
-This adds a flexible way to specify behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be **asynchronous**.
+This adds a flexible way to add specific behavior to every document. You can also use it to add custom getter/setter to documents. PostCreate-hooks cannot be **asynchronous**.
 
 
 ```js
