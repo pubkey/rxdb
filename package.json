@@ -674,7 +674,7 @@
     "react": "19.2.4",
     "readline": "1.3.0",
     "rimraf": "6.1.2",
-    "rollup": "4.57.0",
+    "rollup": "4.57.1",
     "rxdb-old": "npm:rxdb@16.21.1",
     "rxjs": "7.8.2",
     "sharp": "0.34.5",
