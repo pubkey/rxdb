@@ -1,0 +1,115 @@
+import {
+    RxDBLeaderElectionPlugin
+} from '../leader-election/index.ts';
+import type {
+    RxCollection,
+    ReplicationPullOptions,
+    ReplicationPushOptions,
+    RxReplicationWriteToMasterRow,
+    RxReplicationPullStreamItem
+} from '../../types/index.d.ts';
+import {
+    RxReplicationState,
+    startReplicationOnLeaderShip
+} from '../replication/index.ts';
+import {
+    addRxPlugin
+} from '../../index.ts';
+
+import type {
+    GoogleDriveCheckpointType,
+    GoogleDriveOptions,
+    SyncOptionsGoogleDrive
+} from './google-drive-types.ts';
+import { Subject } from 'rxjs';
+
+export * from './google-drive-types.ts';
+export * from './google-drive-helper.ts';
+export * from './pull-handler.ts';
+export * from './transaction.ts';
+
+export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState<RxDocType, GoogleDriveCheckpointType> {
+    constructor(
+        public readonly googleDrive: GoogleDriveOptions,
+        public readonly replicationIdentifierHash: string,
+        public readonly collection: RxCollection<RxDocType>,
+        public readonly pull?: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>,
+        public readonly push?: ReplicationPushOptions<RxDocType>,
+        public readonly live: boolean = true,
+        public retryTime: number = 1000 * 5,
+        public autoStart: boolean = true
+    ) {
+        super(
+            replicationIdentifierHash,
+            collection,
+            '_deleted',
+            pull,
+            push,
+            live,
+            retryTime,
+            autoStart
+        );
+    }
+}
+
+export function replicateGoogleDrive<RxDocType>(
+    options: SyncOptionsGoogleDrive<RxDocType>
+): RxGoogleDriveReplicationState<RxDocType> {
+    const collection: RxCollection<RxDocType, any, any> = options.collection;
+    addRxPlugin(RxDBLeaderElectionPlugin);
+    const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, GoogleDriveCheckpointType>> = new Subject();
+    let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType> | undefined;
+
+    options.live = typeof options.live === 'undefined' ? true : options.live;
+    options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+
+    if (options.pull) {
+        replicationPrimitivesPull = {
+            async handler(
+                lastPulledCheckpoint: GoogleDriveCheckpointType | undefined,
+                batchSize: number
+            ) {
+                // TODO: implement pull handler
+                return {
+                    documents: [],
+                    checkpoint: lastPulledCheckpoint ?? {
+                        id: '',
+                        modifiedTime: ''
+                    }
+                };
+            },
+            batchSize: options.pull.batchSize,
+            modifier: options.pull.modifier,
+            stream$: pullStream$.asObservable(),
+            initialCheckpoint: options.pull.initialCheckpoint
+        };
+    }
+
+    let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
+    if (options.push) {
+        replicationPrimitivesPush = {
+            async handler(
+                rows: RxReplicationWriteToMasterRow<RxDocType>[]
+            ) {
+                // TODO: implement push handler
+                return [];
+            },
+            batchSize: options.push.batchSize,
+            modifier: options.push.modifier
+        };
+    }
+
+    const replicationState = new RxGoogleDriveReplicationState<RxDocType>(
+        options.googleDrive,
+        options.replicationIdentifier,
+        collection,
+        replicationPrimitivesPull,
+        replicationPrimitivesPush,
+        options.live,
+        options.retryTime,
+        options.autoStart
+    );
+
+    startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
+    return replicationState;
+}

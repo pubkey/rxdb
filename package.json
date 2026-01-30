@@ -222,6 +222,12 @@
       "import": "./dist/esm/plugins/replication-firestore/index.js",
       "default": "./dist/esm/plugins/replication-firestore/index.js"
     },
+    "./plugins/replication-google-drive": {
+      "types": "./dist/types/plugins/replication-google-drive/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-google-drive/index.js",
+      "import": "./dist/esm/plugins/replication-google-drive/index.js",
+      "default": "./dist/esm/plugins/replication-google-drive/index.js"
+    },
     "./plugins/replication-graphql": {
       "types": "./dist/types/plugins/replication-graphql/index.d.ts",
       "require": "./dist/cjs/plugins/replication-graphql/index.js",
@@ -448,6 +454,7 @@
     "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-nats.test.js\" --success first --kill-others",
     "test:replication-mongodb": "node ./config/mongodb-connection-tester.js && npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-mongodb.test.js",
     "test:replication-supabase": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-supabase.test.js",
+    "test:replication-google-drive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-google-drive.test.js",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
@@ -639,6 +646,7 @@
     "firebase-tools": "14.27.0",
     "get-port": "5.1.1",
     "globals": "17.2.0",
+    "google-drive-mock": "1.0.0",
     "graphql-http": "1.22.4",
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
