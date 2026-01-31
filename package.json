@@ -592,7 +592,7 @@
     "@babel/preset-env": "7.28.6",
     "@babel/preset-typescript": "7.28.5",
     "@babel/types": "7.28.6",
-    "@eslint/compat": "2.0.1",
+    "@eslint/compat": "2.0.2",
     "@eslint/eslintrc": "3.3.3",
     "@eslint/js": "9.39.2",
     "@firebase/rules-unit-testing": "4.0.1",
