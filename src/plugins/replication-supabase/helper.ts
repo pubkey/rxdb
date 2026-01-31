@@ -31,7 +31,7 @@ export function addDocEqualityToQuery<RxDocType>(
         const v = (doc as any)[key];
         const type = typeof v;
 
-        if (type === "string" || type === "number") {
+        if (type === "string" || type === "number" || type === "object") {
             query = query.eq(key, v);
         } else if (type === "boolean" || v === null) {
             query = query.is(key, v);
