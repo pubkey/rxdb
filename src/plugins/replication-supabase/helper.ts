@@ -31,8 +31,12 @@ export function addDocEqualityToQuery<RxDocType>(
         const v = (doc as any)[key];
         const type = typeof v;
 
-        if (type === "string" || type === "number" || type === "object") {
+        if (type === "string" || type === "number") {
             query = query.eq(key, v);
+        } else if (type === "object" && Array.isArray(v)) {
+          query = query.eq(key, toPostgresArrayLiteral(v));
+        } else if (type === "object") {
+          query = query.eq(key, v);
         } else if (type === "boolean" || v === null) {
             query = query.is(key, v);
         } else if (type === 'undefined') {
@@ -60,4 +64,16 @@ export function addDocEqualityToQuery<RxDocType>(
 
 
     return query;
+}
+
+// https://github.com/supabase/supabase/issues/21154
+function toPostgresArrayLiteral(arr: unknown[]) {
+    return `{${arr
+        .map((v) => {
+            if (typeof v === "string" && /[,(){}"]/.test(v)) {
+                return `"${v.replace(/"/g, '\\"')}"`;
+            }
+            return String(v);
+        })
+        .join(",")}}`;
 }
