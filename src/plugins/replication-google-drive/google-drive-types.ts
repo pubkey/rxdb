@@ -23,6 +23,13 @@ export type GoogleDriveOptions = {
     folderPath: string;
 };
 
+export type GoogleDriveOptionsWithDefaults = {
+    oauthClientId: string;
+    authToken: string;
+    apiEndpoint: string;
+    folderPath: string;
+};
+
 export type GoogleDriveSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>, 'handler' | 'stream$'>;
 
 export type GoogleDriveSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'>;

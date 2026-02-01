@@ -19,6 +19,7 @@ import {
 import type {
     GoogleDriveCheckpointType,
     GoogleDriveOptions,
+    GoogleDriveOptionsWithDefaults,
     SyncOptionsGoogleDrive
 } from './google-drive-types.ts';
 import { Subject } from 'rxjs';
@@ -27,10 +28,11 @@ export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
 export * from './pull-handler.ts';
 export * from './transaction.ts';
+export * from './init.ts';
 
 export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState<RxDocType, GoogleDriveCheckpointType> {
     constructor(
-        public readonly googleDrive: GoogleDriveOptions,
+        public readonly googleDrive: GoogleDriveOptionsWithDefaults,
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>,
@@ -99,8 +101,15 @@ export function replicateGoogleDrive<RxDocType>(
         };
     }
 
+    const googleDriveOptionsWithDefaults: GoogleDriveOptionsWithDefaults = Object.assign(
+        {
+            apiEndpoint: 'https://www.googleapis.com'
+        },
+        options.googleDrive
+    );
+
     const replicationState = new RxGoogleDriveReplicationState<RxDocType>(
-        options.googleDrive,
+        googleDriveOptionsWithDefaults,
         options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,

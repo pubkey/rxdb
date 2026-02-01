@@ -28,6 +28,7 @@
 - **Formatting**: Uses ESLint. Run `npm run lint` to check and `npm run lint:fix` to auto-fix.
 - **Imports**: Uses ES modules (import/export).
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
+- **Errors**: Do not use `throw new Error()`. Use `throw new RxError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
 
 ## Documentation Style
 - SHOULD use clear, simple language.

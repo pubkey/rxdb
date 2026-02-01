@@ -1,5 +1,5 @@
-import type { GoogleDriveOptions } from './google-drive-types.ts';
-import { ensureFolderExists } from './google-drive-helper.ts';
+import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
+import { ensureRootFolderExists } from './google-drive-helper.ts';
 
 export type DriveTransaction = {
     fileId: string;
@@ -7,15 +7,15 @@ export type DriveTransaction = {
 };
 
 export async function startTransaction(
-    googleDriveOptions: GoogleDriveOptions
+    googleDriveOptions: GoogleDriveOptionsWithDefaults
 ): Promise<DriveTransaction | null> {
-    const driveBaseUrl = (googleDriveOptions.apiEndpoint || 'https://www.googleapis.com') + '/drive/v3';
+    const driveBaseUrl = googleDriveOptions.apiEndpoint + '/drive/v3';
     const headers = {
         Authorization: 'Bearer ' + googleDriveOptions.authToken,
         'Content-Type': 'application/json'
     };
 
-    const parentId = await ensureFolderExists(googleDriveOptions);
+    const parentId = await ensureRootFolderExists(googleDriveOptions);
 
     // 1. Search for existing transaction file
     const q = `name = 'transaction.txt' and '${parentId}' in parents and trashed = false`;
@@ -62,7 +62,7 @@ export async function startTransaction(
     // Assuming the mock/API returns id and etag. If mock doesn't simulate race condition correctly on create, we rely on the search check mostly.
     // In real drive, creating a file with same name is allowed, so we might need a better lock strategy (e.g. folder), but user asked for 'transaction.txt'.
     // Better strategy for "lock": create file, if multiple exist, only oldest wins? 
-    // For now, adhering to user request: "write a transaction.txt file or check for its existense"
+    // For now, adhering to user request: "write a transaction.txt file or check for its existence"
 
     // We should probably double check if we aren't creating a duplicate if a race allowed it.
     // The previous search check handles the basic case. Use the return value.
@@ -80,10 +80,10 @@ export async function startTransaction(
 }
 
 export async function commitTransaction(
-    googleDriveOptions: GoogleDriveOptions,
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
     transaction: DriveTransaction
 ) {
-    const driveBaseUrl = (googleDriveOptions.apiEndpoint || 'https://www.googleapis.com') + '/drive/v3';
+    const driveBaseUrl = googleDriveOptions.apiEndpoint + '/drive/v3';
     const headers = {
         Authorization: 'Bearer ' + googleDriveOptions.authToken
     };
@@ -94,7 +94,7 @@ export async function commitTransaction(
     // Google Drive API uses 'If-Match' header for updates/deletes.
     // However, some docs say If-Match works for update, check delete. 
     // "Permanently deleting a file skips the trash. If you want to trash it, use update with trashed=true."
-    // User asked "check for its existense... use the etag to ensure if someone is is writing during our tx checks"
+    // User asked "check for its existence... use the etag to ensure if someone is is writing during our tx checks"
     // We will try to delete with If-Match.
 
     const deleteHeaders: any = { ...headers };

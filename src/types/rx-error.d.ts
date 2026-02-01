@@ -106,6 +106,12 @@ export interface RxErrorParameters {
     readonly pushRows?: RxReplicationWriteToMasterRow<any>[];
     readonly direction?: 'pull' | 'push';
 
+    // google-drive-replication
+    readonly folderPath?: string;
+    readonly folderName?: string;
+    readonly file?: any;
+    readonly parentId?: string;
+
 }
 
 /**
