@@ -971,6 +971,7 @@ jobs:
           npm install
           npm run build
 
+      - run: npm run test:replication-google-drive
 
       # supabase
       - run: npm run supabase:start
