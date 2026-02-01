@@ -1382,6 +1382,64 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/react.html?console=errors&code=R3'
     },
 
+    // plugins/replication-google-drive
+    GDR1: {
+        code: 'GDR1',
+        message: 'Google Drive: folderPath must not be the root folder',
+        cause: 'You provided "/" or "root" as folderPath.',
+        fix: 'Use a specific subfolder.',
+        docs: ''
+    },
+    GDR2: {
+        code: 'GDR2',
+        message: 'Google Drive: Folder already exists but is in trash',
+        cause: 'The target folder path contains a folder that is in the trash.',
+        fix: 'Restore the folder from trash or delete it permanently.',
+        docs: ''
+    },
+    GDR3: {
+        code: 'GDR3',
+        message: 'Google Drive: Folder already exists but is not a folder',
+        cause: 'A file with the same name as the folder exists.',
+        fix: 'Rename the file or the folder.',
+        docs: ''
+    },
+    GDR4: {
+        code: 'GDR4',
+        message: 'Google Drive: Parent folder does not exist',
+        cause: 'The parent folder in the path does not exist.',
+        fix: 'Ensure all parent folders exist or use a path that can be created.',
+        docs: ''
+    },
+    GDR5: {
+        code: 'GDR5',
+        message: 'Google Drive: Folder already exists but we don\'t have access to it',
+        cause: 'Conflict (409) detected but folder could not be found.',
+        fix: 'Check permissions or latency.',
+        docs: ''
+    },
+    GDR6: {
+        code: 'GDR6',
+        message: 'Google Drive: Failed to create folder',
+        cause: 'API returned an error during folder creation.',
+        fix: 'Check the error details.',
+        docs: ''
+    },
+    GDR7: {
+        code: 'GDR7',
+        message: 'Google Drive: Created folder but got no ID',
+        cause: 'API returned success but no ID.',
+        fix: 'This should not happen.',
+        docs: ''
+    },
+    GDR8: {
+        code: 'GDR8',
+        message: 'Google Drive: folderPath required',
+        cause: 'You did not provide a folderPath in the options.',
+        fix: 'Provide a folderPath string.',
+        docs: ''
+    },
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the
