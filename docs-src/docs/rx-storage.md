@@ -118,7 +118,7 @@ The worker RxStorage is a wrapper around any other RxStorage which allows to run
 
 #### 👑 SharedWorker
 
-The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-shared-worker.md)
+The SharedWorker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-shared-worker.md)
 
 #### Remote
 The Remote RxStorage is made to use a remote storage and communicate with it over an asynchronous message channel. The remote part could be on another JavaScript process or even on a different host machine. Mostly used internally in other storages like Worker or Electron-ipc. [Read more](./rx-storage-remote.md)

@@ -193,7 +193,7 @@ const migrationStrategies = {
         // set _attachments to an empty object to delete all existing ones during the migration.
         oldDoc._attachments = {};
         return oldDoc;
-      }
+      },
       3: async function(oldDoc){
         // update the data field of a single attachment to change its data. 
         oldDoc._attachments.myFile.data = await createBlob(

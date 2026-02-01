@@ -125,7 +125,7 @@ RxDB offers multiple storage layers, each backed by a different underlying techn
 
 - [LocalStorage RxStorage](../rx-storage-localstorage.md): Built on top of the browser's LocalStorage API.
 - [IndexedDB RxStorage](../rx-storage-indexeddb.md): The default RxDB storage layer, providing efficient data storage in modern browsers.
-- [OPFS RxStorage](../rx-storage-opfs.md): Uses the Operational File System (OPFS) for storage, suitable for [Electron applications](../electron-database.md).
+- [OPFS RxStorage](../rx-storage-opfs.md): Uses the Origin Private File System (OPFS) for storage, suitable for [Electron applications](../electron-database.md).
 - [Memory RxStorage](../rx-storage-memory.md): Stores data in memory, primarily intended for testing and development purposes.
 - [SQLite RxStorage](../rx-storage-sqlite.md): Stores data in an SQLite database. Can be used in a browser with React by using a SQLite database that was [compiled to WebAssembly](https://sqlite.org/wasm/doc/trunk/index.md). Using SQLite in React might not be the best idea, because a compiled SQLite wasm file is about one megabyte of code that has to be loaded and rendered by your users. Using native browser APIs like IndexedDB and OPFS have shown to be a more optimal database solution for browser based React apps compared to SQLite.
 

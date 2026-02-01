@@ -109,7 +109,7 @@ const schema = {
           type: 'string'
       },
   },
-  required: ['id']
+  required: ['id'],
   encrypted: ['secret']
 };
 

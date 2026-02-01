@@ -73,7 +73,7 @@ await db.addCollections({
 ### Insert a document
 
 ```ts
-await db.tasks.insert({ id: 'task-01', title: 'Get started with RxDB' });
+await db.tasks.insert({ id: 'task-01', title: 'Get started with RxDB', done: false });
 ```
 
 ### Query documents
@@ -93,7 +93,7 @@ const nonDoneTasks = await db.tasks.find({
 
 ## Mocking the LocalStorage API for testing in Node.js
 
-While the `localStorage` API only exists in browsers, your can the LocalStorage based storage in [Node.js](./nodejs-database.md) by using the mock that comes with RxDB.
+While the `localStorage` API only exists in browsers, you can use the LocalStorage based storage in [Node.js](./nodejs-database.md) by using the mock that comes with RxDB.
 This is intended to be used in unit tests or other test suites:
 
 ```ts

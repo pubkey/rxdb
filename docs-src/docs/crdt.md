@@ -199,14 +199,14 @@ When CRDTs are enabled with the plugin, all insert operations are automatically 
 ```ts
 // Calling RxCollection.insert()
 await myRxCollection.insert({
-    id: 'foo'
+    id: 'foo',
     points: 1
 });
 // is exactly equal to calling insertCRDT()
 await myRxCollection.insertCRDT({
     ifMatch: {
         $set: {
-            id: 'foo'
+            id: 'foo',
             points: 1
         }
     }
@@ -225,7 +225,7 @@ await myRxCollection.insertCRDT({
     ifMatch: {
         // if the document did not exist, insert it
         $set: {
-            id: 'foo'
+            id: 'foo',
             points: 1
         }
     },

@@ -89,15 +89,15 @@ app.get('/pull', (req, res) => {
                  * have the same updateAt, we can still "sort" them by their id.
                  */
                 {
-                    updateAt: { $gt: updatedAt }
+                    updatedAt: { $gt: updatedAt }
                 },
                 {
-                    updateAt: { $eq: updatedAt },
+                    updatedAt: { $eq: updatedAt },
                     id: { $gt: id }
                 }
             ]
         })
-        .sort({updateAt: 1, id: 1})
+        .sort({updatedAt: 1, id: 1})
         .limit(parseInt(req.query.batchSize, 10)).toArray();
     const newCheckpoint = documents.length === 0 ? { id, updatedAt } : {
         id: lastOfArray(documents).id,
