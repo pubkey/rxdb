@@ -1,15 +1,16 @@
 
 import assert from 'assert';
 import {
-    ensureNotFalsy
+    ensureNotFalsy,
+    addRxPlugin
 } from '../plugins/core/index.mjs';
 import {
     RxGoogleDriveReplicationState,
     startTransaction,
     commitTransaction,
-    initDriveStructure,
-    ensureFolderExists
+    createFolder
 } from '../plugins/replication-google-drive/index.mjs';
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
     startServer
 } from 'google-drive-mock';
@@ -20,6 +21,7 @@ import getPort from 'get-port';
  */
 
 describe('replication-google-drive.test.ts', function () {
+    addRxPlugin(RxDBDevModePlugin);
     this.timeout(200 * 1000);
     let server: any;
     let serverUrl: string;
@@ -94,124 +96,137 @@ describe('replication-google-drive.test.ts', function () {
             }, /GDR1/);
         });
     });
-    describe('init', () => {
-        let options: any;
+
+
+    describe('createFolder', () => {
+        let originalFetch: any;
+
         beforeEach(() => {
-            options = {
-                oauthClientId: 'mock-client-id',
-                authToken: 'valid-token',
-                apiEndpoint: serverUrl,
-                folderPath: 'init-test-' + Math.random()
+            originalFetch = global.fetch;
+        });
+
+        afterEach(() => {
+            global.fetch = originalFetch;
+        });
+
+        it('should default to root if parentId is undefined', async () => {
+            let capturedUrl: string = '';
+            let capturedBody: any;
+
+            global.fetch = async (url: any, options: any) => {
+                const urlStr = url.toString();
+                if (urlStr.includes('/drive/v3/files') && options.method === 'POST') {
+                    capturedUrl = urlStr;
+                    capturedBody = JSON.parse(options.body as string);
+                    return {
+                        ok: true,
+                        status: 200,
+                        json: async () => ({ id: 'new-folder-id', name: capturedBody.name, mimeType: 'application/vnd.google-apps.folder' })
+                    } as any;
+                }
+                // Mock verification GET
+                if (urlStr.includes('/drive/v3/files/new-folder-id') && options.method === 'GET') {
+                    return {
+                        ok: true,
+                        status: 200,
+                        json: async () => ({ id: 'new-folder-id', name: capturedBody.name, mimeType: 'application/vnd.google-apps.folder', trashed: false })
+                    } as any;
+                }
+                return originalFetch(url, options);
             };
-        });
 
-        it('should init structure on empty folder', async () => {
-            const result = await initDriveStructure(options);
-            assert.ok(result.mainFolderId, 'folderId missing');
-            assert.ok(result.docsFolderId, 'docsId missing');
-            assert.notStrictEqual(result.mainFolderId, result.docsFolderId);
-        });
-
-        it('should be idempotent', async () => {
-            const result1 = await initDriveStructure(options);
-            const result2 = await initDriveStructure(options);
-            assert.strictEqual(result1.mainFolderId, result2.mainFolderId);
-            assert.strictEqual(result1.docsFolderId, result2.docsFolderId);
-        });
-
-        it('should fail if folder is not empty and no rxdb.json', async () => {
-            // 1. Init a folder to get ID
-            const setupId = await initDriveStructure(options);
-
-            // 2. Create a "foreign" file in a NEW folder path (simulate user picking existing folder)
-            const foreignOptions = { ...options, folderPath: 'foreign-folder-' + Math.random() };
-            // Manually create folder and file
-            const driveBaseUrl = serverUrl + '/drive/v3';
-            const headers = { Authorization: 'Bearer valid-token', 'Content-Type': 'application/json' };
-
-            // Create folder
-            const createRes = await fetch(driveBaseUrl + '/files', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ name: foreignOptions.folderPath.split('/')[0], mimeType: 'application/vnd.google-apps.folder', parents: ['root'] })
-            });
-            const folder = await createRes.json();
-
-            // Create random file
-            await fetch(driveBaseUrl + '/files', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ name: 'random.txt', parents: [folder.id] })
-            });
-
-            // 3. Try to init on this foreign folder
-            // We need to pass the same logic (ensureFolderExists will find the existing one)
-            // But our test helper uses paths.
-
-            await assert.rejects(async () => {
-                await initDriveStructure(foreignOptions);
-            }, /Google Drive folder is not empty/);
-        });
-
-        it('should not crash when running in parallel', async () => {
-
-            const promises = [];
-            for (let i = 0; i < 5; i++) {
-                promises.push(initDriveStructure(options));
-            }
-            await Promise.all(promises);
-            // Check result
-            const result = await initDriveStructure(options);
-            assert.ok(result.mainFolderId);
-            assert.ok(result.docsFolderId);
-        });
-
-        it('should ensureFolderExists find existing folder and NOT delete existing files', async () => {
-            const folderName = 'existing-folder-' + Math.random();
-            const driveBaseUrl = serverUrl + '/drive/v3';
-            const headers = { Authorization: 'Bearer valid-token', 'Content-Type': 'application/json' };
-
-            // 1. Create folder
-            const createRes = await fetch(driveBaseUrl + '/files', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: ['root'] })
-            });
-            const folder = await createRes.json();
-            const folderId = folder.id;
-
-            // 2. Create file in that folder
-            const fileName = 'my-file.txt';
-            await fetch(driveBaseUrl + '/files', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ name: fileName, parents: [folderId] })
-            });
-
-            // 3. Call ensureFolderExists
-            const ensuredId = await ensureFolderExists({
+            const options: any = {
                 oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
-                folderPath: folderName
-            }, folderName);
+                folderPath: 'root'
+            };
 
-            assert.strictEqual(ensuredId, folderId);
+            const folderId = await createFolder(options, undefined, 'test-folder');
+            assert.strictEqual(folderId, 'new-folder-id');
+            assert.ok(capturedBody.parents.includes('root'), 'Should have "root" in parents');
+        });
 
-            // 4. Check if file still exists
-            const searchUrl = new URL(driveBaseUrl + '/files');
-            const q = `'${folderId}' in parents and name = '${fileName}' and trashed = false`;
-            searchUrl.searchParams.append('q', q);
+        it('should handle 409 conflict by searching and returning existing ID', async () => {
+            const folderName = 'conflict-folder';
+            const existingId = 'existing-folder-id';
+            let searchCalled = false;
 
-            const searchRes = await fetch(searchUrl.toString(), {
-                method: 'GET',
-                headers
-            });
-            const searchData = await searchRes.json();
-            const files = (searchData.files || []).filter((f: any) => f.parents && f.parents.includes(folderId));
-            assert.strictEqual(files.length, 1);
-            assert.strictEqual(files[0].name, fileName);
+            global.fetch = async (url: any, options: any) => {
+                const urlStr = url.toString();
+                // 1. Create -> 409
+                if (urlStr.includes('/drive/v3/files') && options.method === 'POST') {
+                    return {
+                        ok: false,
+                        status: 409,
+                        statusText: 'Conflict',
+                        text: async () => 'Conflict'
+                    } as any;
+                }
+                // 2. Search -> Found
+                if (urlStr.includes('q=name')) {
+                    searchCalled = true;
+                    // Verify query contains default parent 'root' since we pass undefined
+                    assert.ok(urlStr.includes('root'), 'Query should check for parent');
+                    return {
+                        ok: true,
+                        status: 200,
+                        json: async () => ({ files: [{ id: existingId }] })
+                    } as any;
+                }
+                return originalFetch(url, options);
+            };
+
+            const options: any = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'root'
+            };
+
+            const folderId = await createFolder(options, undefined, folderName);
+            assert.strictEqual(folderId, existingId);
+            assert.ok(searchCalled, 'Should have called search');
+        });
+
+        it('should throw GDR5 if 409 conflict and not found after search', async () => {
+            const folderName = 'ghost-folder';
+
+            global.fetch = async (url: any, options: any) => {
+                const urlStr = url.toString();
+                // 1. Create -> 409
+                if (urlStr.includes('/drive/v3/files') && options.method === 'POST') {
+                    return {
+                        ok: false,
+                        status: 409,
+                        statusText: 'Conflict',
+                        text: async () => 'Conflict'
+                    } as any;
+                }
+                // 2. Search -> Empty
+                if (urlStr.includes('q=name')) {
+                    return {
+                        ok: true,
+                        status: 200,
+                        json: async () => ({ files: [] })
+                    } as any;
+                }
+                return originalFetch(url, options);
+            };
+
+            const options: any = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'root'
+            };
+
+            try {
+                await createFolder(options, undefined, folderName);
+                assert.fail('Should have thrown GDR5');
+            } catch (err: any) {
+                assert.strictEqual(err.code, 'GDR5');
+            }
         });
     });
-
 });

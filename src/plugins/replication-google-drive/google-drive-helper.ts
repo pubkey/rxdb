@@ -1,131 +1,161 @@
 import { newRxError } from '../../rx-error.ts';
 import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
 
+const DRIVE_API_VERSION = 'v3';
+const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
+
+export async function createFolder(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    getParentId: string | undefined,
+    folderName: string
+): Promise<string> {
+    const parentId = getParentId ? getParentId : 'root';
+    const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id,name,mimeType,trashed';
+    const body = {
+        name: folderName,
+        mimeType: FOLDER_MIME_TYPE,
+        parents: [parentId]
+    };
+
+    let response;
+    try {
+        response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+    } catch (err: any) {
+        throw newRxError('GDR6', {
+            folderName,
+            args: { err }
+        });
+    }
+
+    // Handle 409 Conflict (Concurrency)
+    if (response.status === 409) {
+        const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+        const searchResponse = await fetch(searchUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken
+            }
+        });
+        const searchData = await searchResponse.json();
+        if (searchData.files && searchData.files.length > 0) {
+            return searchData.files[0].id;
+        }
+        throw newRxError('GDR5', {
+            folderName,
+            folderPath: folderName, // Best effort
+            args: {
+                status: response.status,
+                statusText: response.statusText
+            }
+        });
+    }
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw newRxError('GDR6', {
+            folderName,
+            args: {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            }
+        });
+    }
+
+    const data = await response.json();
+    const folderId = data.id;
+
+    if (!folderId) {
+        throw newRxError('GDR7', {
+            folderName,
+            args: { data }
+        });
+    }
+
+    /**
+     * Verification:
+     * Fetch the folder again to ensure it exists and has correct mime type.
+     * This catches eventual consistency issues or weird API behaviors.
+     */
+    const verifyUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + folderId + '?fields=id,name,mimeType,trashed';
+    let verifyResponse;
+    try {
+        verifyResponse = await fetch(verifyUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken
+            }
+        });
+    } catch (err) {
+        throw newRxError('GDR6', {
+            folderName,
+            args: {
+                step: 'verification',
+                err
+            }
+        });
+    }
+
+    if (!verifyResponse.ok) {
+        throw newRxError('GDR6', {
+            folderName,
+            args: {
+                step: 'verification',
+                status: verifyResponse.status
+            }
+        });
+    }
+
+    const verifyData = await verifyResponse.json();
+
+    if (verifyData.trashed) {
+        throw newRxError('GDR2', {
+            folderName,
+            folderPath: folderName // Best effort
+        });
+    }
+
+    if (verifyData.mimeType !== FOLDER_MIME_TYPE) {
+        throw newRxError('GDR3', {
+            folderName,
+            args: verifyData
+        });
+    }
+
+    return folderId;
+}
+
 export async function ensureFolderExists(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     folderPath: string
 ): Promise<string> {
-    const safePath = folderPath.split('/').filter(f => f.trim().length > 0);
-    if (safePath.length === 0 || (safePath.length === 1 && safePath[0] === 'root')) {
+    if (folderPath === 'root' || folderPath === '/') {
         throw newRxError('GDR1', { folderPath });
     }
-
-    const driveBaseUrl = googleDriveOptions.apiEndpoint + '/drive/v3';
-    const headers = {
-        Authorization: 'Bearer ' + googleDriveOptions.authToken,
-        'Content-Type': 'application/json'
-    };
-
+    const parts = folderPath.split('/').filter(p => p.length > 0);
     let parentId = 'root';
-
-    for (let i = 0; i < safePath.length; i++) {
-        const folderName = safePath[i];
-        const isLast = i === safePath.length - 1;
-
-        // Search for folder in current parent
-        // We include trashed items in search to differentiate errors
-        // We retry search to handle eventual consistency (latency)
-        const q = `name = '${folderName}' and '${parentId}' in parents and trashed = false`;
-        const searchUrl = new URL(driveBaseUrl + '/files');
-        searchUrl.searchParams.append('q', q);
-        searchUrl.searchParams.append('fields', 'files(id, name, mimeType, trashed, parents)');
-
-        let matchingFile;
-        // Mock simulates ~5s latency, so we need enough retries.
-        // 14 retries * 500ms = 7s (+ overhead)
-        for (let retry = 0; retry < 14; retry++) {
-            const searchRes = await fetch(searchUrl.toString(), {
-                method: 'GET',
-                headers
-            });
-            const searchData = await searchRes.json();
-
-            matchingFile = (searchData.files || []).find((f: any) =>
-                f.name === folderName && f.parents && f.parents.includes(parentId)
-            );
-
-            if (matchingFile) {
-                break;
+    for (const part of parts) {
+        const query = "name = '" + part + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+        const searchResponse = await fetch(searchUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken
             }
-            // Wait before retry if not found
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        // Fallback: If not found by name, list all children of parent and filter client-side
-        // This handles cases where compound queries might fail or lag significantly on some backends/mocks
-        if (!matchingFile) {
-            const fallbackQ = `'${parentId}' in parents and trashed = false`;
-            const fallbackUrl = new URL(driveBaseUrl + '/files');
-            fallbackUrl.searchParams.append('q', fallbackQ);
-            fallbackUrl.searchParams.append('fields', 'files(id, name, mimeType, trashed, parents)');
-
-            const fallbackRes = await fetch(fallbackUrl.toString(), { method: 'GET', headers });
-            const fallbackData = await fallbackRes.json();
-
-            matchingFile = (fallbackData.files || []).find((f: any) =>
-                f.name === folderName
-            );
-        }
-
-        if (matchingFile) {
-            if (matchingFile.trashed) {
-                throw newRxError('GDR2', { folderName, file: matchingFile });
-            }
-            if (matchingFile.mimeType !== 'application/vnd.google-apps.folder') {
-                throw newRxError('GDR3', { folderName, file: matchingFile });
-            }
-            parentId = matchingFile.id;
+        });
+        const searchData = await searchResponse.json();
+        if (searchData.files && searchData.files.length > 0) {
+            parentId = searchData.files[0].id;
         } else {
-            // Not found
-            if (!isLast) {
-                throw newRxError('GDR4', { folderName, parentId });
-            } else {
-                // Create it
-                const createUrl = new URL(driveBaseUrl + '/files');
-                const createBody = {
-                    name: folderName,
-                    mimeType: 'application/vnd.google-apps.folder',
-                    parents: [parentId]
-                };
-
-                const createRes = await fetch(createUrl.toString(), {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify(createBody)
-                });
-                const fileData = await createRes.json();
-
-                if (!createRes.ok) {
-                    if (createRes.status === 409) {
-                        // 409 means it already exists (race condition or latency).
-                        // Try to find it one last time using fallback search.
-                        const fallbackQ = `'${parentId}' in parents and trashed = false`;
-                        const fallbackUrl = new URL(driveBaseUrl + '/files');
-                        fallbackUrl.searchParams.append('q', fallbackQ);
-                        fallbackUrl.searchParams.append('fields', 'files(id, name, mimeType, trashed, parents)');
-
-                        const fallbackRes = await fetch(fallbackUrl.toString(), { method: 'GET', headers });
-                        const fallbackData = await fallbackRes.json();
-
-                        const foundAfter409 = (fallbackData.files || []).find((f: any) =>
-                            f.name === folderName
-                        );
-
-                        if (foundAfter409) {
-                            parentId = foundAfter409.id;
-                        } else {
-                            throw newRxError('GDR5', { folderName });
-                        }
-                    } else {
-                        throw newRxError('GDR6', { folderName, data: fileData });
-                    }
-                } else {
-                    parentId = fileData.id;
-                }
-                if (!parentId) {
-                    throw newRxError('GDR7', { folderName, data: fileData });
-                }
-            }
+            parentId = await createFolder(googleDriveOptions, parentId, part);
         }
     }
     return parentId;
@@ -135,7 +165,9 @@ export async function ensureRootFolderExists(
     googleDriveOptions: GoogleDriveOptionsWithDefaults
 ): Promise<string> {
     if (!googleDriveOptions.folderPath) {
-        throw newRxError('GDR8');
+        throw newRxError('GDR8', {
+            folderPath: ''
+        });
     }
     return ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
 }
