@@ -1,5 +1,6 @@
 import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { ensureRootFolderExists } from './google-drive-helper.ts';
+import { ensureFolderExists } from './google-drive-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 export type DriveTransaction = {
     fileId: string;
@@ -15,7 +16,12 @@ export async function startTransaction(
         'Content-Type': 'application/json'
     };
 
-    const parentId = await ensureRootFolderExists(googleDriveOptions);
+    if (!googleDriveOptions.folderPath) {
+        throw newRxError('GDR8', {
+            folderPath: ''
+        });
+    }
+    const parentId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
 
     // 1. Search for existing transaction file
     const q = `name = 'transaction.txt' and '${parentId}' in parents and trashed = false`;

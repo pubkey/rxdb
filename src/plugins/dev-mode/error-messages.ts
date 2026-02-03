@@ -1400,7 +1400,7 @@ export const ERROR_MESSAGES = {
     GDR3: {
         code: 'GDR3',
         message: 'Google Drive: Folder already exists but is not a folder',
-        cause: 'A file with the same name already exists.',
+        cause: 'A file with the same name already exists, but is not a folder',
         fix: 'Rename the file or the folder you are trying to create.',
         docs: ''
     },
@@ -1425,18 +1425,11 @@ export const ERROR_MESSAGES = {
         fix: 'Check the error details.',
         docs: ''
     },
-    GDR7: {
-        code: 'GDR7',
-        message: 'Google Drive: Created folder but the API response did not return an ID',
-        cause: 'The API response was malformed.',
-        fix: 'Check the API response.',
-        docs: ''
-    },
-    GDR8: {
-        code: 'GDR8',
-        message: 'Google Drive: folderPath required',
-        cause: 'You did not provide a folderPath in the options.',
-        fix: 'Provide a folderPath.',
+    GDR9: {
+        code: 'GDR9',
+        message: 'Google Drive: folder has content but is not a rxdb sync target',
+        cause: 'You selected a folder that is not empty but is not a rxdb sync target.',
+        fix: 'Provide empty folder or use a different folder that is not used for anything else.',
         docs: ''
     },
 

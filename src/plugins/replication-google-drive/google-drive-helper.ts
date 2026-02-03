@@ -1,5 +1,7 @@
 import { newRxError } from '../../rx-error.ts';
-import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
+import { ensureNotFalsy } from '../utils/index.ts';
+import { randomToken } from '../utils/utils-string.ts';
+import type { GoogleDriveOptionsWithDefaults, GoogleDriveFile } from './google-drive-types.ts';
 
 const DRIVE_API_VERSION = 'v3';
 const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
@@ -17,46 +19,14 @@ export async function createFolder(
         parents: [parentId]
     };
 
-    let response;
-    try {
-        response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                Authorization: 'Bearer ' + googleDriveOptions.authToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-    } catch (err: any) {
-        throw newRxError('GDR6', {
-            folderName,
-            args: { err }
-        });
-    }
-
-    // Handle 409 Conflict (Concurrency)
-    if (response.status === 409) {
-        const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
-        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
-        const searchResponse = await fetch(searchUrl, {
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + googleDriveOptions.authToken
-            }
-        });
-        const searchData = await searchResponse.json();
-        if (searchData.files && searchData.files.length > 0) {
-            return searchData.files[0].id;
-        }
-        throw newRxError('GDR5', {
-            folderName,
-            folderPath: folderName, // Best effort
-            args: {
-                status: response.status,
-                statusText: response.statusText
-            }
-        });
-    }
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
 
     if (!response.ok) {
         const errorText = await response.text();
@@ -70,78 +40,315 @@ export async function createFolder(
         });
     }
 
-    const data = await response.json();
-    const folderId = data.id;
-
-    if (!folderId) {
-        throw newRxError('GDR7', {
-            folderName,
-            args: { data }
-        });
-    }
+    await response.json();
 
     /**
-     * Verification:
-     * Fetch the folder again to ensure it exists and has correct mime type.
-     * This catches eventual consistency issues or weird API behaviors.
+     * To make the function idempotent, we do not use the id from the creation-response.
+     * Instead after creating the folder, we search for it again so that in case
+     * some other instance created the same folder, we use the oldest one always.
      */
-    const verifyUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + folderId + '?fields=id,name,mimeType,trashed';
-    let verifyResponse;
-    try {
-        verifyResponse = await fetch(verifyUrl, {
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + googleDriveOptions.authToken
-            }
-        });
-    } catch (err) {
-        throw newRxError('GDR6', {
-            folderName,
-            args: {
-                step: 'verification',
-                err
-            }
-        });
+
+    const foundFolder = await findFolder(
+        googleDriveOptions,
+        parentId,
+        folderName
+    );
+
+    return ensureNotFalsy(foundFolder);
+}
+
+
+export async function findFolder(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    parentId: string = 'root',
+    folderName: string
+): Promise<string | undefined> {
+    const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+    /**
+     * We sort by createdTime ASC
+     * so in case the same folder was created multiple times, we always pick the same
+     * one which is the oldest one.
+     */
+    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&orderBy=createdTime asc&q=' + encodeURIComponent(query);
+    const searchResponse = await fetch(searchUrl, {
+        method: 'GET',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken
+        }
+    });
+    const searchData = await searchResponse.json();
+
+    if (searchData.files && searchData.files.length > 0) {
+        const file = searchData.files[0];
+        if (file.mimeType !== FOLDER_MIME_TYPE) {
+            throw newRxError('GDR3', {
+                folderName,
+                args: file
+            });
+        }
+        return file.id;
+    } else {
+        return undefined;
     }
-
-    if (!verifyResponse.ok) {
-        throw newRxError('GDR6', {
-            folderName,
-            args: {
-                step: 'verification',
-                status: verifyResponse.status
-            }
-        });
-    }
-
-    const verifyData = await verifyResponse.json();
-
-    if (verifyData.trashed) {
-        throw newRxError('GDR2', {
-            folderName,
-            folderPath: folderName // Best effort
-        });
-    }
-
-    if (verifyData.mimeType !== FOLDER_MIME_TYPE) {
-        throw newRxError('GDR3', {
-            folderName,
-            args: verifyData
-        });
-    }
-
-    return folderId;
 }
 
 export async function ensureFolderExists(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     folderPath: string
 ): Promise<string> {
-    if (folderPath === 'root' || folderPath === '/') {
-        throw newRxError('GDR1', { folderPath });
-    }
     const parts = folderPath.split('/').filter(p => p.length > 0);
     let parentId = 'root';
+    for (const part of parts) {
+        const newParentId = await findFolder(googleDriveOptions, parentId, part);
+        if (newParentId) {
+            parentId = newParentId
+        } else {
+            parentId = await createFolder(googleDriveOptions, parentId, part);
+        }
+    }
+    return parentId;
+}
+
+export async function createFileWithJSONContent(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    parentId: string,
+    fileName: string,
+    jsonContent: any
+): Promise<string> {
+    const metadata = {
+        name: fileName,
+        parents: [parentId],
+        mimeType: 'application/json'
+    };
+
+    const multipartBoundary = '-------314159265358979323846';
+    const delimiter = '\r\n--' + multipartBoundary + '\r\n';
+    const closeDelim = '\r\n--' + multipartBoundary + '--';
+
+    const body = delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(jsonContent) +
+        closeDelim;
+
+    const url = googleDriveOptions.apiEndpoint + '/upload/drive/v3/files?uploadType=multipart&fields=id';
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken,
+            'Content-Type': 'multipart/related; boundary="' + multipartBoundary + '"'
+        },
+        body
+    });
+    if (!response.ok) {
+        const body = await response.text();
+        throw newRxError('GDR6', {
+            args: {
+                folderName: fileName,
+                parentId,
+                status: response.status,
+                statusText: response.statusText,
+                body
+            }
+        });
+    }
+
+    const data = await response.json();
+    return data.id;
+}
+
+export async function getFile(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    filePath: string
+): Promise<any | undefined> {
+    const parts = filePath.split('/').filter(p => p.length > 0);
+    if (parts.length === 0) {
+        throw newRxError('GDR8', { folderPath: filePath });
+    }
+
+    let parentId = 'root';
+
+    // Traverse directories
+    for (let i = 0; i < parts.length - 1; i++) {
+        const folderName = parts[i];
+        const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
+        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+        const res = await fetch(searchUrl, {
+            headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+        });
+        const data = await res.json();
+        if (!data.files || data.files.length === 0) {
+            return undefined;
+        }
+        parentId = data.files[0].id;
+    }
+
+    // Get the file
+    const fileName = parts[parts.length - 1];
+    const query = "name = '" + fileName + "' and '" + parentId + "' in parents and trashed = false and mimeType != '" + FOLDER_MIME_TYPE + "'";
+    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+    const res = await fetch(searchUrl, {
+        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+    });
+    const data = await res.json();
+    if (!data.files || data.files.length === 0) {
+        return undefined;
+    }
+
+    const fileId = data.files[0].id;
+    const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + fileId + '?alt=media';
+    const downRes = await fetch(downloadUrl, {
+        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+    });
+
+    if (!downRes.ok) {
+        throw newRxError('GDR6', {
+            folderName: fileName,
+            args: { status: downRes.status }
+        });
+    }
+
+    const fileData = await downRes.json();
+    if (fileData && fileData.kind === 'drive#file' && fileData.content) {
+        return fileData.content;
+    }
+    return fileData;
+}
+
+export async function createEmptyFile(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    parentId: string,
+    fileName: string
+): Promise<string> {
+    const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id';
+    const body = {
+        name: fileName,
+        parents: [parentId],
+        mimeType: 'application/json'
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+
+    /**
+     * Do not throw on duplicates,
+     * if the file is there already, find its id
+     * and return that one.
+     */
+    if (response.status === 409) {
+        const query = [
+            `name = '${fileName}'`,
+            `'${parentId}' in parents`,
+            `trashed = false`,
+        ].join(' and ');
+        const url =
+            googleDriveOptions.apiEndpoint + '/drive/v3/files' +
+            '?fields=files(id,createdTime)' +
+            '&orderBy=createdTime asc' +
+            '&q=' + encodeURIComponent(query);
+        const res = await fetch(url, {
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken,
+            },
+        });
+        const data = await res.json();
+        return ensureNotFalsy(data.files[0].id);
+    }
+
+    if (!response.ok) {
+        throw newRxError('GDR6', {
+            folderName: fileName,
+            args: {
+                asdf: 'asdf',
+                status: response.status,
+                statusText: response.statusText,
+                body: await response.text()
+            }
+        });
+    }
+
+    const data = await response.json();
+    return data.id;
+}
+
+
+export async function updateFile(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string,
+    jsonContent: any
+): Promise<void> {
+    const url = googleDriveOptions.apiEndpoint + '/upload/drive/v3/files/' + fileId + '?uploadType=media';
+    const body = JSON.stringify(jsonContent);
+
+    let response;
+    try {
+        response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                Authorization: 'Bearer ' + googleDriveOptions.authToken,
+                'Content-Type': 'application/json'
+            },
+            body
+        });
+    } catch (err: any) {
+        throw newRxError('GDR6', {
+            folderName: fileId,
+            args: { err }
+        });
+    }
+
+    if (!response.ok) {
+        throw newRxError('GDR6', {
+            folderName: fileId,
+            args: {
+                status: response.status,
+                statusText: response.statusText,
+                body: await response.text()
+            }
+        });
+    }
+}
+
+export async function deleteFile(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string
+): Promise<void> {
+    const url = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + fileId;
+    const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken
+        }
+    });
+
+    if (!response.ok) {
+        throw newRxError('GDR6', {
+            folderName: fileId,
+            args: {
+                status: response.status,
+                statusText: response.statusText
+            }
+        });
+    }
+}
+
+export async function readFolder(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    folderPath: string
+): Promise<GoogleDriveFile[]> {
+    let parentId = 'root';
+    const parts = folderPath.split('/').filter(p => p.length > 0);
+
+    // Resolve folder path
     for (const part of parts) {
         const query = "name = '" + part + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
         const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
@@ -155,19 +362,105 @@ export async function ensureFolderExists(
         if (searchData.files && searchData.files.length > 0) {
             parentId = searchData.files[0].id;
         } else {
-            parentId = await createFolder(googleDriveOptions, parentId, part);
+            throw newRxError('GDR8', { folderPath });
         }
     }
-    return parentId;
-}
 
-export async function ensureRootFolderExists(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults
-): Promise<string> {
-    if (!googleDriveOptions.folderPath) {
-        throw newRxError('GDR8', {
-            folderPath: ''
+    // List children
+    const query = "'" + parentId + "' in parents and trashed = false";
+    const listUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,name,mimeType,trashed,parents)&q=' + encodeURIComponent(query);
+    const listResponse = await fetch(listUrl, {
+        method: 'GET',
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken
+        }
+    });
+
+    if (!listResponse.ok) {
+        throw newRxError('GDR6', {
+            folderName: folderPath,
+            args: {
+                status: listResponse.status,
+                statusText: listResponse.statusText
+            }
         });
     }
-    return ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
+
+    const listData = await listResponse.json();
+    return listData.files || [];
+}
+
+export async function getOrCreateRxDBJson(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    folderId: string
+): Promise<string> {
+    console.log('DEBUG: getOrCreateRxDBJson', folderId);
+    const replicationIdentifier = randomToken(10);
+    try {
+        await createFileWithJSONContent(
+            googleDriveOptions,
+            folderId,
+            'rxdb.json',
+            { replicationIdentifier }
+        );
+        return replicationIdentifier;
+    } catch (err: any) {
+        const is409 = err.code === 'GDR6' &&
+            err.parameters &&
+            err.parameters.args &&
+            err.parameters.args.status === 409;
+
+        if (is409) {
+            // Already exists -> return existing replicationIdentifier
+            // We search directly in the folderId to avoid path traversal issues
+            const query = "name = 'rxdb.json' and '" + folderId + "' in parents and trashed = false";
+            const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
+
+            // Retry loop for eventual consistency
+            for (let i = 0; i < 5; i++) {
+                const searchResponse = await fetch(searchUrl, {
+                    headers: {
+                        Authorization: 'Bearer ' + googleDriveOptions.authToken
+                    }
+                });
+                const searchData = await searchResponse.json();
+
+                if (searchData.files && searchData.files.length > 0) {
+                    const existingFileId = searchData.files[0].id;
+                    // Download content
+                    const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + existingFileId + '?alt=media';
+                    const downRes = await fetch(downloadUrl, {
+                        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+                    });
+                    if (downRes.ok) {
+                        const content = await downRes.json();
+                        return content.replicationIdentifier || (content.content && content.content.replicationIdentifier);
+                    }
+                } else {
+                    // Fallback for mocks/delayed indexing: search by name globally and filter
+                    const globalQuery = "name = 'rxdb.json' and trashed = false";
+                    const globalSearchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,parents)&q=' + encodeURIComponent(globalQuery);
+                    const globalRes = await fetch(globalSearchUrl, {
+                        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+                    });
+                    const globalData = await globalRes.json();
+                    const match = globalData.files ? globalData.files.find((f: any) => f.parents && f.parents.includes(folderId)) : null;
+
+                    if (match) {
+                        const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + match.id + '?alt=media';
+                        const downRes = await fetch(downloadUrl, {
+                            headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
+                        });
+                        if (downRes.ok) {
+                            const content = await downRes.json();
+                            return content.replicationIdentifier || (content.content && content.content.replicationIdentifier);
+                        }
+                    }
+                }
+                // Wait before retry
+                await new Promise(res => setTimeout(res, 200));
+            }
+        }
+        throw err;
+    }
 }

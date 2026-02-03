@@ -17,12 +17,14 @@ import {
 } from '../../index.ts';
 
 import type {
+    DriveStructure,
     GoogleDriveCheckpointType,
     GoogleDriveOptions,
     GoogleDriveOptionsWithDefaults,
     SyncOptionsGoogleDrive
 } from './google-drive-types.ts';
 import { Subject } from 'rxjs';
+import { initDriveStructure } from './init.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -33,6 +35,7 @@ export * from './init.ts';
 export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState<RxDocType, GoogleDriveCheckpointType> {
     constructor(
         public readonly googleDrive: GoogleDriveOptionsWithDefaults,
+        public readonly driveStructure: DriveStructure,
         public readonly replicationIdentifierHash: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>,
@@ -54,11 +57,23 @@ export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState
     }
 }
 
-export function replicateGoogleDrive<RxDocType>(
+export async function replicateGoogleDrive<RxDocType>(
     options: SyncOptionsGoogleDrive<RxDocType>
-): RxGoogleDriveReplicationState<RxDocType> {
+): Promise<RxGoogleDriveReplicationState<RxDocType>> {
     const collection: RxCollection<RxDocType, any, any> = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
+
+    const googleDriveOptionsWithDefaults: GoogleDriveOptionsWithDefaults = Object.assign(
+        {
+            apiEndpoint: 'https://www.googleapis.com'
+        },
+        options.googleDrive
+    );
+
+
+    const driveStructure = await initDriveStructure(googleDriveOptionsWithDefaults);
+
+
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, GoogleDriveCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType> | undefined;
 
@@ -101,15 +116,10 @@ export function replicateGoogleDrive<RxDocType>(
         };
     }
 
-    const googleDriveOptionsWithDefaults: GoogleDriveOptionsWithDefaults = Object.assign(
-        {
-            apiEndpoint: 'https://www.googleapis.com'
-        },
-        options.googleDrive
-    );
 
     const replicationState = new RxGoogleDriveReplicationState<RxDocType>(
         googleDriveOptionsWithDefaults,
+        driveStructure,
         options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,

@@ -9,6 +9,14 @@ export type GoogleDriveCheckpointType = {
     modifiedTime: string;
 };
 
+export type GoogleDriveFile = {
+    id: string;
+    name: string;
+    mimeType: string;
+    trashed: boolean;
+    parents: string[];
+};
+
 export type GoogleDriveOptions = {
     oauthClientId: string;
     authToken: string;
@@ -28,6 +36,12 @@ export type GoogleDriveOptionsWithDefaults = {
     authToken: string;
     apiEndpoint: string;
     folderPath: string;
+};
+
+export type DriveStructure = {
+    rootFolderId: string;
+    docsFolderId: string;
+    replicationIdentifier: string;
 };
 
 export type GoogleDriveSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>, 'handler' | 'stream$'>;

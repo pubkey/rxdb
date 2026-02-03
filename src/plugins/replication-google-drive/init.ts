@@ -1,8 +1,45 @@
-import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { ensureFolderExists, ensureRootFolderExists } from './google-drive-helper.ts';
+import type { DriveStructure, GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
+import { ensureFolderExists, readFolder, getOrCreateRxDBJson } from './google-drive-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
-export type DriveStructure = {
-    mainFolderId: string;
-    docsFolderId: string;
-};
 
+export async function initDriveStructure(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults
+): Promise<DriveStructure> {
+    if (googleDriveOptions.folderPath === '/' || !googleDriveOptions.folderPath) {
+        throw newRxError('GDR1', {
+            folderPath: googleDriveOptions.folderPath
+        });
+    }
+
+    // root folder
+    const rootFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
+    // console.log('DEBUG: rootFolderId', rootFolderId);
+
+    const rootFolderContent = await readFolder(googleDriveOptions, googleDriveOptions.folderPath);
+    // console.log('DEBUG: rootFolderContent', JSON.stringify(rootFolderContent));
+
+    /**
+     * Folder but either be empty
+     * or already used as a RxDB google-drive sync target.
+     */
+    const hasRxDBJson = rootFolderContent.find((file: any) => file.name === 'rxdb.json');
+    const hasOther = rootFolderContent.find((file: any) => file.name !== 'rxdb.json');
+    if (hasOther && !hasRxDBJson) {
+        throw newRxError('GDR9', {
+            folderPath: googleDriveOptions.folderPath
+        });
+    }
+
+    // create rxdb.json file
+    const replicationIdentifier = await getOrCreateRxDBJson(googleDriveOptions, rootFolderId);
+
+    // docs folder
+    const docsFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/docs');
+
+    return {
+        rootFolderId,
+        docsFolderId,
+        replicationIdentifier
+    };
+}
