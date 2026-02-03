@@ -1,23 +1,14 @@
 
 import assert from 'assert';
 import {
-    ensureNotFalsy,
     addRxPlugin,
     randomToken
 } from '../plugins/core/index.mjs';
 import {
-    RxGoogleDriveReplicationState,
-    startTransaction,
-    commitTransaction,
-    createFolder,
-    createFileWithJSONContent,
     createEmptyFile,
-    getFile,
     ensureFolderExists,
     readFolder,
-    initDriveStructure,
-    getOrCreateRxDBJson,
-    deleteFile
+    FOLDER_MIME_TYPE
 } from '../plugins/replication-google-drive/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
@@ -25,7 +16,6 @@ import {
 } from 'google-drive-mock';
 import getPort from 'get-port';
 // import express from 'express'; // Loaded dynamically to match CJS requirements if needed
-
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
  */
@@ -60,9 +50,17 @@ describe('replication-google-drive.test.ts', function () {
     describe('helpers', () => {
         describe('ensureFolderExists()', () => {
             it('should create the folder', async () => {
-                const folderId = await ensureFolderExists(options, options.folderPath + '/foo/bar/lol');
+                const folderId = await ensureFolderExists(options, options.folderPath + '/test1/lol');
                 assert.ok(folderId);
                 assert.ok(folderId.length > 4);
+            });
+            it('create the same folder on two different parents', async () => {
+                console.log('---- 0');
+                const folderId = await ensureFolderExists(options, options.folderPath + '/sub1/itsme');
+                console.log('---- 1');
+                const folderId2 = await ensureFolderExists(options, options.folderPath + '/sub2/itsme');
+                console.log('---- 2');
+                assert.ok(folderId !== folderId2);
             });
             it('should use the existing folder when called twice', async () => {
                 const folderId = await ensureFolderExists(options, options.folderPath + '/foo/bar/lol');
@@ -83,7 +81,7 @@ describe('replication-google-drive.test.ts', function () {
                 const fileId = await createEmptyFile(
                     options,
                     parentId,
-                    'emtpy.txt'
+                    'empty.txt'
                 );
                 assert.ok(fileId);
                 assert.ok(fileId.length > 4);
@@ -95,7 +93,7 @@ describe('replication-google-drive.test.ts', function () {
                 const fileId = await createEmptyFile(
                     options,
                     parentId,
-                    'emtpy.txt'
+                    'empty.txt'
                 );
                 const content = await readFolder(options, options.folderPath + '/foo/bar/lol');
                 assert.strictEqual(content.length, 1);

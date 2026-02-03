@@ -3,15 +3,15 @@ import { ensureNotFalsy } from '../utils/index.ts';
 import { randomToken } from '../utils/utils-string.ts';
 import type { GoogleDriveOptionsWithDefaults, GoogleDriveFile } from './google-drive-types.ts';
 
-const DRIVE_API_VERSION = 'v3';
-const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
+export const DRIVE_API_VERSION = 'v3';
+export const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
 
 export async function createFolder(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    getParentId: string | undefined,
+    parentId: string = 'root',
     folderName: string
 ): Promise<string> {
-    const parentId = getParentId ? getParentId : 'root';
+    console.log('createFolder() ' + folderName + ' parent: ' + parentId);
     const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id,name,mimeType,trashed';
     const body = {
         name: folderName,
@@ -30,9 +30,18 @@ export async function createFolder(
 
     if (!response.ok) {
         const errorText = await response.text();
+
+        if (response.status == 409) {
+            // someone else created the same folder, return that one instead.
+            const found = await findFolder(googleDriveOptions, parentId, folderName);
+            return ensureNotFalsy(found);
+        }
+
         throw newRxError('GDR6', {
             folderName,
             args: {
+                call: 'createFolder',
+                parentId,
                 status: response.status,
                 statusText: response.statusText,
                 body: errorText
@@ -109,114 +118,6 @@ export async function ensureFolderExists(
     return parentId;
 }
 
-export async function createFileWithJSONContent(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    parentId: string,
-    fileName: string,
-    jsonContent: any
-): Promise<string> {
-    const metadata = {
-        name: fileName,
-        parents: [parentId],
-        mimeType: 'application/json'
-    };
-
-    const multipartBoundary = '-------314159265358979323846';
-    const delimiter = '\r\n--' + multipartBoundary + '\r\n';
-    const closeDelim = '\r\n--' + multipartBoundary + '--';
-
-    const body = delimiter +
-        'Content-Type: application/json\r\n\r\n' +
-        JSON.stringify(metadata) +
-        delimiter +
-        'Content-Type: application/json\r\n\r\n' +
-        JSON.stringify(jsonContent) +
-        closeDelim;
-
-    const url = googleDriveOptions.apiEndpoint + '/upload/drive/v3/files?uploadType=multipart&fields=id';
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            Authorization: 'Bearer ' + googleDriveOptions.authToken,
-            'Content-Type': 'multipart/related; boundary="' + multipartBoundary + '"'
-        },
-        body
-    });
-    if (!response.ok) {
-        const body = await response.text();
-        throw newRxError('GDR6', {
-            args: {
-                folderName: fileName,
-                parentId,
-                status: response.status,
-                statusText: response.statusText,
-                body
-            }
-        });
-    }
-
-    const data = await response.json();
-    return data.id;
-}
-
-export async function getFile(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    filePath: string
-): Promise<any | undefined> {
-    const parts = filePath.split('/').filter(p => p.length > 0);
-    if (parts.length === 0) {
-        throw newRxError('GDR8', { folderPath: filePath });
-    }
-
-    let parentId = 'root';
-
-    // Traverse directories
-    for (let i = 0; i < parts.length - 1; i++) {
-        const folderName = parts[i];
-        const query = "name = '" + folderName + "' and '" + parentId + "' in parents and trashed = false and mimeType = '" + FOLDER_MIME_TYPE + "'";
-        const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
-        const res = await fetch(searchUrl, {
-            headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-        });
-        const data = await res.json();
-        if (!data.files || data.files.length === 0) {
-            return undefined;
-        }
-        parentId = data.files[0].id;
-    }
-
-    // Get the file
-    const fileName = parts[parts.length - 1];
-    const query = "name = '" + fileName + "' and '" + parentId + "' in parents and trashed = false and mimeType != '" + FOLDER_MIME_TYPE + "'";
-    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
-    const res = await fetch(searchUrl, {
-        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-    });
-    const data = await res.json();
-    if (!data.files || data.files.length === 0) {
-        return undefined;
-    }
-
-    const fileId = data.files[0].id;
-    const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + fileId + '?alt=media';
-    const downRes = await fetch(downloadUrl, {
-        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-    });
-
-    if (!downRes.ok) {
-        throw newRxError('GDR6', {
-            folderName: fileName,
-            args: { status: downRes.status }
-        });
-    }
-
-    const fileData = await downRes.json();
-    if (fileData && fileData.kind === 'drive#file' && fileData.content) {
-        return fileData.content;
-    }
-    return fileData;
-}
 
 export async function createEmptyFile(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
@@ -313,29 +214,6 @@ export async function updateFile(
                 status: response.status,
                 statusText: response.statusText,
                 body: await response.text()
-            }
-        });
-    }
-}
-
-export async function deleteFile(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    fileId: string
-): Promise<void> {
-    const url = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + fileId;
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-            Authorization: 'Bearer ' + googleDriveOptions.authToken
-        }
-    });
-
-    if (!response.ok) {
-        throw newRxError('GDR6', {
-            folderName: fileId,
-            args: {
-                status: response.status,
-                statusText: response.statusText
             }
         });
     }
