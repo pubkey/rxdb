@@ -606,7 +606,7 @@
     "@types/cors": "2.8.19",
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.10.9",
+    "@types/node": "24.10.10",
     "@types/react": "19.2.10",
     "@types/request": "2.48.13",
     "@types/request-promise-native": "1.0.21",
