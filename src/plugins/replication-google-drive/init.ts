@@ -1,5 +1,5 @@
 import type { DriveStructure, GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { ensureFolderExists, readFolder, getOrCreateRxDBJson, createEmptyFile } from './google-drive-helper.ts';
+import { ensureFolderExists, readFolder, createEmptyFile } from './google-drive-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 
 
@@ -31,7 +31,10 @@ export async function initDriveStructure(
         });
     }
 
-    // create rxdb.json file
+    /**
+     *  Create rxdb.json file.
+     * This must always be the first step.
+     */
     const replicationIdentifier = await createEmptyFile(googleDriveOptions, rootFolderId, 'rxdb.json');
 
     // docs folder
