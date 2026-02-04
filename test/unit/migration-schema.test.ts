@@ -1130,6 +1130,103 @@ describe('migration-schema.test.ts', function () {
             await db3.close();
             await db2.close();
         });
+        /**
+         * Memory leak: migratePromise() doesn't clean up internal replication
+         * The replicationState local variable is never assigned to this.replicationState,
+         * so cancel() cannot properly clean up subscriptions after migration.
+         * @link https://github.com/pubkey/rxdb/issues/7786
+         */
+        it('should properly cancel internal replication after migratePromise completes', async () => {
+            const dbName = randomToken(10);
+
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' }
+                },
+                required: ['id', 'name']
+            };
+
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' },
+                    migrated: { type: 'boolean' }
+                },
+                required: ['id', 'name', 'migrated']
+            };
+
+            // Create v0 database and insert documents
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                items: { schema: schema0 }
+            });
+            await db.items.bulkInsert([
+                { id: 'doc1', name: 'Document 1' },
+                { id: 'doc2', name: 'Document 2' },
+                { id: 'doc3', name: 'Document 3' }
+            ]);
+            await db.close();
+
+            // Reopen with v1 schema and migrate
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db2.addCollections({
+                items: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.migrated = true;
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const migrationState = db2.items.getMigrationState();
+            const migrationNeeded = await migrationState.mustMigrate;
+            assert.strictEqual(migrationNeeded, true, 'Migration should be needed');
+
+            // Perform migration
+            await migrationState.migratePromise();
+
+            // Verify documents migrated
+            const docs = await db2.items.find().exec();
+            assert.strictEqual(docs.length, 3);
+
+            /**
+             * After migration, replicationState should be assigned so cancel() can clean it up.
+             * Before the fix, it was never assigned, causing a memory leak.
+             */
+            const replicationState = migrationState.replicationState;
+            assert.ok(
+                replicationState !== undefined,
+                'replicationState should be assigned during migration so it can be canceled'
+            );
+
+            // Verify it was properly canceled
+            assert.strictEqual(
+                ensureNotFalsy(replicationState).events.canceled.getValue(),
+                true,
+                'replicationState should be canceled after migration to prevent memory leaks'
+            );
+
+            await db2.close();
+        });
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema
             const mySchema = {
