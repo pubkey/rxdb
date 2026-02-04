@@ -8,14 +8,15 @@ import {
     createEmptyFile,
     ensureFolderExists,
     readFolder,
-    FOLDER_MIME_TYPE
+    FOLDER_MIME_TYPE,
+    initDriveStructure
 } from '../plugins/replication-google-drive/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
     startServer
 } from 'google-drive-mock';
 import getPort from 'get-port';
-// import express from 'express'; // Loaded dynamically to match CJS requirements if needed
+
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
  */
@@ -102,6 +103,9 @@ describe('replication-google-drive.test.ts', function () {
         });
     });
     describe('init', () => {
+        it('must not throw', async () => {
+            await initDriveStructure(options);
+        });
 
     });
     // describe('transaction', () => {

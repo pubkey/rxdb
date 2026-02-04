@@ -123,7 +123,10 @@ export async function createEmptyFile(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     parentId: string,
     fileName: string
-): Promise<string> {
+): Promise<{
+    fileId: string;
+    etag: string;
+}> {
     const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id';
     const body = {
         name: fileName,
@@ -145,27 +148,7 @@ export async function createEmptyFile(
      * if the file is there already, find its id
      * and return that one.
      */
-    if (response.status === 409) {
-        const query = [
-            `name = '${fileName}'`,
-            `'${parentId}' in parents`,
-            `trashed = false`,
-        ].join(' and ');
-        const url =
-            googleDriveOptions.apiEndpoint + '/drive/v3/files' +
-            '?fields=files(id,createdTime)' +
-            '&orderBy=createdTime asc' +
-            '&q=' + encodeURIComponent(query);
-        const res = await fetch(url, {
-            headers: {
-                Authorization: 'Bearer ' + googleDriveOptions.authToken,
-            },
-        });
-        const data = await res.json();
-        return ensureNotFalsy(data.files[0].id);
-    }
-
-    if (!response.ok) {
+    if (!response.ok && response.status !== 409) {
         throw newRxError('GDR6', {
             folderName: fileName,
             args: {
@@ -177,8 +160,30 @@ export async function createEmptyFile(
         });
     }
 
-    const data = await response.json();
-    return data.id;
+    /**
+     * For idempotent runs, fetch the file again
+     * after creating it.
+     */
+    const query = [
+        `name = '${fileName}'`,
+        `'${parentId}' in parents`,
+        `trashed = false`,
+    ].join(' and ');
+    const url2 =
+        googleDriveOptions.apiEndpoint + '/drive/v3/files' +
+        '?fields=files(id,etag,createdTime)' +
+        '&orderBy=createdTime asc' +
+        '&q=' + encodeURIComponent(query);
+    const res = await fetch(url2, {
+        headers: {
+            Authorization: 'Bearer ' + googleDriveOptions.authToken,
+        },
+    });
+    const data = await res.json();
+    console.log('aaaa');
+    console.dir(data);
+    return ensureNotFalsy(data.files[0].id);
+
 }
 
 
@@ -266,79 +271,4 @@ export async function readFolder(
 
     const listData = await listResponse.json();
     return listData.files || [];
-}
-
-export async function getOrCreateRxDBJson(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    folderId: string
-): Promise<string> {
-    console.log('DEBUG: getOrCreateRxDBJson', folderId);
-    const replicationIdentifier = randomToken(10);
-    try {
-        await createFileWithJSONContent(
-            googleDriveOptions,
-            folderId,
-            'rxdb.json',
-            { replicationIdentifier }
-        );
-        return replicationIdentifier;
-    } catch (err: any) {
-        const is409 = err.code === 'GDR6' &&
-            err.parameters &&
-            err.parameters.args &&
-            err.parameters.args.status === 409;
-
-        if (is409) {
-            // Already exists -> return existing replicationIdentifier
-            // We search directly in the folderId to avoid path traversal issues
-            const query = "name = 'rxdb.json' and '" + folderId + "' in parents and trashed = false";
-            const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&q=' + encodeURIComponent(query);
-
-            // Retry loop for eventual consistency
-            for (let i = 0; i < 5; i++) {
-                const searchResponse = await fetch(searchUrl, {
-                    headers: {
-                        Authorization: 'Bearer ' + googleDriveOptions.authToken
-                    }
-                });
-                const searchData = await searchResponse.json();
-
-                if (searchData.files && searchData.files.length > 0) {
-                    const existingFileId = searchData.files[0].id;
-                    // Download content
-                    const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + existingFileId + '?alt=media';
-                    const downRes = await fetch(downloadUrl, {
-                        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-                    });
-                    if (downRes.ok) {
-                        const content = await downRes.json();
-                        return content.replicationIdentifier || (content.content && content.content.replicationIdentifier);
-                    }
-                } else {
-                    // Fallback for mocks/delayed indexing: search by name globally and filter
-                    const globalQuery = "name = 'rxdb.json' and trashed = false";
-                    const globalSearchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,parents)&q=' + encodeURIComponent(globalQuery);
-                    const globalRes = await fetch(globalSearchUrl, {
-                        headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-                    });
-                    const globalData = await globalRes.json();
-                    const match = globalData.files ? globalData.files.find((f: any) => f.parents && f.parents.includes(folderId)) : null;
-
-                    if (match) {
-                        const downloadUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files/' + match.id + '?alt=media';
-                        const downRes = await fetch(downloadUrl, {
-                            headers: { Authorization: 'Bearer ' + googleDriveOptions.authToken }
-                        });
-                        if (downRes.ok) {
-                            const content = await downRes.json();
-                            return content.replicationIdentifier || (content.content && content.content.replicationIdentifier);
-                        }
-                    }
-                }
-                // Wait before retry
-                await new Promise(res => setTimeout(res, 200));
-            }
-        }
-        throw err;
-    }
 }
