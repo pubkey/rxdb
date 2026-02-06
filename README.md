@@ -24,7 +24,7 @@
     <img src="./docs-src/static/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
   </a>
   <br />
-  <h3 align="center">A fast, local-first, reactive Database for JavaScript Applications</h3>
+  <h3 align="center">A fast, <a href="https://rxdb.info/articles/local-first-future.html"local-first</a>, reactive Database for JavaScript Applications</h3>
 </p>
 <br />
 
