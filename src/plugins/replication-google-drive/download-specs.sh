@@ -34,3 +34,16 @@ if [ ! -f "$FILE2" ]; then
 else
     echo "openapi.yaml already exists, skipping."
 fi
+
+
+# URL 3: Google Drive API v2 Specs
+URL3="https://www.googleapis.com/discovery/v1/apis/drive/v2/rest"
+FILE3="$SPECS_DIR/google-drive-api-v2.json"
+
+if [ ! -f "$FILE3" ]; then
+    echo "Downloading google-drive-api-v2.json..."
+    curl -L "$URL3" -o "$FILE3" -s
+    echo "Downloaded google-drive-api-v2.json"
+else
+    echo "google-drive-api-v2.json already exists, skipping."
+fi

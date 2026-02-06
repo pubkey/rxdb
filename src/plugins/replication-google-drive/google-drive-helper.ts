@@ -1,6 +1,5 @@
 import { newRxError } from '../../rx-error.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
-import { randomToken } from '../utils/utils-string.ts';
 import type { GoogleDriveOptionsWithDefaults, GoogleDriveFile } from './google-drive-types.ts';
 
 export const DRIVE_API_VERSION = 'v3';
@@ -11,7 +10,6 @@ export async function createFolder(
     parentId: string = 'root',
     folderName: string
 ): Promise<string> {
-    console.log('createFolder() ' + folderName + ' parent: ' + parentId);
     const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id,name,mimeType,trashed';
     const body = {
         name: folderName,
@@ -123,10 +121,7 @@ export async function createEmptyFile(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     parentId: string,
     fileName: string
-): Promise<{
-    fileId: string;
-    etag: string;
-}> {
+) {
     const url = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=id';
     const body = {
         name: fileName,
@@ -171,7 +166,7 @@ export async function createEmptyFile(
     ].join(' and ');
     const url2 =
         googleDriveOptions.apiEndpoint + '/drive/v3/files' +
-        '?fields=files(id,etag,createdTime)' +
+        '?fields=files(id,etag,size,createdTime)' +
         '&orderBy=createdTime asc' +
         '&q=' + encodeURIComponent(query);
     const res = await fetch(url2, {
@@ -180,48 +175,96 @@ export async function createEmptyFile(
         },
     });
     const data = await res.json();
-    console.log('aaaa');
-    console.dir(data);
-    return ensureNotFalsy(data.files[0].id);
+    const file = ensureNotFalsy(data.files[0]);
 
+    console.log('filed:');
+    console.dir(file);
+    return {
+        etag: ensureNotFalsy(file.etag),
+        fileId: ensureNotFalsy(file.id),
+        size: parseInt(file.size, 10)
+    }
 }
 
 
-export async function updateFile(
+export async function fillFileIfEtagMatches<T = any>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileId: string,
+    etag: string,
     jsonContent: any
-): Promise<void> {
-    const url = googleDriveOptions.apiEndpoint + '/upload/drive/v3/files/' + fileId + '?uploadType=media';
-    const body = JSON.stringify(jsonContent);
+): Promise<T> {
 
-    let response;
-    try {
-        response = await fetch(url, {
-            method: 'PATCH',
-            headers: {
-                Authorization: 'Bearer ' + googleDriveOptions.authToken,
-                'Content-Type': 'application/json'
-            },
-            body
-        });
-    } catch (err: any) {
-        throw newRxError('GDR6', {
-            folderName: fileId,
-            args: { err }
-        });
+    const url =
+        `${googleDriveOptions.apiEndpoint}` +
+        `/upload/drive/v2/files/${encodeURIComponent(fileId)}` +
+        `?uploadType=media`;
+
+    const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+            "Content-Type": "application/json; charset=utf-8",
+            "If-Match": etag,
+        },
+        body: JSON.stringify(jsonContent),
+    });
+    console.log('write etag status ' + res.status + ' ' + fileId + ' ' + etag);
+
+    if (res.status !== 412 && res.status !== 200) {
+        const errorText = await res.text();
+        throw new Error('fillFileIfEtagMatches() could not write: ' + errorText);
     }
 
-    if (!response.ok) {
-        throw newRxError('GDR6', {
-            folderName: fileId,
-            args: {
-                status: response.status,
-                statusText: response.statusText,
-                body: await response.text()
-            }
-        });
+    return readJsonFileContent<T>(
+        googleDriveOptions,
+        fileId
+    );
+}
+
+export async function readJsonFileContent<T>(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string
+): Promise<T> {
+    const url =
+        `${googleDriveOptions.apiEndpoint}` +
+        `/drive/v2/files/${encodeURIComponent(fileId)}?alt=media`;
+
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+            Accept: "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        let details: any;
+        const text = await res.text().catch(() => "");
+        try {
+            details = text ? JSON.parse(text) : undefined;
+        } catch {
+            details = text || undefined;
+        }
+
+        const err = new Error(
+            `Google Drive v2 read failed (${res.status}${res.statusText ? ` ${res.statusText}` : ""
+            })`
+        );
+        (err as any).status = res.status;
+        (err as any).details = details;
+        throw err;
     }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        const err = new Error("NOT_A_JSON_FILE but " + contentType);
+        (err as any).code = "NOT_A_JSON_FILE";
+        (err as any).contentType = contentType;
+        throw err;
+    }
+
+    const content = await res.json();
+    return content as T;
 }
 
 export async function readFolder(

@@ -21,7 +21,8 @@ export type GoogleDriveOptions = {
     oauthClientId: string;
     authToken: string;
     /**
-     * like "https://www.googleapis.com/"
+     * like "https://www.googleapis.com"
+     * No endling slash!
      */
     apiEndpoint?: string;
     /**
@@ -34,15 +35,14 @@ export type GoogleDriveOptions = {
 export type GoogleDriveOptionsWithDefaults = {
     oauthClientId: string;
     authToken: string;
+    /**
+     * like "https://www.googleapis.com"
+     * No endling slash!
+     */
     apiEndpoint: string;
     folderPath: string;
 };
 
-export type DriveStructure = {
-    rootFolderId: string;
-    docsFolderId: string;
-    replicationIdentifier: string;
-};
 
 export type GoogleDriveSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>, 'handler' | 'stream$'>;
 

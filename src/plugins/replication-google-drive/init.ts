@@ -1,11 +1,12 @@
-import type { DriveStructure, GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { ensureFolderExists, readFolder, createEmptyFile } from './google-drive-helper.ts';
+import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
+import { ensureFolderExists, readFolder, createEmptyFile, fillFileIfEtagMatches, readJsonFileContent } from './google-drive-helper.ts';
 import { newRxError } from '../../rx-error.ts';
+import { randomToken } from '../utils/utils-string.ts';
 
 
 export async function initDriveStructure(
     googleDriveOptions: GoogleDriveOptionsWithDefaults
-): Promise<DriveStructure> {
+) {
     if (googleDriveOptions.folderPath === '/' || !googleDriveOptions.folderPath) {
         throw newRxError('GDR1', {
             folderPath: googleDriveOptions.folderPath
@@ -32,10 +33,28 @@ export async function initDriveStructure(
     }
 
     /**
-     *  Create rxdb.json file.
+     * Create rxdb.json file.
      * This must always be the first step.
      */
-    const replicationIdentifier = await createEmptyFile(googleDriveOptions, rootFolderId, 'rxdb.json');
+    const rxdbJson = await createEmptyFile(googleDriveOptions, rootFolderId, 'rxdb.json');
+    let replicationIdentifier: string;
+    if (rxdbJson.size === 0) {
+        const rxdbJsonData = await fillFileIfEtagMatches<{ replicationIdentifier: string }>(
+            googleDriveOptions,
+            rxdbJson.fileId,
+            rxdbJson.etag,
+            { replicationIdentifier: randomToken(10) }
+        );
+        replicationIdentifier = rxdbJsonData.replicationIdentifier;
+    } else {
+        const rxdbJsonData = await readJsonFileContent<{ replicationIdentifier: string }>(
+            googleDriveOptions,
+            rxdbJson.fileId
+        );
+        replicationIdentifier = rxdbJsonData.replicationIdentifier;
+    }
+
+
 
     // docs folder
     const docsFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/docs');
@@ -43,6 +62,9 @@ export async function initDriveStructure(
     return {
         rootFolderId,
         docsFolderId,
-        replicationIdentifier
+        replicationIdentifier,
+        rxdbJson
     };
 }
+
+export type DriveStructure = Awaited<ReturnType<typeof initDriveStructure>>;
