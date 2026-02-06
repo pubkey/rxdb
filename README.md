@@ -27,6 +27,7 @@
   <br />
   <h3 align="center">A fast, local-first, reactive Database for JavaScript Applications</h3>
 </p>
+<br />
 
 
 <p align="center">
