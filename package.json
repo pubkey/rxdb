@@ -661,7 +661,7 @@
     "mini-css-extract-plugin": "2.10.0",
     "mocha": "11.7.5",
     "mocha.parallel": "0.15.6",
-    "mongodb": "7.0.0",
+    "mongodb": "7.1.0",
     "nats": "2.29.3",
     "nconf": "0.13.0",
     "node-appwrite": "22.0.0",
