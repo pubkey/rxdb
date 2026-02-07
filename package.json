@@ -636,7 +636,7 @@
     "express": "5.2.1",
     "fake-indexeddb": "6.2.5",
     "firebase": "11.10.0",
-    "firebase-tools": "14.27.0",
+    "firebase-tools": "15.5.1",
     "get-port": "5.1.1",
     "globals": "17.3.0",
     "graphql-http": "1.22.4",
