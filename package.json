@@ -569,7 +569,7 @@
     "simple-peer": "9.11.1",
     "util": "0.12.5",
     "ws": "8.19.0",
-    "z-schema": "6.0.2"
+    "z-schema": "8.5.0"
   },
   "devDependencies": {
     "@angular/core": "21.1.3",
