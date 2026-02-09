@@ -17,20 +17,22 @@ import {
 } from '../../index.ts';
 
 import type {
-    DriveStructure,
     GoogleDriveCheckpointType,
     GoogleDriveOptions,
     GoogleDriveOptionsWithDefaults,
     SyncOptionsGoogleDrive
 } from './google-drive-types.ts';
 import { Subject } from 'rxjs';
-import { initDriveStructure } from './init.ts';
+import { DriveStructure, initDriveStructure } from './init.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
 export * from './pull-handler.ts';
 export * from './transaction.ts';
 export * from './init.ts';
+
+
+export const DEFAULT_TRANSACTION_TIMEOUT = 60 * 1000;
 
 export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState<RxDocType, GoogleDriveCheckpointType> {
     constructor(
@@ -65,7 +67,8 @@ export async function replicateGoogleDrive<RxDocType>(
 
     const googleDriveOptionsWithDefaults: GoogleDriveOptionsWithDefaults = Object.assign(
         {
-            apiEndpoint: 'https://www.googleapis.com'
+            apiEndpoint: 'https://www.googleapis.com',
+            transactionTimeout: DEFAULT_TRANSACTION_TIMEOUT
         },
         options.googleDrive
     );

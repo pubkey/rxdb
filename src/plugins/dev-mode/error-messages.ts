@@ -1420,7 +1420,7 @@ export const ERROR_MESSAGES = {
     },
     GDR6: {
         code: 'GDR6',
-        message: 'Google Drive: Failed to create folder',
+        message: 'Google Drive: Failed to create file or folder',
         cause: 'The Google Drive API returned an error.',
         fix: 'Check the error details.',
         docs: ''
@@ -1430,6 +1430,13 @@ export const ERROR_MESSAGES = {
         message: 'Google Drive: folder has content but is not a rxdb sync target',
         cause: 'You selected a folder that is not empty but is not a rxdb sync target.',
         fix: 'Provide empty folder or use a different folder that is not used for anything else.',
+        docs: ''
+    },
+    GDR10: {
+        code: 'GDR10',
+        message: 'Google Drive: could not delete the file',
+        cause: '',
+        fix: '',
         docs: ''
     },
 

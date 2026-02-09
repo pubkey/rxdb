@@ -30,6 +30,8 @@ export type GoogleDriveOptions = {
      * Example: 'rxdb-replication/my-app'
      */
     folderPath: string;
+
+    transactionTimeout?: number;
 };
 
 export type GoogleDriveOptionsWithDefaults = {
@@ -41,6 +43,7 @@ export type GoogleDriveOptionsWithDefaults = {
      */
     apiEndpoint: string;
     folderPath: string;
+    transactionTimeout: number;
 };
 
 

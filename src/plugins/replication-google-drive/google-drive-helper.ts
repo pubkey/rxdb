@@ -180,7 +180,9 @@ export async function createEmptyFile(
     console.log('filed:');
     console.dir(file);
     return {
+        status: response.status,
         etag: ensureNotFalsy(file.etag),
+        createdTime: ensureNotFalsy(file.createdTime),
         fileId: ensureNotFalsy(file.id),
         size: parseInt(file.size, 10)
     }
@@ -218,13 +220,61 @@ export async function fillFileIfEtagMatches<T = any>(
     return readJsonFileContent<T>(
         googleDriveOptions,
         fileId
+    ).then(d => d.content);
+}
+
+export async function deleteIfEtagMatches(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string,
+    etag: string
+): Promise<void> {
+    const url =
+        `${googleDriveOptions.apiEndpoint}` +
+        `/drive/v2/files/${encodeURIComponent(fileId)}`;
+
+    const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+            "If-Match": etag,
+        },
+    });
+
+    if (res.ok) {
+        // Drive v2 returns 204 No Content on successful delete
+        return;
+    }
+
+    // Best-effort parse error body
+    let details: any;
+    const text = await res.text().catch(() => "");
+    try {
+        details = text ? JSON.parse(text) : undefined;
+    } catch {
+        details = text || undefined;
+    }
+
+    const err = newRxError(
+        'GDR10',
+        {
+            args: {
+                status: res.status,
+                text: res.statusText
+            }
+        }
     );
+    (err as any).status = res.status;
+    (err as any).details = details;
+    throw err;
 }
 
 export async function readJsonFileContent<T>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileId: string
-): Promise<T> {
+): Promise<{
+    etag: string;
+    content: T;
+}> {
     const url =
         `${googleDriveOptions.apiEndpoint}` +
         `/drive/v2/files/${encodeURIComponent(fileId)}?alt=media`;
@@ -264,7 +314,11 @@ export async function readJsonFileContent<T>(
     }
 
     const content = await res.json();
-    return content as T;
+    const etag = ensureNotFalsy(res.headers.get('etag'));
+    return {
+        etag,
+        content: content as T
+    };
 }
 
 export async function readFolder(
@@ -288,7 +342,7 @@ export async function readFolder(
         if (searchData.files && searchData.files.length > 0) {
             parentId = searchData.files[0].id;
         } else {
-            throw newRxError('GDR8', { folderPath });
+            throw newRxError('SNH', { folderPath });
         }
     }
 
@@ -315,3 +369,21 @@ export async function readFolder(
     const listData = await listResponse.json();
     return listData.files || [];
 }
+
+
+export function createMultipartBody(
+    metadata: Record<string, unknown>,
+    content: Record<string, unknown>
+) {
+    const multipartBoundary = '-------1337-👵🍌-use-RxDB-7355608';
+    const delimiter = '\r\n--' + multipartBoundary + '\r\n';
+    const closeDelim = '\r\n--' + multipartBoundary + '--';
+    const body = delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(content) +
+        closeDelim;
+    return { body, boundary: multipartBoundary };
+};

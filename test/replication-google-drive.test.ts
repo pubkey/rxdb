@@ -12,7 +12,10 @@ import {
     FOLDER_MIME_TYPE,
     initDriveStructure,
     updateFile,
-    fillFileIfEtagMatches
+    fillFileIfEtagMatches,
+    DriveStructure,
+    startTransaction,
+    commitTransaction
 } from '../plugins/replication-google-drive/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
@@ -42,13 +45,20 @@ describe('replication-google-drive.test.ts', function () {
         if (server) server.close();
     });
 
-    let options: any;
+    let options: {
+        oauthClientId: string;
+        authToken: string;
+        apiEndpoint: string;
+        folderPath: string;
+        initData: DriveStructure;
+    };
     beforeEach(() => {
         options = {
             oauthClientId: 'mock-client-id',
             authToken: 'valid-token',
             apiEndpoint: serverUrl,
-            folderPath: 'rxdb-test-folder-' + randomToken(8)
+            folderPath: 'rxdb-test-folder-' + randomToken(8),
+            initData: null as any
         };
     });
 
@@ -165,7 +175,33 @@ describe('replication-google-drive.test.ts', function () {
             console.log('........................... 2');
             assert.strictEqual(initData.replicationIdentifier, initData2.replicationIdentifier);
         });
-
+        it('calling in parallel must result in same identifier', async () => {
+            const result = await Promise.all(
+                new Array(10).fill(0).map(() => initDriveStructure(options))
+            );
+            const first = result[0].replicationIdentifier;
+            const firstFolderId = result[0].docsFolderId;
+            result.forEach(r => assert.strictEqual(r.replicationIdentifier, first));
+            result.forEach(r => assert.strictEqual(r.docsFolderId, firstFolderId));
+        });
+    });
+    describe('transaction', () => {
+        beforeEach(async () => {
+            options = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'test-folder-' + Math.random(),
+                initData: null as any
+            };
+            options.initData = await initDriveStructure(options);
+        });
+        it('must not throw to open and close a transaction', async () => {
+            console.log('------------------------------');
+            const txn = await startTransaction(options, options.initData);
+            console.log('START DONE!');
+            await commitTransaction(options, txn);
+        });
     });
     // describe('transaction', () => {
     //     let options: any;

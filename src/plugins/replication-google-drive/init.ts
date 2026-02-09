@@ -51,7 +51,7 @@ export async function initDriveStructure(
             googleDriveOptions,
             rxdbJson.fileId
         );
-        replicationIdentifier = rxdbJsonData.replicationIdentifier;
+        replicationIdentifier = rxdbJsonData.content.replicationIdentifier;
     }
 
 
