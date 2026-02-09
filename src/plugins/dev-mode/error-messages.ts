@@ -1439,6 +1439,13 @@ export const ERROR_MESSAGES = {
         fix: '',
         docs: ''
     },
+    GDR11: {
+        code: 'GDR11',
+        message: 'Google Drive: could not close transaction',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
 
     /**
      * Should never be thrown, use this for

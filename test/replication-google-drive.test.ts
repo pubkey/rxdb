@@ -15,7 +15,8 @@ import {
     fillFileIfEtagMatches,
     DriveStructure,
     startTransaction,
-    commitTransaction
+    commitTransaction,
+    TRANSACTION_BLOCKED_FLAG
 } from '../plugins/replication-google-drive/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
@@ -51,6 +52,7 @@ describe('replication-google-drive.test.ts', function () {
         apiEndpoint: string;
         folderPath: string;
         initData: DriveStructure;
+        transactionTimeout: number;
     };
     beforeEach(() => {
         options = {
@@ -58,6 +60,7 @@ describe('replication-google-drive.test.ts', function () {
             authToken: 'valid-token',
             apiEndpoint: serverUrl,
             folderPath: 'rxdb-test-folder-' + randomToken(8),
+            transactionTimeout: 1000,
             initData: null as any
         };
     });
@@ -145,7 +148,7 @@ describe('replication-google-drive.test.ts', function () {
                         foo: 'bar'
                     }
                 );
-                assert.strictEqual(content.foo, 'bar');
+                assert.strictEqual(content.content.foo, 'bar');
             });
         });
         describe('readFolder()', () => {
@@ -192,15 +195,39 @@ describe('replication-google-drive.test.ts', function () {
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
+                transactionTimeout: 1000,
                 initData: null as any
             };
             options.initData = await initDriveStructure(options);
         });
         it('must not throw to open and close a transaction', async () => {
             console.log('------------------------------');
-            const txn = await startTransaction(options, options.initData);
-            console.log('START DONE!');
-            await commitTransaction(options, txn);
+            let txn = await startTransaction(options, options.initData);
+            console.log('START DONE 1!');
+            await commitTransaction(options, options.initData, txn);
+            console.log('START DONE 1.5!');
+            txn = await startTransaction(options, options.initData);
+            console.dir({ txn });
+            console.log('START DONE 2!');
+            await commitTransaction(options, options.initData, txn);
+        });
+        it('should not start transaction if already running', async () => {
+
+            console.log('.....................................');
+            const txn1 = await startTransaction(options, options.initData);
+            assert.ok(!txn1.retry);
+
+
+            console.log(':_________________________________');
+            const txn2 = await startTransaction(options, options.initData);
+            assert.deepStrictEqual(txn2, TRANSACTION_BLOCKED_FLAG); // Should be locked
+
+            await commitTransaction(options, options.initData, txn1);
+
+            // Now it should work
+            const txn3 = await startTransaction(options, options.initData);
+            assert.ok(txn3);
+            await commitTransaction(options, options.initData, txn3);
         });
     });
     // describe('transaction', () => {

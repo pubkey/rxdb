@@ -193,14 +193,18 @@ export async function fillFileIfEtagMatches<T = any>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileId: string,
     etag: string,
-    jsonContent: any
-): Promise<T> {
-
+    jsonContent?: any
+): Promise<{
+    status: number;
+    etag: string;
+    content: T | undefined;
+}> {
     const url =
         `${googleDriveOptions.apiEndpoint}` +
         `/upload/drive/v2/files/${encodeURIComponent(fileId)}` +
         `?uploadType=media`;
 
+    const writeContent = typeof jsonContent !== 'undefined' ? JSON.stringify(jsonContent) : '';
     const res = await fetch(url, {
         method: "PUT",
         headers: {
@@ -208,9 +212,12 @@ export async function fillFileIfEtagMatches<T = any>(
             "Content-Type": "application/json; charset=utf-8",
             "If-Match": etag,
         },
-        body: JSON.stringify(jsonContent),
+        body: writeContent,
     });
     console.log('write etag status ' + res.status + ' ' + fileId + ' ' + etag);
+    console.dir({
+        writeContent
+    });
 
     if (res.status !== 412 && res.status !== 200) {
         const errorText = await res.text();
@@ -220,7 +227,13 @@ export async function fillFileIfEtagMatches<T = any>(
     return readJsonFileContent<T>(
         googleDriveOptions,
         fileId
-    ).then(d => d.content);
+    ).then(r => {
+        return {
+            content: r.content,
+            etag: r.etag,
+            status: res.status
+        };
+    });
 }
 
 export async function deleteIfEtagMatches(
@@ -273,7 +286,7 @@ export async function readJsonFileContent<T>(
     fileId: string
 ): Promise<{
     etag: string;
-    content: T;
+    content: T | undefined;
 }> {
     const url =
         `${googleDriveOptions.apiEndpoint}` +
@@ -313,7 +326,8 @@ export async function readJsonFileContent<T>(
         throw err;
     }
 
-    const content = await res.json();
+    const contentText = await res.text();
+    const content = contentText.length > 0 ? JSON.parse(contentText) : undefined;
     const etag = ensureNotFalsy(res.headers.get('etag'));
     return {
         etag,

@@ -1,7 +1,14 @@
 import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { ensureFolderExists, readFolder, createEmptyFile, fillFileIfEtagMatches, readJsonFileContent } from './google-drive-helper.ts';
+import { 
+    ensureFolderExists,
+     readFolder,
+     createEmptyFile,
+     fillFileIfEtagMatches,
+     readJsonFileContent
+     } from './google-drive-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 import { randomToken } from '../utils/utils-string.ts';
+import { TRANSACTION_FILE_NAME } from './transaction.ts';
 
 
 export async function initDriveStructure(
@@ -45,7 +52,7 @@ export async function initDriveStructure(
             rxdbJson.etag,
             { replicationIdentifier: randomToken(10) }
         );
-        replicationIdentifier = rxdbJsonData.replicationIdentifier;
+        replicationIdentifier = rxdbJsonData.content.replicationIdentifier;
     } else {
         const rxdbJsonData = await readJsonFileContent<{ replicationIdentifier: string }>(
             googleDriveOptions,
@@ -55,15 +62,22 @@ export async function initDriveStructure(
     }
 
 
-
     // docs folder
     const docsFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/docs');
+
+    // transaction file
+    const transactionFile = await createEmptyFile(
+        googleDriveOptions,
+        rootFolderId,
+        TRANSACTION_FILE_NAME
+    );
 
     return {
         rootFolderId,
         docsFolderId,
         replicationIdentifier,
-        rxdbJson
+        rxdbJson,
+        transactionFile
     };
 }
 
