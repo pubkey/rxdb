@@ -83,7 +83,7 @@ export async function startTransaction(
 
         const waitTime = Math.min(
             100 * 1000,
-            100 * Math.pow(2, attempts)
+            100 * Math.pow(1.5, attempts)
         );
         console.log('wait time ' + waitTime)
         await promiseWait(waitTime);
@@ -152,7 +152,7 @@ export async function isTransactionTimedOut(
     }
 
     const transactionAge = serverTime - transactionCreation;
-    const timeLeft = transactionAge - googleDriveOptions.transactionTimeout;
+    const timeLeft = googleDriveOptions.transactionTimeout - transactionAge;
 
     console.dir({
         times: {

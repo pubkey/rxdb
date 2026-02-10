@@ -231,8 +231,6 @@ describe('replication-google-drive.test.ts', function () {
         });
         it('isTransactionTimedOut() should be false on new transaction', async () => {
             const txn1 = await startTransactionTryOnce(options, options.initData);
-            // Http Date Headers only have seconds precission
-            await wait(1600);
             const result = await isTransactionTimedOut(
                 options,
                 options.initData
@@ -254,9 +252,40 @@ describe('replication-google-drive.test.ts', function () {
             }, 40000, 100);
         });
         it('should close expired transaction from other instance', async () => {
+            options.transactionTimeout = 100;
             const txn1 = await startTransactionTryOnce(options, options.initData);
+            /** here it should automatically wait->retry until the tx timed out */
             const txn2 = await startTransaction(options, options.initData);
             await commitTransaction(options, options.initData, txn2);
+        });
+        it('on parallel calls each at one point should have the tx lock', async () => {
+            let parallelCount = 0;
+            await Promise.all(
+                new Array(10).fill(0).map(async (__, i) => {
+                    console.log('(' + i + '): start');
+                    const txn2 = await startTransaction(options, options.initData);
+                    parallelCount = parallelCount + 1;
+                    assert.strictEqual(parallelCount, 1, 'not more then one in parallel');
+                    console.log('(' + i + '): have');
+                    await commitTransaction(options, options.initData, txn2);
+                    parallelCount = parallelCount - 1;
+                    console.log('(' + i + '): close');
+                })
+            );
+        });
+        it('closing timed out in parallel should work', async () => {
+            options.transactionTimeout = 100;
+            await startTransaction(options, options.initData);
+            await wait(options.transactionTimeout * 2);
+            await Promise.all(
+                new Array(10).fill(0).map(async (__, i) => {
+                    console.log('b(' + i + '): start');
+                    const txn2 = await startTransaction(options, options.initData);
+                    console.log('b(' + i + '): have');
+                    await commitTransaction(options, options.initData, txn2);
+                    console.log('b(' + i + '): close');
+                })
+            );
         });
     });
     // describe('transaction', () => {
