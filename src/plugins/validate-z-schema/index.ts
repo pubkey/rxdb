@@ -3,7 +3,7 @@
  * It's using z-schema as jsonschema-validator
  * @link https://github.com/zaggino/z-schema
  */
-import ZSchema from 'z-schema';
+import ZSchema, { SchemaErrorDetail } from 'z-schema';
 import type { RxJsonSchema } from '../../types/index.d.ts';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
@@ -14,7 +14,7 @@ let zSchema: ZSchema;
 
 export function getZSchema() {
     if (!zSchema) {
-        zSchema = new ZSchema({
+        zSchema = ZSchema.create({
             strictMode: false
         });
     }
@@ -25,15 +25,14 @@ export function getValidator(
     schema: RxJsonSchema<any>
 ) {
     const validator = (obj: any) => {
-        getZSchema().validate(obj, schema);
-        return getZSchema();
+        return getZSchema().validateSafe(obj, schema as any);
     };
     return (docData: any) => {
         const useValidator = validator(docData);
-        if ((useValidator as any) === true) {
-            return;
+        if (useValidator.valid) {
+            return [];
         }
-        const errors: ZSchema.SchemaErrorDetail[] = (useValidator as any).getLastErrors();
+        const errors: SchemaErrorDetail[] = (useValidator as any).error?.details || (useValidator as any).err?.details || [];
         if (errors) {
             const formattedZSchemaErrors = (errors as any).map(({
                 title,

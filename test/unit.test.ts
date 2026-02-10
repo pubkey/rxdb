@@ -5,7 +5,7 @@ import './unit/util.test.ts';
  * Helpers that
  * do not fully test RxDB but
  * just single methods
-*/
+ */
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
