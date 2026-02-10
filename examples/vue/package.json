@@ -22,7 +22,7 @@
     "random-int": "3.1.0",
     "register-service-worker": "1.7.2",
     "rxjs": "7.8.2",
-    "vue": "3.5.27",
+    "vue": "3.5.28",
     "vue-router": "5.0.2"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "@vue/cli-plugin-pwa": "5.0.9",
     "@vue/cli-plugin-typescript": "5.0.9",
     "@vue/cli-service": "5.0.9",
-    "@vue/compiler-sfc": "3.5.27",
+    "@vue/compiler-sfc": "3.5.28",
     "@vue/eslint-config-typescript": "13.0.0",
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
