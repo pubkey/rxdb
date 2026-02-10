@@ -1385,9 +1385,9 @@ export const ERROR_MESSAGES = {
     // plugins/replication-google-drive
     GDR1: {
         code: 'GDR1',
-        message: 'Google Drive: folderPath must not be the root folder',
-        cause: 'You provided "/" or "root" as folderPath.',
-        fix: 'Use a specific subfolder.',
+        message: 'Google Drive: folderPath must not be the root folder or undefined',
+        cause: 'You provided "/" or "root" or "" as folderPath.',
+        fix: 'Use a specific subfolder to ensure RxDB data does not mess up the users drive files.',
         docs: ''
     },
     GDR2: {
@@ -1442,6 +1442,27 @@ export const ERROR_MESSAGES = {
     GDR11: {
         code: 'GDR11',
         message: 'Google Drive: could not close transaction',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
+    GDR12: {
+        code: 'GDR12',
+        message: 'Drive files.list failed',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
+    GDR13: {
+        code: 'GDR13',
+        message: 'Drive insertDocumentFiles failed',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
+    GDR14: {
+        code: 'GDR14',
+        message: 'Drive updateDocumentFiles failed',
         cause: '',
         fix: '',
         docs: ''

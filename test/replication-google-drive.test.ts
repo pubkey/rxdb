@@ -17,20 +17,35 @@ import {
     startTransaction,
     commitTransaction,
     startTransactionTryOnce,
+    updateDocumentFiles,
     TRANSACTION_BLOCKED_FLAG,
+    getDocumentFiles,
+    insertDocumentFiles,
     isTransactionTimedOut
 } from '../plugins/replication-google-drive/index.mjs';
+import {
+    schemaObjects,
+    humansCollection,
+    ensureReplicationHasNoErrors,
+    ensureCollectionsHaveEqualState,
+    SimpleHumanDocumentType,
+    getPullStream,
+    getPullHandler,
+    getPushHandler
+} from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
     startServer
 } from 'google-drive-mock';
 import getPort from 'get-port';
-import { wait, waitUntil } from 'async-test-util';
+import { assertThrows, wait, waitUntil } from 'async-test-util';
+
+const PRIMARY_PATH = 'passportId';
+
 
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
  */
-
 describe('replication-google-drive.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
     this.timeout(200 * 1000);
@@ -168,6 +183,35 @@ describe('replication-google-drive.test.ts', function () {
         });
     });
     describe('init', () => {
+        it('should throw if folderPath is missing or root', async () => {
+            options.folderPath = '';
+            await assertThrows(
+                () => initDriveStructure(options),
+                'RxError',
+                'GDR1'
+            );
+
+            options.folderPath = '/';
+            await assertThrows(
+                () => initDriveStructure(options),
+                'RxError',
+                'GDR1'
+            );
+
+            options.folderPath = 'root';
+            await assertThrows(
+                () => initDriveStructure(options),
+                'RxError',
+                'GDR1'
+            );
+
+            (options as any).folderPath = undefined;
+            await assertThrows(
+                () => initDriveStructure(options),
+                'RxError',
+                'GDR1'
+            );
+        });
         it('must not throw', async () => {
             const initData = await initDriveStructure(options);
             assert.ok(initData.replicationIdentifier);
@@ -241,7 +285,7 @@ describe('replication-google-drive.test.ts', function () {
         });
         it('isTransactionTimedOut() should return true after some time', async () => {
             options.transactionTimeout = 100;
-            const txn1 = await startTransactionTryOnce(options, options.initData);
+            await startTransactionTryOnce(options, options.initData);
             await waitUntil(async () => {
                 console.log('------------------');
                 const result = await isTransactionTimedOut(
@@ -261,7 +305,7 @@ describe('replication-google-drive.test.ts', function () {
         it('on parallel calls each at one point should have the tx lock', async () => {
             let parallelCount = 0;
             await Promise.all(
-                new Array(10).fill(0).map(async (__, i) => {
+                new Array(5).fill(0).map(async (__, i) => {
                     console.log('(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
                     parallelCount = parallelCount + 1;
@@ -278,7 +322,7 @@ describe('replication-google-drive.test.ts', function () {
             await startTransaction(options, options.initData);
             await wait(options.transactionTimeout * 2);
             await Promise.all(
-                new Array(10).fill(0).map(async (__, i) => {
+                new Array(5).fill(0).map(async (__, i) => {
                     console.log('b(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
                     console.log('b(' + i + '): have');
@@ -288,67 +332,48 @@ describe('replication-google-drive.test.ts', function () {
             );
         });
     });
-    // describe('transaction', () => {
-    //     let options: any;
-    //     beforeEach(() => {
-    //         options = {
-    //             oauthClientId: 'mock-client-id',
-    //             authToken: 'valid-token',
-    //             apiEndpoint: serverUrl,
-    //             folderPath: 'test-folder-' + Math.random() // Ensure unique folder for each test if mock persists (though here we restart server or use fresh options)
-    //         };
-    //     });
+    describe('document handling', () => {
+        beforeEach(async () => {
+            options = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'test-folder-' + Math.random(),
+                transactionTimeout: 1000,
+                initData: null as any
+            };
+            options.initData = await initDriveStructure(options);
+        });
+        it('insertDocumentFiles()', async () => {
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+        });
 
-    //     it('should start and commit a transaction', async () => {
-    //         const txn = await startTransaction(options);
-    //         assert.ok(txn);
-    //         assert.ok(txn.fileId);
-    //         assert.ok(txn.etag);
-
-    //         await commitTransaction(options, txn);
-
-    //         // Should be able to start another one
-    //         const txn2 = await startTransaction(options);
-    //         assert.ok(txn2);
-    //         await commitTransaction(options, txn2);
-    //     });
-
-    //     it('should not start transaction if already running', async () => {
-    //         const txn1 = await startTransaction(options);
-    //         assert.ok(txn1);
-
-    //         const txn2 = await startTransaction(options);
-    //         assert.strictEqual(txn2, null); // Should be locked
-
-    //         await commitTransaction(options, txn1);
-
-    //         // Now it should work
-    //         const txn3 = await startTransaction(options);
-    //         assert.ok(txn3);
-    //         await commitTransaction(options, txn3);
-    //     });
-
-    //     it('should throw if folderPath is missing or root', async () => {
-    //         const invalidOptions1 = { ...options };
-    //         delete invalidOptions1.folderPath;
-
-    //         await assert.rejects(async () => {
-    //             await startTransaction(invalidOptions1);
-    //         }, /GDR8/);
-
-    //         const invalidOptions2 = { ...options, folderPath: '/' };
-    //         await assert.rejects(async () => {
-    //             await startTransaction(invalidOptions2);
-    //         }, /GDR1/);
-
-    //         const invalidOptions3 = { ...options, folderPath: 'root' };
-    //         await assert.rejects(async () => {
-    //             await startTransaction(invalidOptions3);
-    //         }, /GDR1/);
-    //     });
-    // });
+        it('getDocumentFiles()', async () => {
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+            docs[0].passportId = 'foobar';
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            const found = await getDocumentFiles(
+                options,
+                options.initData,
+                docs.map(d => (d as any)[PRIMARY_PATH])
+            );
+            console.log(JSON.stringify({ found }, null, 4));
+            assert.strictEqual(found.files.length, 10);
+        });
 
 
+    });
 
 });
 

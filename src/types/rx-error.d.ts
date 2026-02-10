@@ -21,11 +21,14 @@ export type {
 export interface RxErrorParameters {
     readonly error?: PlainJsonError;
     readonly errors?: PlainJsonError[];
+    readonly errorText?: string;
+    readonly status?: number;
     readonly writeError?: RxStorageWriteError<any>;
     readonly schemaPath?: string;
     readonly objPath?: string;
     readonly rootPath?: string;
     readonly childpath?: string;
+    readonly ids?: string[];
     readonly obj?: any;
     readonly document?: any;
     readonly schema?: Readonly<RxJsonSchema<any> | RxSchema>;

@@ -1,24 +1,37 @@
 import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
-import { 
+import {
     ensureFolderExists,
-     readFolder,
-     createEmptyFile,
-     fillFileIfEtagMatches,
-     readJsonFileContent
-     } from './google-drive-helper.ts';
+    readFolder,
+    createEmptyFile,
+    fillFileIfEtagMatches,
+    readJsonFileContent
+} from './google-drive-helper.ts';
 import { newRxError } from '../../rx-error.ts';
 import { randomToken } from '../utils/utils-string.ts';
 import { TRANSACTION_FILE_NAME } from './transaction.ts';
+import { ensureNotFalsy } from '../utils/index.ts';
 
+const NON_ALLOWED_ROOT_FOLDERS = [
+    '/',
+    '',
+    null,
+    false,
+    undefined,
+    'root'
+];
 
 export async function initDriveStructure(
     googleDriveOptions: GoogleDriveOptionsWithDefaults
 ) {
-    if (googleDriveOptions.folderPath === '/' || !googleDriveOptions.folderPath) {
-        throw newRxError('GDR1', {
-            folderPath: googleDriveOptions.folderPath
-        });
-    }
+
+    NON_ALLOWED_ROOT_FOLDERS.forEach(nonAllowed => {
+        if (googleDriveOptions.folderPath === nonAllowed) {
+            throw newRxError('GDR1', {
+                folderPath: googleDriveOptions.folderPath
+            });
+        }
+    });
+
 
     // root folder
     const rootFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
