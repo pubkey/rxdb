@@ -16,14 +16,16 @@ import {
     DriveStructure,
     startTransaction,
     commitTransaction,
-    TRANSACTION_BLOCKED_FLAG
+    startTransactionTryOnce,
+    TRANSACTION_BLOCKED_FLAG,
+    isTransactionTimedOut
 } from '../plugins/replication-google-drive/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
     startServer
 } from 'google-drive-mock';
 import getPort from 'get-port';
-import { } from 'async-test-util';
+import { wait, waitUntil } from 'async-test-util';
 
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
@@ -60,7 +62,7 @@ describe('replication-google-drive.test.ts', function () {
             authToken: 'valid-token',
             apiEndpoint: serverUrl,
             folderPath: 'rxdb-test-folder-' + randomToken(8),
-            transactionTimeout: 1000,
+            transactionTimeout: 500,
             initData: null as any
         };
     });
@@ -202,32 +204,59 @@ describe('replication-google-drive.test.ts', function () {
         });
         it('must not throw to open and close a transaction', async () => {
             console.log('------------------------------');
-            let txn = await startTransaction(options, options.initData);
+            let txn = await startTransactionTryOnce(options, options.initData);
             console.log('START DONE 1!');
             await commitTransaction(options, options.initData, txn);
             console.log('START DONE 1.5!');
-            txn = await startTransaction(options, options.initData);
+            txn = await startTransactionTryOnce(options, options.initData);
             console.dir({ txn });
             console.log('START DONE 2!');
             await commitTransaction(options, options.initData, txn);
         });
         it('should not start transaction if already running', async () => {
-
             console.log('.....................................');
-            const txn1 = await startTransaction(options, options.initData);
+            const txn1 = await startTransactionTryOnce(options, options.initData);
             assert.ok(!txn1.retry);
 
-
             console.log(':_________________________________');
-            const txn2 = await startTransaction(options, options.initData);
+            const txn2 = await startTransactionTryOnce(options, options.initData);
             assert.deepStrictEqual(txn2, TRANSACTION_BLOCKED_FLAG); // Should be locked
 
             await commitTransaction(options, options.initData, txn1);
 
             // Now it should work
-            const txn3 = await startTransaction(options, options.initData);
+            const txn3 = await startTransactionTryOnce(options, options.initData);
             assert.ok(txn3);
             await commitTransaction(options, options.initData, txn3);
+        });
+        it('isTransactionTimedOut() should be false on new transaction', async () => {
+            const txn1 = await startTransactionTryOnce(options, options.initData);
+            // Http Date Headers only have seconds precission
+            await wait(1600);
+            const result = await isTransactionTimedOut(
+                options,
+                options.initData
+            );
+            console.dir({ result });
+            assert.strictEqual(result.expired, false, 'should not be expired');
+            await commitTransaction(options, options.initData, txn1);
+        });
+        it('isTransactionTimedOut() should return true after some time', async () => {
+            options.transactionTimeout = 100;
+            const txn1 = await startTransactionTryOnce(options, options.initData);
+            await waitUntil(async () => {
+                console.log('------------------');
+                const result = await isTransactionTimedOut(
+                    options,
+                    options.initData
+                );
+                return result.expired;
+            }, 40000, 100);
+        });
+        it('should close expired transaction from other instance', async () => {
+            const txn1 = await startTransactionTryOnce(options, options.initData);
+            const txn2 = await startTransaction(options, options.initData);
+            await commitTransaction(options, options.initData, txn2);
         });
     });
     // describe('transaction', () => {
@@ -293,3 +322,6 @@ describe('replication-google-drive.test.ts', function () {
 
 
 });
+
+
+

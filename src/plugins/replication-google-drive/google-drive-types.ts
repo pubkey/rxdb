@@ -31,6 +31,9 @@ export type GoogleDriveOptions = {
      */
     folderPath: string;
 
+    /**
+     * Time in milliseconds.
+     */
     transactionTimeout?: number;
 };
 
@@ -43,6 +46,9 @@ export type GoogleDriveOptionsWithDefaults = {
      */
     apiEndpoint: string;
     folderPath: string;
+    /**
+     * Time in milliseconds.
+     */
     transactionTimeout: number;
 };
 

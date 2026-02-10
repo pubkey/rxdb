@@ -1,6 +1,9 @@
 import { newRxError } from '../../rx-error.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
-import type { GoogleDriveOptionsWithDefaults, GoogleDriveFile } from './google-drive-types.ts';
+import type {
+    GoogleDriveOptionsWithDefaults,
+    GoogleDriveFile
+} from './google-drive-types.ts';
 
 export const DRIVE_API_VERSION = 'v3';
 export const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
@@ -54,7 +57,6 @@ export async function createFolder(
      * Instead after creating the folder, we search for it again so that in case
      * some other instance created the same folder, we use the oldest one always.
      */
-
     const foundFolder = await findFolder(
         googleDriveOptions,
         parentId,
@@ -198,6 +200,7 @@ export async function fillFileIfEtagMatches<T = any>(
     status: number;
     etag: string;
     content: T | undefined;
+    serverTime: number;
 }> {
     const url =
         `${googleDriveOptions.apiEndpoint}` +
@@ -231,7 +234,8 @@ export async function fillFileIfEtagMatches<T = any>(
         return {
             content: r.content,
             etag: r.etag,
-            status: res.status
+            status: res.status,
+            serverTime: r.serverTime
         };
     });
 }
@@ -287,6 +291,7 @@ export async function readJsonFileContent<T>(
 ): Promise<{
     etag: string;
     content: T | undefined;
+    serverTime: number;
 }> {
     const url =
         `${googleDriveOptions.apiEndpoint}` +
@@ -318,6 +323,9 @@ export async function readJsonFileContent<T>(
         throw err;
     }
 
+    const dateHeader = res.headers.get('date');
+    const unixMs = Date.parse(ensureNotFalsy(dateHeader));
+
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
         const err = new Error("NOT_A_JSON_FILE but " + contentType);
@@ -331,7 +339,8 @@ export async function readJsonFileContent<T>(
     const etag = ensureNotFalsy(res.headers.get('etag'));
     return {
         etag,
-        content: content as T
+        content: content as T,
+        serverTime: unixMs
     };
 }
 
