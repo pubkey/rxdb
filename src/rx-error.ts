@@ -175,28 +175,14 @@ export function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxE
 }
 
 export function newRxFetchError(
-    input: any,
-    body?: any,
-    additionalParameters?: any
+    input: Response,
+    additionalParameters?: RxErrorParameters
 ): RxError {
-    const parameters: any = {
-        body,
-        ...additionalParameters
+    const parameters: RxErrorParameters = {
+        ...additionalParameters,
+        ...(input.url ? { url: input.url } : {}),
+        ...(input.status ? { status: input.status } : {}),
+        ...(input.statusText ? { statusText: input.statusText } : {})
     };
-    if (input.code) {
-        parameters.code = input.code;
-    }
-    if (input.url) {
-        parameters.url = input.url;
-    }
-    if (input.method) {
-        parameters.method = input.method;
-    }
-    if (input.status) {
-        parameters.status = input.status;
-    }
-    if (input.statusText) {
-        parameters.statusText = input.statusText;
-    }
     return newRxError('FETCH', parameters);
 }

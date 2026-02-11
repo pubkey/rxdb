@@ -1200,7 +1200,7 @@ export const ERROR_MESSAGES = {
 
     FETCH: {
         message: 'A fetch-request failed',
-        cause: 'The fetch-request failed',
+        cause: 'A call with the javascript fetch() function failed',
         fix: 'Check the network connection and the server logs.',
         docs: ''
     },
