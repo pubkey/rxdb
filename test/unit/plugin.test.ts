@@ -68,7 +68,7 @@ describeParallel('plugin.test.js', () => {
                     # Error: ${err}
                     # Output: ${stdout}
                     # ErrOut: ${stderr}
-                    `);
+                    `, { cause: err });
             }
 
             if (stderr.length > 0) {

@@ -174,15 +174,17 @@ export function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxE
     });
 }
 
-export function newRxFetchError(
+export async function newRxFetchError(
     input: Response,
     additionalParameters?: RxErrorParameters
-): RxError {
+): Promise<RxError> {
+    const errorText = await input.text().catch(() => '');
     const parameters: RxErrorParameters = {
         ...additionalParameters,
         ...(input.url ? { url: input.url } : {}),
         ...(input.status ? { status: input.status } : {}),
-        ...(input.statusText ? { statusText: input.statusText } : {})
+        ...(input.statusText ? { statusText: input.statusText } : {}),
+        ...(errorText ? { errorText } : {})
     };
     return newRxError('FETCH', parameters);
 }
