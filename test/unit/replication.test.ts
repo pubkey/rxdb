@@ -849,10 +849,10 @@ describe('replication.test.ts', () => {
                 await replicationState.awaitInSync();
                 return replicationState;
             };
-            let currentReplicationState = await startReplication();
+            const currentReplicationState = await startReplication();
             await currentReplicationState.remove();
 
-            currentReplicationState = await startReplication();
+            await startReplication();
 
             assert.deepStrictEqual(calledCheckpoints, [undefined, undefined]);
 

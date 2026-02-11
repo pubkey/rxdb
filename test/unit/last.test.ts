@@ -38,7 +38,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
                     version: instance.schema.version
                 });
             });
-            throw new Error('not all memory instances have been closed (' + OPEN_MEMORY_INSTANCES.size + ' still open)');
+            throw new Error('not all memory instances have been closed (' + OPEN_MEMORY_INSTANCES.size + ' still open)', { cause: err });
         }
     });
     it('ensure every db is cleaned up', () => {
@@ -53,7 +53,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             const openCollections = Array.from(OPEN_COLLECTIONS.values()).map(c => ({ c: c.name, db: c.database ? c.database.name : '' }));
             console.log('open collectios:');
             console.dir(openCollections);
-            throw new Error('not all collections have been closed (' + openCollections.length + ')');
+            throw new Error('not all collections have been closed (' + openCollections.length + ')', { cause: err });
         }
     });
     it('ensure all BroadcastChannels are closed', async () => {
@@ -65,7 +65,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             const openChannelKeys = Array.from(BROADCAST_CHANNEL_BY_TOKEN.keys());
             console.log('open broadcast channel tokens:');
             console.log(openChannelKeys.join(', '));
-            throw new Error('not all broadcast channels have been closed (' + openChannelKeys.length + ')');
+            throw new Error('not all broadcast channels have been closed (' + openChannelKeys.length + ')', { cause: err });
         }
     });
     it('ensure all RemoteMessageChannels have been closed', async () => {
@@ -86,7 +86,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
                 console.dir(cacheItem);
             });
             console.log(stillOpen);
-            throw new Error('not all RemoteMessageChannels have been closed (' + stillOpen.length + ')');
+            throw new Error('not all RemoteMessageChannels have been closed (' + stillOpen.length + ')', { cause: err });
         }
     });
     it('ensure all websockets have been closed', async () => {
@@ -98,7 +98,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             const openSocketUrls = Array.from(GRAPHQL_WEBSOCKET_BY_URL.keys());
             console.log('open graphql websockets:');
             console.log(openSocketUrls.join(', '));
-            throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')');
+            throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')', { cause: err });
         }
     });
 

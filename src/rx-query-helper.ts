@@ -114,7 +114,7 @@ export function normalizeMangoQuery<RxDocType>(
             if (schema.indexes) {
                 const fieldsWithLogicalOperator: Set<string> = new Set();
                 Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
-                    let hasLogical = false;
+                    let hasLogical;
                     if (typeof matcher === 'object' && matcher !== null) {
                         hasLogical = !!Object.keys(matcher).find(operator => LOGICAL_OPERATORS.has(operator));
                     } else {

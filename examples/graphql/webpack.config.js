@@ -11,7 +11,7 @@ export default {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
         library: {
-            type: "module"
+            type: 'module'
         }
     },
     experiments: {

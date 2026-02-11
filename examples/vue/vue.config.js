@@ -1,6 +1,8 @@
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+  lintOnSave: false,
+  publicPath: './',
   configureWebpack: {
     devtool: 'source-map',
     plugins: [

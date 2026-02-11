@@ -344,7 +344,7 @@ describeParallel('replication-websocket.test.ts', () => {
                         name: doc.name
                     }))
                 );
-                throw new Error('not all docs are equal');
+                throw new Error('not all docs are equal', { cause: err });
             }
         }
         await ensureUpdated(localCollection);

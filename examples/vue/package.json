@@ -11,78 +11,43 @@
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build:serve": "ws -p 8888 -d dist/",
-    "lint": "vue-cli-service lint",
+    "lint": "eslint .",
     "test:run": "testcafe \"path:$BROWSER_PATH --no-sandbox --disable-dev-shm-usage\" -e test/ --hostname localhost --selector-timeout 30000 --disable-features=LocalNetworkAccessChecks",
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "//": "NOTICE: For the Github CI we use the local RxDB build (rxdb-local.tgz). In your app should just install 'rxdb' from npm instead",
   "dependencies": {
-    "rxdb": "file:rxdb-local.tgz",
     "pouchdb-server": "4.2.0",
     "random-int": "3.1.0",
     "register-service-worker": "1.7.2",
+    "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.2",
     "vue": "3.5.28",
     "vue-router": "5.0.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/node": "24.10.13",
     "@types/pouchdb-adapter-http": "6.1.6",
     "@types/pouchdb-adapter-idb": "6.1.7",
-    "@typescript-eslint/eslint-plugin": "7.18.0",
-    "@typescript-eslint/parser": "7.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
     "@vue/cli-plugin-eslint": "5.0.9",
     "@vue/cli-plugin-pwa": "5.0.9",
     "@vue/cli-plugin-typescript": "5.0.9",
     "@vue/cli-service": "5.0.9",
     "@vue/compiler-sfc": "3.5.28",
-    "@vue/eslint-config-typescript": "13.0.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
     "copy-webpack-plugin": "13.0.1",
-    "eslint": "8.57.1",
-    "eslint-plugin-vue": "9.33.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^9.32.0",
+    "globals": "^17.3.0",
     "local-web-server": "5.4.0",
-    "node-sass": "9.0.0",
+    "sass": "^1.80.0",
     "sass-loader": "16.0.7",
     "testcafe": "3.7.4",
     "typescript": "5.9.3"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended",
-      "@vue/typescript/recommended"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2020,
-      "parser": "@typescript-eslint/parser"
-    },
-    "rules": {
-      "semi": [
-        "error",
-        "always"
-      ],
-      "quotes": [
-        "error",
-        "single",
-        {
-          "avoidEscape": true
-        }
-      ],
-      "no-prototype-builtins": "off",
-      "no-useless-escape": "off",
-      "vue/multi-word-component-names": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-inferrable-types": "off",
-      "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/ban-types": "off"
-    }
   }
 }

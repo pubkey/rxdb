@@ -4,9 +4,9 @@ import { graphqlHTTP } from 'express-graphql';
 import cors from 'cors';
 import { PubSub } from 'graphql-subscriptions';
 import { buildSchema, execute, subscribe } from 'graphql';
-import { WebSocketServer } from "ws";
+import { WebSocketServer } from 'ws';
 
-import * as ws from 'ws';
+
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { createServer } from 'http';
 
@@ -93,9 +93,9 @@ export async function run() {
             authenticateRequest(request);
 
             const lastId = args.checkpoint ? args.checkpoint.id : '';
-            const minUpdatedAt = args.checkpoint
-                ? args.checkpoint.updatedAt
-                : 0;
+            const minUpdatedAt = args.checkpoint ?
+                args.checkpoint.updatedAt :
+                0;
 
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
@@ -126,15 +126,15 @@ export async function run() {
             const last = lastOfArray(limitedDocs);
             const ret = {
                 documents: limitedDocs,
-                checkpoint: last
-                    ? {
-                          id: last.id,
-                          updatedAt: last.updatedAt,
-                      }
-                    : {
-                          id: lastId,
-                          updatedAt: minUpdatedAt,
-                      },
+                checkpoint: last ?
+                    {
+                        id: last.id,
+                        updatedAt: last.updatedAt,
+                    } :
+                    {
+                        id: lastId,
+                        updatedAt: minUpdatedAt,
+                    },
             };
             console.log('pullHero() ret:');
             console.log(JSON.stringify(ret, null, 4));
@@ -146,7 +146,7 @@ export async function run() {
             authenticateRequest(request);
 
             const rows = args.heroPushRow;
-            let lastCheckpoint = {
+            const lastCheckpoint = {
                 id: '',
                 updatedAt: 0,
             };
@@ -165,7 +165,7 @@ export async function run() {
                     docCurrentMaster &&
                     row.assumedMasterState &&
                     docCurrentMaster.updatedAt !==
-                        row.assumedMasterState.updatedAt
+                    row.assumedMasterState.updatedAt
                 ) {
                     conflicts.push(docCurrentMaster);
                     return;
@@ -223,8 +223,8 @@ export async function run() {
     app.listen(GRAPHQL_PORT, function () {
         log(
             'Started graphql-endpoint at http://localhost:' +
-                GRAPHQL_PORT +
-                GRAPHQL_PATH
+            GRAPHQL_PORT +
+            GRAPHQL_PATH
         );
     });
 
@@ -234,8 +234,8 @@ export async function run() {
     serverSubscription.listen(GRAPHQL_SUBSCRIPTION_PORT, () => {
         log(
             'Started graphql-subscription endpoint at http://localhost:' +
-                GRAPHQL_SUBSCRIPTION_PORT +
-                GRAPHQL_SUBSCRIPTION_PATH
+            GRAPHQL_SUBSCRIPTION_PORT +
+            GRAPHQL_SUBSCRIPTION_PATH
         );
         const wsServer = new WebSocketServer({
             server: serverSubscription,
