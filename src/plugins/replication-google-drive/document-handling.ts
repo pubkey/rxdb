@@ -1,4 +1,5 @@
 import { newRxError } from '../../rx-error.ts';
+import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
 import { DriveStructure } from './init.ts';
@@ -126,11 +127,11 @@ export async function insertDocumentFiles<RxDocType>(
     }));
 }
 
-export async function updateDocumentFiles<RxDocType>(
+export async function updateDocumentFiles<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
     primaryPath: string,
-    docs: RxDocType[],
+    docs: DocType[],
     /**
      * Must provide the corresponding Drive fileId for each doc.
      * If you only have names (like `${id}.json`), you need a lookup step first.
@@ -221,11 +222,11 @@ export async function batchFetchDocumentContentsRaw(
 }
 
 
-export async function fetchDocumentContents(
+export async function fetchDocumentContents<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileIds: string[],
     concurrency = 5
-) {
+): Promise<ById<DocType>> {
     const results: Record<string, any> = {};
     const queue = [...fileIds];
 

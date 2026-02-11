@@ -371,7 +371,6 @@ describe('replication-google-drive.test.ts', function () {
                 options.initData,
                 docs.map(d => (d as any)[PRIMARY_PATH])
             );
-            console.log(JSON.stringify({ found }, null, 4));
             assert.strictEqual(found.files.length, 10);
         });
         it('fetchDocumentContents()', async () => {
@@ -388,11 +387,14 @@ describe('replication-google-drive.test.ts', function () {
                 options.initData,
                 ids
             );
+            const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
             const batchResult = await fetchDocumentContents(
                 options,
-                found.files.map((f: any) => ensureNotFalsy(f.id))
+                fileIds
             );
-            console.log(JSON.stringify({ found, batchResult }, null, 4));
+            fileIds.forEach(fileId => {
+                assert.ok(batchResult[fileId].passportId);
+            });
         });
 
 
