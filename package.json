@@ -607,7 +607,7 @@
     "@types/crypto-js": "4.2.2",
     "@types/mocha": "10.0.10",
     "@types/node": "24.10.13",
-    "@types/react": "19.2.13",
+    "@types/react": "19.2.14",
     "@types/request": "2.48.13",
     "@types/request-promise-native": "1.0.21",
     "@types/sharp": "0.32.0",
