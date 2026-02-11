@@ -1467,6 +1467,27 @@ export const ERROR_MESSAGES = {
         fix: '',
         docs: ''
     },
+    GDR15: {
+        code: 'GDR15',
+        message: 'Drive updateDocumentFiles failed',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
+    GDR16: {
+        code: 'GDR16',
+        message: 'Drive batchFetchDocumentContentsRaw failed',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
+    GDR17: {
+        code: 'GDR17',
+        message: 'Drive fetchDocumentContents failed',
+        cause: '',
+        fix: '',
+        docs: ''
+    },
 
     /**
      * Should never be thrown, use this for

@@ -31,7 +31,7 @@ export * from './pull-handler.ts';
 export * from './transaction.ts';
 export * from './init.ts';
 export * from './document-handling.ts';
-
+export * from './multipart.ts';
 
 export const DEFAULT_TRANSACTION_TIMEOUT = 60 * 1000;
 

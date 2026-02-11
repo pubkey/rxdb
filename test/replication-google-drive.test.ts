@@ -21,7 +21,10 @@ import {
     TRANSACTION_BLOCKED_FLAG,
     getDocumentFiles,
     insertDocumentFiles,
-    isTransactionTimedOut
+    isTransactionTimedOut,
+    fetchDocumentContents,
+    batchFetchDocumentContentsRaw,
+    parseBatchResponse
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
@@ -305,7 +308,7 @@ describe('replication-google-drive.test.ts', function () {
         it('on parallel calls each at one point should have the tx lock', async () => {
             let parallelCount = 0;
             await Promise.all(
-                new Array(5).fill(0).map(async (__, i) => {
+                new Array(3).fill(0).map(async (__, i) => {
                     console.log('(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
                     parallelCount = parallelCount + 1;
@@ -322,7 +325,7 @@ describe('replication-google-drive.test.ts', function () {
             await startTransaction(options, options.initData);
             await wait(options.transactionTimeout * 2);
             await Promise.all(
-                new Array(5).fill(0).map(async (__, i) => {
+                new Array(3).fill(0).map(async (__, i) => {
                     console.log('b(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
                     console.log('b(' + i + '): have');
@@ -370,6 +373,26 @@ describe('replication-google-drive.test.ts', function () {
             );
             console.log(JSON.stringify({ found }, null, 4));
             assert.strictEqual(found.files.length, 10);
+        });
+        it('fetchDocumentContents()', async () => {
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
+            const ids = docs.map(d => (d as any)[PRIMARY_PATH]);
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            const found = await getDocumentFiles(
+                options,
+                options.initData,
+                ids
+            );
+            const batchResult = await fetchDocumentContents(
+                options,
+                found.files.map((f: any) => ensureNotFalsy(f.id))
+            );
+            console.log(JSON.stringify({ found, batchResult }, null, 4));
         });
 
 

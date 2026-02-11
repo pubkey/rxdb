@@ -49,33 +49,24 @@ export async function getDocumentFiles(
     return data;
 }
 
-
-export async function insertDocumentFiles<RxDocType>(
+export async function batchGetFilesMetadata(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    init: DriveStructure,
-    primaryPath: string,
-    docs: RxDocType[]
+    fileIds: string[]
 ) {
     const boundary = "batch_" + Math.random().toString(16).slice(2);
 
-    const parts = docs.map((doc, i) => {
-        const id = (doc as any)[primaryPath];
-        const body = JSON.stringify({
-            name: id + '.json',
-            mimeType: 'application/json',
-            parents: [init.docsFolderId],
-        });
-
+    const parts = fileIds.map((id, i) => {
         return (
             `--${boundary}\r\n` +
             `Content-Type: application/http\r\n` +
             `Content-ID: <item-${i}>\r\n\r\n` +
-            `POST /drive/v3/files HTTP/1.1\r\n` +
-            `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-            `${body}\r\n`
+            `GET /drive/v3/files/${encodeURIComponent(id)}?` +
+            `fields=id,name,mimeType,parents,modifiedTime,size&supportsAllDrives=true HTTP/1.1\r\n\r\n`
         );
     });
+
     const batchBody = parts.join("") + `--${boundary}--`;
+
     const res = await fetch(googleDriveOptions.apiEndpoint + "/batch/drive/v3", {
         method: "POST",
         headers: {
@@ -84,15 +75,55 @@ export async function insertDocumentFiles<RxDocType>(
         },
         body: batchBody,
     });
+
     if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw newRxError('GDR13', {
-            ids: docs.map(d => (d as any)[primaryPath]),
-            status: res.status,
-            errorText: text
-        });
+        throw newRxError("GDR18", { status: res.status, errorText: text });
     }
+
+    // multipart/mixed; you can parse it, or just return raw.
     return await res.text();
+}
+
+export async function insertDocumentFiles<RxDocType>(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    init: DriveStructure,
+    primaryPath: string,
+    docs: RxDocType[]
+) {
+    // Run uploads in parallel
+    await Promise.all(docs.map(async (doc) => {
+        const id = (doc as any)[primaryPath];
+        const content = JSON.stringify(doc); // The actual JSON content
+
+        const metadata = {
+            name: id + '.json',
+            mimeType: 'application/json',
+            parents: [init.docsFolderId],
+        };
+        const boundary = "batch_" + Math.random().toString(16).slice(2);
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const closeDelim = "\r\n--" + boundary + "--";
+        const body =
+            delimiter +
+            "Content-Type: application/json\r\n\r\n" +
+            JSON.stringify(metadata) +
+            delimiter +
+            "Content-Type: application/json\r\n\r\n" +
+            content +
+            closeDelim;
+        const res = await fetch(googleDriveOptions.apiEndpoint + "/upload/drive/v3/files?uploadType=multipart", {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${googleDriveOptions.authToken}`,
+                'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+            },
+            body: body
+        });
+        if (!res.ok) {
+            throw new Error(`Upload failed for ${id}: ${res.status} ${await res.text()}`);
+        }
+    }));
 }
 
 export async function updateDocumentFiles<RxDocType>(
@@ -147,4 +178,96 @@ export async function updateDocumentFiles<RxDocType>(
     }
 
     return await res.text();
+}
+
+
+
+export async function batchFetchDocumentContentsRaw(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileIds: string[]
+) {
+    const boundary = "batch_" + Math.random().toString(16).slice(2);
+
+    const parts = fileIds.map((id, i) => {
+        return (
+            `--${boundary}\r\n` +
+            `Content-Type: application/http\r\n` +
+            `Content-ID: <item-${i}>\r\n\r\n` +
+            `GET /drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true HTTP/1.1\r\n\r\n`
+        );
+    });
+
+    const batchBody = parts.join("") + `--${boundary}--`;
+
+    const res = await fetch(googleDriveOptions.apiEndpoint + "/batch/drive/v3", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+            "Content-Type": `multipart/mixed; boundary=${boundary}`,
+        },
+        body: batchBody,
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw newRxError('GDR16', {
+            status: res.status,
+            errorText: text
+        });
+    }
+
+    // This will be a multipart/mixed body that you must parse yourself.
+    return await res.text();
+}
+
+
+export async function fetchDocumentContents(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileIds: string[],
+    concurrency = 5
+) {
+    const results: Record<string, any> = {};
+    const queue = [...fileIds];
+
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    async function fetchOne(fileId: string, attempt = 0): Promise<any> {
+        const url =
+            googleDriveOptions.apiEndpoint +
+            `/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`;
+
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${googleDriveOptions.authToken}` },
+        });
+
+        // Retry on transient errors
+        if ([429, 500, 502, 503, 504].includes(res.status) && attempt < 4) {
+            const backoffMs = 250 * Math.pow(2, attempt) + Math.floor(Math.random() * 200);
+            await sleep(backoffMs);
+            return fetchOne(fileId, attempt + 1);
+        }
+
+        if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            throw newRxError("GDR17", {
+                status: res.status,
+                errorText: text,
+                args: {
+                    fileId
+                }
+            });
+        }
+
+        return res.json();
+    }
+
+    async function worker() {
+        while (queue.length) {
+            const fileId = queue.shift()!;
+            results[fileId] = await fetchOne(fileId);
+        }
+    }
+
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
+    return results;
 }
