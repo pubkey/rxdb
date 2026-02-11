@@ -35,6 +35,7 @@ import {
 import {
     getRxStorageFilesystemNode
 } from 'rxdb-premium/plugins/storage-filesystem-node';
+import path from 'path';
 
 const myRxDatabase = await createRxDatabase({
     name: 'exampledb',

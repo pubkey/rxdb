@@ -156,7 +156,7 @@ CouchDB has a changestream and a query syntax similar to MongoDB.
 
 
 PouchDB is a JavaScript database that is compatible with most of the CouchDB API. It has an adapter system that allows you to switch out the underlying storage layer. There are many adapters like for [IndexedDB](./rx-storage-indexeddb.md), [SQLite](./rx-storage-sqlite.md), the Filesystem and so on. The main benefit is to be able to replicate data with any CouchDB compatible endpoint.
-Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of document, which is why it can show bad performance for bigger datasets.
+Because of the CouchDB compatibility, PouchDB has to do a lot of overhead in handling the revision tree of documents, which is why it can show bad performance for bigger datasets.
 RxDB was originally build around PouchDB until the storage layer was abstracted out in version [10.0.0](./releases/10.0.0.md) so it now allows to use different `RxStorage` implementations. PouchDB has some performance issues because of how it has to store the document revision tree to stay compatible with the CouchDB API.
 
 ### Couchbase
@@ -255,11 +255,11 @@ Yjs is a [CRDT-based](./crdt.md) (Conflict-free Replicated Data Type) library fo
 
 ### SignalDB
 
-SignalDB provides a reactive, in-memory local-lirst JavaScript database with real-time sync, bit it doesn't offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
+SignalDB provides a reactive, in-memory local-first JavaScript database with real-time sync, but it doesn't offer the same level of multi-client replication or flexibility with storage backends that RxDB provides, and through a RxDB persistence adapters you can actually use SignalDB for the front-end reactivity while relying on RxDB for backend sync and persistence.
 
 ### PowerSync
 
-PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers man client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
+PowerSync is a "framework" for implementing local-first solutions. It centralizes business logic and conflict resolution on a central, authoritative server (PostgreSQL or MongoDB), vs RxDB that also supports custom backends. Both RxDB and PowerSync can be used with a variety of storage backends, but PowerSync uses SQLite as the front-end database which has shown to be slow because the WASM-SQLite abstraction increases read and write latency. In terms of client SDKs, PowerSync offers Flutter, Kotlin, and Swift in addition to JS/TypeScript. PowerSync offers many client technologies, PowerSync is under a license that restricts commercial use that competes with PowerSync and the JourneyApps Platform.
 
 # Read further
 

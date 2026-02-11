@@ -115,6 +115,12 @@ export interface RxErrorParameters {
     readonly file?: any;
     readonly parentId?: string;
 
+    // fetch
+    readonly body?: any;
+    readonly status?: number;
+    readonly statusText?: string;
+    readonly headers?: Record<string, any>;
+    readonly code?: string;
 }
 
 /**

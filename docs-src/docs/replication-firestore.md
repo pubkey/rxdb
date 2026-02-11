@@ -121,6 +121,7 @@ to manually set the `_deleted` field to `false` and the `serverTimestamp` to all
 import {
     getDocs,
     query,
+    where,
     serverTimestamp
 } from 'firebase/firestore';
 const allDocsResult = await getDocs(query(firestoreCollection));

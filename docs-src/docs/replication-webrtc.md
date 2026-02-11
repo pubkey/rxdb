@@ -60,7 +60,7 @@ Before you use this plugin, make sure that you understand how [WebRTC works](htt
 
 You can find a fully build example of this at the [RxDB Quickstart Repository](https://github.com/pubkey/rxdb-quickstart) which you can also [try out online](https://pubkey.github.io/rxdb-quickstart/).
 
-Four you create the [database](./rx-database.md) and then you can configure the replication:
+First you create the [database](./rx-database.md) and then you can configure the replication:
 
 <Steps>
 

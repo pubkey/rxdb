@@ -159,7 +159,7 @@ const storage = getRxStorageOPFS({
 });
 ```
 
-If you forget to set this and still create and use a [RxDatabase](./rx-database.md) inside of the worker, you might get the error message` or `Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')`.
+If you forget to set this and still create and use a [RxDatabase](./rx-database.md) inside of the worker, you might get the error message "Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')".
 
 ## OPFS in Electron, React-Native or Capacitor.js
 

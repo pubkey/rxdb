@@ -119,6 +119,9 @@ const myCollection = await myDatabase.addCollections({
   }
 });
 
+/**
+ * We assume myDocument is a document from the collection
+ */
 const mother = await myDocument.family.mother_;
 console.dir(mother); //> RxDocument
 ```
@@ -159,6 +162,6 @@ await myCollection.insert({
 });
 
 const doc = await humansCollection.findOne('Alice').exec();
-const friends = await myDocument.friends_;
+const friends = await doc.friends_;
 console.dir(friends); //> Array.<RxDocument>
 ```

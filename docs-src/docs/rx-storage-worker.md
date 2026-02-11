@@ -7,7 +7,7 @@ image: /headers/rx-storage-worker.jpg
 
 # Worker RxStorage
 
-With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommend to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
+With the worker plugin, you can put the [RxStorage](./rx-storage.md) of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommended to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
 :::note Premium
 This plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
@@ -155,7 +155,7 @@ module.exports = {
 
 Each call to `getRxStorageWorker()` will create a different worker instance so that when you have more than one `RxDatabase`, each database will have its own JavaScript worker process.
 
-To reuse the worker instance in more than one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable an use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
+To reuse the worker instance in more than one `RxDatabase`, you can store the output of `getRxStorageWorker()` into a variable and use that one. Reusing the worker can decrease the initial page load, but you might get slower database operations.
 
 ```ts
 // Call getRxStorageWorker() exactly once

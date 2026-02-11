@@ -63,7 +63,7 @@ import {
     getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
 
-let storage = getRxStorageDexie();
+let storage = getRxStorageIndexedDB();
 ```
 
 
@@ -301,7 +301,7 @@ replicateHTTP({
   collection: db.todos,
   push: {
     handler: async (rows) => {
-      return fetch("https:/example.com/api/todos/push", {
+      return fetch("https://example.com/api/todos/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(rows),

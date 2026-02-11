@@ -24,9 +24,9 @@
     <img src="./docs-src/static/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
   </a>
   <br />
-  <br />
-  <h3 align="center">A fast, local-first, reactive Database for JavaScript Applications</h3>
+  <h3 align="center">A fast, <a href="https://rxdb.info/articles/local-first-future.html">local-first</a>, reactive Database for JavaScript Applications</h3>
 </p>
+<br />
 
 
 <p align="center">
@@ -284,3 +284,6 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 #### More content
 [Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html), [JSON database](https://rxdb.info/articles/json-database.html), [Angular IndexedDB](https://rxdb.info/articles/angular-indexeddb.html), [React IndexedDB](https://rxdb.info/articles/react-indexeddb.html), [Optimistic UI](https://rxdb.info/articles/optimistic-ui.html), [local database](https://rxdb.info/articles/local-database.html), [React Native Encryption](https://rxdb.info/articles/react-native-encryption.html), [Vue Database](https://rxdb.info/articles/vue-database.html), [jQuery Database](https://rxdb.info/articles/jquery-database.html), [Vue IndexedDB](https://rxdb.info/articles/vue-indexeddb.html), [Firestore Alternative](https://rxdb.info/articles/firestore-alternative.html), [Firebase Realtime Database Alternative](https://rxdb.info/articles/firebase-realtime-database-alternative.html), [Ionic Storage](https://rxdb.info/articles/ionic-storage.html)
 
+----------------
+
+View [llms.txt](https://rxdb.info/llms.txt)

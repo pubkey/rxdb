@@ -88,7 +88,7 @@ const myDb = await createRxDatabase({
 
 The remote storage can also be used to send custom messages to and from the remote instance.
 
-One the remote you have to define a `customRequestHandler` like:
+On the remote you have to define a `customRequestHandler` like:
 
 ```ts
 const serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({

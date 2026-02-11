@@ -13,7 +13,7 @@ The memory mapped [RxStorage](./rx-storage.md) is a wrapper around any other RxS
 ## Pros
 
 - Improves read/write performance because these operations run against the in-memory storage.
-- Decreases initial page load because it load all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.
+- Decreases initial page load because it loads all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.
 - Can store encrypted data on disc while still being able to run queries on the non-encrypted in-memory state.
 
 
@@ -49,7 +49,7 @@ const storage = getMemoryMappedRxStorage({
 
 // create the [RxDatabase](./rx-database.md) like you would do with any other RxStorage
 const db = await createRxDatabase({
-    name: 'myDatabase,
+    name: 'myDatabase',
     storage,
 });
 /** ... **/
@@ -84,7 +84,7 @@ const storage = getMemoryMappedRxStorage({
 });
 
 const db = await createRxDatabase({
-    name: 'myDatabase,
+    name: 'myDatabase',
     storage,
 });
 /** ... **/

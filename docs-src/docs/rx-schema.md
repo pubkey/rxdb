@@ -312,7 +312,7 @@ const schemaWithFinalAge = {
 ## Non allowed properties
 
 The schema is not only used to validate objects before they are written into the database, but also used to map getters to observe and populate single fieldnames, key compression and other things. Therefore you can not use every schema which would be valid for the spec of [json-schema.org](http://json-schema.org/).
-For example, fieldnames must match the regex `^[a-zA-Z][[a-zA-Z0-9_]*]?[a-zA-Z0-9]$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
+For example, fieldnames must match the regex `^[a-zA-Z](?:[[a-zA-Z0-9_]*]?[a-zA-Z0-9])?$` and `additionalProperties` is always set to `false`. But don't worry, RxDB will instantly throw an error when you pass an invalid schema into it.
 
 
 Also the following class properties of `RxDocument` cannot be used as top level fields because they would clash when the RxDocument property is accessed:
