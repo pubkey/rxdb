@@ -9,13 +9,14 @@ export type GoogleDriveCheckpointType = {
     modifiedTime: string;
 };
 
-export type GoogleDriveFile = {
+export interface DriveFileMetadata {
     id: string;
     name: string;
     mimeType: string;
-    trashed: boolean;
-    parents: string[];
-};
+    parents?: string[];
+    modifiedTime?: string;
+    size?: string; // Drive returns size as string
+}
 
 export type GoogleDriveOptions = {
     oauthClientId: string;
@@ -51,6 +52,11 @@ export type GoogleDriveOptionsWithDefaults = {
      */
     transactionTimeout: number;
 };
+
+export interface DriveFileListResponse {
+    nextPageToken?: string;
+    files: DriveFileMetadata[];
+}
 
 
 export type GoogleDriveSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>, 'handler' | 'stream$'>;

@@ -396,8 +396,42 @@ describe('replication-google-drive.test.ts', function () {
                 assert.ok(batchResult[fileId].passportId);
             });
         });
-
-
+        it('fetchDocumentContents() after updateDocumentFiles()', async () => {
+            const docs = new Array(3).fill(0).map(() => schemaObjects.humanData());
+            const ids = docs.map(d => (d as any)[PRIMARY_PATH]);
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            docs.forEach(doc => doc.foo = 'bar');
+            const found = await getDocumentFiles(
+                options,
+                options.initData,
+                ids
+            );
+            const fileIdByDocId: any = {};
+            found.files.forEach((file, i) => {
+                const docId = docs[i][PRIMARY_PATH];
+                fileIdByDocId[docId] = file.id;
+            });
+            await updateDocumentFiles(
+                options,
+                PRIMARY_PATH,
+                docs,
+                fileIdByDocId
+            );
+            const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
+            const batchResult = await fetchDocumentContents(
+                options,
+                fileIds
+            );
+            fileIds.forEach(fileId => {
+                assert.ok(batchResult[fileId].passportId);
+                assert.strictEqual(batchResult[fileId].foo, 'bar', 'must have the updated property');
+            });
+        });
     });
 
 });

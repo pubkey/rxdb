@@ -1,16 +1,21 @@
 import { newRxError } from '../../rx-error.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
-import type { GoogleDriveOptionsWithDefaults } from './google-drive-types.ts';
+import type {
+    DriveFileListResponse,
+    GoogleDriveOptionsWithDefaults
+} from './google-drive-types.ts';
 import { DriveStructure } from './init.ts';
 
 const MAX_DRIVE_PAGE_SIZE = 1000;
+
+
 
 export async function getDocumentFiles(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
     docIds: string[]
-) {
+): Promise<DriveFileListResponse> {
     const fileNames = docIds.map(id => id + '.json');
     let q = fileNames
         .map(name => `name = '${name.replace("'", "\\'")}'`)
@@ -129,96 +134,50 @@ export async function insertDocumentFiles<RxDocType>(
 
 export async function updateDocumentFiles<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    init: DriveStructure,
     primaryPath: string,
     docs: DocType[],
-    /**
-     * Must provide the corresponding Drive fileId for each doc.
-     * If you only have names (like `${id}.json`), you need a lookup step first.
-     */
-    fileIdByDocId: Record<string, string>
+    fileIdByDocId: Record<string, string>,
+    concurrency = 5
 ) {
-    const boundary = "batch_" + Math.random().toString(16).slice(2);
+    const queue = docs.slice(0);
+    const results: Record<string, { id: string }> = {};
 
-    const parts = docs.map((doc, i) => {
-        const id = (doc as any)[primaryPath] as string;
-        const fileId = ensureNotFalsy(fileIdByDocId[id]);
-        const body = JSON.stringify({
-            name: id + ".json",
-            mimeType: "application/json",
-            parents: [init.docsFolderId],
-        });
-        return (
-            `--${boundary}\r\n` +
-            `Content-Type: application/http\r\n` +
-            `Content-ID: <item-${i}>\r\n\r\n` +
-            `PATCH /drive/v3/files/${encodeURIComponent(fileId)}?supportsAllDrives=true&fields=id,name,mimeType,parents HTTP/1.1\r\n` +
-            `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-            `${body}\r\n`
-        );
-    });
+    async function worker() {
+        while (queue.length) {
+            const doc = queue.shift()!;
+            const docId = (doc as any)[primaryPath] as string;
+            const fileId = ensureNotFalsy(fileIdByDocId[docId]);
 
-    const batchBody = parts.join("") + `--${boundary}--`;
+            const url =
+                googleDriveOptions.apiEndpoint +
+                `/upload/drive/v3/files/${encodeURIComponent(fileId)}` +
+                `?uploadType=media&supportsAllDrives=true&fields=id`;
 
-    const res = await fetch(googleDriveOptions.apiEndpoint + "/batch/drive/v3", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${googleDriveOptions.authToken}`,
-            "Content-Type": `multipart/mixed; boundary=${boundary}`,
-        },
-        body: batchBody,
-    });
+            const res = await fetch(url, {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${googleDriveOptions.authToken}`,
+                    "Content-Type": "application/json; charset=UTF-8",
+                },
+                body: JSON.stringify(doc),
+            });
 
-    if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw newRxError("GDR14", {
-            ids: docs.map((d) => (d as any)[primaryPath]),
-            status: res.status,
-            errorText: text,
-        });
+            if (!res.ok) {
+                const text = await res.text().catch(() => "");
+                throw newRxError("GDR15", {
+                    docId,
+                    fileId,
+                    status: res.status,
+                    errorText: text,
+                });
+            }
+
+            results[docId] = await res.json(); // { id }
+        }
     }
 
-    return await res.text();
-}
-
-
-
-export async function batchFetchDocumentContentsRaw(
-    googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    fileIds: string[]
-) {
-    const boundary = "batch_" + Math.random().toString(16).slice(2);
-
-    const parts = fileIds.map((id, i) => {
-        return (
-            `--${boundary}\r\n` +
-            `Content-Type: application/http\r\n` +
-            `Content-ID: <item-${i}>\r\n\r\n` +
-            `GET /drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true HTTP/1.1\r\n\r\n`
-        );
-    });
-
-    const batchBody = parts.join("") + `--${boundary}--`;
-
-    const res = await fetch(googleDriveOptions.apiEndpoint + "/batch/drive/v3", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${googleDriveOptions.authToken}`,
-            "Content-Type": `multipart/mixed; boundary=${boundary}`,
-        },
-        body: batchBody,
-    });
-
-    if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw newRxError('GDR16', {
-            status: res.status,
-            errorText: text
-        });
-    }
-
-    // This will be a multipart/mixed body that you must parse yourself.
-    return await res.text();
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
+    return results;
 }
 
 
