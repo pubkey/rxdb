@@ -24,7 +24,8 @@ import {
     isTransactionTimedOut,
     fetchDocumentContents,
     batchFetchDocumentContentsRaw,
-    parseBatchResponse
+    parseBatchResponse,
+    fetchChanges
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
@@ -431,6 +432,33 @@ describe('replication-google-drive.test.ts', function () {
                 assert.ok(batchResult[fileId].passportId);
                 assert.strictEqual(batchResult[fileId].foo, 'bar', 'must have the updated property');
             });
+        });
+    });
+    describe('downstream', () => {
+        beforeEach(async () => {
+            options = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'test-folder-' + Math.random(),
+                transactionTimeout: 1000,
+                initData: null as any
+            };
+            options.initData = await initDriveStructure(options);
+        });
+        it('fetchChanges()', async () => {
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            const changes = await fetchChanges(
+                options,
+                undefined,
+                10
+            );
         });
     });
 

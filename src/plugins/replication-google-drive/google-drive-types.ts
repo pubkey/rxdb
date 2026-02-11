@@ -5,8 +5,16 @@ import type {
 } from '../../types/index.d.ts';
 
 export type GoogleDriveCheckpointType = {
-    id: string;
     modifiedTime: string;
+    /**
+     * There is no way to do a comparison (> or >=)
+     * on fileNames or ids in google drive.
+     * Also modifiedTime can be sometimes the same
+     * on multiple files.
+     * Therefore we might overfetch documents and
+     * after the request removed the ones that have been known before.
+     */
+    docIdsWithSameModifiedTime: string[];
 };
 
 export interface DriveFileMetadata {
