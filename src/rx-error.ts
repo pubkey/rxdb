@@ -17,7 +17,7 @@ function parametersToString(parameters: any): string {
     let ret = '';
     if (Object.keys(parameters).length === 0)
         return ret;
-    ret +='-'.repeat(20) + '\n';
+    ret += '-'.repeat(20) + '\n';
     ret += 'Parameters:\n';
     ret += Object.keys(parameters)
         .map(k => {
@@ -172,4 +172,17 @@ export function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxE
         document: err.documentId,
         writeError: err
     });
+}
+
+export function newRxFetchError(
+    input: Response,
+    additionalParameters?: RxErrorParameters
+): RxError {
+    const parameters: RxErrorParameters = {
+        ...additionalParameters,
+        ...(input.url ? { url: input.url } : {}),
+        ...(input.status ? { status: input.status } : {}),
+        ...(input.statusText ? { statusText: input.statusText } : {})
+    };
+    return newRxError('FETCH', parameters);
 }
