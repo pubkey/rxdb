@@ -1198,6 +1198,13 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/react.html?console=errors&code=R3'
     },
 
+    FETCH: {
+        message: 'A fetch-request failed',
+        cause: 'The fetch-request failed',
+        fix: 'Check the network connection and the server logs.',
+        docs: ''
+    },
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the
