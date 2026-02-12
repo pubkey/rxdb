@@ -2,14 +2,14 @@
 
 import {
     getRxStorageDexie
-} from '../../plugins/storage-dexie/index.mjs';
-import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
-import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
-import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
-import { getRxStorageLocalstorage, getLocalStorageMock } from '../../plugins/storage-localstorage/index.mjs';
-import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../plugins/storage-sqlite/index.mjs';
+} from '../../src/plugins/storage-dexie/index.ts';
+import { getRxStorageRemoteWebsocket } from '../../src/plugins/storage-remote-websocket/index.ts';
+import { getRxStorageMemory } from '../../src/plugins/storage-memory/index.ts';
+import { getRxStorageDenoKV } from '../../src/plugins/storage-denokv/index.ts';
+import { getRxStorageLocalstorage, getLocalStorageMock } from '../../src/plugins/storage-localstorage/index.ts';
+import { getRxStorageSQLiteTrial, getSQLiteBasicsNodeNative } from '../../src/plugins/storage-sqlite/index.ts';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { wrappedValidateAjvStorage } from '../../src/plugins/validate-ajv/index.ts';
 import { randomNumber } from 'async-test-util';
 import * as path from 'node:path';
 import url from 'node:url';
@@ -17,7 +17,7 @@ import {
     RxTestStorage,
     ensureNotFalsy,
     randomDelayStorage
-} from '../../plugins/core/index.mjs';
+} from '../../src/index.ts';
 
 import {
     indexedDB as fakeIndexedDB,
