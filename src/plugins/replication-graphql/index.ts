@@ -221,7 +221,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                             responseData = streamResponse;
                         }
                         
-                        if (!responseData || typeof responseData !== 'object' || responseData === null) {
+                        // Validate response data exists and is an object (but not null)
+                        if (responseData === null || typeof responseData !== 'object') {
                             return;
                         }
                         
@@ -232,10 +233,6 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                         
                         const firstField = firstFieldKeys[0];
                         let data = responseData[firstField];
-                        
-                        if (!data) {
-                            return;
-                        }
                         
                         if (pull.responseModifier) {
                             data = await pull.responseModifier(
