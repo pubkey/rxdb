@@ -78,7 +78,7 @@ export async function findFolder(
      * so in case the same folder was created multiple times, we always pick the same
      * one which is the oldest one.
      */
-    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id)&orderBy=createdTime asc&q=' + encodeURIComponent(query);
+    const searchUrl = googleDriveOptions.apiEndpoint + '/drive/v3/files?fields=files(id,mimeType)&orderBy=createdTime asc&q=' + encodeURIComponent(query);
     const searchResponse = await fetch(searchUrl, {
         method: 'GET',
         headers: {
@@ -92,7 +92,10 @@ export async function findFolder(
         if (file.mimeType !== FOLDER_MIME_TYPE) {
             throw newRxError('GDR3', {
                 folderName,
-                args: file
+                args: {
+                    file,
+                    FOLDER_MIME_TYPE
+                }
             });
         }
         return file.id;

@@ -1,3 +1,6 @@
+import { newRxFetchError } from '../../rx-error.ts';
+import { ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import { fetchDocumentContents } from './document-handling.ts';
 import type {
     DriveFileMetadata,
     GoogleDriveCheckpointType,
@@ -5,13 +8,39 @@ import type {
 } from './google-drive-types';
 import { DriveStructure } from './init.ts';
 
-export async function fetchChanges(
+export async function fetchChanges<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
     checkpoint?: GoogleDriveCheckpointType,
     batchSize: number = 10
 ): Promise<{
-    checkpoint: GoogleDriveCheckpointType,
+    checkpoint?: GoogleDriveCheckpointType,
+    files: DocType[]
+}> {
+    const filesResult = await fetchChangesFiles(
+        googleDriveOptions,
+        init,
+        checkpoint,
+        batchSize
+    );
+
+    const contents = await fetchDocumentContents<DocType>(
+        googleDriveOptions,
+        filesResult.files.map(file => file.id)
+    );
+
+    return {
+        checkpoint: filesResult.checkpoint,
+        files: Object.values(contents)
+    };
+}
+export async function fetchChangesFiles(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    init: DriveStructure,
+    checkpoint?: GoogleDriveCheckpointType,
+    batchSize: number = 10
+): Promise<{
+    checkpoint?: GoogleDriveCheckpointType,
     files: DriveFileMetadata[]
 }> {
 
@@ -48,6 +77,34 @@ export async function fetchChanges(
             Authorization: `Bearer ${googleDriveOptions.authToken}`,
         },
     });
+    if (!res.ok) {
+        throw await newRxFetchError(res);
+    }
 
-    return {} as any;
+    const data: { files: DriveFileMetadata[] } = await res.json();
+
+    let files = data.files;
+    if (checkpoint) {
+        files = files
+            .filter(file => !(file.modifiedTime === checkpoint.modifiedTime && checkpoint.docIdsWithSameModifiedTime.includes(file.name)));
+    }
+    files = files.slice(0, batchSize);
+
+    let newCheckpoint = checkpoint;
+    const last = lastOfArray(files);
+    if (last) {
+        const lastModified = ensureNotFalsy(last.modifiedTime);
+        const docIdsWithSameModifiedTime = files
+            .filter(file => file.modifiedTime === lastModified)
+            .map(file => file.name);
+        newCheckpoint = {
+            docIdsWithSameModifiedTime,
+            modifiedTime: lastModified
+        }
+    }
+
+    return {
+        checkpoint: newCheckpoint,
+        files
+    };
 }

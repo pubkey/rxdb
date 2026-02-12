@@ -35,7 +35,8 @@ import {
     SimpleHumanDocumentType,
     getPullStream,
     getPullHandler,
-    getPushHandler
+    getPushHandler,
+    HumanDocumentType
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import {
@@ -446,19 +447,64 @@ describe('replication-google-drive.test.ts', function () {
             };
             options.initData = await initDriveStructure(options);
         });
-        it('fetchChanges()', async () => {
-            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+        it('fetchChanges() should get one document', async () => {
+            const docs = new Array(1).fill(0).map(() => schemaObjects.humanData())
             await insertDocumentFiles(
                 options,
                 options.initData,
                 PRIMARY_PATH,
                 docs
             );
-            const changes = await fetchChanges(
+            const changes = await fetchChanges<HumanDocumentType>(
                 options,
+                options.initData,
                 undefined,
                 10
             );
+            assert.strictEqual(changes.files.length, 1);
+            assert.ok(changes.checkpoint);
+            const first = ensureNotFalsy(changes.files[0]);
+            assert.ok(first.passportId);
+        });
+        it('fetchChanges() should be able to iterate over the checkpoint', async () => {
+            const docs = new Array(10).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i))
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                docs
+            );
+            let lastCheckpoint;
+            let totalFiles: HumanDocumentType[] = [];
+
+            let done = false;
+            console.log('::::::::::::::::::::::::::::::');
+            let c = 0;
+            while (!done) {
+                c++;
+                console.log(':::::::::::::::::::::::::::::: loop');
+                const changes = await fetchChanges<HumanDocumentType>(
+                    options,
+                    options.initData,
+                    lastCheckpoint,
+                    3
+                );
+                console.log(JSON.stringify({ changes }, null, 4));
+                totalFiles = totalFiles.concat(changes.files);
+                lastCheckpoint = changes.checkpoint;
+                if (changes.files.length === 0) {
+                    done = true;
+                }
+
+                if (c > 10) {
+                    throw new Error('circuit breaker');
+                }
+            }
+
+            assert.strictEqual(totalFiles, 10);
+            const ids = totalFiles.map(f => f.passportId);
+            docs.forEach(id => assert.ok(ids.includes(id)));
+            console.log(JSON.stringify({ totalFiles }));
         });
     });
 
