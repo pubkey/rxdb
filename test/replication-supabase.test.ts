@@ -6,10 +6,10 @@ import {
     addRxPlugin,
     type RxCollection,
     type WithDeleted
-} from '../src/index.ts';
+} from '../plugins/core/index.mjs';
 import {
     lastOfArray
-} from '../src/plugins/utils/index.ts';
+} from '../plugins/utils/index.mjs';
 
 import config from './unit/config.ts';
 import {
@@ -19,13 +19,13 @@ import {
     ensureCollectionsHaveEqualState,
     type SimpleHumanDocumentType,
     type PrimaryHumanDocType
-} from '../src/plugins/test-utils/index.ts';
-import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
+} from '../plugins/test-utils/index.mjs';
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import { randomString, wait, waitUntil } from 'async-test-util';
 import {
     RxSupabaseReplicationState,
     replicateSupabase
-} from '../src/plugins/replication-supabase/index.ts';
+} from '../plugins/replication-supabase/index.mjs';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
 
