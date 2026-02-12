@@ -217,11 +217,11 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                         let responseData = streamResponse?.data;
                         
                         // If there's no data field, the response itself might be the data
-                        if (!responseData) {
+                        if (responseData === undefined) {
                             responseData = streamResponse;
                         }
                         
-                        if (!responseData || typeof responseData !== 'object') {
+                        if (!responseData || typeof responseData !== 'object' || responseData === null) {
                             return;
                         }
                         
