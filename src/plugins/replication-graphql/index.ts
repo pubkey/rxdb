@@ -212,8 +212,31 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 query,
                 {
                     next: async (streamResponse: any) => {
-                        const firstField = Object.keys(streamResponse.data)[0];
-                        let data = streamResponse.data[firstField];
+                        // In graphql-ws, the streamResponse is the execution result payload
+                        // which should have a 'data' field according to GraphQL spec
+                        let responseData = streamResponse?.data;
+                        
+                        // If there's no data field, the response itself might be the data
+                        if (!responseData) {
+                            responseData = streamResponse;
+                        }
+                        
+                        if (!responseData || typeof responseData !== 'object') {
+                            return;
+                        }
+                        
+                        const firstFieldKeys = Object.keys(responseData);
+                        if (firstFieldKeys.length === 0) {
+                            return;
+                        }
+                        
+                        const firstField = firstFieldKeys[0];
+                        let data = responseData[firstField];
+                        
+                        if (!data) {
+                            return;
+                        }
+                        
                         if (pull.responseModifier) {
                             data = await pull.responseModifier(
                                 data,
