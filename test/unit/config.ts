@@ -33,8 +33,9 @@ import {
     isDeno,
     isFastMode,
     isNode,
+    isBun,
     setConfig
-} from '../../plugins/test-utils/index.mjs';
+} from '../../src/plugins/test-utils/index.ts';
 
 function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
@@ -151,6 +152,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                     if (
                         isNode ||
                         isDeno ||
+                        isBun ||
                         isFastMode()
                     ) {
                         return wrappedValidateAjvStorage({
