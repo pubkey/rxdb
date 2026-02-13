@@ -478,18 +478,15 @@ describe('replication-google-drive.test.ts', function () {
             let totalFiles: HumanDocumentType[] = [];
 
             let done = false;
-            console.log('::::::::::::::::::::::::::::::');
             let c = 0;
             while (!done) {
                 c++;
-                console.log(':::::::::::::::::::::::::::::: loop');
                 const changes = await fetchChanges<HumanDocumentType>(
                     options,
                     options.initData,
                     lastCheckpoint,
                     3
                 );
-                console.log(JSON.stringify({ changes }, null, 4));
                 totalFiles = totalFiles.concat(changes.files);
                 lastCheckpoint = changes.checkpoint;
                 if (changes.files.length === 0) {
@@ -501,10 +498,33 @@ describe('replication-google-drive.test.ts', function () {
                 }
             }
 
-            assert.strictEqual(totalFiles, 10);
+            assert.strictEqual(totalFiles.length, 10);
             const ids = totalFiles.map(f => f.passportId);
-            docs.forEach(id => assert.ok(ids.includes(id)));
-            console.log(JSON.stringify({ totalFiles }));
+            docs.forEach(doc => assert.ok(ids.includes(doc.passportId), 'must have id ' + doc.passportId));
+
+            // should not find stuff afterwards
+            const changesAfter = await fetchChanges<HumanDocumentType>(
+                options,
+                options.initData,
+                lastCheckpoint,
+                3
+            );
+            assert.strictEqual(changesAfter.files.length, 0, 'no more changes afterwards');
+
+            // should find changes again if added later
+            await insertDocumentFiles(
+                options,
+                options.initData,
+                PRIMARY_PATH,
+                [schemaObjects.humanData('doc-after')]
+            );
+            const changesAfterWrite = await fetchChanges<HumanDocumentType>(
+                options,
+                options.initData,
+                lastCheckpoint,
+                3
+            );
+            assert.strictEqual(changesAfterWrite.files.length, 1, 'one more change after update');
         });
     });
 
