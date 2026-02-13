@@ -51,6 +51,7 @@ import './unit/hooks.test.ts';
 import './unit/rx-pipeline.test.ts';
 import './unit/orm.test.ts';
 import './unit/replication-protocol.test.ts';
+import './unit/replication-downstream.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-multiinstance.test.ts';
 import './unit/replication-graphql.test.ts';
