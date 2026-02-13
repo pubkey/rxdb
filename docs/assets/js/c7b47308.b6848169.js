@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunkrxdb=globalThis.webpackChunkrxdb||[]).push([[7793],{2007(a,e,t){t.r(e),t.d(e,{default:()=>u});var l=t(7654),s=t(544),r=t(4848);function u(){return(0,s.default)({sem:{id:"gads",metaTitle:"The local Database for Apps",title:(0,r.jsx)(l.Pq,{})}})}}}]);
