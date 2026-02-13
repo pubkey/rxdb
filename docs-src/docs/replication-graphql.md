@@ -348,6 +348,20 @@ const replicationState = replicateGraphQL(
 If it is not possible to create a websocket server on your backend, you can use any other method to pull out the ongoing events from the backend and then you can send them into `RxReplicationState.emitEvent()`.
 :::
 
+:::warning graphql-subscriptions v3 Breaking Change
+If you are using `graphql-subscriptions` v3 or later, you must use `asyncIterableIterator()` instead of the deprecated `asyncIterator()` method when setting up your subscription resolvers:
+
+```js
+// Before (v2)
+streamHero: () => pubsub.asyncIterator('streamHero')
+
+// After (v3+)
+streamHero: () => pubsub.asyncIterableIterator('streamHero')
+```
+
+This change was introduced in graphql-subscriptions v3 to use native `Symbol.asyncIterator` support. For more details, see the [graphql-subscriptions changelog](https://github.com/apollographql/graphql-subscriptions/blob/master/CHANGELOG.md#300).
+:::
+
 ### Transforming null to undefined in optional fields
 
 GraphQL fills up non-existent optional values with `null` while RxDB required them to be `undefined`.

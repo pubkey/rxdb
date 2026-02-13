@@ -203,7 +203,7 @@ export async function run() {
 
             validateBearerToken(bearerToken);
 
-            return pubsub.asyncIterator('streamHero');
+            return pubsub.asyncIterableIterator('streamHero');
         },
     };
 

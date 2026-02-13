@@ -26,7 +26,7 @@
     "lint": "tslint app/src/**/*.ts",
     "analyze": "webpack-bundle-analyzer dist/angular/stats-es2015.json",
     "start:android": "npx cap open android",
-    "build:capacitor": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --configuration capacitor --aot && npx cap sync",
+    "build:capacitor": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --configuration capacitor --aot && npx cap sync android",
     "serve:ssr:angular": "node dist/angular/browser/server/server.mjs"
   },
   "private": true,
