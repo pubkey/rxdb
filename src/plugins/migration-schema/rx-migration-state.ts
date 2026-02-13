@@ -231,27 +231,43 @@ export class RxMigrationState {
             return;
         }
 
-        // remove old collection meta doc
-        try {
-            await writeSingle(
-                this.database.internalStore,
-                {
-                    previous: oldCollectionMeta,
-                    document: Object.assign(
-                        {},
-                        oldCollectionMeta,
-                        {
-                            _deleted: true
-                        }
-                    )
-                },
-                'rx-migration-remove-collection-meta'
-            );
-        } catch (error) {
-            const isConflict = isBulkWriteConflictError<InternalStoreCollectionDocType>(error);
-            if (isConflict && !!isConflict.documentInDb._deleted) {
-            } else {
-                throw error;
+        /**
+         * Remove old collection meta doc with retry on conflict.
+         * The _rev of the meta doc may have changed since we fetched it
+         * at the start of migration (due to updateStatus() calls),
+         * so we re-fetch before each deletion attempt.
+         * @link https://github.com/pubkey/rxdb/issues/7791
+         */
+        while (true) {
+            const currentMeta = await getOldCollectionMeta(this);
+            if (!currentMeta) {
+                break;
+            }
+            try {
+                await writeSingle(
+                    this.database.internalStore,
+                    {
+                        previous: currentMeta,
+                        document: Object.assign(
+                            {},
+                            currentMeta,
+                            {
+                                _deleted: true
+                            }
+                        )
+                    },
+                    'rx-migration-remove-collection-meta'
+                );
+                break;
+            } catch (error) {
+                const isConflict = isBulkWriteConflictError<InternalStoreCollectionDocType>(error);
+                if (isConflict && !!isConflict.documentInDb._deleted) {
+                    break;
+                } else if (isConflict) {
+                    continue;
+                } else {
+                    throw error;
+                }
             }
         }
 
@@ -569,7 +585,7 @@ export class RxMigrationState {
 
 
     async migratePromise(batchSize?: number): Promise<RxMigrationStatus> {
-        this.startMigration(batchSize);
+        this.startMigration(batchSize).catch(() => {});
         const must = await this.mustMigrate;
         if (!must) {
             return {
