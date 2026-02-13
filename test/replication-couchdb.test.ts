@@ -6,7 +6,9 @@ import {
     humansCollection,
     ENV_VARIABLES,
     ensureCollectionsHaveEqualState,
-    isNode
+    isNode,
+    getConfig,
+    simpleHuman
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -34,6 +36,7 @@ import { waitUntil } from 'async-test-util';
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 import * as SpawnServer from './helper/spawn-server.ts';
 import { RxDBcrdtPlugin } from '../plugins/crdt/index.mjs';
+import { wrappedValidateAjvStorage } from '../plugins/validate-ajv/index.mjs';
 
 addRxPlugin(RxDBcrdtPlugin);
 
@@ -463,6 +466,55 @@ describe('replication-couchdb.test.ts', () => {
             assert.strictEqual(serverDocs[0]._id, '3');
 
             await collection.database.close();
+        });
+        it('#7444 CouchDB replication pull handlers fails on deleted document when schema validation is enabled', async () => {
+            const server = await SpawnServer.spawn();
+
+            // create a doc in couch
+            const response = await fetchWithCouchDBAuth(server.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    passportId: 'doc1',
+                    age: '25',
+                    oneOptional: 'some value'
+                })
+            });
+            assert.strictEqual(response.status, 201);
+            const result = await response.json();
+            const docId = result.id;
+            const docRev = result.rev;
+
+            const storage = wrappedValidateAjvStorage({storage: getConfig().storage.getStorage()});
+
+            // the simpleHuman schema has age as a required field.
+            const collection = await humansCollection.createBySchema(simpleHuman, undefined, storage);
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: randomToken(10),
+                url: server.url,
+                collection,
+                fetch: fetchWithCouchDBAuth,
+                live: true,
+                pull: {},
+                push: {},
+            });
+            await replicationState.awaitInitialReplication();
+
+            replicationState.error$.subscribe(err => {
+                assert.strictEqual(err, null, err.toString());
+            });
+
+            // delete the doc from couch
+            const deleteResponse = await fetchWithCouchDBAuth(server.url + docId + '?rev=' + docRev, {
+                method: 'DELETE'
+            });
+            assert.strictEqual(deleteResponse.status, 200);
+            await replicationState.awaitInSync();
+
+            await collection.database.close();
+            server.close();
         });
     });
 });
