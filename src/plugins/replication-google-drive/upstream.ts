@@ -63,12 +63,12 @@ export async function writeToWal<RxDocType>(
 
     const metaUrl =
         googleDriveOptions.apiEndpoint +
-        `/drive/v3/files/${encodeURIComponent(walFileId)}?` +
+        `/drive/v2/files/${encodeURIComponent(walFileId)}?` + // Changed v3 -> v2
         new URLSearchParams({
-            fields: "id,size,mimeType,name",
-            supportsAllDrives: "true"
+            // v2 fields: id, fileSize (was size), mimeType, title (was name), etag
+            fields: "id,fileSize,mimeType,title,etag",
+            supportsAllDrives: "true" // 'supportsAllDrives' is also supported in v2
         }).toString();
-
     const metaRes = await fetch(metaUrl, {
         method: "GET",
         headers: {
@@ -79,11 +79,12 @@ export async function writeToWal<RxDocType>(
         throw await newRxFetchError(metaRes);
     }
     const meta: DriveFileMetadata = await metaRes.json();
-    const sizeStr = meta.size ?? "0";
+    const sizeStr = meta.fileSize ?? "0";
     const sizeNum = Number(sizeStr);
-    if (!meta.size || sizeNum > 0) {
+    if (!meta.fileSize || sizeNum > 0) {
         throw newRxError("GDR19", {
             args: {
+                sizeNum,
                 walFileId,
                 size: meta.size,
                 meta
@@ -91,7 +92,7 @@ export async function writeToWal<RxDocType>(
         });
     }
 
-    const etag = ensureNotFalsy(metaRes.headers.get("etag"));
+    const etag = ensureNotFalsy(metaRes.headers.get("etag"), 'etag missing');
     const writeResult = await fillFileIfEtagMatches(
         googleDriveOptions,
         walFileId,
@@ -102,7 +103,6 @@ export async function writeToWal<RxDocType>(
         throw newRxError("GDR19", {
             args: {
                 walFileId,
-                size: meta.size,
                 meta
             }
         });

@@ -24,6 +24,7 @@ export interface DriveFileMetadata {
     parents?: string[];
     modifiedTime?: string;
     size?: string; // Drive returns size as string
+    fileSize?: string; // v2
 }
 
 export type GoogleDriveOptions = {
