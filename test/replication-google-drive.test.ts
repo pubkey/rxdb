@@ -524,10 +524,35 @@ describe('replication-google-drive.test.ts', function () {
                 lastCheckpoint,
                 3
             );
-            assert.strictEqual(changesAfterWrite.files.length, 1, 'one more change after update');
+            lastCheckpoint = changesAfterWrite.checkpoint;
+            assert.strictEqual(changesAfterWrite.files.length, 1, 'one more change after later insert');
+
+            // should find the change after update
+            const firstDoc = docs[0];
+            firstDoc.firstName = 'updated';
+            const docFiles = await getDocumentFiles(
+                options,
+                options.initData,
+                [firstDoc.passportId]
+            );
+            await updateDocumentFiles(
+                options,
+                PRIMARY_PATH,
+                [firstDoc],
+                { [firstDoc.passportId]: docFiles.files[0].id }
+            );
+
+            const changesAfterUpdate = await fetchChanges<HumanDocumentType>(
+                options,
+                options.initData,
+                lastCheckpoint,
+                3
+            );
+            lastCheckpoint = changesAfterUpdate.checkpoint;
+            assert.strictEqual(changesAfterUpdate.files.length, 1, 'one more change after update');
+            console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
         });
     });
-
 });
 
 
