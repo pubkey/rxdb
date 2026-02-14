@@ -28,7 +28,9 @@ import {
     parseBatchResponse,
     fetchChanges,
     fetchConflicts,
-    writeToWal
+    writeToWal,
+    readWalContent,
+    processWalFile
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
@@ -68,10 +70,13 @@ function toRxDocumentData<RxDocType>(doc: RxDocType): RxDocumentData<RxDocType> 
     );
 }
 function toWriteRow<RxDocType>(doc: RxDocType, previous?: RxDocType): BulkWriteRow<RxDocType> {
-    return {
+    const ret: BulkWriteRow<RxDocType> = {
         document: toRxDocumentData(doc),
-        previous: previous ? toRxDocumentData(previous) : undefined
+    };
+    if (previous) {
+        ret.previous = toRxDocumentData(previous);
     }
+    return ret;
 }
 
 /**
@@ -627,6 +632,94 @@ describe('replication-google-drive.test.ts', function () {
                     ),
                     'RxError',
                     'GDR19'
+                );
+            });
+            it('should read the wal content', async () => {
+                const empty = await readWalContent(
+                    options,
+                    options.initData
+                );
+                assert.strictEqual(typeof empty.rows, 'undefined');
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+                const notEmpty = await readWalContent(
+                    options,
+                    options.initData
+                );
+                assert.deepStrictEqual(notEmpty.rows, rows);
+            });
+            it('should not crash processing empty wal file', async () => {
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+            });
+            it('process a non-empty wal file with inserts', async () => {
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+                const rows2 = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc2-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows2
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+            });
+            it('process a non-empty wal file with updates', async () => {
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+                const rows2 = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows2
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
                 );
             });
         });

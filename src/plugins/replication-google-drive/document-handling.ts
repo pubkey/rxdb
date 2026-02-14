@@ -1,4 +1,4 @@
-import { newRxError } from '../../rx-error.ts';
+import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type {
@@ -94,7 +94,7 @@ export async function batchGetFilesMetadata(
 export async function insertDocumentFiles<RxDocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
-    primaryPath: string,
+    primaryPath: keyof RxDocType,
     docs: RxDocType[]
 ) {
     // Run uploads in parallel
@@ -127,14 +127,14 @@ export async function insertDocumentFiles<RxDocType>(
             body: body
         });
         if (!res.ok) {
-            throw new Error(`Upload failed for ${id}: ${res.status} ${await res.text()}`);
+            throw await newRxFetchError(res);
         }
     }));
 }
 
 export async function updateDocumentFiles<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
-    primaryPath: string,
+    primaryPath: keyof DocType,
     docs: DocType[],
     fileIdByDocId: Record<string, string>,
     concurrency = 5
@@ -163,12 +163,11 @@ export async function updateDocumentFiles<DocType>(
             });
 
             if (!res.ok) {
-                const text = await res.text().catch(() => "");
-                throw newRxError("GDR15", {
-                    docId,
-                    fileId,
-                    status: res.status,
-                    errorText: text,
+                throw await newRxFetchError(res, {
+                    args: {
+                        docId,
+                        fileId
+                    }
                 });
             }
 
@@ -208,17 +207,19 @@ export async function fetchDocumentContents<DocType>(
         }
 
         if (!res.ok) {
-            const text = await res.text().catch(() => "");
-            throw newRxError("GDR17", {
-                status: res.status,
-                errorText: text,
+            throw await newRxFetchError(res, {
                 args: {
                     fileId
                 }
             });
         }
 
-        return res.json();
+        const content = await res.text();
+        if (content) {
+            return JSON.parse(content);
+        } else {
+            return undefined;
+        }
     }
 
     async function worker() {
