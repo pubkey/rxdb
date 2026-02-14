@@ -1289,6 +1289,24 @@ export const ERROR_MESSAGES = {
         fix: '',
         docs: ''
     },
+    GDR18: {
+        message: 'Max batch size exxeeded for google drive sync',
+        cause: '',
+        fix: 'Reduce the batchSize to be lower',
+        docs: ''
+    },
+    GDR19: {
+        message: 'WAL file write conflict',
+        cause: 'Someone else has written to the wal file in between our transaction. This should not happen.',
+        fix: 'Try to reproduce the error in a unit test and make a PR with a test case.',
+        docs: ''
+    },
+
+
+
+
+
+
     FETCH: {
         message: 'A fetch-request failed',
         cause: 'A call with the javascript fetch() function failed',

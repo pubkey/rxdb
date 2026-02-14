@@ -33,6 +33,7 @@ export * from './init.ts';
 export * from './document-handling.ts';
 export * from './multipart.ts';
 export * from './downstream.ts';
+export * from './upstream.ts';
 
 export const DEFAULT_TRANSACTION_TIMEOUT = 60 * 1000;
 

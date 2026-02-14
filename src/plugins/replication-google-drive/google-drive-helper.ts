@@ -1,4 +1,4 @@
-import { newRxError } from '../../rx-error.ts';
+import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type {
     GoogleDriveOptionsWithDefaults,
@@ -6,6 +6,8 @@ import type {
 } from './google-drive-types.ts';
 
 export const DRIVE_API_VERSION = 'v3';
+export const DRIVE_MAX_PAGE_SIZE = 1000;
+export const DRIVE_MAX_BULK_SIZE = DRIVE_MAX_PAGE_SIZE / 4;
 export const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
 
 export async function createFolder(
@@ -226,8 +228,7 @@ export async function fillFileIfEtagMatches<T = any>(
     });
 
     if (res.status !== 412 && res.status !== 200) {
-        const errorText = await res.text();
-        throw new Error('fillFileIfEtagMatches() could not write: ' + errorText);
+        throw await newRxFetchError(res);
     }
 
     return readJsonFileContent<T>(

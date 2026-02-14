@@ -3,6 +3,7 @@ import assert from 'assert';
 import {
     addRxPlugin,
     ensureNotFalsy,
+    now,
     randomToken
 } from '../plugins/core/index.mjs';
 import {
@@ -25,7 +26,9 @@ import {
     fetchDocumentContents,
     batchFetchDocumentContentsRaw,
     parseBatchResponse,
-    fetchChanges
+    fetchChanges,
+    fetchConflicts,
+    writeToWal
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
@@ -44,9 +47,32 @@ import {
 } from 'google-drive-mock';
 import getPort from 'get-port';
 import { assertThrows, wait, waitUntil } from 'async-test-util';
+import { BulkWriteRow, RxDocumentData } from '../src';
 
 const PRIMARY_PATH = 'passportId';
 
+
+function toRxDocumentData<RxDocType>(doc: RxDocType): RxDocumentData<RxDocType> {
+    return Object.assign(
+        {},
+        doc,
+        {
+            _deleted: false,
+            _attachments: {},
+            _rev: '1-asdf',
+            _meta: {
+                lwt: now()
+            }
+
+        }
+    );
+}
+function toWriteRow<RxDocType>(doc: RxDocType, previous?: RxDocType): BulkWriteRow<RxDocType> {
+    return {
+        document: toRxDocumentData(doc),
+        previous: previous ? toRxDocumentData(previous) : undefined
+    }
+}
 
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
@@ -551,6 +577,58 @@ describe('replication-google-drive.test.ts', function () {
             lastCheckpoint = changesAfterUpdate.checkpoint;
             assert.strictEqual(changesAfterUpdate.files.length, 1, 'one more change after update');
             console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
+        });
+    });
+    describe('upstream', () => {
+        beforeEach(async () => {
+            options = {
+                oauthClientId: 'mock-client-id',
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                folderPath: 'test-folder-' + Math.random(),
+                transactionTimeout: 1000,
+                initData: null as any
+            };
+            options.initData = await initDriveStructure(options);
+        });
+        describe('fetchConflicts()', () => {
+            it('should not have a conflict on inserts', async () => {
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                const conflicts = await fetchConflicts(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    rows
+                );
+                assert.deepStrictEqual(conflicts, []);
+            });
+        });
+        describe('WAL file', () => {
+            it('should write to the wal file', async () => {
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+            });
+            it('should throw on conflict', async () => {
+                const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+                await assertThrows(
+                    () => writeToWal(
+                        options,
+                        options.initData,
+                        rows
+                    ),
+                    'RxError',
+                    'GDR19'
+                );
+            });
         });
     });
 });

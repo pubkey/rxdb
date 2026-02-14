@@ -10,6 +10,7 @@ import { newRxError } from '../../rx-error.ts';
 import { randomToken } from '../utils/utils-string.ts';
 import { TRANSACTION_FILE_NAME } from './transaction.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
+import { WAL_FILE_NAME } from './upstream.ts';
 
 const NON_ALLOWED_ROOT_FOLDERS = [
     '/',
@@ -85,12 +86,20 @@ export async function initDriveStructure(
         TRANSACTION_FILE_NAME
     );
 
+    // WAL file
+    const walFile = await createEmptyFile(
+        googleDriveOptions,
+        rootFolderId,
+        WAL_FILE_NAME
+    );
+
     return {
         rootFolderId,
         docsFolderId,
         replicationIdentifier,
         rxdbJson,
-        transactionFile
+        transactionFile,
+        walFile
     };
 }
 
