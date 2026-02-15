@@ -1,6 +1,6 @@
 import { BulkWriteRow, RxDocumentData } from '../../index.ts';
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
-import { deepEqual, ensureNotFalsy, lastOfArray } from '../utils/index.ts';
+import { deepEqual, ensureNotFalsy, getFromMapOrThrow, getFromObjectOrThrow, lastOfArray } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
 import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches } from './google-drive-helper.ts';
 import type {
@@ -15,7 +15,7 @@ export const WAL_FILE_NAME = 'rxdb-wal.json';
 export async function fetchConflicts<RxDocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
-    primaryPath: string,
+    primaryPath: keyof RxDocumentData<RxDocType>,
     writeRows: BulkWriteRow<RxDocType>[]
 ) {
     if (writeRows.length > DRIVE_MAX_BULK_SIZE) {
@@ -26,28 +26,38 @@ export async function fetchConflicts<RxDocType>(
         });
     }
 
-    const ids = writeRows.map(row => (row.document as any)[primaryPath]);
+    const ids = writeRows.map(row => row.document[primaryPath]);
     const filesMeta = await getDocumentFiles(
         googleDriveOptions,
         init,
-        ids
+        ids as string[]
     );
-    const fileIds: string[] = filesMeta.files.map((f: any) => ensureNotFalsy(f.id));
-    const contents = await fetchDocumentContents<RxDocumentData<RxDocType>>(
+    const fileIdByDocId = new Map<string, string>();
+    const fileIds: string[] = filesMeta.files.map((f) => {
+        const fileId = ensureNotFalsy(f.id);
+        const docId = f.name.split('.')[0];
+        fileIdByDocId.set(docId, fileId);
+        return fileId;
+    });
+    const contentsByFileId = await fetchDocumentContents<RxDocumentData<RxDocType>>(
         googleDriveOptions,
         fileIds
     );
 
     const conflicts: RxDocumentData<RxDocType>[] = [];
-
     writeRows.forEach(row => {
-        const id: string = (row.document as any)[primaryPath];
+        const docId = row.document[primaryPath] as string;
+        let fileContent: undefined | RxDocumentData<RxDocType>;
+        const fileId = fileIdByDocId.get(docId);
+        if (fileId) {
+            fileContent = contentsByFileId[fileId];
+        }
         if (row.previous) {
-            if (!deepEqual(row.previous, contents[id])) {
-                conflicts.push(contents[id]);
+            if (!deepEqual(row.previous, fileContent)) {
+                conflicts.push(ensureNotFalsy(fileContent));
             }
-        } else if (contents[id]) {
-            conflicts.push(contents[id]);
+        } else if (fileContent) {
+            conflicts.push(fileContent);
         }
     });
 

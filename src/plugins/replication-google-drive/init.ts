@@ -36,10 +36,8 @@ export async function initDriveStructure(
 
     // root folder
     const rootFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath);
-    // console.log('DEBUG: rootFolderId', rootFolderId);
 
     const rootFolderContent = await readFolder(googleDriveOptions, googleDriveOptions.folderPath);
-    // console.log('DEBUG: rootFolderContent', JSON.stringify(rootFolderContent));
 
     /**
      * Folder but either be empty

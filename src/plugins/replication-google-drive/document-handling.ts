@@ -22,7 +22,6 @@ export async function getDocumentFiles(
         .join(' or ');
     q = '(' + q + ') and trashed = false';
     q += ' and \'' + init.docsFolderId + '\' in parents';
-    console.log(q);
     if (docIds.length >= MAX_DRIVE_PAGE_SIZE) {
         throw newRxError('SNH');
     }

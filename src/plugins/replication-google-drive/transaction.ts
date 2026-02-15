@@ -34,9 +34,6 @@ export async function startTransactionTryOnce(
 
     if (!isEmpty(txFileContent.content)) {
         // tx already existed -> retry
-        // TODO
-        console.log('tx already exsits');
-        console.dir(txFileContent.content);
         return TRANSACTION_BLOCKED_FLAG;
     }
 
@@ -54,7 +51,6 @@ export async function startTransactionTryOnce(
     );
 
     if (writeResult.status !== 200) {
-        console.log('tx wrong status ' + writeResult.status);
         return TRANSACTION_BLOCKED_FLAG;
     }
 
@@ -74,8 +70,6 @@ export async function startTransaction(
 
     let attempts = 0;
     while ((current as any).retry) {
-        console.log('------------- loooop(' + attempts + ') TX START');
-
         /**
          * Wait a bit.
          * Exponential backoff: 100, 200, 400, 800, ...
@@ -85,7 +79,6 @@ export async function startTransaction(
             100 * 1000,
             100 * Math.pow(1.5, attempts)
         );
-        console.log('wait time ' + waitTime)
         await promiseWait(waitTime);
 
         /**
@@ -95,7 +88,6 @@ export async function startTransaction(
             googleDriveOptions,
             init
         );
-        console.dir({ timeoutState });
         if (timeoutState.expired) {
             await fillFileIfEtagMatches<TransactionFileContent>(
                 googleDriveOptions,
@@ -115,7 +107,6 @@ export async function startTransaction(
         );
 
         attempts = attempts + 1;
-        console.log('------------- loooop TX DONE');
     }
 
     return current as DriveTransaction;
@@ -153,16 +144,6 @@ export async function isTransactionTimedOut(
 
     const transactionAge = serverTime - transactionCreation;
     const timeLeft = googleDriveOptions.transactionTimeout - transactionAge;
-
-    console.dir({
-        times: {
-            transactionCreation,
-            timeLeft,
-            serverTime,
-            transactionAge,
-            timeout: googleDriveOptions.transactionTimeout
-        }
-    });
 
     return {
         timeLeft,

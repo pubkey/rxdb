@@ -2,7 +2,8 @@ import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type {
     GoogleDriveOptionsWithDefaults,
-    GoogleDriveFile
+    GoogleDriveFile,
+    DriveFileMetadata
 } from './google-drive-types.ts';
 
 export const DRIVE_API_VERSION = 'v3';
@@ -183,9 +184,6 @@ export async function createEmptyFile(
     });
     const data = await res.json();
     const file = ensureNotFalsy(data.files[0]);
-
-    console.log('filed:');
-    console.dir(file);
     return {
         status: response.status,
         etag: ensureNotFalsy(file.etag),
@@ -222,11 +220,6 @@ export async function fillFileIfEtagMatches<T = any>(
         },
         body: writeContent,
     });
-    console.log('write etag status ' + res.status + ' ' + fileId + ' ' + etag);
-    console.dir({
-        writeContent
-    });
-
     if (res.status !== 412 && res.status !== 200) {
         throw await newRxFetchError(res);
     }
@@ -414,3 +407,39 @@ export function createMultipartBody(
         closeDelim;
     return { body, boundary: multipartBoundary };
 };
+
+
+export async function listFilesInFolder(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    folderId: string
+): Promise<DriveFileMetadata[]> {
+
+    const q = `'${folderId}' in parents and trashed = false`;
+
+    const params = new URLSearchParams({
+        q,
+        pageSize: "1000", // max allowed
+        fields: "files(id,name,mimeType,parents,modifiedTime,size)",
+        supportsAllDrives: "true",
+        includeItemsFromAllDrives: "true",
+    });
+
+    const url =
+        googleDriveOptions.apiEndpoint +
+        "/drive/v3/files?" +
+        params.toString();
+
+    const res = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+        },
+    });
+
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`files.list failed: ${res.status} ${text}`);
+    }
+
+    const data = await res.json();
+    return data.files ?? [];
+}

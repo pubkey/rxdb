@@ -30,7 +30,8 @@ import {
     fetchConflicts,
     writeToWal,
     readWalContent,
-    processWalFile
+    processWalFile,
+    listFilesInFolder
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
@@ -676,6 +677,11 @@ describe('replication-google-drive.test.ts', function () {
                     options.initData,
                     PRIMARY_PATH
                 );
+                let docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                assert.strictEqual(docsFiles.length, 10);
                 await processWalFile(
                     options,
                     options.initData,
@@ -692,6 +698,11 @@ describe('replication-google-drive.test.ts', function () {
                     options.initData,
                     PRIMARY_PATH
                 );
+                docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                assert.strictEqual(docsFiles.length, 20);
             });
             it('process a non-empty wal file with updates', async () => {
                 const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
@@ -710,6 +721,12 @@ describe('replication-google-drive.test.ts', function () {
                     options.initData,
                     PRIMARY_PATH
                 );
+                let docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                assert.strictEqual(docsFiles.length, 10);
+
                 const rows2 = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
                 await writeToWal(
                     options,
@@ -721,7 +738,38 @@ describe('replication-google-drive.test.ts', function () {
                     options.initData,
                     PRIMARY_PATH
                 );
+                docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                assert.strictEqual(docsFiles.length, 10);
             });
+        });
+        describe('full push batch', () => {
+            it('should process a full batch with conflict handling', async () => {
+                const rows = new Array(5).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                await writeToWal(
+                    options,
+                    options.initData,
+                    rows
+                );
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+
+                console.log('::::::::::::::::::::::::');
+                const rows2 = new Array(3).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                const conflicts = await fetchConflicts(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    rows2
+                );
+                assert.strictEqual(conflicts.length, 3);
+            });
+
         });
     });
 });
