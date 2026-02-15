@@ -35,7 +35,7 @@ import {
     isNode,
     isBun,
     setConfig
-} from '../../src/plugins/test-utils/index.ts';
+} from '../../plugins/test-utils/index.mjs';
 
 function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
