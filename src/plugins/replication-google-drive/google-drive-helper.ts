@@ -2,7 +2,6 @@ import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type {
     GoogleDriveOptionsWithDefaults,
-    GoogleDriveFile,
     DriveFileMetadata
 } from './google-drive-types.ts';
 
@@ -344,7 +343,7 @@ export async function readJsonFileContent<T>(
 export async function readFolder(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     folderPath: string
-): Promise<GoogleDriveFile[]> {
+): Promise<DriveFileMetadata[]> {
     let parentId = 'root';
     const parts = folderPath.split('/').filter(p => p.length > 0);
 

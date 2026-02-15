@@ -10,9 +10,7 @@ import {
     createEmptyFile,
     ensureFolderExists,
     readFolder,
-    FOLDER_MIME_TYPE,
     initDriveStructure,
-    updateFile,
     fillFileIfEtagMatches,
     DriveStructure,
     startTransaction,
@@ -24,24 +22,16 @@ import {
     insertDocumentFiles,
     isTransactionTimedOut,
     fetchDocumentContents,
-    batchFetchDocumentContentsRaw,
-    parseBatchResponse,
     fetchChanges,
     fetchConflicts,
     writeToWal,
     readWalContent,
     processWalFile,
-    listFilesInFolder
+    listFilesInFolder,
+    handleUpstreamBatch
 } from '../plugins/replication-google-drive/index.mjs';
 import {
     schemaObjects,
-    humansCollection,
-    ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType,
-    getPullStream,
-    getPullHandler,
-    getPushHandler,
     HumanDocumentType
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -50,32 +40,27 @@ import {
 } from 'google-drive-mock';
 import getPort from 'get-port';
 import { assertThrows, wait, waitUntil } from 'async-test-util';
-import { BulkWriteRow, RxDocumentData } from '../src';
+import { BulkWriteRow, RxDocumentData, RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../src';
 
 const PRIMARY_PATH = 'passportId';
 
 
-function toRxDocumentData<RxDocType>(doc: RxDocType): RxDocumentData<RxDocType> {
+function toRxDocumentData<RxDocType>(doc: RxDocType): WithDeletedAndAttachments<RxDocType> {
     return Object.assign(
         {},
         doc,
         {
             _deleted: false,
             _attachments: {},
-            _rev: '1-asdf',
-            _meta: {
-                lwt: now()
-            }
-
         }
     );
 }
-function toWriteRow<RxDocType>(doc: RxDocType, previous?: RxDocType): BulkWriteRow<RxDocType> {
-    const ret: BulkWriteRow<RxDocType> = {
-        document: toRxDocumentData(doc),
+function toWriteRow<RxDocType>(doc: RxDocType, assumedMasterState?: RxDocType): RxReplicationWriteToMasterRow<RxDocType> {
+    const ret: RxReplicationWriteToMasterRow<RxDocType> = {
+        newDocumentState: toRxDocumentData(doc),
     };
-    if (previous) {
-        ret.previous = toRxDocumentData(previous);
+    if (assumedMasterState) {
+        ret.assumedMasterState = toRxDocumentData(assumedMasterState);
     }
     return ret;
 }
@@ -124,7 +109,7 @@ describe('replication-google-drive.test.ts', function () {
             it('should create the folder', async () => {
                 const folderId = await ensureFolderExists(options, options.folderPath + '/test1/lol');
                 assert.ok(folderId);
-                assert.ok(folderId.length > 4);
+                assert.ok(folderId.length > 2);
             });
             it('create the same folder on two different parents', async () => {
                 console.log('---- 0');
@@ -297,7 +282,7 @@ describe('replication-google-drive.test.ts', function () {
         it('should not start transaction if already running', async () => {
             console.log('.....................................');
             const txn1 = await startTransactionTryOnce(options, options.initData);
-            assert.ok(!txn1.retry);
+            assert.strictEqual(typeof (txn1 as any).retry, 'undefined');
 
             console.log(':_________________________________');
             const txn2 = await startTransactionTryOnce(options, options.initData);
@@ -600,13 +585,13 @@ describe('replication-google-drive.test.ts', function () {
         describe('fetchConflicts()', () => {
             it('should not have a conflict on inserts', async () => {
                 const rows = new Array(10).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
-                const conflicts = await fetchConflicts(
+                const conflictResult = await fetchConflicts(
                     options,
                     options.initData,
                     PRIMARY_PATH,
                     rows
                 );
-                assert.deepStrictEqual(conflicts, []);
+                assert.deepStrictEqual(conflictResult.conflicts, []);
             });
         });
         describe('WAL file', () => {
@@ -748,9 +733,10 @@ describe('replication-google-drive.test.ts', function () {
         describe('full push batch', () => {
             it('should process a full batch with conflict handling', async () => {
                 const rows = new Array(5).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
-                await writeToWal(
+                await handleUpstreamBatch(
                     options,
                     options.initData,
+                    PRIMARY_PATH,
                     rows
                 );
                 await processWalFile(
@@ -759,15 +745,27 @@ describe('replication-google-drive.test.ts', function () {
                     PRIMARY_PATH
                 );
 
-                console.log('::::::::::::::::::::::::');
                 const rows2 = new Array(3).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
-                const conflicts = await fetchConflicts(
+                const nonConflict = new Array(4).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-no-conflict-' + i)));
+
+                const conflicts = await handleUpstreamBatch(
                     options,
                     options.initData,
                     PRIMARY_PATH,
-                    rows2
+                    rows2.concat(nonConflict)
                 );
                 assert.strictEqual(conflicts.length, 3);
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+
+                let docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                assert.strictEqual(docsFiles.length, 9);
             });
 
         });

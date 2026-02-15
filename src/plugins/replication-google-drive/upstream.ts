@@ -1,22 +1,22 @@
-import { BulkWriteRow, RxDocumentData } from '../../index.ts';
+import { RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../../index.ts';
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
-import { deepEqual, ensureNotFalsy, getFromMapOrThrow, getFromObjectOrThrow, lastOfArray } from '../utils/index.ts';
+import { deepEqual, ensureNotFalsy } from '../utils/index.ts';
 import { fetchDocumentContents, getDocumentFiles, insertDocumentFiles, updateDocumentFiles } from './document-handling.ts';
 import { DRIVE_MAX_BULK_SIZE, fillFileIfEtagMatches } from './google-drive-helper.ts';
 import type {
     DriveFileMetadata,
-    GoogleDriveCheckpointType,
     GoogleDriveOptionsWithDefaults
 } from './google-drive-types';
 import { DriveStructure } from './init.ts';
+import { commitTransaction, startTransaction } from './transaction.ts';
 
 export const WAL_FILE_NAME = 'rxdb-wal.json';
 
 export async function fetchConflicts<RxDocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
-    primaryPath: keyof RxDocumentData<RxDocType>,
-    writeRows: BulkWriteRow<RxDocType>[]
+    primaryPath: keyof WithDeletedAndAttachments<RxDocType>,
+    writeRows: RxReplicationWriteToMasterRow<RxDocType>[]
 ) {
     if (writeRows.length > DRIVE_MAX_BULK_SIZE) {
         throw newRxError('GDR18', {
@@ -26,7 +26,7 @@ export async function fetchConflicts<RxDocType>(
         });
     }
 
-    const ids = writeRows.map(row => row.document[primaryPath]);
+    const ids = writeRows.map(row => (row.newDocumentState as any)[primaryPath]);
     const filesMeta = await getDocumentFiles(
         googleDriveOptions,
         init,
@@ -39,35 +39,41 @@ export async function fetchConflicts<RxDocType>(
         fileIdByDocId.set(docId, fileId);
         return fileId;
     });
-    const contentsByFileId = await fetchDocumentContents<RxDocumentData<RxDocType>>(
+    const contentsByFileId = await fetchDocumentContents<WithDeletedAndAttachments<RxDocType>>(
         googleDriveOptions,
         fileIds
     );
 
-    const conflicts: RxDocumentData<RxDocType>[] = [];
+    const conflicts: WithDeletedAndAttachments<RxDocType>[] = [];
+    const nonConflicts: RxReplicationWriteToMasterRow<RxDocType>[] = [];
     writeRows.forEach(row => {
-        const docId = row.document[primaryPath] as string;
-        let fileContent: undefined | RxDocumentData<RxDocType>;
+        const docId = (row.newDocumentState as any)[primaryPath];
+        let fileContent: undefined | WithDeletedAndAttachments<RxDocType>;
         const fileId = fileIdByDocId.get(docId);
         if (fileId) {
             fileContent = contentsByFileId[fileId];
         }
-        if (row.previous) {
-            if (!deepEqual(row.previous, fileContent)) {
+        if (row.assumedMasterState) {
+            if (!deepEqual(row.assumedMasterState, fileContent)) {
                 conflicts.push(ensureNotFalsy(fileContent));
             }
         } else if (fileContent) {
             conflicts.push(fileContent);
+        } else {
+            nonConflicts.push(row);
         }
     });
 
-    return conflicts;
+    return {
+        conflicts,
+        nonConflicts
+    };
 }
 
 export async function writeToWal<RxDocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
-    writeRows?: BulkWriteRow<RxDocType>[]
+    writeRows?: RxReplicationWriteToMasterRow<RxDocType>[]
 ) {
     const walFileId = init.walFile.fileId;
 
@@ -126,7 +132,7 @@ export async function readWalContent<RxDocType>(
     init: DriveStructure,
 ): Promise<{
     etag: string;
-    rows: BulkWriteRow<RxDocType>[] | undefined;
+    rows: RxReplicationWriteToMasterRow<RxDocType>[] | undefined;
 }> {
     const walFileId = init.walFile.fileId;
     const contentUrl =
@@ -160,7 +166,7 @@ export async function readWalContent<RxDocType>(
 
     return {
         etag,
-        rows: JSON.parse(text) as BulkWriteRow<RxDocType>[]
+        rows: JSON.parse(text) as RxReplicationWriteToMasterRow<RxDocType>[]
     };
 }
 
@@ -188,7 +194,7 @@ export async function processWalFile<RxDocType>(
     }
 
 
-    const docIds = content.rows.map(row => row.document[primaryPath]);
+    const docIds = content.rows.map(row => row.newDocumentState[primaryPath]);
     const docFiles = await getDocumentFiles(
         googleDriveOptions,
         init,
@@ -201,15 +207,15 @@ export async function processWalFile<RxDocType>(
         fileIdByDocId[docId] = file.id;
     });
 
-    const toInsert: RxDocumentData<RxDocType>[] = [];
-    const toUpdate: RxDocumentData<RxDocType>[] = [];
+    const toInsert: WithDeletedAndAttachments<RxDocType>[] = [];
+    const toUpdate: WithDeletedAndAttachments<RxDocType>[] = [];
     content.rows.filter(row => {
-        const docId = row.document[primaryPath];
+        const docId = row.newDocumentState[primaryPath];
         const fileExists = fileIdByDocId[docId as any];
         if (!fileExists) {
-            toInsert.push(row.document);
+            toInsert.push(row.newDocumentState);
         } else {
-            toUpdate.push(row.document);
+            toUpdate.push(row.newDocumentState);
         }
     });
 
@@ -236,4 +242,27 @@ export async function processWalFile<RxDocType>(
         undefined
     );
 
+}
+
+export async function handleUpstreamBatch<RxDocType>(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    init: DriveStructure,
+    primaryPath: keyof WithDeletedAndAttachments<RxDocType>,
+    writeRows: RxReplicationWriteToMasterRow<RxDocType>[]
+): Promise<WithDeletedAndAttachments<RxDocType>[]> {
+    const transaction = await startTransaction(googleDriveOptions, init);
+    const conflictResult = await fetchConflicts(
+        googleDriveOptions,
+        init,
+        primaryPath,
+        writeRows
+    );
+    await writeToWal(
+        googleDriveOptions,
+        init,
+        conflictResult.nonConflicts
+    );
+    await commitTransaction(googleDriveOptions, init, transaction);
+
+    return conflictResult.conflicts;
 }

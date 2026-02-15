@@ -24,6 +24,7 @@ import type {
 } from './google-drive-types.ts';
 import { Subject } from 'rxjs';
 import { DriveStructure, initDriveStructure } from './init.ts';
+import { handleUpstreamBatch } from './upstream.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -114,8 +115,13 @@ export async function replicateGoogleDrive<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                // TODO: implement push handler
-                return [];
+                const conflicts = await handleUpstreamBatch(
+                    googleDriveOptionsWithDefaults,
+                    driveStructure,
+                    options.collection.schema.primaryPath as any,
+                    rows
+                );
+                return conflicts;
             },
             batchSize: options.push.batchSize,
             modifier: options.push.modifier
