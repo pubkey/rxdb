@@ -21,11 +21,14 @@ export type {
 export interface RxErrorParameters {
     readonly error?: PlainJsonError;
     readonly errors?: PlainJsonError[];
+    readonly errorText?: string;
+    readonly status?: number;
     readonly writeError?: RxStorageWriteError<any>;
     readonly schemaPath?: string;
     readonly objPath?: string;
     readonly rootPath?: string;
     readonly childpath?: string;
+    readonly ids?: string[];
     readonly obj?: any;
     readonly document?: any;
     readonly schema?: Readonly<RxJsonSchema<any> | RxSchema>;
@@ -105,6 +108,14 @@ export interface RxErrorParameters {
      */
     readonly pushRows?: RxReplicationWriteToMasterRow<any>[];
     readonly direction?: 'pull' | 'push';
+
+    // google-drive-replication
+    readonly folderPath?: string;
+    readonly folderName?: string;
+    readonly file?: any;
+    readonly parentId?: string;
+
+    // fetch
     readonly body?: any;
     readonly status?: number;
     readonly statusText?: string;
