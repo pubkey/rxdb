@@ -14,8 +14,8 @@ export async function fetchChanges<DocType>(
     checkpoint?: GoogleDriveCheckpointType,
     batchSize: number = 10
 ): Promise<{
-    checkpoint?: GoogleDriveCheckpointType,
-    files: DocType[]
+    checkpoint: GoogleDriveCheckpointType | undefined,
+    documents: DocType[]
 }> {
     const filesResult = await fetchChangesFiles(
         googleDriveOptions,
@@ -31,7 +31,7 @@ export async function fetchChanges<DocType>(
 
     return {
         checkpoint: filesResult.checkpoint,
-        files: Object.values(contents)
+        documents: Object.values(contents)
     };
 }
 export async function fetchChangesFiles(

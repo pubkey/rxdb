@@ -5,7 +5,7 @@ import {
     ensureNotFalsy,
     now,
     randomToken
-} from '../plugins/core/index.mjs';
+} from '../src/index.ts';
 import {
     createEmptyFile,
     ensureFolderExists,
@@ -29,12 +29,12 @@ import {
     processWalFile,
     listFilesInFolder,
     handleUpstreamBatch
-} from '../plugins/replication-google-drive/index.mjs';
+} from '../src/plugins/replication-google-drive/index.ts';
 import {
     schemaObjects,
     HumanDocumentType
-} from '../plugins/test-utils/index.mjs';
-import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
+} from '../src/plugins/test-utils/index.ts';
+import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
 import {
     startServer
 } from 'google-drive-mock';

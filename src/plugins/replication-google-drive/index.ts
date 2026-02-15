@@ -25,6 +25,7 @@ import type {
 import { Subject } from 'rxjs';
 import { DriveStructure, initDriveStructure } from './init.ts';
 import { handleUpstreamBatch } from './upstream.ts';
+import { fetchChanges } from './downstream.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -93,14 +94,13 @@ export async function replicateGoogleDrive<RxDocType>(
                 lastPulledCheckpoint: GoogleDriveCheckpointType | undefined,
                 batchSize: number
             ) {
-                // TODO: implement pull handler
-                return {
-                    documents: [],
-                    checkpoint: lastPulledCheckpoint ?? {
-                        id: '',
-                        modifiedTime: ''
-                    }
-                };
+                const changes = await fetchChanges<RxDocType>(
+                    googleDriveOptionsWithDefaults,
+                    driveStructure,
+                    lastPulledCheckpoint,
+                    batchSize
+                );
+                return changes as any;
             },
             batchSize: options.pull.batchSize,
             modifier: options.pull.modifier,
