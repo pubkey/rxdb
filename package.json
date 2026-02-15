@@ -447,7 +447,7 @@
     "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-couchdb.test.js\" --success first --kill-others",
     "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-nats.test.js\" --success first --kill-others",
     "test:replication-mongodb": "node ./config/mongodb-connection-tester.js && npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-mongodb.test.js",
-    "test:replication-supabase": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-supabase.test.js",
+    "test:replication-supabase": "cross-env DEFAULT_STORAGE=dexie bun run ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-supabase.test.ts",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",

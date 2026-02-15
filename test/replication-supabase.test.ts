@@ -4,28 +4,28 @@ import {
     randomToken,
     ensureNotFalsy,
     addRxPlugin,
-    RxCollection,
-    WithDeleted
-} from '../plugins/core/index.mjs';
+    type RxCollection,
+    type WithDeleted
+} from '../src/index.ts';
 import {
     lastOfArray
-} from '../plugins/utils/index.mjs';
+} from '../src/plugins/utils/index.ts';
 
+import config from './unit/config.ts';
 import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
     ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType,
-    PrimaryHumanDocType
-} from '../plugins/test-utils/index.mjs';
-import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
-import config from './unit/config.ts';
+    type SimpleHumanDocumentType,
+    type PrimaryHumanDocType
+} from '../src/plugins/test-utils/index.ts';
+import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
 import { randomString, wait, waitUntil } from 'async-test-util';
 import {
     RxSupabaseReplicationState,
     replicateSupabase
-} from '../plugins/replication-supabase/index.mjs';
+} from '../src/plugins/replication-supabase/index.ts';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
 
