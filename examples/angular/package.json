@@ -51,7 +51,7 @@
     "@capacitor/android": "8.1.0",
     "@capacitor/core": "8.1.0",
     "@capacitor/ios": "8.1.0",
-    "@capacitor/preferences": "8.0.0",
+    "@capacitor/preferences": "8.0.1",
     "assert": "2.1.0",
     "express": "^5.0.0",
     "express-pouchdb": "4.2.0",
