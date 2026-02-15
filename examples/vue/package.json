@@ -26,7 +26,7 @@
     "vue-router": "5.0.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.0",
     "@types/node": "24.10.13",
     "@types/pouchdb-adapter-http": "6.1.6",
     "@types/pouchdb-adapter-idb": "6.1.7",
@@ -41,7 +41,7 @@
     "async-test-util": "2.5.0",
     "concurrently": "9.2.1",
     "copy-webpack-plugin": "13.0.1",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.0",
     "eslint-plugin-vue": "^9.32.0",
     "globals": "^17.3.0",
     "local-web-server": "5.4.0",
