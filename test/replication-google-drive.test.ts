@@ -810,12 +810,8 @@ describe('replication-google-drive.test.ts', function () {
                     if (file.passportId.startsWith('doc-')) {
                         assert.strictEqual(file.age, 42, 'must have updated the age on ' + file.passportId);
                     }
-
                 });
             });
         });
     });
 });
-
-
-
