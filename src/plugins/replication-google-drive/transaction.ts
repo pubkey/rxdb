@@ -9,6 +9,7 @@ import {
 import { newRxError } from '../../rx-error.ts';
 import { DriveStructure } from './init.ts';
 import { ensureNotFalsy, now, promiseWait } from '../utils/index.ts';
+import { processWalFile } from './upstream.ts';
 
 export type DriveTransaction = {
     etag: string;
@@ -196,6 +197,23 @@ function isEmpty(value: any) {
     if (typeof value === "object" && !Array.isArray(value)) {
         return Object.keys(value).length === 0;
     }
-
     return false;
+}
+
+
+export async function runInTransaction<T>(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    init: DriveStructure,
+    primaryPath: string,
+    fn: () => Promise<T>
+): Promise<T> {
+    const transaction = await startTransaction(googleDriveOptions, init);
+    await processWalFile(
+        googleDriveOptions,
+        init,
+        primaryPath
+    );
+    const result = await fn();
+    await commitTransaction(googleDriveOptions, init, transaction);
+    return result;
 }

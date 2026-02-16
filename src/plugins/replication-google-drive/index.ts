@@ -26,6 +26,7 @@ import { Subject } from 'rxjs';
 import { DriveStructure, initDriveStructure } from './init.ts';
 import { handleUpstreamBatch } from './upstream.ts';
 import { fetchChanges } from './downstream.ts';
+import { commitTransaction, runInTransaction, startTransaction } from './transaction.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -78,9 +79,7 @@ export async function replicateGoogleDrive<RxDocType>(
         options.googleDrive
     );
 
-
     const driveStructure = await initDriveStructure(googleDriveOptionsWithDefaults);
-
 
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, GoogleDriveCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType> | undefined;
@@ -94,13 +93,20 @@ export async function replicateGoogleDrive<RxDocType>(
                 lastPulledCheckpoint: GoogleDriveCheckpointType | undefined,
                 batchSize: number
             ) {
-                const changes = await fetchChanges<RxDocType>(
+                return runInTransaction(
                     googleDriveOptionsWithDefaults,
                     driveStructure,
-                    lastPulledCheckpoint,
-                    batchSize
+                    collection.schema.primaryPath,
+                    async () => {
+                        const changes = await fetchChanges<RxDocType>(
+                            googleDriveOptionsWithDefaults,
+                            driveStructure,
+                            lastPulledCheckpoint,
+                            batchSize
+                        );
+                        return changes as any;
+                    }
                 );
-                return changes as any;
             },
             batchSize: options.pull.batchSize,
             modifier: options.pull.modifier,
@@ -115,13 +121,20 @@ export async function replicateGoogleDrive<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                const conflicts = await handleUpstreamBatch(
+                return runInTransaction(
                     googleDriveOptionsWithDefaults,
                     driveStructure,
-                    options.collection.schema.primaryPath as any,
-                    rows
+                    collection.schema.primaryPath,
+                    async () => {
+                        const conflicts = await handleUpstreamBatch(
+                            googleDriveOptionsWithDefaults,
+                            driveStructure,
+                            options.collection.schema.primaryPath as any,
+                            rows
+                        );
+                        return conflicts;
+                    }
                 );
-                return conflicts;
             },
             batchSize: options.push.batchSize,
             modifier: options.push.modifier

@@ -266,7 +266,6 @@ export async function handleUpstreamBatch<RxDocType>(
     primaryPath: keyof WithDeletedAndAttachments<RxDocType>,
     writeRows: RxReplicationWriteToMasterRow<RxDocType>[]
 ): Promise<WithDeletedAndAttachments<RxDocType>[]> {
-    const transaction = await startTransaction(googleDriveOptions, init);
     const conflictResult = await fetchConflicts(
         googleDriveOptions,
         init,
@@ -278,7 +277,6 @@ export async function handleUpstreamBatch<RxDocType>(
         init,
         conflictResult.nonConflicts
     );
-    await commitTransaction(googleDriveOptions, init, transaction);
 
     return conflictResult.conflicts;
 }
