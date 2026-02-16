@@ -31,7 +31,7 @@ export async function fetchChanges<DocType>(
 
     return {
         checkpoint: filesResult.checkpoint,
-        documents: Object.values(contents)
+        documents: contents.ordered
     };
 }
 export async function fetchChangesFiles(
@@ -53,14 +53,15 @@ export async function fetchChangesFiles(
         queryParts.push(`and modifiedTime >= '${checkpoint.modifiedTime}'`);
     }
 
+    /**
+     * Intionally overfetch in case
+     * multiple docs have the same modifiedTime.
+     * We later have to strip the additional ones.
+     */
+    const OVERFETCH_AMOUNT = 6;
     const params = new URLSearchParams({
         q: queryParts.join(' '),
-        /**
-         * Intionally overfetch in case
-         * multiple docs have the same modifiedTime.
-         * We later have to strip the additional ones.
-         */
-        pageSize: (batchSize + 10) + '',
+        pageSize: (batchSize + OVERFETCH_AMOUNT) + '',
         orderBy: "modifiedTime asc,name asc",
         fields: "files(id,name,mimeType,parents,modifiedTime,size)",
         supportsAllDrives: "true",
@@ -89,14 +90,21 @@ export async function fetchChangesFiles(
             .filter(file => !(file.modifiedTime === checkpoint.modifiedTime && checkpoint.docIdsWithSameModifiedTime.includes(file.name)));
     }
     files = files.slice(0, batchSize);
+    const first = files[0];
+
 
     let newCheckpoint = checkpoint;
     const last = lastOfArray(files);
     if (last) {
         const lastModified = ensureNotFalsy(last.modifiedTime);
-        const docIdsWithSameModifiedTime = files
+        let docIdsWithSameModifiedTime = files
             .filter(file => file.modifiedTime === lastModified)
             .map(file => file.name);
+
+        if (checkpoint && first.modifiedTime === checkpoint.modifiedTime) {
+            docIdsWithSameModifiedTime = docIdsWithSameModifiedTime.concat(checkpoint.docIdsWithSameModifiedTime);
+        }
+
         newCheckpoint = {
             docIdsWithSameModifiedTime,
             modifiedTime: lastModified

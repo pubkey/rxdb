@@ -183,13 +183,14 @@ export async function fetchDocumentContents<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     fileIds: string[],
     concurrency = 5
-): Promise<ById<DocType>> {
-    const results: Record<string, any> = {};
-    const queue = [...fileIds];
+): Promise<{ byId: ById<DocType>; ordered: (DocType)[] }> {
+    const byId: ById<DocType> = {};
+    const ordered = new Array<DocType>(fileIds.length);
+    let nextIndex = 0;
 
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-    async function fetchOne(fileId: string, attempt = 0): Promise<any> {
+    async function fetchOne(fileId: string, attempt = 0): Promise<DocType | undefined> {
         const url =
             googleDriveOptions.apiEndpoint +
             `/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`;
@@ -198,36 +199,31 @@ export async function fetchDocumentContents<DocType>(
             headers: { Authorization: `Bearer ${googleDriveOptions.authToken}` },
         });
 
-        // Retry on transient errors
         if ([429, 500, 502, 503, 504].includes(res.status) && attempt < 4) {
             const backoffMs = 250 * Math.pow(2, attempt) + Math.floor(Math.random() * 200);
             await sleep(backoffMs);
             return fetchOne(fileId, attempt + 1);
         }
 
-        if (!res.ok) {
-            throw await newRxFetchError(res, {
-                args: {
-                    fileId
-                }
-            });
-        }
+        if (!res.ok) throw await newRxFetchError(res, { args: { fileId } });
 
-        const content = await res.text();
-        if (content) {
-            return JSON.parse(content);
-        } else {
-            return undefined;
-        }
+        const text = await res.text();
+        return text ? (JSON.parse(text) as DocType) : undefined;
     }
 
     async function worker() {
-        while (queue.length) {
-            const fileId = queue.shift()!;
-            results[fileId] = await fetchOne(fileId);
+        while (true) {
+            const i = nextIndex++;
+            if (i >= fileIds.length) return;
+
+            const fileId = fileIds[i];
+            const doc = await fetchOne(fileId);
+
+            ordered[i] = ensureNotFalsy(doc);
+            byId[fileId] = doc as any; // if ById allows undefined, remove `as any`
         }
     }
 
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
-    return results;
+    return { byId, ordered };
 }

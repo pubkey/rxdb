@@ -4,7 +4,8 @@ import {
     addRxPlugin,
     ensureNotFalsy,
     now,
-    randomToken
+    randomToken,
+    runXTimes
 } from '../src/index.ts';
 import {
     createEmptyFile,
@@ -408,12 +409,12 @@ describe('replication-google-drive.test.ts', function () {
                 ids
             );
             const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
-            const batchResult = await fetchDocumentContents(
+            const batchResult = await fetchDocumentContents<HumanDocumentType>(
                 options,
                 fileIds
             );
             fileIds.forEach(fileId => {
-                assert.ok(batchResult[fileId].passportId);
+                assert.ok(batchResult.byId[fileId].passportId);
             });
         });
         it('fetchDocumentContents() after updateDocumentFiles()', async () => {
@@ -443,13 +444,13 @@ describe('replication-google-drive.test.ts', function () {
                 fileIdByDocId
             );
             const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
-            const batchResult = await fetchDocumentContents(
+            const batchResult = await fetchDocumentContents<HumanDocumentType>(
                 options,
                 fileIds
             );
             fileIds.forEach(fileId => {
-                assert.ok(batchResult[fileId].passportId);
-                assert.strictEqual(batchResult[fileId].foo, 'bar', 'must have the updated property');
+                assert.ok(batchResult.byId[fileId].passportId);
+                assert.strictEqual(batchResult.byId[fileId].foo, 'bar', 'must have the updated property');
             });
         });
     });
@@ -484,95 +485,102 @@ describe('replication-google-drive.test.ts', function () {
             const first = ensureNotFalsy(changes.documents[0]);
             assert.ok(first.passportId);
         });
-        it('fetchChanges() should be able to iterate over the checkpoint', async () => {
-            const docs = new Array(10).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i))
-            await insertDocumentFiles(
-                options,
-                options.initData,
-                PRIMARY_PATH,
-                docs
-            );
-            let lastCheckpoint;
-            let totalFiles: HumanDocumentType[] = [];
+        runXTimes(1, () => {
+            it('fetchChanges() should be able to iterate over the checkpoint', async () => {
+                const insertAmount = 10;
+                const docs = new Array(insertAmount).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i))
+                await insertDocumentFiles(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    docs
+                );
+                let lastCheckpoint;
+                let totalFiles: HumanDocumentType[] = [];
 
-            let done = false;
-            let c = 0;
-            while (!done) {
-                c++;
-                const changesResult: {
-                    checkpoint: GoogleDriveCheckpointType | undefined,
-                    documents: HumanDocumentType[]
-                } = await fetchChanges<HumanDocumentType>(
+                let done = false;
+                let c = 0;
+                while (!done) {
+                    if (totalFiles.length > insertAmount) {
+                        throw new Error('too many docs already ' + totalFiles.length);
+                    }
+                    c++;
+                    const changesResult: {
+                        checkpoint: GoogleDriveCheckpointType | undefined,
+                        documents: HumanDocumentType[]
+                    } = await fetchChanges<HumanDocumentType>(
+                        options,
+                        options.initData,
+                        lastCheckpoint,
+                        3
+                    );
+                    totalFiles = totalFiles.concat(changesResult.documents);
+                    lastCheckpoint = changesResult.checkpoint;
+                    if (changesResult.documents.length === 0) {
+                        done = true;
+                    }
+
+                    if (c > 10) {
+                        throw new Error('circuit breaker');
+                    }
+                }
+
+                assert.strictEqual(totalFiles.length, 10);
+                const ids = totalFiles.map(f => f.passportId);
+                docs.forEach(doc => assert.ok(ids.includes(doc.passportId), 'must have id ' + doc.passportId));
+
+                // should not find stuff afterwards
+                const changesAfter = await fetchChanges<HumanDocumentType>(
                     options,
                     options.initData,
                     lastCheckpoint,
                     3
                 );
-                totalFiles = totalFiles.concat(changesResult.documents);
-                lastCheckpoint = changesResult.checkpoint;
-                if (changesResult.documents.length === 0) {
-                    done = true;
-                }
+                assert.strictEqual(changesAfter.documents.length, 0, 'no more changes afterwards');
 
-                if (c > 10) {
-                    throw new Error('circuit breaker');
-                }
-            }
+                // should find changes again if added later
+                await insertDocumentFiles(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    [schemaObjects.humanData('doc-after')]
+                );
+                const changesAfterWrite = await fetchChanges<HumanDocumentType>(
+                    options,
+                    options.initData,
+                    lastCheckpoint,
+                    3
+                );
+                lastCheckpoint = changesAfterWrite.checkpoint;
+                assert.strictEqual(changesAfterWrite.documents.length, 1, 'one more change after later insert');
 
-            assert.strictEqual(totalFiles.length, 10);
-            const ids = totalFiles.map(f => f.passportId);
-            docs.forEach(doc => assert.ok(ids.includes(doc.passportId), 'must have id ' + doc.passportId));
+                // should find the change after update
+                const firstDoc = docs[0];
+                firstDoc.firstName = 'updated';
+                const docFiles = await getDocumentFiles(
+                    options,
+                    options.initData,
+                    [firstDoc.passportId]
+                );
+                await updateDocumentFiles(
+                    options,
+                    PRIMARY_PATH,
+                    [firstDoc],
+                    { [firstDoc.passportId]: docFiles.files[0].id }
+                );
 
-            // should not find stuff afterwards
-            const changesAfter = await fetchChanges<HumanDocumentType>(
-                options,
-                options.initData,
-                lastCheckpoint,
-                3
-            );
-            assert.strictEqual(changesAfter.documents.length, 0, 'no more changes afterwards');
-
-            // should find changes again if added later
-            await insertDocumentFiles(
-                options,
-                options.initData,
-                PRIMARY_PATH,
-                [schemaObjects.humanData('doc-after')]
-            );
-            const changesAfterWrite = await fetchChanges<HumanDocumentType>(
-                options,
-                options.initData,
-                lastCheckpoint,
-                3
-            );
-            lastCheckpoint = changesAfterWrite.checkpoint;
-            assert.strictEqual(changesAfterWrite.documents.length, 1, 'one more change after later insert');
-
-            // should find the change after update
-            const firstDoc = docs[0];
-            firstDoc.firstName = 'updated';
-            const docFiles = await getDocumentFiles(
-                options,
-                options.initData,
-                [firstDoc.passportId]
-            );
-            await updateDocumentFiles(
-                options,
-                PRIMARY_PATH,
-                [firstDoc],
-                { [firstDoc.passportId]: docFiles.files[0].id }
-            );
-
-            const changesAfterUpdate = await fetchChanges<HumanDocumentType>(
-                options,
-                options.initData,
-                lastCheckpoint,
-                3
-            );
-            lastCheckpoint = changesAfterUpdate.checkpoint;
-            assert.strictEqual(changesAfterUpdate.documents.length, 1, 'one more change after update');
-            console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
+                const changesAfterUpdate = await fetchChanges<HumanDocumentType>(
+                    options,
+                    options.initData,
+                    lastCheckpoint,
+                    3
+                );
+                lastCheckpoint = changesAfterUpdate.checkpoint;
+                assert.strictEqual(changesAfterUpdate.documents.length, 1, 'one more change after update');
+                console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
+            });
         });
+
     });
     describe('upstream', () => {
         beforeEach(async () => {
