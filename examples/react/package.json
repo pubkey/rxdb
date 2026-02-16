@@ -16,7 +16,7 @@
     "rxjs": "7.8.2"
   },
   "devDependencies": {
-    "ajv": "8.17.1",
+    "ajv": "8.18.0",
     "local-web-server": "5.4.0",
     "react-scripts": "5.0.1",
     "rimraf": "6.1.3",
