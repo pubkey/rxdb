@@ -28,7 +28,8 @@ import {
     readWalContent,
     processWalFile,
     listFilesInFolder,
-    handleUpstreamBatch
+    handleUpstreamBatch,
+    GoogleDriveCheckpointType
 } from '../src/plugins/replication-google-drive/index.ts';
 import {
     schemaObjects,
@@ -478,9 +479,9 @@ describe('replication-google-drive.test.ts', function () {
                 undefined,
                 10
             );
-            assert.strictEqual(changes.files.length, 1);
+            assert.strictEqual(changes.documents.length, 1);
             assert.ok(changes.checkpoint);
-            const first = ensureNotFalsy(changes.files[0]);
+            const first = ensureNotFalsy(changes.documents[0]);
             assert.ok(first.passportId);
         });
         it('fetchChanges() should be able to iterate over the checkpoint', async () => {
@@ -498,15 +499,18 @@ describe('replication-google-drive.test.ts', function () {
             let c = 0;
             while (!done) {
                 c++;
-                const changes = await fetchChanges<HumanDocumentType>(
+                const changesResult: {
+                    checkpoint: GoogleDriveCheckpointType | undefined,
+                    documents: HumanDocumentType[]
+                } = await fetchChanges<HumanDocumentType>(
                     options,
                     options.initData,
                     lastCheckpoint,
                     3
                 );
-                totalFiles = totalFiles.concat(changes.files);
-                lastCheckpoint = changes.checkpoint;
-                if (changes.files.length === 0) {
+                totalFiles = totalFiles.concat(changesResult.documents);
+                lastCheckpoint = changesResult.checkpoint;
+                if (changesResult.documents.length === 0) {
                     done = true;
                 }
 
@@ -526,7 +530,7 @@ describe('replication-google-drive.test.ts', function () {
                 lastCheckpoint,
                 3
             );
-            assert.strictEqual(changesAfter.files.length, 0, 'no more changes afterwards');
+            assert.strictEqual(changesAfter.documents.length, 0, 'no more changes afterwards');
 
             // should find changes again if added later
             await insertDocumentFiles(
@@ -542,7 +546,7 @@ describe('replication-google-drive.test.ts', function () {
                 3
             );
             lastCheckpoint = changesAfterWrite.checkpoint;
-            assert.strictEqual(changesAfterWrite.files.length, 1, 'one more change after later insert');
+            assert.strictEqual(changesAfterWrite.documents.length, 1, 'one more change after later insert');
 
             // should find the change after update
             const firstDoc = docs[0];
@@ -566,7 +570,7 @@ describe('replication-google-drive.test.ts', function () {
                 3
             );
             lastCheckpoint = changesAfterUpdate.checkpoint;
-            assert.strictEqual(changesAfterUpdate.files.length, 1, 'one more change after update');
+            assert.strictEqual(changesAfterUpdate.documents.length, 1, 'one more change after update');
             console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
         });
     });
