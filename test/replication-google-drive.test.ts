@@ -5,8 +5,9 @@ import {
     ensureNotFalsy,
     now,
     randomToken,
-    runXTimes
-} from '../src/index.ts';
+    runXTimes,
+    RxCollection
+} from '../plugins/core/index.mjs';
 import {
     createEmptyFile,
     ensureFolderExists,
@@ -30,19 +31,32 @@ import {
     processWalFile,
     listFilesInFolder,
     handleUpstreamBatch,
-    GoogleDriveCheckpointType
+    GoogleDriveCheckpointType,
+    SyncOptionsGoogleDrive,
+    GoogleDriveOptions,
+    replicateGoogleDrive
 } from '../src/plugins/replication-google-drive/index.ts';
+import config from './unit/config.ts';
 import {
     schemaObjects,
-    HumanDocumentType
-} from '../src/plugins/test-utils/index.ts';
+    HumanDocumentType,
+    ensureReplicationHasNoErrors,
+    humansCollection
+} from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
+import { RxDBLeaderElectionPlugin } from '../src/plugins/leader-election/index.ts';
+
 import {
     startServer
 } from 'google-drive-mock';
 import getPort from 'get-port';
 import { assertThrows, wait, waitUntil } from 'async-test-util';
-import { BulkWriteRow, RxDocumentData, RxReplicationWriteToMasterRow, WithDeletedAndAttachments } from '../src';
+import {
+    BulkWriteRow,
+    RxDocumentData,
+    RxReplicationWriteToMasterRow,
+    WithDeletedAndAttachments
+} from '../src/index.ts';
 
 const PRIMARY_PATH = 'passportId';
 
@@ -72,10 +86,30 @@ function toWriteRow<RxDocType>(doc: RxDocType, assumedMasterState?: RxDocType): 
  */
 describe('replication-google-drive.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
+    addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(200 * 1000);
     let server: any;
     let serverUrl: string;
     let port: number;
+
+    config.storage.init?.();
+
+    async function syncOnce(
+        collection: RxCollection,
+        googleDrive: GoogleDriveOptions,
+        options?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
+    ) {
+        const replicationState = await replicateGoogleDrive({
+            replicationIdentifier: 'foobar',
+            collection,
+            googleDrive,
+            live: false,
+            pull: options?.pull ?? {},
+            push: options?.push ?? {},
+        });
+        ensureReplicationHasNoErrors(replicationState);
+        await replicationState.awaitInitialReplication();
+    }
 
     before(async () => {
         port = await getPort();
@@ -811,6 +845,35 @@ describe('replication-google-drive.test.ts', function () {
                         assert.strictEqual(file.age, 42, 'must have updated the age on ' + file.passportId);
                     }
                 });
+            });
+        });
+        describe('non-live replication', () => {
+            it('should keep the master state as default conflict handler', async () => {
+                const c1 = await humansCollection.create(1);
+                const c2 = await humansCollection.create(0);
+
+                await syncOnce(c1, options);
+                await syncOnce(c2, options);
+
+                const doc1 = await c1.findOne().exec(true);
+                const doc2 = await c2.findOne().exec(true);
+
+                // make update on both sides
+                await doc1.incrementalPatch({ firstName: 'c1' });
+                await doc2.incrementalPatch({ firstName: 'c2' });
+
+                await syncOnce(c2, options);
+
+                // cause conflict
+                await syncOnce(c1, options);
+
+                /**
+                 * Must have kept the master state c2
+                 */
+                assert.strictEqual(doc1.getLatest().firstName, 'c2');
+
+                c1.database.close();
+                c2.database.close();
             });
         });
     });
