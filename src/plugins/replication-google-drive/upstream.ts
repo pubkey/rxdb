@@ -51,11 +51,13 @@ export async function fetchConflicts<RxDocType>(
         let fileContent: undefined | WithDeletedAndAttachments<RxDocType>;
         const fileId = fileIdByDocId.get(docId);
         if (fileId) {
-            fileContent = contentsByFileId[fileId];
+            fileContent = contentsByFileId.byId[fileId];
         }
         if (row.assumedMasterState) {
             if (!deepEqual(row.assumedMasterState, fileContent)) {
                 conflicts.push(ensureNotFalsy(fileContent));
+            } else {
+                nonConflicts.push(row);
             }
         } else if (fileContent) {
             conflicts.push(fileContent);
@@ -63,6 +65,20 @@ export async function fetchConflicts<RxDocType>(
             nonConflicts.push(row);
         }
     });
+
+
+    console.log(JSON.stringify({ nonConflicts, conflicts, writeRows }, null, 4));
+
+    if ((nonConflicts.length + conflicts.length) !== writeRows.length) {
+        throw newRxError('SNH', {
+            pushRows: writeRows,
+            args: {
+                nonConflicts,
+                conflicts,
+                contentsByFileId: contentsByFileId.byId
+            }
+        });
+    }
 
     return {
         conflicts,

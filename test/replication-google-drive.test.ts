@@ -744,7 +744,8 @@ describe('replication-google-drive.test.ts', function () {
         });
         describe('full push batch', () => {
             it('should process a full batch with conflict handling', async () => {
-                const rows = new Array(5).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
+                const docs = new Array(3).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i, 1));
+                const rows = docs.map(d => toWriteRow(d));
                 await handleUpstreamBatch(
                     options,
                     options.initData,
@@ -757,8 +758,9 @@ describe('replication-google-drive.test.ts', function () {
                     PRIMARY_PATH
                 );
 
-                const rows2 = new Array(3).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-' + i)));
-                const nonConflict = new Array(4).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('doc-no-conflict-' + i)));
+                const docs2 = new Array(3).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i, 2));
+                const rows2 = docs2.map(d => toWriteRow(d));
+                const nonConflict = new Array(4).fill(0).map((_, i) => toWriteRow(schemaObjects.humanData('no-conflict-' + i)));
 
                 const conflicts = await handleUpstreamBatch(
                     options,
@@ -766,7 +768,7 @@ describe('replication-google-drive.test.ts', function () {
                     PRIMARY_PATH,
                     rows2.concat(nonConflict)
                 );
-                assert.strictEqual(conflicts.length, 3);
+                assert.strictEqual(conflicts.length, 3, 'must have 3 conflicts');
                 await processWalFile(
                     options,
                     options.initData,
@@ -777,9 +779,40 @@ describe('replication-google-drive.test.ts', function () {
                     options,
                     options.initData.docsFolderId
                 );
-                assert.strictEqual(docsFiles.length, 9);
-            });
+                assert.strictEqual(docsFiles.length, 7);
 
+                // non-conflict updates
+                const docs3 = new Array(3).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i, 42));
+                const rows3 = docs.map((d, i) => toWriteRow(docs3[i], d));
+
+                const conflicts2 = await handleUpstreamBatch(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH,
+                    rows3
+                );
+                assert.deepStrictEqual(conflicts2, [], 'not update conflicts');
+                await processWalFile(
+                    options,
+                    options.initData,
+                    PRIMARY_PATH
+                );
+
+                docsFiles = await listFilesInFolder(
+                    options,
+                    options.initData.docsFolderId
+                );
+                const contentsByFileId = await fetchDocumentContents<WithDeletedAndAttachments<HumanDocumentType>>(
+                    options,
+                    docsFiles.map(d => d.id)
+                );
+                contentsByFileId.ordered.forEach(file => {
+                    if (file.passportId.startsWith('doc-')) {
+                        assert.strictEqual(file.age, 42, 'must have updated the age on ' + file.passportId);
+                    }
+
+                });
+            });
         });
     });
 });
