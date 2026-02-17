@@ -4,6 +4,7 @@ import type {
     GoogleDriveOptionsWithDefaults,
     DriveFileMetadata
 } from './google-drive-types.ts';
+import { DriveStructure } from './init.ts';
 
 export const DRIVE_API_VERSION = 'v3';
 export const DRIVE_MAX_PAGE_SIZE = 1000;
@@ -389,12 +390,43 @@ export async function readFolder(
     return listData.files || [];
 }
 
+export async function insertMultipartFile<T>(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    folderId: string,
+    filename: string,
+    jsonData: T
+) {
+    const content = JSON.stringify(jsonData);
+
+    const metadata = {
+        name: filename,
+        mimeType: 'application/json',
+        parents: folderId,
+    };
+
+    const postData = createMultipartBody(
+        metadata,
+        content
+    );
+
+    const res = await fetch(googleDriveOptions.apiEndpoint + "/upload/drive/v3/files?uploadType=multipart", {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+            'Content-Type': 'multipart/related; boundary="' + postData.boundary + '"'
+        },
+        body: postData.body
+    });
+    if (!res.ok) {
+        throw await newRxFetchError(res);
+    }
+}
 
 export function createMultipartBody(
     metadata: Record<string, unknown>,
-    content: Record<string, unknown>
+    content: string
 ) {
-    const multipartBoundary = '-------1337-👵🍌-use-RxDB-7355608';
+    const multipartBoundary = '-------1337-use-RxDB-7355608-' + Math.random().toString(16).slice(2);
     const delimiter = '\r\n--' + multipartBoundary + '\r\n';
     const closeDelim = '\r\n--' + multipartBoundary + '--';
     const body = delimiter +
@@ -402,7 +434,7 @@ export function createMultipartBody(
         JSON.stringify(metadata) +
         delimiter +
         'Content-Type: application/json\r\n\r\n' +
-        JSON.stringify(content) +
+        content +
         closeDelim;
     return { body, boundary: multipartBoundary };
 };

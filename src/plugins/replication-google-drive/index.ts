@@ -27,6 +27,7 @@ import { DriveStructure, initDriveStructure } from './init.ts';
 import { handleUpstreamBatch } from './upstream.ts';
 import { fetchChanges } from './downstream.ts';
 import { commitTransaction, runInTransaction, startTransaction } from './transaction.ts';
+import { ensureProcessNextTickIsSet } from '../replication-webrtc/connection-handler-simple-peer.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -142,6 +143,7 @@ export async function replicateGoogleDrive<RxDocType>(
     }
 
 
+
     const replicationState = new RxGoogleDriveReplicationState<RxDocType>(
         googleDriveOptionsWithDefaults,
         driveStructure,
@@ -153,6 +155,48 @@ export async function replicateGoogleDrive<RxDocType>(
         options.retryTime,
         options.autoStart
     );
+
+
+    /**
+     * Google drive has no websocket or server-send-events
+     * to observe file changes. Therefore we use WebRTC to
+     * connect clients which then can ping each other on changes.
+     * Instead of a singaling server, we use the google-drive itself
+     * to exchange signaling data.
+     */
+    if (options.live && options.pull) {
+        ensureProcessNextTickIsSet();
+        const startBefore = replicationState.start.bind(replicationState);
+        const cancelBefore = replicationState.cancel.bind(replicationState);
+        replicationState.start = () => {
+            const lastChangeQuery = query(
+                pullQuery,
+                orderBy(serverTimestampField, 'desc'),
+                limit(1)
+            );
+            const unsubscribe = onSnapshot(
+                lastChangeQuery,
+                (_querySnapshot) => {
+                    /**
+                     * There is no good way to observe the event stream in firestore.
+                     * So instead we listen to any write to the collection
+                     * and then emit a 'RESYNC' flag.
+                     */
+                    replicationState.reSync();
+                },
+                (error) => {
+                    replicationState.subjects.error.next(
+                        newRxError('RC_STREAM', { error: errorToPlainJson(error) })
+                    );
+                }
+            );
+            replicationState.cancel = () => {
+                unsubscribe();
+                return cancelBefore();
+            };
+            return startBefore();
+        };
+    }
 
     startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
     return replicationState;

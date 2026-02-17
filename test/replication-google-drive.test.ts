@@ -847,34 +847,37 @@ describe('replication-google-drive.test.ts', function () {
                 });
             });
         });
-        describe('non-live replication', () => {
-            it('should keep the master state as default conflict handler', async () => {
-                const c1 = await humansCollection.create(1);
-                const c2 = await humansCollection.create(0);
+    });
+    describe('non-live replication', () => {
+        it('should keep the master state as default conflict handler', async () => {
+            const c1 = await humansCollection.create(1);
+            const c2 = await humansCollection.create(0);
 
-                await syncOnce(c1, options);
-                await syncOnce(c2, options);
+            await syncOnce(c1, options);
+            await syncOnce(c2, options);
 
-                const doc1 = await c1.findOne().exec(true);
-                const doc2 = await c2.findOne().exec(true);
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c2.findOne().exec(true);
 
-                // make update on both sides
-                await doc1.incrementalPatch({ firstName: 'c1' });
-                await doc2.incrementalPatch({ firstName: 'c2' });
+            // make update on both sides
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await doc2.incrementalPatch({ firstName: 'c2' });
 
-                await syncOnce(c2, options);
+            await syncOnce(c2, options);
 
-                // cause conflict
-                await syncOnce(c1, options);
+            // cause conflict
+            await syncOnce(c1, options);
 
-                /**
-                 * Must have kept the master state c2
-                 */
-                assert.strictEqual(doc1.getLatest().firstName, 'c2');
+            /**
+             * Must have kept the master state c2
+             */
+            assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
-                c1.database.close();
-                c2.database.close();
-            });
+            c1.database.close();
+            c2.database.close();
         });
+    });
+    describe('WebRTC signaling', () => {
+
     });
 });

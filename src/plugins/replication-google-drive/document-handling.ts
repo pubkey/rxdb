@@ -1,6 +1,7 @@
 import { newRxError, newRxFetchError } from '../../rx-error.ts';
 import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
+import { insertMultipartFile } from './google-drive-helper.ts';
 import type {
     DriveFileListResponse,
     GoogleDriveOptionsWithDefaults
@@ -99,35 +100,12 @@ export async function insertDocumentFiles<RxDocType>(
     // Run uploads in parallel
     await Promise.all(docs.map(async (doc) => {
         const id = (doc as any)[primaryPath];
-        const content = JSON.stringify(doc); // The actual JSON content
-
-        const metadata = {
-            name: id + '.json',
-            mimeType: 'application/json',
-            parents: [init.docsFolderId],
-        };
-        const boundary = "batch_" + Math.random().toString(16).slice(2);
-        const delimiter = "\r\n--" + boundary + "\r\n";
-        const closeDelim = "\r\n--" + boundary + "--";
-        const body =
-            delimiter +
-            "Content-Type: application/json\r\n\r\n" +
-            JSON.stringify(metadata) +
-            delimiter +
-            "Content-Type: application/json\r\n\r\n" +
-            content +
-            closeDelim;
-        const res = await fetch(googleDriveOptions.apiEndpoint + "/upload/drive/v3/files?uploadType=multipart", {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${googleDriveOptions.authToken}`,
-                'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-            },
-            body: body
-        });
-        if (!res.ok) {
-            throw await newRxFetchError(res);
-        }
+        await insertMultipartFile(
+            googleDriveOptions,
+            init.docsFolderId,
+            id + '.json',
+            doc
+        );
     }));
 }
 
