@@ -78,7 +78,7 @@ export async function initDriveStructure(
     const docsFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/docs');
 
     // sginaling folder
-    const signalingFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/docs');
+    const signalingFolderId = await ensureFolderExists(googleDriveOptions, googleDriveOptions.folderPath + '/signaling');
 
     // transaction file
     const transactionFile = await createEmptyFile(

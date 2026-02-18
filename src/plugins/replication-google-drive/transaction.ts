@@ -205,7 +205,8 @@ export async function runInTransaction<T>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     init: DriveStructure,
     primaryPath: string,
-    fn: () => Promise<T>
+    fn: () => Promise<T>,
+    runAfter?: () => any
 ): Promise<T> {
     const transaction = await startTransaction(googleDriveOptions, init);
     await processWalFile(
@@ -215,5 +216,8 @@ export async function runInTransaction<T>(
     );
     const result = await fn();
     await commitTransaction(googleDriveOptions, init, transaction);
+    if (runAfter) {
+        await runAfter();
+    }
     return result;
 }

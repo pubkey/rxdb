@@ -110,6 +110,8 @@ export class SignalingState {
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', this.resetReaderFn);
+            document.addEventListener('visibilitychange', this.resetReaderFn);
+
         }
 
         // start processing loop
@@ -229,6 +231,7 @@ export class SignalingState {
                      * we tell everyone else.
                      */
                     this.pingPeers('NEW_PEER');
+                    this._resync$.next();
 
 
                     return peer;
@@ -244,6 +247,7 @@ export class SignalingState {
         this.closed = true;
         if (typeof window !== 'undefined') {
             window.removeEventListener('online', this.resetReaderFn);
+            window.removeEventListener('visibilitychange', this.resetReaderFn);
         }
         Array.from(this.peerBySenderId.values()).forEach(peer => peer.destroy())
         this._resync$.complete();

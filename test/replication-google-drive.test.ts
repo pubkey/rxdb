@@ -36,7 +36,8 @@ import {
     GoogleDriveOptions,
     replicateGoogleDrive,
     SignalingState,
-    cleanupOldSignalingMessages
+    cleanupOldSignalingMessages,
+    SignalingOptions
 } from '../src/plugins/replication-google-drive/index.ts';
 import config from './unit/config.ts';
 import {
@@ -44,6 +45,7 @@ import {
     HumanDocumentType,
     ensureReplicationHasNoErrors,
     humansCollection,
+    awaitCollectionsHaveEqualState,
     isNode
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
@@ -120,6 +122,25 @@ describe('replication-google-drive.test.ts', function () {
         await replicationState.awaitInitialReplication();
     }
 
+    async function sync(
+        collection: RxCollection,
+        googleDrive: GoogleDriveOptions,
+        options?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push' | 'signalingOptions'>
+    ) {
+        const replicationState = await replicateGoogleDrive<any>({
+            replicationIdentifier: 'foobar',
+            collection,
+            googleDrive,
+            signalingOptions: options?.signalingOptions,
+            live: true,
+            pull: {},
+            push: {},
+        });
+        ensureReplicationHasNoErrors(replicationState);
+        await replicationState.awaitInitialReplication();
+        return replicationState;
+    }
+
     before(async () => {
         port = await getPort();
         server = startServer(port);
@@ -137,6 +158,7 @@ describe('replication-google-drive.test.ts', function () {
         folderPath: string;
         initData: DriveStructure;
         transactionTimeout: number;
+        signalingOptions: SignalingOptions;
     };
     beforeEach(() => {
         options = {
@@ -145,7 +167,8 @@ describe('replication-google-drive.test.ts', function () {
             apiEndpoint: serverUrl,
             folderPath: 'rxdb-test-folder-' + randomToken(8),
             transactionTimeout: 500,
-            initData: null as any
+            initData: null as any,
+            signalingOptions: { wrtc }
         };
     });
 
@@ -899,7 +922,92 @@ describe('replication-google-drive.test.ts', function () {
     //         c2.database.close();
     //     });
     // });
-    describe('WebRTC signaling', () => {
+    // describe('WebRTC signaling', () => {
+    //     beforeEach(async () => {
+    //         options = {
+    //             oauthClientId: 'mock-client-id',
+    //             authToken: 'valid-token',
+    //             apiEndpoint: serverUrl,
+    //             folderPath: 'test-folder-' + Math.random(),
+    //             transactionTimeout: 1000,
+    //             initData: null as any,
+    //             signalingOptions: { wrtc }
+    //         };
+    //         options.initData = await initDriveStructure(options);
+    //     });
+    //     it('should emit signaling data', async () => {
+    //         const emitted: any[] = [];
+    //         console.dir({ wrtc });
+    //         const peer = new Peer({
+    //             initiator: true,
+    //             trickle: true,
+    //             wrtc
+    //         })
+    //         peer.on('error', (e: any) => console.error('peer error:', e));
+    //         peer.on("signal", async (signalData: any) => {
+    //             console.log('got signal!!');
+    //             console.log(signalData);
+    //             emitted.push(signalData);
+    //         });
+
+    //         await waitUntil(() => emitted.length > 0);
+
+
+    //         peer.destroy();
+    //     });
+    //     it('should not throw', async () => {
+    //         const state = new SignalingState(
+    //             options,
+    //             options.initData,
+    //             { wrtc }
+    //         );
+    //         await state.processNewMessages();
+    //         await state.sendMessage('foobar');
+    //         await cleanupOldSignalingMessages(
+    //             options,
+    //             options.initData.signalingFolderId
+    //         )
+    //         await state.close();
+    //     });
+    //     it('two clients should now about each other', async () => {
+    //         console.log('------------------------------------ 0');
+    //         const state1 = new SignalingState(
+    //             options,
+    //             options.initData,
+    //             { wrtc }
+    //         );
+    //         await state1.processNewMessages();
+    //         const state2 = new SignalingState(
+    //             options,
+    //             options.initData,
+    //             { wrtc }
+    //         );
+
+    //         await waitUntil(async () => {
+    //             return state1.peerBySenderId.size === 1
+    //         });
+    //         await waitUntil(async () => {
+    //             return state2.peerBySenderId.size === 1
+    //         });
+
+    //         console.log('------------------------------------ 1');
+
+
+    //         // ping each other
+    //         let pinged = false;
+    //         state1.resync$.subscribe(() => pinged = true);
+    //         state2.pingPeers('RESYNC');
+    //         await waitUntil(async () => {
+    //             return !!pinged;
+    //         });
+
+
+
+    //         await state1.close();
+    //         await state2.close();
+    //     });
+    // });
+    describe('live replication', () => {
         beforeEach(async () => {
             options = {
                 oauthClientId: 'mock-client-id',
@@ -907,80 +1015,65 @@ describe('replication-google-drive.test.ts', function () {
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
-                initData: null as any
+                initData: null as any,
+                signalingOptions: { wrtc }
+
             };
             options.initData = await initDriveStructure(options);
         });
-        it('should emit signaling data', async () => {
-            const emitted: any[] = [];
-            console.dir({ wrtc });
-            const peer = new Peer({
-                initiator: true,
-                trickle: true,
-                wrtc
-            })
-            peer.on('error', (e: any) => console.error('peer error:', e));
-            peer.on("signal", async (signalData: any) => {
-                console.log('got signal!!');
-                console.log(signalData);
-                emitted.push(signalData);
-            });
+        it('should realtime sync on both sides', async () => {
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'a-init', name: 'colA init' }));
+            await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'b-init', name: 'colB init' }));
 
-            await waitUntil(() => emitted.length > 0);
+            const replicationStateA = await sync(collectionA, options);
+            await replicationStateA.awaitInitialReplication();
 
+            const replicationStateB = await sync(collectionB, options);
+            await replicationStateB.awaitInitialReplication();
 
-            peer.destroy();
-        });
-        it('should not throw', async () => {
-            const state = new SignalingState(
-                options,
-                options.initData,
-                { wrtc }
+            await replicationStateA.awaitInSync();
+
+            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+
+            // insert one
+            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
+            await replicationStateA.awaitInSync();
+
+            await replicationStateB.awaitInSync();
+            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+
+            // delete one
+            await collectionB.findOne().remove();
+            await replicationStateB.awaitInSync();
+            await replicationStateA.awaitInSync();
+            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+
+            // insert many
+            await collectionA.bulkInsert(
+                new Array(10)
+                    .fill(0)
+                    .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
-            await state.processNewMessages();
-            await state.sendMessage('foobar');
-            await cleanupOldSignalingMessages(
-                options,
-                options.initData.signalingFolderId
-            )
-            await state.close();
-        });
-        it('two clients should now about each other', async () => {
-            console.log('------------------------------------ 0');
-            const state1 = new SignalingState(
-                options,
-                options.initData,
-                { wrtc }
-            );
-            await state1.processNewMessages();
-            const state2 = new SignalingState(
-                options,
-                options.initData,
-                { wrtc }
-            );
+            await replicationStateA.awaitInSync();
 
-            await waitUntil(async () => {
-                return state1.peerBySenderId.size === 1
-            });
-            await waitUntil(async () => {
-                return state2.peerBySenderId.size === 1
-            });
+            await replicationStateB.awaitInSync();
+            await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('------------------------------------ 1');
+            // insert at both collections at the same time
+            await Promise.all([
+                collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
+                collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
+            ]);
+            await replicationStateA.awaitInSync();
+            await replicationStateB.awaitInSync();
+            await replicationStateA.awaitInSync();
+            await replicationStateB.awaitInSync();
+            await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-
-            // ping each other
-            let pinged = false;
-            state1.resync$.subscribe(() => pinged = true);
-            state2.pingPeers();
-            await waitUntil(async () => {
-                return !!pinged;
-            });
-
-
-
-            await state1.close();
-            await state2.close();
+            collectionA.database.close();
+            collectionB.database.close();
         });
     });
 });

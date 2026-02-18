@@ -3,6 +3,7 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions
 } from '../../types/index.d.ts';
+import { SignalingOptions } from './signaling.ts';
 
 export type GoogleDriveCheckpointType = {
     modifiedTime: string;
@@ -77,6 +78,7 @@ export type SyncOptionsGoogleDrive<RxDocType> = Omit<
     'pull' | 'push'
 > & {
     googleDrive: GoogleDriveOptions;
+    signalingOptions?: SignalingOptions;
     pull?: GoogleDriveSyncPullOptions<RxDocType>;
     push?: GoogleDriveSyncPushOptions<RxDocType>;
 };

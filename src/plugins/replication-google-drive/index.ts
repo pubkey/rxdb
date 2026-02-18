@@ -27,8 +27,10 @@ import { DriveStructure, initDriveStructure } from './init.ts';
 import { handleUpstreamBatch } from './upstream.ts';
 import { fetchChanges } from './downstream.ts';
 import { commitTransaction, runInTransaction, startTransaction } from './transaction.ts';
-import { ensureProcessNextTickIsSet } from '../replication-webrtc/connection-handler-simple-peer.ts';
-import { SignalingState } from './signaling.ts';
+import {
+    ensureProcessNextTickIsSet
+} from '../replication-webrtc/connection-handler-simple-peer.ts';
+import { SignalingOptions, SignalingState } from './signaling.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -57,6 +59,7 @@ export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
+        public readonly signalingOptions?: SignalingOptions,
         public readonly live: boolean = true,
         public retryTime: number = 1000 * 5,
         public autoStart: boolean = true
@@ -72,7 +75,22 @@ export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState
             autoStart
         );
     }
+
+
+    /**
+     * Notify other peers that something
+     * has or might have changed so that
+     * they can pull from their checkpoints.
+     */
+    async notifyPeers() {
+        if (this.signalingState) {
+            await this.signalingState.pingPeers('RESYNC');
+        }
+    }
+
 }
+
+
 
 export async function replicateGoogleDrive<RxDocType>(
     options: SyncOptionsGoogleDrive<RxDocType>
@@ -87,8 +105,10 @@ export async function replicateGoogleDrive<RxDocType>(
         },
         options.googleDrive
     );
-
     const driveStructure = await initDriveStructure(googleDriveOptionsWithDefaults);
+
+
+    let replicationState: RxGoogleDriveReplicationState<RxDocType>;
 
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, GoogleDriveCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, GoogleDriveCheckpointType> | undefined;
@@ -142,7 +162,8 @@ export async function replicateGoogleDrive<RxDocType>(
                             rows
                         );
                         return conflicts;
-                    }
+                    },
+                    () => replicationState.notifyPeers().catch(() => { })
                 );
             },
             batchSize: options.push.batchSize,
@@ -152,18 +173,18 @@ export async function replicateGoogleDrive<RxDocType>(
 
 
 
-    const replicationState = new RxGoogleDriveReplicationState<RxDocType>(
+    replicationState = new RxGoogleDriveReplicationState<RxDocType>(
         googleDriveOptionsWithDefaults,
         driveStructure,
         options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,
+        options.signalingOptions,
         options.live,
         options.retryTime,
         options.autoStart
     );
-
 
     /**
      * Google drive has no websocket or server-send-events
@@ -179,7 +200,8 @@ export async function replicateGoogleDrive<RxDocType>(
         replicationState.start = () => {
             replicationState.signalingState = new SignalingState(
                 replicationState.googleDrive,
-                replicationState.driveStructure
+                replicationState.driveStructure,
+                replicationState.signalingOptions ? replicationState.signalingOptions : {}
             );
             const sub = replicationState.signalingState.resync$.subscribe(() => {
                 replicationState.reSync();
