@@ -254,32 +254,48 @@ export async function deleteIfEtagMatches(
         },
     });
 
+    if (!res.ok) {
+        throw await newRxFetchError(res, {
+            args: {
+                etag,
+                fileId
+            }
+        });
+    }
+
     if (res.ok) {
         // Drive v2 returns 204 No Content on successful delete
         return;
     }
+}
 
-    // Best-effort parse error body
-    let details: any;
-    const text = await res.text().catch(() => "");
-    try {
-        details = text ? JSON.parse(text) : undefined;
-    } catch {
-        details = text || undefined;
+export async function deleteFile(
+    googleDriveOptions: GoogleDriveOptionsWithDefaults,
+    fileId: string
+): Promise<void> {
+    const url =
+        `${googleDriveOptions.apiEndpoint}` +
+        `/drive/v2/files/${encodeURIComponent(fileId)}`;
+
+    const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${googleDriveOptions.authToken}`,
+        },
+    });
+
+    if (!res.ok) {
+        throw await newRxFetchError(res, {
+            args: {
+                fileId
+            }
+        });
     }
 
-    const err = newRxError(
-        'GDR10',
-        {
-            args: {
-                status: res.status,
-                text: res.statusText
-            }
-        }
-    );
-    (err as any).status = res.status;
-    (err as any).details = details;
-    throw err;
+    if (res.ok) {
+        // Drive v2 returns 204 No Content on successful delete
+        return;
+    }
 }
 
 export async function readJsonFileContent<T>(
@@ -303,21 +319,11 @@ export async function readJsonFileContent<T>(
     });
 
     if (!res.ok) {
-        let details: any;
-        const text = await res.text().catch(() => "");
-        try {
-            details = text ? JSON.parse(text) : undefined;
-        } catch {
-            details = text || undefined;
-        }
-
-        const err = new Error(
-            `Google Drive v2 read failed (${res.status}${res.statusText ? ` ${res.statusText}` : ""
-            })`
-        );
-        (err as any).status = res.status;
-        (err as any).details = details;
-        throw err;
+        throw await newRxFetchError(res, {
+            args: {
+                fileId
+            }
+        });
     }
 
     const dateHeader = res.headers.get('date');
@@ -340,6 +346,7 @@ export async function readJsonFileContent<T>(
         serverTime: unixMs
     };
 }
+
 
 export async function readFolder(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,

@@ -28,6 +28,7 @@ import { handleUpstreamBatch } from './upstream.ts';
 import { fetchChanges } from './downstream.ts';
 import { commitTransaction, runInTransaction, startTransaction } from './transaction.ts';
 import { ensureProcessNextTickIsSet } from '../replication-webrtc/connection-handler-simple-peer.ts';
+import { SignalingState } from './signaling.ts';
 
 export * from './google-drive-types.ts';
 export * from './google-drive-helper.ts';
@@ -38,10 +39,17 @@ export * from './document-handling.ts';
 export * from './multipart.ts';
 export * from './downstream.ts';
 export * from './upstream.ts';
+export * from './signaling.ts';
 
 export const DEFAULT_TRANSACTION_TIMEOUT = 60 * 1000;
 
 export class RxGoogleDriveReplicationState<RxDocType> extends RxReplicationState<RxDocType, GoogleDriveCheckpointType> {
+
+    /**
+     * Only exists on live replication
+     */
+    public signalingState?: SignalingState;
+
     constructor(
         public readonly googleDrive: GoogleDriveOptionsWithDefaults,
         public readonly driveStructure: DriveStructure,
@@ -169,29 +177,17 @@ export async function replicateGoogleDrive<RxDocType>(
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
-            const lastChangeQuery = query(
-                pullQuery,
-                orderBy(serverTimestampField, 'desc'),
-                limit(1)
+            replicationState.signalingState = new SignalingState(
+                replicationState.googleDrive,
+                replicationState.driveStructure
             );
-            const unsubscribe = onSnapshot(
-                lastChangeQuery,
-                (_querySnapshot) => {
-                    /**
-                     * There is no good way to observe the event stream in firestore.
-                     * So instead we listen to any write to the collection
-                     * and then emit a 'RESYNC' flag.
-                     */
-                    replicationState.reSync();
-                },
-                (error) => {
-                    replicationState.subjects.error.next(
-                        newRxError('RC_STREAM', { error: errorToPlainJson(error) })
-                    );
-                }
-            );
+            const sub = replicationState.signalingState.resync$.subscribe(() => {
+                replicationState.reSync();
+            });
+
             replicationState.cancel = () => {
-                unsubscribe();
+                sub.unsubscribe();
+                replicationState.signalingState?.close();
                 return cancelBefore();
             };
             return startBefore();
