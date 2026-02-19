@@ -59,7 +59,7 @@ import {
     RxReplicationWriteToMasterRow,
     WithDeletedAndAttachments
 } from '../src/index.ts';
-import { SimplePeerWebSocketConstructor, SimplePeerWrtc } from '../src/plugins/replication-webrtc/index.ts';
+import { SimplePeerWrtc } from '../src/plugins/replication-webrtc/index.ts';
 import Peer from 'simple-peer';
 
 
@@ -104,15 +104,15 @@ describe('replication-google-drive.test.ts', function () {
     async function syncOnce(
         collection: RxCollection,
         googleDrive: GoogleDriveOptions,
-        options?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
+        syncOptions?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
     ) {
         const replicationState = await replicateGoogleDrive({
             replicationIdentifier: 'foobar',
             collection,
             googleDrive,
             live: false,
-            pull: options?.pull ?? {},
-            push: options?.push ?? {},
+            pull: syncOptions?.pull ?? {},
+            push: syncOptions?.push ?? {},
         });
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
@@ -143,7 +143,7 @@ describe('replication-google-drive.test.ts', function () {
         serverUrl = 'http://localhost:' + port;
     });
 
-    after(async () => {
+    after(() => {
         if (server) server.close();
     });
 
@@ -169,8 +169,9 @@ describe('replication-google-drive.test.ts', function () {
     });
 
     describe('init', () => {
-        it('import WebRTC polyfills on Node.js', async () => {
+        it('import WebRTC polyfills on Node.js', () => {
             if (isNode) {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 wrtc = require('wrtc');
                 // // @ts-ignore
                 // const wrtcModule = await import('node-datachannel/polyfill');
@@ -267,7 +268,7 @@ describe('replication-google-drive.test.ts', function () {
         describe('readFolder()', () => {
             it('should find the subfolders', async () => {
                 const parentId = await ensureFolderExists(options, options.folderPath + '/foo/bar/lol');
-                const fileId = await createEmptyFile(
+                await createEmptyFile(
                     options,
                     parentId,
                     'empty.txt'
@@ -335,7 +336,8 @@ describe('replication-google-drive.test.ts', function () {
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
-                initData: null as any
+                initData: null as any,
+                signalingOptions: { wrtc }
             };
             options.initData = await initDriveStructure(options);
         });
@@ -382,7 +384,7 @@ describe('replication-google-drive.test.ts', function () {
         });
         it('should close expired transaction from other instance', async () => {
             options.transactionTimeout = 100;
-            const txn1 = await startTransactionTryOnce(options, options.initData);
+            await startTransactionTryOnce(options, options.initData);
             /** here it should automatically wait->retry until the tx timed out */
             const txn2 = await startTransaction(options, options.initData);
             await commitTransaction(options, options.initData, txn2);
@@ -390,7 +392,7 @@ describe('replication-google-drive.test.ts', function () {
         it('on parallel calls each at one point should have the tx lock', async () => {
             let parallelCount = 0;
             await Promise.all(
-                new Array(3).fill(0).map(async (__, i) => {
+                new Array(3).fill(0).map(async () => {
                     const txn2 = await startTransaction(options, options.initData);
                     parallelCount = parallelCount + 1;
                     assert.strictEqual(parallelCount, 1, 'not more then one in parallel');
@@ -404,7 +406,7 @@ describe('replication-google-drive.test.ts', function () {
             await startTransaction(options, options.initData);
             await wait(options.transactionTimeout * 2);
             await Promise.all(
-                new Array(3).fill(0).map(async (__, i) => {
+                new Array(3).fill(0).map(async () => {
                     const txn2 = await startTransaction(options, options.initData);
                     await commitTransaction(options, options.initData, txn2);
                 })
@@ -419,7 +421,8 @@ describe('replication-google-drive.test.ts', function () {
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
-                initData: null as any
+                initData: null as any,
+                signalingOptions: { wrtc }
             };
             options.initData = await initDriveStructure(options);
         });
@@ -517,7 +520,8 @@ describe('replication-google-drive.test.ts', function () {
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
-                initData: null as any
+                initData: null as any,
+                signalingOptions: { wrtc }
             };
             options.initData = await initDriveStructure(options);
         });
@@ -630,7 +634,7 @@ describe('replication-google-drive.test.ts', function () {
                     lastCheckpoint,
                     3
                 );
-                lastCheckpoint = changesAfterUpdate.checkpoint;
+                // lastCheckpoint = changesAfterUpdate.checkpoint;
                 assert.strictEqual(changesAfterUpdate.documents.length, 1, 'one more change after update');
             });
         });
@@ -644,7 +648,8 @@ describe('replication-google-drive.test.ts', function () {
                 apiEndpoint: serverUrl,
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
-                initData: null as any
+                initData: null as any,
+                signalingOptions: { wrtc }
             };
             options.initData = await initDriveStructure(options);
         });
@@ -918,7 +923,7 @@ describe('replication-google-drive.test.ts', function () {
                 wrtc
             });
             peer.on('error', (e: any) => console.error('peer error:', e));
-            peer.on('signal', async (signalData: any) => {
+            peer.on('signal', (signalData: any) => {
                 emitted.push(signalData);
             });
 
@@ -954,10 +959,10 @@ describe('replication-google-drive.test.ts', function () {
                 { wrtc }
             );
 
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return state1.peerBySenderId.size === 1;
             });
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return state2.peerBySenderId.size === 1;
             });
 
@@ -966,7 +971,7 @@ describe('replication-google-drive.test.ts', function () {
             let pinged = false;
             state1.resync$.subscribe(() => pinged = true);
             state2.pingPeers('RESYNC');
-            await waitUntil(async () => {
+            await waitUntil(() => {
                 return !!pinged;
             });
 
