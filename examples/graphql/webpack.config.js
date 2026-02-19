@@ -23,7 +23,8 @@ export default {
         }),
         new HtmlWebpackPlugin({
             template: 'client/index.html',
-            filename: 'index.html'
+            filename: 'index.html',
+            scriptLoading: 'module'
         }),
         new MiniCssExtractPlugin({
             filename: '[name].css',

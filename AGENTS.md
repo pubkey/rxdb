@@ -19,9 +19,6 @@
 - **Lint Fix**: `npm run lint:fix`
 - **Check Types**: `npm run check-types`
 - **Unwatch Tests**: `npm run dev`
-- **Watch Example**: `npm run dev:example`
-- **Generate Error Messages**: `npm run generate:error-messages`
-- **Start Docs Server**: `npm run docs:serve`
 
 ## Code Style & Patterns
 - **Language**: TypeScript
@@ -51,6 +48,7 @@
 - AVOID semicolons.
 - AVOID asterisks.
 - AVOID specific words like: can, may, just, that, very, really, literally, actually, certainly, probably, basically, could, maybe, delve, embark, enlightening, esteemed, shed light, craft, creative, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, skyrocket, opened up, powerful, inquiries, ever-evolving.
+- Review your response and ensure no em dashes.
 
 ## Development Workflow
 1. Make changes
@@ -58,3 +56,8 @@
 3. Run tests: `npm run test:fast:memory`
 4. Run lint: `npm run lint`
 5. Check TypeScript types: `npm run check-types`
+
+
+## Not allowed edits
+
+- Do never edit anything in the `/docs` folder. This folder is generated only. The documentation page sources are in `/docs-src`, edit these instead.
