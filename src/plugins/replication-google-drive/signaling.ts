@@ -112,9 +112,9 @@ export class SignalingState {
             while (!this.closed) {
                 const time = BACKOFF_STEPS[this.backoffStepId];
                 await this.processNewMessages();
-                const skipable = promiseWaitSkippable(time);
-                this.skipBackoffTime = skipable.skip;
-                await skipable.promise;
+                const skippable = promiseWaitSkippable(time);
+                this.skipBackoffTime = skippable.skip;
+                await skippable.promise;
                 this.backoffStepId = this.backoffStepId + 1;
                 if (this.backoffStepId > MAX_BACKOFF_STEP_ID) {
                     this.backoffStepId = MAX_BACKOFF_STEP_ID;
