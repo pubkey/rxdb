@@ -102,7 +102,7 @@ describe('replication-google-drive.test.ts', function () {
     config.storage.init?.();
 
     async function syncOnce(
-        collection: RxCollection,
+        collection: RxCollection<any, any, any, any>,
         googleDrive: GoogleDriveOptions,
         syncOptions?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
     ) {
@@ -114,12 +114,12 @@ describe('replication-google-drive.test.ts', function () {
             pull: syncOptions?.pull ?? {},
             push: syncOptions?.push ?? {},
         });
-        ensureReplicationHasNoErrors(replicationState);
+        ensureReplicationHasNoErrors(replicationState as any);
         await replicationState.awaitInitialReplication();
     }
 
     async function sync(
-        collection: RxCollection,
+        collection: RxCollection<any, any, any, any>,
         googleDrive: GoogleDriveOptions,
         signalingOptions: SignalingOptions
     ) {
@@ -132,7 +132,7 @@ describe('replication-google-drive.test.ts', function () {
             pull: {},
             push: {},
         });
-        ensureReplicationHasNoErrors(replicationState);
+        ensureReplicationHasNoErrors(replicationState as any);
         await replicationState.awaitInitialReplication();
         return replicationState;
     }
@@ -478,13 +478,13 @@ describe('replication-google-drive.test.ts', function () {
         it('fetchDocumentContents() after updateDocumentFiles()', async () => {
             const docs = new Array(3).fill(0).map(() => schemaObjects.humanData());
             const ids = docs.map(d => (d as any)[PRIMARY_PATH]);
-            await insertDocumentFiles(
+            await insertDocumentFiles<any>(
                 options,
                 options.initData,
                 PRIMARY_PATH,
                 docs
             );
-            docs.forEach(doc => doc.foo = 'bar');
+            docs.forEach(doc => (doc as any).foo = 'bar');
             const found = await getDocumentFiles(
                 options,
                 options.initData,
@@ -502,7 +502,7 @@ describe('replication-google-drive.test.ts', function () {
                 fileIdByDocId
             );
             const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
-            const batchResult = await fetchDocumentContents<HumanDocumentType>(
+            const batchResult = await fetchDocumentContents<any>(
                 options,
                 fileIds
             );
