@@ -47,8 +47,8 @@ import {
     awaitCollectionsHaveEqualState,
     isNode
 } from '../plugins/test-utils/index.mjs';
-import { RxDBDevModePlugin } from '../src/plugins/dev-mode/index.ts';
-import { RxDBLeaderElectionPlugin } from '../src/plugins/leader-election/index.ts';
+import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
+import { RxDBLeaderElectionPlugin } from '../plugins/leader-election/index.mjs';
 
 import {
     startServer
@@ -87,7 +87,6 @@ function toWriteRow<RxDocType>(doc: RxDocType, assumedMasterState?: RxDocType): 
 }
 
 let wrtc: SimplePeerWrtc = 'not loaded' as any;
-let webSocketConstructor: SimplePeerWebSocketConstructor;
 
 /**
  * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
@@ -124,10 +123,6 @@ describe('replication-google-drive.test.ts', function () {
         googleDrive: GoogleDriveOptions,
         signalingOptions: SignalingOptions
     ) {
-
-        console.log('start sync');
-        console.dir({ options });
-
         const replicationState = await replicateGoogleDrive<any>({
             replicationIdentifier: 'foobar',
             collection,
@@ -194,11 +189,8 @@ describe('replication-google-drive.test.ts', function () {
                 assert.ok(folderId.length > 2);
             });
             it('create the same folder on two different parents', async () => {
-                console.log('---- 0');
                 const folderId = await ensureFolderExists(options, options.folderPath + '/sub1/itsme');
-                console.log('---- 1');
                 const folderId2 = await ensureFolderExists(options, options.folderPath + '/sub2/itsme');
-                console.log('---- 2');
                 assert.ok(folderId !== folderId2);
             });
             it('should use the existing folder when called twice', async () => {
@@ -321,11 +313,8 @@ describe('replication-google-drive.test.ts', function () {
             assert.ok(initData.replicationIdentifier);
         });
         it('calling twice must result in same identifier', async () => {
-            console.log('........................... 0');
             const initData = await initDriveStructure(options);
-            console.log('........................... 1');
             const initData2 = await initDriveStructure(options);
-            console.log('........................... 2');
             assert.strictEqual(initData.replicationIdentifier, initData2.replicationIdentifier);
         });
         it('calling in parallel must result in same identifier', async () => {
@@ -351,22 +340,15 @@ describe('replication-google-drive.test.ts', function () {
             options.initData = await initDriveStructure(options);
         });
         it('must not throw to open and close a transaction', async () => {
-            console.log('------------------------------');
             let txn = await startTransactionTryOnce(options, options.initData);
-            console.log('START DONE 1!');
             await commitTransaction(options, options.initData, txn);
-            console.log('START DONE 1.5!');
             txn = await startTransactionTryOnce(options, options.initData);
-            console.dir({ txn });
-            console.log('START DONE 2!');
             await commitTransaction(options, options.initData, txn);
         });
         it('should not start transaction if already running', async () => {
-            console.log('.....................................');
             const txn1 = await startTransactionTryOnce(options, options.initData);
             assert.strictEqual(typeof (txn1 as any).retry, 'undefined');
 
-            console.log(':_________________________________');
             const txn2 = await startTransactionTryOnce(options, options.initData);
             assert.deepStrictEqual(txn2, TRANSACTION_BLOCKED_FLAG); // Should be locked
 
@@ -383,7 +365,7 @@ describe('replication-google-drive.test.ts', function () {
                 options,
                 options.initData
             );
-            console.dir({ result });
+
             assert.strictEqual(result.expired, false, 'should not be expired');
             await commitTransaction(options, options.initData, txn1);
         });
@@ -391,7 +373,6 @@ describe('replication-google-drive.test.ts', function () {
             options.transactionTimeout = 100;
             await startTransactionTryOnce(options, options.initData);
             await waitUntil(async () => {
-                console.log('------------------');
                 const result = await isTransactionTimedOut(
                     options,
                     options.initData
@@ -410,14 +391,11 @@ describe('replication-google-drive.test.ts', function () {
             let parallelCount = 0;
             await Promise.all(
                 new Array(3).fill(0).map(async (__, i) => {
-                    console.log('(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
                     parallelCount = parallelCount + 1;
                     assert.strictEqual(parallelCount, 1, 'not more then one in parallel');
-                    console.log('(' + i + '): have');
                     await commitTransaction(options, options.initData, txn2);
                     parallelCount = parallelCount - 1;
-                    console.log('(' + i + '): close');
                 })
             );
         });
@@ -427,11 +405,8 @@ describe('replication-google-drive.test.ts', function () {
             await wait(options.transactionTimeout * 2);
             await Promise.all(
                 new Array(3).fill(0).map(async (__, i) => {
-                    console.log('b(' + i + '): start');
                     const txn2 = await startTransaction(options, options.initData);
-                    console.log('b(' + i + '): have');
                     await commitTransaction(options, options.initData, txn2);
-                    console.log('b(' + i + '): close');
                 })
             );
         });
@@ -657,7 +632,6 @@ describe('replication-google-drive.test.ts', function () {
                 );
                 lastCheckpoint = changesAfterUpdate.checkpoint;
                 assert.strictEqual(changesAfterUpdate.documents.length, 1, 'one more change after update');
-                console.log(JSON.stringify({ changesAfterUpdate }, null, 4));
             });
         });
 
@@ -938,7 +912,6 @@ describe('replication-google-drive.test.ts', function () {
         });
         it('should emit signaling data', async () => {
             const emitted: any[] = [];
-            console.dir({ wrtc });
             const peer = new Peer({
                 initiator: true,
                 trickle: true,
@@ -946,8 +919,6 @@ describe('replication-google-drive.test.ts', function () {
             });
             peer.on('error', (e: any) => console.error('peer error:', e));
             peer.on('signal', async (signalData: any) => {
-                console.log('got signal!!');
-                console.log(signalData);
                 emitted.push(signalData);
             });
 
@@ -971,7 +942,6 @@ describe('replication-google-drive.test.ts', function () {
             await state.close();
         });
         it('two clients should now about each other', async () => {
-            console.log('------------------------------------ 0');
             const state1 = new SignalingState(
                 options,
                 options.initData,
@@ -990,8 +960,6 @@ describe('replication-google-drive.test.ts', function () {
             await waitUntil(async () => {
                 return state2.peerBySenderId.size === 1;
             });
-
-            console.log('------------------------------------ 1');
 
 
             // ping each other
@@ -1029,43 +997,23 @@ describe('replication-google-drive.test.ts', function () {
             await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'b-init', name: 'colB init' }));
 
 
-            console.log('colleciton A name ' + collectionA.database.name);
-            console.log('colleciton B name ' + collectionB.database.name);
-            console.log('----------------- 0');
             const replicationStateA = await sync(collectionA, options, options.signalingOptions);
             await replicationStateA.awaitInitialReplication();
-            console.log('----------------- 0.1');
 
             const replicationStateB = await sync(collectionB, options, options.signalingOptions);
-            console.log('----------------- 0.2');
             await replicationStateB.awaitInitialReplication();
-            console.log('----------------- 0.3');
-
-            console.log('---##############################-------------- 0.4');
-
-            // (async () => {
-            //     while (true) {
-            //         await wait(400);
-            //         replicationStateA.reSync();
-            //         replicationStateB.reSync();
-            //     }
-            // })();
 
             await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 1000);
 
-            console.log('---##############################-------------- 0.5');
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            console.log('inserted one !');
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('---##############################-------------- 0.6');
             // delete one
             await collectionB.findOne().remove();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('---##############################-------------- 0.7');
             // insert many
             await collectionA.bulkInsert(
                 new Array(10)
