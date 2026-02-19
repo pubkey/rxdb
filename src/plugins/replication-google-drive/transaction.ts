@@ -139,7 +139,6 @@ export async function isTransactionTimedOut(
      * to the transaction creation time.
      */
     if (serverTime < transactionCreation) {
-        console.log('overwrite servertime ' + serverTime);
         serverTime = transactionCreation;
     }
 

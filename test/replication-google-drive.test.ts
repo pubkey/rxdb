@@ -125,13 +125,17 @@ describe('replication-google-drive.test.ts', function () {
     async function sync(
         collection: RxCollection,
         googleDrive: GoogleDriveOptions,
-        options?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push' | 'signalingOptions'>
+        signalingOptions: SignalingOptions
     ) {
+
+        console.log('start sync');
+        console.dir({ options });
+
         const replicationState = await replicateGoogleDrive<any>({
             replicationIdentifier: 'foobar',
             collection,
             googleDrive,
-            signalingOptions: options?.signalingOptions,
+            signalingOptions,
             live: true,
             pull: {},
             push: {},
@@ -1016,7 +1020,7 @@ describe('replication-google-drive.test.ts', function () {
                 folderPath: 'test-folder-' + Math.random(),
                 transactionTimeout: 1000,
                 initData: null as any,
-                signalingOptions: { wrtc }
+                signalingOptions: { wrtc, config: { iceServers: [] } }
 
             };
             options.initData = await initDriveStructure(options);
@@ -1027,15 +1031,30 @@ describe('replication-google-drive.test.ts', function () {
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'a-init', name: 'colA init' }));
             await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'b-init', name: 'colB init' }));
 
-            const replicationStateA = await sync(collectionA, options);
+            console.log('----------------- 0');
+            const replicationStateA = await sync(collectionA, options, options.signalingOptions);
             await replicationStateA.awaitInitialReplication();
+            console.log('----------------- 0.1');
 
-            const replicationStateB = await sync(collectionB, options);
+            const replicationStateB = await sync(collectionB, options, options.signalingOptions);
+            console.log('----------------- 0.2');
             await replicationStateB.awaitInitialReplication();
+            console.log('----------------- 0.3');
 
             await replicationStateA.awaitInSync();
+            console.log('---##############################-------------- 0.4');
 
-            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+            (async () => {
+                while (true) {
+                    await wait(100);
+                    replicationStateA.reSync();
+                    replicationStateB.reSync();
+                }
+            })();
+
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 1000);
+
+            console.log('----------------- 0.5');
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
@@ -1044,12 +1063,14 @@ describe('replication-google-drive.test.ts', function () {
             await replicationStateB.awaitInSync();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
+            console.log('----------------- 1');
             // delete one
             await collectionB.findOne().remove();
             await replicationStateB.awaitInSync();
             await replicationStateA.awaitInSync();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
+            console.log('----------------- 2');
             // insert many
             await collectionA.bulkInsert(
                 new Array(10)

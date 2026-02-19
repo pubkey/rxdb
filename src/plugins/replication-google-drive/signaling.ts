@@ -1,13 +1,9 @@
 import type {
-    SimplePeer as Peer,
     SimplePeer,
     Instance as SimplePeerInstance,
     Options as SimplePeerOptions
 } from 'simple-peer';
-import {
-    default as _Peer
-    // @ts-ignore
-} from 'simple-peer/simplepeer.min.js';
+import _Peer from 'simple-peer';
 import {
     ensureProcessNextTickIsSet,
     SimplePeerConfig,
@@ -141,8 +137,8 @@ export class SignalingState {
         // add here so we skip these
         this.processedMessageIds.add(messageId);
 
-        console.log('write mesage');
-        console.log(JSON.stringify(data));
+        // console.log('-- >>>  write mesage from ' + this.sessionId);
+        // console.log(JSON.stringify(data));
 
         await insertMultipartFile(
             this.googleDriveOptions,
@@ -153,6 +149,7 @@ export class SignalingState {
     }
 
     async pingPeers(message: SIGNAL) {
+        console.log('ping peers: ' + this.peerBySenderId.size);
         Array.from(this.peerBySenderId.values()).forEach(peer => {
             peer.send(message);
         });
@@ -175,70 +172,95 @@ export class SignalingState {
     }
 
     async _processNewMessages() {
+        console.log('read message from ' + this.sessionId);
         const messages = await readMessages(
             this.googleDriveOptions,
             this.init,
             this.processedMessageIds
         );
+        console.log('read message from ' + this.sessionId + ' got ' + messages.length);
         if (messages.length > 0) {
             this._resync$.next();
         }
         messages.forEach(message => {
             const senderId = message.senderId;
             if (senderId === this.sessionId) {
+                console.log('skip becuse sender is this');
                 return;
             }
-            const peerInstance = getFromMapOrCreate(
-                this.peerBySenderId,
-                senderId,
-                () => {
-                    console.log('create peer (' + this.sessionId + ') with ' + senderId + ' niit ' + (senderId > this.sessionId));
-                    const peer = new _Peer({
-                        initiator: senderId > this.sessionId,
-                        trickle: true,
-                        wrtc: this.signalingOptions.wrtc,
-                        config: this.signalingOptions.config
-                    })
-                    peer.on("signal", async (signalData: any) => {
-                        await this.sendMessage(signalData);
-                    });
-                    peer.on('connect', () => {
-                        console.log('CONNECTED !');
-                        this._resync$.next();
-                    });
-                    peer.on('data', (data: SIGNAL) => {
-                        switch (data) {
-                            case 'NEW_PEER':
-                                this.resetReadLoop();
-                                break;
-                            case 'RESYNC':
-                                this._resync$.next();
-                                break;
-                        }
-                    });
-                    // peer.on('error', () => {
-                    //     this._resync$.next();
-                    // });
-                    peer.on('error', (e: any) => console.error('peer error:', e)); // TODO pipe this out to the replicationState.errror$
-                    peer.on('close', () => {
-                        this.peerBySenderId.delete(senderId);
-                        this._resync$.next();
-                    });
+            console.log('process message(' + this.sessionId + ') from ' + senderId + ' -> ' + JSON.stringify(message));
+            let peerInstance: SimplePeerInstance;
+            try {
+
+                peerInstance = getFromMapOrCreate(
+                    this.peerBySenderId,
+                    senderId,
+                    () => {
+                        console.log('create peer (' + this.sessionId + ') with ' + senderId + ' niit ' + (senderId > this.sessionId));
+                        const peer = new _Peer({
+                            initiator: senderId > this.sessionId,
+                            trickle: true,
+                            wrtc: this.signalingOptions.wrtc,
+                            config: this.signalingOptions.config
+                        })
+                        console.log('create peer 0.1');
+                        peer.on('error', (e: any) => console.error('peer error:', e)); // TODO pipe this out to the replicationState.errror$
+                        console.log('create peer 0.2');
+                        peer.on("signal", async (signalData: any) => {
+                            await this.sendMessage(signalData);
+                        });
+                        console.log('create peer 0.3');
+                        peer.on('connect', () => {
+                            console.log('CONNECTED !');
+                            this._resync$.next();
+                        });
+                        console.log('create peer 1');
+                        peer.on('data', (data: SIGNAL) => {
+                            switch (data) {
+                                case 'NEW_PEER':
+                                    this.resetReadLoop();
+                                    break;
+                                case 'RESYNC':
+                                    this._resync$.next();
+                                    break;
+                            }
+                        });
+                        // peer.on('error', () => {
+                        //     this._resync$.next();
+                        // });
+                        peer.on('close', () => {
+                            console.log('CLOSE PEER!');
+                            this.peerBySenderId.delete(senderId);
+                            this._resync$.next();
+                        });
+                        console.log('create peer 2');
 
 
-                    /**
-                     * If we find a new peer,
-                     * we tell everyone else.
-                     */
-                    this.pingPeers('NEW_PEER');
-                    this._resync$.next();
+                        /**
+                         * If we find a new peer,
+                         * we tell everyone else.
+                         */
+                        this.pingPeers('NEW_PEER');
+                        console.log('create peer 3');
+                        promiseWait().then(() => this._resync$.next());
+                        console.log('create peer 4');
 
+                        return peer;
+                    }
+                );
+            } catch (err) {
+                console.log('ERROR CREATING PEER: ' + err.message);
+                console.dir(err);
+            }
 
-                    return peer;
-                }
-            );
+            console.log('do not skip 1');
+
             if (!message.data.i) {
+                console.log('signal to peer cponneciton');
+                console.dir({ message });
                 peerInstance.signal(message.data);
+            } else {
+                console.log('SKIP signal to peer cponneciton');
             }
         });
     }
@@ -260,9 +282,6 @@ export async function readMessages(
     init: DriveStructure,
     processedMessageIds: Set<string>
 ): Promise<{ senderId: string; data: any }[]> {
-
-    console.log('readMessages() 0');
-
     // ----------------------------
     // INLINE: readFolderById logic
     // ----------------------------
@@ -307,14 +326,10 @@ export async function readMessages(
     let folderData: DriveFileMetadata[] = listData.files || [];
     folderData = folderData.reverse();
 
-    console.log('readMessages() 0.5');
-
     const useFiles = folderData.filter(file => {
         const messageId = messageIdByFilename(file.name);
         return !processedMessageIds.has(messageId);
     });
-
-    console.log('readMessages() 1');
 
     const filesContent = await Promise.all(
         useFiles.map(async (file) => {
@@ -330,8 +345,6 @@ export async function readMessages(
         })
     );
 
-    console.log('readMessages() 2');
-
     /**
      * Do this afterwards so we can retry on errors without losing messages.
      * (No need for async map here.)
@@ -341,8 +354,7 @@ export async function readMessages(
         processedMessageIds.add(messageId);
     });
 
-    console.log('readMessages()');
-    console.log(JSON.stringify({ filesContent }, null, 4));
+
 
     return filesContent;
 }

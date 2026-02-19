@@ -201,7 +201,7 @@ export async function replicateGoogleDrive<RxDocType>(
             replicationState.signalingState = new SignalingState(
                 replicationState.googleDrive,
                 replicationState.driveStructure,
-                replicationState.signalingOptions ? replicationState.signalingOptions : {}
+                options.signalingOptions ? options.signalingOptions : {}
             );
             const sub = replicationState.signalingState.resync$.subscribe(() => {
                 replicationState.reSync();

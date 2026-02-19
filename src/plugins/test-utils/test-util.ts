@@ -58,7 +58,9 @@ export async function awaitCollectionsHaveEqualState<RxDocType>(
                 logContext
             );
         } catch (err) {
+            console.log('diff: ' + (Date.now() - startTime));
             if ((Date.now() - startTime) > timeout) {
+                console.log('throw it!');
                 throw err;
             } else {
                 await promiseWait(20 * i);
