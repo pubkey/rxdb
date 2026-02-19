@@ -57,13 +57,12 @@ export async function awaitCollectionsHaveEqualState<RxDocType>(
                 c2,
                 logContext
             );
+            return;
         } catch (err) {
-            console.log('diff: ' + (Date.now() - startTime));
             if ((Date.now() - startTime) > timeout) {
-                console.log('throw it!');
                 throw err;
             } else {
-                await promiseWait(20 * i);
+                await promiseWait(50 * i);
             }
         }
     }

@@ -203,11 +203,16 @@ export async function replicateGoogleDrive<RxDocType>(
                 replicationState.driveStructure,
                 options.signalingOptions ? options.signalingOptions : {}
             );
+
+
+            console.log('SUBSCRIBBBBBED TO RESYNC !!!');
             const sub = replicationState.signalingState.resync$.subscribe(() => {
+                console.log('RESYSNC p2p2 emitted ' + collection.database.name);
                 replicationState.reSync();
             });
 
             replicationState.cancel = () => {
+                console.log('CANCELED ');
                 sub.unsubscribe();
                 replicationState.signalingState?.close();
                 return cancelBefore();

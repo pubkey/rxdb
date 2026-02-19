@@ -1026,11 +1026,14 @@ describe('replication-google-drive.test.ts', function () {
             options.initData = await initDriveStructure(options);
         });
         it('should realtime sync on both sides', async () => {
-            const collectionA = await humansCollection.createHumanWithTimestamp(0, undefined, false);
-            const collectionB = await humansCollection.createHumanWithTimestamp(0, undefined, false);
+            const collectionA = await humansCollection.createHumanWithTimestamp(0, 'aa' + randomToken(10), false);
+            const collectionB = await humansCollection.createHumanWithTimestamp(0, 'bb' + randomToken(10), false);
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'a-init', name: 'colA init' }));
             await collectionB.insert(schemaObjects.humanWithTimestampData({ id: 'b-init', name: 'colB init' }));
 
+
+            console.log('colleciton A name ' + collectionA.database.name);
+            console.log('colleciton B name ' + collectionB.database.name);
             console.log('----------------- 0');
             const replicationStateA = await sync(collectionA, options, options.signalingOptions);
             await replicationStateA.awaitInitialReplication();
@@ -1041,45 +1044,37 @@ describe('replication-google-drive.test.ts', function () {
             await replicationStateB.awaitInitialReplication();
             console.log('----------------- 0.3');
 
-            await replicationStateA.awaitInSync();
             console.log('---##############################-------------- 0.4');
 
-            (async () => {
-                while (true) {
-                    await wait(100);
-                    replicationStateA.reSync();
-                    replicationStateB.reSync();
-                }
-            })();
+            // (async () => {
+            //     while (true) {
+            //         await wait(400);
+            //         replicationStateA.reSync();
+            //         replicationStateB.reSync();
+            //     }
+            // })();
 
             await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 1000);
 
-            console.log('----------------- 0.5');
+            console.log('---##############################-------------- 0.5');
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            await replicationStateA.awaitInSync();
-
-            await replicationStateB.awaitInSync();
+            console.log('inserted one !');
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('----------------- 1');
+            console.log('---##############################-------------- 0.6');
             // delete one
             await collectionB.findOne().remove();
-            await replicationStateB.awaitInSync();
-            await replicationStateA.awaitInSync();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
-            console.log('----------------- 2');
+            console.log('---##############################-------------- 0.7');
             // insert many
             await collectionA.bulkInsert(
                 new Array(10)
                     .fill(0)
                     .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
-            await replicationStateA.awaitInSync();
-
-            await replicationStateB.awaitInSync();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
             // insert at both collections at the same time
@@ -1087,10 +1082,6 @@ describe('replication-google-drive.test.ts', function () {
                 collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
                 collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
-            await replicationStateA.awaitInSync();
-            await replicationStateB.awaitInSync();
-            await replicationStateA.awaitInSync();
-            await replicationStateB.awaitInSync();
             await awaitCollectionsHaveEqualState(collectionA, collectionB);
 
             collectionA.database.close();

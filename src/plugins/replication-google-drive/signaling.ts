@@ -149,7 +149,7 @@ export class SignalingState {
     }
 
     async pingPeers(message: SIGNAL) {
-        console.log('ping peers: ' + this.peerBySenderId.size);
+        console.log('ping peers(' + this.sessionId + '): ' + this.peerBySenderId.size);
         Array.from(this.peerBySenderId.values()).forEach(peer => {
             peer.send(message);
         });
@@ -172,13 +172,13 @@ export class SignalingState {
     }
 
     async _processNewMessages() {
-        console.log('read message from ' + this.sessionId);
+        // console.log('read message from ' + this.sessionId);
         const messages = await readMessages(
             this.googleDriveOptions,
             this.init,
             this.processedMessageIds
         );
-        console.log('read message from ' + this.sessionId + ' got ' + messages.length);
+        // console.log('read message from ' + this.sessionId + ' got ' + messages.length);
         if (messages.length > 0) {
             this._resync$.next();
         }
@@ -188,7 +188,7 @@ export class SignalingState {
                 console.log('skip becuse sender is this');
                 return;
             }
-            console.log('process message(' + this.sessionId + ') from ' + senderId + ' -> ' + JSON.stringify(message));
+            // console.log('process message(' + this.sessionId + ') from ' + senderId + ' -> ' + JSON.stringify(message));
             let peerInstance: SimplePeerInstance;
             try {
 
@@ -203,19 +203,16 @@ export class SignalingState {
                             wrtc: this.signalingOptions.wrtc,
                             config: this.signalingOptions.config
                         })
-                        console.log('create peer 0.1');
                         peer.on('error', (e: any) => console.error('peer error:', e)); // TODO pipe this out to the replicationState.errror$
-                        console.log('create peer 0.2');
                         peer.on("signal", async (signalData: any) => {
                             await this.sendMessage(signalData);
                         });
-                        console.log('create peer 0.3');
                         peer.on('connect', () => {
                             console.log('CONNECTED !');
                             this._resync$.next();
                         });
-                        console.log('create peer 1');
-                        peer.on('data', (data: SIGNAL) => {
+                        peer.on('data', (dataBuffer: any) => {
+                            const data = dataBuffer + '';
                             switch (data) {
                                 case 'NEW_PEER':
                                     this.resetReadLoop();
@@ -223,17 +220,17 @@ export class SignalingState {
                                 case 'RESYNC':
                                     this._resync$.next();
                                     break;
+                                default:
+                                    console.error('Signaling UNKNOWN DATA ' + data);
                             }
                         });
                         // peer.on('error', () => {
                         //     this._resync$.next();
                         // });
                         peer.on('close', () => {
-                            console.log('CLOSE PEER!');
                             this.peerBySenderId.delete(senderId);
                             this._resync$.next();
                         });
-                        console.log('create peer 2');
 
 
                         /**
@@ -241,23 +238,21 @@ export class SignalingState {
                          * we tell everyone else.
                          */
                         this.pingPeers('NEW_PEER');
-                        console.log('create peer 3');
                         promiseWait().then(() => this._resync$.next());
-                        console.log('create peer 4');
-
                         return peer;
                     }
                 );
             } catch (err) {
                 console.log('ERROR CREATING PEER: ' + err.message);
                 console.dir(err);
+                throw err;
             }
 
             console.log('do not skip 1');
 
             if (!message.data.i) {
-                console.log('signal to peer cponneciton');
-                console.dir({ message });
+                // console.log('signal to peer cponneciton');
+                // console.dir({ message });
                 peerInstance.signal(message.data);
             } else {
                 console.log('SKIP signal to peer cponneciton');
