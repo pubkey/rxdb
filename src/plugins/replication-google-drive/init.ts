@@ -64,13 +64,13 @@ export async function initDriveStructure(
             rxdbJson.etag,
             { replicationIdentifier: randomToken(10) }
         );
-        replicationIdentifier = rxdbJsonData.content.replicationIdentifier;
+        replicationIdentifier = ensureNotFalsy(rxdbJsonData.content).replicationIdentifier;
     } else {
         const rxdbJsonData = await readJsonFileContent<{ replicationIdentifier: string }>(
             googleDriveOptions,
             rxdbJson.fileId
         );
-        replicationIdentifier = rxdbJsonData.content.replicationIdentifier;
+        replicationIdentifier = ensureNotFalsy(rxdbJsonData.content).replicationIdentifier;
     }
 
 

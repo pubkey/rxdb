@@ -193,7 +193,6 @@ export class SignalingState {
                         wrtc: this.signalingOptions.wrtc,
                         config: this.signalingOptions.config
                     })
-                    peer.on('error', (e: any) => console.error('peer error:', e)); // TODO pipe this out to the replicationState.errror$
                     peer.on("signal", async (signalData: any) => {
                         await this.sendMessage(signalData);
                     });
@@ -213,9 +212,9 @@ export class SignalingState {
                                 console.error('Signaling UNKNOWN DATA ' + data);
                         }
                     });
-                    // peer.on('error', () => {
-                    //     this._resync$.next();
-                    // });
+                    peer.on('error', () => {
+                        this._resync$.next();
+                    });
                     peer.on('close', () => {
                         this.peerBySenderId.delete(senderId);
                         this._resync$.next();

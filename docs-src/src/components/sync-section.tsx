@@ -55,6 +55,11 @@ export const replicationLinks = [
     label: 'appwrite',
     iconUrl: '/files/icons/appwrite-small.svg',
   },
+  {
+    url: '/replication-google-drive.html',
+    label: 'Google Drive',
+    iconUrl: '/files/icons/google-drive.svg',
+  },
 ];
 
 export function SyncSection(props: {

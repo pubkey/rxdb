@@ -3,7 +3,6 @@ import assert from 'assert';
 import {
     addRxPlugin,
     ensureNotFalsy,
-    now,
     randomToken,
     runXTimes,
     RxCollection
@@ -57,12 +56,10 @@ import {
 import getPort from 'get-port';
 import { assertThrows, wait, waitUntil } from 'async-test-util';
 import {
-    BulkWriteRow,
-    RxDocumentData,
     RxReplicationWriteToMasterRow,
     WithDeletedAndAttachments
 } from '../src/index.ts';
-import { SimplePeerWebSocketConstructor, SimplePeerWrtc } from '../plugins/replication-webrtc/index.d.mts';
+import { SimplePeerWebSocketConstructor, SimplePeerWrtc } from '../src/plugins/replication-webrtc/index.ts';
 import Peer from 'simple-peer';
 
 
@@ -452,7 +449,7 @@ describe('replication-google-drive.test.ts', function () {
             options.initData = await initDriveStructure(options);
         });
         it('insertDocumentFiles()', async () => {
-            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
             await insertDocumentFiles(
                 options,
                 options.initData,
@@ -462,7 +459,7 @@ describe('replication-google-drive.test.ts', function () {
         });
 
         it('getDocumentFiles()', async () => {
-            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData())
+            const docs = new Array(10).fill(0).map(() => schemaObjects.humanData());
             docs[0].passportId = 'foobar';
             await insertDocumentFiles(
                 options,
@@ -550,7 +547,7 @@ describe('replication-google-drive.test.ts', function () {
             options.initData = await initDriveStructure(options);
         });
         it('fetchChanges() should get one document', async () => {
-            const docs = new Array(1).fill(0).map(() => schemaObjects.humanData())
+            const docs = new Array(1).fill(0).map(() => schemaObjects.humanData());
             await insertDocumentFiles(
                 options,
                 options.initData,
@@ -571,7 +568,7 @@ describe('replication-google-drive.test.ts', function () {
         runXTimes(1, () => {
             it('fetchChanges() should be able to iterate over the checkpoint', async () => {
                 const insertAmount = 10;
-                const docs = new Array(insertAmount).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i))
+                const docs = new Array(insertAmount).fill(0).map((_, i) => schemaObjects.humanData('doc-' + i));
                 await insertDocumentFiles(
                     options,
                     options.initData,
@@ -589,8 +586,8 @@ describe('replication-google-drive.test.ts', function () {
                     }
                     c++;
                     const changesResult: {
-                        checkpoint: GoogleDriveCheckpointType | undefined,
-                        documents: HumanDocumentType[]
+                        checkpoint: GoogleDriveCheckpointType | undefined;
+                        documents: HumanDocumentType[];
                     } = await fetchChanges<HumanDocumentType>(
                         options,
                         options.initData,
@@ -946,9 +943,9 @@ describe('replication-google-drive.test.ts', function () {
                 initiator: true,
                 trickle: true,
                 wrtc
-            })
+            });
             peer.on('error', (e: any) => console.error('peer error:', e));
-            peer.on("signal", async (signalData: any) => {
+            peer.on('signal', async (signalData: any) => {
                 console.log('got signal!!');
                 console.log(signalData);
                 emitted.push(signalData);
@@ -970,7 +967,7 @@ describe('replication-google-drive.test.ts', function () {
             await cleanupOldSignalingMessages(
                 options,
                 options.initData.signalingFolderId
-            )
+            );
             await state.close();
         });
         it('two clients should now about each other', async () => {
@@ -988,10 +985,10 @@ describe('replication-google-drive.test.ts', function () {
             );
 
             await waitUntil(async () => {
-                return state1.peerBySenderId.size === 1
+                return state1.peerBySenderId.size === 1;
             });
             await waitUntil(async () => {
-                return state2.peerBySenderId.size === 1
+                return state2.peerBySenderId.size === 1;
             });
 
             console.log('------------------------------------ 1');
