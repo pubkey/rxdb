@@ -1,7 +1,5 @@
 import type {
-    SimplePeer,
-    Instance as SimplePeerInstance,
-    Options as SimplePeerOptions
+    Instance as SimplePeerInstance
 } from 'simple-peer';
 import _Peer from 'simple-peer';
 import {
@@ -16,7 +14,7 @@ import {
     now,
     PROMISE_RESOLVE_VOID,
     promiseWait,
-    promiseWaitSkipable,
+    promiseWaitSkippable,
     randomToken
 } from '../utils/index.ts';
 import { DriveStructure } from './init.ts';
@@ -27,7 +25,6 @@ import {
 import {
     deleteFile,
     insertMultipartFile,
-    readFolder,
     readJsonFileContent
 } from './google-drive-helper.ts';
 import { Subject } from 'rxjs';
@@ -115,7 +112,7 @@ export class SignalingState {
             while (!this.closed) {
                 const time = BACKOFF_STEPS[this.backoffStepId];
                 await this.processNewMessages();
-                const skipable = promiseWaitSkipable(time);
+                const skipable = promiseWaitSkippable(time);
                 this.skipBackoffTime = skipable.skip;
                 await skipable.promise;
                 this.backoffStepId = this.backoffStepId + 1;

@@ -9,7 +9,7 @@ export function promiseWait(ms: number = 0): Promise<void> {
     return new Promise(res => setTimeout(res, ms));
 }
 
-export function promiseWaitSkipable(
+export function promiseWaitSkippable(
     ms: number = 0
 ): {
     promise: Promise<void>;

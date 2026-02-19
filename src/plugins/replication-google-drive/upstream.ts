@@ -248,7 +248,7 @@ export async function processWalFile<RxDocType>(
     ]);
 
 
-    // overwite wal with emptyness
+    // overwrite wal with emptyness
     await writeToWal(
         googleDriveOptions,
         init,
