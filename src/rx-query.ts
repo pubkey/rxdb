@@ -227,19 +227,28 @@ export class RxQueryBase<
     }> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         if (this.op === 'count') {
+            let eventsDuringQueryRun = 0;
+            const sub = this.collection.eventBulks$.subscribe(() => {
+                eventsDuringQueryRun++;
+            });
             const preparedQuery = this.getPreparedQuery();
             const countResult = await this.collection.storageInstance.count(preparedQuery);
             if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
+                sub.unsubscribe();
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
                 });
-            } else {
-                return {
-                    result: countResult.count,
-                    counter: this.collection._changeEventBuffer.getCounter()
-                };
             }
+            sub.unsubscribe();
+            if (eventsDuringQueryRun > 0) {
+                await promiseWait(0);
+                return this._execOverDatabase();
+            }
+            return {
+                result: countResult.count,
+                counter: this.collection._changeEventBuffer.getCounter()
+            };
         }
 
         if (this.op === 'findByIds') {
@@ -260,7 +269,16 @@ export class RxQueryBase<
             });
             // everything which was not in docCache must be fetched from the storage
             if (mustBeQueried.length > 0) {
+                let eventsDuringQueryRun = 0;
+                const sub = this.collection.eventBulks$.subscribe(() => {
+                    eventsDuringQueryRun++;
+                });
                 const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                sub.unsubscribe();
+                if (eventsDuringQueryRun > 0) {
+                    await promiseWait(0);
+                    return this._execOverDatabase();
+                }
                 docs.forEach(docData => {
                     const doc = this.collection._docCache.getCachedRxDocument(docData);
                     ret.set(doc.primary, doc);
