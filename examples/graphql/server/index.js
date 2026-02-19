@@ -1,6 +1,7 @@
 import express from 'express';
 import * as path from 'path';
-import { graphqlHTTP } from 'express-graphql';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import cors from 'cors';
 import { PubSub } from 'graphql-subscriptions';
 import { buildSchema, execute, subscribe } from 'graphql';
@@ -70,7 +71,6 @@ export function validateBearerToken(token) {
 export async function run() {
     let documents = [];
     const app = express();
-    app.use(cors());
 
     /**
      * In this example we generate the GraphQL schema from the RxDB schema.
@@ -87,10 +87,10 @@ export async function run() {
 
     // The root provides a resolver function for each API endpoint
     const root = {
-        pullHero: (args, request) => {
+        pullHero: (args, context) => {
             log('## pullHero()');
             log(args);
-            authenticateRequest(request);
+            authenticateRequest(context.request);
 
             const lastId = args.checkpoint ? args.checkpoint.id : '';
             const minUpdatedAt = args.checkpoint ?
@@ -140,10 +140,10 @@ export async function run() {
             console.log(JSON.stringify(ret, null, 4));
             return ret;
         },
-        pushHero: (args, request) => {
+        pushHero: (args, context) => {
             log('## pushHero()');
             log(args);
-            authenticateRequest(request);
+            authenticateRequest(context.request);
 
             const rows = args.heroPushRow;
             const lastCheckpoint = {
@@ -210,13 +210,24 @@ export async function run() {
     // server multitab.html - used in the e2e test
     app.use('/static', express.static(path.join(__dirname, '/static')));
 
-    // server graphql-endpoint
+    // Setup Apollo Server
+    const apolloServer = new ApolloServer({
+        schema,
+        rootValue: root,
+    });
+
+    await apolloServer.start();
+
+    // Apply Apollo middleware with authentication context
     app.use(
         GRAPHQL_PATH,
-        graphqlHTTP({
-            schema: schema,
-            rootValue: root,
-            graphiql: true,
+        cors(),
+        express.json(),
+        expressMiddleware(apolloServer, {
+            context: async ({ req }) => {
+                // Pass the request so resolvers can access authentication
+                return { request: req };
+            },
         })
     );
 
