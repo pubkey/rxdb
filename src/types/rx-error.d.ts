@@ -22,7 +22,6 @@ export interface RxErrorParameters {
     readonly error?: PlainJsonError;
     readonly errors?: PlainJsonError[];
     readonly errorText?: string;
-    readonly status?: number;
     readonly writeError?: RxStorageWriteError<any>;
     readonly schemaPath?: string;
     readonly objPath?: string;
