@@ -33,7 +33,7 @@ export type GoogleDriveOptions = {
     authToken: string;
     /**
      * like "https://www.googleapis.com"
-     * No endling slash!
+     * No trailing slash!
      */
     apiEndpoint?: string;
     /**
@@ -53,7 +53,7 @@ export type GoogleDriveOptionsWithDefaults = {
     authToken: string;
     /**
      * like "https://www.googleapis.com"
-     * No endling slash!
+     * No trailing slash!
      */
     apiEndpoint: string;
     folderPath: string;

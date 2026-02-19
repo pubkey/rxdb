@@ -40,7 +40,7 @@ export type SignalingOptions = {
 };
 
 /**
- * Timeings on when to call the google drive
+ * Timings on when to call the google drive
  * api to check for new messages.
  */
 const BACKOFF_STEPS = [

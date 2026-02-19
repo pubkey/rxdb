@@ -189,7 +189,7 @@ export async function replicateGoogleDrive<RxDocType>(
      * Google drive has no websocket or server-send-events
      * to observe file changes. Therefore we use WebRTC to
      * connect clients which then can ping each other on changes.
-     * Instead of a singaling server, we use the google-drive itself
+     * Instead of a signaling server, we use the google-drive itself
      * to exchange signaling data.
      */
     if (options.live && options.pull) {

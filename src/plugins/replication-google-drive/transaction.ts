@@ -134,7 +134,7 @@ export async function isTransactionTimedOut(
 
     /**
      * By definition the HTTP Date header
-     * only has seconds precission so if
+     * only has seconds precision so if
      * the serverTime is "impossible", set it
      * to the transaction creation time.
      */

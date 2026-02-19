@@ -54,7 +54,7 @@ export async function fetchChangesFiles(
     }
 
     /**
-     * Intionally overfetch in case
+     * Intentionally overfetch in case
      * multiple docs have the same modifiedTime.
      * We later have to strip the additional ones.
      */
