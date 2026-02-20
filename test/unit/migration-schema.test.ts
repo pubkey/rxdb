@@ -25,7 +25,9 @@ import {
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
     InternalStoreStorageTokenDocType,
-    rxStorageInstanceToReplicationHandler
+    rxStorageInstanceToReplicationHandler,
+    getPrimaryKeyOfInternalDocument,
+    INTERNAL_CONTEXT_COLLECTION
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -1129,6 +1131,137 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(docsAfter.length, 3);
             await db3.close();
             await db2.close();
+        });
+        /**
+         * Old collection meta doc not deleted after migration when its _rev
+         * changes between the cached fetch and the deletion attempt.
+         * Without the retry loop fix, the _rev conflict causes the deletion
+         * to fail silently and mustMigrate() returns true on every restart.
+         * @link https://github.com/pubkey/rxdb/issues/7791
+         */
+        it('#7791 should delete old collection meta doc even when _rev has changed', async () => {
+            const dbName = randomToken(10);
+
+            const schema0 = {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' }
+                },
+                required: ['id', 'name']
+            };
+
+            const schema1 = {
+                version: 1,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: { type: 'string', maxLength: 100 },
+                    name: { type: 'string' },
+                    migrated: { type: 'boolean' }
+                },
+                required: ['id', 'name', 'migrated']
+            };
+
+            // Create v0 database and insert documents
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                items: { schema: schema0 }
+            });
+            await db.items.bulkInsert([
+                { id: 'doc1', name: 'Document 1' },
+                { id: 'doc2', name: 'Document 2' },
+                { id: 'doc3', name: 'Document 3' }
+            ]);
+            await db.close();
+
+            // Reopen with v1 schema (autoMigrate: false)
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db2.addCollections({
+                items: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.migrated = true;
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const migrationState = db2.items.getMigrationState();
+            assert.strictEqual(await migrationState.mustMigrate, true, 'Migration should be needed initially');
+
+            /**
+             * Simulate a _rev change on the old collection meta doc.
+             * In production, this happens when concurrent processes or storage
+             * internals modify the doc between the cached fetch and the deletion.
+             * We bump the _rev by doing a no-op write to the old meta doc.
+             */
+            const oldMetaDocId = getPrimaryKeyOfInternalDocument(
+                'items-0',
+                INTERNAL_CONTEXT_COLLECTION
+            );
+            const oldMetaDoc = (await db2.internalStore.findDocumentsById([oldMetaDocId], false))[0];
+            assert.ok(oldMetaDoc, 'Old meta doc should exist before migration');
+            const updatedDoc = clone(oldMetaDoc);
+            await db2.internalStore.bulkWrite([{
+                previous: oldMetaDoc,
+                document: updatedDoc
+            }], 'simulate-rev-bump');
+
+            // Now the cached oldCollectionMeta in migrationState has a stale _rev.
+            // Without the retry loop fix, the deletion will fail with a conflict.
+            await migrationState.migratePromise();
+
+            // Verify migration completed
+            const docs = await db2.items.find().exec();
+            assert.strictEqual(docs.length, 3);
+
+            // Verify old collection meta doc was deleted despite the _rev conflict
+            const oldMeta = await getOldCollectionMeta(migrationState);
+            assert.strictEqual(oldMeta, undefined, 'Old collection meta doc should be deleted after migration');
+
+            await db2.close();
+
+            // Reopen again (simulating app restart)
+            const db3 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db3.addCollections({
+                items: {
+                    schema: schema1,
+                    autoMigrate: false,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.migrated = true;
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+
+            const migrationState3 = db3.items.getMigrationState();
+            assert.strictEqual(
+                await migrationState3.mustMigrate,
+                false,
+                'Migration should NOT be needed after restart because old meta doc was deleted'
+            );
+
+            await db3.close();
         });
         it('#7008 migrate schema with multiple connected storages', async () => {
             // create a schema

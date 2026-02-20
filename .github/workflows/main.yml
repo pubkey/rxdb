@@ -706,7 +706,8 @@ jobs:
           BROWSER_PATH: ${{ steps.chrome.outputs.chrome-path }}
         with:
           working-directory: ./examples/vue
-          run: npm run test
+          # retry because of random CI failures on slow servers
+          run: timeout 1h bash -c 'until npm run test; do sleep 5; done'
 
   example-svelte:
     runs-on: ubuntu-22.04

@@ -257,7 +257,7 @@ export async function spawn(
         writeHumansFail: (_args: any) => {
             throw new Error('writeHumansFail called');
         },
-        humanChanged: () => pubsub.asyncIterator('humanChanged')
+        humanChanged: () => pubsub.asyncIterableIterator('humanChanged')
     };
 
     // header simulation middleware
