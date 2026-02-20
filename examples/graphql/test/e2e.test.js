@@ -83,7 +83,7 @@ async function waitUntilServerIsOnline() {
         try {
             await client.query(query);
             return true;
-        } catch (err) {
+        } catch {
             return false;
         }
     });

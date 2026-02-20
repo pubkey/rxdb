@@ -288,7 +288,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 console.log('## ERROR: State not equal (docs count: ' + resA.length + ')');
                 console.log(JSON.stringify({ col: instanceA.collectionName, docA }, null, 4));
                 console.log(JSON.stringify({ col: instanceB.collectionName, docB }, null, 4));
-                throw new Error('STATE not equal');
+                throw new Error('STATE not equal', { cause: err });
             }
         });
     }

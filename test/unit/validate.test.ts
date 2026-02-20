@@ -922,7 +922,7 @@ describeParallel('validate.test.js (custom formats) ', () => {
     });
     describe('z-schema', () => {
         it('should be able to register a custom format', async () => {
-            ZSchemaClass.registerFormat('email', function (v: string) {
+            ZSchemaClass.registerFormat('email', function (v: any) {
                 return v.includes('@');
             });
             const db = await createRxDatabase({

@@ -39,9 +39,8 @@ describe('typings.test.ts', function () {
 
     describe('basic', () => {
         it('should fail on broken code', () => {
-            let x: string = 'foo';
             // @ts-expect-error not a string
-            x = 1337;
+            const x: string = 1337;
             assert.ok(x);
         });
     });

@@ -54,7 +54,7 @@ function walk(dir: string, callback: (filePath: string) => void) {
                 title = title.slice(1, -1);
             }
 
-            let slug = '';
+            let slug;
             if (slugMatch) {
                 slug = slugMatch[1].trim();
                 // remove extension if present in slug usually .html from rxdb docs

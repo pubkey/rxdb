@@ -105,7 +105,11 @@ export interface RxErrorParameters {
      */
     readonly pushRows?: RxReplicationWriteToMasterRow<any>[];
     readonly direction?: 'pull' | 'push';
-
+    readonly body?: any;
+    readonly status?: number;
+    readonly statusText?: string;
+    readonly headers?: Record<string, any>;
+    readonly code?: string;
 }
 
 /**

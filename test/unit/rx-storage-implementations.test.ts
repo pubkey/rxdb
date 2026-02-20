@@ -837,7 +837,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     testContext
                 );
                 assert.deepStrictEqual(res3.error, []);
-                docData = newDocData;
+                // docData = newDocData;
 
 
                 const viaStorage = await storageInstance.findDocumentsById([key], true);
