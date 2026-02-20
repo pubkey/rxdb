@@ -1,7 +1,7 @@
 import express from 'express';
 import * as path from 'path';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import cors from 'cors';
 import { PubSub } from 'graphql-subscriptions';
 import { buildSchema, execute, subscribe } from 'graphql';
@@ -203,7 +203,7 @@ export async function run() {
 
             validateBearerToken(bearerToken);
 
-            return pubsub.asyncIterator('streamHero');
+            return pubsub.asyncIterableIterator('streamHero');
         },
     };
 

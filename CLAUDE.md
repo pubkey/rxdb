@@ -29,7 +29,7 @@
 - **Imports**: Uses ES modules (import/export).
 - **Paths**: Source code in `src/`, tests in `test/`, documentation in `docs-src/`.
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
-
+- **Errors**: Do not use `throw new Error()`. Use `throw newRxError()` or `throw newRxTypeError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
 ## Development Workflow
 
 ```sh
