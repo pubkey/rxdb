@@ -622,7 +622,7 @@
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "8.56.0",
     "@typescript-eslint/parser": "8.56.0",
-    "appwrite": "22.3.1",
+    "appwrite": "22.4.0",
     "assert": "2.1.0",
     "async-test-util": "2.5.0",
     "babel-loader": "10.0.0",
