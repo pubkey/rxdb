@@ -506,7 +506,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     reSync() {
-        console.log('resync ' + this.collection.database.name);
         this.remoteEvents$.next('RESYNC');
     }
     emitEvent(ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) {
