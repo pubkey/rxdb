@@ -59,10 +59,22 @@ export type RxDocumentMeta = {
     lwt: number;
 
     /**
+     * The replication plugins "tags" the origin
+     * of writes to later know if a write came from
+     * the replication or was done locally.
+     */
+    o?: {
+        hash: string;
+        _rev: number;
+    }
+
+    /**
      * Any other value can be attached to the _meta data.
      * Mostly done by plugins to mark documents.
      */
     [k: string]: PlainJsonValue;
+
+
 };
 
 export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity = unknown> {

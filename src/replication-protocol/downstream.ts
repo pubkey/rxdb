@@ -308,7 +308,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             ? writeDocToDocState(forkStateFullDoc, state.hasAttachments, false)
                             : undefined
                             ;
-                        let masterState = downDocsById[docId];
+                        const masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
                         if (
@@ -350,12 +350,22 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                     forkStateFullDoc &&
                                     assumedMaster &&
                                     isAssumedMasterEqualToForkState === false
-                                ) ||
+                                )
+                                ||
                                 (
                                     forkStateFullDoc && !assumedMaster
                                 )
                             ) && !state.skipStoringPullMeta
+                            &&
+                            !(
+                                forkStateFullDoc._meta.o &&
+                                (
+                                    forkStateFullDoc._meta.o.hash === identifierHash &&
+                                    forkStateFullDoc._meta.o._rev === getHeightOfRevision(forkStateFullDoc._rev)
+                                )
+                            )
                         ) {
+
                             /**
                              * We have a non-upstream-replicated
                              * local write to the fork.
@@ -363,24 +373,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * doc data first, or it means that the fork state was
                              * synced from the master but the process exited before
                              * the metadata was written.
-                             * To fix both cases, we use the conflict handler
-                             * here which ensures the local state is correct.
                              * @link https://github.com/pubkey/rxdb/pull/7804
                              */
-                            await state.streamQueue.up;
-                            const resolved = await state.input.conflictHandler.resolve({
-                                assumedMasterState: assumedMaster ? assumedMaster.docData : undefined,
-                                realMasterState: masterState,
-                                newDocumentState: forkStateFullDoc
-                            }, 'non-upstream-replicated-local-write');
-                            masterState = resolved;
-
-
-                            // console.dir({
-                            //     assumedMaster,
-                            //     forkStateFullDoc,
-                            //     masterState
-                            // });
+                            return PROMISE_RESOLVE_VOID;
                         }
 
                         const areStatesExactlyEqual = !forkStateDocData
@@ -457,6 +452,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         ) {
                             newForkState._meta = (masterState as any)._meta;
                         }
+
+
+
+                        newForkState._meta.o = {
+                            _rev: !forkStateFullDoc ? 1 : getHeightOfRevision(forkStateFullDoc._rev) + 1,
+                            hash: identifierHash
+                        };
 
                         const forkWriteRow = {
                             previous: forkStateFullDoc,
