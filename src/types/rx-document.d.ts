@@ -66,7 +66,7 @@ export type RxDocumentMeta = {
     o?: {
         hash: string;
         _rev: number;
-    }
+    };
 
     /**
      * Any other value can be attached to the _meta data.
