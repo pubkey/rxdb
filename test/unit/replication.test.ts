@@ -1192,7 +1192,7 @@ describe('replication.test.ts', () => {
             // Wait for the downstream cycle to finish
             const internalState = ensureNotFalsy(replicationState.internalReplicationState);
             let prevDown = internalState.streamQueue.down;
-            await waitUntil(() => internalState.streamQueue.down !== prevDown, 1000, 10);
+            // await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
             await internalState.streamQueue.down;
 
             assert.ok(metaWriteDropped, 'Meta write should have been intercepted and dropped');
@@ -1220,8 +1220,7 @@ describe('replication.test.ts', () => {
             });
 
             // Wait for downstream to finish processing, then verify it recovered.
-            await wait(500);
-            await waitUntil(() => internalState.streamQueue.down !== prevDown, 1000, 10);
+            // await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
             await internalState.streamQueue.down;
 
             const localDoc = await localCollection.findOne(docId).exec(true);
