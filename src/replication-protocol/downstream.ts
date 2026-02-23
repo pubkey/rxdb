@@ -308,7 +308,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             ? writeDocToDocState(forkStateFullDoc, state.hasAttachments, false)
                             : undefined
                             ;
-                        const masterState = downDocsById[docId];
+                        let masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
                         if (
@@ -359,10 +359,20 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             /**
                              * We have a non-upstream-replicated
                              * local write to the fork.
-                             * This means we ignore the downstream of this document
-                             * because anyway the upstream will first resolve the conflict.
+                             * This means either we have to upstream the local
+                             * doc data first, or it means that the fork state was
+                             * synced from the master but the process exited before
+                             * the metadata was written.
+                             * To fix both cases, we use the conflict handler
+                             * here which ensures the local state is correct.
+                             * @link https://github.com/pubkey/rxdb/pull/7804
                              */
-                            return PROMISE_RESOLVE_VOID;
+                            const resolved = await state.input.conflictHandler.resolve({
+                                assumedMasterState: assumedMaster ? assumedMaster.docData : undefined,
+                                realMasterState: masterState,
+                                newDocumentState: forkStateFullDoc
+                            }, 'non-upstream-replicated-local-write');
+                            masterState = resolved;
                         }
 
                         const areStatesExactlyEqual = !forkStateDocData
@@ -449,6 +459,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             identifierHash,
                             forkWriteRow.previous
                         );
+
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
                         writeRowsToMeta[docId] = await getMetaWriteRow(
