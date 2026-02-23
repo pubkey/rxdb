@@ -1184,21 +1184,21 @@ describe('replication.test.ts', () => {
             // Downstream will write the new state to the fork, but the
             // corresponding meta write is silently dropped above.
             const remoteDoc = await remoteCollection.findOne(docId).exec(true);
+            const internalState = ensureNotFalsy(replicationState.internalReplicationState);
+            let prevDown = internalState.streamQueue.down;
             await remoteDoc.incrementalPatch({
                 name: 'FirstUpdate',
                 age: 2
             });
 
             // Wait for the downstream cycle to finish
-            const internalState = ensureNotFalsy(replicationState.internalReplicationState);
-            let prevDown = internalState.streamQueue.down;
-            // await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
+            await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
             await internalState.streamQueue.down;
 
             assert.ok(metaWriteDropped, 'Meta write should have been intercepted and dropped');
             const afterFirst = await localCollection.findOne(docId).exec(true);
             assert.strictEqual(afterFirst.name, 'FirstUpdate');
-
+            
             // Restore original bulkWrite so meta works normally again.
             metaInstance.bulkWrite = originalBulkWrite;
 
@@ -1208,7 +1208,7 @@ describe('replication.test.ts', () => {
             //
             // Downstream will see forkState != assumedMaster and treat it as a
             // "non-upstream-replicated local write", skipping the document.
-
+            
             // Update the document on remote again.
             prevDown = internalState.streamQueue.down;
             const remoteDoc2 = await remoteCollection.findOne(docId).exec(true);
@@ -1220,7 +1220,7 @@ describe('replication.test.ts', () => {
             });
 
             // Wait for downstream to finish processing, then verify it recovered.
-            // await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
+            await waitUntil(() => internalState.streamQueue.down !== prevDown, undefined, 40);
             await internalState.streamQueue.down;
 
             const localDoc = await localCollection.findOne(docId).exec(true);
