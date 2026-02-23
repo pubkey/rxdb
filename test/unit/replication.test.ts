@@ -1127,27 +1127,28 @@ describe('replication.test.ts', () => {
         * leaving the document permanently stuck.
         */
         it('#7804 (1/3) should recover downstream sync after meta write is lost between fork and meta write (simulated crash)', async () => {
-            
+
 
             function setupReplication(
-                localCollection: RxCollection<TestDocType>,
-                remoteCollection: RxCollection<TestDocType>
+                local: RxCollection<TestDocType>,
+                remote: RxCollection<TestDocType>
             ) {
                 return replicateRxCollection<TestDocType, any>({
-                    collection: localCollection,
+                    collection: local,
                     replicationIdentifier: 'downstream-test',
                     live: true,
                     pull: {
-                        handler: getPullHandler(remoteCollection),
-                        stream$: getPullStream(remoteCollection)
+                        handler: getPullHandler(remote),
+                        stream$: getPullStream(remote)
                     },
                     push: {
-                        handler: getPushHandler(remoteCollection)
+                        handler: getPushHandler(remote)
                     }
                 });
             }
 
-            const { localCollection, remoteCollection } = await getTestCollections({local: 0, remote: 0});
+
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
             const docId = 'crash-test-doc';
 
             // Insert initial document on remote
@@ -1235,24 +1236,25 @@ describe('replication.test.ts', () => {
         });
         it('#7804 (2/3) should sync downstream updates when local and remote have different documents', async () => {
             function setupReplication(
-                localCollection: RxCollection<TestDocType>,
-                remoteCollection: RxCollection<TestDocType>
+                local: RxCollection<TestDocType>,
+                remote: RxCollection<TestDocType>
             ) {
                 return replicateRxCollection<TestDocType, any>({
-                    collection: localCollection,
+                    collection: local,
                     replicationIdentifier: 'downstream-test',
                     live: true,
                     pull: {
-                        handler: getPullHandler(remoteCollection),
-                        stream$: getPullStream(remoteCollection)
+                        handler: getPullHandler(remote),
+                        stream$: getPullStream(remote)
                     },
                     push: {
-                        handler: getPushHandler(remoteCollection)
+                        handler: getPushHandler(remote)
                     }
                 });
             }
 
-            const { localCollection, remoteCollection } = await getTestCollections({local: 0, remote: 0});
+
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
             const docId = 'different-doc';
 
@@ -1299,31 +1301,26 @@ describe('replication.test.ts', () => {
         });
 
         it('#7804 (3/3) should sync downstream updates when local and remote have identical documents', async () => {
-            async function getTestCollections() {
-                const localCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
-                const remoteCollection = await humansCollection.createHumanWithTimestamp(0, randomToken(10), false);
-                return { localCollection, remoteCollection };
-            }
 
             function setupReplication(
-                localCollection: RxCollection<TestDocType>,
-                remoteCollection: RxCollection<TestDocType>
+                local: RxCollection<TestDocType>,
+                remote: RxCollection<TestDocType>
             ) {
                 return replicateRxCollection<TestDocType, any>({
-                    collection: localCollection,
+                    collection: local,
                     replicationIdentifier: 'downstream-test',
                     live: true,
                     pull: {
-                        handler: getPullHandler(remoteCollection),
-                        stream$: getPullStream(remoteCollection)
+                        handler: getPullHandler(remote),
+                        stream$: getPullStream(remote)
                     },
                     push: {
-                        handler: getPushHandler(remoteCollection)
+                        handler: getPushHandler(remote)
                     }
                 });
             }
 
-            const { localCollection, remoteCollection } = await getTestCollections();
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
 
             const docId = 'identical-doc';
             const docData = schemaObjects.humanWithTimestampData({
