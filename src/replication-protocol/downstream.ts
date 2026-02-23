@@ -367,12 +367,20 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                              * here which ensures the local state is correct.
                              * @link https://github.com/pubkey/rxdb/pull/7804
                              */
+                            await state.streamQueue.up;
                             const resolved = await state.input.conflictHandler.resolve({
                                 assumedMasterState: assumedMaster ? assumedMaster.docData : undefined,
                                 realMasterState: masterState,
                                 newDocumentState: forkStateFullDoc
                             }, 'non-upstream-replicated-local-write');
                             masterState = resolved;
+
+
+                            // console.dir({
+                            //     assumedMaster,
+                            //     forkStateFullDoc,
+                            //     masterState
+                            // });
                         }
 
                         const areStatesExactlyEqual = !forkStateDocData
