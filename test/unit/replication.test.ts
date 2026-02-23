@@ -1278,7 +1278,7 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInSync();
 
             // Update document on remote
-            const internalState = replicationState.internalReplicationState;
+            const internalState = ensureNotFalsy(replicationState.internalReplicationState);
             const prevDown = internalState.streamQueue.down;
             const remoteDoc = await remoteCollection.findOne(docId).exec(true);
             await remoteDoc.incrementalPatch({
@@ -1341,7 +1341,7 @@ describe('replication.test.ts', () => {
             await replicationState.awaitInSync();
 
             // Update document on remote
-            const internalState = replicationState.internalReplicationState;
+            const internalState = ensureNotFalsy(replicationState.internalReplicationState);
             const prevDown = internalState.streamQueue.down;
             const remoteDoc = await remoteCollection.findOne(docId).exec(true);
             await remoteDoc.incrementalPatch({
