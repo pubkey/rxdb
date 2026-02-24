@@ -5,7 +5,6 @@ import AsyncTestUtil, { assertThrows, wait, waitUntil } from 'async-test-util';
 import {
     humanData,
     humansCollection,
-    isDeno,
     isFastMode,
     schemaObjects,
     schemas
