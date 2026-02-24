@@ -26,38 +26,28 @@ export async function resolveConflictError<RxDocType>(
 ): Promise<RxDocumentData<RxDocType> | undefined> {
     const conflictHandler: RxConflictHandler<RxDocType> = state.input.conflictHandler;
 
-    const isEqual = conflictHandler.isEqual(input.realMasterState, input.newDocumentState, 'replication-resolve-conflict');
-
-    if (isEqual) {
-        /**
-         * Documents are equal,
-         * so this is not a conflict -> do nothing.
-         */
-        return undefined;
-    } else {
-        const resolved = await conflictHandler.resolve(input, 'replication-resolve-conflict');
-        /**
-         * We have a resolved conflict,
-         * use the resolved document data.
-         */
-        const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
-            {},
-            resolved,
-            {
-                /**
-                 * Because the resolved conflict is written to the fork,
-                 * we have to keep/update the forks _meta data, not the masters.
-                 */
-                _meta: flatClone(forkState._meta),
-                _rev: getDefaultRevision(),
-                _attachments: flatClone(forkState._attachments)
-            }
-        ) as any;
-        resolvedDoc._meta.lwt = now();
-        resolvedDoc._rev = createRevision(
-            await state.checkpointKey,
-            forkState
-        );
-        return resolvedDoc;
-    }
+    const resolved = await conflictHandler.resolve(input, 'replication-resolve-conflict');
+    /**
+     * We have a resolved conflict,
+     * use the resolved document data.
+     */
+    const resolvedDoc: RxDocumentData<RxDocType> = Object.assign(
+        {},
+        resolved,
+        {
+            /**
+             * Because the resolved conflict is written to the fork,
+             * we have to keep/update the forks _meta data, not the masters.
+             */
+            _meta: flatClone(forkState._meta),
+            _rev: getDefaultRevision(),
+            _attachments: flatClone(forkState._attachments)
+        }
+    ) as any;
+    resolvedDoc._meta.lwt = now();
+    resolvedDoc._rev = createRevision(
+        await state.checkpointKey,
+        forkState
+    );
+    return resolvedDoc;
 }

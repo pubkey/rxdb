@@ -1298,7 +1298,6 @@ describe('replication.test.ts', () => {
         });
 
         it('#7804 (3/3) should sync downstream updates when local and remote have identical documents', async () => {
-            return; // TODO this is a different issue, fix this!
             function setupReplication(
                 local: RxCollection<TestDocType>,
                 remote: RxCollection<TestDocType>
@@ -1342,8 +1341,6 @@ describe('replication.test.ts', () => {
             const prevDown = internalState.streamQueue.down;
             const remoteDoc = await remoteCollection.findOne(docId).exec(true);
 
-
-            console.log('...................................');
             await remoteDoc.incrementalPatch({
                 name: 'UpdatedFromRemote',
                 age: 999

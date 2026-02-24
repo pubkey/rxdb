@@ -344,6 +344,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         ) {
                             isAssumedMasterEqualToForkState = true;
                         }
+
                         if (
                             (
                                 (
