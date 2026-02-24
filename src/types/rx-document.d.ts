@@ -12,7 +12,7 @@ import type {
 } from './rx-attachment.d.ts';
 import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
 import type { RxChangeEvent } from './rx-change-event.d.ts';
-import type { DeepReadonly, MaybePromise, PlainJsonValue, PlainSimpleJsonObject } from './util.d.ts';
+import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
 
@@ -66,7 +66,7 @@ export type RxDocumentMeta = {
     o?: {
         hash: string;
         _rev: number;
-    } & PlainSimpleJsonObject;
+    };
 
     /**
      * Any other value can be attached to the _meta data.
