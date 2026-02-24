@@ -195,7 +195,7 @@ jobs:
         with:
           run: npm run test:browser:memory
 
-      - run: timeout 1h bash -lc "until 'npm run test:fast:memory-random-delay'; do sleep 5; done"
+      - run: timeout 1h bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
 
       - name: performance test
         uses: coactions/setup-xvfb@v1

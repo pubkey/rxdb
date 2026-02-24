@@ -59,6 +59,7 @@ When writing documentation or code comments or any other text, always use this w
 • SHOULD focus on practical, actionable insights.
 • SHOULD use data and examples to support claims when possible.
 • SHOULD use "you" and "your" to directly address the reader.
+• SHOULD always try to use the Oxford 3000 in variable names so that non-native English speakers know the words.
 • AVOID using em dashes (–) anywhere in your response. Use only commas, periods, or other standard punctuation. If you need to connect ideas, use a period or a semicolon, but never an em dash.
 • AVOID constructions like "not just this, but also this".
 • AVOID metaphors and cliches.
