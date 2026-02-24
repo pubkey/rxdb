@@ -4,7 +4,8 @@ import {
     dbCount,
     BROADCAST_CHANNEL_BY_TOKEN,
     getFromMapOrThrow,
-    OPEN_COLLECTIONS
+    OPEN_COLLECTIONS,
+    OPEN_REPLICATION_STATES
 } from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
@@ -66,6 +67,18 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.log('open broadcast channel tokens:');
             console.log(openChannelKeys.join(', '));
             throw new Error('not all broadcast channels have been closed (' + openChannelKeys.length + ')', { cause: err });
+        }
+    });
+    it('ensure all replication states are closed', async () => {
+        try {
+            await waitUntil(() => {
+                return OPEN_REPLICATION_STATES.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            const openChannelKeys = Array.from(OPEN_REPLICATION_STATES.values()).map(s => s.checkpointKey);
+            console.log('open replication states tokens:');
+            console.log(openChannelKeys.join(', '));
+            throw new Error('not all replication states have been closed (' + openChannelKeys.length + ')', { cause: err });
         }
     });
     it('ensure all RemoteMessageChannels have been closed', async () => {

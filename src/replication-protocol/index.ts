@@ -39,7 +39,11 @@ import {
     getCheckpointKey
 } from './checkpoint.ts';
 import { startReplicationDownstream } from './downstream.ts';
-import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
+import {
+    docStateToWriteDoc,
+    getUnderlyingPersistentStorage,
+    writeDocToDocState
+} from './helper.ts';
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
@@ -54,6 +58,12 @@ export * from './conflicts.ts';
 export * from './helper.ts';
 export * from './default-conflict-handler.ts';
 
+
+/**
+ * Used in tests to ensure all states are cleaned up
+ * and we have no memory leak.
+ */
+export const OPEN_REPLICATION_STATES = new Set<RxStorageInstanceReplicationState<any>>();
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
@@ -111,6 +121,7 @@ export function replicateRxStorageInstance<RxDocType>(
         checkpointQueue: PROMISE_RESOLVE_VOID,
         lastCheckpointDoc: {}
     };
+    OPEN_REPLICATION_STATES.add(state);
 
     startReplicationDownstream(state);
     startReplicationUpstream(state);
@@ -322,6 +333,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 export async function cancelRxStorageReplication(
     replicationState: RxStorageInstanceReplicationState<any>
 ) {
+    OPEN_REPLICATION_STATES.delete(replicationState);
+
     replicationState.events.canceled.next(true);
     replicationState.events.active.up.complete();
     replicationState.events.active.down.complete();

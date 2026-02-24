@@ -189,26 +189,35 @@ export class RxMigrationState {
         });
 
 
+        console.log('start migration ------- 0');
+
+
         try {
             /**
              * First migrate the connected storages,
              * afterwards migrate the normal collection.
             */
+            console.log('start migration ------- 1');
             await Promise.all(
                 connectedInstances.map(async (connectedInstance) => {
+                    console.log('start migration ------- loop 0 ' + connectedInstance.newStorage.collectionName);
                     await addConnectedStorageToCollection(
                         this.collection,
                         connectedInstance.newStorage.collectionName,
                         connectedInstance.newStorage.schema
                     );
+                    console.log('start migration ------- loop 1 ' + connectedInstance.newStorage.collectionName);
                     await this.migrateStorage(
                         connectedInstance.oldStorage,
                         connectedInstance.newStorage,
                         batchSize
                     );
+                    console.log('start migration ------- loop 2 ' + connectedInstance.newStorage.collectionName);
                     await connectedInstance.newStorage.close();
+                    console.log('start migration ------- loop 3 ' + connectedInstance.newStorage.collectionName);
                 })
             );
+            console.log('start migration ------- 2');
 
             await this.migrateStorage(
                 oldStorageInstance,
@@ -221,7 +230,9 @@ export class RxMigrationState {
                 this.collection.storageInstance.originalStorageInstance,
                 batchSize
             );
+            console.log('start migration ------- 3');
         } catch (err) {
+            console.log('start migration ------- 3 error');
             await oldStorageInstance.close();
             await this.updateStatus(s => {
                 s.status = 'ERROR';
@@ -230,6 +241,7 @@ export class RxMigrationState {
             });
             return;
         }
+        console.log('start migration ------- 4');
 
         /**
          * Remove old collection meta doc with retry on conflict.
@@ -271,13 +283,16 @@ export class RxMigrationState {
             }
         }
 
+        console.log('start migration ------- 5');
         await this.updateStatus(s => {
             s.status = 'DONE';
             return s;
         });
+        console.log('start migration ------- 6');
         if (this.broadcastChannel) {
             await this.broadcastChannel.close();
         }
+        console.log('start migration ------- 7');
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
@@ -366,6 +381,7 @@ export class RxMigrationState {
 
         this.collection.onClose.push(() => this.cancel());
         this.database.onClose.push(() => this.cancel());
+        console.log('migrate(' + newStorage.collectionName + ') --- 0');
         const replicationMetaStorageInstance = await this.database.storage.createStorageInstance({
             databaseName: this.database.name,
             collectionName: 'rx-migration-state-meta-' + oldStorage.collectionName + '-' + oldStorage.schema.version,
@@ -376,6 +392,7 @@ export class RxMigrationState {
             password: this.database.password,
             devMode: overwritable.isDevMode()
         });
+        console.log('migrate(' + newStorage.collectionName + ') --- 1');
 
         const replicationHandlerBase = rxStorageInstanceToReplicationHandler(
             newStorage,
@@ -444,8 +461,6 @@ export class RxMigrationState {
                             })
                     );
 
-                    this.replicationState = replicationState;
-
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
@@ -461,7 +476,9 @@ export class RxMigrationState {
             conflictHandler: defaultConflictHandler,
             hashFunction: this.database.hashFunction
         });
+        // this.replicationState = replicationState;
 
+        console.log('migrate(' + newStorage.collectionName + ') --- 2');
 
         let hasError: RxError | RxTypeError | false = false;
         replicationState.events.error.subscribe(err => hasError = err);
@@ -474,22 +491,30 @@ export class RxMigrationState {
             });
         });
 
+
+        console.log('migrate(' + newStorage.collectionName + ') --- 3');
         await awaitRxStorageReplicationFirstInSync(replicationState);
+        console.log('migrate(' + newStorage.collectionName + ') --- 4');
         await awaitRxStorageReplicationInSync(replicationState);
+        console.log('migrate(' + newStorage.collectionName + ') --- 5');
 
         await this.updateStatusQueue;
         if (hasError) {
             await replicationMetaStorageInstance.close();
             throw hasError;
         }
+        console.log('migrate(' + newStorage.collectionName + ') --- 6');
 
         // cleanup old storages
         await Promise.all([
             oldStorage.remove(),
             replicationMetaStorageInstance.remove()
         ]);
+        console.log('migrate(' + newStorage.collectionName + ') --- 7');
 
-        await this.cancel();
+        // await this.cancel();
+        await cancelRxStorageReplication(replicationState);
+        console.log('migrate(' + newStorage.collectionName + ') --- 8');
     }
 
     /**
