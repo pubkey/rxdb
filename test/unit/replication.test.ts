@@ -1198,7 +1198,7 @@ describe('replication.test.ts', () => {
             assert.ok(metaWriteDropped, 'Meta write should have been intercepted and dropped');
             const afterFirst = await localCollection.findOne(docId).exec(true);
             assert.strictEqual(afterFirst.name, 'FirstUpdate');
-            
+
             // Restore original bulkWrite so meta works normally again.
             metaInstance.bulkWrite = originalBulkWrite;
 
@@ -1208,7 +1208,7 @@ describe('replication.test.ts', () => {
             //
             // Downstream will see forkState != assumedMaster and treat it as a
             // "non-upstream-replicated local write", skipping the document.
-            
+
             // Update the document on remote again.
             prevDown = internalState.streamQueue.down;
             const remoteDoc2 = await remoteCollection.findOne(docId).exec(true);
