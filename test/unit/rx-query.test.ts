@@ -1,5 +1,5 @@
 import assert from 'assert';
-import AsyncTestUtil, { assertThrows } from 'async-test-util';
+import AsyncTestUtil, { assertThrows, waitUntil } from 'async-test-util';
 import config, { describeParallel } from './config.ts';
 import clone from 'clone';
 
@@ -7,7 +7,8 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    isNode
+    isNode,
+    isFastMode
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -26,6 +27,8 @@ import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 import { firstValueFrom } from 'rxjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 describe('rx-query.test.ts', () => {
     describeParallel('.constructor', () => {
@@ -900,6 +903,96 @@ describe('rx-query.test.ts', () => {
         });
     });
     describeParallel('issues', () => {
+        new Array(isFastMode() ? 1 : 2)
+            .fill(0).forEach((_v, runIdx) => {
+
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/7864
+                 */
+                it('query.$ emits after insert with async storage (run ' + runIdx + ')', async () => {
+                    const memStorage = getRxStorageMemory();
+                    /**
+                     * Simulate a real async storage (Dexie/SQLite) where a
+                     * read transaction started before a write commits does
+                     * not see the written data. The write event has already
+                     * been emitted and buffered in ChangeEventBuffer while
+                     * queryCollection() awaits the slow query(). When
+                     * queryCollection() calls getCounter(), processTasks()
+                     * advances the counter past the event. _latestChangeEvent
+                     * is set to this advanced counter. The next _ensureEqual
+                     * (queued by the insert event) sees _isResultsInSync()
+                     * return true and short-circuits. The subscriber never
+                     * sees the inserted document.
+                     *
+                     * We achieve this by capturing the query result
+                     * synchronously (before any concurrent write), then
+                     * waiting (so a write+event can happen), then returning
+                     * the stale captured result. The key: we capture BEFORE
+                     * ensurePersistence runs for the concurrent write.
+                     */
+                    let pendingQueryResolve: ((result: any) => void) | null = null;
+                    let stallFirstHumansQuery = true;
+                    const staleQueryStorage = Object.assign({}, memStorage, {
+                        name: 'stale-query-' + memStorage.name,
+                        async createStorageInstance(params: any) {
+                            const instance = await memStorage.createStorageInstance(params);
+                            if (params.collectionName === 'humans') {
+                                const originalQuery = instance.query.bind(instance);
+                                instance.query = function (preparedQuery: any) {
+                                    const currentResult = originalQuery(preparedQuery);
+                                    if (stallFirstHumansQuery) {
+                                        stallFirstHumansQuery = false;
+                                        return new Promise((res) => {
+                                            pendingQueryResolve = () => res(currentResult);
+                                        });
+                                    }
+                                    return currentResult;
+                                };
+                            }
+                            return instance;
+                        }
+                    });
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: wrappedValidateAjvStorage({ storage: staleQueryStorage }),
+                        eventReduce: false
+                    });
+                    const collections = await db.addCollections({
+                        humans: { schema: schemas.human }
+                    });
+                    const c = collections.humans;
+
+                    const emissions: any[][] = [];
+                    const sub = c.find().sort('passportId').$.subscribe(results => {
+                        emissions.push(results);
+                    });
+
+                    // wait for query() to be called and stall
+                    await waitUntil(() => pendingQueryResolve !== null);
+
+                    // insert a doc while query() is stalled.
+                    // bulkWrite emits the event synchronously -> gets buffered.
+                    await c.insert(schemaObjects.humanData('test-' + runIdx));
+
+                    // now resolve the stalled query() with stale data (no doc)
+                    const resolveStalledQuery = pendingQueryResolve as any;
+                    pendingQueryResolve = null;
+                    resolveStalledQuery(undefined);
+
+                    await promiseWait(500);
+                    const lastEmission = emissions[emissions.length - 1];
+                    assert.strictEqual(
+                        lastEmission.length,
+                        1,
+                        'expected 1 doc but got ' + lastEmission.length +
+                        ' after ' + emissions.length + ' total emissions, ' +
+                        'lengths=' + JSON.stringify(emissions.map(e => e.length))
+                    );
+
+                    sub.unsubscribe();
+                    db.close();
+                });
+            });
         /**
          * @link https://github.com/pubkey/rxdb/pull/7497
          */

@@ -221,28 +221,47 @@ export class RxQueryBase<
      * executes the query on the database
      * @return results-array with document-data
      */
-    async _execOverDatabase(): Promise<{
+    async _execOverDatabase(rerunCount = 0): Promise<{
         result: RxDocumentData<RxDocType>[] | number;
         counter: number;
     }> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+        let result: {
+            result: RxDocumentData<RxDocType>[] | number;
+            counter: number;
+        };
+
+        /**
+         * If a change happens during the query-run,
+         * we do not know for 100% if that change is already included
+         * into the query results or not. The storage itself does not give that information.
+         * This lead to cases where the query results where outdated but RxDB thought
+         * that the changeevents must not be processed.
+         * To fix this we re-run the query if a change happens directly during the query run.
+         *
+         * @link https://github.com/pubkey/rxdb/issues/7067
+         */
+        let eventsDuringQueryRun = 0;
+        const sub = this.collection.eventBulks$.subscribe(() => {
+            eventsDuringQueryRun++;
+        });
+
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const countResult = await this.collection.storageInstance.count(preparedQuery);
             if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
+                sub.unsubscribe();
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
                 });
             } else {
-                return {
+                result = {
                     result: countResult.count,
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        }
-
-        if (this.op === 'findByIds') {
+        } else if (this.op === 'findByIds') {
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
             const ret = new Map<string, RxDocument<RxDocType>>();
             const mustBeQueried: string[] = [];
@@ -266,17 +285,25 @@ export class RxQueryBase<
                     ret.set(doc.primary, doc);
                 });
             }
-            return {
+            result = {
                 result: ret as any,
                 counter: this.collection._changeEventBuffer.getCounter()
             };
+        } else {
+            const queryResult = await queryCollection<RxDocType>(this as any);
+            result = {
+                result: queryResult.docs,
+                counter: queryResult.counter
+            };
         }
 
-        const result = await queryCollection<RxDocType>(this as any);
-        return {
-            result: result.docs,
-            counter: result.counter
-        };
+        sub.unsubscribe();
+        if (eventsDuringQueryRun > 0) {
+            await promiseWait(rerunCount * 20);
+            return this._execOverDatabase(rerunCount + 1);
+        }
+
+        return result;
     }
 
     /**
@@ -677,21 +704,6 @@ export async function queryCollection<RxDocType>(
     const collection = rxQuery.collection;
 
     /**
-     * If a change happens during the query-run,
-     * we do not know for 100% if that change is already included
-     * into the query results or not. The storage itself does not give that information.
-     * This lead to cases where the query results where outdated but RxDB thought
-     * that the changeevents must not be processed.
-     * To fix this we re-run the query if a change happens directly during the query run.
-     *
-     * @link https://github.com/pubkey/rxdb/issues/7067
-     */
-    let eventsDuringQueryRun = 0;
-    const sub = collection.eventBulks$.subscribe(() => {
-        eventsDuringQueryRun++;
-    });
-
-    /**
      * Optimizations shortcut.
      * If query is find-one-document-by-id,
      * then we do not have to use the slow query() method
@@ -737,12 +749,6 @@ export async function queryCollection<RxDocType>(
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
         docs = queryResult.documents;
-    }
-
-    sub.unsubscribe();
-    if (eventsDuringQueryRun > 0) {
-        await promiseWait(0);
-        return queryCollection(rxQuery);
     }
 
     return {
