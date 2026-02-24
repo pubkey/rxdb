@@ -444,6 +444,8 @@ export class RxMigrationState {
                             })
                     );
 
+                    this.replicationState = replicationState;
+
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
@@ -585,7 +587,7 @@ export class RxMigrationState {
 
 
     async migratePromise(batchSize?: number): Promise<RxMigrationStatus> {
-        this.startMigration(batchSize).catch(() => {});
+        this.startMigration(batchSize).catch(() => { });
         const must = await this.mustMigrate;
         if (!must) {
             return {
