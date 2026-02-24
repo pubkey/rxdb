@@ -459,7 +459,7 @@ export class RxMigrationState {
             conflictHandler: defaultConflictHandler,
             hashFunction: this.database.hashFunction
         });
-
+        this.replicationState = replicationState;
 
         let hasError: RxError | RxTypeError | false = false;
         replicationState.events.error.subscribe(err => hasError = err);
