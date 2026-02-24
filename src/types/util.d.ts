@@ -3,7 +3,14 @@ import type { RxStorage } from './rx-storage.interface';
 export type MaybePromise<T> = Promise<T> | T;
 
 
-export type PlainJsonValue = string | number | boolean | PlainSimpleJsonObject | PlainSimpleJsonObject[] | PlainJsonValue[];
+export type PlainJsonValue =
+    string |
+    number |
+    boolean |
+    PlainSimpleJsonObject |
+    PlainSimpleJsonObject[] |
+    PlainJsonValue[]
+    ;
 export type PlainSimpleJsonObject = {
     [k: string]: PlainJsonValue | PlainJsonValue[];
 };
