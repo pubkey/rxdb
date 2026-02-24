@@ -444,8 +444,6 @@ export class RxMigrationState {
                             })
                     );
 
-                    this.replicationState = replicationState;
-
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
@@ -461,6 +459,7 @@ export class RxMigrationState {
             conflictHandler: defaultConflictHandler,
             hashFunction: this.database.hashFunction
         });
+        this.replicationState = replicationState;
 
 
         let hasError: RxError | RxTypeError | false = false;
