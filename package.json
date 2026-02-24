@@ -576,7 +576,7 @@
     "simple-peer": "9.11.1",
     "util": "0.12.5",
     "ws": "8.19.0",
-    "z-schema": "9.0.1"
+    "z-schema": "10.0.0"
   },
   "devDependencies": {
     "wrtc": "0.4.7",
