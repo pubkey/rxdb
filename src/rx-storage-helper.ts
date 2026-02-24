@@ -417,9 +417,9 @@ export function categorizeBulkWriteRows<RxDocType>(
                 newestRow = updatedRow as any;
             }
 
-            let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
+            let eventDocumentData: RxDocumentData<RxDocType> | undefined;
             let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
-            let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
+            let operation: 'INSERT' | 'UPDATE' | 'DELETE';
 
             if (previousDeleted && !documentDeleted) {
                 operation = 'INSERT';

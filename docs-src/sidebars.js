@@ -250,6 +250,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'replication-google-drive',
+          label: 'Google Drive Replication'
+        },
+        {
+          type: 'doc',
           id: 'replication-nats',
           label: 'NATS Replication'
         },

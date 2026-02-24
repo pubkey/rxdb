@@ -1,7 +1,7 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
 import type { RxCollection } from '../../types';
-import { requestIdlePromise } from '../utils/index.ts';
+import { promiseWait, requestIdlePromise } from '../utils/index.ts';
 import type { RxReplicationState } from '../replication/index.ts';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {
@@ -37,6 +37,38 @@ export async function ensureCollectionsHaveEqualState<RxDocType>(
         throw err;
     }
 }
+
+/**
+ * Waits until the collections have the equal state.
+ */
+export async function awaitCollectionsHaveEqualState<RxDocType>(
+    c1: RxCollection<RxDocType>,
+    c2: RxCollection<RxDocType>,
+    logContext?: string,
+    timeout = 8000
+) {
+    let i = 0;
+    const startTime = Date.now();
+    while (true) {
+        i++;
+        try {
+            await ensureCollectionsHaveEqualState(
+                c1,
+                c2,
+                logContext
+            );
+            return;
+        } catch (err) {
+            if ((Date.now() - startTime) > timeout) {
+                throw err;
+            } else {
+                await promiseWait(50 * i);
+            }
+        }
+    }
+}
+
+
 
 export function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
     /**

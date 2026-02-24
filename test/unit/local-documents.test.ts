@@ -760,8 +760,8 @@ describeParallel('local-documents.test.ts', () => {
             });
 
             const key = 'foobar';
-            let doc = await db.getLocal(key);
-            doc = await db.insertLocal(key, {
+            await db.getLocal(key);
+            const doc = await db.insertLocal(key, {
                 foo: 'bar'
             });
             assert.ok(doc);

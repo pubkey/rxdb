@@ -9,6 +9,48 @@ export function promiseWait(ms: number = 0): Promise<void> {
     return new Promise(res => setTimeout(res, ms));
 }
 
+export function promiseWaitSkippable(
+    ms: number = 0
+): {
+    promise: Promise<void>;
+    skip: () => void;
+} {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let settled = false;
+
+    let resolveFn!: () => void;
+
+    const promise = new Promise<void>((resolve) => {
+        resolveFn = resolve;
+
+        timeoutId = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            resolve();
+        }, ms);
+    });
+
+    function cleanup() {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = undefined;
+        }
+    }
+
+    function skip() {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolveFn();
+    }
+
+    return {
+        promise,
+        skip
+    };
+}
+
 export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
     if (maybePromise && typeof (maybePromise as any).then === 'function') {
         // is promise

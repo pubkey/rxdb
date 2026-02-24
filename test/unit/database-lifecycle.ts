@@ -104,7 +104,7 @@ describeParallel('database-lifecycle.ts', () => {
         await col.cleanup(0);
         await refreshDatabase();
 
-        result = await col.bulkInsert([
+        await col.bulkInsert([
             schemaObjects.humanData(),
             schemaObjects.humanData(),
             schemaObjects.humanData(),

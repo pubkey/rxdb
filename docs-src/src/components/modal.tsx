@@ -11,7 +11,7 @@ export interface ModalProps
     title?: string;
 }
 
-export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
+export const Modal = forwardRef<HTMLDivElement, ModalProps>(function RxModal(
     {
         centered = true,
         maskClosable = false,

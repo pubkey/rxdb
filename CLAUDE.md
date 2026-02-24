@@ -29,7 +29,7 @@
 - **Imports**: Uses ES modules (import/export).
 - **Paths**: Source code in `src/`, tests in `test/`, documentation in `docs-src/`.
 - **TypeScript**: Do not use enums. Prefer types instead of interfaces.
-
+- **Errors**: Do not use `throw new Error()`. Use `throw newRxError()` or `throw newRxTypeError()` instead to reduce build size and do not include full error messages in production builds. Use the error codes from `src/rx-error.ts` and add new error codes if needed like `PL1`, `PL2`. Example: `throw newRxError('PL1', { plugin });`
 ## Development Workflow
 
 ```sh
@@ -59,6 +59,7 @@ When writing documentation or code comments or any other text, always use this w
 • SHOULD focus on practical, actionable insights.
 • SHOULD use data and examples to support claims when possible.
 • SHOULD use "you" and "your" to directly address the reader.
+• SHOULD always try to use the Oxford 3000 in variable names so that non-native English speakers know the words.
 • AVOID using em dashes (–) anywhere in your response. Use only commas, periods, or other standard punctuation. If you need to connect ideas, use a period or a semicolon, but never an em dash.
 • AVOID constructions like "not just this, but also this".
 • AVOID metaphors and cliches.
