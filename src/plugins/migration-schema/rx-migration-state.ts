@@ -444,6 +444,8 @@ export class RxMigrationState {
                             })
                     );
 
+                    this.replicationState = replicationState;
+
                     // filter out the documents where the migration strategy returned null
                     migratedRows = migratedRows.filter(row => !!row && !!row.newDocumentState);
 
