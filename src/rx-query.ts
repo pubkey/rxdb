@@ -294,7 +294,7 @@ export class RxQueryBase<
             result = {
                 result: queryResult.docs,
                 counter: queryResult.counter
-            }
+            };
         }
 
         sub.unsubscribe();
