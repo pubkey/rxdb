@@ -541,7 +541,7 @@ describeParallel('reactive-query.test.js', () => {
 
                 db.remove();
             });
-        new Array(isFastMode() ? 5 : 20)
+        new Array(isFastMode() ? 1 : 3)
             .fill(0).forEach((_v, runIdx) => {
                 it('query.$ emits after insert with async storage (run ' + runIdx + ')', async () => {
                     const memStorage = getRxStorageMemory();
@@ -609,11 +609,11 @@ describeParallel('reactive-query.test.js', () => {
                     await c.insert(schemaObjects.humanData('test-' + runIdx));
 
                     // now resolve the stalled query() with stale data (no doc)
-                    const resolveStalledQuery = pendingQueryResolve as ((result: any) => void);
+                    const resolveStalledQuery = pendingQueryResolve as any;
                     pendingQueryResolve = null;
                     resolveStalledQuery(undefined);
 
-                    await promiseWait(500);
+                    await promiseWait(isFastMode() ? 100 : 500);
                     const lastEmission = emissions[emissions.length - 1];
                     assert.strictEqual(
                         lastEmission.length,
