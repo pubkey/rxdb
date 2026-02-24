@@ -1365,12 +1365,6 @@ describe('migration-schema.test.ts', function () {
 
 
         it('#7008 migrate schema with multiple connected storages', async () => {
-            if (
-                config.storage.name === 'remote' ||
-                isDeno
-            ) {
-                return;
-            }
             // create a schema
             const mySchema = {
                 version: 0,
