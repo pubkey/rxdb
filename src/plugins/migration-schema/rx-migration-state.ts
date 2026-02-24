@@ -500,6 +500,7 @@ export class RxMigrationState {
 
         await this.updateStatusQueue;
         if (hasError) {
+            await cancelRxStorageReplication(replicationState);
             await replicationMetaStorageInstance.close();
             throw hasError;
         }
