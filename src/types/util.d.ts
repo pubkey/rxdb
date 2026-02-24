@@ -10,7 +10,7 @@ export type PlainJsonValue =
     PlainSimpleJsonObject |
     PlainSimpleJsonObject[] |
     PlainJsonValue[] |
-    { [key: string]: PlainJsonValue }
+    { [key: string]: PlainJsonValue; }
     ;
 export type PlainSimpleJsonObject = {
     [k: string]: PlainJsonValue | PlainJsonValue[];
