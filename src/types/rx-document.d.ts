@@ -72,7 +72,7 @@ export type RxDocumentMeta = {
      * Any other value can be attached to the _meta data.
      * Mostly done by plugins to mark documents.
      */
-    [k: string]: PlainJsonValue;
+    [k: string]: PlainJsonValue | undefined;
 
 
 };
