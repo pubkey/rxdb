@@ -601,7 +601,7 @@
     "@babel/preset-typescript": "7.28.5",
     "@babel/types": "7.29.0",
     "@eslint/compat": "2.0.2",
-    "@eslint/eslintrc": "3.3.3",
+    "@eslint/eslintrc": "3.3.4",
     "@eslint/js": "10.0.1",
     "@firebase/rules-unit-testing": "4.0.1",
     "@preact/signals-core": "1.13.0",
