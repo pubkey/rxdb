@@ -477,7 +477,6 @@ export class RxMigrationState {
             });
         });
 
-
         await awaitRxStorageReplicationFirstInSync(replicationState);
         await awaitRxStorageReplicationInSync(replicationState);
 
