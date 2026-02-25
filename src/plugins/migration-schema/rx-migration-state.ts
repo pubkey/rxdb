@@ -84,6 +84,11 @@ export class RxMigrationState {
     public readonly mustMigrate: ReturnType<typeof mustMigrate>;
     public readonly statusDocId: string;
     public readonly $: Observable<RxMigrationStatus>;
+
+    /**
+     * Contains ALL replication states
+     * that are ever used in this migration state.
+     */
     public replicationStates = new Set<RxStorageInstanceReplicationState<any>>();
     public canceled: boolean = false;
     public broadcastChannel?: BroadcastChannel;
@@ -515,7 +520,6 @@ export class RxMigrationState {
 
         // await this.cancel();
         await cancelRxStorageReplication(replicationState);
-        this.replicationStates.delete(replicationState);
         console.log('migrate(' + newStorage.collectionName + ') --- 8');
     }
 

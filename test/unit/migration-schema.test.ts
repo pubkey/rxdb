@@ -1337,31 +1337,30 @@ describe('migration-schema.test.ts', function () {
 
             // Perform migration
             const migrationPromise = migrationState.migratePromise();
-            await wait(0);
-            assert.ok(migrationState.replicationStates.size > 0, 'must have a replicationState');
-            const firstState = ensureNotFalsy(Array.from(migrationState.replicationStates.values())[0]);
             await migrationPromise;
+            const firstState = ensureNotFalsy(Array.from(migrationState.replicationStates.values())[0]);
+
+
+            assert.ok(migrationState.replicationStates.size > 0, 'must have a replicationState');
 
             // Verify documents migrated
             const docs = await db2.items.find().exec();
             assert.strictEqual(docs.length, 3);
 
-            /**
-             * After migration, replicationState should be assigned so cancel() can clean it up.
-             * Before the fix, it was never assigned, causing a memory leak.
-             */
-            assert.strictEqual(
-                migrationState.replicationStates.size,
-                0,
-                'must have cleaned up the replication state'
-            );
 
-            // Verify it was properly canceled
+            // Verify replication states are properly canceled
             assert.strictEqual(
                 ensureNotFalsy(firstState).events.canceled.getValue(),
                 true,
                 'replicationState should be canceled after migration to prevent memory leaks'
             );
+            Array.from(migrationState.replicationStates.values()).forEach(state => {
+                assert.strictEqual(
+                    state.events.canceled.getValue(),
+                    true,
+                    'replicationState should be canceled after migration to prevent memory leaks'
+                );
+            });
 
             await db2.close();
         });
