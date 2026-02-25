@@ -604,6 +604,45 @@ describe('migration-schema.test.ts', function () {
                 assert.strictEqual(needed, true);
                 col.database.close();
             });
+            /**
+             * After a successful migration, reopening the same database
+             * (simulating an app restart) must not require migration again.
+             * @link https://github.com/pubkey/rxdb/issues/7791
+             */
+            it('return false when database is reopened after migration (#7791)', async () => {
+                const dbName = randomToken(10);
+                const col = await humansCollection.createMigrationCollection(5, {
+                    3: (doc: any) => {
+                        doc.age = parseInt(doc.age, 10);
+                        return doc;
+                    }
+                }, dbName);
+                await col.migratePromise();
+                await col.database.close();
+
+                const db2 = await createRxDatabase({
+                    name: dbName,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true
+                });
+                const cols2 = await db2.addCollections({
+                    human: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: false,
+                        migrationStrategies: {
+                            1: (doc: any) => doc,
+                            2: (doc: any) => doc,
+                            3: (doc: any) => {
+                                doc.age = parseInt(doc.age, 10);
+                                return doc;
+                            }
+                        }
+                    }
+                });
+                const needed = await cols2.human.migrationNeeded();
+                assert.strictEqual(needed, false);
+                await db2.close();
+            });
         });
     });
     describeParallel('RxDatabase.migrationStates()', () => {
