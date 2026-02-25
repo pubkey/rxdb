@@ -580,7 +580,7 @@
   },
   "devDependencies": {
     "wrtc": "0.4.7",
-    "@angular/core": "21.1.5",
+    "@angular/core": "21.2.0",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.29.0",
     "@babel/plugin-external-helpers": "7.27.1",
