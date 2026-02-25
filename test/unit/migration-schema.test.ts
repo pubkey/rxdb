@@ -1336,7 +1336,11 @@ describe('migration-schema.test.ts', function () {
             assert.strictEqual(migrationNeeded, true, 'Migration should be needed');
 
             // Perform migration
-            await migrationState.migratePromise();
+            const migrationPromise = migrationState.migratePromise();
+            await wait(0);
+            assert.ok(migrationState.replicationStates.size > 0, 'must have a replicationState');
+            const firstState = ensureNotFalsy(Array.from(migrationState.replicationStates.values())[0]);
+            await migrationPromise;
 
             // Verify documents migrated
             const docs = await db2.items.find().exec();
@@ -1346,15 +1350,15 @@ describe('migration-schema.test.ts', function () {
              * After migration, replicationState should be assigned so cancel() can clean it up.
              * Before the fix, it was never assigned, causing a memory leak.
              */
-            const replicationState = migrationState.replicationState;
-            assert.ok(
-                replicationState !== undefined,
-                'replicationState should be assigned during migration so it can be canceled'
+            assert.strictEqual(
+                migrationState.replicationStates.size,
+                0,
+                'must have cleaned up the replication state'
             );
 
             // Verify it was properly canceled
             assert.strictEqual(
-                ensureNotFalsy(replicationState).events.canceled.getValue(),
+                ensureNotFalsy(firstState).events.canceled.getValue(),
                 true,
                 'replicationState should be canceled after migration to prevent memory leaks'
             );
@@ -1409,6 +1413,8 @@ describe('migration-schema.test.ts', function () {
                 }
             };
 
+            console.log('--------------------- 0');
+
             const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
@@ -1422,6 +1428,7 @@ describe('migration-schema.test.ts', function () {
                     schema: mySchema
                 }
             });
+            console.log('--------------------- 1');
 
             // create a replication state - this adds a new connected storage
             const replicationState = replicateRxCollection({
@@ -1438,6 +1445,7 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
+            console.log('--------------------- 2');
 
             // create another replication state - this adds an additional connected storage
             const replicationState2 = replicateRxCollection({
@@ -1454,12 +1462,16 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
+            console.log('--------------------- 3');
 
             // wait until initial replication is done
             await Promise.all([
                 replicationState.awaitInitialReplication(),
                 replicationState2.awaitInitialReplication()
             ]);
+
+            console.log('--------------------- 4');
+
 
             // insert a document
             await collections.mycollection.insert({
@@ -1469,7 +1481,9 @@ describe('migration-schema.test.ts', function () {
                 age: 56
             });
 
+            console.log('--------------------- 5');
             await db.close();
+            console.log('--------------------- 6');
 
             const db2 = await createRxDatabase({
                 name,
@@ -1478,6 +1492,7 @@ describe('migration-schema.test.ts', function () {
                 ignoreDuplicate: true
             });
 
+            console.log('--------------------- 7');
             // create a collection with the new schema
             const collections2 = await db2.addCollections({
                 mycollection: {
@@ -1492,9 +1507,13 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
+            console.log('--------------------- 8');
             const docs = await collections2.mycollection.find().exec();
+            console.log('--------------------- 9');
             assert.strictEqual(docs.length, 1);
+            console.log('--------------------- 10');
             await db2.close();
+            console.log('--------------------- 11');
         });
         it('#212 migration runs into infinity-loop', async () => {
             const dbName = randomToken(10);

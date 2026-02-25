@@ -84,7 +84,7 @@ export class RxMigrationState {
     public readonly mustMigrate: ReturnType<typeof mustMigrate>;
     public readonly statusDocId: string;
     public readonly $: Observable<RxMigrationStatus>;
-    public replicationState?: RxStorageInstanceReplicationState<any>;
+    public replicationStates = new Set<RxStorageInstanceReplicationState<any>>();
     public canceled: boolean = false;
     public broadcastChannel?: BroadcastChannel;
     constructor(
@@ -476,7 +476,7 @@ export class RxMigrationState {
             conflictHandler: defaultConflictHandler,
             hashFunction: this.database.hashFunction
         });
-        // this.replicationState = replicationState;
+        this.replicationStates.add(replicationState);
 
         console.log('migrate(' + newStorage.collectionName + ') --- 2');
 
@@ -515,6 +515,7 @@ export class RxMigrationState {
 
         // await this.cancel();
         await cancelRxStorageReplication(replicationState);
+        this.replicationStates.delete(replicationState);
         console.log('migrate(' + newStorage.collectionName + ') --- 8');
     }
 
@@ -525,9 +526,10 @@ export class RxMigrationState {
      */
     public async cancel() {
         this.canceled = true;
-        if (this.replicationState) {
-            await cancelRxStorageReplication(this.replicationState);
-        }
+        await Promise.all(
+            Array.from(this.replicationStates.values())
+                .map(state => cancelRxStorageReplication(state))
+        );
         if (this.broadcastChannel) {
             await this.broadcastChannel.close();
         }
