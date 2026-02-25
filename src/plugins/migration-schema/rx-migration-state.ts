@@ -494,7 +494,6 @@ export class RxMigrationState {
             replicationMetaStorageInstance.remove()
         ]);
 
-        // await this.cancel();
         await cancelRxStorageReplication(replicationState);
     }
 
