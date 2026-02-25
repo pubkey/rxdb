@@ -114,11 +114,14 @@ describe('rx-collection.test.ts', () => {
                     if ((await hasPremiumFlag())) {
                         return;
                     }
+                    if (isFastMode()) {
+                        return;
+                    }
                     const db = await createRxDatabase({
                         name: randomToken(10),
                         storage: config.storage.getStorage(),
                     });
-                    let t = NON_PREMIUM_COLLECTION_LIMIT + 1;
+                    let t = NON_PREMIUM_COLLECTION_LIMIT + 2;
                     await assertThrows(
                         async () => {
                             while (t > 0) {

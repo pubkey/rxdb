@@ -14,7 +14,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     NON_PREMIUM_COLLECTION_LIMIT,
-    hasPremiumFlag
+    hasPremiumFlag,
+    now
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
@@ -161,17 +162,6 @@ export class RxCollectionBase<
                 filter(changeEventBulk => changeEventBulk.collectionName === this.name)
             );
         } else { }
-
-
-        /**
-         * Must be last because the hooks might throw on dev-mode
-         * checks and we do not want to have broken collections here.
-         * RxCollection instances created for testings do not have a database
-         * so we do not add these to the list.
-         */
-        if (this.database) {
-            OPEN_COLLECTIONS.add(this);
-        }
     }
 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
@@ -240,9 +230,9 @@ export class RxCollectionBase<
              * we retry after some times to account for this.
              */
             let count = 0;
-            while (count < 10 && OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
-                count++;
+            while (count < 10 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
                 await this.promiseWait(30);
+                count++;
             }
             if (OPEN_COLLECTIONS.size > NON_PREMIUM_COLLECTION_LIMIT) {
                 throw newRxError('COL23', {
@@ -256,6 +246,16 @@ export class RxCollectionBase<
                     }
                 });
             }
+        }
+
+        /**
+         * Must be after the check because the hooks might throw on dev-mode
+         * checks and we do not want to have broken collections here.
+         * RxCollection instances created for testings do not have a database
+         * so we do not add these to the list.
+         */
+        if (this.database) {
+            OPEN_COLLECTIONS.add(this);
         }
 
 

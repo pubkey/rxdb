@@ -203,7 +203,7 @@ describeParallel('attachments.test.ts', () => {
                 ].join(' '), 'text/plain'), // use space here
                 type: 'text/plain'
             });
-            c.database.close();
+            await c.database.close();
         });
     });
     describe('.getAttachment()', () => {
@@ -476,7 +476,7 @@ describeParallel('attachments.test.ts', () => {
                 assert.deepStrictEqual(dataStringAfter, text);
 
 
-                c.database.close();
+                await c.database.close();
             });
         });
     });
@@ -565,7 +565,7 @@ describeParallel('attachments.test.ts', () => {
             assert.ok(emitted[0][0].doc);
 
             sub.unsubscribe();
-            c.database.close();
+            await c.database.close();
         });
     });
     describe('multiInstance', () => {
@@ -638,7 +638,7 @@ describeParallel('attachments.test.ts', () => {
             assert.strictEqual(doc2Streamed[2].length, 0);
             sub.unsubscribe();
             db.close();
-            db2.close();
+            await db2.close();
         });
     });
     describe('migration', () => {
