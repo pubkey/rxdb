@@ -1412,8 +1412,6 @@ describe('migration-schema.test.ts', function () {
                 }
             };
 
-            console.log('--------------------- 0');
-
             const name = randomToken(10);
             const db = await createRxDatabase({
                 name,
@@ -1427,7 +1425,6 @@ describe('migration-schema.test.ts', function () {
                     schema: mySchema
                 }
             });
-            console.log('--------------------- 1');
 
             // create a replication state - this adds a new connected storage
             const replicationState = replicateRxCollection({
@@ -1444,7 +1441,6 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
-            console.log('--------------------- 2');
 
             // create another replication state - this adds an additional connected storage
             const replicationState2 = replicateRxCollection({
@@ -1461,15 +1457,12 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
-            console.log('--------------------- 3');
 
             // wait until initial replication is done
             await Promise.all([
                 replicationState.awaitInitialReplication(),
                 replicationState2.awaitInitialReplication()
             ]);
-
-            console.log('--------------------- 4');
 
 
             // insert a document
@@ -1480,9 +1473,7 @@ describe('migration-schema.test.ts', function () {
                 age: 56
             });
 
-            console.log('--------------------- 5');
             await db.close();
-            console.log('--------------------- 6');
 
             const db2 = await createRxDatabase({
                 name,
@@ -1491,7 +1482,6 @@ describe('migration-schema.test.ts', function () {
                 ignoreDuplicate: true
             });
 
-            console.log('--------------------- 7');
             // create a collection with the new schema
             const collections2 = await db2.addCollections({
                 mycollection: {
@@ -1506,13 +1496,9 @@ describe('migration-schema.test.ts', function () {
                     }
                 }
             });
-            console.log('--------------------- 8');
             const docs = await collections2.mycollection.find().exec();
-            console.log('--------------------- 9');
             assert.strictEqual(docs.length, 1);
-            console.log('--------------------- 10');
             await db2.close();
-            console.log('--------------------- 11');
         });
         it('#212 migration runs into infinity-loop', async () => {
             const dbName = randomToken(10);
