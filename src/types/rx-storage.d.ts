@@ -137,16 +137,23 @@ export type RxAttachmentData = {
  */
 export type RxAttachmentWriteData = RxAttachmentData & {
     /**
-     * The data of the attachment. As string in base64 format.
-     * In the past we used Blob internally but it created many
-     * problems because of then we need the full data (for encryption/compression)
-     * so we anyway have to get the string value out of the Blob.
+     * The data of the attachment as a Blob.
+     * Blob is the canonical internal type because:
+     * - Attachments are blob-like things (images, videos, PDFs)
+     * - Blob is immutable (safe, no accidental mutation)
+     * - Blob.type carries MIME type metadata
+     * - Blob.size gives length synchronously
+     * - Blob is structured-cloneable (works with Worker/Electron postMessage)
+     * - IndexedDB stores Blobs efficiently (some engines use external blob storage)
      *
-     * Also using Blob has no performance benefit because in some RxStorage implementations,
-     * it just keeps the transaction open for longer because the Blob
-     * has be be read.
+     * Conversion to ArrayBuffer only happens at boundaries that require it:
+     * encryption (Web Crypto), compression (CompressionStream), digest hashing,
+     * and WebSocket serialization.
+     *
+     * Encryption/compression run in the wrapRxStorageInstance layer OUTSIDE
+     * storage transactions, so Blob does not extend transaction lifetimes.
      */
-    data: string;
+    data: Blob;
 };
 
 

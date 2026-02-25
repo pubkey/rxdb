@@ -244,7 +244,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             mode: 'fast'
         };
     }
-    getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
+    getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<Blob> {
         throw new Error("Method not implemented.");
     }
     changeStream() {

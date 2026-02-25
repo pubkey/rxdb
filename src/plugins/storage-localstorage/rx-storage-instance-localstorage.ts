@@ -2,6 +2,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import {
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
+    arrayBufferToBase64,
     ensureNotFalsy,
     now,
     toArray
@@ -182,7 +183,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
 
 
-    bulkWrite(
+    async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
@@ -285,21 +286,30 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             this.setIndex(index[i].index, indexValue);
         });
 
-        // attachments
+        // attachments — localStorage can only store strings, so serialize Blob to base64
+        const attachmentWrites: Promise<void>[] = [];
         categorized.attachmentsAdd.forEach(attachment => {
-            this.localStorage.setItem(
-                this.attachmentsKey +
-                '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
-                attachment.attachmentData.data
+            attachmentWrites.push(
+                attachment.attachmentData.data.arrayBuffer().then(ab => {
+                    this.localStorage.setItem(
+                        this.attachmentsKey +
+                        '-' + attachment.documentId +
+                        '||' + attachment.attachmentId,
+                        arrayBufferToBase64(ab)
+                    );
+                })
             );
         });
         categorized.attachmentsUpdate.forEach(attachment => {
-            this.localStorage.setItem(
-                this.attachmentsKey +
-                '-' + attachment.documentId +
-                '||' + attachment.attachmentId,
-                attachment.attachmentData.data
+            attachmentWrites.push(
+                attachment.attachmentData.data.arrayBuffer().then(ab => {
+                    this.localStorage.setItem(
+                        this.attachmentsKey +
+                        '-' + attachment.documentId +
+                        '||' + attachment.attachmentId,
+                        arrayBufferToBase64(ab)
+                    );
+                })
             );
         });
         categorized.attachmentsRemove.forEach(attachment => {
@@ -309,6 +319,7 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
                 '||' + attachment.attachmentId
             );
         });
+        await Promise.all(attachmentWrites);
 
         if (categorized.eventBulk.events.length > 0) {
             const lastState = ensureNotFalsy(categorized.newestRow).document;
@@ -514,9 +525,10 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return PROMISE_RESOLVE_TRUE;
     }
 
-    async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
-        const data = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
-        return ensureNotFalsy(data);
+    async getAttachmentData(documentId: string, attachmentId: string): Promise<Blob> {
+        const base64 = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
+        const response = await fetch('data:application/octet-stream;base64,' + ensureNotFalsy(base64));
+        return response.blob();
     }
 
     remove(): Promise<void> {

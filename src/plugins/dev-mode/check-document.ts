@@ -2,6 +2,25 @@ import { newRxError } from '../../rx-error.ts';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type { BulkWriteRow, RxDocumentData, RxStorageInstance } from '../../types/index.d.ts';
 
+/**
+ * Strip Blob data from _attachments so that
+ * the structured-clone / JSON check does not fail on Blob objects.
+ */
+function stripBlobsFromAttachments(
+    attachments: Record<string, any> | undefined
+): Record<string, any> {
+    if (!attachments) {
+        return {};
+    }
+    const ret: Record<string, any> = {};
+    for (const [key, val] of Object.entries(attachments)) {
+        const clone = Object.assign({}, val);
+        delete clone.data;
+        ret[key] = clone;
+    }
+    return ret;
+}
+
 export function ensurePrimaryKeyValid(
     primaryKey: string,
     docData: RxDocumentData<any>
@@ -108,7 +127,7 @@ export function checkWriteRows<RxDocType>(
         }
 
         /**
-         * Ensure it can be structured cloned
+         * Ensure it can be structured cloned.
          */
         try {
             /**
@@ -119,7 +138,21 @@ export function checkWriteRows<RxDocType>(
             if (typeof structuredClone === 'function') {
                 structuredClone(writeRow);
             } else {
-                JSON.parse(JSON.stringify(writeRow));
+                /**
+                 * JSON.stringify cannot handle Blob objects,
+                 * so we must strip them from _attachments before checking.
+                 */
+                const checkRow = Object.assign({}, writeRow, {
+                    document: Object.assign({}, writeRow.document, {
+                        _attachments: stripBlobsFromAttachments(writeRow.document._attachments)
+                    })
+                });
+                if (writeRow.previous) {
+                    checkRow.previous = Object.assign({}, writeRow.previous, {
+                        _attachments: stripBlobsFromAttachments(writeRow.previous._attachments)
+                    });
+                }
+                JSON.parse(JSON.stringify(checkRow));
             }
         } catch (err) {
             throw newRxError('DOC24', {

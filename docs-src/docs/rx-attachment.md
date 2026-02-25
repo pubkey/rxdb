@@ -16,7 +16,7 @@ Using attachments instead of adding the data to the normal document, ensures tha
 - Not all replication plugins support the replication of attachments.
 - Attachments can be stored [encrypted](./encryption.md).
 
-Internally, attachments in RxDB are stored and handled similar to how [CouchDB, PouchDB](https://pouchdb.com/guides/attachments.html#how-attachments-are-stored) does it.
+Internally, attachment data is stored as `Blob` objects. Blob is the canonical internal type because it is immutable, carries MIME type metadata via `Blob.type`, provides synchronous size via `Blob.size`, and is [structured-cloneable](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) (works with Worker/Electron `postMessage` and IndexedDB). Conversion to `ArrayBuffer` only happens at system boundaries that require it: encryption (Web Crypto), compression (CompressionStream), digest hashing, and WebSocket serialization.
 
 
 ## Add the attachments plugin
@@ -66,7 +66,7 @@ import { createBlob } from 'rxdb';
 const attachment = await myDocument.putAttachment(
     {
         id: 'cat.txt',     // (string) name of the attachment
-        data: createBlob('meowmeow', 'text/plain'),   // (string|Blob) data of the attachment
+        data: createBlob('meowmeow', 'text/plain'),   // (Blob) data of the attachment
         type: 'text/plain'    // (string) type of the attachment-data like 'image/jpeg'
     }
 );
@@ -193,7 +193,13 @@ const data = await attachment.getStringData(); // 'meow'
 Storing many attachments can be a problem when the disc space of the device is exceeded.
 Therefore it can make sense to compress the attachments before storing them in the [RxStorage](./rx-storage.md).
 With the `attachments-compression` plugin you can compress the attachments data on write and decompress it on reads.
-This happens internally and will now change on how you use the api. The compression is run with the [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) which is only supported on [newer browsers](https://caniuse.com/?search=compressionstream).
+This happens internally and will not change how you use the API. The compression is run with the [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) which is only supported on [newer browsers](https://caniuse.com/?search=compressionstream).
+
+## MIME-type-aware compression
+
+The compression plugin is MIME-type-aware. It only compresses attachment types that benefit from compression (text, JSON, SVG, etc.) and passes through already-compressed formats (JPEG, PNG, MP4, etc.) as-is. This avoids wasting CPU cycles on files that won't shrink.
+
+A built-in default list of compressible types is used automatically. You can override it with the `compressibleTypes` option in your schema:
 
 ```ts
 import {
@@ -218,15 +224,26 @@ const mySchema = {
     version: 0,
     type: 'object',
     properties: {
-        // .
-        // .
-        // .
+        // ..
     },
     attachments: {
-        compression: 'deflate'  // <- Specify the compression mode here. OneOf ['deflate', 'gzip']
+        compression: 'deflate',  // <- Specify the compression mode here. OneOf ['deflate', 'gzip']
+
+        // Optional: override which MIME types get compressed.
+        // Supports wildcard prefix matching (e.g. 'text/*' matches 'text/plain', 'text/html', etc.).
+        // If omitted, a built-in default list of compressible types is used.
+        compressibleTypes: [
+            'text/*',
+            'application/json',
+            'application/xml',
+            'image/svg+xml'
+            // ... add your own patterns
+        ]
     }
 };
 
 /* ... create your collections as usual and store attachments in them. */
 
 ```
+
+The default compressible types include `text/*`, `application/json`, `application/xml`, `application/javascript`, `image/svg+xml`, `image/bmp`, `application/pdf`, font formats, and other text-based MIME types. Binary formats like `image/jpeg`, `image/png`, `video/*`, and `audio/*` are **not** in the default list and will be stored without re-compression.

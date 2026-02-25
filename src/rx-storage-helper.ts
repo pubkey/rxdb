@@ -465,12 +465,6 @@ export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<Rx
     };
 }
 
-export function getAttachmentSize(
-    attachmentBase64String: string
-): number {
-    return atob(attachmentBase64String).length;
-}
-
 /**
  * Used in custom RxStorage implementations.
  */
@@ -480,7 +474,7 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
         return writeData as any;
     }
     const ret: RxAttachmentData = {
-        length: getAttachmentSize(data),
+        length: data.size,
         digest: writeData.digest,
         type: writeData.type
     };

@@ -170,7 +170,7 @@ describeParallel('rx-database.test.ts', () => {
                 const db = await createRxDatabase({
                     name: randomToken(10),
                     storage: config.storage.getStorage(),
-                    async hashFunction(i: string) {
+                    async hashFunction(i: string | ArrayBuffer | Blob) {
                         const hash = await defaultHashSha256(i);
                         return hash + 'xxx';
                     }

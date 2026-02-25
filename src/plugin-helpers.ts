@@ -156,7 +156,7 @@ export function wrapRxStorageInstance<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
     modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => MaybePromise<RxDocumentData<any>>,
     modifyFromStorage: (docData: RxDocumentData<any>) => MaybePromise<RxDocumentData<RxDocType>>,
-    modifyAttachmentFromStorage: (attachmentData: string) => MaybePromise<string> = (v) => v
+    modifyAttachmentFromStorage: (attachmentData: Blob) => MaybePromise<Blob> = (v) => v
 ): WrappedRxStorageInstance<RxDocType, any, any> {
     async function toStorage(docData: RxDocumentWriteData<RxDocType>): Promise<RxDocumentData<any>> {
         if (!docData) {

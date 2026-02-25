@@ -75,8 +75,11 @@ export type ById<T> = {
 
 /**
  * Must be async to support async hashing like from the WebCrypto API.
+ * Accepts string for document revision hashing,
+ * ArrayBuffer for raw binary hashing,
+ * or Blob for attachment digest hashing.
  */
-export type HashFunction = (input: string) => Promise<string>;
+export type HashFunction = (input: string | ArrayBuffer | Blob) => Promise<string>;
 
 export declare type QueryMatcher<DocType> = (doc: DocType | DeepReadonly<DocType>) => boolean;
 

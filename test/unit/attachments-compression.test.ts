@@ -17,15 +17,14 @@ import {
     RxCollection,
     createBlob,
     blobToString,
-    CompressionMode,
-    b64EncodeUnicode,
-    b64DecodeUnicode
+    CompressionMode
 } from '../../plugins/core/index.mjs';
 
 import {
     wrappedAttachmentsCompressionStorage,
-    compressBase64,
-    decompressBase64
+    compressBlob,
+    decompressBlob,
+    isCompressibleType
 } from '../../plugins/attachments-compression/index.mjs';
 
 const modes: CompressionMode[] = ['deflate', 'gzip'];
@@ -39,6 +38,14 @@ modes.forEach(mode => {
              */
             || isBun
         ) {
+            return;
+        }
+
+        // Deno's structuredClone() silently destroys Blob data, returning {}. https://github.com/denoland/deno/issues/12067#issuecomment-1975001079
+        // fake-indexeddb (used by dexie in non-browser envs) relies on
+        // structuredClone, so Blob attachment roundtrips are broken in Deno+dexie.
+        // These tests pass fine on Node and Bun, which is sufficient coverage.
+        if (isDeno && config.storage.name === 'dexie') {
             return;
         }
 
@@ -86,10 +93,11 @@ modes.forEach(mode => {
         describe('basics', () => {
             it('compress->decompress', async () => {
                 const plainData = 'foobar';
-                const compressed = await compressBase64(mode, b64EncodeUnicode(plainData));
-                const decompressedBase64 = await decompressBase64(mode, compressed);
+                const blob = createBlob(plainData, 'text/plain');
+                const compressed = await compressBlob(mode, blob);
+                const decompressed = await decompressBlob(mode, compressed);
 
-                const plainDecompressed = b64DecodeUnicode(decompressedBase64);
+                const plainDecompressed = await blobToString(decompressed);
                 assert.strictEqual(
                     plainData,
                     plainDecompressed
@@ -171,6 +179,150 @@ modes.forEach(mode => {
                 );
                 c.database.close();
                 c2.database.close();
+            });
+        });
+
+        describe('selective compression', () => {
+            it('should compress a compressible type (text/plain) and roundtrip correctly', async () => {
+                const c = await createCompressedAttachmentsCollection(1);
+                const doc = await c.findOne().exec(true);
+                const plainData = 'hello world repeating text '.repeat(20);
+                const originalBlob = createBlob(plainData, 'text/plain');
+                const attachment = await doc.putAttachment({
+                    id: 'readme.txt',
+                    data: originalBlob,
+                    type: 'text/plain'
+                });
+                assert.ok(attachment);
+
+                // Stored size should be smaller than original (text compresses well)
+                assert.ok(
+                    attachment.length < originalBlob.size,
+                    'compressed attachment (' + attachment.length + ') should be smaller than original (' + originalBlob.size + ')'
+                );
+
+                const data = await attachment.getData();
+                const dataString = await blobToString(data);
+                assert.strictEqual(dataString, plainData);
+                c.database.close();
+            });
+            it('should NOT compress a non-compressible type (image/jpeg) but still roundtrip correctly', async () => {
+                const c = await createCompressedAttachmentsCollection(1);
+                const doc = await c.findOne().exec(true);
+
+                // Create fake JPEG-like binary data
+                const binaryData = new Uint8Array(200);
+                for (let i = 0; i < binaryData.length; i++) {
+                    binaryData[i] = i % 256;
+                }
+                const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+
+                const attachment = await doc.putAttachment({
+                    id: 'photo.jpg',
+                    data: jpegBlob,
+                    type: 'image/jpeg'
+                });
+                assert.ok(attachment);
+
+                // Stored size should be exactly the original (not compressed, no overhead)
+                assert.strictEqual(
+                    attachment.length,
+                    binaryData.length,
+                    'non-compressible type stored size (' + attachment.length + ') should equal original (' + binaryData.length + ')'
+                );
+
+                const data = await attachment.getData();
+                const retrievedBytes = new Uint8Array(await data.arrayBuffer());
+                assert.strictEqual(retrievedBytes.length, binaryData.length);
+                for (let i = 0; i < binaryData.length; i++) {
+                    assert.strictEqual(retrievedBytes[i], binaryData[i]);
+                }
+                c.database.close();
+            });
+            it('should compress text but not jpeg on the same document', async () => {
+                if (isDeno) {
+                    return;
+                }
+                const c = await createCompressedAttachmentsCollection(1);
+                const c2 = await humansCollection.createAttachments(1);
+                const doc = await c.findOne().exec(true);
+                const docUncompressed = await c2.findOne().exec(true);
+
+                const textData = 'repeating text data for compression '.repeat(20);
+                const binaryData = new Uint8Array(200);
+                for (let i = 0; i < binaryData.length; i++) {
+                    binaryData[i] = i % 256;
+                }
+                const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+
+                // Store both on compressed collection
+                const textAttachment = await doc.putAttachment({
+                    id: 'readme.txt',
+                    data: createBlob(textData, 'text/plain'),
+                    type: 'text/plain'
+                });
+                const jpegAttachment = await doc.putAttachment({
+                    id: 'photo.jpg',
+                    data: jpegBlob,
+                    type: 'image/jpeg'
+                });
+
+                // Store text on uncompressed collection for size comparison
+                const textAttachmentUncompressed = await docUncompressed.putAttachment({
+                    id: 'readme.txt',
+                    data: createBlob(textData, 'text/plain'),
+                    type: 'text/plain'
+                });
+
+                // Compressed text should be strictly smaller than uncompressed
+                assert.ok(
+                    textAttachment.length < textAttachmentUncompressed.length,
+                    'compressed text (' + textAttachment.length + ') should be smaller than uncompressed (' + textAttachmentUncompressed.length + ')'
+                );
+
+                // JPEG stored size should be exactly the original (not compressed, no overhead)
+                assert.strictEqual(
+                    jpegAttachment.length,
+                    binaryData.length,
+                    'non-compressible JPEG stored size (' + jpegAttachment.length + ') should equal original (' + binaryData.length + ')'
+                );
+
+                // Both should roundtrip correctly
+                const textResult = await blobToString(await textAttachment.getData());
+                assert.strictEqual(textResult, textData);
+
+                const jpegResult = new Uint8Array(await (await jpegAttachment.getData()).arrayBuffer());
+                assert.strictEqual(jpegResult.length, binaryData.length);
+
+                c.database.close();
+                c2.database.close();
+            });
+        });
+
+        describe('isCompressibleType()', () => {
+            const defaultTypes = [
+                'text/*',
+                'application/json',
+                'image/svg+xml'
+            ];
+            it('should match wildcard patterns', () => {
+                assert.strictEqual(isCompressibleType('text/plain', defaultTypes), true);
+                assert.strictEqual(isCompressibleType('text/html', defaultTypes), true);
+                assert.strictEqual(isCompressibleType('text/css', defaultTypes), true);
+            });
+            it('should match exact patterns', () => {
+                assert.strictEqual(isCompressibleType('application/json', defaultTypes), true);
+                assert.strictEqual(isCompressibleType('image/svg+xml', defaultTypes), true);
+            });
+            it('should be case-insensitive', () => {
+                assert.strictEqual(isCompressibleType('TEXT/PLAIN', defaultTypes), true);
+                assert.strictEqual(isCompressibleType('Application/JSON', defaultTypes), true);
+            });
+            it('should NOT match non-compressible types', () => {
+                assert.strictEqual(isCompressibleType('image/jpeg', defaultTypes), false);
+                assert.strictEqual(isCompressibleType('image/png', defaultTypes), false);
+                assert.strictEqual(isCompressibleType('video/mp4', defaultTypes), false);
+                assert.strictEqual(isCompressibleType('audio/mpeg', defaultTypes), false);
             });
         });
 

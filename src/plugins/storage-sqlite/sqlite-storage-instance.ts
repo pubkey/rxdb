@@ -369,7 +369,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         return true;
     }
 
-    async getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
+    async getAttachmentData(_documentId: string, _attachmentId: string): Promise<Blob> {
         throw newRxError('SQL1');
     }
 

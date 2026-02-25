@@ -925,6 +925,15 @@ describe('replication.test.ts', () => {
          * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
          * This makes handling attachment easier
          */
+
+        // Deno's structuredClone() silently destroys Blob data, returning {}. https://github.com/denoland/deno/issues/12067#issuecomment-1975001079
+        // fake-indexeddb (used by dexie in non-browser envs) relies on
+        // structuredClone, so Blob attachment roundtrips are broken in Deno+dexie.
+        // These tests pass fine on Node and Bun, which is sufficient coverage.
+        if (isDeno && config.storage.name === 'dexie') {
+            return;
+        }
+
         it('attachments replication: up and down with streaming', async () => {
             const localCollection = await humansCollection.createAttachments(3);
             const remoteCollection = await humansCollection.createAttachments(3);

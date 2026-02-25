@@ -151,6 +151,13 @@ export type RxJsonSchema<
          * @link https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
          */
         compression?: CompressionMode;
+        /**
+         * Optional whitelist of MIME type patterns that should be compressed.
+         * Supports '*' suffix for prefix matching (e.g., 'text/*').
+         * If omitted, a built-in default list of compressible types is used.
+         * Only relevant when 'compression' is set.
+         */
+        compressibleTypes?: string[];
     };
     /**
      * Options for the sharding plugin of rxdb-premium.

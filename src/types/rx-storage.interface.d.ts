@@ -32,10 +32,12 @@ import type {
  * as a factory that can create multiple RxStorageInstance
  * objects.
  *
- * All data inputs and outputs of a StorageInstance must be plain json objects.
- * Do not use Map, Set or anything else that cannot be JSON.stringify-ed.
+ * All data inputs and outputs of a StorageInstance must be structured-cloneable.
+ * Document data must be plain JSON objects. Attachment data uses Blob.
+ * Do not use Map, Set or anything else that is not structured-cloneable.
  * This will ensure that the storage can exchange data
  * when it is a WebWorker or a WASM process or data is send via BroadcastChannel.
+ * The only exception is the WebSocket transport, which serializes at its boundary.
  */
 export interface RxStorage<Internals, InstanceCreationOptions> {
     /**
@@ -217,13 +219,13 @@ export interface RxStorageInstance<
     ): Promise<RxStorageCountResult>;
 
     /**
-     * Returns the plain data of a single attachment.
+     * Returns the data of a single attachment as a Blob.
      */
     getAttachmentData(
         documentId: string,
         attachmentId: string,
         digest: string
-    ): Promise<string>;
+    ): Promise<Blob>;
 
     /**
      * Returns the current (not the old!) data of all documents that have been changed AFTER the given checkpoint.

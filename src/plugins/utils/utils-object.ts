@@ -170,6 +170,10 @@ function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
     if (src === null || typeof (src) !== 'object') {
         return src;
     }
+    // Blobs are immutable — pass through without cloning, otherwise it gets converted into a normal object, which breaks things.
+    if (typeof Blob !== 'undefined' && src instanceof Blob) {
+        return src as any;
+    }
     if (Array.isArray(src)) {
         const ret = new Array(src.length);
         let i = ret.length;

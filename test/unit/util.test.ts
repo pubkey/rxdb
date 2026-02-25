@@ -17,7 +17,6 @@ import {
     clone as rxdbClone,
     createBlob,
     blobToString,
-    getBlobSize,
     blobToBase64String,
     createBlobFromBase64,
     overwritable,
@@ -60,6 +59,18 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+        });
+        it('should work with a Blob input', async () => {
+            const text = 'foobar';
+            const blob = createBlob(text, 'text/plain');
+            const hashFromBlob = await defaultHashSha256(blob);
+            assert.strictEqual(typeof hashFromBlob, 'string');
+            assert.ok(hashFromBlob.length > 0);
+
+            // Hash of Blob should match hash of equivalent ArrayBuffer
+            const ab = await blob.arrayBuffer();
+            const hashFromAb = await defaultHashSha256(ab);
+            assert.strictEqual(hashFromBlob, hashFromAb);
         });
     });
     describe('.sortObject()', () => {
@@ -220,7 +231,7 @@ describe('util.test.js', () => {
             const amount = 30;
             const str = randomToken(amount);
             const blob = createBlob(str, 'plain/text');
-            const size = getBlobSize(blob);
+            const size = blob.size;
             assert.strictEqual(size, amount);
         });
         it('should do the correct base64 conversion', async () => {
@@ -276,6 +287,29 @@ describe('util.test.js', () => {
                 await blobToString(blobFromb64),
                 plain
             );
+        });
+        it('deepClone should preserve Blob instances by reference', () => {
+            const text = 'some attachment data';
+            const blob = createBlob(text, 'text/plain');
+            const obj = {
+                _attachments: {
+                    'file.txt': {
+                        data: blob,
+                        type: 'text/plain'
+                    }
+                }
+            };
+            const cloned = clone(obj);
+            // Blob should be the exact same reference (not cloned into a plain object)
+            assert.ok(cloned._attachments['file.txt'].data instanceof Blob);
+            assert.strictEqual(cloned._attachments['file.txt'].data, blob);
+        });
+        it('deepClone should preserve Blob in nested arrays', () => {
+            const blob = createBlob('test', 'text/plain');
+            const arr = [{ data: blob }, 'other'];
+            const cloned = clone(arr);
+            assert.ok((cloned[0] as any).data instanceof Blob);
+            assert.strictEqual((cloned[0] as any).data, blob);
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {

@@ -29,8 +29,15 @@ function getHashFn() {
     return hashFn;
 }
 
-export async function nativeSha256(input: string) {
-    const data = new TextEncoder().encode(input);
+export async function nativeSha256(input: string | ArrayBuffer | Blob) {
+    let data: BufferSource;
+    if (input instanceof Blob) {
+        data = await input.arrayBuffer();
+    } else if (typeof input === 'string') {
+        data = new TextEncoder().encode(input);
+    } else {
+        data = input;
+    }
     const hashBuffer = await getHashFn()('SHA-256', data);
     /**
      * @link https://jameshfisher.com/2017/10/30/web-cryptography-api-hello-world/

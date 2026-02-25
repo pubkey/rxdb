@@ -7,7 +7,6 @@ import {
     blobToString,
     createBlobFromBase64,
     flatClone,
-    getBlobSize,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils/index.ts';
 import type {
@@ -68,12 +67,12 @@ export class RxAttachment {
      * returns the data for the attachment
      */
     async getData(): Promise<Blob> {
-        const plainDataBase64 = await this.getDataBase64();
-        const ret = await createBlobFromBase64(
-            plainDataBase64,
-            this.type as any
+        const blob = await this.doc.collection.storageInstance.getAttachmentData(
+            this.doc.primary,
+            this.id,
+            this.digest
         );
-        return ret;
+        return blob;
     }
 
     async getStringData(): Promise<string> {
@@ -83,12 +82,8 @@ export class RxAttachment {
     }
 
     async getDataBase64(): Promise<string> {
-        const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
-            this.doc.primary,
-            this.id,
-            this.digest
-        );
-        return plainDataBase64;
+        const blob = await this.getData();
+        return blobToBase64String(blob);
     }
 }
 
@@ -114,27 +109,11 @@ export async function putAttachment<RxDocType>(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    const dataSize = getBlobSize(attachmentData.data);
-    const dataString = await blobToBase64String(attachmentData.data);
-
-    return this.putAttachmentBase64({
-        id: attachmentData.id,
-        length: dataSize,
-        type: attachmentData.type,
-        data: dataString
-    }) as any;
-}
-
-export async function putAttachmentBase64<RxDocType>(
-    this: RxDocument<RxDocType>,
-    attachmentData: RxAttachmentCreatorBase64
-) {
-    ensureSchemaSupportsAttachments(this);
-    const digest = await this.collection.database.hashFunction(attachmentData.data);
+    const dataBlob = attachmentData.data;
+    const digest = await this.collection.database.hashFunction(dataBlob);
 
     const id = attachmentData.id;
     const type = attachmentData.type;
-    const data = attachmentData.data;
 
     return this.collection.incrementalWriteQueue.addWrite(
         this._data,
@@ -142,9 +121,9 @@ export async function putAttachmentBase64<RxDocType>(
             docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             docWriteData._attachments[id] = {
-                length: attachmentData.length,
+                length: dataBlob.size,
                 type,
-                data,
+                data: dataBlob,
                 digest
             };
             return docWriteData;
@@ -158,6 +137,19 @@ export async function putAttachmentBase64<RxDocType>(
             );
             return attachment;
         });
+}
+
+export async function putAttachmentBase64<RxDocType>(
+    this: RxDocument<RxDocType>,
+    attachmentData: RxAttachmentCreatorBase64
+) {
+    ensureSchemaSupportsAttachments(this);
+    const blob = await createBlobFromBase64(attachmentData.data, attachmentData.type);
+    return this.putAttachment({
+        id: attachmentData.id,
+        type: attachmentData.type,
+        data: blob
+    });
 }
 
 /**
@@ -217,16 +209,16 @@ export async function preMigrateDocument<RxDocType>(
             Object.keys(attachments).map(async (attachmentId) => {
                 const attachment: RxAttachmentData = attachments[attachmentId];
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
-                const rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(
+                const rawAttachmentBlob = await data.oldCollection.storageInstance.getAttachmentData(
                     docPrimary,
                     attachmentId,
                     attachment.digest
                 );
-                const digest = await data.oldCollection.database.hashFunction(rawAttachmentData);
+                const digest = await data.oldCollection.database.hashFunction(rawAttachmentBlob);
                 newAttachments[attachmentId] = {
-                    length: attachment.length,
+                    length: rawAttachmentBlob.size,
                     type: attachment.type,
-                    data: rawAttachmentData,
+                    data: rawAttachmentBlob,
                     digest
                 };
             })
