@@ -7,7 +7,8 @@ import {
     humansCollection,
     isFastMode,
     schemaObjects,
-    schemas
+    schemas,
+    isDeno
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -1583,6 +1584,15 @@ describe('migration-schema.test.ts', function () {
             if (!config.storage.hasAttachments) {
                 return;
             }
+
+            // Deno's structuredClone() silently destroys Blob data, returning {}. https://github.com/denoland/deno/issues/12067#issuecomment-1975001079
+            // fake-indexeddb (used by dexie in non-browser envs) relies on
+            // structuredClone, so Blob attachment roundtrips are broken in Deno+dexie.
+            // These tests pass fine on Node and Bun, which is sufficient coverage.
+            if (isDeno && config.storage.name === 'dexie') {
+                return;
+            }
+
             const attachmentData = AsyncTestUtil.randomString(20);
             const dataBlob = createBlob(
                 attachmentData,

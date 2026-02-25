@@ -68,12 +68,12 @@ export async function fillWriteDataForAttachmentsChange<RxDocType>(
                     ) &&
                     !(value as RxAttachmentWriteData).data
                 ) {
-                    const attachmentDataString = await storageInstance.getAttachmentData(
+                    const attachmentBlob = await storageInstance.getAttachmentData(
                         docId,
                         key,
                         value.digest
                     );
-                    (value as RxAttachmentWriteData).data = attachmentDataString;
+                    (value as RxAttachmentWriteData).data = attachmentBlob;
                 }
             })
     );

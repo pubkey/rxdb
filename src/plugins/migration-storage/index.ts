@@ -7,7 +7,6 @@ import {
     RxStorageBulkWriteResponse,
     randomToken,
     RxStorage,
-    blobToBase64String,
     prepareQuery,
     PreparedQuery,
     FilledMangoQuery
@@ -153,16 +152,15 @@ export async function migrateCollection<RxDocType>(
                     const docId: string = (doc as any)[primaryPath];
                     await Promise.all(
                         Object.entries(doc._attachments).map(async ([attachmentId, attachmentMeta]) => {
-                            const attachmentData = await oldStorageInstance.getAttachmentData(
+                            const attachmentBlob = await oldStorageInstance.getAttachmentData(
                                 docId,
                                 attachmentId,
                                 (attachmentMeta as any).digest
                             );
-                            const attachmentDataString = await blobToBase64String(attachmentData);
                             (doc as any)._attachments[attachmentId] = {
-                                data: attachmentDataString,
+                                data: attachmentBlob,
                                 digest: (attachmentMeta as any).digest,
-                                length: (attachmentMeta as any).length,
+                                length: attachmentBlob.size,
                                 type: (attachmentMeta as any).type
                             }
                         })

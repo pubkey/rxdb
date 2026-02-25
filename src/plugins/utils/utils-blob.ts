@@ -63,6 +63,3 @@ export async function blobToBase64String(blob: Blob | string): Promise<string> {
     return arrayBufferToBase64(arrayBuffer);
 }
 
-export function getBlobSize(blob: Blob): number {
-    return blob.size;
-}

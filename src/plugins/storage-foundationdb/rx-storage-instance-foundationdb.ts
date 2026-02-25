@@ -5,7 +5,6 @@ import type {
     CategorizeBulkWriteRowsOutput,
     EventBulk,
     PreparedQuery,
-    RxAttachmentWriteData,
     RxDocumentData,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
@@ -156,18 +155,25 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     });
 
                     // attachments
-                    categorized.attachmentsAdd.forEach(attachment => {
-                        attachmentTx.set(
-                            attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                            attachment.attachmentData
-                        );
-                    });
-                    categorized.attachmentsUpdate.forEach(attachment => {
-                        attachmentTx.set(
-                            attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                            attachment.attachmentData
-                        );
-                    });
+                    // FoundationDB stores attachment data as raw binary Buffers.
+                    await Promise.all(
+                        categorized.attachmentsAdd.map(async (attachment) => {
+                            const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
+                            attachmentTx.set(
+                                attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                                buffer
+                            );
+                        })
+                    );
+                    await Promise.all(
+                        categorized.attachmentsUpdate.map(async (attachment) => {
+                            const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
+                            attachmentTx.set(
+                                attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                                buffer
+                            );
+                        })
+                    );
                     categorized.attachmentsRemove.forEach(attachment => {
                         attachmentTx.delete(
                             attachmentMapKey(attachment.documentId, attachment.attachmentId)
@@ -235,10 +241,14 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         };
     }
 
-    async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
+    async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<Blob> {
         const dbs = await this.internals.dbsPromise;
-        const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
-        return attachment.data;
+        const key = attachmentMapKey(documentId, attachmentId);
+        const buffer = await dbs.attachments.get(key);
+        if (!buffer) {
+            throw new Error('attachment does not exist: ' + key);
+        }
+        return new Blob([buffer]);
     }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
@@ -366,10 +376,10 @@ export function createFoundationDBStorageInstance<RxDocType>(
             .withKeyEncoding(encoders.string)
             .withValueEncoding(encoders.json) as any;
 
-        const attachments: FoundationDBDatabase<RxAttachmentWriteData> = root
+        const attachments: FoundationDBDatabase<Buffer> = root
             .at('attachments.')
             .withKeyEncoding(encoders.string)
-            .withValueEncoding(encoders.json) as any;
+            .withValueEncoding(encoders.buffer) as any;
 
 
         const indexDBs: { [indexName: string]: FoundationDBIndexMeta<RxDocType>; } = {};
