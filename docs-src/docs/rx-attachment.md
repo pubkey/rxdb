@@ -76,6 +76,27 @@ const attachment = await myDocument.putAttachment(
 Expo/React-Native does not support the `Blob` API natively. Make sure you use your own polyfill that properly supports `blob.arrayBuffer()` when using RxAttachments or use the `putAttachmentBase64()` and `getDataBase64()` so that you do not have to create blobs.
 :::
 
+## putAttachments()
+
+Write multiple attachments to a `RxDocument` in a single atomic operation. This is more efficient than calling `putAttachment()` multiple times because it only performs one write to the storage. Returns a Promise with an array of the new attachments.
+
+```javascript
+import { createBlob } from 'rxdb';
+
+const attachments = await myDocument.putAttachments([
+    {
+        id: 'cat.txt',
+        data: createBlob('meowmeow', 'text/plain'),
+        type: 'text/plain'
+    },
+    {
+        id: 'dog.txt',
+        data: createBlob('woof', 'text/plain'),
+        type: 'text/plain'
+    }
+]);
+```
+
 ## putAttachmentBase64()
 
 Same as `putAttachment()` but accepts a plain base64 string instead of a `Blob`.
@@ -184,6 +205,50 @@ Returns a Promise which resolves the attachment's data as `string`.
 const attachment = await myDocument.getAttachment('cat.jpg');
 const data = await attachment.getStringData(); // 'meow'
 ```
+
+
+## Inline attachments on insert and upsert
+
+Instead of inserting a document first and then calling `putAttachment()` separately, you can include attachments directly in the document data when using `insert()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, or `incrementalUpsert()`. Provide `attachments` as an array of `{ id, type, data }` objects — the same format used by `putAttachment()`.
+
+```javascript
+import { createBlob } from 'rxdb';
+
+// insert with inline attachments
+const doc = await myCollection.insert({
+    name: 'foo',
+    attachments: [
+        {
+            id: 'photo.jpg',
+            type: 'image/jpeg',
+            data: myJpegBlob
+        },
+        {
+            id: 'notes.txt',
+            type: 'text/plain',
+            data: createBlob('some notes', 'text/plain')
+        }
+    ]
+});
+
+const attachment = doc.getAttachment('photo.jpg');
+```
+
+### Upsert behavior with attachments
+
+When upserting a document that already exists, attachments from the new data are **merged** with the document's existing attachments by default. This means existing attachments not mentioned in the upsert data are preserved.
+
+To replace all existing attachments instead, pass `{ deleteExistingAttachments: true }` as the second argument:
+
+```javascript
+// Merge (default): keeps existing attachments, adds/updates new ones
+const doc = await myCollection.upsert(docData);
+
+// Replace: only the attachments in docData will exist after the upsert
+const doc2 = await myCollection.upsert(docData, { deleteExistingAttachments: true });
+```
+
+This option works with `upsert()`, `bulkUpsert()`, and `incrementalUpsert()`.
 
 
 

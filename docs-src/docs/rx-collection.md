@@ -151,16 +151,22 @@ const result = await myCollection.bulkRemove([
 
 ### upsert()
 Inserts the document if it does not exist within the collection, otherwise it will overwrite it. Returns the new or overwritten RxDocument.
+
+When the document already exists, any [inline attachments](./rx-attachment.md#inline-attachments-on-insert-and-upsert) in the upsert data are **merged** with existing attachments by default. Pass `{ deleteExistingAttachments: true }` as the second argument to replace all existing attachments instead.
+
 ```js
 const doc = await myCollection.upsert({
   name: 'foo',
   lastname: 'bar2'
 });
+
+// with options
+const doc2 = await myCollection.upsert(docData, { deleteExistingAttachments: true });
 ```
 
 ### bulkUpsert()
 Same as `upsert()` but runs over multiple documents. Improves performance compared to running many `upsert()` calls.
-Returns an `error` and a `success` array.
+Returns an `error` and a `success` array. Accepts an optional second argument for [upsert options](./rx-attachment.md#upsert-behavior-with-attachments).
 
 ```js
 const docs = await myCollection.bulkUpsert([

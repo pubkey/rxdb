@@ -1069,6 +1069,195 @@ describeParallel('attachments.test.ts', () => {
             db.close();
         });
     });
+    describe('inline attachments on insert/upsert', () => {
+        // Share a single db/collection to avoid exceeding the open collection
+        // limit when tests run in parallel (describeParallel / mocha.parallel).
+        let db: any;
+        let col: any;
+        before(async () => {
+            db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            col = collections.humans;
+        });
+        after(async () => {
+            await db.close();
+        });
+        it('insert with inline attachments computes digest and length', async () => {
+            const testBlob = createBlob('hello inline', 'text/plain');
+            const docData = schemaObjects.humanData();
+            (docData as any).attachments = [
+                {
+                    id: 'inline.txt',
+                    type: 'text/plain',
+                    data: testBlob
+                }
+            ];
+            const doc = await col.insert(docData);
+            const attachment = doc.getAttachment('inline.txt');
+            assert.ok(attachment);
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.length, testBlob.size);
+            assert.ok(attachment.digest.length > 0);
+
+            const retrievedData = await attachment.getData();
+            const text = await blobToString(retrievedData);
+            assert.strictEqual(text, 'hello inline');
+        });
+        it('bulkInsert with inline attachments', async () => {
+            const doc1Data = schemaObjects.humanData();
+            (doc1Data as any).attachments = [
+                {
+                    id: 'file1.txt',
+                    type: 'text/plain',
+                    data: createBlob('doc1 content', 'text/plain')
+                }
+            ];
+            const doc2Data = schemaObjects.humanData();
+            (doc2Data as any).attachments = [
+                {
+                    id: 'file2.txt',
+                    type: 'text/plain',
+                    data: createBlob('doc2 content', 'text/plain')
+                }
+            ];
+
+            const result = await col.bulkInsert([doc1Data, doc2Data]);
+            assert.strictEqual(result.success.length, 2);
+
+            for (const doc of result.success) {
+                const attachments = doc.allAttachments();
+                assert.strictEqual(attachments.length, 1);
+                const att = attachments[0];
+                assert.ok(att.digest.length > 0);
+                const data = await att.getData();
+                const text = await blobToString(data);
+                assert.ok(text.includes('content'));
+            }
+        });
+        it('upsert with inline attachments on new document', async () => {
+            const docData = schemaObjects.humanData();
+            (docData as any).attachments = [
+                {
+                    id: 'upsert.txt',
+                    type: 'text/plain',
+                    data: createBlob('upsert content', 'text/plain')
+                }
+            ];
+            const doc = await col.upsert(docData);
+            const attachment = doc.getAttachment('upsert.txt');
+            assert.ok(attachment);
+            const text = await blobToString(await attachment.getData());
+            assert.strictEqual(text, 'upsert content');
+        });
+        it('upsert with inline attachments on existing document preserves and merges', async () => {
+            // Insert first with an attachment
+            const docData = schemaObjects.humanData();
+            (docData as any).attachments = [
+                {
+                    id: 'first.txt',
+                    type: 'text/plain',
+                    data: createBlob('first attachment', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // Upsert same primary with a different attachment
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any).attachments = [
+                {
+                    id: 'second.txt',
+                    type: 'text/plain',
+                    data: createBlob('second attachment', 'text/plain')
+                }
+            ];
+            upsertData.age = 99;
+            const upsertedDoc = await col.upsert(upsertData);
+            assert.strictEqual(upsertedDoc.age, 99);
+
+            // Both attachments should exist
+            const allAtts = upsertedDoc.allAttachments();
+            assert.strictEqual(allAtts.length, 2);
+            const names = allAtts.map((a: any) => a.id).sort();
+            assert.deepStrictEqual(names, ['first.txt', 'second.txt']);
+        });
+        it('incrementalUpsert with inline attachments preserves existing', async () => {
+            // Insert first with an attachment
+            const docData = schemaObjects.humanData();
+            (docData as any).attachments = [
+                {
+                    id: 'original.txt',
+                    type: 'text/plain',
+                    data: createBlob('original content', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // incrementalUpsert same primary with a new attachment
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any).attachments = [
+                {
+                    id: 'added.txt',
+                    type: 'text/plain',
+                    data: createBlob('added content', 'text/plain')
+                }
+            ];
+            upsertData.age = 77;
+            const doc = await col.incrementalUpsert(upsertData);
+            assert.strictEqual(doc.age, 77);
+
+            // Both attachments should exist
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 2);
+            const names = allAtts.map((a: any) => a.id).sort();
+            assert.deepStrictEqual(names, ['added.txt', 'original.txt']);
+        });
+        it('upsert with deleteExistingAttachments removes unlisted attachments', async () => {
+            // Insert with two attachments
+            const docData = schemaObjects.humanData();
+            (docData as any).attachments = [
+                {
+                    id: 'keep.txt',
+                    type: 'text/plain',
+                    data: createBlob('keep this', 'text/plain')
+                },
+                {
+                    id: 'remove.txt',
+                    type: 'text/plain',
+                    data: createBlob('remove this', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // Upsert with only one attachment and deleteExistingAttachments=true
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any).attachments = [
+                {
+                    id: 'keep.txt',
+                    type: 'text/plain',
+                    data: createBlob('keep this updated', 'text/plain')
+                }
+            ];
+            upsertData.age = 50;
+            const doc = await col.upsert(upsertData, { deleteExistingAttachments: true });
+            assert.strictEqual(doc.age, 50);
+
+            // Only 'keep.txt' should exist
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 1);
+            assert.strictEqual(allAtts[0].id, 'keep.txt');
+
+            db.close();
+        });
+    });
     describe('issues', () => {
         it('#455 attachments not working', async () => {
             const myschema = {
