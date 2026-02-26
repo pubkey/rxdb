@@ -151,10 +151,6 @@ describeParallel('reactive-query.test.js', () => {
             c.database.close();
         });
         it('doing insert after subscribe should end with the correct results', async () => {
-            if (config.storage.name === 'foundationdb') {
-                // TODO randomly fails in foundationdb
-                return;
-            }
 
             const c = await humansCollection.create(1);
             let result = [];
@@ -189,9 +185,6 @@ describeParallel('reactive-query.test.js', () => {
     describe('ISSUES', () => {
         it('#7075 query results not correct if changes happen faster then the query updates', async () => {
             if (
-                // TODO randomly fails in foundationdb
-                config.storage.name === 'foundationdb' ||
-                // sqlite cannot insert too many rows
                 config.storage.name === 'sqlite-trial'
             ) {
                 return;

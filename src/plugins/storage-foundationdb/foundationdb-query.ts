@@ -60,26 +60,6 @@ export async function queryFoundationDB<RxDocType>(
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
 
-
-        /**
-         * TODO for whatever reason the keySelectors like firstGreaterThan etc.
-         * do not work properly. So we have to hack here to find the correct
-         * document in case lowerBoundString===upperBoundString.
-         * This likely must be fixed in the foundationdb library.
-         * When it is fixed, we do not need this if-case and instead
-         * can rely on .getRangeBatch() in all cases.
-         */
-        if (lowerBoundString === upperBoundString) {
-            const docId: string = await indexTx.get(lowerBoundString);
-            if (docId) {
-                const docData = await mainTx.get(docId);
-                if (!queryMatcher || queryMatcher(docData)) {
-                    innerResult.push(docData);
-                }
-            }
-            return innerResult;
-        }
-
         if (!queryPlan.inclusiveStart) {
             lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
         }

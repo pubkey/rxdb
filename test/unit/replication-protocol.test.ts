@@ -1175,8 +1175,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler,
                 hashFunction: defaultHashSha256,
             });
-            // TODO why does this throw an an error with the foundationdb RxStorage?
-            // ensureReplicationHasNoErrors(replicationState);
+            ensureReplicationHasNoErrors(replicationState);
             await awaitRxStorageReplicationIdle(replicationState);
 
             // master must contain a resolved conflict
@@ -1224,8 +1223,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     skipStoringPullMeta: false,
                     hashFunction: defaultHashSha256,
                 });
-                // TODO why does this throw an an error with the foundationdb RxStorage?
-                // ensureReplicationHasNoErrors(replicationState);
+                ensureReplicationHasNoErrors(replicationState);
 
                 // insert
                 const document = getDocData();

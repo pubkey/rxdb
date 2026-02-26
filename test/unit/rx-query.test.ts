@@ -997,10 +997,6 @@ describe('rx-query.test.ts', () => {
          * @link https://github.com/pubkey/rxdb/pull/7497
          */
         it('#7497 findOne subscription + exec does not return correct result', async () => {
-            if (config.storage.name === 'foundationdb') {
-                // TODO randomly fails in foundationdb
-                return;
-            }
             const c = await humansCollection.create(1);
             const doc = await c.findOne().exec(true);
             const query = c.findOne().sort({ age: 'asc' });
