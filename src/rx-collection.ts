@@ -80,7 +80,6 @@ import type {
     CollectionsOfDatabase,
     RxChangeEventBulk,
     RxLocalDocumentData,
-    RxDocumentBase,
     RxConflictHandler,
     MaybePromise,
     CRDTEntry,
@@ -654,7 +653,7 @@ export class RxCollectionBase<
                     const deleteExisting = options?.deleteExistingAttachments === true;
                     const newDoc = await this.incrementalWriteQueue.addWrite(
                         docDataInDb,
-                        (docWriteData: any) => {
+                        (docWriteData: any): any => {
                             return Object.assign({}, writeData, {
                                 _attachments: deleteExisting
                                     ? newAttachments
@@ -723,8 +722,8 @@ export class RxCollectionBase<
                     const doc = wasInserted.doc;
                     const newAttachments = (useJson as any)._attachments;
                     return this.incrementalWriteQueue.addWrite(
-                        doc._data,
-                        (docWriteData: any) => {
+                        doc._data as RxDocumentData<RxDocumentType>,
+                        (docWriteData: any): any => {
                             return Object.assign({}, useJson, {
                                 _attachments: deleteExisting
                                     ? newAttachments
