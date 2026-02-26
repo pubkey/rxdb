@@ -142,7 +142,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                                     const ab = await useAttachment.data.arrayBuffer();
                                     const base64 = arrayBufferToBase64(ab);
                                     const encrypted = encryptString(base64, password);
-                                    useAttachment.data = new Blob([encrypted]);
+                                    useAttachment.data = new Blob([encrypted], { type: useAttachment.type });
                                 }
                                 newAttachments[id] = useAttachment;
                             })
@@ -174,7 +174,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                         const encryptedText = await attachmentData.text();
                         const decryptedBase64 = decryptString(encryptedText, password);
                         const ab = base64ToArrayBuffer(decryptedBase64);
-                        return new Blob([ab]);
+                        return new Blob([ab], attachmentData.type ? { type: attachmentData.type } : undefined);
                     } else {
                         return attachmentData;
                     }

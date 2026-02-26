@@ -104,7 +104,7 @@ module.exports = async function (config) {
                  */
                 timeout: 120000,
 
-                // Allows running something like `CI=true DEFAULT_STORAGE=dexie MOCHA_GREP="attachments" npx karma start ./config/karma.conf.cjs --single-run --browsers Chrome 2>&1`, which will only run the attachments-related tests, saving an immense amount of time while iterating on fixing a test
+                // Filter tests via MOCHA_GREP env variable for faster iteration
                 grep: process.env.MOCHA_GREP || undefined
             },
             /**

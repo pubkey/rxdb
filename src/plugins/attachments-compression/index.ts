@@ -65,6 +65,7 @@ export function isCompressibleType(
     const lower = mimeType.toLowerCase();
     for (const pattern of compressibleTypes) {
         if (pattern.endsWith('/*')) {
+            // 'text/*' -> 'text/', so startsWith matches all subtypes
             const prefix = pattern.slice(0, -1);
             if (lower.startsWith(prefix)) {
                 return true;
@@ -100,6 +101,14 @@ export async function decompressBlob(
     return new Response(stream).blob();
 }
 
+
+/**
+ * Digest prefix that marks an attachment as having been
+ * stored with compression. Used by getAttachmentData to
+ * determine whether decompression is needed, without
+ * having to fetch the full document to inspect the MIME type.
+ */
+const COMPRESSED_DIGEST_PREFIX = 'c-';
 
 /**
  * A RxStorage wrapper that compresses attachment data on writes
@@ -142,6 +151,10 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
                             if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
                                 attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
+                                // Mark the digest so getAttachmentData knows to decompress
+                                if (!attachmentWriteData.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                                    attachmentWriteData.digest = COMPRESSED_DIGEST_PREFIX + attachmentWriteData.digest;
+                                }
                             }
                         })
                     );
@@ -176,9 +189,8 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 );
 
                 /**
-                 * Override getAttachmentData to selectively decompress
-                 * based on the attachment's MIME type.
-                 * Non-compressible types (JPEG, PNG, etc.) are returned as-is.
+                 * Override getAttachmentData to decompress based on the
+                 * digest prefix rather than looking up the document's MIME type.
                  */
                 wrappedInstance.getAttachmentData = async (
                     documentId: string,
@@ -186,13 +198,8 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                     digest: string
                 ) => {
                     const data = await instance.getAttachmentData(documentId, attachmentId, digest);
-                    const docs = await instance.findDocumentsById([documentId], false);
-                    const doc = docs[0];
-                    if (doc) {
-                        const attachmentMeta = doc._attachments[attachmentId];
-                        if (attachmentMeta && isCompressibleType(attachmentMeta.type, compressibleTypes)) {
-                            return decompressBlob(mode, data);
-                        }
+                    if (digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
+                        return decompressBlob(mode, data);
                     }
                     return data;
                 };

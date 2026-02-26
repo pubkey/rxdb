@@ -158,20 +158,36 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     // FoundationDB stores attachment data as raw binary Buffers.
                     await Promise.all(
                         categorized.attachmentsAdd.map(async (attachment) => {
-                            const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
-                            attachmentTx.set(
-                                attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                                buffer
-                            );
+                            try {
+                                const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
+                                attachmentTx.set(
+                                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                                    buffer
+                                );
+                            } catch (error) {
+                                const message = error instanceof Error ? error.message : String(error);
+                                throw new Error(
+                                    'FoundationDB: failed to store attachment "' + attachment.attachmentId +
+                                    '" for document "' + attachment.documentId + '": ' + message
+                                );
+                            }
                         })
                     );
                     await Promise.all(
                         categorized.attachmentsUpdate.map(async (attachment) => {
-                            const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
-                            attachmentTx.set(
-                                attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                                buffer
-                            );
+                            try {
+                                const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
+                                attachmentTx.set(
+                                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                                    buffer
+                                );
+                            } catch (error) {
+                                const message = error instanceof Error ? error.message : String(error);
+                                throw new Error(
+                                    'FoundationDB: failed to store attachment "' + attachment.attachmentId +
+                                    '" for document "' + attachment.documentId + '": ' + message
+                                );
+                            }
                         })
                     );
                     categorized.attachmentsRemove.forEach(attachment => {

@@ -55,7 +55,7 @@ describeParallel('attachments.test.ts', () => {
     if (isDeno && config.storage.name === 'dexie') {
         return;
     }
-    
+
     async function createEncryptedAttachmentsCollection(
         size = 20,
         name = 'human',

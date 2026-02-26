@@ -82,6 +82,13 @@ export async function normalizeInlineAttachments(
     if (Array.isArray(attachments)) {
         const attachmentMap: { [attachmentId: string]: any; } = {};
         for (const att of attachments) {
+            if (!att.id || !att.type || !att.data) {
+                throw newRxError('ATT1', {
+                    args: {
+                        attachment: att
+                    }
+                });
+            }
             attachmentMap[att.id] = {
                 type: att.type,
                 data: att.data
@@ -99,9 +106,9 @@ export async function normalizeInlineAttachments(
         return attachmentMap;
     }
 
-    // Empty object from fillObjectDataBeforeInsert — pass through
-    if (typeof attachments === 'object' && Object.keys(attachments).length === 0) {
-        return attachments;
+    // Handle null/undefined and empty object from fillObjectDataBeforeInsert
+    if (!attachments || (typeof attachments === 'object' && Object.keys(attachments).length === 0)) {
+        return {};
     }
 
     // Already-normalized map (from internal paths like bulkUpsert's 409 handler)

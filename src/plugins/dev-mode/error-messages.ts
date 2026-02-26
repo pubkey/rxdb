@@ -635,6 +635,12 @@ export const ERROR_MESSAGES = {
         fix: 'Enable attachments in the schema.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT1'
     },
+    ATT1: {
+        message: 'inline attachment must have id, type, and data fields',
+        cause: 'An inline attachment object is missing one or more required fields (id, type, data).',
+        fix: 'Ensure each inline attachment has { id: string, type: string, data: Blob }.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=ATT1'
+    },
 
     // plugins/encryption-crypto-js.js
     EN1: {
