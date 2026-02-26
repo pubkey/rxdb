@@ -7,7 +7,6 @@ import {
     schemas,
     humansCollection,
     HumanDocumentType,
-    isBun,
     isDeno
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -33,11 +32,6 @@ modes.forEach(mode => {
     describeParallel('attachments-compression.test.ts (mode: ' + mode + ')', () => {
         if (
             !config.storage.hasAttachments
-            /**
-             * TODO re-enable when bun supports CompressionStream
-             * @link https://github.com/oven-sh/bun/issues/1723
-             */
-            || isBun
         ) {
             return;
         }
