@@ -101,42 +101,52 @@ export function fromStorageInstanceResult<RxDocType>(
     });
 }
 
+async function _putAttachmentsImpl<RxDocType>(
+    doc: RxDocument<RxDocType>,
+    attachments: RxAttachmentCreator[]
+): Promise<RxAttachment[]> {
+    ensureSchemaSupportsAttachments(doc);
 
+    const prepared = await Promise.all(
+        attachments.map(async (att) => ({
+            id: att.id,
+            type: att.type,
+            data: att.data,
+            digest: await doc.collection.database.hashFunction(att.data)
+        }))
+    );
+
+    const writeResult = await doc.collection.incrementalWriteQueue.addWrite(
+        doc._data,
+        (docWriteData: RxDocumentWriteData<RxDocType>) => {
+            docWriteData = flatClone(docWriteData);
+            docWriteData._attachments = flatClone(docWriteData._attachments);
+            for (const att of prepared) {
+                docWriteData._attachments[att.id] = {
+                    length: att.data.size,
+                    type: att.type,
+                    data: att.data,
+                    digest: att.digest
+                };
+            }
+            return docWriteData;
+        }
+    );
+
+    const newDocument = doc.collection._docCache.getCachedRxDocument(writeResult);
+    return prepared.map((att) => fromStorageInstanceResult(
+        att.id,
+        writeResult._attachments[att.id],
+        newDocument
+    ));
+}
 
 export async function putAttachment<RxDocType>(
     this: RxDocument<RxDocType>,
     attachmentData: RxAttachmentCreator
 ): Promise<RxAttachment> {
-    ensureSchemaSupportsAttachments(this);
-
-    const dataBlob = attachmentData.data;
-    const digest = await this.collection.database.hashFunction(dataBlob);
-
-    const id = attachmentData.id;
-    const type = attachmentData.type;
-
-    return this.collection.incrementalWriteQueue.addWrite(
-        this._data,
-        (docWriteData: RxDocumentWriteData<RxDocType>) => {
-            docWriteData = flatClone(docWriteData);
-            docWriteData._attachments = flatClone(docWriteData._attachments);
-            docWriteData._attachments[id] = {
-                length: dataBlob.size,
-                type,
-                data: dataBlob,
-                digest
-            };
-            return docWriteData;
-        }).then(writeResult => {
-            const newDocument = this.collection._docCache.getCachedRxDocument(writeResult);
-            const attachmentDataOfId = writeResult._attachments[id];
-            const attachment = fromStorageInstanceResult(
-                id,
-                attachmentDataOfId,
-                newDocument
-            );
-            return attachment;
-        });
+    const results = await _putAttachmentsImpl(this, [attachmentData]);
+    return results[0];
 }
 
 export async function putAttachmentBase64<RxDocType>(
@@ -150,6 +160,16 @@ export async function putAttachmentBase64<RxDocType>(
         type: attachmentData.type,
         data: blob
     });
+}
+
+/**
+ * Write multiple attachments in a single atomic operation.
+ */
+export function putAttachments<RxDocType>(
+    this: RxDocument<RxDocType>,
+    attachments: RxAttachmentCreator[]
+): Promise<RxAttachment[]> {
+    return _putAttachmentsImpl(this, attachments);
 }
 
 /**
@@ -246,6 +266,7 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
     prototypes: {
         RxDocument: (proto: any) => {
             proto.putAttachment = putAttachment;
+            proto.putAttachments = putAttachments;
             proto.putAttachmentBase64 = putAttachmentBase64;
             proto.getAttachment = getAttachment;
             proto.allAttachments = allAttachments;

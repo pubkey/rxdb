@@ -18,6 +18,7 @@ import {
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
+    normalizeInlineAttachments,
     createRxCollectionStorageInstance,
     removeCollectionStorages,
     ensureRxCollectionIsNotClosed
@@ -112,6 +113,14 @@ const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'] as const;
 type HookKeyType = typeof HOOKS_KEYS[number];
+
+export interface UpsertOptions {
+    /**
+     * When true, existing attachments not present in the upsert data
+     * will be removed. Defaults to false (preserve existing attachments).
+     */
+    deleteExistingAttachments?: boolean;
+}
 let hooksApplied = false;
 
 export const OPEN_COLLECTIONS = new Set<RxCollectionBase<any, any, any>>();
@@ -447,6 +456,17 @@ export class RxCollectionBase<
             });
         }
 
+        // Normalize any inline attachment inputs (compute digest/length from Blob)
+        // Also converts array format to internal map format
+        await Promise.all(
+            insertRows.map(async (row) => {
+                (row.document as any)._attachments = await normalizeInlineAttachments(
+                    this.database.hashFunction,
+                    (row.document as any)._attachments
+                );
+            })
+        );
+
         const results = await this.storageInstance.bulkWrite(
             insertRows,
             'rx-collection-bulk-insert'
@@ -591,14 +611,14 @@ export class RxCollectionBase<
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<{
+    async bulkUpsert(docsData: Partial<RxDocumentType>[], options?: UpsertOptions): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
-        docsData.forEach(docData => {
+        for (const docData of docsData) {
             const useJson = fillObjectDataBeforeInsert(this.schema, docData);
             const primary: string = useJson[this.schema.primaryPath] as any;
             if (!primary) {
@@ -608,9 +628,14 @@ export class RxCollectionBase<
                     schema: this.schema.jsonSchema
                 });
             }
+            // Normalize array-format attachments to map format for the 409 handler
+            (useJson as any)._attachments = await normalizeInlineAttachments(
+                this.database.hashFunction,
+                (useJson as any)._attachments
+            );
             useJsonByDocId.set(primary, useJson);
             insertData.push(useJson);
-        });
+        }
 
         const insertResult = await this.bulkInsert(insertData);
         const success = insertResult.success.slice(0);
@@ -625,9 +650,23 @@ export class RxCollectionBase<
                     const id = err.documentId;
                     const writeData = getFromMapOrThrow(useJsonByDocId, id);
                     const docDataInDb = ensureNotFalsy(err.documentInDb);
-                    const doc = this._docCache.getCachedRxDocuments([docDataInDb])[0];
-                    const newDoc = await doc.incrementalModify(() => writeData);
-                    success.push(newDoc);
+                    const newAttachments = (writeData as any)._attachments;
+                    const deleteExisting = options?.deleteExistingAttachments === true;
+                    const newDoc = await this.incrementalWriteQueue.addWrite(
+                        docDataInDb,
+                        (docWriteData: any) => {
+                            return Object.assign({}, writeData, {
+                                _attachments: deleteExisting
+                                    ? newAttachments
+                                    : Object.assign(
+                                        {},
+                                        docWriteData._attachments,
+                                        newAttachments
+                                    )
+                            });
+                        }
+                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+                    success.push(newDoc as any);
                 }
             })
         );
@@ -640,9 +679,9 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         ensureRxCollectionIsNotClosed(this);
-        const bulkResult = await this.bulkUpsert([json]);
+        const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
             this.asRxCollection,
             (json as any)[this.schema.primaryPath],
@@ -655,7 +694,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         ensureRxCollectionIsNotClosed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
@@ -665,16 +704,38 @@ export class RxCollectionBase<
             });
         }
 
+        const deleteExisting = options?.deleteExistingAttachments === true;
+
         // ensure that it won't try 2 parallel runs
         let queue = this._incrementalUpsertQueues.get(primary);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
         }
         queue = queue
-            .then(() => _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
+            // Normalize array-format attachments to map format
+            .then(() => normalizeInlineAttachments(this.database.hashFunction, (useJson as any)._attachments))
+            .then((normalizedAttachments) => {
+                (useJson as any)._attachments = normalizedAttachments;
+                return _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson);
+            })
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _incrementalUpsertUpdate(wasInserted.doc, useJson);
+                    const doc = wasInserted.doc;
+                    const newAttachments = (useJson as any)._attachments;
+                    return this.incrementalWriteQueue.addWrite(
+                        doc._data,
+                        (docWriteData: any) => {
+                            return Object.assign({}, useJson, {
+                                _attachments: deleteExisting
+                                    ? newAttachments
+                                    : Object.assign(
+                                        {},
+                                        docWriteData._attachments,
+                                        newAttachments
+                                    )
+                            });
+                        }
+                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
                 } else {
                     return wasInserted.doc;
                 }
@@ -1030,15 +1091,6 @@ function _applyHookFunctions(
                 return this.addHook(when, key, fun, parallel);
             };
         });
-    });
-}
-
-function _incrementalUpsertUpdate<RxDocType>(
-    doc: RxDocumentBase<RxDocType>,
-    json: RxDocumentData<RxDocType>
-): Promise<RxDocumentBase<RxDocType>> {
-    return doc.incrementalModify((_innerDoc) => {
-        return json;
     });
 }
 
