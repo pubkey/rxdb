@@ -1,7 +1,6 @@
 
 import {
-    Subject,
-    Observable
+    Subject
 } from 'rxjs';
 import type {
     RxStorageInstance,
@@ -24,14 +23,14 @@ import type { DenoKVIndexMeta, DenoKVSettings, DenoKVStorageInternals } from './
 import { RxStorageDenoKV } from './index.ts';
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, commitWithRetry, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.ts";
-import { batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
+import { batchArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
-import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.ts";
 import { flatClone } from "../utils/utils-object.ts";
+import { PROMISE_RESOLVE_VOID } from 'rxdb-old';
 
 
 
@@ -45,6 +44,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public closed?: Promise<void>;
     public readonly kvPromise: Promise<any>;
+    public writeQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     constructor(
         public readonly storage: RxStorageDenoKV,
@@ -88,6 +88,13 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        this.writeQueue = this.writeQueue.then(() => this._bulkWrite(documentWrites, context));
+        const ret = this.writeQueue;
+        this.writeQueue = this.writeQueue.catch(() => { });
+        return ret;
+    }
+
+    async _bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
