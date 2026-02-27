@@ -326,6 +326,42 @@ modes.forEach(mode => {
             });
         });
 
+        describe('MIME type preservation', () => {
+            it('full roundtrip through storage should preserve MIME type on getData()', async () => {
+                const c = await createCompressedAttachmentsCollection(1);
+                const doc = await c.findOne().exec(true);
+                await doc.putAttachment({
+                    id: 'readme.txt',
+                    data: createBlob('hello world', 'text/plain'),
+                    type: 'text/plain'
+                });
+                const latestDoc = await c.findOne().exec(true);
+                const attachment = latestDoc.getAttachment('readme.txt');
+                const blob = await attachment.getData();
+                assert.strictEqual(blob.type, 'text/plain', 'retrieved Blob should have text/plain MIME type after compression roundtrip');
+                c.database.close();
+            });
+            it('full roundtrip should preserve MIME type for non-compressible type', async () => {
+                const c = await createCompressedAttachmentsCollection(1);
+                const doc = await c.findOne().exec(true);
+                const binaryData = new Uint8Array(50);
+                for (let i = 0; i < binaryData.length; i++) {
+                    binaryData[i] = i % 256;
+                }
+                const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+                await doc.putAttachment({
+                    id: 'photo.jpg',
+                    data: jpegBlob,
+                    type: 'image/jpeg'
+                });
+                const latestDoc = await c.findOne().exec(true);
+                const attachment = latestDoc.getAttachment('photo.jpg');
+                const blob = await attachment.getData();
+                assert.strictEqual(blob.type, 'image/jpeg', 'retrieved Blob should have image/jpeg MIME type (non-compressed path)');
+                c.database.close();
+            });
+        });
+
 
     });
 

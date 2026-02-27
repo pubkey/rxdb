@@ -310,19 +310,23 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
 
         // attachments — use pre-converted base64 data (synchronous)
         categorized.attachmentsAdd.forEach(attachment => {
+            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
                 '-' + attachment.documentId +
                 '||' + attachment.attachmentId,
-                ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data))
+                'data:' + mimeType + ';base64,' + base64
             );
         });
         categorized.attachmentsUpdate.forEach(attachment => {
+            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
                 '-' + attachment.documentId +
                 '||' + attachment.attachmentId,
-                ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data))
+                'data:' + mimeType + ';base64,' + base64
             );
         });
         categorized.attachmentsRemove.forEach(attachment => {
@@ -538,8 +542,16 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
 
     async getAttachmentData(documentId: string, attachmentId: string): Promise<Blob> {
-        const base64 = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
-        const response = await fetch('data:application/octet-stream;base64,' + ensureNotFalsy(base64));
+        const stored = ensureNotFalsy(
+            this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId)
+        );
+        // Stored value is a data URL like "data:<mime>;base64,<payload>".
+        // Fall back to application/octet-stream for legacy bare base64 payloads.
+        let dataUrl = stored;
+        if (!stored.startsWith('data:')) {
+            dataUrl = 'data:application/octet-stream;base64,' + stored;
+        }
+        const response = await fetch(dataUrl);
         return response.blob();
     }
 

@@ -72,6 +72,11 @@ export class RxAttachment {
             this.id,
             this.digest
         );
+        // Some storage layers return blobs without the original MIME type.
+        // Ensure the returned Blob has the attachment's MIME type.
+        if (blob && blob.type !== this.type) {
+            return blob.slice(0, blob.size, this.type);
+        }
         return blob;
     }
 

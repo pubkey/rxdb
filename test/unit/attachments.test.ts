@@ -1424,4 +1424,50 @@ describeParallel('attachments.test.ts', () => {
             db.close();
         });
     });
+    describe('MIME type preservation', () => {
+        it('getData() should return a Blob with the correct MIME type', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'test.txt',
+                data: createBlob('hello', 'text/plain'),
+                type: 'text/plain'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('test.txt');
+            const blob = await attachment.getData();
+            assert.strictEqual(blob.type, 'text/plain', 'Blob should preserve text/plain MIME type');
+            c.database.close();
+        });
+        it('getData() should preserve MIME type for binary types', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const binaryData = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0]);
+            const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+            await doc.putAttachment({
+                id: 'photo.jpg',
+                data: jpegBlob,
+                type: 'image/jpeg'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('photo.jpg');
+            const blob = await attachment.getData();
+            assert.strictEqual(blob.type, 'image/jpeg', 'Blob should preserve image/jpeg MIME type');
+            c.database.close();
+        });
+        it('getData() should preserve MIME type for application/json', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'data.json',
+                data: createBlob('{"key":"value"}', 'application/json'),
+                type: 'application/json'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('data.json');
+            const blob = await attachment.getData();
+            assert.strictEqual(blob.type, 'application/json', 'Blob should preserve application/json MIME type');
+            c.database.close();
+        });
+    });
 });
