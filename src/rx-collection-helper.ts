@@ -82,13 +82,6 @@ export async function normalizeInlineAttachments(
     if (Array.isArray(attachments)) {
         const attachmentMap: { [attachmentId: string]: any; } = {};
         for (const att of attachments) {
-            if (!att.id || !att.type || !(att.data instanceof Blob)) {
-                throw newRxError('ATT1', {
-                    args: {
-                        attachment: att
-                    }
-                });
-            }
             attachmentMap[att.id] = {
                 type: att.type,
                 data: att.data

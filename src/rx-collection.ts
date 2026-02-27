@@ -617,6 +617,9 @@ export class RxCollectionBase<
         ensureRxCollectionIsNotClosed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
+
+        // First pass: synchronous work — schema filling and primary key validation
+        const preparedDocs: RxDocumentType[] = [];
         for (const docData of docsData) {
             const useJson = fillObjectDataBeforeInsert(this.schema, docData);
             const primary: string = useJson[this.schema.primaryPath] as any;
@@ -627,14 +630,21 @@ export class RxCollectionBase<
                     schema: this.schema.jsonSchema
                 });
             }
-            // Normalize array-format attachments to map format for the 409 handler
-            (useJson as any)._attachments = await normalizeInlineAttachments(
-                this.database.hashFunction,
-                (useJson as any)._attachments
-            );
-            useJsonByDocId.set(primary, useJson);
-            insertData.push(useJson);
+            preparedDocs.push(useJson);
         }
+
+        // Second pass: normalize inline attachments concurrently across all documents
+        await Promise.all(
+            preparedDocs.map(async (useJson) => {
+                (useJson as any)._attachments = await normalizeInlineAttachments(
+                    this.database.hashFunction,
+                    (useJson as any)._attachments
+                );
+                const primary: string = (useJson as any)[this.schema.primaryPath];
+                useJsonByDocId.set(primary, useJson);
+                insertData.push(useJson);
+            })
+        );
 
         const insertResult = await this.bulkInsert(insertData);
         const success = insertResult.success.slice(0);

@@ -453,6 +453,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the number of open collections or upgrade to premium.',
         docs: 'https://rxdb.info/premium.html?console=errors&code=COL23'
     },
+    COL24: {
+        message: 'inline _attachments must be an array of { id, type, data } objects; the map format is reserved for internal use only',
+        cause: 'An object was passed as _attachments that is neither an array of attachment creators nor a fully-normalized internal map.',
+        fix: 'Pass attachments as an array: [{ id, type, data }]. This is the same format used by putAttachment().',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=COL24'
+    },
 
     // rx-document.js
     DOC1: {

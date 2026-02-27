@@ -1254,8 +1254,6 @@ describeParallel('attachments.test.ts', () => {
             const allAtts = doc.allAttachments();
             assert.strictEqual(allAtts.length, 1);
             assert.strictEqual(allAtts[0].id, 'keep.txt');
-
-            db.close();
         });
     });
     describe('issues', () => {
