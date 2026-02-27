@@ -45,13 +45,26 @@ async function serializeBlobsForWs(msg: any): Promise<string> {
     if (msgForJson.method === 'bulkWrite' && Array.isArray(msgForJson.params)) {
         const documentWrites = msgForJson.params[0];
         if (Array.isArray(documentWrites)) {
+            // Collect all blob-bearing attachments first, then convert concurrently
+            const toConvert: { attachment: any; blob: Blob }[] = [];
             for (const row of documentWrites) {
                 if (row.document?._attachments) {
                     for (const attachment of Object.values(row.document._attachments)) {
                         if ((attachment as any).data instanceof Blob) {
-                            (attachment as any).data = await blobToBase64String((attachment as any).data);
+                            toConvert.push({
+                                attachment,
+                                blob: (attachment as any).data as Blob,
+                            });
                         }
                     }
+                }
+            }
+            if (toConvert.length > 0) {
+                const base64Results = await Promise.all(
+                    toConvert.map((entry) => blobToBase64String(entry.blob)),
+                );
+                for (let i = 0; i < toConvert.length; i++) {
+                    toConvert[i].attachment.data = base64Results[i];
                 }
             }
         }

@@ -31,7 +31,7 @@ function getHashFn() {
 
 export async function nativeSha256(input: string | ArrayBuffer | Blob) {
     let data: BufferSource;
-    if (input instanceof Blob) {
+    if (typeof Blob !== "undefined" && input instanceof Blob) {
         data = await input.arrayBuffer();
     } else if (typeof input === 'string') {
         data = new TextEncoder().encode(input);
@@ -50,7 +50,6 @@ export async function nativeSha256(input: string | ArrayBuffer | Blob) {
 }
 
 export const defaultHashSha256: HashFunction = nativeSha256;
-
 
 export function hashStringToNumber(str: string): number {
     let nr = 0;
