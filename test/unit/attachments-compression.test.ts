@@ -17,7 +17,8 @@ import {
     RxCollection,
     createBlob,
     blobToString,
-    CompressionMode
+    CompressionMode,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -337,7 +338,7 @@ modes.forEach(mode => {
                 });
                 const latestDoc = await c.findOne().exec(true);
                 const attachment = latestDoc.getAttachment('readme.txt');
-                const blob = await attachment.getData();
+                const blob = await ensureNotFalsy(attachment).getData();
                 assert.strictEqual(blob.type, 'text/plain', 'retrieved Blob should have text/plain MIME type after compression roundtrip');
                 c.database.close();
             });
@@ -356,7 +357,7 @@ modes.forEach(mode => {
                 });
                 const latestDoc = await c.findOne().exec(true);
                 const attachment = latestDoc.getAttachment('photo.jpg');
-                const blob = await attachment.getData();
+                const blob = await ensureNotFalsy(attachment).getData();
                 assert.strictEqual(blob.type, 'image/jpeg', 'retrieved Blob should have image/jpeg MIME type (non-compressed path)');
                 c.database.close();
             });

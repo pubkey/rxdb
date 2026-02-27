@@ -1435,7 +1435,7 @@ describeParallel('attachments.test.ts', () => {
             });
             const latestDoc = await c.findOne().exec(true);
             const attachment = latestDoc.getAttachment('test.txt');
-            const blob = await attachment.getData();
+            const blob = await ensureNotFalsy(attachment).getData();
             assert.strictEqual(blob.type, 'text/plain', 'Blob should preserve text/plain MIME type');
             c.database.close();
         });
@@ -1451,7 +1451,7 @@ describeParallel('attachments.test.ts', () => {
             });
             const latestDoc = await c.findOne().exec(true);
             const attachment = latestDoc.getAttachment('photo.jpg');
-            const blob = await attachment.getData();
+            const blob = await ensureNotFalsy(attachment).getData();
             assert.strictEqual(blob.type, 'image/jpeg', 'Blob should preserve image/jpeg MIME type');
             c.database.close();
         });
@@ -1465,7 +1465,7 @@ describeParallel('attachments.test.ts', () => {
             });
             const latestDoc = await c.findOne().exec(true);
             const attachment = latestDoc.getAttachment('data.json');
-            const blob = await attachment.getData();
+            const blob = await ensureNotFalsy(attachment).getData();
             assert.strictEqual(blob.type, 'application/json', 'Blob should preserve application/json MIME type');
             c.database.close();
         });
