@@ -250,6 +250,17 @@ The [RxDB Sync Engine](../replication.md) for example uses two modes of operatio
 
 There are many known problems with company infrastructure when using any of the streaming technologies. Proxies and firewall can block traffic or unintentionally break requests and responses. Whenever you implement a realtime app in such an infrastructure, make sure you first test out if the technology itself works for you.
 
+
+
+
+## FAQ
+
+<details>
+<summary>What are the differences between long polling and traditional polling in web development?</summary>
+
+Traditional polling forces the client to ask the server for updates at fixed intervals. The server responds immediately even when no new data exists. This approach wastes bandwidth and increases server load. Long polling improves this model. The client requests data and the server holds the connection open until it has new information to send. The server then responds and the client immediately opens a new connection. Long polling reduces unnecessary requests and provides updates faster than traditional polling.
+</details>
+
 ## Follow Up
 
 - Check out the [hackernews discussion of this article](https://news.ycombinator.com/item?id=39745993)

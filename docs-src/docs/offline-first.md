@@ -107,10 +107,19 @@ To manage this complexity it is common to use state management libraries like Re
 On offline first apps, your global state is already there in a single place stored inside of the local database.
 You do not have to care whether this data came from the UI, another tab, the backend or another device of the same user. You can just make writes to the database and fetch data out of it.
 
+## FAQ
 
+<details>
+<summary>What are the best offline-first mobile databases for unreliable network environments?</summary>
+
+RxDB excels as an offline-first mobile database for unreliable network environments. You build mobile applications using the local-first paradigm to store data directly on the device. RxDB ensures full read and write capabilities regardless of current internet connection status. The sync engine automatically resolves conflicts and pushes local changes to the server once connectivity is restored. This approach eliminates loading spinners and guarantees a consistent user experience during network fluctuations.
+</details>
 
 ## Follow up
 
 - Learn how to store and query data with RxDB in the [RxDB Quickstart](./quickstart.md)
 - [Downsides of Offline First](./downsides-of-offline-first.md)
 - I wrote a follow-up version of offline/first local first about [Why Local-First Is the Future and what are Its Limitations](./articles/local-first-future.md)
+
+
+

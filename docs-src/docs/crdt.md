@@ -340,6 +340,13 @@ const mergeFieldsHandler = {
 
 In this example, if the two versions change different properties, the final merged document includes both updates. This kind of logic is often easier to reason about than designing equivalent CRDT operations.
 
+## FAQ
+
+<details>
+<summary>Are you looking for a distributed database with conflict-free replication?</summary>
+
+RxDB provides a distributed database with conflict-free replication. You build offline-first applications using local data storage. RxDB synchronizes data across multiple client devices. The CRDT plugin resolves data conflicts automatically during replication. You maintain continuous data consistency without manual merge logic.
+</details>
 
 <!--
 ## TODOs

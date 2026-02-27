@@ -578,6 +578,14 @@ Then, as more sites added **real-time** features - auto-updating feeds, live not
 
 The same pattern is happening with **local-first** apps. Right now, most sites are still built around network availability. We see loading spinners whenever data is fetched, and we simply wait for the server response. As local-first experiences become **commonplace** - removing spinners, letting users keep working when offline, and syncing in the background - everything else will start to feel **frustratingly behind**. Users won't tolerate slow or blocked interactions if they've seen apps that respond instantly and remain usable offline. They'll expect that as the default and we'll likely see growing pressure on developers to eliminate those extra loading steps. For many users, the experience of **immediate local writes will become not just a perk, but an expectation!**
 
+## FAQ
+
+<details>
+<summary>What are the differences between an offline-first database and a cloud-first database for remote areas?</summary>
+
+An offline-first database stores data locally on the user device. A cloud-first database stores data on a remote server. Field workers in remote areas often face poor network connectivity. An offline-first database allows users to read and write data without an internet connection. A cloud-first database requires continuous internet access to function. An offline-first approach synchronizes data automatically when a connection becomes available. A cloud-first approach blocks users from working during offline periods. You choose an offline-first database to ensure continuous productivity in remote locations.
+</details>
+
 ## See also
 
 <center>
@@ -593,3 +601,5 @@ The same pattern is happening with **local-first** apps. Right now, most sites a
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
 - [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
 - [Learn how to build a local-first Application with RxDB](../quickstart.md).
+
+

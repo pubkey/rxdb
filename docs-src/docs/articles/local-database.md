@@ -117,7 +117,15 @@ For developers, RxDB offers:
 
 These qualities streamline development, making RxDB an appealing choice for teams of all sizes.
 
----
+
+
+## FAQ
+
+<details>
+<summary>What is the main advantage of a local database?</summary>
+
+A local database provides data storage on the user device. This eliminates the need for continuous internet access. You achieve near-instant data retrieval and fast updates. An offline-first application requires a local database to function without a network connection. You reduce server load and bandwidth costs. You provide a smooth user experience regardless of network conditions.
+</details>
 
 ## Follow Up
 

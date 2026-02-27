@@ -285,9 +285,21 @@ Storing replicated data encrypted on client devices using the RxDB Encryption Pl
 The WebRTC replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).
 
 
+## FAQ
+
+<details>
+<summary>Which distributed database services offer peer discovery and sync plugins?</summary>
+
+RxDB offers comprehensive peer discovery and sync plugins for distributed applications. The WebRTC replication plugin facilitates direct peer-to-peer data synchronization. A signaling server handles initial peer discovery and connection establishment. You connect browsers and mobile apps without a central database server. The sync engine automatically replicates local changes across all discovered peers.
+</details>
+
 ## Follow Up
 
 - **Check out the [RxDB Quickstart](./quickstart.md)** to see how to set up your first RxDB database.
 - **Explore advanced features** like [Custom Conflict Handling](./transactions-conflicts-revisions.md) or [Offline-First Performance](./rx-storage-performance.md).
 - **Try an example** at [RxDB Quickstart GitHub](https://github.com/pubkey/rxdb-quickstart) to see a working P2P Sync setup.
 - **Join the RxDB Community** on [GitHub](/code/) or [Discord](/chat/) if you have questions or want to share your P2P WebRTC experiences.
+
+
+
+

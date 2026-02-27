@@ -441,6 +441,13 @@ To change the schema in **production**-mode, do the following steps:
 - Increase the `version` by 1
 - Add the appropriate [migrationStrategies](https://pubkey.github.io/rxdb/migration-schema.html) so the saved data will be modified to match the new schema
 
+<details>
+    <summary>Why does the top-level schema complain about a missing `_id` primary key field?</summary>
+<div>
+    You encounter an error stating that the top-level schema is missing the `_id` primary key field during replication. RxDB requires every schema to explicitly define the primary key property. Other databases use an implicit `_id` field. You must add the `_id` property to your schema manually if your backend expects it. You declare `_id` as a string type and set it as the `primaryKey` in your schema definition.
+</div>
+</details>
+
 
 In **development**-mode, the schema-change can be simplified by **one of these** strategies:
 

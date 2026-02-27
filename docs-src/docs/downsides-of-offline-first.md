@@ -153,3 +153,5 @@ So creating replication for an SQL offline first database is way more work than 
   <img src="./files/no-relational-data.png" alt="no relational data" width="250" />
 </p>
 
+
+

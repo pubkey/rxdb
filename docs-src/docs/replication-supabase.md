@@ -252,6 +252,17 @@ The `RxSupabaseReplicationState` which is returned from `replicateSupabase()` al
 </Steps>
 
 
+
+
+
+## FAQ
+
+<details>
+<summary>Why use Supabase and RxDB as a cloud document database for Node.js and TypeScript?</summary>
+
+Supabase and RxDB offer the best of both worlds for Node.js and TypeScript applications. Supabase provides a powerful PostgreSQL backend. You can use PostgreSQL as a document database by storing JSON data. RxDB provides a reactive local document store. You achieve real-time synchronization between the local document store and the Supabase backend. You benefit from strong TypeScript typing on the client and robust SQL querying on the server.
+</details>
+
 ## Follow Up
 
 - **Replication API Reference:** Learn the core concepts and lifecycle hooks — [Replication](./replication.md)

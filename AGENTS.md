@@ -29,12 +29,11 @@
 
 ## Documentation Style
 - SHOULD use clear, simple language.
-- SHOULD be spartan and informative.
-- SHOULD use short, impactful sentences.
+- SHOULD be informative.
+- SHOULD use not-that-long, impactful sentences.
 - SHOULD use active voice, avoid passive voice.
 - SHOULD focus on practical, actionable insights.
 - SHOULD use data and examples to support claims when possible.
-- SHOULD use "you" and "your" to directly address the reader.
 - AVOID using em dashes (–) anywhere.
 - AVOID constructions like "not just this, but also this".
 - AVOID metaphors and cliches.
@@ -47,7 +46,7 @@
 - AVOID hashtags.
 - AVOID semicolons.
 - AVOID asterisks.
-- AVOID specific words like: can, may, just, that, very, really, literally, actually, certainly, probably, basically, could, maybe, delve, embark, enlightening, esteemed, shed light, craft, creative, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, skyrocket, opened up, powerful, inquiries, ever-evolving.
+- AVOID specific words like: very, really, literally, actually, certainly, probably, basically, could, maybe, delve, embark, enlightening, esteemed, shed light, craft, creative, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, skyrocket, opened up, powerful, inquiries, ever-evolving.
 - Review your response and ensure no em dashes.
 
 ## Development Workflow

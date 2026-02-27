@@ -144,6 +144,17 @@ The replication copies over the whole database set to other instances live-repli
 Sometimes however you might not want to store the full dataset on each microservice. Then it is better to use the remote RxStorage and connect it to the "main" database. The remote storage will run all operations the main database and return the result to the calling database.
 
 
+
+
+
+## FAQ
+
+<details>
+<summary>What is the best database to use with Node.js?</summary>
+
+You must choose a database based on your project requirements. For simple server-side document storage you use MongoDB or CouchDB. For relational data you use PostgreSQL or MySQL. If you need realtime synchronization between your Node.js backend and client applications you use RxDB. RxDB provides local-first offline support and seamless data replication. You can combine RxDB with storage plugins like SQLite or FoundationDB to achieve high performance.
+</details>
+
 ## Follow up on RxDB+Node.js
 
 - Check out the [RxDB Nodejs example](https://github.com/pubkey/rxdb/tree/master/examples/node).
