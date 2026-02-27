@@ -73,6 +73,22 @@ async function serializeBlobsForWs(msg: any): Promise<string> {
     }
 }
 
+/**
+ * Builds a MessageFromRemote error response for any message-like object.
+ * Works for both MessageToRemote (uses .requestId) and MessageFromRemote (uses .answerTo).
+ */
+function buildErrorResponse(msg: any, err: any): MessageFromRemote {
+    return {
+        connectionId: msg.connectionId,
+        answerTo: msg.requestId ?? msg.answerTo,
+        method: msg.method,
+        error: {
+            name: err instanceof Error ? err.name : 'Error',
+            message: err instanceof Error ? err.message : String(err)
+        }
+    };
+}
+
 async function deserializeBlobsFromWs(msg: any): Promise<any> {
     try {
         if (msg.method === 'bulkWrite' && Array.isArray(msg.params)) {
@@ -116,7 +132,14 @@ export function startRxStorageRemoteWebsocketServer(
         customRequestHandler: options.customRequestHandler,
         send(msg) {
             const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
-            serializeBlobsForWs(msg).then(serialized => ws.send(serialized));
+            serializeBlobsForWs(msg).then(serialized => ws.send(serialized)).catch(err => {
+                console.error('RxDB WebSocket server: failed to serialize outgoing message', err);
+                try {
+                    ws.send(JSON.stringify(buildErrorResponse(msg, err)));
+                } catch {
+                    // Ignore secondary send failure.
+                }
+            });
         },
         fakeVersion: options.fakeVersion
     };
@@ -132,10 +155,6 @@ export function startRxStorageRemoteWebsocketServer(
             deserializeBlobsFromWs(parsed).then((message: MessageToRemote) => {
                 const connectionId = message.connectionId;
                 if (!websocketByConnectionId.has(connectionId)) {
-                    /**
-                     * If first message is not 'create',
-                     * it is an error.
-                     */
                     if (
                         message.method !== 'create' &&
                         message.method !== 'custom'
@@ -150,6 +169,12 @@ export function startRxStorageRemoteWebsocketServer(
                     websocketByConnectionId.set(connectionId, ws);
                 }
                 messages$.next(message);
+            }).catch((err: any) => {
+                try {
+                    ws.send(JSON.stringify(buildErrorResponse(parsed, err)));
+                } catch {
+                    // Ignore secondary failure sending the error response.
+                }
             });
         });
     });
@@ -174,13 +199,17 @@ export function getRxStorageRemoteWebsocket(
             const messages$ = new Subject<MessageFromRemote>();
             const websocketClient = await createWebSocketClient(options as any);
             websocketClient.message$.subscribe(msg => {
-                deserializeBlobsFromWs(msg).then(deserialized => messages$.next(deserialized));
+                deserializeBlobsFromWs(msg).then(deserialized => messages$.next(deserialized)).catch(err => {
+                    console.error('RxDB WebSocket client: failed to deserialize incoming message', err);
+                    messages$.next(buildErrorResponse(msg, err));
+                });
             });
             return {
                 messages$,
                 send(msg) {
-                    serializeBlobsForWs(msg).then(serialized => {
-                        websocketClient.socket.send(serialized);
+                    serializeBlobsForWs(msg).then(serialized => websocketClient.socket.send(serialized)).catch(err => {
+                        console.error('RxDB WebSocket client: failed to serialize outgoing message', err);
+                        messages$.next(buildErrorResponse(msg, err));
                     });
                 },
                 close() {

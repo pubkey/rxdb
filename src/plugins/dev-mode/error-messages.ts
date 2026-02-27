@@ -636,8 +636,8 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT1'
     },
     ATT1: {
-        message: 'inline attachment must have id, type, and data fields',
-        cause: 'An inline attachment object is missing one or more required fields (id, type, data).',
+        message: 'inline attachment must have id and type (strings) and data (Blob)',
+        cause: 'An inline attachment object is missing a required field or data is not a Blob instance.',
         fix: 'Ensure each inline attachment has { id: string, type: string, data: Blob }.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=ATT1'
     },

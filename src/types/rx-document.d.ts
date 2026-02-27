@@ -143,6 +143,9 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     putAttachmentBase64(
         creator: RxAttachmentCreatorBase64
     ): Promise<RxAttachment<RxDocType, OrmMethods, Reactivity>>;
+    putAttachments(
+        creators: RxAttachmentCreator[]
+    ): Promise<RxAttachment<RxDocType, OrmMethods, Reactivity>[]>;
     getAttachment(id: string): RxAttachment<RxDocType, OrmMethods, Reactivity> | null;
     allAttachments(): RxAttachment<RxDocType, OrmMethods, Reactivity>[];
 

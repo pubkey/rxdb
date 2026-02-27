@@ -151,7 +151,16 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                             const attachmentWriteData = attachment as RxAttachmentWriteData;
                             if (isCompressibleType(attachmentWriteData.type, compressibleTypes)) {
                                 attachmentWriteData.data = await compressBlob(mode, attachmentWriteData.data);
-                                // Mark the digest so getAttachmentData knows to decompress
+                                /**
+                                 * Prefix the digest to signal that this attachment is compressed.
+                                 * This is intentional: the stored digest is 'c-' + hash(originalData),
+                                 * NOT hash(compressedData). RxDB does not use digests for integrity
+                                 * verification — only for change detection (comparing before vs after).
+                                 * Change detection remains correct because both sides of any comparison
+                                 * consistently carry the 'c-' prefix for compressed attachments.
+                                 * All write paths flow through this modifyToStorage wrapper so the
+                                 * prefix is always applied, regardless of which API was used to write.
+                                 */
                                 if (!attachmentWriteData.digest.startsWith(COMPRESSED_DIGEST_PREFIX)) {
                                     attachmentWriteData.digest = COMPRESSED_DIGEST_PREFIX + attachmentWriteData.digest;
                                 }
