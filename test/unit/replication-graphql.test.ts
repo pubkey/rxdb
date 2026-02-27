@@ -48,7 +48,8 @@ import {
     isDeno,
     isBun,
     getEncryptedStorage,
-    enableKeyCompression
+    enableKeyCompression,
+    ensureReplicationHasNoErrors
 } from '../../plugins/test-utils/index.mjs';
 import {
     GRAPHQL_PATH,
@@ -158,17 +159,6 @@ describe('replication-graphql.test.ts', () => {
             variables
         });
     };
-    function ensureReplicationHasNoErrors(replicationState: RxGraphQLReplicationState<any, any>) {
-        /**
-         * We do not have to unsubscribe because the observable will cancel anyway.
-         */
-        replicationState.error$.subscribe(err => {
-            console.error('ensureReplicationHasNoErrors() has error:');
-            console.dir(err.parameters.errors);
-            console.log(JSON.stringify(err.parameters.errors, null, 4));
-            throw err;
-        });
-    }
     describe('node', () => {
         if (!isNode) {
             return;

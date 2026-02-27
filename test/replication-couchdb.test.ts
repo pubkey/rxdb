@@ -6,7 +6,8 @@ import {
     humansCollection,
     ENV_VARIABLES,
     ensureCollectionsHaveEqualState,
-    isNode
+    isNode,
+    ensureReplicationHasNoErrors
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -52,20 +53,6 @@ describe('replication-couchdb.test.ts', () => {
         const response = await fetchWithCouchDBAuth(url);
         const result: CouchAllDocsResponse = await response.json();
         return result.rows.map(row => row.doc);
-    }
-
-    function ensureReplicationHasNoErrors(replicationState: RxCouchDBReplicationState<any>) {
-        /**
-         * We do not have to unsubscribe because the observable will cancel anyway.
-         */
-        replicationState.error$.subscribe(err => {
-            console.error('ensureReplicationHasNoErrors() has error:');
-            console.log(err);
-            if (err?.parameters?.errors) {
-                throw err.parameters.errors[0];
-            }
-            throw err;
-        });
     }
 
     async function syncOnce(collection: RxCollection, server: {

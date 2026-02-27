@@ -5,7 +5,8 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 import {
     schemaObjects,
     schemas,
-    HumanDocumentType
+    HumanDocumentType,
+    ensureReplicationHasNoErrors
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
@@ -33,7 +34,7 @@ import {
 } from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
 import config, { describeParallel } from './config.ts';
-import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
 describeParallel('crdt.test.ts', () => {
@@ -393,13 +394,6 @@ describeParallel('crdt.test.ts', () => {
                     return result;
                 };
                 return handler;
-            }
-            function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
-                replicationState.error$.subscribe(err => {
-                    console.error('ensureReplicationHasNoErrors() has error:');
-                    console.dir(err);
-                    throw err;
-                });
             }
             async function replicateOnce(
                 clientCollection: RxCollection<TestDocType>,

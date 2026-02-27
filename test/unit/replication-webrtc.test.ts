@@ -76,22 +76,6 @@ describe('replication-webrtc.test.ts', function () {
         });
     });
 
-    // function ensureReplicationHasNoErrors(
-    //     replicationPool: RxWebRTCReplicationPool<any, SimplePeer>
-    // ) {
-    //     /**
-    //      * We do not have to unsubscribe because the observable will cancel anyway.
-    //      */
-    //     replicationPool.error$.subscribe(err => {
-    //         console.error('ensureReplicationHasNoErrors() has error:');
-    //         console.log(err);
-    //         if (err?.parameters?.errors) {
-    //             throw err.parameters.errors[0];
-    //         }
-    //         throw err;
-    //     });
-    // }
-
     async function getJson<RxDocType>(collection: RxCollection<RxDocType>) {
         const docs = await collection.find().exec();
         return docs.map((d: any) => d.toJSON());
