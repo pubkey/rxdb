@@ -5,6 +5,7 @@ import type {
 import {
     PROMISE_RESOLVE_VOID,
     blobToBase64String,
+    clone,
     createBlobFromBase64,
     getFromMapOrThrow
 } from '../../plugins/utils/index.ts';
@@ -33,44 +34,32 @@ import type {
  * - bulkWrite request: document._attachments[id].data (Blob)
  * - getAttachmentData response: msg.return (Blob)
  *
- * We pre-compute Blob→base64 into a map, then use a JSON.stringify replacer
- * to swap them during serialization. This avoids mutating the caller's data
- * (the msg.params for bulkWrite shares references with the caller's write rows).
+ * clone(msg) deep-clones the message while passing Blob instances through by
+ * reference (deepClone has an explicit Blob pass-through). We then replace the
+ * Blob fields with base64 strings on the owned clone. The caller's original
+ * message is never touched.
  */
 async function serializeBlobsForWs(msg: any): Promise<string> {
-    // Temporarily replace Blobs with base64 strings for JSON serialization,
-    // then restore the originals so the caller's references aren't corrupted.
-    const saved: { owner: any; key: string; blob: Blob }[] = [];
+    const msgForJson: any = clone(msg);
 
-    try {
-        if (msg.method === 'bulkWrite' && Array.isArray(msg.params)) {
-            const documentWrites = msg.params[0];
-            if (Array.isArray(documentWrites)) {
-                for (const row of documentWrites) {
-                    if (row.document?._attachments) {
-                        for (const attachment of Object.values(row.document._attachments)) {
-                            if ((attachment as any).data instanceof Blob) {
-                                const blob = (attachment as any).data;
-                                saved.push({ owner: attachment, key: 'data', blob });
-                                (attachment as any).data = await blobToBase64String(blob);
-                            }
+    if (msgForJson.method === 'bulkWrite' && Array.isArray(msgForJson.params)) {
+        const documentWrites = msgForJson.params[0];
+        if (Array.isArray(documentWrites)) {
+            for (const row of documentWrites) {
+                if (row.document?._attachments) {
+                    for (const attachment of Object.values(row.document._attachments)) {
+                        if ((attachment as any).data instanceof Blob) {
+                            (attachment as any).data = await blobToBase64String((attachment as any).data);
                         }
                     }
                 }
             }
-        } else if (msg.method === 'getAttachmentData' && msg.return instanceof Blob) {
-            saved.push({ owner: msg, key: 'return', blob: msg.return });
-            msg.return = await blobToBase64String(msg.return);
         }
-
-        const result = JSON.stringify(msg);
-        return result;
-    } finally {
-        // Always restore original Blob references, even if serialization fails
-        for (const s of saved) {
-            s.owner[s.key] = s.blob;
-        }
+    } else if (msgForJson.method === 'getAttachmentData' && msgForJson.return instanceof Blob) {
+        msgForJson.return = await blobToBase64String(msgForJson.return);
     }
+
+    return JSON.stringify(msgForJson);
 }
 
 /**
@@ -112,7 +101,8 @@ async function deserializeBlobsFromWs(msg: any): Promise<any> {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        throw new Error('RxDB WebSocket: failed to deserialize Blob data from message ' + msg.id + ': ' + errorMessage);
+        const msgIdentifier = msg.requestId ?? msg.answerTo ?? 'unknown';
+        throw new Error('RxDB WebSocket: failed to deserialize Blob data from message ' + msgIdentifier + ': ' + errorMessage);
     }
     return msg;
 }

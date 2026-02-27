@@ -64,13 +64,14 @@ export function isCompressibleType(
 ): boolean {
     const lower = mimeType.toLowerCase();
     for (const pattern of compressibleTypes) {
-        if (pattern.endsWith('/*')) {
+        const lowerPattern = pattern.toLowerCase();
+        if (lowerPattern.endsWith('/*')) {
             // 'text/*' -> 'text/', so startsWith matches all subtypes
-            const prefix = pattern.slice(0, -1);
+            const prefix = lowerPattern.slice(0, -1);
             if (lower.startsWith(prefix)) {
                 return true;
             }
-        } else if (lower === pattern) {
+        } else if (lower === lowerPattern) {
             return true;
         }
     }
