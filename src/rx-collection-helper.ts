@@ -77,6 +77,14 @@ export async function normalizeInlineAttachments(
     if (Array.isArray(attachments)) {
         const attachmentMap: { [attachmentId: string]: any; } = {};
         for (const att of attachments) {
+            if (
+                !att ||
+                typeof att.id !== 'string' || att.id.length === 0 ||
+                typeof att.type !== 'string' || att.type.length === 0 ||
+                !(att.data instanceof Blob)
+            ) {
+                throw newRxError('ATT1', { obj: att });
+            }
             attachmentMap[att.id] = {
                 type: att.type,
                 data: att.data
@@ -107,10 +115,7 @@ export async function normalizeInlineAttachments(
         return attachments;
     }
 
-    throw new Error(
-        'RxDB: inline _attachments must be an array of { id, type, data } objects. ' +
-        'Map format is not supported for user-facing APIs.'
-    );
+    throw newRxError('COL24', { data: attachments });
 }
 
 /**

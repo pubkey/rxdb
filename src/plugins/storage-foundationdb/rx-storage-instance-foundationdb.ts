@@ -97,6 +97,26 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         await Promise.all(
             writeBatches.map(async (writeBatch) => {
                 let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
+
+                /**
+                 * Pre-convert all attachment Blobs to Buffers before entering the transaction.
+                 * This avoids holding the FDB transaction open during async Blob reads,
+                 * which can trigger 'Transaction exceeds byte limit' or timeout errors.
+                 */
+                const preConvertedBuffers = new Map<string, Buffer>();
+                await Promise.all(
+                    writeBatch.flatMap(row => {
+                        const docId: string = (row.document as any)[this.primaryPath];
+                        const attachments: Record<string, any> = (row.document as any)._attachments || {};
+                        return Object.entries(attachments)
+                            .filter(([, att]) => att.data instanceof Blob)
+                            .map(async ([attId, att]) => {
+                                const buffer = Buffer.from(await att.data.arrayBuffer());
+                                preConvertedBuffers.set(attachmentMapKey(docId, attId), buffer);
+                            });
+                    })
+                );
+
                 await dbs.root.doTransaction(async (tx: any) => {
                     const ids = writeBatch.map(row => (row.document as any)[this.primaryPath]);
                     const mainTx = tx.at(dbs.main.subspace);
@@ -156,40 +176,17 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
                     // attachments
                     // FoundationDB stores attachment data as raw binary Buffers.
-                    await Promise.all(
-                        categorized.attachmentsAdd.map(async (attachment) => {
-                            try {
-                                const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
-                                attachmentTx.set(
-                                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                                    buffer
-                                );
-                            } catch (error) {
-                                const message = error instanceof Error ? error.message : String(error);
-                                throw new Error(
-                                    'FoundationDB: failed to store attachment "' + attachment.attachmentId +
-                                    '" for document "' + attachment.documentId + '": ' + message
-                                );
-                            }
-                        })
-                    );
-                    await Promise.all(
-                        categorized.attachmentsUpdate.map(async (attachment) => {
-                            try {
-                                const buffer = Buffer.from(await attachment.attachmentData.data.arrayBuffer());
-                                attachmentTx.set(
-                                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                                    buffer
-                                );
-                            } catch (error) {
-                                const message = error instanceof Error ? error.message : String(error);
-                                throw new Error(
-                                    'FoundationDB: failed to store attachment "' + attachment.attachmentId +
-                                    '" for document "' + attachment.documentId + '": ' + message
-                                );
-                            }
-                        })
-                    );
+                    // Buffers were pre-converted from Blobs before the transaction started.
+                    for (const attachment of categorized.attachmentsAdd) {
+                        const key = attachmentMapKey(attachment.documentId, attachment.attachmentId);
+                        const buffer = preConvertedBuffers.get(key)!;
+                        attachmentTx.set(key, buffer);
+                    }
+                    for (const attachment of categorized.attachmentsUpdate) {
+                        const key = attachmentMapKey(attachment.documentId, attachment.attachmentId);
+                        const buffer = preConvertedBuffers.get(key)!;
+                        attachmentTx.set(key, buffer);
+                    }
                     categorized.attachmentsRemove.forEach(attachment => {
                         attachmentTx.delete(
                             attachmentMapKey(attachment.documentId, attachment.attachmentId)
