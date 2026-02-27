@@ -1436,7 +1436,12 @@ describeParallel('attachments.test.ts', () => {
             const latestDoc = await c.findOne().exec(true);
             const attachment = latestDoc.getAttachment('test.txt');
             const blob = await ensureNotFalsy(attachment).getData();
-            assert.strictEqual(blob.type, 'text/plain', 'Blob should preserve text/plain MIME type');
+            // Bun normalizes text/* and some other MIME types by appending ';charset=utf-8'
+            // in the Blob constructor, which cannot be suppressed. This is a known Bun issue:
+            // https://github.com/oven-sh/bun/issues/15078
+            // https://github.com/oven-sh/bun/issues/19603
+            const blobType = isBun ? blob.type.split(';')[0].trim() : blob.type;
+            assert.strictEqual(blobType, 'text/plain', 'Blob should preserve text/plain MIME type');
             c.database.close();
         });
         it('getData() should preserve MIME type for binary types', async () => {
@@ -1466,7 +1471,9 @@ describeParallel('attachments.test.ts', () => {
             const latestDoc = await c.findOne().exec(true);
             const attachment = latestDoc.getAttachment('data.json');
             const blob = await ensureNotFalsy(attachment).getData();
-            assert.strictEqual(blob.type, 'application/json', 'Blob should preserve application/json MIME type');
+            // Bun normalizes application/json to 'application/json;charset=utf-8'. See text/plain test above.
+            const blobType = isBun ? blob.type.split(';')[0].trim() : blob.type;
+            assert.strictEqual(blobType, 'application/json', 'Blob should preserve application/json MIME type');
             c.database.close();
         });
     });
