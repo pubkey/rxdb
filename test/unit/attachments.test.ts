@@ -35,6 +35,10 @@ import {
     randomOfArray,
     promiseWait
 } from '../../plugins/core/index.mjs';
+import {
+    wrappedAttachmentsCompressionStorage,
+    decompressBlob
+} from '../../plugins/attachments-compression/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationSchemaPlugin);
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
@@ -903,10 +907,6 @@ describeParallel('attachments.test.ts', () => {
             return;
         }
         it('should roundtrip compressible attachment through encryption and compression', async () => {
-            const {
-                wrappedAttachmentsCompressionStorage,
-                decompressBlob
-            } = await import('../../plugins/attachments-compression/index.mjs');
 
             const db = await createRxDatabase({
                 name: randomToken(10),
@@ -981,9 +981,6 @@ describeParallel('attachments.test.ts', () => {
             db.close();
         });
         it('should roundtrip non-compressible attachment through encryption and compression', async () => {
-            const {
-                wrappedAttachmentsCompressionStorage
-            } = await import('../../plugins/attachments-compression/index.mjs');
 
             const db = await createRxDatabase({
                 name: randomToken(10),
@@ -1094,7 +1091,7 @@ describeParallel('attachments.test.ts', () => {
         it('insert with inline attachments computes digest and length', async () => {
             const testBlob = createBlob('hello inline', 'text/plain');
             const docData = schemaObjects.humanData();
-            (docData as any).attachments = [
+            (docData as any)._attachments = [
                 {
                     id: 'inline.txt',
                     type: 'text/plain',
@@ -1114,7 +1111,7 @@ describeParallel('attachments.test.ts', () => {
         });
         it('bulkInsert with inline attachments', async () => {
             const doc1Data = schemaObjects.humanData();
-            (doc1Data as any).attachments = [
+            (doc1Data as any)._attachments = [
                 {
                     id: 'file1.txt',
                     type: 'text/plain',
@@ -1122,7 +1119,7 @@ describeParallel('attachments.test.ts', () => {
                 }
             ];
             const doc2Data = schemaObjects.humanData();
-            (doc2Data as any).attachments = [
+            (doc2Data as any)._attachments = [
                 {
                     id: 'file2.txt',
                     type: 'text/plain',
@@ -1145,7 +1142,7 @@ describeParallel('attachments.test.ts', () => {
         });
         it('upsert with inline attachments on new document', async () => {
             const docData = schemaObjects.humanData();
-            (docData as any).attachments = [
+            (docData as any)._attachments = [
                 {
                     id: 'upsert.txt',
                     type: 'text/plain',
@@ -1161,7 +1158,7 @@ describeParallel('attachments.test.ts', () => {
         it('upsert with inline attachments on existing document preserves and merges', async () => {
             // Insert first with an attachment
             const docData = schemaObjects.humanData();
-            (docData as any).attachments = [
+            (docData as any)._attachments = [
                 {
                     id: 'first.txt',
                     type: 'text/plain',
@@ -1172,7 +1169,7 @@ describeParallel('attachments.test.ts', () => {
 
             // Upsert same primary with a different attachment
             const upsertData = Object.assign({}, docData);
-            (upsertData as any).attachments = [
+            (upsertData as any)._attachments = [
                 {
                     id: 'second.txt',
                     type: 'text/plain',
@@ -1192,7 +1189,7 @@ describeParallel('attachments.test.ts', () => {
         it('incrementalUpsert with inline attachments preserves existing', async () => {
             // Insert first with an attachment
             const docData = schemaObjects.humanData();
-            (docData as any).attachments = [
+            (docData as any)._attachments = [
                 {
                     id: 'original.txt',
                     type: 'text/plain',
@@ -1203,7 +1200,7 @@ describeParallel('attachments.test.ts', () => {
 
             // incrementalUpsert same primary with a new attachment
             const upsertData = Object.assign({}, docData);
-            (upsertData as any).attachments = [
+            (upsertData as any)._attachments = [
                 {
                     id: 'added.txt',
                     type: 'text/plain',
@@ -1223,7 +1220,7 @@ describeParallel('attachments.test.ts', () => {
         it('upsert with deleteExistingAttachments removes unlisted attachments', async () => {
             // Insert with two attachments
             const docData = schemaObjects.humanData();
-            (docData as any).attachments = [
+            (docData as any)._attachments = [
                 {
                     id: 'keep.txt',
                     type: 'text/plain',
@@ -1239,7 +1236,7 @@ describeParallel('attachments.test.ts', () => {
 
             // Upsert with only one attachment and deleteExistingAttachments=true
             const upsertData = Object.assign({}, docData);
-            (upsertData as any).attachments = [
+            (upsertData as any)._attachments = [
                 {
                     id: 'keep.txt',
                     type: 'text/plain',

@@ -50,11 +50,6 @@ export function fillObjectDataBeforeInsert<RxDocType>(
     if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
         data._deleted = false;
     }
-    // Support 'attachments' as a user-facing alias for '_attachments'
-    if (Object.prototype.hasOwnProperty.call(data, 'attachments') && !Object.prototype.hasOwnProperty.call(data, '_attachments')) {
-        data._attachments = data.attachments;
-        delete data.attachments;
-    }
     if (!Object.prototype.hasOwnProperty.call(data, '_attachments')) {
         data._attachments = {};
     }

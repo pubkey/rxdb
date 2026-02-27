@@ -5,6 +5,8 @@ description: Learn how to store and manage binary data like images or files in R
 image: /headers/rx-attachment.jpg
 ---
 
+import { DefaultCompressibleTypes } from '@site/src/components/default-compressible-types';
+
 # Attachments
 
 Attachments are binary data files that can be attachment to an `RxDocument`, like a file that is attached to an email.
@@ -209,7 +211,7 @@ const data = await attachment.getStringData(); // 'meow'
 
 ## Inline attachments on insert and upsert
 
-Instead of inserting a document first and then calling `putAttachment()` separately, you can include attachments directly in the document data when using `insert()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, or `incrementalUpsert()`. Provide `attachments` as an array of `{ id, type, data }` objects — the same format used by `putAttachment()`.
+Instead of inserting a document first and then calling `putAttachment()` separately, you can include attachments directly in the document data when using `insert()`, `bulkInsert()`, `upsert()`, `bulkUpsert()`, or `incrementalUpsert()`. Provide `_attachments` as an array of `{ id, type, data }` objects.
 
 ```javascript
 import { createBlob } from 'rxdb';
@@ -217,7 +219,7 @@ import { createBlob } from 'rxdb';
 // insert with inline attachments
 const doc = await myCollection.insert({
     name: 'foo',
-    attachments: [
+    _attachments: [
         {
             id: 'photo.jpg',
             type: 'image/jpeg',
@@ -311,4 +313,6 @@ const mySchema = {
 
 ```
 
-The default compressible types include `text/*`, `application/json`, `application/xml`, `application/javascript`, `image/svg+xml`, `image/bmp`, `application/pdf`, font formats, and other text-based MIME types. Binary formats like `image/jpeg`, `image/png`, `video/*`, and `audio/*` are **not** in the default list and will be stored without re-compression.
+The default compressible types include the following MIME type patterns. Binary formats like `image/jpeg`, `image/png`, `video/*`, and `audio/*` are **not** in the default list and will be stored without re-compression.
+
+<DefaultCompressibleTypes />

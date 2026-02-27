@@ -18,7 +18,7 @@ import {
  * Types like images (JPEG, PNG, WebP), videos, and audio
  * are already compressed and should NOT be re-compressed.
  */
-const DEFAULT_COMPRESSIBLE_TYPES: string[] = [
+export const DEFAULT_COMPRESSIBLE_TYPES: string[] = [
     'text/*',
     'application/json',
     'application/xml',

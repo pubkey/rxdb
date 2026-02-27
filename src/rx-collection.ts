@@ -457,14 +457,19 @@ export class RxCollectionBase<
 
         // Normalize any inline attachment inputs (compute digest/length from Blob)
         // Also converts array format to internal map format
-        await Promise.all(
-            insertRows.map(async (row) => {
-                (row.document as any)._attachments = await normalizeInlineAttachments(
-                    this.database.hashFunction,
-                    (row.document as any)._attachments
-                );
-            })
-        );
+        if (this.schema.jsonSchema.attachments) {
+            await Promise.all(
+                insertRows.map(async (row) => {
+                    const atts = (row.document as any)._attachments;
+                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                        (row.document as any)._attachments = await normalizeInlineAttachments(
+                            this.database.hashFunction,
+                            atts
+                        );
+                    }
+                })
+            );
+        }
 
         const results = await this.storageInstance.bulkWrite(
             insertRows,
@@ -634,17 +639,24 @@ export class RxCollectionBase<
         }
 
         // Second pass: normalize inline attachments concurrently across all documents
-        await Promise.all(
-            preparedDocs.map(async (useJson) => {
-                (useJson as any)._attachments = await normalizeInlineAttachments(
-                    this.database.hashFunction,
-                    (useJson as any)._attachments
-                );
-                const primary: string = (useJson as any)[this.schema.primaryPath];
-                useJsonByDocId.set(primary, useJson);
-                insertData.push(useJson);
-            })
-        );
+        if (this.schema.jsonSchema.attachments) {
+            await Promise.all(
+                preparedDocs.map(async (useJson) => {
+                    const atts = (useJson as any)._attachments;
+                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                        (useJson as any)._attachments = await normalizeInlineAttachments(
+                            this.database.hashFunction,
+                            atts
+                        );
+                    }
+                })
+            );
+        }
+        for (const useJson of preparedDocs) {
+            const primary: string = (useJson as any)[this.schema.primaryPath];
+            useJsonByDocId.set(primary, useJson);
+            insertData.push(useJson);
+        }
 
         const insertResult = await this.bulkInsert(insertData);
         const success = insertResult.success.slice(0);
@@ -713,6 +725,7 @@ export class RxCollectionBase<
             });
         }
 
+        const hasAttachments = !!this.schema.jsonSchema.attachments;
         const deleteExisting = options?.deleteExistingAttachments === true;
 
         // ensure that it won't try 2 parallel runs
@@ -722,7 +735,15 @@ export class RxCollectionBase<
         }
         queue = queue
             // Normalize array-format attachments to map format
-            .then(() => normalizeInlineAttachments(this.database.hashFunction, (useJson as any)._attachments))
+            .then(() => {
+                if (hasAttachments) {
+                    const atts = (useJson as any)._attachments;
+                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                        return normalizeInlineAttachments(this.database.hashFunction, atts);
+                    }
+                }
+                return (useJson as any)._attachments;
+            })
             .then((normalizedAttachments) => {
                 (useJson as any)._attachments = normalizedAttachments;
                 return _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson);
