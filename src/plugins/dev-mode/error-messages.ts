@@ -641,11 +641,17 @@ export const ERROR_MESSAGES = {
         fix: 'Enable attachments in the schema.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT1'
     },
-    ATT1: {
+    AT2: {
         message: 'inline attachment must have id and type (strings) and data (Blob)',
         cause: 'An inline attachment object is missing a required field or data is not a Blob instance.',
         fix: 'Ensure each inline attachment has { id: string, type: string, data: Blob }.',
-        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=ATT1'
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT2'
+    },
+    AT3: {
+        message: 'duplicate attachment id',
+        cause: 'The same attachment id appears multiple times in the inline attachments array.',
+        fix: 'Ensure each attachment id is unique in the array.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT3'
     },
 
     // plugins/encryption-crypto-js.js

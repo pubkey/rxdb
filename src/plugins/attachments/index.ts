@@ -112,6 +112,10 @@ async function _putAttachmentsImpl<RxDocType>(
 ): Promise<RxAttachment[]> {
     ensureSchemaSupportsAttachments(doc);
 
+    if (attachments.length === 0) {
+        return [];
+    }
+
     const prepared = await Promise.all(
         attachments.map(async (att) => ({
             id: att.id,

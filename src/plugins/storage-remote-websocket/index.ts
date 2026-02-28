@@ -119,25 +119,33 @@ export function startRxStorageRemoteWebsocketServer(
         ws.onclose = () => {
             onCloseHandlers.map(fn => fn());
         };
-        ws.on('message', async (messageString: string) => {
-            const message: MessageToRemote = JSON.parse(messageString);
-            await deserializeBlobsFromWs(message);
-            const connectionId = message.connectionId;
-            if (!websocketByConnectionId.has(connectionId)) {
-                if (
-                    message.method !== 'create' &&
-                    message.method !== 'custom'
-                ) {
-                    ws.send(
-                        JSON.stringify(
-                            createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))
-                        )
-                    );
+        ws.on('message', (messageString: string) => {
+            void (async () => {
+                let message: MessageToRemote;
+                try {
+                    message = JSON.parse(messageString);
+                    await deserializeBlobsFromWs(message);
+                } catch (err) {
+                    console.error('RxDB WebSocket server: failed to parse or deserialize message', err);
                     return;
                 }
-                websocketByConnectionId.set(connectionId, ws);
-            }
-            messages$.next(message);
+                const connectionId = message.connectionId;
+                if (!websocketByConnectionId.has(connectionId)) {
+                    if (
+                        message.method !== 'create' &&
+                        message.method !== 'custom'
+                    ) {
+                        ws.send(
+                            JSON.stringify(
+                                createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))
+                            )
+                        );
+                        return;
+                    }
+                    websocketByConnectionId.set(connectionId, ws);
+                }
+                messages$.next(message);
+            })();
         });
     });
 
@@ -160,9 +168,14 @@ export function getRxStorageRemoteWebsocket(
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();
             const websocketClient = await createWebSocketClient(options as any);
-            websocketClient.message$.subscribe(async msg => {
-                const deserialized = await deserializeBlobsFromWs(msg);
-                messages$.next(deserialized);
+            websocketClient.message$.subscribe(msg => {
+                void deserializeBlobsFromWs(msg)
+                    .then(deserialized => {
+                        messages$.next(deserialized);
+                    })
+                    .catch(err => {
+                        console.error('RxDB WebSocket client: failed to deserialize incoming message', err);
+                    });
             });
             return {
                 messages$,

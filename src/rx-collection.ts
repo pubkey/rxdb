@@ -461,7 +461,7 @@ export class RxCollectionBase<
             await Promise.all(
                 insertRows.map(async (row) => {
                     const atts = (row.document as any)._attachments;
-                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
                         (row.document as any)._attachments = await normalizeInlineAttachments(
                             this.database.hashFunction,
                             atts
@@ -643,7 +643,7 @@ export class RxCollectionBase<
             await Promise.all(
                 preparedDocs.map(async (useJson) => {
                     const atts = (useJson as any)._attachments;
-                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
                         (useJson as any)._attachments = await normalizeInlineAttachments(
                             this.database.hashFunction,
                             atts
@@ -738,7 +738,7 @@ export class RxCollectionBase<
             .then(() => {
                 if (hasAttachments) {
                     const atts = (useJson as any)._attachments;
-                    if (atts && (Array.isArray(atts) || Object.keys(atts).length > 0)) {
+                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
                         return normalizeInlineAttachments(this.database.hashFunction, atts);
                     }
                 }

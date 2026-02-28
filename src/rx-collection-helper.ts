@@ -83,7 +83,10 @@ export async function normalizeInlineAttachments(
                 typeof att.type !== 'string' || att.type.length === 0 ||
                 !(att.data instanceof Blob)
             ) {
-                throw newRxError('ATT1', { obj: att });
+                throw newRxError('AT2', { obj: att });
+            }
+            if (Object.prototype.hasOwnProperty.call(attachmentMap, att.id)) {
+                throw newRxError('AT3', { obj: att });
             }
             attachmentMap[att.id] = {
                 type: att.type,
