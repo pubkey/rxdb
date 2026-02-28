@@ -456,19 +456,28 @@ export class RxCollectionBase<
         }
 
         // Normalize any inline attachment inputs (compute digest/length from Blob)
-        // Also converts array format to internal map format
+        // Also converts array format to internal map format.
+        // Only create promises for rows that actually need normalization to avoid
+        // expensive await overhead on the hot path.
         if (this.schema.jsonSchema.attachments) {
-            await Promise.all(
-                insertRows.map(async (row) => {
-                    const atts = (row.document as any)._attachments;
-                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
-                        (row.document as any)._attachments = await normalizeInlineAttachments(
-                            this.database.hashFunction,
-                            atts
-                        );
-                    }
-                })
-            );
+            const normalizePromises: Promise<void>[] = [];
+            for (const row of insertRows) {
+                const doc: any = row.document;
+                const atts = doc._attachments;
+                if (atts == null || Object.keys(atts).length === 0) {
+                    doc._attachments = {};
+                } else {
+                    normalizePromises.push(
+                        normalizeInlineAttachments(this.database.hashFunction, atts)
+                            .then(normalized => {
+                                doc._attachments = normalized;
+                            })
+                    );
+                }
+            }
+            if (normalizePromises.length > 0) {
+                await Promise.all(normalizePromises);
+            }
         }
 
         const results = await this.storageInstance.bulkWrite(
@@ -638,19 +647,27 @@ export class RxCollectionBase<
             preparedDocs.push(useJson);
         }
 
-        // Second pass: normalize inline attachments concurrently across all documents
+        // Second pass: normalize inline attachments concurrently across all documents.
+        // Only create promises for docs that actually need normalization to avoid
+        // expensive await overhead on the hot path.
         if (this.schema.jsonSchema.attachments) {
-            await Promise.all(
-                preparedDocs.map(async (useJson) => {
-                    const atts = (useJson as any)._attachments;
-                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
-                        (useJson as any)._attachments = await normalizeInlineAttachments(
-                            this.database.hashFunction,
-                            atts
-                        );
-                    }
-                })
-            );
+            const normalizePromises: Promise<void>[] = [];
+            for (const useJson of preparedDocs) {
+                const atts = (useJson as any)._attachments;
+                if (atts == null || Object.keys(atts).length === 0) {
+                    (useJson as any)._attachments = {};
+                } else {
+                    normalizePromises.push(
+                        normalizeInlineAttachments(this.database.hashFunction, atts)
+                            .then(normalized => {
+                                (useJson as any)._attachments = normalized;
+                            })
+                    );
+                }
+            }
+            if (normalizePromises.length > 0) {
+                await Promise.all(normalizePromises);
+            }
         }
         for (const useJson of preparedDocs) {
             const primary: string = (useJson as any)[this.schema.primaryPath];
@@ -738,7 +755,9 @@ export class RxCollectionBase<
             .then(() => {
                 if (hasAttachments) {
                     const atts = (useJson as any)._attachments;
-                    if (atts && (Array.isArray(atts) ? atts.length > 0 : Object.keys(atts).length > 0)) {
+                    if (atts == null || Object.keys(atts).length === 0) {
+                        return {};
+                    } else {
                         return normalizeInlineAttachments(this.database.hashFunction, atts);
                     }
                 }

@@ -71,6 +71,11 @@ export async function normalizeInlineAttachments(
     hashFunction: HashFunction,
     attachments: Array<{ id: string; type: string; data: Blob; }> | { [attachmentId: string]: any; }
 ): Promise<{ [attachmentId: string]: RxAttachmentWriteData; }> {
+    // Guard against null/undefined/non-object values
+    if (attachments == null || typeof attachments !== 'object') {
+        throw newRxError('COL24', { data: attachments });
+    }
+
     let entries: [string, any][];
     // Only accept array format for inline attachments.
     // An empty object {} (set by fillObjectDataBeforeInsert) is also valid.

@@ -139,7 +139,7 @@ async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
     if (typeof Blob !== 'undefined' && input instanceof Blob) {
         input = await blobToBase64String(input);
     } else if (input instanceof ArrayBuffer) {
-        input = String.fromCharCode(...new Uint8Array(input));
+        input = new TextDecoder().decode(new Uint8Array(input));
     }
     return sha256(input);
 }

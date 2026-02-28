@@ -653,6 +653,12 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure each attachment id is unique in the array.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT3'
     },
+    AT4: {
+        message: '_attachments missing on document',
+        cause: 'A document is missing the _attachments property during an attachments write operation.',
+        fix: 'Ensure documents have the _attachments property set.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
+    },
 
     // plugins/encryption-crypto-js.js
     EN1: {

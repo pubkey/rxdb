@@ -1477,4 +1477,147 @@ describeParallel('attachments.test.ts', () => {
             c.database.close();
         });
     });
+    describe('.putAttachments()', () => {
+        it('should write multiple attachments in a single operation', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const attachments = await doc.putAttachments([
+                {
+                    id: 'cat.txt',
+                    data: createBlob('meow', 'text/plain'),
+                    type: 'text/plain'
+                },
+                {
+                    id: 'dog.txt',
+                    data: createBlob('woof', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]);
+            assert.strictEqual(attachments.length, 2);
+            const ids = attachments.map(a => a.id).sort();
+            assert.deepStrictEqual(ids, ['cat.txt', 'dog.txt']);
+
+            const latestDoc = await c.findOne().exec(true);
+            const all = latestDoc.allAttachments();
+            assert.strictEqual(all.length, 2);
+
+            const catAtt = latestDoc.getAttachment('cat.txt');
+            assert.ok(catAtt);
+            const catData = await ensureNotFalsy(catAtt).getData();
+            const catText = await blobToString(catData);
+            assert.strictEqual(catText, 'meow');
+
+            const dogAtt = latestDoc.getAttachment('dog.txt');
+            assert.ok(dogAtt);
+            const dogData = await ensureNotFalsy(dogAtt).getData();
+            const dogText = await blobToString(dogData);
+            assert.strictEqual(dogText, 'woof');
+            c.database.close();
+        });
+        it('should work with a single attachment', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const attachments = await doc.putAttachments([
+                {
+                    id: 'single.txt',
+                    data: createBlob('only one', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]);
+            assert.strictEqual(attachments.length, 1);
+            assert.strictEqual(attachments[0].id, 'single.txt');
+            c.database.close();
+        });
+    });
+    describe('inline attachment edge cases', () => {
+        it('insert with _attachments: [] should succeed with no attachments', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [];
+            const doc = await col.insert(docData);
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 0);
+            await db.close();
+        });
+        it('insert with _attachments: null should succeed with no attachments', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = null;
+            const doc = await col.insert(docData);
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 0);
+            await db.close();
+        });
+        it('should throw AT2 for invalid inline attachment (missing data)', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                { id: 'bad.txt', type: 'text/plain', data: 'not a blob' }
+            ];
+            await AsyncTestUtil.assertThrows(
+                () => col.insert(docData),
+                'RxError',
+                'AT2'
+            );
+            await db.close();
+        });
+        it('should throw AT3 for duplicate attachment ids', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                { id: 'same.txt', type: 'text/plain', data: createBlob('a', 'text/plain') },
+                { id: 'same.txt', type: 'text/plain', data: createBlob('b', 'text/plain') }
+            ];
+            await AsyncTestUtil.assertThrows(
+                () => col.insert(docData),
+                'RxError',
+                'AT3'
+            );
+            await db.close();
+        });
+    });
 });
