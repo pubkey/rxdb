@@ -38,6 +38,7 @@ export interface RxErrorParameters {
     readonly regex?: string;
     readonly fieldName?: string;
     readonly id?: string;
+    readonly documentId?: string;
     readonly data?: any;
     readonly missingCollections?: string[];
     readonly primaryPath?: string;

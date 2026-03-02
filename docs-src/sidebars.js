@@ -417,6 +417,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'webmcp',
+          label: 'Local-First AI with WebMCP'
+        },
+        {
+          type: 'doc',
           id: 'third-party-plugins',
           label: 'Third Party Plugins'
         }

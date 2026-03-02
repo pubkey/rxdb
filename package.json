@@ -282,6 +282,12 @@
       "import": "./dist/esm/plugins/attachments/index.js",
       "default": "./dist/esm/plugins/attachments/index.js"
     },
+    "./plugins/webmcp": {
+      "types": "./dist/types/plugins/webmcp/index.d.ts",
+      "require": "./dist/cjs/plugins/webmcp/index.js",
+      "import": "./dist/esm/plugins/webmcp/index.js",
+      "default": "./dist/esm/plugins/webmcp/index.js"
+    },
     "./plugins/attachments-compression": {
       "types": "./dist/types/plugins/attachments-compression/index.d.ts",
       "require": "./dist/cjs/plugins/attachments-compression/index.js",
