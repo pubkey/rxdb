@@ -12,6 +12,11 @@ import {QuoteBlock} from '@site/src/components/quoteblock';
 
 # Local-First with WebMCP
 
+:::note Beta Status
+
+The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to change as the official [W3C WebMCP specification](https://webmachinelearning.github.io/webmcp/) and browser implementations evolve.
+:::
+
 
 ## What is WebMCP?
 
@@ -67,7 +72,7 @@ The plugin dynamically reads your RxDB schema to assemble a prompt description a
 - `rxdb_upsert`: Overwrite existing documents or insert them if they don't exist.
 - `rxdb_delete`: Remove items from the local database by ID.
 
-*(Note: State-modifying tools like insert/upsert/delete can be disabled via the `readOnly` option).*
+*(Note: State-modifying tools like insert/upsert/delete can be disabled via the [`readOnly`](#readonly-default-false) option).*
 
 ### Quick Start
 
@@ -205,6 +210,13 @@ const productSchema = {
 ```
 
 </Tabs>
+
+## Follow up
+
+To learn more about WebMCP and see it in action, check out these resources:
+- [WebMCP Chrome Developer Blog Post](https://developer.chrome.com/blog/webmcp-epp?hl=en)
+- [RxDB WebMCP Quickstart Repository](https://github.com/pubkey/rxdb-quickstart)
+- [Live WebMCP RxDB Demo](https://pubkey.github.io/rxdb-quickstart/)
 
 ## FAQ
 
