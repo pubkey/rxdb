@@ -418,7 +418,7 @@ const sidebars = {
         {
           type: 'doc',
           id: 'webmcp',
-          label: 'Local-First AI with WebMCP'
+          label: 'WebMCP'
         },
         {
           type: 'doc',

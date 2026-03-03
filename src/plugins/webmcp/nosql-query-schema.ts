@@ -39,6 +39,12 @@ export const NOSQL_QUERY_JSON_SCHEMA = {
             "limit": 50
         }
     ],
+    default: {
+        "selector": {},
+        "sort": [],
+        "limit": 50,
+        "skip": 0
+    },
 
     "$defs": {
         "sort": {
