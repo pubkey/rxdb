@@ -917,7 +917,7 @@ export class RxCollectionBase<
         throw pluginMissing('json-dump');
     }
 
-    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
+    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent>; } {
         throw pluginMissing('webmcp');
     }
 

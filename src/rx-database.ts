@@ -573,7 +573,7 @@ export class RxDatabaseBase<
         return this as any;
     }
 
-    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
+    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent>; } {
         throw pluginMissing('webmcp');
     }
 }
