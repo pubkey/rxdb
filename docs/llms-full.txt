@@ -23244,7 +23244,7 @@ WebMCP provides a formalized machine interface alongside the human interface. By
 
 <QuoteBlock
   author="rand42"
-  year="2024"
+  year="2026"
   sourceLink="https://news.ycombinator.com/item?id=47213538"
 >I personally think these AI agents are inevitable. Like we adapted to Mobile from Desktop, its time to build websites and services for AI agents.</QuoteBlock>
 

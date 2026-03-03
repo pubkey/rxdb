@@ -84,6 +84,7 @@ jobs:
         if: steps.vars.outputs.prerelease == 'false'
         run: |
           (cd docs-src && npm install)
+          npm run generate:headers
           npm run docs:build
 
       - name: add git tag
