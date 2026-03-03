@@ -170,7 +170,7 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(tools.length, 0);
     });
 
-    it('should not register modifier tools when readOnly is true', async () => {
+    it('should not register modifier tools when readOnly is true', () => {
         db.registerWebMCP({ readOnly: true });
 
         const tools = getTools();

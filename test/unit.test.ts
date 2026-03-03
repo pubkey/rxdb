@@ -62,6 +62,7 @@ import './unit/migration-schema.test.ts';
 import './unit/attachments.test.ts';
 import './unit/attachments-compression.test.ts';
 import './unit/migration-storage.test.ts';
+import './unit/webmcp.test.ts';
 import './unit/crdt.test.ts';
 import './unit/population.test.ts';
 import './unit/leader-election.test.ts';
