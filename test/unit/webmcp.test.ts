@@ -4,8 +4,8 @@ import {
     addRxPlugin,
     randomToken,
 } from '../../plugins/core/index.mjs';
-import { RxDBWebMCPPlugin } from '../../plugins/webmcp/index.ts';
-import config from '../../test/unit/config.ts';
+import { RxDBWebMCPPlugin } from '../../plugins/webmcp/index.mjs';
+import config from './config.ts';
 import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 import { initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
 
@@ -50,11 +50,13 @@ describe('webmcp.test.ts', () => {
     });
 
     afterEach(async () => {
-        if (originalNavigator) {
-            (global as any).navigator = originalNavigator;
-        } else {
-            delete (global as any).navigator;
-        }
+        try {
+            if (originalNavigator) {
+                (global as any).navigator = originalNavigator;
+            } else {
+                delete (global as any).navigator;
+            }
+        } catch (err) { }
         await db.destroy();
     });
 
@@ -63,8 +65,10 @@ describe('webmcp.test.ts', () => {
 
         const tools = getTools();
         assert.strictEqual(tools.length, 7);
-        const queryTool = tools.find((t: any) => t.name.startsWith('rxdb_query_humans_0'));
-        assert.ok(queryTool.name.startsWith('rxdb_query_humans_0'));
+        const queryToolName = `rxdb_query_humans_${collection.schema.version}`;
+        const queryTool = tools.find((t: any) => t.name.startsWith(queryToolName));
+        assert.ok(queryTool, 'queryTool not found');
+        assert.ok(queryTool.name.startsWith(queryToolName));
         assert.ok(queryTool.inputSchema.properties.query);
 
         // Test error decoding URL
