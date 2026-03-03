@@ -22,7 +22,7 @@ const db = await createRxDatabase({
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true,                  // <- eventReduce (optional, default: false)
-  cleanupPolicy: {}                   // <- custom cleanup policy (optional) 
+  cleanupPolicy: {}                   // <- custom cleanup policy (optional)
 });
 ```
 
@@ -120,13 +120,19 @@ const db2 = await createRxDatabase({
 
 ### hashFunction
 
-By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a string as input and returns a `Promise` that resolves a string.
+By default, RxDB will use `crypto.subtle.digest('SHA-256', data)` for hashing. If you need a different hash function or the `crypto.subtle` API is not supported in your JavaScript runtime, you can provide your own hash function instead. A hash function gets a `string`, `ArrayBuffer`, or `Blob` as input and returns a `Promise` that resolves a string. When a `Blob` is received (for attachment digest hashing), convert it to a string or ArrayBuffer before hashing.
 
 ```ts
 // example hash function that runs in plain JavaScript
 import { sha256 } from 'ohash';
-function myOwnHashFunction(input: string) {
-    return Promise.resolve(sha256(input));
+import { blobToBase64String } from 'rxdb';
+async function myOwnHashFunction(input: string | ArrayBuffer | Blob) {
+    if (typeof Blob !== 'undefined' && input instanceof Blob) {
+        input = await blobToBase64String(input);
+    } else if (input instanceof ArrayBuffer) {
+        input = new TextDecoder().decode(new Uint8Array(input));
+    }
+    return sha256(input);
 }
 const db = await createRxDatabase({
   hashFunction: myOwnHashFunction
