@@ -31,6 +31,7 @@ const tags: {
         { value: 'Migration', url: '/migration-schema.html' },
         { value: 'CRDT', url: '/crdt.html' },
         { value: 'Population', url: '/population.html' },
+        { value: 'WebMCP', url: '/webmcp.html' },
     ];
 
 export function FeaturesSection(props: {

@@ -435,6 +435,14 @@ export const ERROR_MESSAGES = {
         fix: 'Ensure the collection is open before accessing it.',
         docs: ''
     },
+
+    // plugins/webmcp
+    WMCP1: {
+        message: 'WebMCP Agent attempted to delete a document that does not exist',
+        cause: 'The explicitly requested ID for deletion could not be found in the database.',
+        fix: 'Ensure the agent queries for the document correctly before trying to delete it.',
+        docs: ''
+    },
     CONFLICT: {
         message: 'Document update conflict. When changing a document you must work on the previous revision',
         cause: 'You tried to update a document but the revision you provided is not the latest one.',

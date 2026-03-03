@@ -29,6 +29,7 @@ import {
     normalizeRxJsonSchema
 } from './rx-schema-helper.ts';
 import { overwritable } from './overwritable.ts';
+import { flatClone } from 'event-reduce-js';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];
@@ -71,6 +72,20 @@ export class RxSchema<RxDocType = any> {
             'defaultValues',
             values
         );
+    }
+
+    public getJsonSchemaWithoutMeta(): RxJsonSchema<RxDocumentData<RxDocType>> {
+        const jsonSchema: any = flatClone(this.jsonSchema);
+        jsonSchema.properties = flatClone(jsonSchema.properties);
+        delete jsonSchema.properties._deleted;
+        delete jsonSchema.properties._meta;
+        delete jsonSchema.properties._attachments;
+
+        if (jsonSchema.required) {
+            jsonSchema.required = jsonSchema.required.filter((r: string) => !r.startsWith('_'));
+        }
+
+        return jsonSchema as RxJsonSchema<RxDocumentData<RxDocType>>;
     }
 
     /**

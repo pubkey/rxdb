@@ -282,6 +282,12 @@
       "import": "./dist/esm/plugins/attachments/index.js",
       "default": "./dist/esm/plugins/attachments/index.js"
     },
+    "./plugins/webmcp": {
+      "types": "./dist/types/plugins/webmcp/index.d.ts",
+      "require": "./dist/cjs/plugins/webmcp/index.js",
+      "import": "./dist/esm/plugins/webmcp/index.js",
+      "default": "./dist/esm/plugins/webmcp/index.js"
+    },
     "./plugins/attachments-compression": {
       "types": "./dist/types/plugins/attachments-compression/index.d.ts",
       "require": "./dist/cjs/plugins/attachments-compression/index.js",
@@ -579,7 +585,6 @@
     "z-schema": "12.0.1"
   },
   "devDependencies": {
-    "wrtc": "0.4.7",
     "@angular/core": "21.2.0",
     "@babel/cli": "7.28.6",
     "@babel/core": "7.29.0",
@@ -604,6 +609,7 @@
     "@eslint/eslintrc": "3.3.4",
     "@eslint/js": "10.0.1",
     "@firebase/rules-unit-testing": "4.0.1",
+    "@mcp-b/webmcp-polyfill": "2.0.11",
     "@preact/signals-core": "1.13.0",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-node-resolve": "16.0.3",
@@ -702,7 +708,8 @@
     "webpack": "5.105.3",
     "webpack-bundle-analyzer": "5.2.0",
     "webpack-cli": "6.0.1",
-    "webpack-dev-server": "5.2.3"
+    "webpack-dev-server": "5.2.3",
+    "wrtc": "0.4.7"
   },
   "overrides": {
     "eslint": "10.0.2",
