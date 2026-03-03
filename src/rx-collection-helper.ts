@@ -1,6 +1,7 @@
 import type {
     HashFunction,
     InternalStoreDocType,
+    RxAttachmentWriteData,
     RxCollection,
     RxDatabase,
     RxDocumentData,
@@ -56,6 +57,73 @@ export function fillObjectDataBeforeInsert<RxDocType>(
         data._rev = getDefaultRevision();
     }
     return data;
+}
+
+/**
+ * Normalizes inline attachment inputs on a document's _attachments.
+ * Accepts an array of { id, type, data } objects (aligned with putAttachment API)
+ * and converts to the internal map format { [id]: { type, data, digest, length } }.
+ * For each entry where data is a Blob and digest is missing,
+ * computes digest via hashFunction and sets length from Blob.size.
+ * Already-complete RxAttachmentWriteData entries are left untouched.
+ */
+export async function normalizeInlineAttachments(
+    hashFunction: HashFunction,
+    attachments: Array<{ id: string; type: string; data: Blob; }> | { [attachmentId: string]: any; }
+): Promise<{ [attachmentId: string]: RxAttachmentWriteData; }> {
+    // Guard against null/undefined/non-object values
+    if (attachments == null || typeof attachments !== 'object') {
+        throw newRxError('COL24', { data: attachments });
+    }
+
+    let entries: [string, any][];
+    // Only accept array format for inline attachments.
+    // An empty object {} (set by fillObjectDataBeforeInsert) is also valid.
+    if (Array.isArray(attachments)) {
+        const attachmentMap: { [attachmentId: string]: any; } = {};
+        for (const att of attachments) {
+            if (
+                !att ||
+                typeof att.id !== 'string' || att.id.length === 0 ||
+                typeof att.type !== 'string' || att.type.length === 0 ||
+                !(att.data instanceof Blob)
+            ) {
+                throw newRxError('AT2', { obj: att });
+            }
+            if (Object.prototype.hasOwnProperty.call(attachmentMap, att.id)) {
+                throw newRxError('AT3', { obj: att });
+            }
+            attachmentMap[att.id] = {
+                type: att.type,
+                data: att.data
+            };
+        }
+        entries = Object.entries(attachmentMap);
+        await Promise.all(
+            entries.map(async ([, att]) => {
+                if (att.data instanceof Blob && !att.digest) {
+                    att.digest = await hashFunction(att.data);
+                    att.length = att.data.size;
+                }
+            })
+        );
+        return attachmentMap;
+    }
+
+    // Empty object from fillObjectDataBeforeInsert — pass through
+    if (typeof attachments === 'object' && Object.keys(attachments).length === 0) {
+        return attachments;
+    }
+
+    // Already-normalized map (from internal paths like bulkUpsert's 409 handler)
+    // where entries already have digest/length — pass through
+    entries = Object.entries(attachments);
+    const allNormalized = entries.every(([, att]) => att.digest);
+    if (allNormalized) {
+        return attachments;
+    }
+
+    throw newRxError('COL24', { data: attachments });
 }
 
 /**

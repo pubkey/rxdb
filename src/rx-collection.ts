@@ -18,6 +18,7 @@ import {
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
+    normalizeInlineAttachments,
     createRxCollectionStorageInstance,
     removeCollectionStorages,
     ensureRxCollectionIsNotClosed
@@ -79,7 +80,6 @@ import type {
     CollectionsOfDatabase,
     RxChangeEventBulk,
     RxLocalDocumentData,
-    RxDocumentBase,
     RxConflictHandler,
     MaybePromise,
     CRDTEntry,
@@ -112,6 +112,14 @@ const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
 const HOOKS_KEYS = ['insert', 'save', 'remove', 'create'] as const;
 type HookKeyType = typeof HOOKS_KEYS[number];
+
+export interface UpsertOptions {
+    /**
+     * When true, existing attachments not present in the upsert data
+     * will be removed. Defaults to false (preserve existing attachments).
+     */
+    deleteExistingAttachments?: boolean;
+}
 let hooksApplied = false;
 
 export const OPEN_COLLECTIONS = new Set<RxCollectionBase<any, any, any>>();
@@ -447,6 +455,31 @@ export class RxCollectionBase<
             });
         }
 
+        // Normalize any inline attachment inputs (compute digest/length from Blob)
+        // Also converts array format to internal map format.
+        // Only create promises for rows that actually need normalization to avoid
+        // expensive await overhead on the hot path.
+        if (this.schema.jsonSchema.attachments) {
+            const normalizePromises: Promise<void>[] = [];
+            for (const row of insertRows) {
+                const doc: any = row.document;
+                const atts = doc._attachments;
+                if (atts == null || Object.keys(atts).length === 0) {
+                    doc._attachments = {};
+                } else {
+                    normalizePromises.push(
+                        normalizeInlineAttachments(this.database.hashFunction, atts)
+                            .then(normalized => {
+                                doc._attachments = normalized;
+                            })
+                    );
+                }
+            }
+            if (normalizePromises.length > 0) {
+                await Promise.all(normalizePromises);
+            }
+        }
+
         const results = await this.storageInstance.bulkWrite(
             insertRows,
             'rx-collection-bulk-insert'
@@ -591,14 +624,17 @@ export class RxCollectionBase<
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<{
+    async bulkUpsert(docsData: Partial<RxDocumentType>[], options?: UpsertOptions): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
         ensureRxCollectionIsNotClosed(this);
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
-        docsData.forEach(docData => {
+
+        // First pass: synchronous work — schema filling and primary key validation
+        const preparedDocs: RxDocumentType[] = [];
+        for (const docData of docsData) {
             const useJson = fillObjectDataBeforeInsert(this.schema, docData);
             const primary: string = useJson[this.schema.primaryPath] as any;
             if (!primary) {
@@ -608,9 +644,36 @@ export class RxCollectionBase<
                     schema: this.schema.jsonSchema
                 });
             }
+            preparedDocs.push(useJson);
+        }
+
+        // Second pass: normalize inline attachments concurrently across all documents.
+        // Only create promises for docs that actually need normalization to avoid
+        // expensive await overhead on the hot path.
+        if (this.schema.jsonSchema.attachments) {
+            const normalizePromises: Promise<void>[] = [];
+            for (const useJson of preparedDocs) {
+                const atts = (useJson as any)._attachments;
+                if (atts == null || Object.keys(atts).length === 0) {
+                    (useJson as any)._attachments = {};
+                } else {
+                    normalizePromises.push(
+                        normalizeInlineAttachments(this.database.hashFunction, atts)
+                            .then(normalized => {
+                                (useJson as any)._attachments = normalized;
+                            })
+                    );
+                }
+            }
+            if (normalizePromises.length > 0) {
+                await Promise.all(normalizePromises);
+            }
+        }
+        for (const useJson of preparedDocs) {
+            const primary: string = (useJson as any)[this.schema.primaryPath];
             useJsonByDocId.set(primary, useJson);
             insertData.push(useJson);
-        });
+        }
 
         const insertResult = await this.bulkInsert(insertData);
         const success = insertResult.success.slice(0);
@@ -625,9 +688,23 @@ export class RxCollectionBase<
                     const id = err.documentId;
                     const writeData = getFromMapOrThrow(useJsonByDocId, id);
                     const docDataInDb = ensureNotFalsy(err.documentInDb);
-                    const doc = this._docCache.getCachedRxDocuments([docDataInDb])[0];
-                    const newDoc = await doc.incrementalModify(() => writeData);
-                    success.push(newDoc);
+                    const newAttachments = (writeData as any)._attachments;
+                    const deleteExisting = options?.deleteExistingAttachments === true;
+                    const newDoc = await this.incrementalWriteQueue.addWrite(
+                        docDataInDb,
+                        (docWriteData: any): any => {
+                            return Object.assign({}, writeData, {
+                                _attachments: deleteExisting
+                                    ? newAttachments
+                                    : Object.assign(
+                                        {},
+                                        docWriteData._attachments,
+                                        newAttachments
+                                    )
+                            });
+                        }
+                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
+                    success.push(newDoc as any);
                 }
             })
         );
@@ -640,9 +717,9 @@ export class RxCollectionBase<
     /**
      * same as insert but overwrites existing document with same primary
      */
-    async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    async upsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         ensureRxCollectionIsNotClosed(this);
-        const bulkResult = await this.bulkUpsert([json]);
+        const bulkResult = await this.bulkUpsert([json], options);
         throwIfIsStorageWriteError<RxDocumentType>(
             this.asRxCollection,
             (json as any)[this.schema.primaryPath],
@@ -655,7 +732,7 @@ export class RxCollectionBase<
     /**
      * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    incrementalUpsert(json: Partial<RxDocumentType>, options?: UpsertOptions): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         ensureRxCollectionIsNotClosed(this);
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
@@ -665,16 +742,49 @@ export class RxCollectionBase<
             });
         }
 
+        const hasAttachments = !!this.schema.jsonSchema.attachments;
+        const deleteExisting = options?.deleteExistingAttachments === true;
+
         // ensure that it won't try 2 parallel runs
         let queue = this._incrementalUpsertQueues.get(primary);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
         }
         queue = queue
-            .then(() => _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
+            // Normalize array-format attachments to map format
+            .then(() => {
+                if (hasAttachments) {
+                    const atts = (useJson as any)._attachments;
+                    if (atts == null || Object.keys(atts).length === 0) {
+                        return {};
+                    } else {
+                        return normalizeInlineAttachments(this.database.hashFunction, atts);
+                    }
+                }
+                return (useJson as any)._attachments;
+            })
+            .then((normalizedAttachments) => {
+                (useJson as any)._attachments = normalizedAttachments;
+                return _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson);
+            })
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _incrementalUpsertUpdate(wasInserted.doc, useJson);
+                    const doc = wasInserted.doc;
+                    const newAttachments = (useJson as any)._attachments;
+                    return this.incrementalWriteQueue.addWrite(
+                        doc._data as RxDocumentData<RxDocumentType>,
+                        (docWriteData: any): any => {
+                            return Object.assign({}, useJson, {
+                                _attachments: deleteExisting
+                                    ? newAttachments
+                                    : Object.assign(
+                                        {},
+                                        docWriteData._attachments,
+                                        newAttachments
+                                    )
+                            });
+                        }
+                    ).then(writeResult => this._docCache.getCachedRxDocument(writeResult) as any);
                 } else {
                     return wasInserted.doc;
                 }
@@ -1030,15 +1140,6 @@ function _applyHookFunctions(
                 return this.addHook(when, key, fun, parallel);
             };
         });
-    });
-}
-
-function _incrementalUpsertUpdate<RxDocType>(
-    doc: RxDocumentBase<RxDocType>,
-    json: RxDocumentData<RxDocType>
-): Promise<RxDocumentBase<RxDocType>> {
-    return doc.incrementalModify((_innerDoc) => {
-        return json;
     });
 }
 

@@ -424,7 +424,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         documentId: string,
         attachmentId: string,
         digest: string
-    ): Promise<string> {
+    ): Promise<Blob> {
         this.ensurePersistence();
         ensureNotRemoved(this);
         const key = attachmentMapKey(documentId, attachmentId);

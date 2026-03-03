@@ -45,7 +45,9 @@ export async function fillWriteDataForAttachmentsChange<RxDocType>(
             !originalDocument._attachments
         )
     ) {
-        throw new Error('_attachments missing');
+        throw newRxError('AT4', {
+            document: newDocument
+        });
     }
 
     const docId: string = (newDocument as any)[primaryPath];
@@ -68,12 +70,12 @@ export async function fillWriteDataForAttachmentsChange<RxDocType>(
                     ) &&
                     !(value as RxAttachmentWriteData).data
                 ) {
-                    const attachmentDataString = await storageInstance.getAttachmentData(
+                    const attachmentBlob = await storageInstance.getAttachmentData(
                         docId,
                         key,
                         value.digest
                     );
-                    (value as RxAttachmentWriteData).data = attachmentDataString;
+                    (value as RxAttachmentWriteData).data = attachmentBlob;
                 }
             })
     );

@@ -2,6 +2,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 import {
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
+    arrayBufferToBase64,
     ensureNotFalsy,
     now,
     toArray
@@ -182,13 +183,35 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
     }
 
 
-    bulkWrite(
+    async bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             error: []
         };
+
+        /**
+         * Pre-convert all Blob attachment data to base64 BEFORE
+         * calling categorizeBulkWriteRows. localStorage has no transactions
+         * and is non-async, so all writes after the conflict check
+         * must be synchronous to avoid interleaving.
+         */
+        const attachmentBase64Map = new Map<Blob, string>();
+        await Promise.all(
+            documentWrites.map(async (row) => {
+                if (row.document._attachments) {
+                    await Promise.all(
+                        Object.values(row.document._attachments).map(async (att: any) => {
+                            if (att.data instanceof Blob) {
+                                const ab = await att.data.arrayBuffer();
+                                attachmentBase64Map.set(att.data, arrayBufferToBase64(ab));
+                            }
+                        })
+                    );
+                }
+            })
+        );
 
         const docsInDb = new Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>();
         documentWrites.forEach(row => {
@@ -285,21 +308,25 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
             this.setIndex(index[i].index, indexValue);
         });
 
-        // attachments
+        // attachments — use pre-converted base64 data (synchronous)
         categorized.attachmentsAdd.forEach(attachment => {
+            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
                 '-' + attachment.documentId +
                 '||' + attachment.attachmentId,
-                attachment.attachmentData.data
+                'data:' + mimeType + ';base64,' + base64
             );
         });
         categorized.attachmentsUpdate.forEach(attachment => {
+            const base64 = ensureNotFalsy(attachmentBase64Map.get(attachment.attachmentData.data));
+            const mimeType = attachment.attachmentData.type || 'application/octet-stream';
             this.localStorage.setItem(
                 this.attachmentsKey +
                 '-' + attachment.documentId +
                 '||' + attachment.attachmentId,
-                attachment.attachmentData.data
+                'data:' + mimeType + ';base64,' + base64
             );
         });
         categorized.attachmentsRemove.forEach(attachment => {
@@ -514,9 +541,18 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         return PROMISE_RESOLVE_TRUE;
     }
 
-    async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
-        const data = this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId);
-        return ensureNotFalsy(data);
+    async getAttachmentData(documentId: string, attachmentId: string): Promise<Blob> {
+        const stored = ensureNotFalsy(
+            this.localStorage.getItem(this.attachmentsKey + '-' + documentId + '||' + attachmentId)
+        );
+        // Stored value is a data URL like "data:<mime>;base64,<payload>".
+        // Fall back to application/octet-stream for legacy bare base64 payloads.
+        let dataUrl = stored;
+        if (!stored.startsWith('data:')) {
+            dataUrl = 'data:application/octet-stream;base64,' + stored;
+        }
+        const response = await fetch(dataUrl);
+        return response.blob();
     }
 
     remove(): Promise<void> {

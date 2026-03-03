@@ -409,7 +409,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         _documentId: string,
         _attachmentId: string,
         _digest: string
-    ): Promise<string> {
+    ): Promise<Blob> {
         await this.mongoCollectionPromise;
         throw new Error('attachments not implemented, make a PR');
     }

@@ -35,6 +35,10 @@ import {
     randomOfArray,
     promiseWait
 } from '../../plugins/core/index.mjs';
+import {
+    wrappedAttachmentsCompressionStorage,
+    decompressBlob
+} from '../../plugins/attachments-compression/index.mjs';
 import { RxDBMigrationSchemaPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationSchemaPlugin);
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
@@ -47,6 +51,15 @@ describeParallel('attachments.test.ts', () => {
     if (!config.storage.hasAttachments) {
         return;
     }
+
+    // Deno's structuredClone() silently destroys Blob data, returning {}. https://github.com/denoland/deno/issues/12067#issuecomment-1975001079
+    // fake-indexeddb (used by dexie in non-browser envs) relies on
+    // structuredClone, so Blob attachment roundtrips are broken in Deno+dexie.
+    // These tests pass fine on Node and Bun, which is sufficient coverage.
+    if (isDeno && config.storage.name === 'dexie') {
+        return;
+    }
+
     async function createEncryptedAttachmentsCollection(
         size = 20,
         name = 'human',
@@ -832,7 +845,7 @@ describeParallel('attachments.test.ts', () => {
                         'barfoo2',
                         myAttachment.type
                     );
-                    (myAttachment as any).data = await blobToBase64String(blob);
+                    (myAttachment as any).data = blob;
 
                     oldDoc._attachments = {
                         foobar: myAttachment
@@ -887,6 +900,357 @@ describeParallel('attachments.test.ts', () => {
 
             assert.strictEqual(attachment.foobar(), 'foobar text/plain');
             db.close();
+        });
+    });
+    describe('encryption + compression combined', () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
+        it('should roundtrip compressible attachment through encryption and compression', async () => {
+
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                password: await getPassword(),
+                storage: wrappedAttachmentsCompressionStorage({
+                    storage: getEncryptedStorage()
+                }),
+                multiInstance: false,
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {
+                encrypted: true,
+                compression: 'gzip'
+            };
+
+            const collections = await db.addCollections({
+                human: { schema: schemaJson }
+            });
+            const c = collections.human;
+
+            const docsData = [schemaObjects.humanData()];
+            await c.bulkInsert(docsData);
+            const doc = await c.findOne().exec(true);
+
+            // Store text attachment (compressible + encrypted)
+            const textData = 'encrypted and compressed data '.repeat(20);
+            const originalBlob = createBlob(textData, 'text/plain');
+            const attachment = await doc.putAttachment({
+                id: 'secret.txt',
+                data: originalBlob,
+                type: 'text/plain'
+            });
+            assert.ok(attachment);
+
+            // Walk the storage chain to access intermediate layers
+            const storageChain: any[] = [];
+            let current: any = doc.collection.storageInstance;
+            while (current) {
+                storageChain.push(current);
+                current = current.originalStorageInstance;
+            }
+            const baseStorage = storageChain[storageChain.length - 1];
+            const encryptionWrapper = storageChain[storageChain.length - 2];
+
+            // 1. Raw data from base storage should not be plaintext (encrypted)
+            const rawData: Blob = await baseStorage.getAttachmentData(doc.primary, 'secret.txt', attachment.digest);
+            const rawString = await blobToString(rawData);
+            assert.notStrictEqual(rawString, textData, 'raw stored data should not be plaintext (encrypted)');
+
+            // 2. Data from encryption layer is decrypted but still compressed
+            const decryptedCompressedData: Blob = await encryptionWrapper.getAttachmentData(doc.primary, 'secret.txt', attachment.digest);
+
+            // Compressed size should be strictly smaller than original text
+            assert.ok(
+                decryptedCompressedData.size < originalBlob.size,
+                'compressed data (' + decryptedCompressedData.size + ') should be smaller than original (' + originalBlob.size + ')'
+            );
+
+            // 3. Manually decompress to verify it matches original
+            const manuallyDecompressed = await decompressBlob('gzip', decryptedCompressedData);
+            const manuallyDecompressedString = await blobToString(manuallyDecompressed);
+            assert.strictEqual(manuallyDecompressedString, textData, 'manually decompressed data should match original');
+
+            // 4. Full API roundtrip should return original
+            const retrieved = await attachment.getData();
+            const retrievedString = await blobToString(retrieved);
+            assert.strictEqual(retrievedString, textData);
+
+            db.close();
+        });
+        it('should roundtrip non-compressible attachment through encryption and compression', async () => {
+
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                password: await getPassword(),
+                storage: wrappedAttachmentsCompressionStorage({
+                    storage: getEncryptedStorage()
+                }),
+                multiInstance: false,
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {
+                encrypted: true,
+                compression: 'gzip'
+            };
+
+            const collections = await db.addCollections({
+                human: { schema: schemaJson }
+            });
+            const c = collections.human;
+
+            await c.bulkInsert([schemaObjects.humanData()]);
+            const doc = await c.findOne().exec(true);
+
+            // Store binary attachment (non-compressible type)
+            const binaryData = new Uint8Array(150);
+            for (let i = 0; i < binaryData.length; i++) {
+                binaryData[i] = i % 256;
+            }
+            const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+
+            const attachment = await doc.putAttachment({
+                id: 'photo.jpg',
+                data: jpegBlob,
+                type: 'image/jpeg'
+            });
+            assert.ok(attachment);
+
+            // Walk the storage chain
+            const storageChain: any[] = [];
+            let current: any = doc.collection.storageInstance;
+            while (current) {
+                storageChain.push(current);
+                current = current.originalStorageInstance;
+            }
+            const baseStorage = storageChain[storageChain.length - 1];
+            const encryptionWrapper = storageChain[storageChain.length - 2];
+
+            // 1. Raw data from base storage should differ from original (encrypted)
+            const rawData: Blob = await baseStorage.getAttachmentData(doc.primary, 'photo.jpg', attachment.digest);
+            const rawBytes = new Uint8Array(await rawData.arrayBuffer());
+            let isDifferent = rawBytes.length !== binaryData.length;
+            if (!isDifferent) {
+                for (let i = 0; i < binaryData.length; i++) {
+                    if (rawBytes[i] !== binaryData[i]) {
+                        isDifferent = true;
+                        break;
+                    }
+                }
+            }
+            assert.ok(isDifferent, 'raw stored data should differ from original (encrypted)');
+
+            // 2. Data from encryption layer: decrypted, NOT compressed (non-compressible type)
+            const decryptedData: Blob = await encryptionWrapper.getAttachmentData(doc.primary, 'photo.jpg', attachment.digest);
+
+            // Non-compressible: stored size should equal original (no compression, no marker)
+            assert.strictEqual(
+                decryptedData.size,
+                binaryData.length,
+                'decrypted non-compressed data (' + decryptedData.size + ') should equal original (' + binaryData.length + ')'
+            );
+
+            // 3. Full API roundtrip should return original binary data
+            const retrieved = await attachment.getData();
+            const retrievedBytes = new Uint8Array(await retrieved.arrayBuffer());
+            assert.strictEqual(retrievedBytes.length, binaryData.length);
+            for (let i = 0; i < binaryData.length; i++) {
+                assert.strictEqual(retrievedBytes[i], binaryData[i]);
+            }
+
+            db.close();
+        });
+    });
+    describe('inline attachments on insert/upsert', () => {
+        // Share a single db/collection to avoid exceeding the open collection
+        // limit when tests run in parallel (describeParallel / mocha.parallel).
+        let db: any;
+        let col: any;
+        before(async () => {
+            db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            col = collections.humans;
+        });
+        after(async () => {
+            await db.close();
+        });
+        it('insert with inline attachments computes digest and length', async () => {
+            const testBlob = createBlob('hello inline', 'text/plain');
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'inline.txt',
+                    type: 'text/plain',
+                    data: testBlob
+                }
+            ];
+            const doc = await col.insert(docData);
+            const attachment = doc.getAttachment('inline.txt');
+            assert.ok(attachment);
+            assert.strictEqual(attachment.type, 'text/plain');
+            assert.strictEqual(attachment.length, testBlob.size);
+            assert.ok(attachment.digest.length > 0);
+
+            const retrievedData = await attachment.getData();
+            const text = await blobToString(retrievedData);
+            assert.strictEqual(text, 'hello inline');
+        });
+        it('bulkInsert with inline attachments', async () => {
+            const doc1Data = schemaObjects.humanData();
+            (doc1Data as any)._attachments = [
+                {
+                    id: 'file1.txt',
+                    type: 'text/plain',
+                    data: createBlob('doc1 content', 'text/plain')
+                }
+            ];
+            const doc2Data = schemaObjects.humanData();
+            (doc2Data as any)._attachments = [
+                {
+                    id: 'file2.txt',
+                    type: 'text/plain',
+                    data: createBlob('doc2 content', 'text/plain')
+                }
+            ];
+
+            const result = await col.bulkInsert([doc1Data, doc2Data]);
+            assert.strictEqual(result.success.length, 2);
+
+            for (const doc of result.success) {
+                const attachments = doc.allAttachments();
+                assert.strictEqual(attachments.length, 1);
+                const att = attachments[0];
+                assert.ok(att.digest.length > 0);
+                const data = await att.getData();
+                const text = await blobToString(data);
+                assert.ok(text.includes('content'));
+            }
+        });
+        it('upsert with inline attachments on new document', async () => {
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'upsert.txt',
+                    type: 'text/plain',
+                    data: createBlob('upsert content', 'text/plain')
+                }
+            ];
+            const doc = await col.upsert(docData);
+            const attachment = doc.getAttachment('upsert.txt');
+            assert.ok(attachment);
+            const text = await blobToString(await attachment.getData());
+            assert.strictEqual(text, 'upsert content');
+        });
+        it('upsert with inline attachments on existing document preserves and merges', async () => {
+            // Insert first with an attachment
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'first.txt',
+                    type: 'text/plain',
+                    data: createBlob('first attachment', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // Upsert same primary with a different attachment
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any)._attachments = [
+                {
+                    id: 'second.txt',
+                    type: 'text/plain',
+                    data: createBlob('second attachment', 'text/plain')
+                }
+            ];
+            upsertData.age = 99;
+            const upsertedDoc = await col.upsert(upsertData);
+            assert.strictEqual(upsertedDoc.age, 99);
+
+            // Both attachments should exist
+            const allAtts = upsertedDoc.allAttachments();
+            assert.strictEqual(allAtts.length, 2);
+            const names = allAtts.map((a: any) => a.id).sort();
+            assert.deepStrictEqual(names, ['first.txt', 'second.txt']);
+        });
+        it('incrementalUpsert with inline attachments preserves existing', async () => {
+            // Insert first with an attachment
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'original.txt',
+                    type: 'text/plain',
+                    data: createBlob('original content', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // incrementalUpsert same primary with a new attachment
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any)._attachments = [
+                {
+                    id: 'added.txt',
+                    type: 'text/plain',
+                    data: createBlob('added content', 'text/plain')
+                }
+            ];
+            upsertData.age = 77;
+            const doc = await col.incrementalUpsert(upsertData);
+            assert.strictEqual(doc.age, 77);
+
+            // Both attachments should exist
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 2);
+            const names = allAtts.map((a: any) => a.id).sort();
+            assert.deepStrictEqual(names, ['added.txt', 'original.txt']);
+        });
+        it('upsert with deleteExistingAttachments removes unlisted attachments', async () => {
+            // Insert with two attachments
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                {
+                    id: 'keep.txt',
+                    type: 'text/plain',
+                    data: createBlob('keep this', 'text/plain')
+                },
+                {
+                    id: 'remove.txt',
+                    type: 'text/plain',
+                    data: createBlob('remove this', 'text/plain')
+                }
+            ];
+            await col.insert(docData);
+
+            // Upsert with only one attachment and deleteExistingAttachments=true
+            const upsertData = Object.assign({}, docData);
+            (upsertData as any)._attachments = [
+                {
+                    id: 'keep.txt',
+                    type: 'text/plain',
+                    data: createBlob('keep this updated', 'text/plain')
+                }
+            ];
+            upsertData.age = 50;
+            const doc = await col.upsert(upsertData, { deleteExistingAttachments: true });
+            assert.strictEqual(doc.age, 50);
+
+            // Only 'keep.txt' should exist
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 1);
+            assert.strictEqual(allAtts[0].id, 'keep.txt');
         });
     });
     describe('issues', () => {
@@ -1058,6 +1422,202 @@ describeParallel('attachments.test.ts', () => {
             assert.strictEqual(myDocument.age, 60);
 
             db.close();
+        });
+    });
+    describe('MIME type preservation', () => {
+        it('getData() should return a Blob with the correct MIME type', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'test.txt',
+                data: createBlob('hello', 'text/plain'),
+                type: 'text/plain'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('test.txt');
+            const blob = await ensureNotFalsy(attachment).getData();
+            // Bun normalizes text/* and some other MIME types by appending ';charset=utf-8'
+            // in the Blob constructor, which cannot be suppressed. This is a known Bun issue:
+            // https://github.com/oven-sh/bun/issues/15078
+            // https://github.com/oven-sh/bun/issues/19603
+            const blobType = isBun ? blob.type.split(';')[0].trim() : blob.type;
+            assert.strictEqual(blobType, 'text/plain', 'Blob should preserve text/plain MIME type');
+            c.database.close();
+        });
+        it('getData() should preserve MIME type for binary types', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const binaryData = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0]);
+            const jpegBlob = new Blob([binaryData], { type: 'image/jpeg' });
+            await doc.putAttachment({
+                id: 'photo.jpg',
+                data: jpegBlob,
+                type: 'image/jpeg'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('photo.jpg');
+            const blob = await ensureNotFalsy(attachment).getData();
+            assert.strictEqual(blob.type, 'image/jpeg', 'Blob should preserve image/jpeg MIME type');
+            c.database.close();
+        });
+        it('getData() should preserve MIME type for application/json', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            await doc.putAttachment({
+                id: 'data.json',
+                data: createBlob('{"key":"value"}', 'application/json'),
+                type: 'application/json'
+            });
+            const latestDoc = await c.findOne().exec(true);
+            const attachment = latestDoc.getAttachment('data.json');
+            const blob = await ensureNotFalsy(attachment).getData();
+            // Bun normalizes application/json to 'application/json;charset=utf-8'. See text/plain test above.
+            const blobType = isBun ? blob.type.split(';')[0].trim() : blob.type;
+            assert.strictEqual(blobType, 'application/json', 'Blob should preserve application/json MIME type');
+            c.database.close();
+        });
+    });
+    describe('.putAttachments()', () => {
+        it('should write multiple attachments in a single operation', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const attachments = await doc.putAttachments([
+                {
+                    id: 'cat.txt',
+                    data: createBlob('meow', 'text/plain'),
+                    type: 'text/plain'
+                },
+                {
+                    id: 'dog.txt',
+                    data: createBlob('woof', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]);
+            assert.strictEqual(attachments.length, 2);
+            const ids = attachments.map(a => a.id).sort();
+            assert.deepStrictEqual(ids, ['cat.txt', 'dog.txt']);
+
+            const latestDoc = await c.findOne().exec(true);
+            const all = latestDoc.allAttachments();
+            assert.strictEqual(all.length, 2);
+
+            const catAtt = latestDoc.getAttachment('cat.txt');
+            assert.ok(catAtt);
+            const catData = await ensureNotFalsy(catAtt).getData();
+            const catText = await blobToString(catData);
+            assert.strictEqual(catText, 'meow');
+
+            const dogAtt = latestDoc.getAttachment('dog.txt');
+            assert.ok(dogAtt);
+            const dogData = await ensureNotFalsy(dogAtt).getData();
+            const dogText = await blobToString(dogData);
+            assert.strictEqual(dogText, 'woof');
+            c.database.close();
+        });
+        it('should work with a single attachment', async () => {
+            const c = await humansCollection.createAttachments(1);
+            const doc = await c.findOne().exec(true);
+            const attachments = await doc.putAttachments([
+                {
+                    id: 'single.txt',
+                    data: createBlob('only one', 'text/plain'),
+                    type: 'text/plain'
+                }
+            ]);
+            assert.strictEqual(attachments.length, 1);
+            assert.strictEqual(attachments[0].id, 'single.txt');
+            c.database.close();
+        });
+    });
+    describe('inline attachment edge cases', () => {
+        it('insert with _attachments: [] should succeed with no attachments', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [];
+            const doc = await col.insert(docData);
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 0);
+            await db.close();
+        });
+        it('insert with _attachments: null should succeed with no attachments', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = null;
+            const doc = await col.insert(docData);
+            const allAtts = doc.allAttachments();
+            assert.strictEqual(allAtts.length, 0);
+            await db.close();
+        });
+        it('should throw AT2 for invalid inline attachment (missing data)', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                { id: 'bad.txt', type: 'text/plain', data: 'not a blob' }
+            ];
+            await AsyncTestUtil.assertThrows(
+                () => col.insert(docData),
+                'RxError',
+                'AT2'
+            );
+            await db.close();
+        });
+        it('should throw AT3 for duplicate attachment ids', async () => {
+            const db = await createRxDatabase({
+                name: randomToken(10),
+                storage: config.storage.getStorage(),
+                multiInstance: false,
+                ignoreDuplicate: true
+            });
+            const schemaJson = clone(schemas.human);
+            schemaJson.attachments = {};
+            const collections = await db.addCollections({
+                humans: { schema: schemaJson }
+            });
+            const col = collections.humans;
+            const docData = schemaObjects.humanData();
+            (docData as any)._attachments = [
+                { id: 'same.txt', type: 'text/plain', data: createBlob('a', 'text/plain') },
+                { id: 'same.txt', type: 'text/plain', data: createBlob('b', 'text/plain') }
+            ];
+            await AsyncTestUtil.assertThrows(
+                () => col.insert(docData),
+                'RxError',
+                'AT3'
+            );
+            await db.close();
         });
     });
 });

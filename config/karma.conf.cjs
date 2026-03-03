@@ -102,7 +102,10 @@ module.exports = async function (config) {
                  * because the CI servers have a non-predictable
                  * computation power and sometimes they can be really slow.
                  */
-                timeout: 120000
+                timeout: 120000,
+
+                // Filter tests via MOCHA_GREP env variable for faster iteration
+                grep: process.env.MOCHA_GREP || undefined
             },
             /**
              * Pass all env variables here,

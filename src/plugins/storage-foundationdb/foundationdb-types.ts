@@ -3,7 +3,6 @@
 
 import type {
     EventBulk,
-    RxAttachmentWriteData,
     RxDocumentData,
     RxStorage,
     RxStorageChangeEvent,
@@ -55,7 +54,7 @@ export type FoundationDBStorageInternals<RxDocType> = {
     dbsPromise: Promise<{
         root: FoundationDBDatabase<any>;
         main: FoundationDBDatabase<RxDocType>;
-        attachments: FoundationDBDatabase<RxAttachmentWriteData>;
+        attachments: FoundationDBDatabase<Buffer>;
         events: FoundationDBDatabase<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
         indexes: {
             [indexName: string]: FoundationDBIndexMeta<RxDocType>;

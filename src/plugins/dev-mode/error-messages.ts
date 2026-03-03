@@ -453,6 +453,12 @@ export const ERROR_MESSAGES = {
         fix: 'Reduce the number of open collections or upgrade to premium.',
         docs: 'https://rxdb.info/premium.html?console=errors&code=COL23'
     },
+    COL24: {
+        message: 'inline _attachments must be an array of { id, type, data } objects; the map format is reserved for internal use only',
+        cause: 'An object was passed as _attachments that is neither an array of attachment creators nor a fully-normalized internal map.',
+        fix: 'Pass attachments as an array: [{ id, type, data }]. This is the same format used by putAttachment().',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=COL24'
+    },
 
     // rx-document.js
     DOC1: {
@@ -634,6 +640,24 @@ export const ERROR_MESSAGES = {
         cause: 'You tried to use attachments but they are not enabled in the schema.',
         fix: 'Enable attachments in the schema.',
         docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT1'
+    },
+    AT2: {
+        message: 'inline attachment must have id and type (strings) and data (Blob)',
+        cause: 'An inline attachment object is missing a required field or data is not a Blob instance.',
+        fix: 'Ensure each inline attachment has { id: string, type: string, data: Blob }.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT2'
+    },
+    AT3: {
+        message: 'duplicate attachment id',
+        cause: 'The same attachment id appears multiple times in the inline attachments array.',
+        fix: 'Ensure each attachment id is unique in the array.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT3'
+    },
+    AT4: {
+        message: '_attachments missing on document',
+        cause: 'A document is missing the _attachments property during an attachments write operation.',
+        fix: 'Ensure documents have the _attachments property set.',
+        docs: 'https://rxdb.info/rx-attachment.html?console=errors&code=AT4'
     },
 
     // plugins/encryption-crypto-js.js

@@ -19,8 +19,8 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
 import {
-    b64DecodeUnicode,
-    b64EncodeUnicode,
+    arrayBufferToBase64,
+    base64ToArrayBuffer,
     clone,
     ensureNotFalsy,
     flatClone,
@@ -115,7 +115,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                     )
                 );
 
-                function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
+                async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     docData = cloneWithoutAttachments(docData);
                     ensureNotFalsy(params.schema.encrypted)
                         .forEach(path => {
@@ -135,14 +135,18 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                         params.schema.attachments.encrypted
                     ) {
                         const newAttachments: typeof docData._attachments = {};
-                        Object.entries(docData._attachments).forEach(([id, attachment]) => {
-                            const useAttachment: RxAttachmentWriteData = flatClone(attachment) as any;
-                            if (useAttachment.data) {
-                                const dataString = useAttachment.data;
-                                useAttachment.data = b64EncodeUnicode(encryptString(dataString, password));
-                            }
-                            newAttachments[id] = useAttachment;
-                        });
+                        await Promise.all(
+                            Object.entries(docData._attachments).map(async ([id, attachment]) => {
+                                const useAttachment: RxAttachmentWriteData = flatClone(attachment) as any;
+                                if (useAttachment.data) {
+                                    const ab = await useAttachment.data.arrayBuffer();
+                                    const base64 = arrayBufferToBase64(ab);
+                                    const encrypted = encryptString(base64, password);
+                                    useAttachment.data = new Blob([encrypted], { type: useAttachment.type });
+                                }
+                                newAttachments[id] = useAttachment;
+                            })
+                        );
                         docData._attachments = newAttachments;
                     }
                     return docData;
@@ -162,13 +166,15 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                     return docData;
                 }
 
-                function modifyAttachmentFromStorage(attachmentData: string): string {
+                async function modifyAttachmentFromStorage(attachmentData: Blob): Promise<Blob> {
                     if (
                         params.schema.attachments &&
                         params.schema.attachments.encrypted
                     ) {
-                        const decrypted = decryptString(b64DecodeUnicode(attachmentData), password);
-                        return decrypted;
+                        const encryptedText = await attachmentData.text();
+                        const decryptedBase64 = decryptString(encryptedText, password);
+                        const ab = base64ToArrayBuffer(decryptedBase64);
+                        return new Blob([ab], attachmentData.type ? { type: attachmentData.type } : undefined);
                     } else {
                         return attachmentData;
                     }
