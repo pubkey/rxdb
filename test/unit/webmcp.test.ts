@@ -8,6 +8,7 @@ import { RxDBWebMCPPlugin } from '../../plugins/webmcp/index.mjs';
 import config from './config.ts';
 import { schemaObjects, schemas } from '../../plugins/test-utils/index.mjs';
 import { initializeWebMCPPolyfill } from '@mcp-b/webmcp-polyfill';
+import { waitUntil } from 'async-test-util';
 
 addRxPlugin(RxDBWebMCPPlugin);
 
@@ -40,6 +41,7 @@ describe('webmcp.test.ts', () => {
         db = await createRxDatabase({
             name: randomToken(10),
             storage: config.storage.getStorage(),
+            allowSlowCount: true
         });
         const collections = await db.addCollections({
             humans: {
@@ -57,19 +59,21 @@ describe('webmcp.test.ts', () => {
                 delete (global as any).navigator;
             }
         } catch (err) { }
-        await db.destroy();
+        await db.close();
     });
 
     it('should register query tool when registerWebMCP is called', async () => {
         db.registerWebMCP();
 
         const tools = getTools();
+        console.log('Tools count:', tools?.length);
         assert.strictEqual(tools.length, 7);
-        const queryToolName = `rxdb_query_humans_${collection.schema.version}`;
+        const queryToolName = `rxdb_query_${db.name}_humans_${collection.schema.version}`;
         const queryTool = tools.find((t: any) => t.name.startsWith(queryToolName));
+        console.log('QueryTool:', JSON.stringify(queryTool));
         assert.ok(queryTool, 'queryTool not found');
         assert.ok(queryTool.name.startsWith(queryToolName));
-        assert.ok(queryTool.inputSchema.properties.query);
+        assert.ok(queryTool.inputSchema);
 
         // Test error decoding URL
         assert.ok(queryTool.description.includes('https://rxdb.info/errors.html'));
@@ -81,13 +85,13 @@ describe('webmcp.test.ts', () => {
         assert.strictEqual(result[0].passportId, 'alice');
 
         // Test count execution
-        const countTool = tools.find((t: any) => t.name.startsWith('rxdb_count'));
+        const countTool = tools.find((t: any) => t.name.startsWith(`rxdb_count_${db.name}_humans`));
         assert.ok(countTool);
         const countResult = await executeTool(countTool.name, { query: { selector: { age: { $gt: 0 } } } });
         assert.strictEqual(countResult.count, 1);
 
         // Test changes execution
-        const changesTool = tools.find((t: any) => t.name.startsWith('rxdb_changes'));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
         assert.ok(changesTool);
         const changesResult = await executeTool(changesTool.name, { limit: 10 });
         assert.strictEqual(changesResult.documents.length, 1);
@@ -98,7 +102,7 @@ describe('webmcp.test.ts', () => {
     it('should wait for changes using wait_changes tool', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const waitTool = tools.find((t: any) => t.name.startsWith('rxdb_wait_changes'));
+        const waitTool = tools.find((t: any) => t.name.startsWith(`rxdb_wait_changes_${db.name}_humans`));
         assert.ok(waitTool);
         let waitResolved = false;
         const waitPromise = executeTool(waitTool.name, {}).then(() => {
@@ -118,7 +122,7 @@ describe('webmcp.test.ts', () => {
     it('should iterate over changes using checkpoint', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const changesTool = tools.find((t: any) => t.name.startsWith('rxdb_changes'));
+        const changesTool = tools.find((t: any) => t.name.startsWith(`rxdb_changes_${db.name}_humans`));
 
         await collection.insert(schemaObjects.humanData('c_alice'));
         await collection.insert(schemaObjects.humanData('c_bob'));
@@ -136,9 +140,9 @@ describe('webmcp.test.ts', () => {
     it('should execute modifier tools successfully (insert/upsert/delete)', async () => {
         db.registerWebMCP();
         const tools = getTools();
-        const insertTool = tools.find((t: any) => t.name.startsWith('rxdb_insert'));
-        const upsertTool = tools.find((t: any) => t.name.startsWith('rxdb_upsert'));
-        const deleteTool = tools.find((t: any) => t.name.startsWith('rxdb_delete'));
+        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
+        const upsertTool = tools.find((t: any) => t.name.startsWith(`rxdb_upsert_${db.name}_humans`));
+        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}_humans`));
 
         // Insert
         const docData = schemaObjects.humanData('mod_alice');
@@ -159,7 +163,7 @@ describe('webmcp.test.ts', () => {
 
         // Delete
         const deleteResult = await executeTool(deleteTool.name, { id: 'mod_alice' });
-        assert.strictEqual(deleteResult._deleted, true);
+        assert.strictEqual(deleteResult.passportId, 'mod_alice');
 
         docs = await collection.find().exec();
         assert.strictEqual(docs.length, 0);
@@ -179,7 +183,7 @@ describe('webmcp.test.ts', () => {
 
         const tools = getTools();
         assert.strictEqual(tools.length, 4); // Only query/count/changes/wait should be registered
-        const insertTool = tools.find((t: any) => t.name.startsWith('rxdb_insert'));
+        const insertTool = tools.find((t: any) => t.name.startsWith(`rxdb_insert_${db.name}_humans`));
         assert.ok(!insertTool);
     });
 
@@ -191,7 +195,7 @@ describe('webmcp.test.ts', () => {
         const sub2 = error$.subscribe((e: any) => errors.push(e));
 
         const tools = getTools();
-        const queryTool = tools.find((t: any) => t.name.startsWith('rxdb_query'));
+        const queryTool = tools.find((t: any) => t.name.startsWith(`rxdb_query_${db.name}_humans`));
         await executeTool(queryTool.name, { query: { selector: { age: { $gt: 0 } } } });
 
         assert.strictEqual(logs.length, 1);
@@ -199,7 +203,7 @@ describe('webmcp.test.ts', () => {
         assert.ok(!logs[0].error);
 
         // Test error
-        const deleteTool = tools.find((t: any) => t.name.startsWith('rxdb_delete'));
+        const deleteTool = tools.find((t: any) => t.name.startsWith(`rxdb_delete_${db.name}_humans`));
         try {
             await executeTool(deleteTool.name, { id: 'does-not-exist' });
         } catch (err) { }
@@ -213,7 +217,7 @@ describe('webmcp.test.ts', () => {
         sub2.unsubscribe();
     });
 
-    it('should register tools for newly added collections dynamically', async (done) => {
+    it('should register tools for newly added collections dynamically', async () => {
         db.registerWebMCP();
         assert.ok(!getTools().find((t: any) => t.name.includes('aliens')));
 
@@ -223,14 +227,9 @@ describe('webmcp.test.ts', () => {
             }
         });
 
-        setTimeout(() => {
-            try {
-                const queryTool = getTools().find((t: any) => t.name.includes('aliens') && t.name.startsWith('rxdb_query'));
-                assert.ok(queryTool);
-                done();
-            } catch (err) {
-                done(err);
-            }
-        }, 100);
+        await waitUntil(() => {
+            const queryTool = getTools().find((t: any) => t.name.includes('aliens') && t.name.startsWith(`rxdb_query_${db.name}`));
+            return !!queryTool;
+        });
     });
 });

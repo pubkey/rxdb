@@ -62,7 +62,7 @@ export const NOSQL_QUERY_JSON_SCHEMA = {
         },
 
         "expression": {
-            "oneOf": [
+            "anyOf": [
                 { "$ref": "#/$defs/logicalExpression" },
                 { "$ref": "#/$defs/fieldExpression" }
             ]
@@ -133,7 +133,7 @@ export const NOSQL_QUERY_JSON_SCHEMA = {
             "additionalProperties": false,
             "patternProperties": {
                 "^(?!\\$).+$": {
-                    "oneOf": [
+                    "anyOf": [
                         { "$ref": "#/$defs/literal" },
                         { "$ref": "#/$defs/fieldOperatorExpression" }
                     ]

@@ -32,13 +32,6 @@ When an AI Agent is active, it can discover these tools and call them programmat
 <br />
 </center>
 
-## How to try WebMCP in Chrome
-
-WebMCP is currently in an early preview phase. You can test it today in Chrome Canary (version 145+) by following these steps:
-
-1. **Enable the flag**: Go to `chrome://flags`, search for "WebMCP for testing", enable it, and relaunch Chrome.
-2. **Install the inspector extension**: Install the [Model Context Tool Inspector Extension](https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd) to view registered tools, execute them manually, and test with an agent using Gemini API integration.
-3. **Use a live demo**: You can test the integration directly on demo pages like the [RxDB WebMCP Quickstart](https://pubkey.github.io/rxdb-quickstart/).
 
 ## Why Local-First Database Tools work great with WebMCP
 
@@ -60,6 +53,14 @@ Exposing your local database to AI agents unlocks new user experiences:
   year="2026"
   sourceLink="https://abvijaykumar.medium.com/webmcp-web-model-context-protocol-agents-are-learning-to-browse-better-22fcefc981d7"
 >WebMCP essentially adds a second layer to the web, one that’s designed for machines to use programmatically, not just for humans to see.</QuoteBlock>
+
+## How to try WebMCP in Chrome
+
+WebMCP is currently in an early preview phase. You can test it today in Chrome Canary (version 145+) by following these steps:
+
+1. **Enable the flag**: Go to `chrome://flags`, search for "WebMCP for testing", enable it, and relaunch Chrome.
+2. **Install the inspector extension**: Install the [Model Context Tool Inspector Extension](https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd) to view registered tools, execute them manually, and test with an agent using Gemini API integration.
+3. **Use a live demo**: You can test the integration directly on demo pages like the [RxDB WebMCP Quickstart](https://pubkey.github.io/rxdb-quickstart/).
 
 ## The RxDB WebMCP Plugin
 
@@ -109,29 +110,6 @@ db.collections.humans.registerWebMCP();
 
 </Steps>
 
-### Logs and Errors
-
-Both `registerWebMCP` methods (`db.registerWebMCP()` and `db.collections.humans.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
-
-You can subscribe to these to monitor the AI agent's actions:
-
-```ts
-const { log$, error$ } = db.registerWebMCP();
-
-log$.subscribe(info => {
-    // Log all tool calls, arguments, and responses
-    console.log('WebMCP Agent Action', info);
-});
-
-error$.subscribe(err => {
-    // Audit failed tool executions
-    console.error('WebMCP Agent Error', err);
-});
-```
-
-### Tooling
-
-To aid in debugging and developing WebMCP features, you can use the [Model Context Protocol (MCP) tool inspector](https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd) browser extension. This extension allows you to view all registered tools, their schemas, and test invoking them manually before integrating an AI Agent.
 
 ### Options
 
@@ -164,6 +142,27 @@ db.registerWebMCP({
 
 > [!WARNING]
 > If the application is offline and the replication is configured to retry infinitely, querying WebMCP with this option enabled may hang indefinitely while awaiting replication sync. Use wisely.
+
+
+### Logs and Errors
+
+Both `registerWebMCP` methods (`db.registerWebMCP()` and `db.collections.humans.registerWebMCP()`) return an object containing two RxJS Subjects: `log$` and `error$`.
+
+You can subscribe to these to monitor the AI agent's actions:
+
+```ts
+const { log$, error$ } = db.registerWebMCP();
+
+log$.subscribe(info => {
+    // Log all tool calls, arguments, and responses
+    console.log('WebMCP Agent Action', info);
+});
+
+error$.subscribe(err => {
+    // Audit failed tool executions
+    console.error('WebMCP Agent Error', err);
+});
+```
 
 ### Pro Tip: Schema Descriptions for Better LLM Results
 

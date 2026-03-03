@@ -36,6 +36,7 @@ export interface RxWebMCPPlugin {
         RxDatabase: (proto: any) => void;
         RxCollection: (proto: any) => void;
     };
+    hooks?: any;
 }
 
 

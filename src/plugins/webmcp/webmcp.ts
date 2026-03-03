@@ -34,23 +34,10 @@ export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions
         registerCollection(collection as RxCollection);
     }
 
-    // Register future collections
-    database.eventBulks$.subscribe(bulk => {
-        for (const event of bulk.events) {
-            if ((event as any).documentData && (event as any).documentData.id === 'rxdb-collection-add') {
-                // Actually the collection observable is database.$.pipe(filter(e => e.type === 'ADDED')) or something,
-                // But RxDatabase.collection$ exists... Let me check. Wait, I will use `database.$` for RxCollectionEvent, or `database.eventBulks$`
-                // Let's use `database.$` to catch RxCollectionEvent if possible, but actually `database.$` emits RxChangeEvent.
-                // Looking at RxDatabase, let's use the standard approach or I'll just check if it's possible.
-            }
-        }
-    });
-    // Let me revise the dynamic collection hook
-    const sub = (database as any).$.subscribe((event: any) => {
-        if (event && event.type === 'ADDED' && event.collection) {
-            registerCollection(event.collection);
-        }
-    });
+    // Store options and subjects on the database instance so the hook can pick them up dynamically
+    (database as any)._webmcpOptions = options || {};
+    (database as any)._webmcpError$ = error$;
+    (database as any)._webmcpLog$ = log$;
 
     // We should probably tear this down if the database is destroyed... For now it's okay.
     return { error$, log$ };
@@ -129,16 +116,19 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         });
     });
 
+    const queryToolName = `rxdb_query_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
     register({
-        name: `rxdb_query_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-        description: `Query the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. Allows filtering, sorting, and pagination. Returns an array of matched document objects. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+        name: queryToolName,
+        description: `Query the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. Allows filtering, sorting, and pagination. Returns an array of matched document objects. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
             readOnlyHint: true
         },
         inputSchema: {
             type: 'object',
+            $defs: NOSQL_QUERY_JSON_SCHEMA.$defs,
             properties: {
                 query: Object.assign({}, NOSQL_QUERY_JSON_SCHEMA, {
+                    $defs: undefined, // remove nested $defs
                     default: {
                         sort: [{ [collection.schema.primaryPath]: 'asc' }]
                     }
@@ -146,23 +136,26 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             },
             required: ['query']
         },
-        execute: withMiddleware('rxdb_query', async (args: { query: any }, _context: any) => {
+        execute: withMiddleware(queryToolName, async (args: { query: any }, _context: any) => {
             await awaitSyncIfRequired();
             const docs = await collection.find(args.query).exec();
             return docs.map(d => d.toJSON());
         })
     });
 
+    const countToolName = `rxdb_count_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
     register({
-        name: `rxdb_count_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-        description: `Counts the documents in the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' matching a given query. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+        name: countToolName,
+        description: `Counts the documents in the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' matching a given query. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
             readOnlyHint: true
         },
         inputSchema: {
             type: 'object',
+            $defs: NOSQL_QUERY_JSON_SCHEMA.$defs,
             properties: {
                 query: Object.assign({}, NOSQL_QUERY_JSON_SCHEMA, {
+                    $defs: undefined, // remove nested $defs
                     default: {
                         sort: [{ [collection.schema.primaryPath]: 'asc' }]
                     }
@@ -170,16 +163,17 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             },
             required: ['query']
         },
-        execute: withMiddleware('rxdb_count', async (args: { query: any }, _context: any) => {
+        execute: withMiddleware(countToolName, async (args: { query: any }, _context: any) => {
             await awaitSyncIfRequired();
             const count = await collection.count(args.query).exec();
             return { count };
         })
     });
 
+    const changesToolName = `rxdb_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
     register({
-        name: `rxdb_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-        description: `Returns all changes of the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' since a given checkpoint. If no checkpoint is provided, starts from the oldest change. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+        name: changesToolName,
+        description: `Returns all changes of the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' since a given checkpoint. If no checkpoint is provided, starts from the oldest change. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
             readOnlyHint: true
         },
@@ -197,7 +191,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
                 }
             }
         },
-        execute: withMiddleware('rxdb_changes', async (args: { checkpoint?: any; limit?: number }, _context: any) => {
+        execute: withMiddleware(changesToolName, async (args: { checkpoint?: any; limit?: number }, _context: any) => {
             await awaitSyncIfRequired();
             const limit = args.limit || 50;
             const storageInstance = collection.storageInstance;
@@ -206,8 +200,9 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         })
     });
 
+    const waitChangesToolName = `rxdb_wait_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
     register({
-        name: `rxdb_wait_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
+        name: waitChangesToolName,
         description: `Waits until a new write event happens to the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. Returns a promise that resolves when a change occurs. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
             readOnlyHint: true
@@ -216,54 +211,57 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             type: 'object',
             properties: {}
         },
-        execute: withMiddleware('rxdb_wait_changes', async (_args: any, _context: any) => {
+        execute: withMiddleware(waitChangesToolName, async (_args: any, _context: any) => {
             await firstValueFrom(collection.eventBulks$);
             return { success: true, message: 'A write event occurred in the collection.' };
         })
     });
 
     if (options?.readOnly !== true) {
+        const insertToolName = `rxdb_insert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
         register({
-            name: `rxdb_insert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-            description: `Insert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+            name: insertToolName,
+            description: `Insert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {
                 type: 'object',
                 properties: {
-                    document: Object.assign({}, collection.schema.jsonSchema, {
+                    document: Object.assign({}, JSON.parse(JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())), {
                         description: 'The document to insert.',
                     })
                 },
                 required: ['document']
             },
-            execute: withMiddleware('rxdb_insert', async (args: { document: any }, _context: any) => {
+            execute: withMiddleware(insertToolName, async (args: { document: any }, _context: any) => {
                 await awaitSyncIfRequired();
                 const doc = await collection.insert(args.document);
                 return doc.toJSON();
             })
         });
 
+        const upsertToolName = `rxdb_upsert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
         register({
-            name: `rxdb_upsert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-            description: `Upsert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. If a document with the same primary key exists, it will be overwritten. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+            name: upsertToolName,
+            description: `Upsert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. If a document with the same primary key exists, it will be overwritten. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {
                 type: 'object',
                 properties: {
-                    document: Object.assign({}, collection.schema.jsonSchema, {
+                    document: Object.assign({}, JSON.parse(JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())), {
                         description: 'The document to upsert.',
                     })
                 },
                 required: ['document']
             },
-            execute: withMiddleware('rxdb_upsert', async (args: { document: any }, _context: any) => {
+            execute: withMiddleware(upsertToolName, async (args: { document: any }, _context: any) => {
                 await awaitSyncIfRequired();
                 const doc = await collection.upsert(args.document);
                 return doc.toJSON();
             })
         });
 
+        const deleteToolName = `rxdb_delete_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`;
         register({
-            name: `rxdb_delete_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
-            description: `Deletes a document by id from the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
+            name: deleteToolName,
+            description: `Deletes a document by id from the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.getJsonSchemaWithoutMeta())}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {
                 type: 'object',
                 properties: {
@@ -274,7 +272,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
                 },
                 required: ['id']
             },
-            execute: withMiddleware('rxdb_delete', async (args: { id: string }, _context: any) => {
+            execute: withMiddleware(deleteToolName, async (args: { id: string }, _context: any) => {
                 await awaitSyncIfRequired();
                 const doc = await collection.findOne(args.id).exec();
                 if (!doc) {
@@ -300,6 +298,22 @@ export const RxDBWebMCPPlugin: RxWebMCPPlugin = {
         },
         RxCollection: (proto: any) => {
             proto.registerWebMCP = registerWebMCPCollection;
+        }
+    },
+    hooks: {
+        createRxCollection: {
+            after: ({ collection }: { collection: RxCollection }) => {
+                const db = collection.database as any;
+                if (db._webmcpOptions) {
+                    const res = (collection as any).registerWebMCP(db._webmcpOptions);
+                    if (db._webmcpError$) {
+                        res.error$.subscribe(db._webmcpError$);
+                    }
+                    if (db._webmcpLog$) {
+                        res.log$.subscribe(db._webmcpLog$);
+                    }
+                }
+            }
         }
     }
 };
