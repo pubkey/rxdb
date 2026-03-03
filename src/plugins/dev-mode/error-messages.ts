@@ -317,7 +317,7 @@ export const ERROR_MESSAGES = {
     COL1: {
         message: 'RxDocument.insert() You cannot insert an existing document',
         cause: 'You tried to insert a document with a primary key that already exists.',
-        fix: 'Use upsert() or atomicUpsert() if you want to overwrite.',
+        fix: 'Use upsert() if you want to overwrite.',
         docs: 'https://rxdb.info/rx-collection.html?console=errors&code=COL1#insert'
     },
     COL2: {
@@ -549,7 +549,7 @@ export const ERROR_MESSAGES = {
     DOC16: {
         message: 'Since version 8.0.0 RxDocument.set() can only be called on temporary RxDocuments',
         cause: 'You called set() on a non-temporary document.',
-        fix: 'Use update(), atomicUpdate(), patch() or modify() to change document data.',
+        fix: 'Use update(), patch() or modify() to change document data.',
         docs: 'https://rxdb.info/rx-document.html?console=errors&code=DOC16#update'
     },
     DOC17: {

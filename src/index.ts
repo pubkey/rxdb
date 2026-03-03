@@ -27,4 +27,4 @@ export * from './plugin-helpers.ts';
 export * from './plugins/utils/index.ts';
 export * from './hooks.ts';
 export * from './query-cache.ts';
-export type * from './types/index.ts';
+export type * from './types/index.d.ts';

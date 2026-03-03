@@ -19,7 +19,7 @@ import type {
     RxAttachmentWriteData,
     RxCollection,
     RxAttachmentCreatorBase64
-} from '../../types/index.ts';
+} from '../../types/index.d.ts';
 import {
     assignMethodsToAttachment,
     ensureSchemaSupportsAttachments

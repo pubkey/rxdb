@@ -8,7 +8,7 @@ import type {
     RxPlugin,
     RxCollection,
     RxDatabase
-} from '../../types/index.ts';
+} from '../../types/index.d.ts';
 import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,

@@ -16,7 +16,7 @@ import type {
     JsonSchema,
     RxDocumentData,
     RxJsonSchema
-} from './types/index.ts';
+} from './types/index.d.ts';
 import {
     ensureNotFalsy,
     objectPathMonad,
