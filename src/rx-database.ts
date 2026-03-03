@@ -28,7 +28,9 @@ import type {
     HashFunction,
     MaybePromise,
     RxState,
-    RxCollectionEvent
+    RxCollectionEvent,
+    WebMCPOptions,
+    WebMCPLogEvent
 } from './types/index.d.ts';
 
 import {
@@ -569,6 +571,10 @@ export class RxDatabaseBase<
         Reactivity
     > {
         return this as any;
+    }
+
+    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
+        throw pluginMissing('webmcp');
     }
 }
 

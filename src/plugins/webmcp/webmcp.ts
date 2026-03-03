@@ -19,19 +19,19 @@ import { NOSQL_QUERY_JSON_SCHEMA } from './nosql-query-schema.ts';
 
 export function registerWebMCPDatabase(this: RxDatabase, options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
     const database = this;
-    const collections = (this as any).collections;
+    const collections = this.collections;
     const error$ = new Subject<Error>();
     const log$ = new Subject<WebMCPLogEvent>();
 
-    const registerCollection = (collection: RxCollection) => {
-        const res = (collection as any).registerWebMCP(options);
+    const registerCollection = (collection: RxCollection<any>) => {
+        const res = collection.registerWebMCP(options);
         res.error$.subscribe(error$);
         res.log$.subscribe(log$);
     };
 
     // Register existing collections
     for (const [name, collection] of Object.entries(collections)) {
-        registerCollection(collection as RxCollection);
+        registerCollection(collection as RxCollection<any>);
     }
 
     // Store options and subjects on the database instance so the hook can pick them up dynamically

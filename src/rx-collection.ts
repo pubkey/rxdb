@@ -54,7 +54,8 @@ import {
 
 import {
     Subscription,
-    Observable
+    Observable,
+    Subject
 } from 'rxjs';
 
 import type {
@@ -84,7 +85,9 @@ import type {
     MaybePromise,
     CRDTEntry,
     MangoQuerySelectorAndIndex,
-    MigrationStrategies
+    MigrationStrategies,
+    WebMCPOptions,
+    WebMCPLogEvent
 } from './types/index.d.ts';
 
 import {
@@ -912,6 +915,10 @@ export class RxCollectionBase<
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void> {
         throw pluginMissing('json-dump');
+    }
+
+    registerWebMCP(_options?: WebMCPOptions): { error$: Subject<Error>; log$: Subject<WebMCPLogEvent> } {
+        throw pluginMissing('webmcp');
     }
 
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {

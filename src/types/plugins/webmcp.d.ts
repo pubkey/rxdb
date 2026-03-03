@@ -38,5 +38,3 @@ export interface RxWebMCPPlugin {
     };
     hooks?: any;
 }
-
-
