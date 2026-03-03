@@ -111,7 +111,25 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         }
     };
 
-    modelContext.registerTool({
+    const registeredToolNames: string[] = [];
+    const register = (tool: any) => {
+        modelContext.registerTool(tool);
+        registeredToolNames.push(tool.name);
+    };
+
+    collection.onClose.push(() => {
+        registeredToolNames.forEach(name => {
+            try {
+                if (modelContext.unregisterTool) {
+                    modelContext.unregisterTool(name);
+                }
+            } catch (err) {
+                // Ignore errors on unregister
+            }
+        });
+    });
+
+    register({
         name: `rxdb_query_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
         description: `Query the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. Allows filtering, sorting, and pagination. Returns an array of matched document objects. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
@@ -135,7 +153,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         })
     });
 
-    modelContext.registerTool({
+    register({
         name: `rxdb_count_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
         description: `Counts the documents in the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' matching a given query. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
@@ -159,7 +177,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         })
     });
 
-    modelContext.registerTool({
+    register({
         name: `rxdb_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
         description: `Returns all changes of the RxDB collection '${collection.name}' of database '${(collection as any).database.name}' since a given checkpoint. If no checkpoint is provided, starts from the oldest change. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
@@ -188,7 +206,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
         })
     });
 
-    modelContext.registerTool({
+    register({
         name: `rxdb_wait_changes_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
         description: `Waits until a new write event happens to the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. Returns a promise that resolves when a change occurs. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
         annotations: {
@@ -205,7 +223,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
     });
 
     if (options?.readOnly !== true) {
-        modelContext.registerTool({
+        register({
             name: `rxdb_insert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
             description: `Insert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {
@@ -224,7 +242,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             })
         });
 
-        modelContext.registerTool({
+        register({
             name: `rxdb_upsert_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
             description: `Upsert a document into the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. If a document with the same primary key exists, it will be overwritten. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {
@@ -243,7 +261,7 @@ export function registerWebMCPCollection(this: RxCollection, options?: WebMCPOpt
             })
         });
 
-        modelContext.registerTool({
+        register({
             name: `rxdb_delete_${(collection as any).database.name}_${collection.name}_${collection.schema.version}`,
             description: `Deletes a document by id from the RxDB collection '${collection.name}' of database '${(collection as any).database.name}'. The collection has the following JSON schema: ${JSON.stringify(collection.schema.jsonSchema)}. Note: If this tool returns an error code, you can find the decoded error message at https://rxdb.info/errors.html`,
             inputSchema: {

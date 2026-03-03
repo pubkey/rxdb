@@ -32,7 +32,13 @@ When an AI Agent is active, it can discover these tools and call them programmat
 <br />
 </center>
 
-**Browser Support**: [WebMCP](https://github.com/webmachinelearning/webmcp) is currently in an early preview phase. As of early 2025, it can be tested in Chrome Canary (version 145/146+) by enabling the "WebMCP for testing" flag at `chrome://flags`. Industry observers anticipate formal browser announcements for broader rollout towards 2026.
+## How to try WebMCP in Chrome
+
+WebMCP is currently in an early preview phase. You can test it today in Chrome Canary (version 145+) by following these steps:
+
+1. **Enable the flag**: Go to `chrome://flags`, search for "WebMCP for testing", enable it, and relaunch Chrome.
+2. **Install the inspector extension**: Install the [Model Context Tool Inspector Extension](https://chromewebstore.google.com/detail/model-context-tool-inspec/gbpdfapgefenggkahomfgkhfehlcenpd) to view registered tools, execute them manually, and test with an agent using Gemini API integration.
+3. **Use a live demo**: You can test the integration directly on demo pages like the [RxDB WebMCP Quickstart](https://pubkey.github.io/rxdb-quickstart/).
 
 ## Why Local-First Database Tools work great with WebMCP
 
