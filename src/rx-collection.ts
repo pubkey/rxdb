@@ -240,7 +240,7 @@ export class RxCollectionBase<
              * we retry after some times to account for this.
              */
             let count = 0;
-            while (count < 10 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
+            while (count < 15 && OPEN_COLLECTIONS.size >= NON_PREMIUM_COLLECTION_LIMIT) {
                 await this.promiseWait(30);
                 count++;
             }
