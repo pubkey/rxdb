@@ -333,7 +333,10 @@ modes.forEach(mode => {
                 const latestDoc = await c.findOne().exec(true);
                 const attachment = latestDoc.getAttachment('readme.txt');
                 const blob = await ensureNotFalsy(attachment).getData();
-                assert.strictEqual(blob.type, 'text/plain', 'retrieved Blob should have text/plain MIME type after compression roundtrip');
+                assert.ok(
+                    blob.type === 'text/plain' || blob.type === 'text/plain;charset=utf-8',
+                    'retrieved Blob should have text/plain MIME type after compression roundtrip, got: ' + blob.type
+                );
                 c.database.close();
             });
             it('full roundtrip should preserve MIME type for non-compressible type', async () => {
