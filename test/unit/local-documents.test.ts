@@ -50,7 +50,7 @@ describeParallel('local-documents.test.ts', () => {
                 });
                 const doc2 = await c.findOne().exec();
                 assert.strictEqual(doc2, null);
-                c.database.close();
+                await c.database.close();
             });
         });
         describe('negative', () => {
@@ -94,7 +94,7 @@ describeParallel('local-documents.test.ts', () => {
                 const doc2 = await c.getLocal('foobar');
                 assert.ok(doc);
                 assert.ok(doc === doc2);
-                c.database.close();
+                await c.database.close();
             });
         });
         describe('negative', () => {
