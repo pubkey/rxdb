@@ -298,8 +298,6 @@ const is = isRxDocument(myObj);
 
 ## Document Lifetime and Immutability
 
-Understanding how `RxDocument` instances behave over time is important for writing correct code.
-
 **RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
 
 ```js
