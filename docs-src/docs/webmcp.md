@@ -358,7 +358,7 @@ The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to ch
         addRxPlugin(RxDBWebMCPPlugin);
         ```
 
-        The polyfill sets up the <code>navigator.modelContext</code> interface and bridges it to the <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol (MCP)</a> so that AI agents connecting via MCP clients can discover and call your registered tools.
+        The polyfill sets up the <code>navigator.modelContext</code> interface so that your registered tools are accessible to AI agents running in the browser, even without native browser support.
     </div>
 </details>
 
