@@ -2234,9 +2234,9 @@ describe('replication.test.ts', () => {
                         pushCallCount++;
                         pushCount += rows.length;
                         return getPushHandler(serverCollection)(rows);
-                    }
-                },
-                waitBeforePersist: () => waitPromise
+                    },
+                    waitBeforePersist: () => waitPromise
+                }
             });
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();

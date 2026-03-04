@@ -116,8 +116,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         public readonly live?: boolean,
         public retryTime?: number,
         public autoStart?: boolean,
-        public toggleOnDocumentVisible?: boolean,
-        public waitBeforePersist?: () => Promise<any>
+        public toggleOnDocumentVisible?: boolean
     ) {
         this.metaInfoPromise = (async () => {
             const metaInstanceCollectionName = 'rx-replication-meta-' + await collection.database.hashFunction([
@@ -234,7 +233,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             skipStoringPullMeta: this.push ? false : true,
             identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
-            waitBeforePersist: this.waitBeforePersist,
+            waitBeforePersist: this.push ? this.push.waitBeforePersist : undefined,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter(_v => !!this.pull),
@@ -579,8 +578,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         retryTime = 1000 * 5,
         waitForLeadership = true,
         autoStart = true,
-        toggleOnDocumentVisible = true,
-        waitBeforePersist
+        toggleOnDocumentVisible = true
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
@@ -608,8 +606,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         live,
         retryTime,
         autoStart,
-        toggleOnDocumentVisible,
-        waitBeforePersist
+        toggleOnDocumentVisible
     );
 
 
