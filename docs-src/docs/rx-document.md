@@ -173,38 +173,6 @@ const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
 ```
 
-## Document Lifetime and Immutability
-
-Understanding how `RxDocument` instances behave over time is important for writing correct code.
-
-**RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
-
-```js
-const doc = await myCollection.findOne('foobar').exec();
-console.log(doc.age); // 10
-
-await doc.incrementalPatch({ age: 20 });
-
-// The original instance still has the old data
-console.log(doc.age); // 10
-
-// Use getLatest() to get the updated state
-console.log(doc.getLatest().age); // 20
-```
-
-**RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
-
-**Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error.
-
-To avoid this, either:
-- Use the [incremental methods](#prevent-conflicts-with-the-incremental-methods) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
-- Call `getLatest()` to get the current state before writing.
-- Re-query the collection to get a fresh document.
-
-**How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
-
-
-
 ### Observe $
 Calling this will return an [RxJS Observable](https://rxjs.dev/guide/observable) which emits the current newest state of the RxDocument.
 
@@ -327,3 +295,33 @@ Returns true if the given object is an instance of RxDocument. Returns false if 
 ```js
 const is = isRxDocument(myObj);
 ```
+
+## Document Lifetime and Immutability
+
+Understanding how `RxDocument` instances behave over time is important for writing correct code.
+
+**RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
+
+```js
+const doc = await myCollection.findOne('foobar').exec();
+console.log(doc.age); // 10
+
+await doc.incrementalPatch({ age: 20 });
+
+// The original instance still has the old data
+console.log(doc.age); // 10
+
+// Use getLatest() to get the updated state
+console.log(doc.getLatest().age); // 20
+```
+
+**RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
+
+**Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error.
+
+To avoid this, either:
+- Use the [incremental methods](#prevent-conflicts-with-the-incremental-methods) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
+- Call `getLatest()` to get the current state before writing.
+- Re-query the collection to get a fresh document.
+
+**How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
