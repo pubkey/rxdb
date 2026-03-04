@@ -158,4 +158,24 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
      * @default true
      */
     autoStart?: boolean;
+
+    /**
+     * When a write happens to the fork,
+     * normally the replication will directly try to persist.
+     *
+     * For many use cases, it is better to await the next event loop tick
+     * or to wait until the RxDatabase is idle or requestIdleCallback() calls
+     * to ensure the CPU is idle.
+     * This can improve performance because the persistence will not affect UI
+     * renders.
+     *
+     * It can also be used to batch writes from multiple collections into a single
+     * push cycle. By returning a promise that resolves only after all related
+     * writes are done, you ensure that the push handler receives all documents
+     * in one batch instead of multiple individual pushes.
+     *
+     * But: The longer you wait here, the higher is the risk of losing fork
+     * writes when the replication is closed unexpected.
+     */
+    waitBeforePersist?: () => Promise<any>;
 };

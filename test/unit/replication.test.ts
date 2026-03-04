@@ -2213,5 +2213,54 @@ describe('replication.test.ts', () => {
             serverCollection.database.close();
             clientCollection.database.close();
         });
+        it('waitBeforePersist should batch multiple writes into a single push', async () => {
+            const serverCollection = await humansCollection.create(0);
+            const clientCollection = await humansCollection.create(0);
+
+            let pushCallCount = 0;
+            let pushCount = 0;
+
+            let resolveWait!: () => void;
+            let waitPromise: Promise<void> = Promise.resolve();
+
+            const replicationState = replicateRxCollection({
+                replicationIdentifier: 'replicate-' + randomToken(10),
+                collection: clientCollection,
+                pull: {
+                    handler: getPullHandler(serverCollection)
+                },
+                push: {
+                    handler: (rows) => {
+                        pushCallCount++;
+                        pushCount += rows.length;
+                        return getPushHandler(serverCollection)(rows);
+                    }
+                },
+                waitBeforePersist: () => waitPromise
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            // hold push by keeping the promise pending
+            waitPromise = new Promise(resolve => {
+                resolveWait = resolve;
+            });
+
+            // insert multiple documents while push is held
+            await clientCollection.insert(schemaObjects.humanData('p1'));
+            await clientCollection.insert(schemaObjects.humanData('p2'));
+            await clientCollection.insert(schemaObjects.humanData('p3'));
+
+            // release the gate so all buffered writes are pushed in one batch
+            resolveWait();
+            await replicationState.awaitInSync();
+
+            // all 3 docs should have been pushed in a single push call
+            assert.strictEqual(pushCallCount, 1);
+            assert.strictEqual(pushCount, 3);
+
+            serverCollection.database.close();
+            clientCollection.database.close();
+        });
     });
 });
