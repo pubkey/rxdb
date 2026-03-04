@@ -337,6 +337,32 @@ The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to ch
 </details>
 
 <details>
+    <summary>How to use the WebMCP polyfill for browsers without native support?</summary>
+    <div>
+        Since most browsers do not yet natively implement the <code>navigator.modelContext</code> API, you can use the <a href="https://github.com/WebMCP-org" target="_blank">WebMCP-org</a> polyfill package <code>@mcp-b/global</code> to add support in any browser today.
+
+        Install the package:
+
+        ```bash
+        npm install @mcp-b/global
+        ```
+
+        Then import it once at the entry point of your application, before any WebMCP tools are registered:
+
+        ```ts
+        import '@mcp-b/global';
+
+        // navigator.modelContext is now available
+        import { addRxPlugin } from 'rxdb';
+        import { RxDBWebMCPPlugin } from 'rxdb/plugins/webmcp';
+        addRxPlugin(RxDBWebMCPPlugin);
+        ```
+
+        The polyfill sets up the <code>navigator.modelContext</code> interface and bridges it to the <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol (MCP)</a> so that AI agents connecting via MCP clients can discover and call your registered tools.
+    </div>
+</details>
+
+<details>
 <summary>How can I try WebMCP in Chrome?</summary>
 <div>
 
