@@ -77,6 +77,8 @@ X- "reactjs storage"
 - "redux alternative" - 1300
 - "Awesome local first" - 10
 - "tauri database" - 170
+- "capacitor embedded database"
+- "Node.js embedded database"
 
 - "sqlite javascript" - 2900
 - "sqlite typescript" - 260
