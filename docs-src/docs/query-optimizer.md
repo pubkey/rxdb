@@ -26,9 +26,9 @@ import {
 } from 'rxdb-premium/plugins/indexeddb';
 
 const bestIndexes = await findBestIndex({
-    schema: myRxJsonSchema, // see [Schema Validation](./schema-validation.md)
+    schema: myRxJsonSchema, // see Schema Validation
     /**
-     * In this example we use the [IndexedDB RxStorage](./rx-storage-indexeddb.md),
+     * In this example we use the IndexedDB RxStorage,
      * but any other storage can be used for testing.
      */
     storage: getRxStorageIndexedDB(),
