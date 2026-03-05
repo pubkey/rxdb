@@ -1010,7 +1010,7 @@ jobs:
             /home/runner/.cache/deno
           # do not cache based on package.json because deno install randomly fails
           # and it would then never succeed on the first run on dependency updateds
-          key: ${{ runner.os }}-deno-x4-
+          key: ${{ runner.os }}-deno-x5-
 
       - name: clear denoKV storage files
         run: rm -rf /home/runner/.cache/deno/location_data/*
