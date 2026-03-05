@@ -609,7 +609,7 @@
     "@eslint/eslintrc": "3.3.4",
     "@eslint/js": "10.0.1",
     "@firebase/rules-unit-testing": "4.0.1",
-    "@mcp-b/webmcp-polyfill": "2.0.11",
+    "@mcp-b/webmcp-polyfill": "2.0.12",
     "@preact/signals-core": "1.13.0",
     "@rollup/plugin-commonjs": "29.0.0",
     "@rollup/plugin-node-resolve": "16.0.3",
