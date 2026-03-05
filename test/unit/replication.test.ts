@@ -2213,12 +2213,12 @@ describe('replication.test.ts', () => {
             serverCollection.database.close();
             clientCollection.database.close();
         });
-        it('waitBeforePersist should batch multiple writes into a single push', async () => {
+        it('waitBeforePersist should delay push until the returned promise resolves', async () => {
             const serverCollection = await humansCollection.create(0);
             const clientCollection = await humansCollection.create(0);
 
-            let pushCallCount = 0;
             let pushCount = 0;
+            let waitBeforePersistCalled = false;
 
             let resolveWait!: () => void;
             let waitPromise: Promise<void> = Promise.resolve();
@@ -2231,11 +2231,13 @@ describe('replication.test.ts', () => {
                 },
                 push: {
                     handler: (rows) => {
-                        pushCallCount++;
                         pushCount += rows.length;
                         return getPushHandler(serverCollection)(rows);
                     },
-                    waitBeforePersist: () => waitPromise
+                    waitBeforePersist: () => {
+                        waitBeforePersistCalled = true;
+                        return waitPromise;
+                    }
                 }
             });
             ensureReplicationHasNoErrors(replicationState);
@@ -2246,18 +2248,19 @@ describe('replication.test.ts', () => {
                 resolveWait = resolve;
             });
 
-            // insert multiple documents while push is held
+            // insert a document while push is held
             await clientCollection.insert(schemaObjects.humanData('p1'));
-            await clientCollection.insert(schemaObjects.humanData('p2'));
-            await clientCollection.insert(schemaObjects.humanData('p3'));
 
-            // release the gate so all buffered writes are pushed in one batch
+            // push should not have happened yet because waitBeforePersist is blocking
+            assert.strictEqual(pushCount, 0);
+            assert.ok(waitBeforePersistCalled);
+
+            // release the gate
             resolveWait();
             await replicationState.awaitInSync();
 
-            // all 3 docs should have been pushed in a single push call
-            assert.strictEqual(pushCallCount, 1);
-            assert.strictEqual(pushCount, 3);
+            // the document should now have been pushed
+            assert.strictEqual(pushCount, 1);
 
             serverCollection.database.close();
             clientCollection.database.close();
