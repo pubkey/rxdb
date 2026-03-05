@@ -144,7 +144,7 @@ exposeWorkerRxStorage({
 });
 
 /**
- * Then create a normal RxDatabase and [RxCollections](./rx-collection.md)
+ * Then create a normal RxDatabase and RxCollections
  * and start the replication.
  */
 const database = await createRxDatabase({

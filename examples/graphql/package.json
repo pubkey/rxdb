@@ -28,7 +28,7 @@
     "concurrently": "9.2.1",
     "cors": "2.8.6",
     "express": "5.2.1",
-    "graphql": "16.13.0",
+    "graphql": "16.13.1",
     "graphql-client": "2.0.1",
     "graphql-subscriptions": "3.0.0",
     "graphql-ws": "5.16.2",
@@ -55,7 +55,7 @@
     "style-loader": "4.0.0",
     "testcafe": "3.7.4",
     "testcafe-hammerhead": "31.7.7",
-    "webpack": "5.105.3",
+    "webpack": "5.105.4",
     "webpack-cli": "6.0.1",
     "webpack-dev-server": "5.2.3"
   }

@@ -47,7 +47,7 @@ const storage = getMemoryMappedRxStorage({
     storage: parentStorage
 });
 
-// create the [RxDatabase](./rx-database.md) like you would do with any other RxStorage
+// create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
     name: 'myDatabase',
     storage,
