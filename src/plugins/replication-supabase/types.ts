@@ -25,7 +25,7 @@ export type SyncOptionsSupabase<RxDocType> = Omit<
 > & {
     client: SupabaseClient;
     tableName: string;
-    schemaName: string;
+    schemaName?: string;
 
     /**
      * Modified field, default "_modified"
