@@ -651,7 +651,7 @@
     "fake-indexeddb": "6.2.5",
     "firebase": "12.10.0",
     "firebase-tools": "14.27.0",
-    "get-port": "5.1.1",
+    "get-port": "7.1.0",
     "globals": "17.4.0",
     "google-drive-mock": "1.1.4",
     "graphql-http": "1.22.4",
