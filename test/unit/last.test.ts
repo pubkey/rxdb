@@ -127,7 +127,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             {
                 runs: 1,
                 docsAmount: 100,
-                serialDocsAmount: 5,
+                serialDocsAmount: 10,
                 insertBatches: 2,
                 collectionsAmount: 2,
                 parallelQueryAmount: 2
