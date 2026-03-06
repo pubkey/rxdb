@@ -86,7 +86,7 @@ export function replicateSupabase<RxDocType>(
         return doc;
     }
     async function fetchById(id: string): Promise<WithDeleted<RxDocType>> {
-        const { data, error } = await options.client
+        const { data, error } = await options.client.schema(options.schemaName)
             .from(options.tableName)
             .select()
             .eq(primaryPath, id)
@@ -103,7 +103,7 @@ export function replicateSupabase<RxDocType>(
                 lastPulledCheckpoint: SupabaseCheckpoint | undefined,
                 batchSize: number
             ) {
-                let query = options.client
+                let query = options.client.schema(options.schemaName)
                     .from(options.tableName)
                     .select('*');
 
@@ -169,7 +169,7 @@ export function replicateSupabase<RxDocType>(
         ) {
             async function insertOrReturnConflict(doc: WithDeleted<RxDocType>): Promise<WithDeleted<RxDocType> | undefined> {
                 const id = (doc as any)[primaryPath];
-                const { error } = await options.client.from(options.tableName).insert(doc)
+                const { error } = await options.client.schema(options.schemaName).from(options.tableName).insert(doc)
                 if (!error) {
                     return;
                 } else if (error.code == POSTGRES_INSERT_CONFLICT_CODE) {
@@ -197,7 +197,7 @@ export function replicateSupabase<RxDocType>(
                 // modified field will be set server-side
                 delete toRow[modifiedField];
 
-                let query = options.client
+                let query = options.client.schema(options.schemaName)
                     .from(options.tableName)
                     .update(toRow);
 
@@ -262,7 +262,7 @@ export function replicateSupabase<RxDocType>(
                 .channel('realtime:' + options.tableName)
                 .on(
                     'postgres_changes',
-                    { event: '*', schema: 'public', table: options.tableName },
+                    { event: '*', schema: options.schemaName, table: options.tableName },
                     (payload) => {
                         /**
                          * We assume soft-deletes in supabase
