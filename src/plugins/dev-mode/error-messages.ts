@@ -1269,6 +1269,46 @@ export const ERROR_MESSAGES = {
     },
 
 
+
+    // plugins/replication-microsoft-onedrive
+    ODR1: {
+        message: 'Microsoft OneDrive: folderPath must not be the root folder or undefined',
+        cause: 'You provided "/" or "root" or "" as folderPath.',
+        fix: 'Use a specific subfolder to ensure RxDB data does not mess up the users drive files.',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR1'
+    },
+    ODR3: {
+        message: 'Microsoft OneDrive: Folder already exists but is not a folder',
+        cause: 'A file with the same name already exists, but is not a folder',
+        fix: 'Rename the file or the folder you are trying to create.',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR3'
+    },
+    ODR9: {
+        message: 'Microsoft OneDrive: folder has content but is not a rxdb sync target',
+        cause: 'You selected a folder that is not empty but is not a rxdb sync target.',
+        fix: 'Provide empty folder or use a different folder that is not used for anything else.',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR9'
+    },
+    ODR11: {
+        message: 'Microsoft OneDrive: could not close transaction',
+        cause: '',
+        fix: '',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR11'
+    },
+    ODR18: {
+        message: 'Max batch size exceeded for Microsoft OneDrive sync',
+        cause: '',
+        fix: 'Reduce the batchSize to be lower',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR18'
+    },
+    ODR19: {
+        message: 'WAL file write conflict',
+        cause: 'Someone else has written to the wal file in between our transaction. This should not happen.',
+        fix: 'Try to reproduce the error in a unit test and make a PR with a test case.',
+        docs: 'https://rxdb.info/replication-microsoft-onedrive.html?console=errors&code=ODR19'
+    },
+
+
     FETCH: {
         message: 'A fetch-request failed',
         cause: 'A call with the javascript fetch() function failed',
