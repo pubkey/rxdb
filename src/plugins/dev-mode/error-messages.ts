@@ -54,7 +54,7 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
     UT8: {
-        message: 'crypto.subtle.digest is not available in your runtime. For expo/react-native see https://discord.com/channels/969553741705539624/1341392686267109458/1343639513850843217 ',
+        message: 'crypto.subtle.digest is not available in your runtime. For expo/react-native you need to polyfill those, see https://github.com/pubkey/rxdb/blob/master/examples/react-native/initializeDb.js#L24 ',
         cause: 'The Web Crypto API is not available in this environment.',
         fix: 'Use a polyfill or an environment that supports the Web Crypto API, or provide a custom hash function.',
         docs: 'https://rxdb.info/rx-database.html?console=errors&code=UT8#ignoreduplicate'
