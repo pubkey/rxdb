@@ -58,7 +58,7 @@ export function replicateSupabase<RxDocType>(
     // set defaults
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     options.live = typeof options.live === 'undefined' ? true : options.live;
-    options.schemaName = options.schemaName ? options.schemaName : 'public';
+    options.schemaName = typeof options.schemaName === 'undefined' ? 'public' : options.schemaName;
     const modifiedField = options.modifiedField ? options.modifiedField : DEFAULT_MODIFIED_FIELD;
     const deletedField = options.deletedField ? options.deletedField : DEFAULT_DELETED_FIELD;
 
