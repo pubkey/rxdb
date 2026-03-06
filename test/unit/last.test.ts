@@ -127,10 +127,11 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             {
                 runs: 1,
                 docsAmount: 100,
-                serialDocsAmount: 10,
+                serialDocsAmount: 100,
                 insertBatches: 2,
                 collectionsAmount: 2,
-                parallelQueryAmount: 2
+                parallelQueryAmount: 2,
+                waitBetweenTests: 0
             }
         );
     });

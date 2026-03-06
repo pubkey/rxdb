@@ -42,6 +42,12 @@ export type PerformanceTestConfig = {
      * @default 6
      */
     insertBatches?: number;
+    /**
+     * Milliseconds to wait between test operations.
+     * Set to 0 to disable waiting (useful for smoke tests).
+     * @default 100
+     */
+    waitBetweenTests?: number;
 };
 
 export type PerformanceTestResult = {
@@ -71,7 +77,8 @@ export async function runPerformanceTests(
         docsAmount = 3000,
         serialDocsAmount = 50,
         parallelQueryAmount = 4,
-        insertBatches = 6
+        insertBatches = 6,
+        waitBetweenTests = 100
     } = config;
 
     const totalTimes: { [k: string]: number[]; } = {};
@@ -96,7 +103,7 @@ export async function runPerformanceTests(
             time = performance.now();
         };
 
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
         updateTime();
 
         // create database
@@ -146,7 +153,7 @@ export async function runPerformanceTests(
         }
         collection = await createDbWithCollections();
         updateTime('time-to-first-insert');
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         // insert documents (in batches)
         const docIds: string[] = [];
@@ -165,12 +172,12 @@ export async function runPerformanceTests(
             updateTime();
             await collection.bulkInsert(docsData);
             updateTime('insert-documents-' + docsPerBatch);
-            await awaitBetweenTest();
+            await awaitBetweenTest(waitBetweenTests);
         }
 
         // refresh db to ensure we do not run on caches
         collection = await createDbWithCollections();
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         /**
          * Bulk Find by id
@@ -179,7 +186,7 @@ export async function runPerformanceTests(
         const idsResult = await collection.findByIds(docIds).exec();
         updateTime('find-by-ids-' + docsAmount);
         assert.strictEqual(Array.from(idsResult.keys()).length, docsAmount, 'find-by-id amount');
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         /**
          * Serial inserts
@@ -199,7 +206,7 @@ export async function runPerformanceTests(
 
         // refresh db to ensure we do not run on caches
         collection = await createDbWithCollections();
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         /**
          * Serial find-by-id
@@ -209,7 +216,7 @@ export async function runPerformanceTests(
             await collection.findByIds([id]).exec();
         }
         updateTime('serial-find-by-id-' + serialDocsAmount);
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         // find by query
         updateTime();
@@ -226,7 +233,7 @@ export async function runPerformanceTests(
 
         // refresh db to ensure we do not run on caches
         collection = await createDbWithCollections();
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         // find by multiple queries in parallel
         updateTime();
@@ -244,7 +251,7 @@ export async function runPerformanceTests(
         let parallelSum = 0;
         parallelResult.forEach(r => parallelSum = parallelSum + r.length);
         assert.strictEqual(parallelSum, docsAmount, 'parallelSum');
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         // run count query
         updateTime();
@@ -263,7 +270,7 @@ export async function runPerformanceTests(
             t++;
         }
         updateTime('4x-count');
-        await awaitBetweenTest();
+        await awaitBetweenTest(waitBetweenTests);
 
         // test property access time
         updateTime();
@@ -317,9 +324,11 @@ function roundToThree(num: number) {
     return Math.round(num * 1000) / 1000;
 }
 
-async function awaitBetweenTest() {
+async function awaitBetweenTest(waitMs: number) {
     await requestIdlePromise();
-    await wait(100);
+    if (waitMs > 0) {
+        await wait(waitMs);
+    }
     await requestIdlePromise();
     await requestIdlePromise();
 }
