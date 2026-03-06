@@ -156,11 +156,6 @@ jobs:
         with:
           run: npm run test:browser:dexie
 
-      - name: performance test
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run test:performance:dexie
-
   storage-memory:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
@@ -196,13 +191,6 @@ jobs:
           run: npm run test:browser:memory
 
       - run: timeout 1h bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
-
-      - name: performance test
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm run test:performance:memory:browser
-
-      - run: npm run test:performance:memory:node
 
       - name: node example
         working-directory: ./examples/node
@@ -290,7 +278,6 @@ jobs:
       - run: npm run test:node:foundationdb
 
       - run: npm run test:fast:foundationdb
-      - run: npm run test:performance:foundationdb
 
   storage-sqlite-trial:
     runs-on: ubuntu-22.04
@@ -354,7 +341,6 @@ jobs:
       - run: node ./config/mongodb-connection-tester.js
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
-      - run: npm run test:performance:mongodb
       - run: timeout 1h bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
 
   example-angular:
@@ -998,7 +984,6 @@ jobs:
         with:
           bun-version: '1.3.10'
       - run: npm run test:bun:memory
-      - run: npm run test:performance:memory:bun
 
       # deno (must be last because it messes up with file permissions)
       - name: Reuse deno cache folder
@@ -1029,5 +1014,3 @@ jobs:
           sudo npm i -g cross-env
           deno info
           timeout 1h bash -c 'until npm run test:deno:denokv; do sleep 5; done'
-      # TODO fix deno performance test
-      #- run: npm run test:performance:memory:deno

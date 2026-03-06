@@ -19,7 +19,8 @@ import {
 import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory/index.mjs';
 import {
     isBun,
-    isDeno
+    isDeno,
+    runPerformanceTests
 } from '../../plugins/test-utils/index.mjs';
 declare const Deno: any;
 
@@ -115,6 +116,23 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.log(openSocketUrls.join(', '));
             throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')', { cause: err });
         }
+    });
+
+    it('run a minimal performance test to ensure the performance function works', async function () {
+        this.timeout(120 * 1000);
+        const perfStorage = config.storage.getPerformanceStorage();
+        await runPerformanceTests(
+            perfStorage.storage,
+            perfStorage.description,
+            {
+                runs: 1,
+                docsAmount: 100,
+                serialDocsAmount: 5,
+                insertBatches: 2,
+                collectionsAmount: 2,
+                parallelQueryAmount: 2
+            }
+        );
     });
 
     /**
