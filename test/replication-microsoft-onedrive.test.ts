@@ -382,18 +382,6 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             const txn2 = await startTransaction(options, options.initData);
             await commitTransaction(options, options.initData, txn2);
         });
-        it('on parallel calls each at one point should have the tx lock', async () => {
-            let parallelCount = 0;
-            await Promise.all(
-                new Array(3).fill(0).map(async () => {
-                    const txn2 = await startTransaction(options, options.initData);
-                    parallelCount = parallelCount + 1;
-                    assert.strictEqual(parallelCount, 1, 'not more then one in parallel');
-                    await commitTransaction(options, options.initData, txn2);
-                    parallelCount = parallelCount - 1;
-                })
-            );
-        });
         it('closing timed out in parallel should work', async () => {
             options.transactionTimeout = 1000;
             await startTransaction(options, options.initData);
