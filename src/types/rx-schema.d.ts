@@ -43,8 +43,8 @@ export type JsonSchema<RxDocType = any> = {
     dependencies?: {
         [key: string]: JsonSchema | string[] | readonly string[];
     };
-    exclusiveMinimum?: boolean;
-    exclusiveMaximum?: boolean;
+    exclusiveMinimum?: number;
+    exclusiveMaximum?: number;
     items?: JsonSchema | JsonSchema[] | readonly JsonSchema[];
     multipleOf?: number;
     maxProperties?: number;
