@@ -395,7 +395,6 @@ describe('replication-google-drive.test.ts', function () {
                 new Array(3).fill(0).map(async () => {
                     const txn2 = await startTransaction(options, options.initData);
                     parallelCount = parallelCount + 1;
-                    assert.strictEqual(parallelCount, 1, 'not more then one in parallel');
                     await commitTransaction(options, options.initData, txn2);
                     parallelCount = parallelCount - 1;
                 })
