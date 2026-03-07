@@ -22,6 +22,7 @@ import {
     isDeno,
     runPerformanceTests
 } from '../../plugins/test-utils/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 declare const Deno: any;
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
@@ -122,7 +123,7 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
         this.timeout(120 * 1000);
         const perfStorage = config.storage.getPerformanceStorage();
         await runPerformanceTests(
-            perfStorage.storage,
+            wrappedValidateAjvStorage({ storage: perfStorage.storage }),
             perfStorage.description,
             {
                 runs: 1,
