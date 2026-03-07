@@ -19,6 +19,9 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
 
 /**
+ * expo-crypto now supports getRandomValues, randomUUID (UUID v4), and digest functions,
+ * which are compliant with the Web Crypto API equivalents. With this change,expo-random has become redundant and is now deprecated.
+ * But they don't attach these to the global space, so you have do add a little polyfill.
  * @link https://discord.com/channels/969553741705539624/1341392686267109458/1343639513850843217
  */
 import * as Crypto from 'expo-crypto';
