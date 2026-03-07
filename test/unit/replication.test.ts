@@ -2213,5 +2213,56 @@ describe('replication.test.ts', () => {
             serverCollection.database.close();
             clientCollection.database.close();
         });
+        it('waitBeforePersist delays the push until the promise resolves', async () => {
+            const serverCollection = await humansCollection.create(0);
+            const clientCollection = await humansCollection.create(0);
+
+            let waitBeforePersistCalled = false;
+            let resolveWait!: () => void;
+            let waitPromise: Promise<void> = Promise.resolve();
+
+            const replicationState = replicateRxCollection({
+                replicationIdentifier: 'replicate-' + randomToken(10),
+                collection: clientCollection,
+                pull: {
+                    handler: getPullHandler(serverCollection)
+                },
+                push: {
+                    handler: getPushHandler(serverCollection),
+                    waitBeforePersist: () => {
+                        waitBeforePersistCalled = true;
+                        return waitPromise;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            // Block the push by switching to a pending promise
+            waitPromise = new Promise(resolve => {
+                resolveWait = resolve;
+            });
+
+            // Insert a document while push is blocked
+            await clientCollection.insert(schemaObjects.humanData('p1'));
+
+            // The server must have no documents yet because the push is blocked
+            // by the pending waitBeforePersist promise. This is deterministic:
+            // the push handler can only run after waitBeforePersist resolves.
+            const serverDocsBefore = await serverCollection.find().exec();
+            assert.strictEqual(serverDocsBefore.length, 0);
+
+            // Release the gate and wait for sync to complete
+            resolveWait();
+            await replicationState.awaitInSync();
+
+            // The document should now have been pushed to the server
+            const serverDocsAfter = await serverCollection.find().exec();
+            assert.strictEqual(serverDocsAfter.length, 1);
+            assert.ok(waitBeforePersistCalled);
+
+            serverCollection.database.close();
+            clientCollection.database.close();
+        });
     });
 });

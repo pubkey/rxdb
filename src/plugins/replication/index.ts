@@ -233,6 +233,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             skipStoringPullMeta: this.push ? false : true,
             identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
+            waitBeforePersist: this.push ? this.push.waitBeforePersist : undefined,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
                     filter(_v => !!this.pull),
