@@ -62,6 +62,16 @@ export function replicateSupabase<RxDocType>(
     const modifiedField = options.modifiedField ? options.modifiedField : DEFAULT_MODIFIED_FIELD;
     const deletedField = options.deletedField ? options.deletedField : DEFAULT_DELETED_FIELD;
 
+    /**
+     * For the default 'public' schema we use the client directly
+     * to avoid sending an explicit Accept-Profile header, which is
+     * not needed and can cause "operation was canceled" errors in
+     * some PostgREST setups.
+     */
+    const schemaClient = schemaName === 'public'
+        ? options.client
+        : options.client.schema(schemaName);
+
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, SupabaseCheckpoint>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, SupabaseCheckpoint> | undefined;
 
@@ -87,7 +97,7 @@ export function replicateSupabase<RxDocType>(
         return doc;
     }
     async function fetchById(id: string): Promise<WithDeleted<RxDocType>> {
-        const { data, error } = await options.client.schema(schemaName)
+        const { data, error } = await schemaClient
             .from(options.tableName)
             .select()
             .eq(primaryPath, id)
@@ -104,7 +114,7 @@ export function replicateSupabase<RxDocType>(
                 lastPulledCheckpoint: SupabaseCheckpoint | undefined,
                 batchSize: number
             ) {
-                let query = options.client.schema(schemaName)
+                let query = schemaClient
                     .from(options.tableName)
                     .select('*');
 
@@ -170,7 +180,7 @@ export function replicateSupabase<RxDocType>(
         ) {
             async function insertOrReturnConflict(doc: WithDeleted<RxDocType>): Promise<WithDeleted<RxDocType> | undefined> {
                 const id = (doc as any)[primaryPath];
-                const { error } = await options.client.schema(schemaName).from(options.tableName).insert(doc)
+                const { error } = await schemaClient.from(options.tableName).insert(doc)
                 if (!error) {
                     return;
                 } else if (error.code == POSTGRES_INSERT_CONFLICT_CODE) {
@@ -198,7 +208,7 @@ export function replicateSupabase<RxDocType>(
                 // modified field will be set server-side
                 delete toRow[modifiedField];
 
-                let query = options.client.schema(schemaName)
+                let query = schemaClient
                     .from(options.tableName)
                     .update(toRow);
 
