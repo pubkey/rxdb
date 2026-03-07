@@ -164,7 +164,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                     }
                 },
                 getPerformanceStorage() {
-                    if (isNode) {
+                    if (isNode || isDeno) {
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB: fakeIndexedDB,
