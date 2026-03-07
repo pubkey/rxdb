@@ -3,10 +3,11 @@ import { ById } from '../../types/util';
 import { ensureNotFalsy } from '../utils/index.ts';
 import type {
     OneDriveState,
-    OneDriveItem
+    OneDriveItem,
+    OneDriveResponse
 } from './microsoft-onedrive-types.ts';
 import { DriveStructure } from './init.ts';
-import { getDriveBaseUrl, listFilesInFolder } from './microsoft-onedrive-helper.ts';
+import { getDriveBaseUrl } from './microsoft-onedrive-helper.ts';
 
 const MAX_DRIVE_PAGE_SIZE = 999;
 
@@ -20,12 +21,61 @@ export async function getDocumentFiles(
         throw newRxError('SNH');
     }
 
-    // List all files in the docs folder and filter by name.
-    // The Microsoft Graph $batch path-based lookup is not universally supported,
-    // so we fetch the full folder listing and filter client-side.
-    const fileNames = new Set(docIds.map(id => id + '.json'));
-    const allItems = await listFilesInFolder(oneDriveState, init.docsFolderId);
-    const files = allItems.filter(item => fileNames.has(item.name));
+    const baseUrl = getDriveBaseUrl(oneDriveState);
+    const files: OneDriveItem[] = [];
+
+    // Use $batch requests to look up each document file by path in the docs folder.
+    // Graph batch has a limit of 20 requests per batch.
+
+    const BATCH_SIZE = 20;
+
+    for (let i = 0; i < docIds.length; i += BATCH_SIZE) {
+        const chunk = docIds.slice(i, i + BATCH_SIZE);
+        const apiEndpoint = oneDriveState.apiEndpoint || 'https://graph.microsoft.com/v1.0';
+        let pathPrefix = baseUrl.substring(apiEndpoint.length);
+        if (!pathPrefix.startsWith('/')) {
+            pathPrefix = '/' + pathPrefix;
+        }
+
+        const batchRequests = chunk.map((id, index) => {
+            return {
+                id: index.toString(),
+                method: 'GET',
+                url: `${pathPrefix}/items/${init.docsFolderId}:/${encodeURIComponent(id + '.json')}?$select=id,name,eTag,createdDateTime,lastModifiedDateTime,size,file`
+            };
+        });
+
+        // The batch URL is at the API root, not the drive root.
+        // E.g. https://graph.microsoft.com/v1.0/$batch
+        const batchUrl = apiEndpoint + '/$batch';
+
+        const res = await fetch(batchUrl, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${oneDriveState.authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ requests: batchRequests })
+        });
+
+        if (!res.ok) {
+            throw await newRxFetchError(res, {
+                ids: docIds,
+            });
+        }
+
+        const data = await res.json();
+        const responses = data.responses || [];
+        for (const response of responses) {
+            if (response.status === 200) {
+                files.push(response.body);
+            } else if (response.status !== 404) {
+                // If it's a 404, the file doesn't exist, which is fine for getDocumentFiles.
+                // It just returns the files that ARE found.
+                // If it's another error, we could throw, but skipping is safer to match Google Drive behavior if one fails.
+            }
+        }
+    }
 
     return { files };
 }
