@@ -223,6 +223,50 @@ Supabase returns `null` for nullable columns, but in RxDB you often model those 
 :::
 
 
+## Using a Custom Postgres Schema
+
+By default, the plugin targets the `public` schema. If your tables live in a different Postgres schema, pass `schemaName` to `replicateSupabase`:
+
+```ts
+const replication = replicateSupabase({
+  tableName: 'humans',
+  schemaName: 'private',   // default is "public"
+  client: supabase,
+  collection: db.humans,
+  replicationIdentifier: 'humans-private-schema',
+  pull: { batchSize: 50 },
+  push: { batchSize: 50 },
+});
+```
+
+You also need to:
+- Create the table inside that schema and grant the required roles access to both the schema and the table.
+- Add the table to the `supabase_realtime` publication if you use live replication.
+
+Example SQL to set up a `private` schema with a `humans` table:
+
+```sql
+create schema if not exists "private";
+
+create table "private"."humans" (
+    "passportId" text primary key,
+    "firstName" text not null,
+    "lastName" text not null,
+    "age" integer,
+    "_deleted" boolean DEFAULT false NOT NULL,
+    "_modified" timestamp with time zone DEFAULT now() NOT NULL
+);
+
+CREATE TRIGGER update_modified_datetime BEFORE UPDATE ON private.humans FOR EACH ROW
+EXECUTE FUNCTION extensions.moddatetime('_modified');
+
+alter publication supabase_realtime add table "private"."humans";
+
+grant usage on schema "private" to "anon";
+grant select, insert, update, delete on table "private"."humans" to "anon";
+```
+
+
 ## Using Joins
 
 You can use the `pull.queryBuilder` to use joins and also pull data from related tables.

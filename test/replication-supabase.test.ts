@@ -535,6 +535,100 @@ describe('replication-supabase.test.ts', function () {
         });
     });
 
+    describe('schemaName', () => {
+        const privateSchemaTableName = 'humans';
+        const privateSchemaName = 'private';
+
+        async function getPrivateSchemaServerState(): Promise<WithDeleted<TestDocType>[]> {
+            const { data, error } = await supabase
+                .schema(privateSchemaName)
+                .from(privateSchemaTableName)
+                .select('*');
+            if (error) {
+                throw error;
+            }
+            return data;
+        }
+        async function cleanUpPrivateSchemaServer() {
+            const { error } = await supabase
+                .schema(privateSchemaName)
+                .from(privateSchemaTableName)
+                .delete()
+                .neq(primaryPath, 0);
+            if (error) {
+                throw error;
+            }
+        }
+        it('should push and pull documents using a custom schemaName', async () => {
+            await cleanUpPrivateSchemaServer();
+
+            const collection = await humansCollection.createPrimary(5, undefined, false);
+
+            const replicationState = replicateSupabase<TestDocType>({
+                tableName: privateSchemaTableName,
+                schemaName: privateSchemaName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection,
+                live: false,
+                pull: {
+                    batchSize,
+                    modifier: d => {
+                        if (!d.age) {
+                            delete d.age;
+                        }
+                        return d;
+                    }
+                },
+                push: {
+                    batchSize
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+            await replicationState.awaitInSync();
+            await replicationState.cancel();
+
+            const serverState = await getPrivateSchemaServerState();
+            assert.strictEqual(serverState.length, 5, 'must have pushed all docs to the custom schema');
+
+            // also verify that the public schema was not touched
+            const publicServerState = await getServerState();
+            assert.strictEqual(publicServerState.length, 0, 'public schema must be empty');
+
+            // pull from the custom schema into a fresh collection
+            const collection2 = await humansCollection.createPrimary(0, undefined, false);
+            const replicationState2 = replicateSupabase<TestDocType>({
+                tableName: privateSchemaTableName,
+                schemaName: privateSchemaName,
+                client: supabase,
+                replicationIdentifier: randomToken(10),
+                collection: collection2,
+                live: false,
+                pull: {
+                    batchSize,
+                    modifier: d => {
+                        if (!d.age) {
+                            delete d.age;
+                        }
+                        return d;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await replicationState2.awaitInitialReplication();
+            await replicationState2.awaitInSync();
+            await replicationState2.cancel();
+
+            const docs2 = await collection2.find().exec();
+            assert.strictEqual(docs2.length, 5, 'must have pulled all docs from the custom schema');
+
+            await collection.database.close();
+            await collection2.database.close();
+            await cleanUpPrivateSchemaServer();
+        });
+    });
+
     describe('issues', () => {
         it('#7513 push.modifier is never applied', async () => {
             await cleanUpServer();

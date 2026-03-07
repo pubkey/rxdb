@@ -27,6 +27,11 @@ export type SyncOptionsSupabase<RxDocType> = Omit<
     tableName: string;
 
     /**
+     * The Postgres schema to use. Default: "public"
+     */
+    schemaName?: string;
+
+    /**
      * Modified field, default "_modified"
      */
     modifiedField?: '_modified' | string;
