@@ -680,7 +680,7 @@
     "karma-webpack": "5.0.1",
     "leveldown": "6.1.1",
     "madge": "8.0.0",
-    "microsoft-onedrive-mock": "1.0.3",
+    "microsoft-onedrive-mock": "1.0.4",
     "mini-css-extract-plugin": "2.10.0",
     "mocha": "11.7.5",
     "mocha.parallel": "0.15.6",
