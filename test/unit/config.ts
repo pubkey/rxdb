@@ -134,7 +134,7 @@ export function getStorage(storageKey: string): RxTestStorage {
                 getPerformanceStorage() {
                     return {
                         description: 'localstorage',
-                        storage: getRxStorageLocalstorage()
+                        storage: isNode || isDeno ? getRxStorageLocalstorage({ localStorage: localStorageMock }) : getRxStorageLocalstorage()
                     };
                 },
                 hasPersistence: true,
@@ -164,11 +164,11 @@ export function getStorage(storageKey: string): RxTestStorage {
                     }
                 },
                 getPerformanceStorage() {
-                    if (isNode) {
+                    if (isNode || isDeno) {
                         return {
                             storage: getRxStorageDexie({
-                                indexedDB,
-                                IDBKeyRange
+                                indexedDB: fakeIndexedDB,
+                                IDBKeyRange: fakeIDBKeyRange
                             }),
                             description: 'dexie+fake-indexeddb'
                         };
