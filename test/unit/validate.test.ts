@@ -394,6 +394,63 @@ validationImplementations.forEach(
                     );
                     await instance.close();
                 });
+                it('should correctly enforce exclusiveMaximum and exclusiveMinimum', async () => {
+                    const schema: RxJsonSchema<{ id: string; score: number; }> = {
+                        version: 0,
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            score: {
+                                type: 'number',
+                                exclusiveMinimum: 0,
+                                exclusiveMaximum: 100
+                            }
+                        },
+                        required: ['id', 'score']
+                    };
+                    const instance = await getRxStorageInstance(schema);
+
+                    // value strictly within range must be valid
+                    await assertBulkWriteNoError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                score: 50
+                            })
+                        }]
+                    );
+
+                    // value equal to exclusiveMaximum must be invalid
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                score: 100
+                            } as any)
+                        }],
+                        'exclusiveMaximum'
+                    );
+
+                    // value equal to exclusiveMinimum must be invalid
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomToken(12),
+                                score: 0
+                            } as any)
+                        }],
+                        'exclusiveMinimum'
+                    );
+
+                    await instance.close();
+                });
             });
             describe('error layout', () => {
                 it('accessible error-parameters', async () => {
