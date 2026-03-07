@@ -318,7 +318,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         ) {
                             /**
                              * The current fork state represents a resolved conflict
-                             * that first must be send to the master in the upstream.
+                             * that first must be sent to the master in the upstream.
                              * All conflicts are resolved by the upstream.
                              */
                             // return PROMISE_RESOLVE_VOID;
