@@ -60,6 +60,11 @@ export const replicationLinks = [
     label: 'Google Drive',
     iconUrl: '/files/icons/google-drive.svg',
   },
+  {
+    url: '/replication-microsoft-onedrive.html',
+    label: 'Microsoft OneDrive',
+    iconUrl: '/files/icons/onedrive.svg',
+  },
 ];
 
 export function SyncSection(props: {

@@ -228,6 +228,12 @@
       "import": "./dist/esm/plugins/replication-google-drive/index.js",
       "default": "./dist/esm/plugins/replication-google-drive/index.js"
     },
+    "./plugins/replication-microsoft-onedrive": {
+      "types": "./dist/types/plugins/replication-microsoft-onedrive/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-microsoft-onedrive/index.js",
+      "import": "./dist/esm/plugins/replication-microsoft-onedrive/index.js",
+      "default": "./dist/esm/plugins/replication-microsoft-onedrive/index.js"
+    },
     "./plugins/replication-graphql": {
       "types": "./dist/types/plugins/replication-graphql/index.d.ts",
       "require": "./dist/cjs/plugins/replication-graphql/index.js",
@@ -461,6 +467,7 @@
     "test:replication-mongodb": "node ./config/mongodb-connection-tester.js && npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-mongodb.test.js",
     "test:replication-supabase": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-supabase.test.js",
     "test:replication-google-drive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-google-drive.test.ts",
+    "test:replication-microsoft-onedrive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-microsoft-onedrive.test.ts",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
@@ -673,6 +680,7 @@
     "karma-webpack": "5.0.1",
     "leveldown": "6.1.1",
     "madge": "8.0.0",
+    "microsoft-onedrive-mock": "1.0.5",
     "mini-css-extract-plugin": "2.10.0",
     "mocha": "11.7.5",
     "mocha.parallel": "0.15.6",

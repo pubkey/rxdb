@@ -255,6 +255,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'replication-microsoft-onedrive',
+          label: 'Microsoft OneDrive Replication'
+        },
+        {
+          type: 'doc',
           id: 'replication-nats',
           label: 'NATS Replication'
         },

@@ -1,4 +1,3 @@
-
 import assert from 'assert';
 import {
     addRxPlugin,
@@ -10,7 +9,6 @@ import {
 import {
     createEmptyFile,
     ensureFolderExists,
-    readFolder,
     initDriveStructure,
     fillFileIfEtagMatches,
     DriveStructure,
@@ -30,14 +28,14 @@ import {
     processWalFile,
     listFilesInFolder,
     handleUpstreamBatch,
-    GoogleDriveCheckpointType,
-    SyncOptionsGoogleDrive,
-    GoogleDriveOptions,
-    replicateGoogleDrive,
+    OneDriveCheckpointType,
+    SyncOptionsOneDrive,
+    OneDriveState,
+    replicateMicrosoftOneDrive,
     SignalingState,
     cleanupOldSignalingMessages,
     SignalingOptions
-} from '../src/plugins/replication-google-drive/index.ts';
+} from '../src/plugins/replication-microsoft-onedrive/index.ts';
 import config from './unit/config.ts';
 import {
     schemaObjects,
@@ -52,7 +50,7 @@ import { RxDBLeaderElectionPlugin } from '../plugins/leader-election/index.mjs';
 
 import {
     startServer
-} from 'google-drive-mock';
+} from 'microsoft-onedrive-mock';
 import getPort from 'get-port';
 import { assertThrows, wait, waitUntil } from 'async-test-util';
 import {
@@ -89,9 +87,9 @@ function toWriteRow<RxDocType>(doc: RxDocType, assumedMasterState?: RxDocType): 
 let wrtc: SimplePeerWrtc = 'not loaded' as any;
 
 /**
- * Whenever you change something in this file, run `npm run test:replication-google-drive` to verify that the changes are correct.
+ * Whenever you change something in this file, run `npm run test:replication-microsoft-onedrive` to verify that the changes are correct.
  */
-describe('replication-google-drive.test.ts', function () {
+describe('replication-microsoft-onedrive.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
     addRxPlugin(RxDBLeaderElectionPlugin);
     this.timeout(200 * 1000);
@@ -103,13 +101,13 @@ describe('replication-google-drive.test.ts', function () {
 
     async function syncOnce(
         collection: RxCollection<any, any, any, any>,
-        googleDrive: GoogleDriveOptions,
-        syncOptions?: Pick<SyncOptionsGoogleDrive<any>, 'pull' | 'push'>
+        oneDrive: OneDriveState,
+        syncOptions?: Pick<SyncOptionsOneDrive<any>, 'pull' | 'push'>
     ) {
-        const replicationState = await replicateGoogleDrive({
+        const replicationState = await replicateMicrosoftOneDrive({
             replicationIdentifier: 'foobar',
             collection,
-            googleDrive,
+            oneDrive,
             live: false,
             pull: syncOptions?.pull ?? {},
             push: syncOptions?.push ?? {},
@@ -120,13 +118,13 @@ describe('replication-google-drive.test.ts', function () {
 
     async function sync(
         collection: RxCollection<any, any, any, any>,
-        googleDrive: GoogleDriveOptions,
+        oneDrive: OneDriveState,
         signalingOptions: SignalingOptions
     ) {
-        const replicationState = await replicateGoogleDrive<any>({
+        const replicationState = await replicateMicrosoftOneDrive<any>({
             replicationIdentifier: 'foobar',
             collection,
-            googleDrive,
+            oneDrive,
             signalingOptions,
             live: true,
             pull: {},
@@ -140,7 +138,7 @@ describe('replication-google-drive.test.ts', function () {
     before(async () => {
         port = await getPort();
         server = startServer(port);
-        serverUrl = 'http://localhost:' + port;
+        serverUrl = 'http://localhost:' + port + '/v1.0';
     });
 
     after(() => {
@@ -148,9 +146,9 @@ describe('replication-google-drive.test.ts', function () {
     });
 
     let options: {
-        oauthClientId: string;
         authToken: string;
         apiEndpoint: string;
+        driveId: string;
         folderPath: string;
         initData: DriveStructure;
         transactionTimeout: number;
@@ -158,9 +156,9 @@ describe('replication-google-drive.test.ts', function () {
     };
     beforeEach(() => {
         options = {
-            oauthClientId: 'mock-client-id',
             authToken: 'valid-token',
             apiEndpoint: serverUrl,
+            driveId: 'me/drive',
             folderPath: 'rxdb-test-folder-' + randomToken(8),
             transactionTimeout: 500,
             initData: null as any,
@@ -173,11 +171,6 @@ describe('replication-google-drive.test.ts', function () {
             if (isNode) {
                 // eslint-disable-next-line @typescript-eslint/no-require-imports
                 wrtc = require('wrtc');
-                // // @ts-ignore
-                // const wrtcModule = await import('node-datachannel/polyfill');
-                // wrtc = wrtcModule.default as any;
-                // const wsModule = await import('ws');
-                // webSocketConstructor = wsModule.WebSocket as unknown as SimplePeerWebSocketConstructor;
             }
         });
     });
@@ -265,7 +258,7 @@ describe('replication-google-drive.test.ts', function () {
                 assert.strictEqual(content.content.foo, 'bar');
             });
         });
-        describe('readFolder()', () => {
+        describe('listFilesInFolder()', () => {
             it('should find the subfolders', async () => {
                 const parentId = await ensureFolderExists(options, options.folderPath + '/foo/bar/lol');
                 await createEmptyFile(
@@ -273,7 +266,7 @@ describe('replication-google-drive.test.ts', function () {
                     parentId,
                     'empty.txt'
                 );
-                const content = await readFolder(options, options.folderPath + '/foo/bar/lol');
+                const content = await listFilesInFolder(options, parentId);
                 assert.strictEqual(content.length, 1);
                 assert.strictEqual(content[0].name, 'empty.txt');
             });
@@ -285,28 +278,28 @@ describe('replication-google-drive.test.ts', function () {
             await assertThrows(
                 () => initDriveStructure(options),
                 'RxError',
-                'GDR1'
+                'ODR1'
             );
 
             options.folderPath = '/';
             await assertThrows(
                 () => initDriveStructure(options),
                 'RxError',
-                'GDR1'
+                'ODR1'
             );
 
             options.folderPath = 'root';
             await assertThrows(
                 () => initDriveStructure(options),
                 'RxError',
-                'GDR1'
+                'ODR1'
             );
 
             (options as any).folderPath = undefined;
             await assertThrows(
                 () => initDriveStructure(options),
                 'RxError',
-                'GDR1'
+                'ODR1'
             );
         });
         it('must not throw', async () => {
@@ -331,11 +324,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('transaction', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc }
             };
@@ -401,7 +394,7 @@ describe('replication-google-drive.test.ts', function () {
             );
         });
         it('closing timed out in parallel should work', async () => {
-            options.transactionTimeout = 100;
+            options.transactionTimeout = 1000;
             await startTransaction(options, options.initData);
             await wait(options.transactionTimeout * 2);
             await Promise.all(
@@ -415,11 +408,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('document handling', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc }
             };
@@ -514,11 +507,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('downstream', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc }
             };
@@ -564,7 +557,7 @@ describe('replication-google-drive.test.ts', function () {
                     }
                     c++;
                     const changesResult: {
-                        checkpoint: GoogleDriveCheckpointType | undefined;
+                        checkpoint: OneDriveCheckpointType | undefined;
                         documents: HumanDocumentType[];
                     } = await fetchChanges<HumanDocumentType>(
                         options,
@@ -642,11 +635,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('upstream', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc }
             };
@@ -687,7 +680,7 @@ describe('replication-google-drive.test.ts', function () {
                         rows
                     ),
                     'RxError',
-                    'GDR19'
+                    'ODR19'
                 );
             });
             it('should read the wal content', async () => {
@@ -862,7 +855,7 @@ describe('replication-google-drive.test.ts', function () {
                 );
                 const contentsByFileId = await fetchDocumentContents<WithDeletedAndAttachments<HumanDocumentType>>(
                     options,
-                    docsFiles.map(d => d.id)
+                    docsFiles.map(d => ensureNotFalsy(d.id))
                 );
                 contentsByFileId.ordered.forEach(file => {
                     if (file.passportId.startsWith('doc-')) {
@@ -873,6 +866,18 @@ describe('replication-google-drive.test.ts', function () {
         });
     });
     describe('non-live replication', () => {
+        beforeEach(async () => {
+            options = {
+                authToken: 'valid-token',
+                apiEndpoint: serverUrl,
+                driveId: 'me/drive',
+                folderPath: 'test-folder-' + Math.random(),
+                transactionTimeout: 30000,
+                initData: null as any,
+                signalingOptions: { wrtc }
+            };
+            options.initData = await initDriveStructure(options);
+        });
         it('should keep the master state as default conflict handler', async () => {
             const c1 = await humansCollection.create(1);
             const c2 = await humansCollection.create(0);
@@ -889,6 +894,8 @@ describe('replication-google-drive.test.ts', function () {
 
             await syncOnce(c2, options);
 
+            await wait(200); // Allow mock server state to fully settle to prevent transaction eTag races.
+
             // cause conflict
             await syncOnce(c1, options);
 
@@ -904,11 +911,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('WebRTC signaling', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc }
             };
@@ -983,11 +990,11 @@ describe('replication-google-drive.test.ts', function () {
     describe('live replication', () => {
         beforeEach(async () => {
             options = {
-                oauthClientId: 'mock-client-id',
                 authToken: 'valid-token',
                 apiEndpoint: serverUrl,
+                driveId: 'me/drive',
                 folderPath: 'test-folder-' + Math.random(),
-                transactionTimeout: 1000,
+                transactionTimeout: 30000,
                 initData: null as any,
                 signalingOptions: { wrtc, config: { iceServers: [] } }
 
@@ -1007,16 +1014,16 @@ describe('replication-google-drive.test.ts', function () {
             const replicationStateB = await sync(collectionB, options, options.signalingOptions);
             await replicationStateB.awaitInitialReplication();
 
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'initial', 1000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
 
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert');
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
 
             // delete one
             await collectionB.findOne().remove();
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'delete');
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
 
             // insert many
             await collectionA.bulkInsert(
@@ -1024,14 +1031,14 @@ describe('replication-google-drive.test.ts', function () {
                     .fill(0)
                     .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert many');
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
 
             // insert at both collections at the same time
             await Promise.all([
                 collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
                 collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert parallel');
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
 
             collectionA.database.close();
             collectionB.database.close();
