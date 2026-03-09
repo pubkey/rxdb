@@ -278,7 +278,6 @@ describeParallel('custom-index.test.ts', () => {
                 const endTime = performance.now();
                 const time = endTime - startTime;
                 assert.ok(time);
-                console.log('time: ' + time);
             });
         });
     });

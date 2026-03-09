@@ -118,7 +118,6 @@ describe('util.test.js', () => {
                     obj = Object.assign({}, obj);
                 }
                 const time = performance.now() - start;
-                console.log('time ' + time);
             });
         });
     });

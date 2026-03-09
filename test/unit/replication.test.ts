@@ -1362,7 +1362,6 @@ describe('replication.test.ts', () => {
             // Verify local received the update
 
             const localDoc = await localCollection.findOne(docId).exec(true);
-            console.log('localDoc.name ' + localDoc.name);
             assert.strictEqual(localDoc.name, 'UpdatedFromRemote');
             assert.strictEqual(localDoc.age, 999);
 

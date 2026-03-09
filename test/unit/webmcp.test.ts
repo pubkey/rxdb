@@ -66,11 +66,9 @@ describe('webmcp.test.ts', () => {
         db.registerWebMCP();
 
         const tools = getTools();
-        console.log('Tools count:', tools?.length);
         assert.strictEqual(tools.length, 7);
         const queryToolName = `rxdb_query_${db.name}_humans_${collection.schema.version}`;
         const queryTool = tools.find((t: any) => t.name.startsWith(queryToolName));
-        console.log('QueryTool:', JSON.stringify(queryTool));
         assert.ok(queryTool, 'queryTool not found');
         assert.ok(queryTool.name.startsWith(queryToolName));
         assert.ok(queryTool.inputSchema);

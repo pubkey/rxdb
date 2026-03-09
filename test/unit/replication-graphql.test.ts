@@ -787,7 +787,6 @@ describe('replication-graphql.test.ts', () => {
                 firstDoc.updatedAt = Date.now();
                 firstDoc.deleted = true;
 
-                console.log('writing delete to server START');
                 await server.setDocument(firstDoc);
 
                 await replicationState.reSync();
