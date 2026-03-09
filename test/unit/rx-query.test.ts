@@ -712,7 +712,7 @@ describe('rx-query.test.ts', () => {
                             ]
                         }
                     },
-                })
+                }).exec()
             ];
             for (const operation of operations) {
                 await operation();

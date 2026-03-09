@@ -790,11 +790,11 @@ export function isFindOneByIdQuery(
         // same with $in string arrays
         if (
             Object.keys(value).length === 1 &&
-            Array.isArray(value.$eq) &&
+            Array.isArray(value.$in) &&
             // must only contain strings
-            !(value.$eq as any[]).find(r => typeof r !== 'string')
+            !(value.$in as any[]).find(r => typeof r !== 'string')
         ) {
-            return value.$eq;
+            return value.$in;
         }
     }
     return false;
