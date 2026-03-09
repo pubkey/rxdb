@@ -1007,16 +1007,16 @@ describe('replication-google-drive.test.ts', function () {
             const replicationStateB = await sync(collectionB, options, options.signalingOptions);
             await replicationStateB.awaitInitialReplication();
 
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 1000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'initial', 1000);
 
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert');
 
             // delete one
             await collectionB.findOne().remove();
-            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'delete');
 
             // insert many
             await collectionA.bulkInsert(
@@ -1024,14 +1024,14 @@ describe('replication-google-drive.test.ts', function () {
                     .fill(0)
                     .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
-            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert many');
 
             // insert at both collections at the same time
             await Promise.all([
                 collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
                 collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
-            await awaitCollectionsHaveEqualState(collectionA, collectionB);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert parallel');
 
             collectionA.database.close();
             collectionB.database.close();
