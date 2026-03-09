@@ -7,9 +7,6 @@ import {
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
-import events from 'node:events';
-import * as path from 'node:path';
-import url from 'node:url';
 import type { RxStorage, RxTestStorage } from '../../types';
 import { wrappedKeyEncryptionCryptoJsStorage } from '../encryption-crypto-js/index.ts';
 
@@ -99,7 +96,9 @@ export function initTestEnvironment() {
     if (isNode) {
         process.setMaxListeners(100);
 
-        events.EventEmitter.defaultMaxListeners = 100;
+        import('node:events').then(events => {
+            events.EventEmitter.defaultMaxListeners = 100;
+        });
 
         /**
          * Add a global function to process, so we can debug timings
