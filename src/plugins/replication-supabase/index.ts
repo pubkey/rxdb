@@ -205,6 +205,7 @@ export function replicateSupabase<RxDocType>(
                     collection.schema.jsonSchema,
                     deletedField,
                     modifiedField,
+                    primaryPath,
                     assumedMasterState,
                     query
                 );

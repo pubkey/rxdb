@@ -568,6 +568,31 @@ describe('replication-supabase.test.ts', function () {
 
             await collection.database.close();
         });
+        it('#7986 push handler should succeed for documents with large text fields', async () => {
+            await cleanUpServer();
+            const collection = await humansCollection.createPrimary(0, undefined, false);
+
+            // Create a document with a very long lastName to exceed URL limits if all fields
+            // were added as query parameters (typical URL limit is 2048-8192 chars).
+            const longValue = 'x'.repeat(3000);
+            await collection.insert(schemaObjects.humanData('large-field-doc', undefined, longValue));
+
+            // push to server - insert should succeed
+            await syncCollectionOnce(collection, true, false);
+            let serverState = await getServerState();
+            assert.strictEqual(serverState.length, 1, 'must have pushed the doc');
+            assert.strictEqual(serverState[0].firstName, longValue);
+
+            // update the document - push should succeed without URL length errors
+            const doc = await collection.findOne('large-field-doc').exec(true);
+            await doc.incrementalPatch({ lastName: 'updated' });
+            await syncCollectionOnce(collection, true, false);
+
+            serverState = await getServerState();
+            assert.strictEqual(serverState[0].lastName, 'updated', 'update must be pushed without URL length errors');
+
+            await collection.database.close();
+        });
     });
 
     describe('last', () => {
