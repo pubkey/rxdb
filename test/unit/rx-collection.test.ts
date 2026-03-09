@@ -483,6 +483,81 @@ describe('rx-collection.test.ts', () => {
                     await col.bulkInsert([]);
                     col.database.close();
                 });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/7984
+                 */
+                it('should revive all soft-deleted documents, not just 199', async () => {
+                    const db = await createRxDatabase({
+                        name: randomToken(10),
+                        storage: config.storage.getStorage(),
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    });
+                    const collection = collections.human;
+
+                    // Use 300 documents, well above the 199 limit described in the bug
+                    const DOCUMENT_COUNT = 300;
+                    const myDocuments = new Array(DOCUMENT_COUNT).fill(0).map((_, i) => schemaObjects.humanData(
+                        'doc-' + String(i).padStart(4, '0'),
+                        i % 150,
+                        'First' + i
+                    ));
+
+                    // Step 1: Insert all N documents
+                    const firstInsertResult = await collection.bulkInsert(myDocuments);
+                    assert.strictEqual(
+                        firstInsertResult.success.length,
+                        DOCUMENT_COUNT,
+                        'First bulkInsert should succeed for all documents'
+                    );
+                    const countAfterFirstInsert = await collection.count().exec();
+                    assert.strictEqual(
+                        countAfterFirstInsert,
+                        DOCUMENT_COUNT,
+                        'After first bulkInsert, collection should contain all documents'
+                    );
+
+                    // Step 2: Delete all N documents
+                    const bulkDeleteResult = await collection.bulkRemove(myDocuments.map(d => d.passportId));
+                    assert.strictEqual(
+                        bulkDeleteResult.success.length,
+                        DOCUMENT_COUNT,
+                        'bulkRemove should succeed for all documents'
+                    );
+                    const countAfterDelete = await collection.count().exec();
+                    assert.strictEqual(
+                        countAfterDelete,
+                        0,
+                        'After bulkRemove, collection should be empty'
+                    );
+
+                    // Step 3: Re-insert the same N documents (reviving soft-deleted entries)
+                    const secondInsertResult = await collection.bulkInsert(myDocuments);
+                    assert.strictEqual(
+                        secondInsertResult.success.length,
+                        DOCUMENT_COUNT,
+                        'Second bulkInsert should succeed for all documents'
+                    );
+                    assert.strictEqual(
+                        secondInsertResult.error.length,
+                        0,
+                        'Second bulkInsert should have no errors'
+                    );
+
+                    // Step 4: Verify all documents are present (this is where the bug manifests)
+                    const countAfterSecondInsert = await collection.count().exec();
+                    assert.strictEqual(
+                        countAfterSecondInsert,
+                        DOCUMENT_COUNT,
+                        'After second bulkInsert (reviving soft-deleted docs), collection should contain all ' +
+                        DOCUMENT_COUNT + ' documents, not just 199'
+                    );
+
+                    await db.close();
+                });
             });
             describe('negative', () => {
                 it('should throw if one already exists', async () => {
