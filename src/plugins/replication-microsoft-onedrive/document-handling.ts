@@ -56,7 +56,6 @@ export async function getDocumentFiles(
         const batchUrl = (oneDriveState.apiEndpoint || 'https://graph.microsoft.com/v1.0') + '/$batch';
 
         const batchBody = JSON.stringify({ requests: batchRequests });
-        console.log(`[getDocumentFiles] Batch fetch to ${batchUrl} with payload: ${batchBody}`);
 
         const res = await fetch(batchUrl, {
             method: 'POST',
