@@ -48,6 +48,7 @@ import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import {
     getQueryMatcher,
+    getSortComparator,
     normalizeMangoQuery,
     prepareQuery,
     runQueryUpdateFunction
@@ -728,6 +729,17 @@ export async function queryCollection<RxDocType>(
             if (docIds.length > 0) {
                 const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
                 docs = docs.concat(docsFromStorage);
+            }
+            /**
+             * findDocumentsById() does not apply any sorting.
+             * For find() queries (which return sorted arrays), we must sort the docs
+             * according to the query's sort specification.
+             * For other ops like findByIds (which return a Map), sorting is not needed.
+             */
+            if (rxQuery.op === 'find') {
+                const preparedQuery = rxQuery.getPreparedQuery();
+                const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+                docs = docs.sort(sortComparator);
             }
         } else {
             const docId = rxQuery.isFindOneByIdQuery;
