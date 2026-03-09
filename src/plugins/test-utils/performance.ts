@@ -48,6 +48,11 @@ export type PerformanceTestConfig = {
      * @default 100
      */
     waitBetweenTests?: number;
+    /**
+     * Whether to log progress and results to the console.
+     * @default true
+     */
+    log?: boolean;
 };
 
 export type PerformanceTestResult = {
@@ -78,14 +83,17 @@ export async function runPerformanceTests(
         serialDocsAmount = 50,
         parallelQueryAmount = 4,
         insertBatches = 6,
-        waitBetweenTests = 100
+        waitBetweenTests = 100,
+        log = true
     } = config;
 
     const totalTimes: { [k: string]: number[]; } = {};
 
     let runsDone = 0;
     while (runsDone < runs) {
-        console.log('runsDone: ' + runsDone + ' of ' + runs);
+        if (log) {
+            console.log('runsDone: ' + runsDone + ' of ' + runs);
+        }
         runsDone++;
 
         let time = performance.now();
@@ -297,8 +305,10 @@ export async function runPerformanceTests(
         result[key] = roundToThree(averageOfTimeValues(times, 95));
     });
 
-    console.log('Performance test for ' + storageDescription);
-    console.log(JSON.stringify(result, null, 4));
+    if (log) {
+        console.log('Performance test for ' + storageDescription);
+        console.log(JSON.stringify(result, null, 4));
+    }
 
     return result;
 }

@@ -26,6 +26,26 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs'
 declare const Deno: any;
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
+
+    it('run a minimal performance test to ensure the performance function works', async function () {
+        this.timeout(120 * 1000);
+        const perfStorage = config.storage.getPerformanceStorage();
+        await runPerformanceTests(
+            wrappedValidateAjvStorage({ storage: perfStorage.storage }),
+            perfStorage.description,
+            {
+                runs: 1,
+                docsAmount: 100,
+                serialDocsAmount: 100,
+                insertBatches: 2,
+                collectionsAmount: 2,
+                parallelQueryAmount: 2,
+                waitBetweenTests: 0,
+                log: false
+            }
+        );
+    });
+
     it('ensure all Memory RxStorage instances are closed', async () => {
         try {
             await waitUntil(() => {
@@ -117,24 +137,6 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.log(openSocketUrls.join(', '));
             throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')', { cause: err });
         }
-    });
-
-    it('run a minimal performance test to ensure the performance function works', async function () {
-        this.timeout(120 * 1000);
-        const perfStorage = config.storage.getPerformanceStorage();
-        await runPerformanceTests(
-            wrappedValidateAjvStorage({ storage: perfStorage.storage }),
-            perfStorage.description,
-            {
-                runs: 1,
-                docsAmount: 100,
-                serialDocsAmount: 100,
-                insertBatches: 2,
-                collectionsAmount: 2,
-                parallelQueryAmount: 2,
-                waitBetweenTests: 0
-            }
-        );
     });
 
     /**
