@@ -117,7 +117,6 @@ describe('util.test.js', () => {
                     method(obj);
                     obj = Object.assign({}, obj);
                 }
-                const time = performance.now() - start;
             });
         });
     });
