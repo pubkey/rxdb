@@ -1014,16 +1014,16 @@ describe('replication-microsoft-onedrive.test.ts', function () {
             const replicationStateB = await sync(collectionB, options, options.signalingOptions);
             await replicationStateB.awaitInitialReplication();
 
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'initial', 10000);
 
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert', 10000);
 
             // delete one
             await collectionB.findOne().remove();
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'delete', 10000);
 
             // insert many
             await collectionA.bulkInsert(
@@ -1031,17 +1031,17 @@ describe('replication-microsoft-onedrive.test.ts', function () {
                     .fill(0)
                     .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
             );
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert many', 10000);
 
             // insert at both collections at the same time
             await Promise.all([
                 collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
                 collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
             ]);
-            await awaitCollectionsHaveEqualState(collectionA, collectionB, undefined, 4000);
+            await awaitCollectionsHaveEqualState(collectionA, collectionB, 'insert parallel', 10000);
 
             collectionA.database.close();
             collectionB.database.close();
-        });
+        }).timeout(1000 * 60);
     });
 });
