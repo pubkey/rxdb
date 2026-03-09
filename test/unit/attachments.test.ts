@@ -1067,28 +1067,8 @@ describeParallel('attachments.test.ts', () => {
         });
     });
     describe('inline attachments on insert/upsert', () => {
-        // Share a single db/collection to avoid exceeding the open collection
-        // limit when tests run in parallel (describeParallel / mocha.parallel).
-        let db: any;
-        let col: any;
-        before(async () => {
-            db = await createRxDatabase({
-                name: randomToken(10),
-                storage: config.storage.getStorage(),
-                multiInstance: false,
-                ignoreDuplicate: true
-            });
-            const schemaJson = clone(schemas.human);
-            schemaJson.attachments = {};
-            const collections = await db.addCollections({
-                humans: { schema: schemaJson }
-            });
-            col = collections.humans;
-        });
-        after(async () => {
-            await db.close();
-        });
         it('insert with inline attachments computes digest and length', async () => {
+            const col = await humansCollection.createAttachments(0);
             const testBlob = createBlob('hello inline', 'text/plain');
             const docData = schemaObjects.humanData();
             (docData as any)._attachments = [
@@ -1108,8 +1088,10 @@ describeParallel('attachments.test.ts', () => {
             const retrievedData = await attachment.getData();
             const text = await blobToString(retrievedData);
             assert.strictEqual(text, 'hello inline');
+            col.database.close();
         });
         it('bulkInsert with inline attachments', async () => {
+            const col = await humansCollection.createAttachments(0);
             const doc1Data = schemaObjects.humanData();
             (doc1Data as any)._attachments = [
                 {
@@ -1139,8 +1121,10 @@ describeParallel('attachments.test.ts', () => {
                 const text = await blobToString(data);
                 assert.ok(text.includes('content'));
             }
+            col.database.close();
         });
         it('upsert with inline attachments on new document', async () => {
+            const col = await humansCollection.createAttachments(0);
             const docData = schemaObjects.humanData();
             (docData as any)._attachments = [
                 {
@@ -1154,8 +1138,10 @@ describeParallel('attachments.test.ts', () => {
             assert.ok(attachment);
             const text = await blobToString(await attachment.getData());
             assert.strictEqual(text, 'upsert content');
+            col.database.close();
         });
         it('upsert with inline attachments on existing document preserves and merges', async () => {
+            const col = await humansCollection.createAttachments(0);
             // Insert first with an attachment
             const docData = schemaObjects.humanData();
             (docData as any)._attachments = [
@@ -1185,8 +1171,10 @@ describeParallel('attachments.test.ts', () => {
             assert.strictEqual(allAtts.length, 2);
             const names = allAtts.map((a: any) => a.id).sort();
             assert.deepStrictEqual(names, ['first.txt', 'second.txt']);
+            col.database.close();
         });
         it('incrementalUpsert with inline attachments preserves existing', async () => {
+            const col = await humansCollection.createAttachments(0);
             // Insert first with an attachment
             const docData = schemaObjects.humanData();
             (docData as any)._attachments = [
@@ -1216,8 +1204,10 @@ describeParallel('attachments.test.ts', () => {
             assert.strictEqual(allAtts.length, 2);
             const names = allAtts.map((a: any) => a.id).sort();
             assert.deepStrictEqual(names, ['added.txt', 'original.txt']);
+            col.database.close();
         });
         it('upsert with deleteExistingAttachments removes unlisted attachments', async () => {
+            const col = await humansCollection.createAttachments(0);
             // Insert with two attachments
             const docData = schemaObjects.humanData();
             (docData as any)._attachments = [
@@ -1251,6 +1241,7 @@ describeParallel('attachments.test.ts', () => {
             const allAtts = doc.allAttachments();
             assert.strictEqual(allAtts.length, 1);
             assert.strictEqual(allAtts[0].id, 'keep.txt');
+            col.database.close();
         });
     });
     describe('issues', () => {

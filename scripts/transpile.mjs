@@ -171,7 +171,9 @@ async function run() {
 
 
     let totalFiles = 0;
-    Object.values(files).forEach(f => { totalFiles += f.length; });
+    Object.values(files).forEach(f => {
+ totalFiles += f.length;
+});
 
     if (totalFiles > 30) {
         console.log('# Many files changed (' + totalFiles + '), running full build via npm scripts...');
