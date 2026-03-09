@@ -661,7 +661,6 @@ describe('rx-query.test.ts', () => {
             docData.passportId = docId;
             await c.insert(docData);
 
-
             // overwrite .query() to track the amount of calls
             let queryCalls = 0;
             const queryBefore = c.storageInstance.query.bind(c.storageInstance);
@@ -670,53 +669,34 @@ describe('rx-query.test.ts', () => {
                 return queryBefore(preparedQuery);
             };
 
-            /**
-             * None of these operations should lead to a call to .query()
-             */
-            const operations = [
-                () => c.findOne(docId).exec(true),
-                () => c.find({
-                    selector: {
-                        passportId: docId
-                    },
-                    limit: 1
-                }).exec(),
-                () => c.find({
-                    selector: {
-                        passportId: {
-                            $eq: docId
-                        }
-                    },
-                    limit: 1
-                }).exec(),
-                () => c.find({
-                    selector: {
-                        passportId: {
-                            $eq: docId
-                        }
-                    }
-                    /**
-                     * Even without limit here,
-                     * it should detect that we look for a document that is $eq
-                     * to the primary key, so it can always
-                     * only find one document.
-                     */
-                }).exec(),
-                // same with id arrays
-                () => c.find({
-                    selector: {
-                        passportId: {
-                            $in: [
-                                docId,
-                                'foobar'
-                            ]
-                        }
-                    },
-                }).exec()
-            ];
-            for (const operation of operations) {
-                await operation();
-            }
+            // findOne(id) — should use the fast path (string id)
+            const q1 = c.findOne(docId);
+            assert.strictEqual(q1.isFindOneByIdQuery, docId);
+            await q1.exec();
+
+            // find({ selector: { passportId: docId }, limit: 1 }) — fast path (string id)
+            const q2 = c.find({ selector: { passportId: docId }, limit: 1 });
+            assert.strictEqual(q2.isFindOneByIdQuery, docId);
+            await q2.exec();
+
+            // find({ selector: { passportId: { $eq: docId } }, limit: 1 }) — fast path (string id)
+            const q3 = c.find({ selector: { passportId: { $eq: docId } }, limit: 1 });
+            assert.strictEqual(q3.isFindOneByIdQuery, docId);
+            await q3.exec();
+
+            // find({ selector: { passportId: { $eq: docId } } }) — fast path (string id), no limit needed for $eq
+            const q4 = c.find({ selector: { passportId: { $eq: docId } } });
+            assert.strictEqual(q4.isFindOneByIdQuery, docId);
+            await q4.exec();
+
+            // find with $in array — fast path (array of ids)
+            const q5 = c.find({ selector: { passportId: { $in: [docId, 'foobar'] } } });
+            assert.deepStrictEqual(q5.isFindOneByIdQuery, [docId, 'foobar']);
+            await q5.exec();
+
+            // find without primary key constraint — should NOT use the fast path
+            const q6 = c.find({ selector: { firstName: 'Alice' } });
+            assert.strictEqual(q6.isFindOneByIdQuery, false);
 
             assert.strictEqual(queryCalls, 0);
             c.database.close();
@@ -733,29 +713,33 @@ describe('rx-query.test.ts', () => {
             docs[2].firstName = 'Bob';
             await c.bulkInsert(docs);
 
-            // query with $in + additional operator on the primary key
-            const result = await c.find({
+            // query with $in + additional operator on the primary key — still uses fast path
+            const q1 = c.find({
                 selector: {
                     passportId: {
                         $in: ['aa', 'bb', 'cc'],
                         $ne: 'bb'
                     }
                 }
-            }).exec();
-            // 'bb' should be excluded by the $ne operator
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // 'bb' should be excluded by the $ne operator via queryMatcher
             const ids = result.map(d => d.passportId).sort();
             assert.deepStrictEqual(ids, ['aa', 'cc']);
 
-            // query with $eq + additional operator on the primary key
-            const result2 = await c.find({
+            // query with $eq + additional operator on the primary key — still uses fast path
+            const q2 = c.find({
                 selector: {
                     passportId: {
                         $eq: 'aa',
                         $ne: 'aa'
                     }
                 }
-            }).exec();
-            // 'aa' should be excluded by the $ne operator
+            });
+            assert.strictEqual(q2.isFindOneByIdQuery, 'aa');
+            const result2 = await q2.exec();
+            // 'aa' should be excluded by the $ne operator via queryMatcher
             assert.strictEqual(result2.length, 0);
 
             c.database.close();
