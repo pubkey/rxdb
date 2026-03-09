@@ -170,32 +170,53 @@ async function run() {
     const files = await getFiles();
 
 
-    await Promise.all(
-        Object.values(files).map(async (filesWithSameGoalFolder) => {
+    let totalFiles = 0;
+    Object.values(files).forEach(f => {
+ totalFiles += f.length;
+});
 
-            const byEnv = {};
-            filesWithSameGoalFolder.forEach(row => {
-                const env = row.env;
-                if (!byEnv[env]) {
-                    byEnv[env] = [];
-                }
-                const ar = byEnv[env];
-                ar.push(row);
+    if (totalFiles > 30) {
+        console.log('# Many files changed (' + totalFiles + '), running full build via npm scripts...');
+        const cmd = 'concurrently "npm run build:cjs" "npm run build:esm" "npm run build:test"';
+        const execRes = shell.exec(cmd, { async: true });
+        await new Promise(res => execRes.on('exit', res));
+        if (execRes.exitCode !== 0) {
+            console.error('transpiling failed with cmd: ' + cmd);
+            process.exit(1);
+        }
+        Object.values(files).forEach(filesWithSameGoalFolder => {
+            filesWithSameGoalFolder.forEach(file => {
+                nconf.set(file.fullPath, file.mtime);
             });
+        });
+    } else {
+        await Promise.all(
+            Object.values(files).map(async (filesWithSameGoalFolder) => {
 
-            await Promise.all(
-                Object.entries(byEnv)
-                    .map(async ([env, innerFiles]) => {
-                        await transpileFile(
-                            innerFiles.map(file => path.join(file.basePath, file.relativePath)),
-                            innerFiles[0].goalFolder,
-                            env
-                        );
-                        innerFiles.forEach(file => nconf.set(file.fullPath, file.mtime));
-                    })
-            );
-        })
-    );
+                const byEnv = {};
+                filesWithSameGoalFolder.forEach(row => {
+                    const env = row.env;
+                    if (!byEnv[env]) {
+                        byEnv[env] = [];
+                    }
+                    const ar = byEnv[env];
+                    ar.push(row);
+                });
+
+                await Promise.all(
+                    Object.entries(byEnv)
+                        .map(async ([env, innerFiles]) => {
+                            await transpileFile(
+                                innerFiles.map(file => path.join(file.basePath, file.relativePath)),
+                                innerFiles[0].goalFolder,
+                                env
+                            );
+                            innerFiles.forEach(file => nconf.set(file.fullPath, file.mtime));
+                        })
+                );
+            })
+        );
+    }
 
     nconf.save(function () {
         if (DEBUG) {

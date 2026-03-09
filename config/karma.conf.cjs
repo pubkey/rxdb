@@ -140,6 +140,12 @@ module.exports = async function (config) {
         configuration.concurrency = 1;
     }
 
+    configuration.browserConsoleLogOptions = {
+        level: 'debug',
+        format: '%b %T: %m',
+        terminal: true
+    };
+
 
     config.set(configuration);
 };
