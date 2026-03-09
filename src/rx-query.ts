@@ -731,6 +731,13 @@ export async function queryCollection<RxDocType>(
                 docs = docs.concat(docsFromStorage);
             }
             /**
+             * Apply query matcher to filter out docs that do not match
+             * additional operators beyond $in on the primary key.
+             * Note: queryMatcher does not check _deleted, which is already
+             * handled above (cache: manual check, storage: false param).
+             */
+            docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+            /**
              * findDocumentsById() does not apply any sorting.
              * For find() queries (which return sorted arrays), we must sort the docs
              * according to the query's sort specification.
@@ -753,7 +760,11 @@ export async function queryCollection<RxDocType>(
                     docData = fromStorageList[0];
                 }
             }
-            if (docData && !docData._deleted) {
+            /**
+             * Apply query matcher to also check additional operators
+             * beyond $eq on the primary key.
+             */
+            if (docData && !docData._deleted && rxQuery.queryMatcher(docData)) {
                 docs.push(docData);
             }
         }
@@ -772,17 +783,18 @@ export async function queryCollection<RxDocType>(
 
 /**
  * Returns true if the given query
- * selects exactly one document by its id.
- * Used to optimize performance because these kind of
- * queries do not have to run over an index and can use get-by-id instead.
- * Returns false if no query of that kind.
- * Returns the document id otherwise.
+ * selects documents by primary key using $eq or $in.
+ * Used to optimize performance: these queries use get-by-id
+ * instead of a full index scan. Additional operators beyond
+ * $eq/$in are handled via the queryMatcher after fetching.
+ * Returns false if no such optimization is possible.
+ * Returns the document id (string) or ids (string[]) otherwise.
  */
 export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
 ): false | string | string[] {
-    // must have exactly one operator which must be $eq || $in
+    // primary key must be the only selector field
     if (
         !query.skip &&
         query.selector &&
@@ -793,7 +805,6 @@ export function isFindOneByIdQuery(
         if (typeof value === 'string') {
             return value;
         } else if (
-            Object.keys(value).length === 1 &&
             typeof value.$eq === 'string'
         ) {
             return value.$eq;
@@ -801,7 +812,6 @@ export function isFindOneByIdQuery(
 
         // same with $in string arrays
         if (
-            Object.keys(value).length === 1 &&
             Array.isArray(value.$in) &&
             // must only contain strings
             !(value.$in as any[]).find(r => typeof r !== 'string')

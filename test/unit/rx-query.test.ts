@@ -721,6 +721,45 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(queryCalls, 0);
             c.database.close();
         });
+        it('isFindOneByIdQuery(): additional operators alongside $in/$eq on primary key are applied via queryMatcher', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].firstName = 'Alice';
+            docs[1].firstName = 'Alice';
+            docs[2].firstName = 'Bob';
+            await c.bulkInsert(docs);
+
+            // query with $in + additional operator on the primary key
+            const result = await c.find({
+                selector: {
+                    passportId: {
+                        $in: ['aa', 'bb', 'cc'],
+                        $ne: 'bb'
+                    }
+                }
+            }).exec();
+            // 'bb' should be excluded by the $ne operator
+            const ids = result.map(d => d.passportId).sort();
+            assert.deepStrictEqual(ids, ['aa', 'cc']);
+
+            // query with $eq + additional operator on the primary key
+            const result2 = await c.find({
+                selector: {
+                    passportId: {
+                        $eq: 'aa',
+                        $ne: 'aa'
+                    }
+                }
+            }).exec();
+            // 'aa' should be excluded by the $ne operator
+            assert.strictEqual(result2.length, 0);
+
+            c.database.close();
+        });
     });
     describeParallel('updates to the result of the query', () => {
         describe('RxQuery.update()', () => {
