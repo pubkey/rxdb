@@ -711,6 +711,14 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
+        /**
+         * Determine if there are extra operators beyond $in/$eq on the primary key.
+         * Only when extra operators are present do we need to run queryMatcher.
+         */
+        const primarySelectorValue = rxQuery.mangoQuery.selector?.[collection.schema.primaryPath as string];
+        const hasExtraOperators = primarySelectorValue &&
+            typeof primarySelectorValue === 'object' &&
+            Object.keys(primarySelectorValue).length > 1;
         if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
             let docIds = rxQuery.isFindOneByIdQuery;
             docIds = docIds.filter(docId => {
@@ -733,10 +741,14 @@ export async function queryCollection<RxDocType>(
             /**
              * Apply query matcher to filter out docs that do not match
              * additional operators beyond $in on the primary key.
+             * Only run this when there are actually other operators present,
+             * as the filter loop is expensive.
              * Note: queryMatcher does not check _deleted, which is already
              * handled above (cache: manual check, storage: false param).
              */
-            docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+            if (hasExtraOperators) {
+                docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+            }
             /**
              * findDocumentsById() does not apply any sorting.
              * For find() queries (which return sorted arrays), we must sort the docs
@@ -763,8 +775,9 @@ export async function queryCollection<RxDocType>(
             /**
              * Apply query matcher to also check additional operators
              * beyond $eq on the primary key.
+             * Only call when there are actually extra operators present.
              */
-            if (docData && !docData._deleted && rxQuery.queryMatcher(docData)) {
+            if (docData && !docData._deleted && (!hasExtraOperators || rxQuery.queryMatcher(docData))) {
                 docs.push(docData);
             }
         }
