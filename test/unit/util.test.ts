@@ -109,7 +109,6 @@ describe('util.test.js', () => {
                         }
                     }
                 };
-                const start = performance.now();
                 let t = 0;
                 const runs = isFastMode() ? 100 : 2000;
                 while (t < runs) {
