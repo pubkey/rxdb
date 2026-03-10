@@ -711,7 +711,9 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const primarySelectorValue = (rxQuery.mangoQuery.selector as any)?.[collection.schema.primaryPath as string];
+        const selector = rxQuery.mangoQuery.selector;
+        const primaryPath = collection.schema.primaryPath as string;
+        const primarySelectorValue = selector && primaryPath in selector ? (selector as any)[primaryPath] : undefined;
 
         // Check if there are extra OPERATORS on the primary key selector
         const hasExtraOperators = primarySelectorValue &&
@@ -719,11 +721,13 @@ export async function queryCollection<RxDocType>(
             Object.keys(primarySelectorValue).length > 1;
 
         // Check if there are selectors OTHER than the primary key
-        const hasOtherSelectors = (rxQuery.mangoQuery.selector ? Object.keys(rxQuery.mangoQuery.selector).length : 0) > 1;
-        // Normalize single ID to array
-        const docIds = Array.isArray(rxQuery.isFindOneByIdQuery)
+        const hasOtherSelectors = selector ? Object.keys(selector).length > 1 : false;
+
+        // Normalize single ID to array and de-duplicate to avoid returning the same document multiple times
+        const docIdArray = Array.isArray(rxQuery.isFindOneByIdQuery)
             ? rxQuery.isFindOneByIdQuery
             : [rxQuery.isFindOneByIdQuery];
+        const docIds = Array.from(new Set(docIdArray));
 
         // Separate cache hits from storage misses
         const cacheMisses: string[] = [];
@@ -750,15 +754,34 @@ export async function queryCollection<RxDocType>(
         }
 
         /**
-         * findDocumentsById() does not apply sorting.
-         * Only sort for find() queries when we have multiple results.
-         * Sorting is unnecessary and wasteful for single results.
+         * The findDocumentsById() fast-path also does not apply `skip`/`limit`.
+         * To keep behavior consistent with storageInstance.query(), we must
+         * apply them after queryMatcher + sort for find() queries.
          */
-        if (docs.length > 1 && rxQuery.op === 'find') {
-            const preparedQuery = rxQuery.getPreparedQuery();
-            const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
-            docs = docs.sort(sortComparator);
+        if (rxQuery.op === 'find') {
+            // Apply sorting
+            if (docs.length > 1) {
+                const preparedQuery = rxQuery.getPreparedQuery();
+                const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+                docs = docs.sort(sortComparator);
+            }
+
+            // Apply skip
+            const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
+                ? rxQuery.mangoQuery.skip
+                : 0;
+            if (skip > 0) {
+                docs = docs.slice(skip);
+            }
+
+            // Apply limit
+            const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
+            if (limitIsNumber) {
+                const limit = rxQuery.mangoQuery.limit as number;
+                docs = docs.slice(0, limit);
+            }
         }
+
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
@@ -778,6 +801,7 @@ export async function queryCollection<RxDocType>(
  * Used to optimize performance: these queries use get-by-id
  * instead of a full index scan. Additional operators beyond
  * $eq/$in are handled via the queryMatcher after fetching.
+ * Skip, limit, and sort are also applied after fetching.
  * Returns false if no such optimization is possible.
  * Returns the document id (string) or ids (string[]) otherwise.
  */
@@ -785,10 +809,9 @@ export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
 ): false | string | string[] {
-    // primary key constraint can coexist with other selectors
-    // The optimization will fetch by ID, then QueryMatcher filters the rest
+    // primary key constraint can coexist with other selectors, skip, limit, and sort
+    // The optimization will fetch by ID, then apply queryMatcher, sort, skip, and limit
     if (
-        !query.skip &&
         query.selector &&
         query.selector[primaryPath]
     ) {
