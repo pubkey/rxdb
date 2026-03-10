@@ -711,75 +711,49 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        /**
-         * Determine if there are extra operators beyond $in/$eq on the primary key.
-         * Only when extra operators are present do we need to run queryMatcher.
-         */
         const primarySelectorValue = rxQuery.mangoQuery.selector?.[collection.schema.primaryPath as string];
         const hasExtraOperators = primarySelectorValue &&
             typeof primarySelectorValue === 'object' &&
             Object.keys(primarySelectorValue).length > 1;
-        if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
-            let docIds = rxQuery.isFindOneByIdQuery;
-            docIds = docIds.filter(docId => {
-                // first try to fill from docCache
-                const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-                if (docData) {
-                    if (!docData._deleted) {
-                        docs.push(docData);
-                    }
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-            // otherwise get from storage
-            if (docIds.length > 0) {
-                const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
-                docs = docs.concat(docsFromStorage);
-            }
-            /**
-             * Apply query matcher to filter out docs that do not match
-             * additional operators beyond $in on the primary key.
-             * Only run this when there are actually other operators present,
-             * as the filter loop is expensive.
-             * Note: queryMatcher does not check _deleted, which is already
-             * handled above (cache: manual check, storage: false param).
-             */
-            if (hasExtraOperators) {
-                docs = docs.filter(doc => rxQuery.queryMatcher(doc));
-            }
-            /**
-             * findDocumentsById() does not apply any sorting.
-             * For find() queries (which return sorted arrays), we must sort the docs
-             * according to the query's sort specification.
-             * For other ops like findByIds (which return a Map), sorting is not needed.
-             */
-            if (rxQuery.op === 'find') {
-                const preparedQuery = rxQuery.getPreparedQuery();
-                const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
-                docs = docs.sort(sortComparator);
-            }
-        } else {
-            const docId = rxQuery.isFindOneByIdQuery;
 
-            // first try to fill from docCache
-            let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-            if (!docData) {
-                // otherwise get from storage
-                const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
-                if (fromStorageList[0]) {
-                    docData = fromStorageList[0];
-                }
-            }
-            /**
-             * Apply query matcher to also check additional operators
-             * beyond $eq on the primary key.
-             * Only call when there are actually extra operators present.
-             */
-            if (docData && !docData._deleted && (!hasExtraOperators || rxQuery.queryMatcher(docData))) {
+        // Normalize single ID to array
+        const docIds = Array.isArray(rxQuery.isFindOneByIdQuery)
+            ? rxQuery.isFindOneByIdQuery
+            : [rxQuery.isFindOneByIdQuery];
+
+        // Separate cache hits from storage misses
+        const cacheMisses: string[] = [];
+        docIds.forEach(docId => {
+            const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+            if (docData && !docData._deleted) {
                 docs.push(docData);
+            } else if (!docData) {
+                // Only fetch from storage if not in cache
+                cacheMisses.push(docId);
             }
+            // If found but deleted, skip entirely (no refetch)
+        });
+
+        // Fetch only cache misses from storage
+        if (cacheMisses.length > 0) {
+            const docsFromStorage = await collection.storageInstance.findDocumentsById(cacheMisses, false);
+            docs = docs.concat(docsFromStorage);
+        }
+
+        // Apply query matcher for extra operators beyond $eq/$in
+        if (hasExtraOperators) {
+            docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+        }
+
+        /**
+         * findDocumentsById() does not apply sorting.
+         * Only sort for find() queries when we have multiple results.
+         * Sorting is unnecessary and wasteful for single results.
+         */
+        if (docs.length > 1 && rxQuery.op === 'find') {
+            const preparedQuery = rxQuery.getPreparedQuery();
+            const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+            docs = docs.sort(sortComparator);
         }
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
