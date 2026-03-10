@@ -15,7 +15,7 @@ export type TestConfig = {
 };
 
 export const isDeno = typeof Deno !== 'undefined' || (typeof window !== 'undefined' && 'Deno' in window);
-export const isBun = typeof process !== 'undefined' && !!process.versions.bun;
+export const isBun = typeof process !== 'undefined' && typeof process.versions !== 'undefined' && !!process.versions.bun;
 export const isNode = !isDeno && !isBun && typeof window === 'undefined';
 
 let config: TestConfig;
