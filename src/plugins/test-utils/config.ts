@@ -96,9 +96,9 @@ export function initTestEnvironment() {
     if (isNode) {
         process.setMaxListeners(100);
 
-        import('node:events').then(events => {
+        import('node:events' + '').then(events => {
             events.EventEmitter.defaultMaxListeners = 100;
-        });
+        }).catch(() => {});
 
         /**
          * Add a global function to process, so we can debug timings
