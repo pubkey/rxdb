@@ -11,8 +11,7 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    isNode,
-    nextPort
+    isNode
 } from '../../plugins/test-utils/index.mjs';
 import {
     getRxStorageRemoteWebsocket,
@@ -21,6 +20,7 @@ import {
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { assertThrows } from 'async-test-util';
+import { nextPort } from '../helper/port-manager.ts';
 
 describeParallel('rx-storage-remote.test.ts', () => {
     /**

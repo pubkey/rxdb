@@ -27,14 +27,14 @@ import {
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
 import { RxReplicationWriteToMasterRow } from '../../plugins/core/index.mjs';
 import {
-    HumanWithTimestampDocumentType,
-    nextPort
+    HumanWithTimestampDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../plugins/core/index.mjs';
 
 import {
     graphQLRequest
 } from '../../plugins/replication-graphql/index.mjs';
+import { nextPort } from './port-manager.ts';
 
 function sortByUpdatedAtAndPrimary(
     a: any,

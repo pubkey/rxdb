@@ -9,7 +9,6 @@ import {
     humansCollection,
     isNode,
     isFastMode,
-    nextPort,
     HumanWithTimestampDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
@@ -20,6 +19,7 @@ import {
     RxCollection,
     randomToken
 } from '../../plugins/core/index.mjs';
+import { nextPort } from '../helper/port-manager.ts';
 
 describeParallel('replication-websocket.test.ts', () => {
     if (!config.storage.hasReplication) {
