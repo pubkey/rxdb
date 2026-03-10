@@ -1,6 +1,7 @@
 ---
 title: Testing
 slug: testing.html
+image: /headers/testing.jpg
 ---
 
 # Testing

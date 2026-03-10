@@ -242,7 +242,18 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called multiple times and should not contain any side effects.
          * (optional)
          */
-        modifier: d => d
+        modifier: d => d,
+        /**
+         * When a local write happens, the replication will normally start pushing immediately.
+         * By providing a function here that returns a promise, the replication waits for that
+         * promise to resolve before starting the next upstream persist cycle.
+         * This lets you batch writes from multiple rapid inserts into a single push call,
+         * or defer pushing until the CPU is idle (e.g. via requestIdleCallback).
+         * NOTE: The longer you wait, the higher the risk of losing writes if the replication
+         * closes unexpectedly.
+         * (optional)
+         */
+        waitBeforePersist: () => new Promise(resolve => requestIdleCallback(resolve))
     },
     /**
      * Optional,

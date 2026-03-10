@@ -2013,6 +2013,8 @@ X- "reactjs storage"
 - "redux alternative" - 1300
 - "Awesome local first" - 10
 - "tauri database" - 170
+- "capacitor embedded database"
+- "Node.js embedded database"
 
 - "sqlite javascript" - 2900
 - "sqlite typescript" - 260
@@ -3969,7 +3971,7 @@ In **local-first** software, the primary copy of your data lives on the **client
 This approach is increasingly popular because it leads to **instant** app responses (no network delay for most operations), genuine **offline capability**, and more direct **data ownership** for users. Local-first apps also sidestep outages and if the server or internet goes down, users can keep working with their local data. When connectivity returns, everything syncs. This makes the user experience **more resilient** and gives them control of their data, which is especially appealing when privacy concerns or limited connectivity are key factors.
 
 <QuoteBlock 
-  author="Ink&Switch"
+  author="Ink & Switch"
   year="2019"
   sourceLink="https://martin.kleppmann.com/papers/local-first.pdf"
 >Local-First software: A set of principles for software that enables both collaboration and ownership for users. Local-first ideals include the ability to work offline and collaborate across multiple devices, while also improving the security, privacy, long-term preservation, and user control of data.</QuoteBlock>
@@ -3985,7 +3987,7 @@ The push for local-first is driven by a few key new technological capabilities t
   
   - **Bandwidth Has Grown, But Latency Is Capped**: Internet infrastructure has rapidly expanded to provide higher throughput making it possible to transfer large amounts of data more quickly. However, latency (i.e., round-trip delay) is constrained by the **speed of light** and other physical limitations in fiber, satellite links, and routing. We can always build out bigger "pipes" to stream or send bulk data, but we can't significantly reduce the base round-trip time for each request. This is a physical limit, not a technological one. Local-first strategies mitigate this fundamental latency limit by avoiding excessive client-server calls in interactive workflows, once data is on the client, it's instantly available for reads and writes without waiting on a network round-trip. Imagine, transferring **around 100,000** "average" JSON documents might only consume **about the same bandwidth as two frames of a 4K YouTube video** which can be transferred in milliseconds. This shows just how far raw data throughput has come. Yet each request still has a 100-200ms latency or more, which becomes noticeable in user interactions. Local-first mitigates this by minimizing round-trip calls during active use and using the available bandwidth to directly transfer most of the data on the first app start.
 
-- **WebAssembly**: Another advancement is **WebAssembly (WASM)**, which allows developers to compile low-level languages (C, C++, Rust) for execution in the browser at near-native speed. This means database engines, search algorithms, [vector databases](./javascript-vector-database.md),  and other performance-heavy tasks can run right on the client. However, a key limitation is that **WASM cannot directly access persistent storage APIs** in the browser. Instead, all data must be send from WASM to JavaScript (or the main thread) and then go through something like IndexedDB or OPFS. This extra indirection [is slower](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md) compared to plain JavaScript->storage calls. Looking ahead, there might come up future APIs that allow WASM to interface with persistent storage directly, and if those land, local-first systems could see another major boost in [performance](../rx-storage-performance.md).
+- **WebAssembly**: Another advancement is **WebAssembly (WASM)**, which allows developers to compile low-level languages (C, C++, Rust) for execution in the browser at near-native speed. This means database engines, search algorithms, [vector databases](./javascript-vector-database.md),  and other performance-heavy tasks can run right on the client. However, a key limitation is that **WASM cannot directly access persistent storage APIs** in the browser. Instead, all data must be sent from WASM to JavaScript (or the main thread) and then go through something like IndexedDB or OPFS. This extra indirection [is slower](./localstorage-indexeddb-cookies-opfs-sqlite-wasm.md) compared to plain JavaScript->storage calls. Looking ahead, there might come up future APIs that allow WASM to interface with persistent storage directly, and if those land, local-first systems could see another major boost in [performance](../rx-storage-performance.md).
 
 - **Improvements in Local-First Tooling**: A major factor fueling the rise of local-first architectures is the **dramatic leap in client-side tooling and performance**. For instance, consider a local-first **email client** that stores **one million messages**. In 2014, searching through that many documents, especially with something like early PouchDB, could take **minutes** in a browser. Today, with advanced offline databases like **RxDB**, you can use the [OPFS storage](../rx-storage-opfs.md) with [sharding](../rx-storage-sharding.md) across multiple [web workers](../rx-storage-worker.md) (one per CPU) and use [memory-mapped](../rx-storage-memory-mapped.md) techniques. The result is a **regex search** of one million of these email documents in around **120 milliseconds** - all in JavaScript, running inside a standard web browser, on a mobile phone.
 
@@ -4464,7 +4466,7 @@ In the early days of offline-capable web apps (around 2014), the common phrase w
     <VideoBox videoId="bWXAZboHZN8" title="What is Offline First?" duration="4:18" />
 </center>
 
-Over time, this focus on offline support evolved into the broader concept of **"Local-First Software,"** (see [Ink&Switch](https://martin.kleppmann.com/papers/local-first.pdf)) emphasizing not just offline operation but also the technical underpinnings of **storing data locally** in the client application. While offline-first is primarily about resilience to network loss, local-first highlights ownership, privacy, and performance benefits of keeping the primary data on the user's device. Most tools these days extended the original offline-first concepts, adding real-time reactivity, custom sync, and more nuances like conflict resolution or encryption.
+Over time, this focus on offline support evolved into the broader concept of **"Local-First Software,"** (see [Ink & Switch](https://martin.kleppmann.com/papers/local-first.pdf)) emphasizing not just offline operation but also the technical underpinnings of **storing data locally** in the client application. While offline-first is primarily about resilience to network loss, local-first highlights ownership, privacy, and performance benefits of keeping the primary data on the user's device. Most tools these days extended the original offline-first concepts, adding real-time reactivity, custom sync, and more nuances like conflict resolution or encryption.
 
   
 However, the term **"local-first"** can be **confusing** to non-technical audiences because many people (especially in the US) associate "local first" with *community-oriented movements* that encourage buying from nearby businesses or supporting local initiatives. To reduce ambiguity, it may be clearer to use **"local first software"** or **"local first development"** in your documentation and marketing materials. When creating branding or logos around local-first software, **avoid using the "Google Maps Pin"** as a symbol. This icon typically implies geolocation or physical locality further mixing up the notion of "location-based services" with "on-device data storage."
@@ -4506,7 +4508,7 @@ An offline-first database stores data locally on the user device. A cloud-first 
 - Discuss [this topic on HackerNews](https://news.ycombinator.com/item?id=43289885)
 - [Local-First Technologies](../alternatives.md): A list of databases and technologies (besides [RxDB](/)) that support offline-first or local-first use cases.
 - [Discord](/chat/): Join our Discord server to talk with people and share ideas about this topic.
-- [Inc&Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
+- [Ink & Switch](https://martin.kleppmann.com/papers/local-first.pdf): The "original" paper about Local-First from 2019 where the naming of local-first Software was first used and described.
 - [Learn how to build a local-first Application with RxDB](../quickstart.md).
 
 ---
@@ -10821,9 +10823,9 @@ import {
 } from 'rxdb-premium/plugins/indexeddb';
 
 const bestIndexes = await findBestIndex({
-    schema: myRxJsonSchema, // see [Schema Validation](./schema-validation.md)
+    schema: myRxJsonSchema, // see Schema Validation
     /**
-     * In this example we use the [IndexedDB RxStorage](./rx-storage-indexeddb.md),
+     * In this example we use the IndexedDB RxStorage,
      * but any other storage can be used for testing.
      */
     storage: getRxStorageIndexedDB(),
@@ -13008,6 +13010,7 @@ To improve vibe-coding when working with RxDB directly we:
 
 - **ADD** [WebMCP Plugin](../webmcp.md) to expose RxDB collections to AI Agents via the Model Context Protocol.
 - **ADD** [Google Drive Replication](../replication-google-drive.md) plugin to replicate client data to a clients Google Drive folder without any server.
+- **ADD** [Microsoft OneDrive Replication](../replication-microsoft-onedrive.md) plugin to replicate client data to a clients OneDrive folder without any server.
 - **ADD** [react-hooks plugin](../react.md).
 
 ### 🔁 Reactivity & APIs
@@ -13042,6 +13045,9 @@ To improve vibe-coding when working with RxDB directly we:
 - **FIX**: downstream replication issues [#7804](https://github.com/pubkey/rxdb/pull/7804)
 - **FIX** add event guard to count and findByIds in _execOverDatabase [#7864](https://github.com/pubkey/rxdb/pull/7864)
 - **FIX**: memory leak in migratePromise() [#7787](https://github.com/pubkey/rxdb/pull/7787)
+- **FIX** `exclusiveMinimum` and `exclusiveMaximum` TypeScript types corrected from `boolean` to `number` to match JSON Schema Draft 6+ [#7962](https://github.com/pubkey/rxdb/pull/7962)
+- **FIX** `find()` with `$in` on the primary key now correctly uses the fast `findDocumentsById` path instead of falling back to a full storage query [#7993](https://github.com/pubkey/rxdb/pull/7993)
+- **ADD** `waitBeforePersist` option to `ReplicationPushOptions` to delay upstream persistence cycles, enabling write batching across collections and CPU-idle deferral [#7872](https://github.com/pubkey/rxdb/issues/7872)
 - **ADD** enforce maximum length for indexes and primary keys (`maxLength: 2048`)
 - **CHANGE** `final` schema fields no longer need to be marked as `required`
 - **UPDATE** [z-schema](https://github.com/zaggino/z-schema/blob/main/CHANGELOG.md) to version 9.
@@ -14109,7 +14115,7 @@ import { replicateGoogleDrive } from 'rxdb/plugins/replication-google-drive';
 
 const replicationState = await replicateGoogleDrive({
     replicationIdentifier: 'my-app-drive-sync',
-    collection: myRxCollection, // [RxCollection](./rx-collection.md)
+    collection: myRxCollection, // RxCollection
     googleDrive: {
         oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
         authToken: 'USER_ACCESS_TOKEN',
@@ -15016,6 +15022,145 @@ In this tutorial we only covered the basics of doing a HTTP replication between 
 - Authentication: To authenticate the client on the server, you might want to send authentication headers with the HTTP requests
 - Skip events on the `pull.stream$` for the client that caused the changes to improve performance.
 - Version upgrades: You should add a version-flag to the endpoint urls. If you then update the version of your endpoints in any way, your old endpoints should emit a `Code 426` to outdated clients so that they can update their client version.
+
+---
+
+## Microsoft OneDrive Sync
+
+import {Steps} from '@site/src/components/steps';
+
+# Replication with Microsoft OneDrive
+
+The `replication-microsoft-onedrive` plugin allows you to replicate your client-side [RxDB](./) database to a folder in the user's Microsoft OneDrive. This enables cross-device [sync](./replication.md) for single users without requiring any backend server.
+
+  
+
+## Overview
+
+The replication uses the Microsoft Graph API.
+
+- **[Offline-First](./offline-first.md):** Users can work offline. Changes are synced when they go online.
+- **No Backend Required:** You don't need to host your own database server.
+- **Cross-Device:** Users can access their data from multiple devices by signing into the same Microsoft account.
+- **Realtime Sync:** Uses [WebRTC](./replication-webrtc.md) for peer-to-peer signaling to achieve near real-time updates. Uses the same onedrive folder instead of a signaling-server.
+
+:::info
+This plugin is in **beta** since RxDB version 17.0.0.
+:::
+
+## Usage
+
+<Steps>
+
+### Enable Microsoft Graph API
+
+You need to register your application in the [Azure portal](https://portal.azure.com/) and create credentials (OAuth 2.0 Client ID) with `Files.ReadWrite` permissions for your application.
+
+### Authenticate the User
+
+Your application must handle the OAuth flow to get an `accessToken` from Microsoft. You can use libraries like `@azure/msal-browser` or `@azure/msal-react`.
+
+### Start Replication
+
+Once you have the `accessToken`, you can start the replication.
+
+```ts
+import { replicateMicrosoftOneDrive } from 'rxdb/plugins/replication-microsoft-onedrive';
+
+const replicationState = await replicateMicrosoftOneDrive({
+    replicationIdentifier: 'my-app-onedrive-sync',
+    collection: myRxCollection, // RxCollection
+    oneDrive: {
+        authToken: 'USER_ACCESS_TOKEN',
+        folderPath: 'my-app-data/user-1'
+    },
+    live: true,
+    pull: {
+        batchSize: 60,
+        modifier: doc => doc // (optional) modify invalid data
+    },
+    push: {
+        batchSize: 60,
+        modifier: doc => doc // (optional) modify before sending
+    }
+});
+
+// Observe replication states
+replicationState.error$.subscribe(err => {
+    console.error('Replication error:', err);
+});
+
+replicationState.awaitInitialReplication().then(() => {
+    console.log('Initial replication done');
+});
+```
+
+</Steps>
+
+## Signaling & WebRTC
+
+Microsoft OneDrive does not provide real-time events for file changes that a client can easily subscribe to in the browser. If a user changes data on **User Device A**, **User Device B** would not know about it until it periodically polls the API.
+To achieve real-time updates, this plugin uses **WebRTC** to signal changes between connected devices.
+
+1.  Devices create "signal files" in a `signaling` subfolder on OneDrive.
+2.  Other devices detect these files, read the WebRTC connection data, and establish a direct P2P connection with each other.
+3.  When a device makes a write, it sends a "RESYNC" signal via WebRTC to all connected peers to notify them about the change.
+
+### Polyfill for Node.js
+
+WebRTC is native in browsers but requires a polyfill in Node.js.
+
+```ts
+import wrtc from 'node-datachannel/polyfill'; // or 'wrtc' package
+// ...
+const replicationState = await replicateMicrosoftOneDrive({
+    // ...
+    signalingOptions: {
+        wrtc // Pass the polyfill here
+    }
+});
+```
+
+## Options
+
+### oneDrive
+
+- **authToken** `string`: The valid access token associated with the user.
+- **folderPath** `string`: The path to the folder in Microsoft OneDrive where data should be stored.
+    - The plugin will ensure this folder exists.
+    - It must **not** be the root folder.
+    - It creates subfolders `docs` (for data) and `signaling` (for WebRTC).
+- **apiEndpoint** `string` (optional): Defaults to `https://graph.microsoft.com/v1.0/me/drive`. Useful for mocking or proxies.
+- **transactionTimeout** `number` (optional): Default `10000` (10s). The plugin uses a `transaction.json` file in OneDrive to ensure data integrity during writes. This is the timeout after which a lock is considered stale.
+
+### pull & push
+
+Standard RxDB [Replication Options](./replication.md) for batch size, modifiers, etc.
+
+## Technical Details
+
+### File Mapping
+- Each RxDB document corresponds to **one JSON file** in the `docs` subfolder.
+- The filename is `[primaryKey].json`.
+- This simple mapping makes it easy to inspect or backup data manually.
+
+### Checkpointing
+- The replication relies on the `lastModifiedDateTime` of files in Microsoft OneDrive.
+
+### Conflict Resolution
+- Conflicts are handled using the standard RxDB [conflict handling](./replication.md#conflict-handling) strategies.
+- The plugin assumes a master-slave replication pattern where the client (RxDB) merges changes.
+- If the `transaction.json` file is locked by another device, the write retries until the lock is released or times out.
+
+## Limitations
+
+- **Rate Limits:** Microsoft Graph API has strict rate limits. The plugin attempts to handle 429 errors with exponential backoff, but heavy concurrent writes might hit these limits.
+- **Latency:** Changes take time to propagate and appear in listings (eventual consistency), which the plugin handles internally.
+- **Signaling Delay:** The initial WebRTC handshake requires writing and reading files from OneDrive, which can take a few seconds. Once connected, signaling is instant.
+
+## Testing
+
+For testing, it is recommended to use [microsoft-onedrive-mock](https://github.com/pubkey/microsoft-onedrive-mock). It simulates the Microsoft Graph API so you can run tests without real credentials.
 
 ---
 
@@ -15987,7 +16132,7 @@ import {
     startWebsocketServer
 } from 'rxdb/plugins/replication-websocket';
 
-// create a [RxDatabase](./rx-database.md) like normal
+// create a RxDatabase like normal
 const myDatabase = await createRxDatabase({/* ... */});
 
 // start a websocket server
@@ -16274,7 +16419,18 @@ const replicationState = await replicateRxCollection({
          * Notice that the modifier can be called multiple times and should not contain any side effects.
          * (optional)
          */
-        modifier: d => d
+        modifier: d => d,
+        /**
+         * When a local write happens, the replication will normally start pushing immediately.
+         * By providing a function here that returns a promise, the replication waits for that
+         * promise to resolve before starting the next upstream persist cycle.
+         * This lets you batch writes from multiple rapid inserts into a single push call,
+         * or defer pushing until the CPU is idle (e.g. via requestIdleCallback).
+         * NOTE: The longer you wait, the higher the risk of losing writes if the replication
+         * closes unexpectedly.
+         * (optional)
+         */
+        waitBeforePersist: () => new Promise(resolve => requestIdleCallback(resolve))
     },
     /**
      * Optional,
@@ -17896,6 +18052,34 @@ Returns true if the given object is an instance of RxDocument. Returns false if 
 const is = isRxDocument(myObj);
 ```
 
+## Document Lifetime and Immutability
+
+**RxDocument instances are immutable.** Each instance represents a snapshot of the document at the time it was fetched or last written. Modifying a document does not update existing instances of it - it creates a new `RxDocument` instance with the updated data. The old instance retains its original data.
+
+```js
+const doc = await myCollection.findOne('foobar').exec();
+console.log(doc.age); // 10
+
+await doc.incrementalPatch({ age: 20 });
+
+// The original instance still has the old data
+console.log(doc.age); // 10
+
+// Use getLatest() to get the updated state
+console.log(doc.getLatest().age); // 20
+```
+
+**RxDB de-duplicates document instances.** When the same document is fetched multiple times without any writes in between, RxDB returns the same instance to save memory. Once a write occurs, subsequent fetches return a new instance reflecting the updated state.
+
+**Calling non-incremental write methods on an outdated instance throws a `CONFLICT` error.** If you hold a reference to a document and another operation modifies that document in the meantime, calling `.patch()`, `.update()`, or `.modify()` on the outdated instance will fail with a conflict error. See [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md) for details on how RxDB handles conflicts.
+
+To avoid this, either:
+- Use the [incremental methods](#prevent-conflicts-with-the-incremental-methods) (`incrementalPatch`, `incrementalModify`, `incrementalUpdate`) which always fetch the latest state before applying changes.
+- Call `getLatest()` to get the current state before writing.
+- Re-query the collection to get a fresh document.
+
+**How long to keep a reference to an `RxDocument`.** Treat an `RxDocument` like plain JSON data - it is a snapshot valid at the time of retrieval. RxDB manages query result caching internally via [event-reduce](./rx-query.md), so you do not need to cache documents yourself. For components that display document data and need live updates, subscribe to the document's `$` observable instead of holding a static reference.
+
 ---
 
 ## Master Local Documents in RxDB
@@ -17933,7 +18117,7 @@ For better performance, the local document plugin does not create a storage for 
 Instead you have to set `localDocuments: true` when you want to store local documents in the instance.
 
 ```js
-// activate local documents on a [RxDatabase](./rx-database.md)
+// activate local documents on a RxDatabase
 const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageLocalstorage(),
@@ -17943,7 +18127,7 @@ const myDatabase = await createRxDatabase({
 myDatabase.addCollections({
   messages: {
     schema: messageSchema,
-    localDocuments: true // <- activate this to store local documents in the [collection](./rx-collection.md)
+    localDocuments: true // <- activate this to store local documents in the collection
   }
 });
 ```
@@ -20476,7 +20660,7 @@ const storage = getMemoryMappedRxStorage({
     storage: parentStorage
 });
 
-// create the [RxDatabase](./rx-database.md) like you would do with any other RxStorage
+// create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
     name: 'myDatabase',
     storage,
@@ -21332,7 +21516,7 @@ const mySchema = {
 }
 
 /**
- * Create the [RxDatabase](./rx-database.md) with the wrapped RxStorage. 
+ * Create the RxDatabase with the wrapped RxStorage. 
  */
 const database = await createRxDatabase({
     name: 'mydatabase',
@@ -21481,7 +21665,7 @@ exposeWorkerRxStorage({
 });
 
 /**
- * Then create a normal RxDatabase and [RxCollections](./rx-collection.md)
+ * Then create a normal RxDatabase and RxCollections
  * and start the replication.
  */
 const database = await createRxDatabase({
@@ -23516,6 +23700,32 @@ The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to ch
     <summary>How to mix the RxDB WebMCP with own WebMCP tools?</summary>
     
         You can easily mix the RxDB WebMCP tools with your own tools. Since <code>db.registerWebMCP()</code> internally just calls <code>navigator.modelContext.registerTool()</code>, you can simply call this native method yourself to register any additional tools that interact with your frontend logic, external APIs, or other non-database components.
+    
+</details>
+
+<details>
+    <summary>How to use the WebMCP polyfill for browsers without native support?</summary>
+    
+        Since most browsers do not yet natively implement the <code>navigator.modelContext</code> API, you can use the WebMCP-org polyfill package <code>@mcp-b/global</code> to add support in any browser today.
+
+        Install the package:
+
+        ```bash
+        npm install @mcp-b/global
+        ```
+
+        Then import it once at the entry point of your application, before any WebMCP tools are registered:
+
+        ```ts
+        import '@mcp-b/global';
+
+        // navigator.modelContext is now available
+        import { addRxPlugin } from 'rxdb';
+        import { RxDBWebMCPPlugin } from 'rxdb/plugins/webmcp';
+        addRxPlugin(RxDBWebMCPPlugin);
+        ```
+
+        The polyfill sets up the <code>navigator.modelContext</code> interface so that your registered tools are accessible to AI agents running in the browser, even without native browser support.
     
 </details>
 

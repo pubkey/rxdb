@@ -2,6 +2,7 @@
 title: Microsoft OneDrive Sync
 slug: replication-microsoft-onedrive.html
 description: Sync your RxDB application state with Microsoft OneDrive.
+image: /headers/replication-microsoft-onedrive.jpg
 ---
 
 import {Steps} from '@site/src/components/steps';

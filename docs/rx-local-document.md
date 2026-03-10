@@ -35,7 +35,7 @@ For better performance, the local document plugin does not create a storage for 
 Instead you have to set `localDocuments: true` when you want to store local documents in the instance.
 
 ```js
-// activate local documents on a [RxDatabase](./rx-database.md)
+// activate local documents on a RxDatabase
 const myDatabase = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageLocalstorage(),
@@ -45,7 +45,7 @@ const myDatabase = await createRxDatabase({
 myDatabase.addCollections({
   messages: {
     schema: messageSchema,
-    localDocuments: true // <- activate this to store local documents in the [collection](./rx-collection.md)
+    localDocuments: true // <- activate this to store local documents in the collection
   }
 });
 ```

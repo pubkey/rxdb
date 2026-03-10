@@ -44,7 +44,7 @@ import { replicateGoogleDrive } from 'rxdb/plugins/replication-google-drive';
 
 const replicationState = await replicateGoogleDrive({
     replicationIdentifier: 'my-app-drive-sync',
-    collection: myRxCollection, // [RxCollection](./rx-collection.md)
+    collection: myRxCollection, // RxCollection
     googleDrive: {
         oauthClientId: 'YOUR_GOOGLE_CLIENT_ID',
         authToken: 'USER_ACCESS_TOKEN',
