@@ -3,6 +3,7 @@ import React, { forwardRef } from 'react';
 import type { ModalProps as AntdModalProps } from 'antd';
 import { Modal as AntdModal } from 'antd';
 import { IconClose } from './icons/close';
+import { triggerTrackingEvent } from './trigger-event';
 
 export interface ModalProps
     extends Omit<AntdModalProps, 'closeIcon' | 'rootClassName'> {
@@ -78,10 +79,17 @@ export function IframeFormModal(props: {
     iframeUrl: string;
     onClose: Function;
     open: boolean;
+    /**
+     * When provided, tracking events are fired on iframe load and error
+     * so we can measure how often the embedded form successfully loads.
+     * e.g. 'buy_form' fires 'buy_form_loaded' on success and 'buy_form_error' on failure.
+     */
+    eventId?: string;
 }) {
     const handleClose = () => {
         props.onClose();
     };
+    const eventId = props.eventId;
     return <Modal
         className="modal-consulting-page"
         open={props.open}
@@ -95,6 +103,8 @@ export function IframeFormModal(props: {
                 height: '70vh',
             }}
             src={props.iframeUrl}
+            onLoad={eventId ? () => triggerTrackingEvent(eventId + '_loaded', 1, 50) : undefined}
+            onError={eventId ? () => triggerTrackingEvent(eventId + '_error', 0, 50) : undefined}
         >
             Your browser doesn't support iframes,{' '}
             <a
