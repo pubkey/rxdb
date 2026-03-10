@@ -6,7 +6,6 @@
 
 export * from './config.ts';
 export * from './humans-collection.ts';
-export * from './port-manager.ts';
 export * from './revisions.ts';
 export * from './test-util.ts';
 
