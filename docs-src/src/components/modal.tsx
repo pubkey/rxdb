@@ -103,7 +103,7 @@ export function IframeFormModal(props: {
                 height: '70vh',
             }}
             src={props.iframeUrl}
-            onLoad={eventId ? () => triggerTrackingEvent(eventId + '_loaded', 1, 50) : undefined}
+            onLoad={eventId ? () => triggerTrackingEvent(eventId + '_loaded', 0, 50) : undefined}
             onError={eventId ? () => triggerTrackingEvent(eventId + '_error', 0, 50) : undefined}
         >
             Your browser doesn't support iframes,{' '}
