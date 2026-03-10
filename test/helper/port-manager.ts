@@ -1,4 +1,4 @@
-import { PROMISE_RESOLVE_VOID } from '../utils/index.ts';
+import { PROMISE_RESOLVE_VOID } from '../../plugins/utils/index.mjs';
 
 /**
  * For easier debugging, we increase the port each time
