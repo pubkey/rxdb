@@ -713,7 +713,9 @@ export async function queryCollection<RxDocType>(
     if (rxQuery.isFindOneByIdQuery) {
         const selector = rxQuery.mangoQuery.selector;
         const primaryPath = collection.schema.primaryPath as string;
-        const primarySelectorValue = selector && primaryPath in selector ? (selector as any)[primaryPath] : undefined;
+        // Use hasOwnProperty to avoid prototype pollution from user-controlled input
+        const hasPrimaryKey = selector && Object.prototype.hasOwnProperty.call(selector, primaryPath);
+        const primarySelectorValue = hasPrimaryKey ? (selector as any)[primaryPath] : undefined;
 
         // Check if there are extra OPERATORS on the primary key selector
         const hasExtraOperators = primarySelectorValue &&
@@ -754,32 +756,30 @@ export async function queryCollection<RxDocType>(
         }
 
         /**
-         * The findDocumentsById() fast-path also does not apply `skip`/`limit`.
+         * The findDocumentsById() fast-path also does not apply `skip`/`limit`/`sort`.
          * To keep behavior consistent with storageInstance.query(), we must
-         * apply them after queryMatcher + sort for find() queries.
+         * apply them after queryMatcher for both find() and findOne() queries.
          */
-        if (rxQuery.op === 'find') {
-            // Apply sorting
-            if (docs.length > 1) {
-                const preparedQuery = rxQuery.getPreparedQuery();
-                const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
-                docs = docs.sort(sortComparator);
-            }
+        // Apply sorting for both find and findOne
+        if (docs.length > 1) {
+            const preparedQuery = rxQuery.getPreparedQuery();
+            const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+            docs = docs.sort(sortComparator);
+        }
 
-            // Apply skip
-            const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
-                ? rxQuery.mangoQuery.skip
-                : 0;
-            if (skip > 0) {
-                docs = docs.slice(skip);
-            }
+        // Apply skip for both find and findOne
+        const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
+            ? rxQuery.mangoQuery.skip
+            : 0;
+        if (skip > 0) {
+            docs = docs.slice(skip);
+        }
 
-            // Apply limit
-            const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
-            if (limitIsNumber) {
-                const limit = rxQuery.mangoQuery.limit as number;
-                docs = docs.slice(0, limit);
-            }
+        // Apply limit for both find and findOne
+        const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
+        if (limitIsNumber) {
+            const limit = rxQuery.mangoQuery.limit as number;
+            docs = docs.slice(0, limit);
         }
 
     } else {
