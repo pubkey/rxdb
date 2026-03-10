@@ -48,6 +48,7 @@ import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import {
     getQueryMatcher,
+    getSortComparator,
     normalizeMangoQuery,
     prepareQuery,
     runQueryUpdateFunction
@@ -710,41 +711,76 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
-            let docIds = rxQuery.isFindOneByIdQuery;
-            docIds = docIds.filter(docId => {
-                // first try to fill from docCache
-                const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-                if (docData) {
-                    if (!docData._deleted) {
-                        docs.push(docData);
-                    }
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-            // otherwise get from storage
-            if (docIds.length > 0) {
-                const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
-                docs = docs.concat(docsFromStorage);
-            }
-        } else {
-            const docId = rxQuery.isFindOneByIdQuery;
+        const selector = rxQuery.mangoQuery.selector;
+        const primaryPath = collection.schema.primaryPath as string;
+        // isFindOneByIdQuery guarantees the primary key is in the selector
+        const primarySelectorValue = selector ? (selector as any)[primaryPath] : undefined;
 
-            // first try to fill from docCache
-            let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-            if (!docData) {
-                // otherwise get from storage
-                const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
-                if (fromStorageList[0]) {
-                    docData = fromStorageList[0];
-                }
-            }
+        // Check if there are extra operators on the primary key selector (e.g. $ne alongside $in)
+        const hasExtraOperators = typeof primarySelectorValue === 'object' &&
+            primarySelectorValue !== null &&
+            Object.keys(primarySelectorValue).length > 1;
+
+        // Check if there are selectors OTHER than the primary key
+        const hasOtherSelectors = selector ? Object.keys(selector).length > 1 : false;
+
+        // Normalize single ID to array and de-duplicate to avoid returning the same document multiple times
+        const docIdArray = Array.isArray(rxQuery.isFindOneByIdQuery)
+            ? rxQuery.isFindOneByIdQuery
+            : [rxQuery.isFindOneByIdQuery];
+        const docIds = Array.from(new Set(docIdArray));
+
+        // Separate cache hits from storage misses
+        const cacheMisses: string[] = [];
+        docIds.forEach(docId => {
+            const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
             if (docData && !docData._deleted) {
                 docs.push(docData);
+            } else if (!docData) {
+                // Only fetch from storage if not in cache
+                cacheMisses.push(docId);
             }
+            // If found but deleted, skip entirely (no refetch)
+        });
+
+        // Fetch only cache misses from storage
+        if (cacheMisses.length > 0) {
+            const docsFromStorage = await collection.storageInstance.findDocumentsById(cacheMisses, false);
+            docs = docs.concat(docsFromStorage);
         }
+
+        // Apply query matcher if there are extra operators or other selectors
+        if (hasExtraOperators || hasOtherSelectors) {
+            docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+        }
+
+        /**
+         * The findDocumentsById() fast-path also does not apply `skip`/`limit`/`sort`.
+         * To keep behavior consistent with storageInstance.query(), we must
+         * apply them after queryMatcher for both find() and findOne() queries.
+         */
+        // Apply sorting for both find and findOne
+        if (docs.length > 1) {
+            const preparedQuery = rxQuery.getPreparedQuery();
+            const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+            docs = docs.sort(sortComparator);
+        }
+
+        // Apply skip for both find and findOne
+        const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
+            ? rxQuery.mangoQuery.skip
+            : 0;
+        if (skip > 0) {
+            docs = docs.slice(skip);
+        }
+
+        // Apply limit for both find and findOne
+        const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
+        if (limitIsNumber) {
+            const limit = rxQuery.mangoQuery.limit as number;
+            docs = docs.slice(0, limit);
+        }
+
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
@@ -760,28 +796,29 @@ export async function queryCollection<RxDocType>(
 
 /**
  * Returns true if the given query
- * selects exactly one document by its id.
- * Used to optimize performance because these kind of
- * queries do not have to run over an index and can use get-by-id instead.
- * Returns false if no query of that kind.
- * Returns the document id otherwise.
+ * selects documents by primary key using $eq or $in.
+ * Used to optimize performance: these queries use get-by-id
+ * instead of a full index scan. Additional operators beyond
+ * $eq/$in are handled via the queryMatcher after fetching.
+ * Skip, limit, and sort are also applied after fetching.
+ * Returns false if no such optimization is possible.
+ * Returns the document id (string) or ids (string[]) otherwise.
  */
 export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
 ): false | string | string[] {
-    // must have exactly one operator which must be $eq || $in
+    // primary key constraint can coexist with other selectors, skip, limit, and sort
+    // The optimization will fetch by ID, then apply queryMatcher, sort, skip, and limit
+    // Use hasOwnProperty to avoid prototype pollution from user-controlled input
     if (
-        !query.skip &&
         query.selector &&
-        Object.keys(query.selector).length === 1 &&
-        query.selector[primaryPath]
+        Object.prototype.hasOwnProperty.call(query.selector, primaryPath)
     ) {
-        const value: any = query.selector[primaryPath];
+        const value: any = (query.selector as any)[primaryPath];
         if (typeof value === 'string') {
             return value;
         } else if (
-            Object.keys(value).length === 1 &&
             typeof value.$eq === 'string'
         ) {
             return value.$eq;
@@ -789,12 +826,11 @@ export function isFindOneByIdQuery(
 
         // same with $in string arrays
         if (
-            Object.keys(value).length === 1 &&
-            Array.isArray(value.$eq) &&
+            Array.isArray(value.$in) &&
             // must only contain strings
-            !(value.$eq as any[]).find(r => typeof r !== 'string')
+            !(value.$in as any[]).find(r => typeof r !== 'string')
         ) {
-            return value.$eq;
+            return value.$in;
         }
     }
     return false;
