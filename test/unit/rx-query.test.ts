@@ -668,7 +668,9 @@ describe('rx-query.test.ts', () => {
             };
             return {
                 queryCalls: () => queryCalls,
-                reset: () => { queryCalls = 0; }
+                reset: () => {
+                    queryCalls = 0;
+                }
             };
         }
 
