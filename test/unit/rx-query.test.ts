@@ -654,6 +654,24 @@ describe('rx-query.test.ts', () => {
             );
             c.database.close();
         });
+
+        /**
+         * Helper to track storageInstance.query() calls.
+         * Returns a callback that increments counter.
+         */
+        function setupQueryTracking(storageInstance: any) {
+            let queryCalls = 0;
+            const queryBefore = storageInstance.query.bind(storageInstance);
+            storageInstance.query = function (preparedQuery: any) {
+                queryCalls = queryCalls + 1;
+                return queryBefore(preparedQuery);
+            };
+            return {
+                queryCalls: () => queryCalls,
+                reset: () => { queryCalls = 0; }
+            };
+        }
+
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
             const docData = schemaObjects.humanData();
@@ -661,13 +679,8 @@ describe('rx-query.test.ts', () => {
             docData.passportId = docId;
             await c.insert(docData);
 
-            // overwrite .query() to track the amount of calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // findOne(id) — should use the fast path (string id)
             const q1 = c.findOne(docId);
@@ -698,7 +711,7 @@ describe('rx-query.test.ts', () => {
             const q6 = c.find({ selector: { firstName: 'Alice' } });
             assert.strictEqual(q6.isFindOneByIdQuery, false);
 
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
             c.database.close();
         });
         it('isFindOneByIdQuery(): additional operators alongside $in/$eq on primary key are applied via queryMatcher', async () => {
@@ -712,6 +725,9 @@ describe('rx-query.test.ts', () => {
             docs[1].firstName = 'Alice';
             docs[2].firstName = 'Bob';
             await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + additional operator on the primary key — still uses fast path
             const q1 = c.find({
@@ -742,8 +758,359 @@ describe('rx-query.test.ts', () => {
             // 'aa' should be excluded by the $ne operator via queryMatcher
             assert.strictEqual(result2.length, 0);
 
+            // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
+            assert.strictEqual(tracker.queryCalls(), 0);
+
             c.database.close();
         });
+        it('isFindOneByIdQuery(): other selectors alongside primary key $in/$eq are applied via queryMatcher', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].firstName = 'Alice';
+            docs[0].age = 25;
+            docs[1].firstName = 'Alice';
+            docs[1].age = 30;
+            docs[2].firstName = 'Bob';
+            docs[2].age = 35;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query with primary key $in + other selector — still uses fast path but filters via queryMatcher
+            const q1 = c.find({
+                selector: {
+                    passportId: {
+                        $in: ['aa', 'bb', 'cc']
+                    },
+                    age: {
+                        $gt: 28
+                    }
+                }
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // only 'bb' (age 30) and 'cc' (age 35) should be returned
+            const ids = result.map(d => d.passportId).sort();
+            assert.deepStrictEqual(ids, ['bb', 'cc']);
+
+            // query with primary key $eq + other selector — still uses fast path but filters via queryMatcher
+            const q2 = c.find({
+                selector: {
+                    passportId: 'aa',
+                    firstName: 'Alice'
+                }
+            });
+            assert.strictEqual(q2.isFindOneByIdQuery, 'aa');
+            const result2 = await q2.exec();
+            // 'aa' should match all conditions
+            assert.strictEqual(result2.length, 1);
+            assert.strictEqual(result2[0].passportId, 'aa');
+
+            // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): query without primary key constraint must use storage.query()', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].firstName = 'Alice';
+            docs[0].age = 25;
+            docs[1].firstName = 'Alice';
+            docs[1].age = 30;
+            docs[2].firstName = 'Bob';
+            docs[2].age = 35;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query without primary key — must use storage.query()
+            const q1 = c.find({
+                selector: {
+                    firstName: 'Alice',
+                    age: { $gt: 28 }
+                }
+            });
+            assert.strictEqual(q1.isFindOneByIdQuery, false);
+            const result = await q1.exec();
+            // should find 'bb' with age 30
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, 'bb');
+
+            // storage.query() MUST have been called at least once
+            assert.ok(tracker.queryCalls() >= 1);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): sort is applied correctly in the fast path', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query with $in + sort — should use fast path and apply sort
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['cc', 'aa', 'bb'] }
+                },
+                sort: [{ age: 'asc' }]
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['cc', 'aa', 'bb']);
+            const result = await q1.exec();
+            // Should be sorted by age: aa(25), cc(30), bb(35)
+            assert.strictEqual(result[0].passportId, 'aa');
+            assert.strictEqual(result[1].passportId, 'cc');
+            assert.strictEqual(result[2].passportId, 'bb');
+
+            // No storage.query() calls should have been made
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): limit is applied correctly in the fast path', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query with $in + limit — should use fast path and apply limit
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['aa', 'bb', 'cc'] }
+                },
+                limit: 2
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // Should return at most 2 documents
+            assert.strictEqual(result.length, 2);
+
+            // No storage.query() calls should have been made
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): skip is applied correctly in the fast path', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query with $in + skip + sort — should use fast path and apply skip after sort
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['aa', 'bb', 'cc'] }
+                },
+                sort: [{ age: 'asc' }],
+                skip: 1
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // Sorted by age asc: aa(25), cc(30), bb(35)
+            // Skip 1: cc(30), bb(35)
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].passportId, 'cc');
+            assert.strictEqual(result[1].passportId, 'bb');
+
+            // No storage.query() calls should have been made
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): sort + skip + limit all applied correctly in the fast path', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+                schemaObjects.humanData('dd'),
+                schemaObjects.humanData('ee'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            docs[3].age = 20;
+            docs[4].age = 40;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // query with $in + sort + skip + limit
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['aa', 'bb', 'cc', 'dd', 'ee'] }
+                },
+                sort: [{ age: 'asc' }],
+                skip: 1,
+                limit: 2
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc', 'dd', 'ee']);
+            const result = await q1.exec();
+            // Sorted by age: dd(20), aa(25), cc(30), bb(35), ee(40)
+            // Skip 1: aa(25), cc(30), bb(35), ee(40)
+            // Limit 2: aa(25), cc(30)
+            assert.strictEqual(result.length, 2);
+            assert.strictEqual(result[0].passportId, 'aa');
+            assert.strictEqual(result[0].age, 25);
+            assert.strictEqual(result[1].passportId, 'cc');
+            assert.strictEqual(result[1].age, 30);
+
+            // No storage.query() calls should have been made (fast path used)
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): sort + skip + limit results are consistent with expectations', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+                schemaObjects.humanData('dd'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            docs[3].age = 20;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // Query using the fast path with operator filtering + sort + skip + limit
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['aa', 'bb', 'cc', 'dd'] },
+                    age: { $gt: 22 }
+                },
+                sort: [{ age: 'desc' }],
+                skip: 1,
+                limit: 1
+            });
+            const result = await q1.exec();
+
+            // Sorted descending by age: bb(35), cc(30), aa(25), skip 1 = cc(30) and aa(25), limit 1 = cc(30)
+            // With $gt: 22 filter, we have: bb(35), cc(30), aa(25) -> skip 1 -> cc(30), aa(25) -> limit 1 -> cc(30)
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, 'cc');
+            assert.strictEqual(result[0].age, 30);
+
+            // No storage.query() calls should have been made (fast path used)
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): find with primary key + skip + limit 1 respects skip order', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // find with primary key $in + skip + sort + limit - simulates findOne with skip
+            // (user might do this and expect it to work like storageInstance.query)
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['aa', 'bb', 'cc'] }
+                },
+                sort: [{ age: 'asc' }],
+                skip: 1,
+                limit: 1
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // Sorted by age asc: aa(25), cc(30), bb(35)
+            // Skip 1: cc(30), bb(35)
+            // Limit 1: cc(30)
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, 'cc');
+            assert.strictEqual(result[0].age, 30);
+
+            // No storage.query() calls should have been made (fast path used)
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): find with primary key + sort + limit 1 (findOne behavior) returns first, after sort', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].age = 25;
+            docs[1].age = 35;
+            docs[2].age = 30;
+            await c.bulkInsert(docs);
+
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
+
+            // find with primary key $in + sort + limit 1 (findOne behavior)
+            // Should use fast path and respect sort order when returning first result
+            const q1 = c.find({
+                selector: {
+                    passportId: { $in: ['cc', 'aa', 'bb'] }
+                },
+                sort: [{ age: 'asc' }],
+                limit: 1
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['cc', 'aa', 'bb']);
+            const result = await q1.exec();
+            // Sorted by age asc: aa(25), cc(30), bb(35) -> limit 1 = aa(25)
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, 'aa');
+            assert.strictEqual(result[0].age, 25);
+
+            // No storage.query() calls should have been made
+            assert.strictEqual(tracker.queryCalls(), 0);
+
+            c.database.close();
+        });
+
     });
     describeParallel('updates to the result of the query', () => {
         describe('RxQuery.update()', () => {
