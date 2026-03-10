@@ -16,8 +16,7 @@ import { Subject } from 'rxjs';
 import {
     DEFAULT_DELETED_FIELD,
     DEFAULT_MODIFIED_FIELD,
-    POSTGRES_INSERT_CONFLICT_CODE,
-    addDocEqualityToQuery
+    POSTGRES_INSERT_CONFLICT_CODE
 } from './helper.ts';
 import { ensureNotFalsy, flatClone, lastOfArray } from '../utils/index.ts';
 
@@ -185,7 +184,6 @@ export function replicateSupabase<RxDocType>(
                 assumedMasterState: WithDeleted<RxDocType>
             ): Promise<WithDeleted<RxDocType> | undefined> {
                 ensureNotFalsy(assumedMasterState);
-                const id = (doc as any)[primaryPath];
                 const toRow: Record<string, any> = flatClone(doc);
                 if (doc._deleted) {
                     toRow[deletedField] = !!doc._deleted;
@@ -197,29 +195,34 @@ export function replicateSupabase<RxDocType>(
                 // modified field will be set server-side
                 delete toRow[modifiedField];
 
-                let query = options.client
-                    .from(options.tableName)
-                    .update(toRow);
-
-                query = addDocEqualityToQuery(
-                    collection.schema.jsonSchema,
-                    deletedField,
-                    modifiedField,
-                    primaryPath,
-                    assumedMasterState,
-                    query
+                /**
+                 * Use a PostgreSQL stored function (RPC) for the conditional UPDATE.
+                 * This sends all equality conditions in the POST body instead of URL
+                 * query parameters, avoiding URL length limits for documents with
+                 * large text or JSON fields.
+                 * @see https://github.com/pubkey/rxdb/issues/7986
+                 */
+                const { data, error } = await (options.client.rpc as Function)(
+                    '_rxdb_supabase_conditional_update',
+                    {
+                        p_table_name: options.tableName,
+                        p_pk_col: primaryPath,
+                        p_assumed_state: assumedMasterState,
+                        p_new_state: toRow,
+                        p_deleted_col: deletedField,
+                        p_modified_col: modifiedField
+                    }
                 );
-
-                const { data, error } = await query.select();
                 if (error) {
                     throw error;
                 }
 
-                if (data && data.length > 0) {
+                if (data === null) {
+                    // null return value means the update succeeded without a conflict
                     return;
                 } else {
-                    // no match -> conflict
-                    return await fetchById(id);
+                    // non-null return value is the current server state — a conflict
+                    return rowToDoc(data as any) as any;
                 }
             }
 
