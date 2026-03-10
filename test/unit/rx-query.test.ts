@@ -654,6 +654,24 @@ describe('rx-query.test.ts', () => {
             );
             c.database.close();
         });
+
+        /**
+         * Helper to track storageInstance.query() calls.
+         * Returns a callback that increments counter.
+         */
+        function setupQueryTracking(storageInstance: any) {
+            let queryCalls = 0;
+            const queryBefore = storageInstance.query.bind(storageInstance);
+            storageInstance.query = function (preparedQuery: any) {
+                queryCalls = queryCalls + 1;
+                return queryBefore(preparedQuery);
+            };
+            return {
+                queryCalls: () => queryCalls,
+                reset: () => { queryCalls = 0; }
+            };
+        }
+
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
             const docData = schemaObjects.humanData();
@@ -661,13 +679,8 @@ describe('rx-query.test.ts', () => {
             docData.passportId = docId;
             await c.insert(docData);
 
-            // overwrite .query() to track the amount of calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // findOne(id) — should use the fast path (string id)
             const q1 = c.findOne(docId);
@@ -698,7 +711,7 @@ describe('rx-query.test.ts', () => {
             const q6 = c.find({ selector: { firstName: 'Alice' } });
             assert.strictEqual(q6.isFindOneByIdQuery, false);
 
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
             c.database.close();
         });
         it('isFindOneByIdQuery(): additional operators alongside $in/$eq on primary key are applied via queryMatcher', async () => {
@@ -713,13 +726,8 @@ describe('rx-query.test.ts', () => {
             docs[2].firstName = 'Bob';
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + additional operator on the primary key — still uses fast path
             const q1 = c.find({
@@ -751,7 +759,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result2.length, 0);
 
             // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -770,13 +778,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 35;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with primary key $in + other selector — still uses fast path but filters via queryMatcher
             const q1 = c.find({
@@ -809,7 +812,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result2[0].passportId, 'aa');
 
             // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -828,13 +831,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 35;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query without primary key — must use storage.query()
             const q1 = c.find({
@@ -850,7 +848,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[0].passportId, 'bb');
 
             // storage.query() MUST have been called at least once
-            assert.ok(queryCalls >= 1);
+            assert.ok(tracker.queryCalls() >= 1);
 
             c.database.close();
         });
@@ -866,13 +864,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 30;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + sort — should use fast path and apply sort
             const q1 = c.find({
@@ -889,7 +882,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[2].passportId, 'bb');
 
             // No storage.query() calls should have been made
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -902,13 +895,8 @@ describe('rx-query.test.ts', () => {
             ];
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + limit — should use fast path and apply limit
             const q1 = c.find({
@@ -923,7 +911,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result.length, 2);
 
             // No storage.query() calls should have been made
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -939,13 +927,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 30;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + skip + sort — should use fast path and apply skip after sort
             const q1 = c.find({
@@ -964,7 +947,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[1].passportId, 'bb');
 
             // No storage.query() calls should have been made
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -984,13 +967,8 @@ describe('rx-query.test.ts', () => {
             docs[4].age = 40;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // query with $in + sort + skip + limit
             const q1 = c.find({
@@ -1012,8 +990,8 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[1].passportId, 'cc');
             assert.strictEqual(result[1].age, 30);
 
-            // No storage.query() calls should have been made
-            assert.strictEqual(queryCalls, 0);
+            // No storage.query() calls should have been made (fast path used)
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -1031,13 +1009,8 @@ describe('rx-query.test.ts', () => {
             docs[3].age = 20;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // Query using the fast path with operator filtering + sort + skip + limit
             const q1 = c.find({
@@ -1058,7 +1031,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[0].age, 30);
 
             // No storage.query() calls should have been made (fast path used)
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -1074,13 +1047,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 30;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // find with primary key $in + skip + sort + limit - simulates findOne with skip
             // (user might do this and expect it to work like storageInstance.query)
@@ -1102,7 +1070,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[0].age, 30);
 
             // No storage.query() calls should have been made (fast path used)
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });
@@ -1118,13 +1086,8 @@ describe('rx-query.test.ts', () => {
             docs[2].age = 30;
             await c.bulkInsert(docs);
 
-            // overwrite .query() to track calls
-            let queryCalls = 0;
-            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
-            c.storageInstance.query = function (preparedQuery) {
-                queryCalls = queryCalls + 1;
-                return queryBefore(preparedQuery);
-            };
+            // Track query calls
+            const tracker = setupQueryTracking(c.storageInstance);
 
             // find with primary key $in + sort + limit 1 (findOne behavior)
             // Should use fast path and respect sort order when returning first result
@@ -1143,7 +1106,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result[0].age, 25);
 
             // No storage.query() calls should have been made
-            assert.strictEqual(queryCalls, 0);
+            assert.strictEqual(tracker.queryCalls(), 0);
 
             c.database.close();
         });

@@ -811,11 +811,12 @@ export function isFindOneByIdQuery(
 ): false | string | string[] {
     // primary key constraint can coexist with other selectors, skip, limit, and sort
     // The optimization will fetch by ID, then apply queryMatcher, sort, skip, and limit
+    // Use hasOwnProperty to avoid prototype pollution from user-controlled input
     if (
         query.selector &&
-        query.selector[primaryPath]
+        Object.prototype.hasOwnProperty.call(query.selector, primaryPath)
     ) {
-        const value: any = query.selector[primaryPath];
+        const value: any = (query.selector as any)[primaryPath];
         if (typeof value === 'string') {
             return value;
         } else if (
