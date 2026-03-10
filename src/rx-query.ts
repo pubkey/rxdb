@@ -711,11 +711,15 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const primarySelectorValue = rxQuery.mangoQuery.selector?.[collection.schema.primaryPath as string];
+        const primarySelectorValue = (rxQuery.mangoQuery.selector as any)?.[collection.schema.primaryPath as string];
+
+        // Check if there are extra OPERATORS on the primary key selector
         const hasExtraOperators = primarySelectorValue &&
             typeof primarySelectorValue === 'object' &&
             Object.keys(primarySelectorValue).length > 1;
 
+        // Check if there are selectors OTHER than the primary key
+        const hasOtherSelectors = (rxQuery.mangoQuery.selector ? Object.keys(rxQuery.mangoQuery.selector).length : 0) > 1;
         // Normalize single ID to array
         const docIds = Array.isArray(rxQuery.isFindOneByIdQuery)
             ? rxQuery.isFindOneByIdQuery
@@ -740,8 +744,8 @@ export async function queryCollection<RxDocType>(
             docs = docs.concat(docsFromStorage);
         }
 
-        // Apply query matcher for extra operators beyond $eq/$in
-        if (hasExtraOperators) {
+        // Apply query matcher if there are extra operators or other selectors
+        if (hasExtraOperators || hasOtherSelectors) {
             docs = docs.filter(doc => rxQuery.queryMatcher(doc));
         }
 
@@ -781,11 +785,11 @@ export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
 ): false | string | string[] {
-    // primary key must be the only selector field
+    // primary key constraint can coexist with other selectors
+    // The optimization will fetch by ID, then QueryMatcher filters the rest
     if (
         !query.skip &&
         query.selector &&
-        Object.keys(query.selector).length === 1 &&
         query.selector[primaryPath]
     ) {
         const value: any = query.selector[primaryPath];

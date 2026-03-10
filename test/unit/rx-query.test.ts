@@ -713,6 +713,14 @@ describe('rx-query.test.ts', () => {
             docs[2].firstName = 'Bob';
             await c.bulkInsert(docs);
 
+            // overwrite .query() to track calls
+            let queryCalls = 0;
+            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
+            c.storageInstance.query = function (preparedQuery) {
+                queryCalls = queryCalls + 1;
+                return queryBefore(preparedQuery);
+            };
+
             // query with $in + additional operator on the primary key — still uses fast path
             const q1 = c.find({
                 selector: {
@@ -741,6 +749,108 @@ describe('rx-query.test.ts', () => {
             const result2 = await q2.exec();
             // 'aa' should be excluded by the $ne operator via queryMatcher
             assert.strictEqual(result2.length, 0);
+
+            // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
+            assert.strictEqual(queryCalls, 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): other selectors alongside primary key $in/$eq are applied via queryMatcher', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].firstName = 'Alice';
+            docs[0].age = 25;
+            docs[1].firstName = 'Alice';
+            docs[1].age = 30;
+            docs[2].firstName = 'Bob';
+            docs[2].age = 35;
+            await c.bulkInsert(docs);
+
+            // overwrite .query() to track calls
+            let queryCalls = 0;
+            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
+            c.storageInstance.query = function (preparedQuery) {
+                queryCalls = queryCalls + 1;
+                return queryBefore(preparedQuery);
+            };
+
+            // query with primary key $in + other selector — still uses fast path but filters via queryMatcher
+            const q1 = c.find({
+                selector: {
+                    passportId: {
+                        $in: ['aa', 'bb', 'cc']
+                    },
+                    age: {
+                        $gt: 28
+                    }
+                }
+            });
+            assert.deepStrictEqual(q1.isFindOneByIdQuery, ['aa', 'bb', 'cc']);
+            const result = await q1.exec();
+            // only 'bb' (age 30) and 'cc' (age 35) should be returned
+            const ids = result.map(d => d.passportId).sort();
+            assert.deepStrictEqual(ids, ['bb', 'cc']);
+
+            // query with primary key $eq + other selector — still uses fast path but filters via queryMatcher
+            const q2 = c.find({
+                selector: {
+                    passportId: 'aa',
+                    firstName: 'Alice'
+                }
+            });
+            assert.strictEqual(q2.isFindOneByIdQuery, 'aa');
+            const result2 = await q2.exec();
+            // 'aa' should match all conditions
+            assert.strictEqual(result2.length, 1);
+            assert.strictEqual(result2[0].passportId, 'aa');
+
+            // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
+            assert.strictEqual(queryCalls, 0);
+
+            c.database.close();
+        });
+        it('isFindOneByIdQuery(): query without primary key constraint must use storage.query()', async () => {
+            const c = await humansCollection.create(0);
+            const docs = [
+                schemaObjects.humanData('aa'),
+                schemaObjects.humanData('bb'),
+                schemaObjects.humanData('cc'),
+            ];
+            docs[0].firstName = 'Alice';
+            docs[0].age = 25;
+            docs[1].firstName = 'Alice';
+            docs[1].age = 30;
+            docs[2].firstName = 'Bob';
+            docs[2].age = 35;
+            await c.bulkInsert(docs);
+
+            // overwrite .query() to track calls
+            let queryCalls = 0;
+            const queryBefore = c.storageInstance.query.bind(c.storageInstance);
+            c.storageInstance.query = function (preparedQuery) {
+                queryCalls = queryCalls + 1;
+                return queryBefore(preparedQuery);
+            };
+
+            // query without primary key — must use storage.query()
+            const q1 = c.find({
+                selector: {
+                    firstName: 'Alice',
+                    age: { $gt: 28 }
+                }
+            });
+            assert.strictEqual(q1.isFindOneByIdQuery, false);
+            const result = await q1.exec();
+            // should find 'bb' with age 30
+            assert.strictEqual(result.length, 1);
+            assert.strictEqual(result[0].passportId, 'bb');
+
+            // storage.query() MUST have been called at least once
+            assert.strictEqual(queryCalls, 1);
 
             c.database.close();
         });
