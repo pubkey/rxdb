@@ -763,6 +763,13 @@ describe('rx-query.test.ts', () => {
             // No additional storage.query() calls should have been made (still using findDocumentsById fast path)
             assert.strictEqual(tracker.queryCalls(), 0);
 
+            // A query without primary key must flow through to storage.query()
+            const q3 = c.find({ selector: { firstName: 'Alice' } });
+            assert.strictEqual(q3.isFindOneByIdQuery, false);
+            tracker.reset();
+            await q3.exec();
+            assert.ok(tracker.queryCalls() >= 1);
+
             c.database.close();
         });
         it('isFindOneByIdQuery(): other selectors alongside primary key $in/$eq are applied via queryMatcher', async () => {

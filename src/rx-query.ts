@@ -713,13 +713,12 @@ export async function queryCollection<RxDocType>(
     if (rxQuery.isFindOneByIdQuery) {
         const selector = rxQuery.mangoQuery.selector;
         const primaryPath = collection.schema.primaryPath as string;
-        // Use hasOwnProperty to avoid prototype pollution from user-controlled input
-        const hasPrimaryKey = selector && Object.prototype.hasOwnProperty.call(selector, primaryPath);
-        const primarySelectorValue = hasPrimaryKey ? (selector as any)[primaryPath] : undefined;
+        // isFindOneByIdQuery guarantees the primary key is in the selector
+        const primarySelectorValue = selector ? (selector as any)[primaryPath] : undefined;
 
-        // Check if there are extra OPERATORS on the primary key selector
-        const hasExtraOperators = primarySelectorValue &&
-            typeof primarySelectorValue === 'object' &&
+        // Check if there are extra operators on the primary key selector (e.g. $ne alongside $in)
+        const hasExtraOperators = typeof primarySelectorValue === 'object' &&
+            primarySelectorValue !== null &&
             Object.keys(primarySelectorValue).length > 1;
 
         // Check if there are selectors OTHER than the primary key
