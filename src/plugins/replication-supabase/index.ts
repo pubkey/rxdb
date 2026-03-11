@@ -203,6 +203,7 @@ export function replicateSupabase<RxDocType>(
 
                 query = addDocEqualityToQuery(
                     collection.schema.jsonSchema,
+                    primaryPath,
                     deletedField,
                     modifiedField,
                     assumedMasterState,
