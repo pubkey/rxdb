@@ -7,7 +7,9 @@ export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxD
 export function setFlutterRxDatabaseConnector(
     createDB: CreateRxDatabaseFunctionType
 ) {
-    (process as any).databases = {};
+    if (!(process as any).databases) {
+        (process as any).databases = {};
+    }
     (process as any).init = async (databaseName: string) => {
         const db = await createDB(databaseName);
         const eventSub = db.eventBulks$.subscribe(eventBulk => {
