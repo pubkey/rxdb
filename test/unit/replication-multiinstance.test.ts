@@ -5,7 +5,7 @@ import {
     humansCollection,
     // ensureReplicationHasNoErrors,
     randomStringWithSpecialChars,
-    ensureEqualState,
+    awaitCollectionsHaveEqualState,
     getPullHandler,
     getPushHandler,
     isFastMode
@@ -132,7 +132,7 @@ describe('replication-multiinstance.test.ts', () => {
         // ensure initial sync has worked
         await Promise.all(
             localCollections.map(async (localCollection) => {
-                await ensureEqualState(localCollection, remoteCollection);
+                await awaitCollectionsHaveEqualState(localCollection, remoteCollection, 'initial sync');
             })
         );
 
@@ -142,7 +142,7 @@ describe('replication-multiinstance.test.ts', () => {
             await replicationState.awaitInSync();
         }));
         for (const localCollection of localCollections) {
-            await ensureEqualState(localCollection, remoteCollection);
+            await awaitCollectionsHaveEqualState(localCollection, remoteCollection, 'after updates');
         }
 
         // stop first replication and check again
@@ -151,7 +151,7 @@ describe('replication-multiinstance.test.ts', () => {
         await Promise.all(replicationStates.map(replicationState => replicationState.awaitInSync()));
         await Promise.all(
             localCollections.map(async (localCollection) => {
-                await ensureEqualState(localCollection, remoteCollection);
+                await awaitCollectionsHaveEqualState(localCollection, remoteCollection, 'after cancel first replication');
             })
         );
 
