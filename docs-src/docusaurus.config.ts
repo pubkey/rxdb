@@ -80,7 +80,12 @@ Data is modeled as JSON documents inside collections, validated by JSON Schema, 
 All data access is reactive through RxJS Observables so that UI components update automatically when data changes.
 
 Source code: https://github.com/pubkey/rxdb
-Website: https://rxdb.info`,
+Website: https://rxdb.info
+
+Topic-specific documentation files:
+- [Core API](https://rxdb.info/llms-api.txt): RxDatabase, RxSchema, RxCollection, RxDocument, RxQuery
+- [Storages](https://rxdb.info/llms-storages.txt): RxStorage layer, all storage backends and wrappers
+- [Replication](https://rxdb.info/llms-replication.txt): Sync engine, HTTP, GraphQL, WebSocket, CouchDB, Firestore, Supabase, WebRTC P2P`,
                 excludeImports: false,
                 removeDuplicateHeadings: true,
                 generateMarkdownFiles: true,
@@ -200,6 +205,21 @@ Website: https://rxdb.info`,
                         fullContent: true,
                         title: 'RxDB Core API Documentation',
                         description: 'Reference for the core RxDB API: RxDatabase, RxSchema, RxCollection, RxDocument, RxQuery, and related entities.',
+                    },
+                    {
+                        filename: 'llms-storages.txt',
+                        includePatterns: [
+                            'rx-storage.md',
+                            'rx-storage-*.md',
+                            'schema-validation.md',
+                            'encryption.md',
+                            'key-compression.md',
+                            'logger.md',
+                            'electron.md',
+                        ],
+                        fullContent: true,
+                        title: 'RxDB Storage Documentation',
+                        description: 'Complete reference for the RxDB RxStorage layer, all storage backends (LocalStorage, IndexedDB, OPFS, SQLite, Memory, Dexie.js, MongoDB, FoundationDB, DenoKV) and storage wrappers (encryption, compression, sharding, workers).',
                     },
                     {
                         filename: 'llms-replication.txt',
