@@ -282,7 +282,7 @@ describe('rx-collection.test.ts', () => {
                             schema: schemas.nestedHuman
                         }
                     });
-                    for (let i = 0; i < 10; i++) {
+                    for (let i = 0; i < (isFastMode() ? 5 : 10); i++) {
                         await collections.nestedhuman.insert(schemaObjects.nestedHumanData());
                     }
                     db.close();

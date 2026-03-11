@@ -47,6 +47,7 @@ import {
     HumanDocumentType,
     human,
     isBun,
+    isFastMode,
     schemaObjects
 } from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
@@ -151,7 +152,7 @@ testStorages.forEach(storages => {
 
                 const oldCol: RxCollection = oldDb[collectionName];
 
-                const docsAmount = 100;
+                const docsAmount = isFastMode() ? 20 : 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
                     return schemaObjects.humanData(
 
@@ -248,7 +249,7 @@ testStorages.forEach(storages => {
 
                 const oldCol: RxCollection = oldDb[collectionName];
 
-                const docsAmount = 100;
+                const docsAmount = isFastMode() ? 20 : 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
                     return schemaObjects.humanData(
 
@@ -345,7 +346,7 @@ testStorages.forEach(storages => {
 
                 const oldCol = oldDb[collectionName];
 
-                const docsAmount = 100;
+                const docsAmount = isFastMode() ? 20 : 100;
                 const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
                     return schemaObjects.humanData();
                 });
