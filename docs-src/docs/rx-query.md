@@ -378,7 +378,7 @@ const count$ = myCollection.find({
 
 /**
  * To allow non-fully-indexed count queries,
- * you can also specify that by setting allowanceSlowCount: true
+ * you can also specify that by setting allowSlowCount: true
  * when creating the database.
  */
 const database = await createRxDatabase({
