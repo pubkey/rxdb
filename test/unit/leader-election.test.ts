@@ -122,7 +122,7 @@ describe('leader-election.test.js', () => {
             this.timeout(5 * 1000);
             const name = randomToken(10);
             const dbs: any[] = [];
-            while (dbs.length < 6) {
+            while (dbs.length < (isFastMode() ? 3 : 6)) {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
