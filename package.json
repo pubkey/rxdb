@@ -330,6 +330,12 @@
       "import": "./dist/esm/plugins/replication-couchdb/index.js",
       "default": "./dist/esm/plugins/replication-couchdb/index.js"
     },
+    "./plugins/replication-electric-sql": {
+      "types": "./dist/types/plugins/replication-electric-sql/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-electric-sql/index.js",
+      "import": "./dist/esm/plugins/replication-electric-sql/index.js",
+      "default": "./dist/esm/plugins/replication-electric-sql/index.js"
+    },
     "./plugins/replication-nats": {
       "types": "./dist/types/plugins/replication-nats/index.d.ts",
       "require": "./dist/cjs/plugins/replication-nats/index.js",
