@@ -491,6 +491,18 @@ describe('typings.test.ts', function () {
             // @ts-expect-error should not be assignable to number
             const wrong: number = {} as Result;
         });
+        it('should correctly type get$$ with ReactivityLambda', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            const doc: RxDocument<DocType, unknown, SetReactivityLambda> = {} as any;
+
+            // doc.get$$() should return Set<any>
+            const signal: Set<any> = doc.get$$('age');
+
+            // @ts-expect-error get$$ should not be assignable to number
+            const wrong: number = doc.get$$('age');
+        });
     });
 });
 describe('local documents', () => {
