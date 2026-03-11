@@ -168,7 +168,7 @@ If you need to store files (images, text files, etc.), consider encrypting attac
 
 ```ts
 import { createBlob } from 'rxdb/plugins/core';
-const doc = await await db.secureData.findOne({
+const doc = await db.secureData.findOne({
     selector: {
         normalField: 'foobar'
     }
