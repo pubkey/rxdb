@@ -9,12 +9,16 @@ export function setFlutterRxDatabaseConnector(
 ) {
     (process as any).init = async (databaseName: string) => {
         const db = await createDB(databaseName);
-        db.eventBulks$.subscribe(eventBulk => {
+        const eventSub = db.eventBulks$.subscribe(eventBulk => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             sendRxDBEvent(JSON.stringify(eventBulk));
         });
         (process as any).db = db;
+        (process as any).close = async () => {
+            eventSub.unsubscribe();
+            await db.close();
+        };
         const collections: { name: string; primaryKey: string; }[] = [];
         Object.entries(db.collections).forEach(([collectionName, collection]) => {
             collections.push({
