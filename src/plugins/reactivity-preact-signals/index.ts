@@ -6,8 +6,23 @@ import type {
 import type {
     WeakRef,
     FinalizationRegistry,
-    RxReactivityFactory
+    RxReactivityFactory,
+    ReactivityLambda
 } from '../../types/index.d.ts';
+
+/**
+ * Type-level function (ReactivityLambda) for Preact signals.
+ * Use this as the Reactivity type parameter for properly typed signals.
+ *
+ * @example
+ * const db = await createRxDatabase<MyCollections, any, any, PreactSignalReactivityLambda>({
+ *     reactivity: PreactSignalsRxReactivityFactory
+ * });
+ * const signal = doc.age$$; // Signal<number>
+ */
+export interface PreactSignalReactivityLambda extends ReactivityLambda {
+    readonly _result: Signal<this['_data']>;
+}
 
 export type PreactSignal<T = any> = Signal<T>;
 
@@ -39,7 +54,7 @@ function cleanupCallback(sub: Subscription) {
 
 const cleanupRegistry: FinalizationRegistry<Subscription> = new FinalizationRegistry(cleanupCallback) as any;
 
-export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignal> = {
+export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignalReactivityLambda> = {
     fromObservable<Data, InitData>(
         obs: Observable<Data>,
         initialValue: InitData
