@@ -321,7 +321,7 @@ class RxDocument<RxDocType> {
   dynamic data;
   RxDocument(this.collection, this.data);
 
-  String get primary => data[collection.primaryKey] as String;
+  String get primary => data[collection.primaryKey].toString();
 
   bool get deleted => data['_deleted'] == true;
 
@@ -333,6 +333,9 @@ class RxDocument<RxDocType> {
     return data[fieldName];
   }
 
+  /// Sets the value of a field in the local document data.
+  /// This does not persist the change to the database.
+  /// Use [patch] or [incrementalPatch] to persist changes.
   void set(String fieldName, dynamic value) {
     data[fieldName] = value;
   }
