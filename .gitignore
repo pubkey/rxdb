@@ -22,6 +22,7 @@ isolate-*
 release-body.md
 /test-db-*
 dist/
+plugins/
 *-debug.log
 .vscode
 ai-context.txt
