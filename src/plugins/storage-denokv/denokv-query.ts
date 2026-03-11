@@ -62,6 +62,11 @@ export async function queryDenoKV<RxDocType>(
         upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
     }
 
+    if (lowerBoundString > upperBoundString) {
+        return {
+            documents: []
+        };
+    }
 
     let result: RxDocumentData<RxDocType>[] = [];
 
