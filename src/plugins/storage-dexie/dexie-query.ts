@@ -39,7 +39,7 @@ export function getKeyRangeByQueryPlan(
     booleanIndexes: string[],
     queryPlan: RxQueryPlan,
     IDBKeyRange?: any
-) {
+): any | null {
     if (!IDBKeyRange) {
         if (typeof window === 'undefined') {
             throw new Error('IDBKeyRange missing');
@@ -61,12 +61,26 @@ export function getKeyRangeByQueryPlan(
         })
         .map(mapKeyForKeyRange);
 
-    const keyRange = IDBKeyRange.bound(
-        startKeys,
-        endKeys,
-        !queryPlan.inclusiveStart,
-        !queryPlan.inclusiveEnd
-    );
+    /**
+     * IDBKeyRange.bound() throws a DataError when the lower bound is
+     * greater than the upper bound (e.g. produced by an impossible
+     * selector like { $gt: 50, $lt: 50 }). Return null so callers can
+     * short-circuit and return an empty result instead of crashing.
+     */
+    let keyRange: any;
+    try {
+        keyRange = IDBKeyRange.bound(
+            startKeys,
+            endKeys,
+            !queryPlan.inclusiveStart,
+            !queryPlan.inclusiveEnd
+        );
+    } catch (err: any) {
+        if (err.name === 'DataError') {
+            return null;
+        }
+        throw err;
+    }
     return keyRange;
 }
 
@@ -98,6 +112,14 @@ export async function dexieQuery<RxDocType>(
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );
+
+    /**
+     * An impossible range (e.g. $gt: 50, $lt: 50) returns null from
+     * getKeyRangeByQueryPlan. No document can match, so return early.
+     */
+    if (keyRange === null) {
+        return { documents: [] };
+    }
 
     const queryPlanFields: string[] = queryPlan.index;
 
@@ -208,6 +230,14 @@ export async function dexieCount<RxDocType>(
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );
+
+    /**
+     * An impossible range returns null — no document can match.
+     */
+    if (keyRange === null) {
+        return 0;
+    }
+
     let count: number = -1;
     await state.dexieDb.transaction(
         'r',
