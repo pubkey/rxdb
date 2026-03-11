@@ -51,18 +51,40 @@ export function getPseudoSchemaForVersion<T = any>(
 }
 
 /**
- * Returns the sub-schema for a given path
+ * Cache for getSchemaByObjectPath results.
+ * Uses a WeakMap keyed by the schema object reference
+ * so the cache is automatically cleaned up when schemas are garbage collected.
+ */
+const SCHEMA_PATH_CACHE = new WeakMap<object, Map<string, JsonSchema>>();
+
+/**
+ * Returns the sub-schema for a given path.
+ * Results are cached per schema reference and path
+ * to avoid redundant string operations and property lookups.
  */
 export function getSchemaByObjectPath<T = any>(
     rxJsonSchema: RxJsonSchema<T>,
     path: keyof T | string
 ): JsonSchema {
-    let usePath: string = path as string;
+    let pathCache = SCHEMA_PATH_CACHE.get(rxJsonSchema as any);
+    const pathStr = path as string;
+    if (pathCache) {
+        const cached = pathCache.get(pathStr);
+        if (cached) {
+            return cached;
+        }
+    } else {
+        pathCache = new Map();
+        SCHEMA_PATH_CACHE.set(rxJsonSchema as any, pathCache);
+    }
+
+    let usePath: string = pathStr;
     usePath = usePath.replace(REGEX_ALL_DOTS, '.properties.');
     usePath = 'properties.' + usePath;
     usePath = trimDots(usePath);
 
     const ret = getProperty(rxJsonSchema, usePath);
+    pathCache.set(pathStr, ret);
     return ret;
 }
 

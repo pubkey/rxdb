@@ -15,6 +15,7 @@ import {
     sortObject,
     pluginMissing,
     overwriteGetterForCaching,
+    clone,
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
@@ -38,6 +39,7 @@ import type {
     MangoQuerySortPart,
     MangoQuerySelector,
     PreparedQuery,
+    FilledMangoQuery,
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher,
@@ -336,21 +338,35 @@ export class RxQueryBase<
 
 
     /**
+     * Returns the normalized query.
+     * Caches the result so that multiple calls to
+     * queryMatcher, toString() and getPreparedQuery()
+     * do not have to run the normalization again.
+     * @overwrites itself with the actual value.
+     */
+    get normalizedQuery(): FilledMangoQuery<RxDocType> {
+        return overwriteGetterForCaching(
+            this,
+            'normalizedQuery',
+            normalizeMangoQuery<RxDocType>(
+                this.collection.schema.jsonSchema,
+                this.mangoQuery
+            )
+        );
+    }
+
+    /**
      * cached call to get the queryMatcher
      * @overwrites itself with the actual value
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const schema = this.collection.schema.jsonSchema;
-        const normalizedQuery = normalizeMangoQuery(
-            this.collection.schema.jsonSchema,
-            this.mangoQuery
-        );
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
             getQueryMatcher(
                 schema,
-                normalizedQuery
+                this.normalizedQuery
             ) as any
         );
     }
@@ -362,10 +378,7 @@ export class RxQueryBase<
     toString(): string {
         const stringObj = sortObject({
             op: this.op,
-            query: normalizeMangoQuery<RxDocType>(
-                this.collection.schema.jsonSchema,
-                this.mangoQuery
-            ),
+            query: this.normalizedQuery,
             other: this.other
         }, true);
         const value = JSON.stringify(stringObj);
@@ -382,10 +395,7 @@ export class RxQueryBase<
         const hookInput = {
             rxQuery: this,
             // can be mutated by the hooks so we have to deep clone first.
-            mangoQuery: normalizeMangoQuery<RxDocType>(
-                this.collection.schema.jsonSchema,
-                this.mangoQuery
-            )
+            mangoQuery: clone(this.normalizedQuery) as FilledMangoQuery<RxDocType>
         };
         (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
         if (hookInput.mangoQuery.index) {
