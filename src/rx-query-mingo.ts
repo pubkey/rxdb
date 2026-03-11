@@ -33,6 +33,7 @@ import {
 import {
 } from 'mingo/operators/query/evaluation';
 import {
+    $all
 } from 'mingo/operators/query/array';
 import {
 } from 'mingo/operators/query/element';
@@ -58,6 +59,7 @@ export function getMingoQuery<RxDocType>(
                 $project
             },
             query: {
+                $all,
                 $elemMatch,
                 $eq,
                 $nor,

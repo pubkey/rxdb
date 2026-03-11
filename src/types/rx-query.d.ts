@@ -53,10 +53,11 @@ export interface MangoQueryOperators<PathValueType> {
     $options?: MangoQueryRegexOptions;
     $exists?: boolean;
     $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
-    $mod?: number;
+    $mod?: [number, number];
     $not?: PathValueType;
     $size?: number;
     $elemMatch?: MangoQuerySelector<PathValueType>;
+    $all?: PathValueType;
 }
 
 export type MangoQuerySelector<DocType> = Partial<{

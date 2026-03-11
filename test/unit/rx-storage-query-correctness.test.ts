@@ -1841,4 +1841,683 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             },
         ],
     });
+    /**
+     * Queries that use descending sort should return
+     * results in the correct reversed order.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+    }>({
+        testTitle: 'descending sort',
+        data: [
+            { id: 'aa', age: 10, name: 'alice' },
+            { id: 'bb', age: 20, name: 'bob' },
+            { id: 'cc', age: 30, name: 'carol' },
+            { id: 'dd', age: 40, name: 'dave' },
+            { id: 'ee', age: 50, name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'age', 'name'],
+            indexes: ['age']
+        },
+        queries: [
+            {
+                info: 'sort descending by age',
+                query: {
+                    selector: {},
+                    sort: [{ age: 'desc' }]
+                },
+                expectedResultDocIds: ['ee', 'dd', 'cc', 'bb', 'aa']
+            },
+            {
+                info: 'sort descending by age with limit',
+                query: {
+                    selector: {},
+                    sort: [{ age: 'desc' }],
+                    limit: 3
+                },
+                expectedResultDocIds: ['ee', 'dd', 'cc']
+            },
+            {
+                info: 'sort descending by age with skip and limit',
+                query: {
+                    selector: {},
+                    sort: [{ age: 'desc' }],
+                    skip: 1,
+                    limit: 3
+                },
+                expectedResultDocIds: ['dd', 'cc', 'bb']
+            },
+            {
+                info: 'sort descending with selector',
+                query: {
+                    selector: { age: { $gt: 15 } },
+                    sort: [{ age: 'desc' }]
+                },
+                expectedResultDocIds: ['ee', 'dd', 'cc', 'bb']
+            }
+        ]
+    });
+    /**
+     * Queries using the $regex operator.
+     */
+    testCorrectQueries<{
+        id: string;
+        name: string;
+        age: number;
+    }>({
+        testTitle: '$regex operator',
+        data: [
+            { id: 'aa', name: 'alice', age: 10 },
+            { id: 'bb', name: 'bob', age: 20 },
+            { id: 'cc', name: 'alice-smith', age: 30 },
+            { id: 'dd', name: 'alice-jones', age: 40 },
+            { id: 'ee', name: 'carol', age: 50 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                name: { type: 'string', maxLength: 50 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'name', 'age'],
+            indexes: ['name', 'age']
+        },
+        queries: [
+            {
+                info: '$regex matching names starting with alice',
+                query: {
+                    selector: { name: { $regex: '^alice' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'dd']
+            },
+            {
+                info: '$regex matching names ending with smith',
+                query: {
+                    selector: { name: { $regex: 'smith$' } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['cc']
+            },
+            {
+                info: '$regex with sort on indexed field',
+                query: {
+                    selector: { name: { $regex: '^alice' } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'dd']
+            },
+            {
+                info: '$regex with limit',
+                query: {
+                    selector: { name: { $regex: '^alice' } },
+                    sort: [{ age: 'asc' }],
+                    limit: 2
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            }
+        ]
+    });
+    /**
+     * Queries using the $mod operator.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+    }>({
+        testTitle: '$mod operator',
+        data: [
+            { id: 'aa', age: 10 },
+            { id: 'bb', age: 15 },
+            { id: 'cc', age: 20 },
+            { id: 'dd', age: 25 },
+            { id: 'ee', age: 30 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'age'],
+            indexes: ['age']
+        },
+        queries: [
+            {
+                info: '$mod returns ages divisible by 10',
+                query: {
+                    selector: { age: { $mod: [10, 0] } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'ee']
+            },
+            {
+                info: '$mod returns ages divisible by 5 but not 10',
+                query: {
+                    selector: { age: { $mod: [10, 5] } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd']
+            }
+        ]
+    });
+    /**
+     * Queries using the $exists operator.
+     */
+    testCorrectQueries<{
+        id: string;
+        name: string;
+        optional?: string;
+    }>({
+        testTitle: '$exists operator',
+        data: [
+            { id: 'aa', name: 'alice', optional: 'present' },
+            { id: 'bb', name: 'bob' },
+            { id: 'cc', name: 'carol', optional: 'here' },
+            { id: 'dd', name: 'dave' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                name: { type: 'string', maxLength: 50 },
+                optional: { type: 'string', maxLength: 50 }
+            },
+            required: ['id', 'name'],
+            indexes: ['name']
+        },
+        queries: [
+            {
+                info: '$exists true returns docs with the field',
+                query: {
+                    selector: { optional: { $exists: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: '$exists false returns docs without the field',
+                query: {
+                    selector: { optional: { $exists: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd']
+            }
+        ]
+    });
+    /**
+     * Queries using the $not operator.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+    }>({
+        testTitle: '$not operator',
+        data: [
+            { id: 'aa', age: 10, name: 'alice' },
+            { id: 'bb', age: 20, name: 'bob' },
+            { id: 'cc', age: 30, name: 'carol' },
+            { id: 'dd', age: 40, name: 'dave' },
+            { id: 'ee', age: 50, name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'age', 'name'],
+            indexes: ['age']
+        },
+        queries: [
+            {
+                info: '$not $gte',
+                query: {
+                    selector: { age: { $not: { $gte: 30 } } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$not $eq',
+                query: {
+                    selector: { name: { $not: { $eq: 'alice' } } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$not $in',
+                query: {
+                    selector: { name: { $not: { $in: ['alice', 'carol', 'eve'] } } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd']
+            }
+        ]
+    });
+    /**
+     * Queries using the $nor operator.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+    }>({
+        testTitle: '$nor operator',
+        data: [
+            { id: 'aa', age: 10, name: 'alice' },
+            { id: 'bb', age: 20, name: 'bob' },
+            { id: 'cc', age: 30, name: 'carol' },
+            { id: 'dd', age: 40, name: 'dave' },
+            { id: 'ee', age: 50, name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'age', 'name'],
+            indexes: ['age']
+        },
+        queries: [
+            {
+                info: '$nor excludes docs matching any condition',
+                query: {
+                    selector: {
+                        $nor: [
+                            { age: { $gt: 30 } },
+                            { name: { $eq: 'alice' } }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc']
+            },
+            {
+                info: '$nor with single condition',
+                query: {
+                    selector: {
+                        $nor: [{ age: { $lte: 20 } }]
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['cc', 'dd', 'ee']
+            }
+        ]
+    });
+    /**
+     * Queries using $all on array fields.
+     */
+    testCorrectQueries<{
+        id: string;
+        tags: string[];
+    }>({
+        testTitle: '$all operator on array fields',
+        data: [
+            { id: 'aa', tags: ['admin', 'user', 'editor'] },
+            { id: 'bb', tags: ['user', 'editor'] },
+            { id: 'cc', tags: ['admin', 'user'] },
+            { id: 'dd', tags: ['admin'] },
+            { id: 'ee', tags: [] }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                tags: {
+                    type: 'array',
+                    items: { type: 'string', maxLength: 20 }
+                }
+            },
+            required: ['id', 'tags']
+        },
+        queries: [
+            {
+                info: '$all matches docs that contain all specified elements',
+                query: {
+                    selector: { tags: { $all: ['admin', 'user'] } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: '$all with single element',
+                query: {
+                    selector: { tags: { $all: ['admin'] } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'dd']
+            },
+            {
+                info: '$all with all three elements',
+                query: {
+                    selector: { tags: { $all: ['admin', 'user', 'editor'] } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa']
+            }
+        ]
+    });
+    /**
+     * Queries using a compound $or across different fields.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+        active: boolean;
+    }>({
+        testTitle: 'complex $or across different fields',
+        data: [
+            { id: 'aa', age: 10, name: 'alice', active: true },
+            { id: 'bb', age: 20, name: 'bob', active: false },
+            { id: 'cc', age: 30, name: 'carol', active: true },
+            { id: 'dd', age: 40, name: 'dave', active: false },
+            { id: 'ee', age: 50, name: 'eve', active: true }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 },
+                active: { type: 'boolean' }
+            },
+            required: ['id', 'age', 'name', 'active'],
+            indexes: ['age', 'name']
+        },
+        queries: [
+            {
+                info: '$or on different fields',
+                query: {
+                    selector: {
+                        $or: [
+                            { age: { $gt: 40 } },
+                            { name: { $eq: 'alice' } }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'ee']
+            },
+            {
+                info: '$or with boolean field condition',
+                query: {
+                    selector: {
+                        $or: [
+                            { age: { $gt: 35 } },
+                            { active: { $eq: false } }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd', 'ee']
+            },
+            {
+                info: '$or with three branches',
+                query: {
+                    selector: {
+                        $or: [
+                            { age: { $lt: 15 } },
+                            { name: { $eq: 'carol' } },
+                            { age: { $gte: 50 } }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'ee']
+            }
+        ]
+    });
+    /**
+     * Tests for gt/gte/lt/lte operators specifically at boundary values
+     * in compound indexes, to ensure the index key range is computed
+     * correctly and does not include documents at the boundary when
+     * strict operators ($gt, $lt) are used.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+    }>({
+        testTitle: 'boundary values in compound indexes',
+        data: [
+            { id: 'aa', age: 10 },
+            { id: 'bb', age: 20 },
+            { id: 'cc', age: 30 },
+            { id: 'dd', age: 40 },
+            { id: 'ee', age: 50 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'age'],
+            indexes: ['age']
+        },
+        queries: [
+            {
+                info: '$gt must exclude the boundary value',
+                query: {
+                    selector: { age: { $gt: 20 } },
+                    sort: [{ age: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt must exclude the boundary value',
+                query: {
+                    selector: { age: { $lt: 30 } },
+                    sort: [{ age: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: '$gte must include the boundary value',
+                query: {
+                    selector: { age: { $gte: 20 } },
+                    sort: [{ age: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lte must include the boundary value',
+                query: {
+                    selector: { age: { $lte: 30 } },
+                    sort: [{ age: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc']
+            },
+            {
+                info: '$gt + $lt range excludes both boundaries',
+                query: {
+                    selector: { age: { $gt: 10, $lt: 40 } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc']
+            },
+            {
+                info: '$gte + $lte range includes both boundaries',
+                query: {
+                    selector: { age: { $gte: 20, $lte: 40 } },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            },
+            {
+                info: '$gt with limit must not include boundary',
+                query: {
+                    selector: { age: { $gt: 20 } },
+                    sort: [{ age: 'asc' }],
+                    limit: 2
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd']
+            },
+            {
+                info: '$lt with limit must not include boundary',
+                query: {
+                    selector: { age: { $lt: 30 } },
+                    sort: [{ age: 'asc' }],
+                    limit: 1
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa']
+            }
+        ]
+    });
+    /**
+     * Tests that verify sorting correctness when sorting by a field
+     * that has equal values, requiring correct tiebreaking by the
+     * secondary sort field.
+     */
+    testCorrectQueries<{
+        id: string;
+        category: string;
+        score: number;
+    }>({
+        testTitle: 'sort stability with equal primary sort values',
+        data: [
+            { id: 'cc', category: 'A', score: 10 },
+            { id: 'aa', category: 'B', score: 10 },
+            { id: 'dd', category: 'A', score: 20 },
+            { id: 'bb', category: 'B', score: 20 },
+            { id: 'ee', category: 'A', score: 30 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                category: { type: 'string', maxLength: 10 },
+                score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'category', 'score'],
+            indexes: [['category', 'score'], 'score']
+        },
+        queries: [
+            {
+                info: 'sort by category then score',
+                query: {
+                    selector: {},
+                    sort: [{ category: 'asc' }, { score: 'asc' }]
+                },
+                expectedResultDocIds: ['cc', 'dd', 'ee', 'aa', 'bb']
+            },
+            {
+                info: 'sort by score then id (tiebreaker)',
+                query: {
+                    selector: {},
+                    sort: [{ score: 'asc' }, { id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc', 'bb', 'dd', 'ee']
+            },
+            {
+                info: 'sort by category then score with limit',
+                query: {
+                    selector: {},
+                    sort: [{ category: 'asc' }, { score: 'asc' }],
+                    limit: 3
+                },
+                expectedResultDocIds: ['cc', 'dd', 'ee']
+            }
+        ]
+    });
+    /**
+     * Tests for the $and operator at the top level
+     * combined with various conditions.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+    }>({
+        testTitle: '$and operator',
+        data: [
+            { id: 'aa', age: 10, name: 'alice' },
+            { id: 'bb', age: 20, name: 'bob' },
+            { id: 'cc', age: 30, name: 'carol' },
+            { id: 'dd', age: 40, name: 'dave' },
+            { id: 'ee', age: 50, name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'age', 'name'],
+            indexes: ['age', 'name']
+        },
+        queries: [
+            {
+                info: '$and with age and name conditions',
+                query: {
+                    selector: {
+                        $and: [
+                            { age: { $gt: 15 } },
+                            { age: { $lt: 45 } }
+                        ]
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            },
+            {
+                info: '$and on different fields',
+                query: {
+                    selector: {
+                        $and: [
+                            { age: { $gte: 20 } },
+                            { name: { $lte: 'carol' } }
+                        ]
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc']
+            }
+        ]
+    });
 });
