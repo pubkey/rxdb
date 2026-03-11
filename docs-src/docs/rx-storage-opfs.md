@@ -116,9 +116,9 @@ const database = await createRxDatabase({
 
 ## Using OPFS in the main thread instead of a worker
 
-The `createSyncAccessHandle` method from the Filesystem API is only available inside of a Webworker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. But there is a slightly slower way to access the virtual filesystem from the main thread. RxDB support the `getRxStorageOPFSMainThread()` for that. 
+The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood. Because it cannot use the synchronous access handle, this main-thread variant is slightly slower for heavy write workloads than the worker-based storage.
 
-Using OPFS from the main thread can have benefits because not having to cross the worker bridge can reduce latence in reads and writes.
+Using OPFS from the main thread can still have benefits, because avoiding the worker bridge can reduce latency for some read and write patterns and may simplify your application architecture.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
