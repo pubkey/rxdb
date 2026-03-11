@@ -263,7 +263,7 @@ const config: Config = {
         image: 'img/rxdb_social_card.png',
         metadata: [
             { name: 'keywords', content: 'RxDB, JavaScript database, local-first, offline-first, reactive database, NoSQL, real-time sync, browser database, IndexedDB, TypeScript' },
-            { name: 'og:type', content: 'website' },
+            { property: 'og:type', content: 'website' },
             { name: 'twitter:site', content: '@rxdbjs' },
         ],
         colorMode: {
