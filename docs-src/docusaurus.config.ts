@@ -256,11 +256,6 @@ const config: Config = {
                     dropdown: 'storages'
                 },
                 {
-                    href: '/premium/',
-                    label: 'Premium',
-                    position: 'left',
-                },
-                {
                     href: '/consulting/',
                     label: 'Support',
                     position: 'left',
