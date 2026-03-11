@@ -2520,4 +2520,406 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
             }
         ]
     });
+    /**
+     * Tests comparison operators ($gt, $gte, $lt, $lte, $eq, $ne)
+     * against string-typed fields, including exact boundary values.
+     */
+    testCorrectQueries<{
+        id: string;
+        name: string;
+    }>({
+        testTitle: 'comparison operators on string type at exact boundary',
+        data: [
+            { id: 'aa', name: 'alice' },
+            { id: 'bb', name: 'bob' },
+            { id: 'cc', name: 'carol' },
+            { id: 'dd', name: 'dave' },
+            { id: 'ee', name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'name'],
+            indexes: ['name']
+        },
+        queries: [
+            {
+                info: 'string $gt at exact boundary excludes the boundary value',
+                query: {
+                    selector: { name: { $gt: 'bob' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc', 'dd', 'ee']
+            },
+            {
+                info: 'string $gte at exact boundary includes the boundary value',
+                query: {
+                    selector: { name: { $gte: 'bob' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: 'string $lt at exact boundary excludes the boundary value',
+                query: {
+                    selector: { name: { $lt: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: 'string $lte at exact boundary includes the boundary value',
+                query: {
+                    selector: { name: { $lte: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc']
+            },
+            {
+                info: 'string $eq matches exact value only',
+                query: {
+                    selector: { name: { $eq: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['cc']
+            },
+            {
+                info: 'string $ne excludes exact value',
+                query: {
+                    selector: { name: { $ne: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'bb', 'dd', 'ee']
+            },
+            {
+                info: 'string $gt + $lt range excludes both boundary values',
+                query: {
+                    selector: { name: { $gt: 'alice', $lt: 'eve' } },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            },
+            {
+                info: 'string $gte + $lte range includes both boundary values',
+                query: {
+                    selector: { name: { $gte: 'bob', $lte: 'dave' } },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'cc', 'dd']
+            }
+        ]
+    });
+    /**
+     * Tests comparison operators on boolean-typed fields.
+     * IndexedDB stores booleans as '0'/'1' strings, so edge
+     * cases around boolean comparisons are important to verify.
+     */
+    testCorrectQueries<{
+        id: string;
+        active: boolean;
+        name: string;
+    }>({
+        testTitle: 'comparison operators on boolean type',
+        data: [
+            { id: 'aa', active: false, name: 'alice' },
+            { id: 'bb', active: true, name: 'bob' },
+            { id: 'cc', active: false, name: 'carol' },
+            { id: 'dd', active: true, name: 'dave' },
+            { id: 'ee', active: true, name: 'eve' }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                active: { type: 'boolean' },
+                name: { type: 'string', maxLength: 20 }
+            },
+            required: ['id', 'active', 'name'],
+            indexes: ['active', ['active', 'name']]
+        },
+        queries: [
+            {
+                info: 'boolean $eq true returns only true docs',
+                query: {
+                    selector: { active: { $eq: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd', 'ee']
+            },
+            {
+                info: 'boolean $eq false returns only false docs',
+                query: {
+                    selector: { active: { $eq: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: 'boolean $ne true returns false docs',
+                query: {
+                    selector: { active: { $ne: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: 'boolean $ne false returns true docs',
+                query: {
+                    selector: { active: { $ne: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd', 'ee']
+            },
+            {
+                info: 'boolean with combined selector on active and name',
+                query: {
+                    selector: {
+                        active: { $eq: true },
+                        name: { $gt: 'bob' }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['dd', 'ee']
+            }
+        ]
+    });
+    /**
+     * Edge cases for number comparison operators specifically
+     * at exact boundary values — verifying that `$gt` with the
+     * exact value of a stored document never returns that document,
+     * and `$gte` always does. Tests minimum and maximum stored values.
+     */
+    testCorrectQueries<{
+        id: string;
+        score: number;
+    }>({
+        testTitle: 'number comparison at exact boundary values including min/max',
+        data: [
+            { id: 'aa', score: 0 },
+            { id: 'bb', score: 1 },
+            { id: 'cc', score: 50 },
+            { id: 'dd', score: 99 },
+            { id: 'ee', score: 100 }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+            },
+            required: ['id', 'score'],
+            indexes: ['score']
+        },
+        queries: [
+            {
+                info: '$gt at the minimum stored value excludes it',
+                query: {
+                    selector: { score: { $gt: 0 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$gte at the minimum stored value includes it',
+                query: {
+                    selector: { score: { $gte: 0 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$lt at the maximum stored value excludes it',
+                query: {
+                    selector: { score: { $lt: 100 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
+            },
+            {
+                info: '$lte at the maximum stored value includes it',
+                query: {
+                    selector: { score: { $lte: 100 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+            },
+            {
+                info: '$gt at an intermediate value excludes it',
+                query: {
+                    selector: { score: { $gt: 50 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['dd', 'ee']
+            },
+            {
+                info: '$lt at an intermediate value excludes it',
+                query: {
+                    selector: { score: { $lt: 50 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['aa', 'bb']
+            },
+            {
+                info: 'single document range with $gte + $lte at same value',
+                query: {
+                    selector: { score: { $gte: 50, $lte: 50 } },
+                    sort: [{ score: 'asc' }]
+                },
+                expectedResultDocIds: ['cc']
+            },
+            {
+                info: 'empty range with $gt + $lt at same value',
+                query: {
+                    selector: { score: { $gt: 50, $lt: 50 } },
+                    sort: [{ score: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: '$gt at the maximum stored value returns empty',
+                query: {
+                    selector: { score: { $gt: 100 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
+            },
+            {
+                info: '$lt at the minimum stored value returns empty',
+                query: {
+                    selector: { score: { $lt: 0 } },
+                    sort: [{ score: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
+            }
+        ]
+    });
+    /**
+     * Tests comparison operators on mixed-type field values,
+     * combining number and string comparisons in the same query
+     * to ensure the query planner handles them independently.
+     */
+    testCorrectQueries<{
+        id: string;
+        age: number;
+        name: string;
+        active: boolean;
+    }>({
+        testTitle: 'mixed type comparisons: number + string + boolean',
+        data: [
+            { id: 'aa', age: 10, name: 'alice', active: true },
+            { id: 'bb', age: 20, name: 'bob', active: false },
+            { id: 'cc', age: 20, name: 'carol', active: true },
+            { id: 'dd', age: 30, name: 'dave', active: false },
+            { id: 'ee', age: 30, name: 'eve', active: true }
+        ],
+        schema: {
+            primaryKey: 'id',
+            type: 'object',
+            version: 0,
+            properties: {
+                id: { type: 'string', maxLength: 20 },
+                age: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 },
+                name: { type: 'string', maxLength: 20 },
+                active: { type: 'boolean' }
+            },
+            required: ['id', 'age', 'name', 'active'],
+            indexes: ['age', 'name', 'active']
+        },
+        queries: [
+            {
+                info: 'number $gte boundary + string $gt boundary',
+                query: {
+                    selector: {
+                        age: { $gte: 20 },
+                        name: { $gt: 'bob' }
+                    },
+                    sort: [{ age: 'asc' }, { id: 'asc' }]
+                },
+                expectedResultDocIds: ['cc', 'dd', 'ee']
+            },
+            {
+                info: 'number $eq + boolean $eq true',
+                query: {
+                    selector: {
+                        age: { $eq: 20 },
+                        active: { $eq: true }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['cc']
+            },
+            {
+                info: 'number $eq + boolean $eq false',
+                query: {
+                    selector: {
+                        age: { $eq: 20 },
+                        active: { $eq: false }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb']
+            },
+            {
+                info: 'number $gt boundary + boolean $eq true',
+                query: {
+                    selector: {
+                        age: { $gt: 20 },
+                        active: { $eq: true }
+                    },
+                    sort: [{ age: 'asc' }, { id: 'asc' }]
+                },
+                expectedResultDocIds: ['ee']
+            },
+            {
+                info: 'string $lte boundary + boolean $eq false',
+                query: {
+                    selector: {
+                        name: { $lte: 'carol' },
+                        active: { $eq: false }
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['bb']
+            },
+            {
+                info: 'number $eq at boundary shared by multiple docs',
+                query: {
+                    selector: { age: { $eq: 20 } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['bb', 'cc']
+            },
+            {
+                info: 'number $ne at boundary shared by multiple docs',
+                query: {
+                    selector: { age: { $ne: 20 } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'dd', 'ee']
+            }
+        ]
+    });
 });
