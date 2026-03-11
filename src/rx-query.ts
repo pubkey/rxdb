@@ -42,7 +42,8 @@ import type {
     RxDocumentData,
     QueryMatcher,
     ModifyFunction,
-    RxStorageChangeEvent
+    RxStorageChangeEvent,
+    Reactified
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
@@ -161,7 +162,7 @@ export class RxQueryBase<
         return this._$ as any;
     }
 
-    get $$(): Reactivity {
+    get $$(): Reactified<Reactivity, RxQueryResult> {
         const reactivity = this.collection.database.getReactivityFactory();
         return reactivity.fromObservable(
             this.$,
