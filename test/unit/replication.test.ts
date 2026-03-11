@@ -127,7 +127,7 @@ describe('replication.test.ts', () => {
     });
     describeParallel('non-live replication', () => {
         it('should replicate both sides', async () => {
-            const docsPerSide = 15;
+            const docsPerSide = isFastMode() ? 5 : 15;
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: docsPerSide,
                 remote: docsPerSide
@@ -1973,7 +1973,7 @@ describe('replication.test.ts', () => {
         it('upstreamInitialSync() running on all data instead of continuing from checkpoint', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: 0,
-                remote: 30
+                remote: isFastMode() ? 10 : 30
             });
 
             let replicationState = replicateRxCollection({

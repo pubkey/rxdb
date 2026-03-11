@@ -313,7 +313,7 @@ describe('migration-schema.test.ts', function () {
                 await col.database.close();
             });
             it('should resolve finished when some docs are in the collection', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
+                const col = await humansCollection.createMigrationCollection(isFastMode() ? 3 : 10, {
                     3: (doc: any) => {
                         doc.age = parseInt(doc.age, 10);
                         return doc;
@@ -323,11 +323,11 @@ describe('migration-schema.test.ts', function () {
 
                 // check if in new collection
                 const docs = await col.find().exec();
-                assert.strictEqual(docs.length, 10);
+                assert.strictEqual(docs.length, isFastMode() ? 3 : 10);
                 await col.database.close();
             });
             it('should emit status updates', async () => {
-                const docsAmount = 10;
+                const docsAmount = isFastMode() ? 3 : 10;
 
                 const col = await humansCollection.createMigrationCollection(
                     docsAmount,
@@ -356,7 +356,7 @@ describe('migration-schema.test.ts', function () {
             });
 
             it('should remove the document when migration-strategy returns null', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
+                const col = await humansCollection.createMigrationCollection(isFastMode() ? 3 : 10, {
                     3: () => {
                         return null;
                     }
@@ -369,7 +369,7 @@ describe('migration-schema.test.ts', function () {
                 col.database.close();
             });
             it('should throw when document cannot be migrated', async () => {
-                const col = await humansCollection.createMigrationCollection(10, {
+                const col = await humansCollection.createMigrationCollection(isFastMode() ? 3 : 10, {
                     3: () => {
                         throw new Error('foobarInStrategy');
                     }

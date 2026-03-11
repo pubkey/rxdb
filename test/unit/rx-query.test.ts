@@ -492,7 +492,7 @@ describe('rx-query.test.ts', () => {
         it('querying after insert should always return the correct amount', async () => {
             const col = await humansCollection.create(0);
 
-            const amount = 50;
+            const amount = isFastMode() ? 10 : 50;
             const query = col.find({
                 selector: {
                     age: {
@@ -1378,7 +1378,10 @@ describe('rx-query.test.ts', () => {
                     pendingQueryResolve = null;
                     resolveStalledQuery(undefined);
 
-                    await promiseWait(500);
+                    await waitUntil(() => {
+                        const last = emissions[emissions.length - 1];
+                        return last && last.length === 1;
+                    }, 10000, 10);
                     const lastEmission = emissions[emissions.length - 1];
                     assert.strictEqual(
                         lastEmission.length,

@@ -7,7 +7,8 @@ import {
     randomStringWithSpecialChars,
     ensureEqualState,
     getPullHandler,
-    getPushHandler
+    getPushHandler,
+    isFastMode
 } from '../../plugins/test-utils/index.mjs';
 import config from './config.ts';
 
@@ -85,8 +86,8 @@ describe('replication-multiinstance.test.ts', () => {
         if (config.storage.name === 'sqlite-trial') {
             return;
         }
-        const docsPerSide = 5;
-        const localCollectionsAmount = 5;
+        const docsPerSide = isFastMode() ? 2 : 5;
+        const localCollectionsAmount = isFastMode() ? 2 : 5;
         const { localCollections, remoteCollection } = await getTestCollections(localCollectionsAmount, {
             local: docsPerSide,
             remote: docsPerSide

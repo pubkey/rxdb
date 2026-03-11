@@ -450,7 +450,12 @@ addRxPlugin(RxDBJsonDumpPlugin);
                     }
                 }
                 await Promise.all(promises);
-                await wait(isFastMode() ? 100 : 300);
+                await waitUntil(() => {
+                    return state1.get('a') === amount &&
+                        state2.get('a') === amount &&
+                        state1.get('b') === amount &&
+                        state2.get('b') === amount;
+                }, 10000, 10);
 
                 assert.strictEqual(state1.get('a'), amount);
                 assert.strictEqual(state2.get('a'), amount);

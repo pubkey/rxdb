@@ -5,7 +5,8 @@ import config, { describeParallel } from './config.ts';
 import {
     schemas,
     humansCollection,
-    isNode
+    isNode,
+    isFastMode
 } from '../../plugins/test-utils/index.mjs';
 
 import {
@@ -66,7 +67,7 @@ describe('leader-election.test.js', () => {
 
             // run often
             let tries = 0;
-            while (tries < 3) {
+            while (tries < (isFastMode() ? 1 : 3)) {
                 tries++;
                 const name = randomToken(10);
                 const c1 = await humansCollection.createMultiInstance(name);
@@ -95,7 +96,7 @@ describe('leader-election.test.js', () => {
         it('when many instances apply, one should win', async () => {
             const name = randomToken(10);
             const dbs: any[] = [];
-            while (dbs.length < 10) {
+            while (dbs.length < (isFastMode() ? 4 : 10)) {
                 const c = await humansCollection.createMultiInstance(name);
                 dbs.push(c.database);
             }
