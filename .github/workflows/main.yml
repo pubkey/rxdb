@@ -190,7 +190,7 @@ jobs:
         with:
           run: npm run test:browser:memory
 
-      - run: timeout 1h bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
+      - run: timeout 30m bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
 
       - name: node example
         working-directory: ./examples/node
@@ -341,7 +341,7 @@ jobs:
       - run: node ./config/mongodb-connection-tester.js
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
-      - run: timeout 1h bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
+      - run: timeout 30m bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
 
   example-angular:
     runs-on: ubuntu-22.04
@@ -693,7 +693,7 @@ jobs:
         with:
           working-directory: ./examples/vue
           # retry because of random CI failures on slow servers
-          run: timeout 1h bash -lc "until npm run test; do sleep 5; done"
+          run: timeout 30m bash -lc "until npm run test; do sleep 5; done"
 
   example-svelte:
     runs-on: ubuntu-22.04
@@ -868,7 +868,7 @@ jobs:
   # TODO this fails randomly because it will not always know about the project after running the import
   # appwrite:
   #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  #   timeout-minutes: 30
   #   steps:
   #     - uses: actions/checkout@v4
   #     - name: Set node version
@@ -934,7 +934,7 @@ jobs:
 
   test-others:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - name: Set node version
@@ -966,7 +966,7 @@ jobs:
 
       # supabase
       - run: npm run supabase:start
-      - run: timeout 1h bash -c 'until npm run test:replication-supabase; do sleep 5; done'
+      - run: timeout 30m bash -c 'until npm run test:replication-supabase; do sleep 5; done'
       - run: npm run supabase:stop
 
 
@@ -974,7 +974,7 @@ jobs:
 
       - name: firestore replication
         run: |
-          timeout 1h bash -c 'until npm run test:replication-firestore; do sleep 15; done'
+          timeout 30m bash -c 'until npm run test:replication-firestore; do sleep 15; done'
 
       - name: nats replication
         # first start/stop the container once to ensure it
@@ -1013,9 +1013,9 @@ jobs:
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 1h bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+          timeout 30m bash -c 'until npm run test:deno:dexie; do sleep 5; done'
       - name: run deno tests:denokv
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 1h bash -c 'until npm run test:deno:denokv; do sleep 5; done'
+          timeout 30m bash -c 'until npm run test:deno:denokv; do sleep 5; done'
