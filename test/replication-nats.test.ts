@@ -3,23 +3,19 @@ import config from './unit/config.ts';
 import {
     randomToken,
     RxCollection,
-    ensureNotFalsy,
     WithDeleted,
     addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import {
-    schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState,
     HumanWithTimestampDocumentType,
     runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
 import {
     replicateNats,
-    NatsSyncOptions,
     RxNatsReplicationState
 } from '../plugins/replication-nats/index.mjs';
 import {
@@ -82,24 +78,6 @@ describe('replication-nats.test.js', () => {
         return useMessages;
     }
 
-    async function syncOnce(
-        collection: RxCollection,
-        natsName: string,
-        options?: Pick<NatsSyncOptions<any>, 'pull' | 'push'>
-    ) {
-        const replicationState = replicateNats({
-            collection,
-            replicationIdentifier: 'nats-once-' + natsName,
-            streamName: natsName,
-            subjectPrefix: natsName,
-            connection: connectionSettings,
-            live: false,
-            pull: options?.pull ?? {},
-            push: options?.push ?? {},
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        await replicationState.awaitInitialReplication();
-    }
     function syncNats<RxDocType = TestDocType>(
         collection: RxCollection<RxDocType>,
         natsName: string
@@ -190,7 +168,7 @@ describe('replication-nats.test.js', () => {
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getAllDocsOfServer(baseNatsName);
         },
         async cleanUpServer() {

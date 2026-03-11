@@ -14,7 +14,6 @@ import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState,
     SimpleHumanDocumentType,
     getPullStream,
     getPullHandler,
@@ -40,7 +39,7 @@ import {
     iterateCheckpoint
 } from '../plugins/replication-mongodb/index.mjs';
 import config from './unit/config.ts';
-import { randomString, wait, waitUntil } from 'async-test-util';
+import { randomString, waitUntil } from 'async-test-util';
 import { MONGO_OPTIONS_DRIVER_INFO } from '../plugins/storage-mongodb/index.mjs';
 import { MongoDBCheckpointIterationState } from '../src/plugins/replication-mongodb/index.ts';
 import { replicateRxCollection } from '../plugins/replication/index.mjs';
@@ -518,7 +517,7 @@ describe('replication-mongodb.test.ts', function () {
             await replicationState.awaitInSync();
             await replicationState.cancel();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getServerState();
         },
         async cleanUpServer() {

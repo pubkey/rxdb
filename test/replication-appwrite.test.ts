@@ -6,17 +6,11 @@ import assert from 'assert';
 
 import {
     randomToken,
-    RxCollection,
-    ensureNotFalsy,
     addRxPlugin
 } from '../plugins/core/index.mjs';
 
 import {
-    schemaObjects,
-    humansCollection,
     ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState,
-    SimpleHumanDocumentType,
     runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
@@ -24,7 +18,6 @@ import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 
 
 import {
-    RxAppwriteReplicationState,
     replicateAppwrite
 } from '../plugins/replication-appwrite/index.mjs';
 import config from './unit/config.ts';
@@ -33,7 +26,7 @@ import {
     Databases,
     Query
 } from 'appwrite';
-import { randomString, wait, waitUntil } from 'async-test-util';
+import { randomString, waitUntil } from 'async-test-util';
 
 /**
  * The tests for the firestore replication plugin
@@ -44,8 +37,6 @@ describe('replication-appwrite.test.ts', function () {
     addRxPlugin(RxDBDevModePlugin);
 
     config.storage.init?.();
-    type TestDocType = SimpleHumanDocumentType;
-
     this.timeout(1000 * 20);
 
     /**
@@ -78,50 +69,7 @@ describe('replication-appwrite.test.ts', function () {
         return result.documents;
     }
 
-    function syncCollection<RxDocType = TestDocType>(
-        collection: RxCollection<RxDocType>,
-    ): RxAppwriteReplicationState<RxDocType> {
-        const replicationState = replicateAppwrite<RxDocType>({
-            client: getClient(),
-            collectionId,
-            databaseId,
-            deletedField: 'deleted',
-            replicationIdentifier: randomToken(10),
-            collection,
-            pull: {
-                batchSize
-            },
-            push: {
-                batchSize
-            }
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        return replicationState;
-    }
 
-    async function syncCollectionOnce<RxDocType = TestDocType>(
-        collection: RxCollection<RxDocType>,
-    ) {
-        const replicationState = replicateAppwrite<RxDocType>({
-            client: getClient(),
-            collectionId,
-            databaseId,
-            deletedField: 'deleted',
-            replicationIdentifier: 'sync-once',
-            collection,
-            live: false,
-            pull: {
-                batchSize
-            },
-            push: {
-                batchSize
-            }
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        await replicationState.awaitInitialReplication();
-        await replicationState.awaitInSync();
-        await replicationState.cancel();
-    }
 
     async function cleanUpServer() {
         const result = await databases.listDocuments(
@@ -141,9 +89,6 @@ describe('replication-appwrite.test.ts', function () {
         }
     }
 
-    function getRandomAppwriteDocId() {
-        return randomString(10, appwritePrimaryKeyCharset);
-    }
 
     describe('basics', function () {
         this.timeout(100000);
@@ -257,7 +202,7 @@ describe('replication-appwrite.test.ts', function () {
             await replicationState.awaitInSync();
             await replicationState.cancel();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getServerState();
         },
         async cleanUpServer() {

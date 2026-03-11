@@ -108,7 +108,7 @@ describe('replication-couchdb.test.ts', () => {
      * Run the base test suite that is shared
      * across all replication plugins.
      */
-    let baseServer: { dbName: string; url: string; close: () => Promise<void> };
+    let baseServer: { dbName: string; url: string; close: () => Promise<void>; };
     runReplicationBaseTestSuite({
         startReplication(collection) {
             const replicationState = replicateCouchDB({
@@ -136,7 +136,7 @@ describe('replication-couchdb.test.ts', () => {
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getAllServerDocs(baseServer.url);
         },
         async cleanUpServer() {

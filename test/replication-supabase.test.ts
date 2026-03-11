@@ -15,14 +15,13 @@ import {
     schemaObjects,
     humansCollection,
     ensureReplicationHasNoErrors,
-    ensureCollectionsHaveEqualState,
     SimpleHumanDocumentType,
     PrimaryHumanDocType,
     runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
 import config from './unit/config.ts';
-import { randomString, wait, waitUntil } from 'async-test-util';
+import { randomString, waitUntil } from 'async-test-util';
 import {
     RxSupabaseReplicationState,
     replicateSupabase
@@ -436,7 +435,7 @@ describe('replication-supabase.test.ts', function () {
             await replicationState.awaitInSync();
             await replicationState.cancel();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getServerState();
         },
         async cleanUpServer() {

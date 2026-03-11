@@ -20,7 +20,6 @@ import {
     humansCollection,
     ensureReplicationHasNoErrors,
     HumanDocumentType,
-    ensureCollectionsHaveEqualState,
     HumanWithTimestampDocumentType,
     humanSchemaLiteral,
     HumanWithOwnershipDocumentType,
@@ -48,7 +47,6 @@ import {
 import {
     FirestoreOptions,
     replicateFirestore,
-    RxFirestoreReplicationState,
     SyncOptionsFirestore
 } from '../plugins/replication-firestore/index.mjs';
 import config from './unit/config.ts';
@@ -108,24 +106,6 @@ describe('replication-firestore.test.ts', function () {
         });
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
-    }
-    function syncFirestore<RxDocType = TestDocType>(
-        collection: RxCollection<RxDocType>,
-        firestoreState: FirestoreOptions<RxDocType>
-    ): RxFirestoreReplicationState<RxDocType> {
-        const replicationState = replicateFirestore({
-            replicationIdentifier: randomToken(10),
-            collection,
-            firestore: firestoreState,
-            pull: {
-                batchSize
-            },
-            push: {
-                batchSize
-            }
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        return replicationState;
     }
 
     function makeFirestoreHumanDocument(human: HumanDocumentType) {
@@ -201,7 +181,7 @@ describe('replication-firestore.test.ts', function () {
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
         },
-        async getAllServerDocs() {
+        getAllServerDocs() {
             return getAllDocsOfFirestore(baseFirestoreState);
         },
         async cleanUpServer() {
