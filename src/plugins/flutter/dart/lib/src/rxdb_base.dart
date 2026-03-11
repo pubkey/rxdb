@@ -208,6 +208,9 @@ class RxDatabase<CollectionsOfDatabase> {
   bool closed = false;
   RxDatabase(this.name, this.engine, this.eventBulks$, this.collectionMeta);
 
+  String get _jsDbRef =>
+      "process.databases[" + jsonEncode(name) + "].db";
+
   RxCollection<RxDocType> getCollection<RxDocType>(String name) {
     var meta = collectionMeta.firstWhere((meta) => meta['name'] == name);
     String collectionName = meta['name'];
@@ -227,7 +230,7 @@ class RxDatabase<CollectionsOfDatabase> {
 
   Future<void> close() async {
     if (closed) return;
-    await engine.evaluate('process.close();');
+    await engine.evaluate('process.close(' + jsonEncode(name) + ');');
     closed = true;
     await eventBulks$.close();
     engine.close();
@@ -247,6 +250,9 @@ class RxCollection<RxDocType> {
     docCache = DocCache<RxDocType>(this);
   }
 
+  String get _jsCollRef =>
+      database._jsDbRef + "[" + jsonEncode(name) + "]";
+
   RxQuery<RxDocType> find(dynamic query) {
     var rxQuery = RxQuery<RxDocType>(query, this);
     return rxQuery;
@@ -258,9 +264,8 @@ class RxCollection<RxDocType> {
   }
 
   Future<RxDocument<RxDocType>> insert(data) async {
-    dynamic result = await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].insert(" +
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".insert(" +
         jsonEncode(data) +
         ").then(d => d.toJSON(true));");
     var document = docCache.getByDocData(result);
@@ -268,9 +273,8 @@ class RxCollection<RxDocType> {
   }
 
   Future<List<RxDocument<RxDocType>>> bulkInsert(List<dynamic> docs) async {
-    List<dynamic> result = await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].bulkInsert(" +
+    List<dynamic> result = await database.engine.evaluate(_jsCollRef +
+        ".bulkInsert(" +
         jsonEncode(docs) +
         ").then(r => r.success.map(d => d.toJSON(true)));");
     return result.map((docData) {
@@ -279,9 +283,8 @@ class RxCollection<RxDocType> {
   }
 
   Future<List<RxDocument<RxDocType>>> bulkRemove(List<String> ids) async {
-    List<dynamic> result = await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].bulkRemove(" +
+    List<dynamic> result = await database.engine.evaluate(_jsCollRef +
+        ".bulkRemove(" +
         jsonEncode(ids) +
         ").then(r => r.success.map(d => d.toJSON(true)));");
     return result.map((docData) {
@@ -290,9 +293,8 @@ class RxCollection<RxDocType> {
   }
 
   Future<RxDocument<RxDocType>> upsert(dynamic data) async {
-    dynamic result = await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].upsert(" +
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".upsert(" +
         jsonEncode(data) +
         ").then(d => d.toJSON(true));");
     var document = docCache.getByDocData(result);
@@ -301,18 +303,16 @@ class RxCollection<RxDocType> {
 
   Future<int> count([dynamic query]) async {
     String queryStr = query != null ? jsonEncode(query) : '{}';
-    dynamic result = await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].count(" +
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".count(" +
         queryStr +
         ").exec();");
     return (result as num).toInt();
   }
 
   Future<void> remove() async {
-    await database.engine.evaluate("process.db[" +
-        jsonEncode(name) +
-        "].remove();");
+    await database.engine.evaluate(_jsCollRef +
+        ".remove();");
   }
 }
 
@@ -342,9 +342,9 @@ class RxDocument<RxDocType> {
 
   Future<RxDocument<RxDocType>> patch(Map<String, dynamic> patchData) async {
     String id = primary;
-    dynamic result = await collection.database.engine.evaluate("process.db[" +
-        jsonEncode(collection.name) +
-        "].findOne(" +
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
         jsonEncode(id) +
         ").exec().then(d => d.patch(" +
         jsonEncode(patchData) +
@@ -357,9 +357,9 @@ class RxDocument<RxDocType> {
   Future<RxDocument<RxDocType>> incrementalPatch(
       Map<String, dynamic> patchData) async {
     String id = primary;
-    dynamic result = await collection.database.engine.evaluate("process.db[" +
-        jsonEncode(collection.name) +
-        "].findOne(" +
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
         jsonEncode(id) +
         ").exec().then(d => d.incrementalPatch(" +
         jsonEncode(patchData) +
@@ -371,9 +371,9 @@ class RxDocument<RxDocType> {
 
   Future<RxDocument<RxDocType>> remove() async {
     String id = primary;
-    await collection.database.engine.evaluate("process.db[" +
-        jsonEncode(collection.name) +
-        "].findOne(" +
+    await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
         jsonEncode(id) +
         ").exec().then(d => d.remove());");
     return this;
@@ -381,9 +381,9 @@ class RxDocument<RxDocType> {
 
   Future<RxDocument<RxDocType>> incrementalRemove() async {
     String id = primary;
-    await collection.database.engine.evaluate("process.db[" +
-        jsonEncode(collection.name) +
-        "].findOne(" +
+    await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
         jsonEncode(id) +
         ").exec().then(d => d.incrementalRemove());");
     return this;
@@ -400,9 +400,8 @@ class RxQuery<RxDocType> {
   RxQuery(this.query, this.collection);
   Future<List<RxDocument<RxDocType>>> exec() async {
     List<dynamic> result = await collection.database.engine.evaluate(
-        "process.db[" +
-            jsonEncode(collection.name) +
-            "].find(" +
+        collection._jsCollRef +
+            ".find(" +
             jsonEncode(query) +
             ").exec().then(docs => docs.map(d => d.toJSON(true)));");
 
@@ -445,9 +444,9 @@ class RxQuerySingle<RxDocType> {
     } else {
       queryArg = jsonEncode(queryOrPrimaryKey);
     }
-    dynamic result = await collection.database.engine.evaluate("process.db[" +
-        jsonEncode(collection.name) +
-        "].findOne(" +
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
         queryArg +
         ").exec().then(d => d ? d.toJSON(true) : null);");
     if (result == null) {
