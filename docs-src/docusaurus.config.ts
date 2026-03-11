@@ -35,6 +35,35 @@ const config: Config = {
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://region1.analytics.google.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://www.redditstatic.com/' } },
         { tagName: 'link', attributes: { rel: 'preconnect', href: 'https://pixel-config.reddit.com/' } },
+        {
+            tagName: 'script',
+            attributes: { type: 'application/ld+json' },
+            innerHTML: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'SoftwareApplication',
+                'name': 'RxDB',
+                'applicationCategory': 'DeveloperApplication',
+                'operatingSystem': 'Any',
+                'description': 'A fast, local-first, reactive NoSQL database for JavaScript applications. Supports offline-first sync, real-time replication, and works across browsers, Node.js, Electron, React Native, and Flutter.',
+                'url': 'https://rxdb.info',
+                'offers': {
+                    '@type': 'Offer',
+                    'price': '0',
+                    'priceCurrency': 'USD',
+                },
+                'author': {
+                    '@type': 'Organization',
+                    'name': 'RxDB',
+                    'url': 'https://rxdb.info',
+                    'logo': 'https://rxdb.info/files/logo/logo.svg',
+                    'sameAs': [
+                        'https://github.com/pubkey/rxdb',
+                        'https://twitter.com/rxdbjs',
+                        'https://www.linkedin.com/company/rxdb',
+                    ],
+                },
+            }),
+        },
     ],
 
     // Set the production url of your site here
@@ -197,6 +226,12 @@ const config: Config = {
                 googleTagManager: {
                     containerId: 'GTM-PL63TR5',
                 },
+                sitemap: {
+                    lastmod: 'date',
+                    changefreq: 'weekly',
+                    priority: 0.5,
+                    filename: 'sitemap.xml',
+                },
                 docs: {
                     sidebarPath: './sidebars.js',
                     routeBasePath: '',
@@ -226,6 +261,11 @@ const config: Config = {
     {
         // Replace with your project's social card
         image: 'img/rxdb_social_card.png',
+        metadata: [
+            { name: 'keywords', content: 'RxDB, JavaScript database, local-first, offline-first, reactive database, NoSQL, real-time sync, browser database, IndexedDB, TypeScript' },
+            { property: 'og:type', content: 'website' },
+            { name: 'twitter:site', content: '@rxdbjs' },
+        ],
         colorMode: {
             defaultMode: 'dark',
             disableSwitch: true,
