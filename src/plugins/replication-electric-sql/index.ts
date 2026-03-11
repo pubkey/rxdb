@@ -89,8 +89,8 @@ export function replicateElectricSQL<RxDocType>(
                 lastPulledCheckpoint: ElectricSQLCheckpointType | undefined,
                 batchSize: number
             ) {
-                const offset = lastPulledCheckpoint?.offset ?? '-1';
-                const handle = lastPulledCheckpoint?.handle ?? '';
+                let offset = lastPulledCheckpoint?.offset ?? '-1';
+                let handle = lastPulledCheckpoint?.handle ?? '';
 
                 const url = buildElectricUrl(
                     options.url,
@@ -109,22 +109,45 @@ export function replicateElectricSQL<RxDocType>(
                     });
                 }
 
-                const messages: ElectricSQLMessage<RxDocType>[] = await response.json();
+                let messages: ElectricSQLMessage<RxDocType>[] = await response.json();
 
-                const electricOffset = response.headers.get('electric-offset') || offset;
-                const electricHandle = response.headers.get('electric-handle') || handle;
+                let electricOffset = response.headers.get('electric-offset') || offset;
+                let electricHandle = response.headers.get('electric-handle') || handle;
+
+                /**
+                 * When Electric sends a must-refetch control message,
+                 * the shape has changed and we must start over from
+                 * offset -1.  We reset and immediately re-fetch inside
+                 * the handler so the replication framework never sees
+                 * a confusing empty-but-not-done response.
+                 */
+                if (hasMustRefetch(messages)) {
+                    offset = '-1';
+                    handle = '';
+                    liveOffset = '';
+                    liveHandle = '';
+
+                    const retryUrl = buildElectricUrl(
+                        options.url,
+                        options.params,
+                        offset,
+                        undefined
+                    );
+                    const retryResponse = await useFetch(retryUrl, {
+                        headers: options.headers || {}
+                    });
+                    if (!retryResponse.ok) {
+                        throw newRxError('RC_PULL', {
+                            args: { url: retryUrl, status: retryResponse.status }
+                        });
+                    }
+                    messages = await retryResponse.json();
+                    electricOffset = retryResponse.headers.get('electric-offset') || offset;
+                    electricHandle = retryResponse.headers.get('electric-handle') || handle;
+                }
 
                 liveOffset = electricOffset;
                 liveHandle = electricHandle;
-
-                if (hasMustRefetch(messages)) {
-                    liveOffset = '';
-                    liveHandle = '';
-                    return {
-                        documents: [],
-                        checkpoint: undefined as any
-                    };
-                }
 
                 const documents: WithDeleted<RxDocType>[] = [];
                 for (const message of messages) {
