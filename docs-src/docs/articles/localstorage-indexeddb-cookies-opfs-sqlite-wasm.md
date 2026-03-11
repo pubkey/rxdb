@@ -95,7 +95,7 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
 
 
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
-Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower than native](https://www.usenix.org/conference/atc19/presentation/jangda).
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
@@ -190,7 +190,7 @@ The fast version of OPFS with the `createSyncAccessHandle` method can **only** [
 
 
 
-- **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your web server will not accept too long headers and reject the requests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
+- **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are sent to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your web server will not accept too long headers and reject the requests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
 
 - **LocalStorage** has a storage size limitation that varies depending on the browser, but generally ranges from 4 MB to 10 MB per origin. You can test your localStorage size limit [here](https://arty.name/localstorage.html).
   - Chrome/Chromium/Edge: 5 MB per domain

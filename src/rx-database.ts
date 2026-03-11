@@ -91,7 +91,7 @@ import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
 /**
  * stores the used database names+storage names
- * so we can throw when the same database is created more then once.
+ * so we can throw when the same database is created more than once.
  */
 const USED_DATABASE_NAMES: Set<string> = new Set();
 const DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP = new Map<string, Set<Promise<RxDatabase>>>();

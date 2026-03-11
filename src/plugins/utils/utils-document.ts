@@ -10,7 +10,7 @@ import { flatClone } from './utils-object.ts';
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying
- * with a value lower then the minimum could give false results.
+ * with a value lower than the minimum could give false results.
  */
 export const RX_META_LWT_MINIMUM = 1;
 

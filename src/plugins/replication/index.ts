@@ -77,7 +77,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
-        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
+        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are sent to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
@@ -471,7 +471,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
      * - All local data is replicated with the remote
      * - No replication cycle is running or in retry-state
      *
-     * WARNING: USing this function directly in a multi-tab browser application
+     * WARNING: Using this function directly in a multi-tab browser application
      * is dangerous because only the leading instance will ever be replicated,
      * so this promise will not resolve in the other tabs.
      * For multi-tab support you should set and observe a flag in a local document.

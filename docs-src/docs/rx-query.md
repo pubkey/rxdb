@@ -13,7 +13,7 @@ To find documents inside of an [RxCollection](./rx-collection.md), RxDB uses the
 To create a basic `RxQuery`, call `.find()` on a collection and insert selectors. The result-set of normal queries is an array with documents.
 
 ```js
-// find all that are older then 18
+// find all that are older than 18
 const query = myCollection
     .find({
       selector: {

@@ -10,7 +10,7 @@ export type RxCleanupPolicy = {
      */
     minimumDeletedTime: number;
     /**
-     * The minimum amount of that that the RxCollection must have existed.
+     * The minimum amount of time that the RxCollection must have existed.
      * This ensures that at the initial page load, more important
      * tasks are not slowed down because a cleanup process is running.
      */

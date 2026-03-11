@@ -125,7 +125,7 @@ describe('replication-webrtc.test.ts', function () {
         );
 
         /**
-         * If we have more then one collection,
+         * If we have more than one collection,
          * ensure that at least one peer exists each.
          */
         await Promise.all(

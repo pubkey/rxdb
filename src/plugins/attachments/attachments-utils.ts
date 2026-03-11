@@ -27,7 +27,7 @@ export function assignMethodsToAttachment(attachment: any) {
 
 /**
  * Fill up the missing attachment.data of the newDocument
- * so that the new document can be send to somewhere else
+ * so that the new document can be sent to somewhere else
  * which could then receive all required attachments data
  * that it did not have before.
  */

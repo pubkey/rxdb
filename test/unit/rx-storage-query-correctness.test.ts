@@ -378,7 +378,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
-                info: 'compare more then one field',
+                info: 'compare more than one field',
                 query: {
                     selector: {
                         age: {
@@ -489,7 +489,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
-                info: 'compare more then one field',
+                info: 'compare more than one field',
                 query: {
                     selector: {
                         age: {

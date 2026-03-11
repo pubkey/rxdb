@@ -896,7 +896,7 @@ describeParallel('rx-storage-implementations.test.ts (implementation: ' + config
                     storageInstance2.close()
                 ]);
             });
-            it('should be able to jump more then 1 revision height in a single write operation', async () => {
+            it('should be able to jump more than 1 revision height in a single write operation', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomToken(10),
                     databaseName: randomToken(12),
