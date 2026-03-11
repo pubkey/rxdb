@@ -18,7 +18,8 @@ import {
     SimpleHumanDocumentType,
     getPullStream,
     getPullHandler,
-    getPushHandler
+    getPushHandler,
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
