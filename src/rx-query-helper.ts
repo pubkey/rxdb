@@ -18,7 +18,6 @@ import {
     firstPropertyNameOfObject,
     toArray,
     isMaybeReadonlyArray,
-    flatClone,
     objectPathMonad,
     ObjectPathMonadFunction
 } from './plugins/utils/index.ts';
@@ -37,7 +36,6 @@ export function normalizeMangoQuery<RxDocType>(
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    mangoQuery = flatClone(mangoQuery);
 
     const normalizedMangoQuery: FilledMangoQuery<RxDocType> = clone(mangoQuery) as any;
     if (typeof normalizedMangoQuery.skip !== 'number') {
