@@ -1208,29 +1208,32 @@ export async function createRxCollection(
         options = {},
         localDocuments = false,
         cacheReplacementPolicy = defaultCacheReplacementPolicy,
-        conflictHandler = defaultConflictHandler
+        conflictHandler = defaultConflictHandler,
+        storageInstance
     }: any
 ): Promise<RxCollection> {
-    const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
-        databaseInstanceToken: database.token,
-        databaseName: database.name,
-        collectionName: name,
-        schema: schema.jsonSchema,
-        options: instanceCreationOptions,
-        multiInstance: database.multiInstance,
-        password: database.password,
-        devMode: overwritable.isDevMode()
-    };
+    if (!storageInstance) {
+        const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+            databaseInstanceToken: database.token,
+            databaseName: database.name,
+            collectionName: name,
+            schema: schema.jsonSchema,
+            options: instanceCreationOptions,
+            multiInstance: database.multiInstance,
+            password: database.password,
+            devMode: overwritable.isDevMode()
+        };
 
-    runPluginHooks(
-        'preCreateRxStorageInstance',
-        storageInstanceCreationParams
-    );
+        runPluginHooks(
+            'preCreateRxStorageInstance',
+            storageInstanceCreationParams
+        );
 
-    const storageInstance = await createRxCollectionStorageInstance(
-        database,
-        storageInstanceCreationParams
-    );
+        storageInstance = await createRxCollectionStorageInstance(
+            database,
+            storageInstanceCreationParams
+        );
+    }
 
     const collection = new RxCollectionBase(
         database,
