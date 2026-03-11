@@ -47,9 +47,9 @@ function getEnvVariables() {
         return ret;
     }
 
-    return isBun || isNode ? process.env : (window as any).__karma__.config.env;
+    return isBun || isNode ? process.env : ((window as any).__karma__?.config?.env || {});
 }
-export const ENV_VARIABLES = getEnvVariables();
+export const ENV_VARIABLES = getEnvVariables() || {};
 export const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 
 export function isFastMode(): boolean {
