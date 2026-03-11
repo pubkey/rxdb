@@ -409,8 +409,10 @@ export class RxDatabaseBase<
             );
             /**
              * Prevent unhandled promise rejection warnings.
-             * If the bulkWrite error handling below throws (e.g. schema mismatch),
-             * these promises might never be awaited.
+             * If ensureNoStartupErrors() or the bulkWrite error handling throws
+             * (e.g. password mismatch, schema mismatch), these promises might
+             * never be awaited. The actual errors are still propagated when
+             * the promises are awaited in Phase 5 below.
              */
             promise.catch(() => { });
             collectionStorageInstancePromises[collectionName] = promise;
@@ -455,7 +457,11 @@ export class RxDatabaseBase<
                 })
             );
         } catch (err) {
-            // Close any pre-created storage instances on error
+            /**
+             * Close any pre-created storage instances on error.
+             * Some instances might have failed to create (rejected promise),
+             * so we catch and ignore errors during cleanup.
+             */
             await Promise.all(
                 Object.values(collectionStorageInstancePromises).map(
                     p => p.then(instance => instance.close()).catch(() => { })
