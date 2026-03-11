@@ -205,7 +205,9 @@ export function replicateElectricSQL<RxDocType>(
                         });
 
                         if (!response.ok) {
-                            throw new Error('Live polling failed: ' + response.status);
+                            throw newRxError('RC_STREAM', {
+                                error: errorToPlainJson(new Error('Live polling failed: ' + response.status))
+                            });
                         }
 
                         const messages: ElectricSQLMessage<RxDocType>[] = await response.json();
