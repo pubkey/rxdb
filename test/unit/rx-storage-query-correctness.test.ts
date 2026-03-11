@@ -2616,6 +2616,40 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     sort: [{ name: 'asc' }]
                 },
                 expectedResultDocIds: ['bb', 'cc', 'dd']
+            },
+            {
+                info: 'string $gte + $lte at same value returns only that document',
+                query: {
+                    selector: { name: { $gte: 'carol', $lte: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: ['cc']
+            },
+            {
+                info: 'string empty range with $gt + $lt at same value returns empty',
+                query: {
+                    selector: { name: { $gt: 'carol', $lt: 'carol' } },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'string $gt at the maximum stored value returns empty',
+                query: {
+                    selector: { name: { $gt: 'eve' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
+            },
+            {
+                info: 'string $lt at the minimum stored value returns empty',
+                query: {
+                    selector: { name: { $lt: 'alice' } },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
             }
         ]
     });
@@ -2692,6 +2726,72 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                     sort: [{ id: 'asc' }]
                 },
                 expectedResultDocIds: ['dd', 'ee']
+            },
+            {
+                info: 'boolean $gt false (exclusive lower bound) returns only true documents',
+                query: {
+                    selector: { active: { $gt: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd', 'ee']
+            },
+            {
+                info: 'boolean $lt true (exclusive upper bound) returns only false documents',
+                query: {
+                    selector: { active: { $lt: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: 'boolean $gte true + $lte true returns only true documents',
+                query: {
+                    selector: { active: { $gte: true, $lte: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['bb', 'dd', 'ee']
+            },
+            {
+                info: 'boolean $gte false + $lte false returns only false documents',
+                query: {
+                    selector: { active: { $gte: false, $lte: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: ['aa', 'cc']
+            },
+            {
+                info: 'boolean empty range with $gt true + $lt true returns empty',
+                query: {
+                    selector: { active: { $gt: true, $lt: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'boolean empty range with $gt false + $lt false returns empty',
+                query: {
+                    selector: { active: { $gt: false, $lt: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'boolean $gt true (nothing greater than true) returns empty',
+                query: {
+                    selector: { active: { $gt: true } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
+            },
+            {
+                info: 'boolean $lt false (nothing less than false) returns empty',
+                query: {
+                    selector: { active: { $lt: false } },
+                    sort: [{ id: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: []
             }
         ]
     });
