@@ -157,7 +157,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * Use a counter-based event bulk ID instead of randomToken()
  * for better performance. The prefix ensures uniqueness across instances.
  */
-const EVENT_BULK_ID_PREFIX = randomToken(6);
+const EVENT_BULK_ID_PREFIX = randomToken(10);
 let eventBulkCounter = 0;
 function nextEventBulkId(): string {
     return EVENT_BULK_ID_PREFIX + (++eventBulkCounter);
