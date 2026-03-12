@@ -932,7 +932,7 @@ jobs:
   #       with:
   #         run: npm run test:replication-appwrite
 
-  test-others:
+  test-others-replications:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -949,9 +949,9 @@ jobs:
         with:
           path: |
             ~/.npm
-          key: ${{ runner.os }}-npm-others-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-others-replications-x4-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-others-x4-
+            ${{ runner.os }}-npm-others-replications-x4-
 
       - name: prepare RxDB core
         run: |
@@ -962,13 +962,10 @@ jobs:
       - run: npm run test:replication-google-drive
       - run: npm run test:replication-microsoft-onedrive
 
-
-
       # supabase
       - run: npm run supabase:start
       - run: timeout 30m bash -c 'until npm run test:replication-supabase; do sleep 5; done'
       - run: npm run supabase:stop
-
 
       - run: npm run test:replication-couchdb
 
@@ -983,6 +980,31 @@ jobs:
           docker pull nats:2.9.17
           npm run test:replication-nats
 
+  test-others-runtimes:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set node version
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-npm-others-runtimes-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-others-runtimes-x4-
+
+      - name: prepare RxDB core
+        run: |
+          npm install
+          npm run build
 
       # bun
       - uses: oven-sh/setup-bun@v2
