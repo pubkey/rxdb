@@ -1,6 +1,7 @@
 ---
 title: Sharding RxStorage 👑
 slug: rx-storage-sharding.html
+description: Improve RxDB read and write performance by splitting data across multiple storage shards using the sharding RxStorage wrapper plugin.
 image: /headers/rx-storage-sharding.jpg
 ---
 

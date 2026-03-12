@@ -1,6 +1,7 @@
 ---
 title: Leader Election
 slug: leader-election.html
+description: Use RxDB leader election to coordinate browser tabs so that only one tab manages remote data access, reducing redundant connections and saving resources.
 image: /headers/leader-election.jpg
 ---
 
