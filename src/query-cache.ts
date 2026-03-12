@@ -1,6 +1,6 @@
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
- * if you use the same mango-query more then once, it will reuse the first RxQuery
+ * if you use the same mango-query more than once, it will reuse the first RxQuery
  */
 import type {
     RxQuery,

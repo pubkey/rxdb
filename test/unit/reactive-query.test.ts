@@ -183,7 +183,7 @@ describeParallel('reactive-query.test.js', () => {
         });
     });
     describe('ISSUES', () => {
-        it('#7075 query results not correct if changes happen faster then the query updates', async () => {
+        it('#7075 query results not correct if changes happen faster than the query updates', async () => {
             if (
                 config.storage.name === 'sqlite-trial'
             ) {

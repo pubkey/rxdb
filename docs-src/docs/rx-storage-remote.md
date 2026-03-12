@@ -1,6 +1,7 @@
 ---
 title: Remote RxStorage
 slug: rx-storage-remote.html
+description: Use the Remote RxStorage plugin to run RxDB storage on a separate process or host machine and communicate over an asynchronous message channel.
 image: /headers/rx-storage-remote.jpg
 ---
 

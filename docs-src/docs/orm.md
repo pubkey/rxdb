@@ -1,6 +1,7 @@
 ---
 title: ORM
 slug: orm.html
+description: Add ORM capabilities to RxDB collections and documents with custom static methods, instance methods, and attachment methods for structured data access.
 image: /headers/orm.jpg
 ---
 

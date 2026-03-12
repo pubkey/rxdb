@@ -63,8 +63,8 @@ export type ChangeStreamStoredData<RxDocType> = {
 
 
 /**
- * StorageEvents are not send to the same
- * browser tab where they where created.
+ * StorageEvents are not sent to the same
+ * browser tab where they were created.
  * This makes it hard to write unit tests
  * so we redistribute the events here instead.
  */

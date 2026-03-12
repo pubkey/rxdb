@@ -1,6 +1,7 @@
 ---
 title: Websocket Replication
 slug: replication-websocket.html
+description: Spawn a WebSocket replication server from a RxDB Node.js database and replicate data between server instances in real time.
 image: /headers/replication-websocket.jpg
 ---
 

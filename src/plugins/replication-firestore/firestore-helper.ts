@@ -70,7 +70,7 @@ export function getContentByIds<RxDocType>(ids: string[], getQuery: GetQuery<RxD
         // firestore limits batches to 10
         const batch = ids.splice(0, 10);
 
-        // add the batch request to to a queue
+        // add the batch request to a queue
         batches.push(getQuery(batch));
     }
 

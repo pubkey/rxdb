@@ -1,6 +1,7 @@
 ---
 title: DenoKV RxStorage
 slug: rx-storage-denokv.html
+description: Run a full-featured RxDB NoSQL database on top of Deno Key Value Store with queries, encryption, compression, and replication support across 35 global regions.
 image: /headers/rx-storage-denokv.jpg
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: GraphQL Replication
 slug: replication-graphql.html
+description: Set up GraphQL-based replication with RxDB including pull, push, and live streaming handlers for syncing data between client and server.
 image: /headers/replication-graphql.jpg
 ---
 

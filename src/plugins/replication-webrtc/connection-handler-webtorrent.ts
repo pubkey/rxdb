@@ -1,7 +1,7 @@
 // /**
 //  * Uses the Webtorrent servers as signaling server, works similar to p2pt.
 //  * We could not use p2pt directly because it has so many bugs and behaves wrong in
-//  * cases with more then 2 peers.
+//  * cases with more than 2 peers.
 //  * @link https://github.com/subins2000/p2pt/blob/master/p2pt.js
 //  */
 

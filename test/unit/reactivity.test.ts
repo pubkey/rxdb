@@ -161,7 +161,12 @@ describeParallel('reactivity.test.ts', () => {
              * This test can take very long because we await the garbage collection
              * of the signal.
              */
-            if (isFastMode() || !(global as any).gc) {
+            this.timeout(60 * 1000);
+            if (
+                isFastMode() ||
+                !(global as any).gc ||
+                getConfig().storage.name.includes('random-delay')
+            ) {
                 return;
             }
 

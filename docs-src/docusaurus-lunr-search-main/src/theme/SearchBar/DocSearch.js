@@ -194,7 +194,7 @@ class DocSearch {
         });
         groupedHits = utils.flattenAndFlagFirst(groupedHits, "isCategoryHeader");
 
-        // Translate hits into smaller objects to be send to the template
+        // Translate hits into smaller objects to be sent to the template
         return groupedHits.map(hit => {
             const url = DocSearch.formatURL(hit);
             const category = utils.getHighlightedValue(hit, "lvl0");
