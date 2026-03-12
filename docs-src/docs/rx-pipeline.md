@@ -29,7 +29,7 @@ await mySourceCollection.insert({/* ... */});
  * we know that the result array contains data created
  * on top of the previously inserted documents.
  */
-const result = myDestinationCollection.find().exec();
+const result = await myDestinationCollection.find().exec();
 ```
 
 

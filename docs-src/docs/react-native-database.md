@@ -45,7 +45,7 @@ npm install rxdb rxjs react-native-quick-sqlite
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageSQLite, getSQLiteBasicsQuickSQLite } from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 
 const db = await createRxDatabase({
@@ -72,7 +72,7 @@ npm install rxdb rxjs
 **Configuration**:
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb/plugins/storage-sqlite';
+import { getRxStorageSQLite, getSQLiteBasicsExpoSQLiteAsync } from 'rxdb-premium/plugins/storage-sqlite';
 import * as SQLite from 'expo-sqlite';
 
 const db = await createRxDatabase({

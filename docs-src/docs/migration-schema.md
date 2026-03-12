@@ -65,9 +65,9 @@ myDatabase.addCollections({
         // so we must get the country of the message-sender from the server
         const coordinates = oldDoc.coordinates;
         return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
-          .then(response => {
-            const response = response.json();
-            oldDoc.senderCountry = response;
+          .then(response => response.json())
+          .then(country => {
+            oldDoc.senderCountry = country;
             return oldDoc;
           });
       }

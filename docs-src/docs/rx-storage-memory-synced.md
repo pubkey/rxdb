@@ -56,7 +56,7 @@ const storage = getMemorySyncedRxStorage({
 
 // create the RxDatabase like you would do with any other RxStorage
 const db = await createRxDatabase({
-    name: 'myDatabase,
+    name: 'myDatabase',
     storage,
 });
 /** ... **/

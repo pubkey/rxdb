@@ -54,7 +54,7 @@ const mySchema = {
       id: {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
-      }
+      },
       /* ... */
   }
 };

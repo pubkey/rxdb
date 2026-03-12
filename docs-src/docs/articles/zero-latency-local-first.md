@@ -199,7 +199,7 @@ await db.addCollections({
       type: 'object',
       primaryKey: 'id',
       properties: {
-        id:         { type: 'string'. maxLength: 100 },
+        id:         { type: 'string', maxLength: 100 },
         message:    { type: 'string' },
         timestamp:  { type: 'number' }
       }
