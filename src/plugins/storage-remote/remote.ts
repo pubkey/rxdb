@@ -168,7 +168,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     method: 'changeStream',
                     return: changes
                 };
-                settings.send(message);
+                try {
+                    settings.send(message);
+                } catch (err) {
+                    // Connection might have been closed, ignore send errors for changeStream events
+                }
             })
         );
 
@@ -263,7 +267,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     }
                     settings.send(createAnswer(message, result));
                 } catch (err: any) {
-                    settings.send(createErrorAnswer(message, err));
+                    try {
+                        settings.send(createErrorAnswer(message, err));
+                    } catch (innerErr) {
+                        // Connection might have been closed, ignore send errors
+                    }
                 }
             })
         );
