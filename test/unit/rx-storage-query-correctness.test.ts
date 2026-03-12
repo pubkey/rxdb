@@ -1962,4 +1962,57 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 }
             ]
         });
+
+    testCorrectQueries<{
+        id: string;
+        status: string;
+        age: number;
+    }>({
+        testTitle: 'enum field with $eq should be sort-irrelevant and return correct results',
+        data: [
+            { id: '1', status: 'active', age: 30 },
+            { id: '2', status: 'inactive', age: 10 },
+            { id: '3', status: 'active', age: 10 },
+            { id: '4', status: 'active', age: 50 },
+            { id: '5', status: 'pending', age: 20 },
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                status: {
+                    type: 'string',
+                    enum: ['active', 'inactive', 'pending'],
+                    maxLength: 20
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                ['status', 'age']
+            ],
+            required: ['id', 'status', 'age']
+        },
+        queries: [
+            {
+                info: 'enum $eq with sort on next index field returns correct results in order',
+                query: {
+                    selector: {
+                        status: { $eq: 'active' }
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['3', '1', '4']
+            }
+        ]
+    });
 });
