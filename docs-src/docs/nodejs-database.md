@@ -5,10 +5,11 @@ description: Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale
 image: /headers/nodejs-database.jpg
 ---
 
+import PerformanceNode from '@site/src/components/performance-node';
+
 # Node.js Database
 
 [RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, [hybrid Apps](./articles/mobile-database.md), [Electron-Apps](./electron-database.md), [Progressive Web Apps](./articles/progressive-web-app-database.md) and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
-
 
 <p align="center">
   <img src="./files/icons/nodejs.svg" alt="Node.js" width="70" />
@@ -82,13 +83,9 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
-
 Here is a performance comparison chart of the different storages (lower is better):
 
-<p align="center">
-  <img src="./files/rx-storage-performance-node.png" alt="database performance - Node.js" width="700" />
-</p>
-
+<PerformanceNode />
 
 ## RxDB as Node.js In-Memory Database
 
@@ -114,7 +111,6 @@ node --max-old-space-size=8192 index.js
 ## Hybrid In-memory-persistence-synced storage
 
 If you want to have the performance of an **in-memory database** but require persistency of the data, you can use the [memory-mapped storage](./rx-storage-memory-mapped.md). On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistent storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.
-
 
 ```typescript
 import { createRxDatabase } from 'rxdb';
@@ -142,10 +138,6 @@ Using a local, embedded database in Node.js works great until you have to share 
 To share the database state with other instances, RxDB provides two different methods. One is [replication](./replication.md) and the other is the [remote RxStorage](./rx-storage-remote.md).
 The replication copies over the whole database set to other instances live-replicates all ongoing writes. This has the benefit of scaling better because each of your microservice will run queries on its own copy of the dataset.
 Sometimes however you might not want to store the full dataset on each microservice. Then it is better to use the remote RxStorage and connect it to the "main" database. The remote storage will run all operations the main database and return the result to the calling database.
-
-
-
-
 
 ## FAQ
 

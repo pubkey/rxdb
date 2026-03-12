@@ -5,6 +5,8 @@ description: Use Dexie.js to power RxDB in the browser. Enjoy quick setup, Dexie
 image: /headers/rx-storage-dexie.jpg
 ---
 
+import PerformanceBrowser from '@site/src/components/performance-browser';
+
 import {Steps} from '@site/src/components/steps';
 
 # RxStorage Dexie.js
@@ -42,7 +44,6 @@ const db = await createRxDatabase({
 ```
 </Steps>
 
-
 ## Overwrite/Polyfill the native IndexedDB API with an in-memory version
 
 Node.js has no IndexedDB API. To still run the Dexie `RxStorage` in Node.js, for example to run unit tests, you have to polyfill it.
@@ -66,7 +67,6 @@ const db = await createRxDatabase({
 
 ```
 
-
 ## Using Dexie Addons
 
 Dexie.js has its own plugin system with [many plugins](https://dexie.org/docs/DerivedWork#known-addons) for encryption, replication or other use cases. With the Dexie.js `RxStorage` you can use the same plugins by passing them to the `getRxStorageDexie()` function.
@@ -80,7 +80,6 @@ const db = await createRxDatabase({
 });
 ```
 
-
 ## Sync Dexie.js with your Backend in RxDB
 
 Having your local data in sync with a remote backend is a key feature of RxDB. Here are two approaches to achieve this when using the Dexie.js RxStorage:
@@ -90,7 +89,6 @@ Having your local data in sync with a remote backend is a key feature of RxDB. H
 
 Choose the approach that best suits your needs - whether you want to get started quickly with Dexie Cloud or require the adaptability and autonomy of RxDB's native replication.
 
-
 ### A. Use Dexie Cloud Sync
 
 **Dexie Cloud** is an official SaaS solution provided by the Dexie team. It offers automatic synchronization, user management, and conflict resolution out of the box. The primary benefits are:
@@ -98,7 +96,6 @@ Choose the approach that best suits your needs - whether you want to get started
 - **Automatic Sync**: Dexie Cloud keeps your local IndexedDB in sync with its cloud-based backend.
 - **User Authentication**: Built-in user management (auth, roles, permissions).
 - **Conflict Resolution**: Automated resolution logic on the server side.
-
 
 <Steps>
 
@@ -204,11 +201,9 @@ const replicationState = replicateCouchDB({
 
 </Steps>
 
-
 ## liveQuery - Realtime Queries
 
 Dexie.js offers a feature called `liveQuery` which automatically updates query results as data changes, allowing you to react to these changes in real-time. However, because RxDB intrinsically provides [reactive queries](./rx-query.md#observe), you typically do **not** need to enable live queries through Dexie. Once you have created your database and collections with RxDB, any query you perform can be observed by subscribing to it, for example via `collection.find().$.subscribe(results => { /*... */ })`. This means RxDB takes care of listening for changes and automatically emitting new results - ensuring your UI stays in sync with the underlying data without requiring extra plugins or manual polling.
-
 
 ## Disabling the non-premium console log
 
@@ -225,6 +220,4 @@ setPremiumFlag();
 
 The performance of the Dexie.js RxStorage is good enough for most use cases but other storages can have way better performance metrics:
 
-<p align="center">
-  <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser Dexie.js" width="700" />
-</p>
+<PerformanceBrowser />

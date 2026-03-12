@@ -5,8 +5,9 @@ description: Experience a powerful JSON database with RxDB, built for JavaScript
 image: /headers/json-database.jpg
 ---
 
-# RxDB - JSON Database for JavaScript
+import PerformanceBrowser from '@site/src/components/performance-browser';
 
+# RxDB - JSON Database for JavaScript
 
 Storing data as **JSON documents** in a **[NoSQL](./in-memory-nosql-database.md)** database is not just a trend; it's a practical choice. JSON data is highly compatible with various tools and is human-readable, making it an excellent fit for modern applications. JSON documents offer more flexibility compared to traditional SQL table rows, as they can contain nested data structures. This article introduces [RxDB](https://rxdb.info/), an open-source, flexible, performant, and battle-tested NoSQL JSON database specifically designed for **JavaScript** applications.
 
@@ -37,7 +38,6 @@ When incorporating JSON documents into your application, you have several storag
 ## Compression Storage for JSON Documents
 
 Compression storage for JSON documents is made effortless with RxDB's [key-compression plugin](../key-compression.md). This feature enables the efficient storage of compressed document data, reducing storage requirements while maintaining data integrity. Queries on compressed documents remain seamless, ensuring that your application benefits from both space-saving advantages and optimal query performance, making RxDB a compelling choice for managing JSON data efficiently. The compression happens inside of the [RxDatabase](../rx-database.md) and does not affect the API usage. The only limitation is that encrypted fields themself cannot be used inside a query.
-
 
 ## Schema Validation and Data Migration on Schema Changes
 Storing JSON documents inside of a database in an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
@@ -72,8 +72,6 @@ const mySchema = {
 }
 ```
 
-
-
 ## Store JSON with RxDB in Browser Applications
 RxDB offers versatile storage solutions for browser-based applications:
 
@@ -84,7 +82,6 @@ RxDB offers versatile storage solutions for browser-based applications:
 <p align="center">
   <img src="../files/multiwindow.gif" alt="multi tab support" width="450" />
 </p>
-
 
 ## RxDB JSON Database Performance
 
@@ -98,10 +95,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
-<p align="center">
-  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
-</p>
-
+<PerformanceBrowser />
 
 ## RxDB in Node.js
 Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON db to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).
@@ -110,16 +104,13 @@ Node.js developers can also benefit from RxDB's capabilities. By integrating RxD
 
 For mobile app developers working with React Native, RxDB offers a convenient solution for handling JSON data. Whether you're building Android or iOS applications, RxDB's compatibility with JavaScript and its ability to work with JSON documents make it a natural choice for data management within your React Native apps. [Read more about RxDB+React-Native](../react-native-database.md).
 
-
 ## Using SQLite as a JSON Database
 In some cases, you might want to use SQLite as a backend storage solution for your JSON data. RxDB can be configured [to work with SQLite](../rx-storage-sqlite.md), providing the benefits of both a relational database system and JSON document storage. This hybrid approach can be advantageous when dealing with complex data relationships while retaining the flexibility of JSON data representation.
-
 
 ## Follow Up
 To further explore RxDB and get started with using it in your frontend applications, consider the following resources:
 
 - [RxDB Quickstart](../quickstart.md): A step-by-step guide to quickly set up RxDB in your project and start leveraging its features.
 - [RxDB GitHub Repository](https://github.com/pubkey/rxdb): The official repository for RxDB, where you can find the code, examples, and community support.
-
 
 By embracing [RxDB](https://rxdb.info/) as your **JSON database** solution, you can tap into the extensive capabilities of JSON data storage. This empowers your applications with offline accessibility, caching, enhanced performance, and effortless data synchronization. RxDB's focus on JavaScript and its robust feature set render it the perfect selection for frontend developers in pursuit of efficient and scalable data storage solutions.

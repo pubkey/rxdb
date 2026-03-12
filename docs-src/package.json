@@ -34,6 +34,7 @@
     "react-countup": "6.5.3",
     "react-dom": "19.2.0",
     "react-tagcloud": "2.3.3",
+    "recharts": "3.8.0",
     "rehype-parse": "7.0.1",
     "rehype-pretty-code": "0.14.1",
     "shiki": "3.19.0",
