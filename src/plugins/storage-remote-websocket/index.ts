@@ -112,10 +112,14 @@ export function startRxStorageRemoteWebsocketServer(
             }
             serializeBlobsForWs(msg)
                 .then(serialized => {
-                    ws.send(serialized);
+                    try {
+                        ws.send(serialized);
+                    } catch (err) {
+                        // WebSocket might have transitioned to CLOSING or CLOSED state
+                    }
                 })
                 .catch(() => {
-                    // WebSocket might be in CLOSING or CLOSED state, silently drop
+                    // serialization error, silently drop
                 });
         },
         fakeVersion: options.fakeVersion
