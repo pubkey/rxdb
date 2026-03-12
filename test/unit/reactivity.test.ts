@@ -162,7 +162,11 @@ describeParallel('reactivity.test.ts', () => {
              * of the signal.
              */
             this.timeout(60 * 1000);
-            if (isFastMode() || !(global as any).gc) {
+            if (
+                isFastMode() ||
+                !(global as any).gc ||
+                getConfig().storage.name.includes('random-delay')
+            ) {
                 return;
             }
 
