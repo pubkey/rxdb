@@ -1,3 +1,5 @@
+import { promiseWait } from '../utils/utils-promise.ts';
+
 export const RX_STORAGE_NAME_DENOKV = 'denokv';
 
 export function getDenoKVIndexName(index: string[]): string {
@@ -35,7 +37,7 @@ export async function commitWithRetry(buildTx: () => any) {
             const locked = err && String((err as any).message).includes('database is locked');
             if (locked && attempt < 10) {
                 attempt++;
-                await new Promise(res => setTimeout(res, 10 * attempt));
+                await promiseWait(10 * attempt);
                 continue;
             }
             throw err;

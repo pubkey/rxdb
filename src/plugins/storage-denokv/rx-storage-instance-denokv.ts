@@ -27,6 +27,7 @@ import { batchArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
+import { promiseWait } from "../utils/utils-promise.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
 import { flatClone } from "../utils/utils-object.ts";
@@ -86,7 +87,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 return result;
             }
             retryCount++;
-            await new Promise(res => setTimeout(res, retryCount * 5));
+            await promiseWait(retryCount * 5);
         }
     }
 
@@ -212,7 +213,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                     break;
                 }
                 writeRetryCount++;
-                await new Promise(res => setTimeout(res, writeRetryCount * 5));
+                await promiseWait(writeRetryCount * 5);
             }
         }
         return ret;
