@@ -269,7 +269,7 @@ export class RxStateBase<T, Reactivity = unknown> {
         const firstNr = parseInt(firstWrite.id, 10);
         const lastNr = parseInt(lastWrite.id, 10);
         if ((lastNr - 5) < firstNr) {
-            // only run if more then 5 write rows
+            // only run if more than 5 write rows
             return;
         }
 

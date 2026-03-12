@@ -44,7 +44,7 @@ export async function startSignalingServerSimplePeer(
     /**
      * Clients can disconnect without telling that to the
      * server. Therefore we have to automatically disconnect clients that
-     * have not send a ping message in the last 2 minutes.
+     * have not sent a ping message in the last 2 minutes.
      */
     (async () => {
         while (!serverClosed) {

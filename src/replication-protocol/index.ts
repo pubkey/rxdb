@@ -242,7 +242,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                                     instance,
                                     clone(docData),
                                     /**
-                                     * Notice the the master never knows
+                                     * Notice that the master never knows
                                      * the client state of the document.
                                      * Therefore we always send all attachments data.
                                      */

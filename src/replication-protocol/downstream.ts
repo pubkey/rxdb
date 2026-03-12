@@ -237,7 +237,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
     /**
      * It can happen that the calls to masterChangesSince() or the changeStream()
-     * are way faster then how fast the documents can be persisted.
+     * are way faster than how fast the documents can be persisted.
      * Therefore we merge all incoming downResults into the nonPersistedFromMaster object
      * and process them together if possible.
      * This often bundles up single writes and improves performance

@@ -389,7 +389,7 @@ export class RxQueryBase<
 
     /**
      * returns the prepared query
-     * which can be send to the storage instance to query for documents.
+     * which can be sent to the storage instance to query for documents.
      * @overwrites itself with the actual value.
      */
     getPreparedQuery(): PreparedQuery<RxDocType> {

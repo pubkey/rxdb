@@ -97,7 +97,7 @@ export function flattenObject(ob: any) {
 
 /**
  * does a flat copy on the objects,
- * is about 3 times faster then using deepClone
+ * is about 3 times faster than using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
 export function flatClone<T>(obj: T | DeepReadonlyObject<T> | Readonly<T>): T {

@@ -44,7 +44,7 @@ export const HOOKS = {
     prePrepareRxQuery: [],
     preCreateRxQuery: [],
     /**
-     * Runs before a query is send to the
+     * Runs before a query is sent to the
      * prepareQuery function of the storage engine.
      */
     prePrepareQuery: [],
