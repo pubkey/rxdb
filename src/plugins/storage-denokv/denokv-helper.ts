@@ -33,9 +33,9 @@ export async function commitWithRetry(buildTx: () => any) {
             return await tx.commit();
         } catch (err) {
             const locked = err && String((err as any).message).includes('database is locked');
-            if (locked && attempt < 3) {
+            if (locked && attempt < 10) {
                 attempt++;
-                await new Promise(res => setTimeout(res, 5 * attempt));
+                await new Promise(res => setTimeout(res, 10 * attempt));
                 continue;
             }
             throw err;

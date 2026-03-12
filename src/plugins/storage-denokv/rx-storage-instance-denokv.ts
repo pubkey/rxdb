@@ -74,6 +74,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         fn: () => Promise<T>
     ): Promise<T> {
         const kv = await this.kvPromise;
+        let retryCount = 0;
         while (true) {
             const writeBlockKeyBefore = await kv.get([this.keySpace], this.kvOptions);
             const writeBlockValueBefore = writeBlockKeyBefore ? writeBlockKeyBefore.value : -1;
@@ -84,6 +85,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             if (writeBlockValueBefore === writeBlockValueAfter) {
                 return result;
             }
+            retryCount++;
+            await new Promise(res => setTimeout(res, retryCount * 5));
         }
     }
 
@@ -110,6 +113,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
          * and so that we can do bulkWrites
          */
         for (const writeBatch of batches) {
+            let writeRetryCount = 0;
             while (true) {
                 const writeBlockKey = await kv.get([this.keySpace], this.kvOptions);
                 const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
@@ -207,6 +211,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                     }
                     break;
                 }
+                writeRetryCount++;
+                await new Promise(res => setTimeout(res, writeRetryCount * 5));
             }
         }
         return ret;
@@ -244,7 +250,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
          * @link https://github.com/denoland/deno/issues/18965
          */
         const result = await this.retryUntilNoWriteInBetween(
-            () => this.query(preparedQuery)
+            () => queryDenoKV(this, preparedQuery)
         );
         return {
             count: result.documents.length,
@@ -315,7 +321,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 tx = tx.check(docDataResult);
                 tx = tx.delete([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
                 Object.values(this.internals.indexes).forEach(indexMetaInner => {
-                    tx = tx.delete([this.keySpace, indexMetaInner.indexId, docId]);
+                    const indexString = indexMetaInner.getIndexableString(docData as any);
+                    tx = tx.delete([this.keySpace, indexMetaInner.indexId, indexString]);
                 });
                 return tx;
             });
