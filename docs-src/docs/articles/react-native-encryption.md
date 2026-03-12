@@ -167,7 +167,7 @@ async function getDatabasePassword() {
 If you need to store files (images, text files, etc.), consider encrypting attachments. RxDB supports attachments that can be encrypted automatically, ensuring your files are protected:
 
 ```ts
-import { createBlob } from 'rxdb/plugins/core';
+import { createBlob } from 'rxdb';
 const doc = await db.secureData.findOne({
     selector: {
         normalField: 'foobar'
