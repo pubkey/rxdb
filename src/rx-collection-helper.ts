@@ -13,9 +13,8 @@ import type {
 import {
     createRevision,
     flatClone,
-    getDefaultRevision,
-    getDefaultRxDocumentMeta,
-    now
+    now,
+    RX_META_LWT_MINIMUM
 } from './plugins/utils/index.ts';
 import {
     fillObjectWithDefaults,
@@ -46,15 +45,15 @@ export function fillObjectDataBeforeInsert<RxDocType>(
             data
         );
     }
-    data._meta = getDefaultRxDocumentMeta();
-    if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
+    data._meta = { lwt: RX_META_LWT_MINIMUM };
+    if (!('_deleted' in data)) {
         data._deleted = false;
     }
-    if (!Object.prototype.hasOwnProperty.call(data, '_attachments')) {
+    if (!('_attachments' in data)) {
         data._attachments = {};
     }
-    if (!Object.prototype.hasOwnProperty.call(data, '_rev')) {
-        data._rev = getDefaultRevision();
+    if (!('_rev' in data)) {
+        data._rev = '';
     }
     return data;
 }

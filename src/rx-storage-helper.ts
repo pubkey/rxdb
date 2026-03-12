@@ -154,6 +154,16 @@ export function throwIfIsStorageWriteError<RxDocType>(
 
 
 /**
+ * Use a counter-based event bulk ID instead of randomToken()
+ * for better performance. The prefix ensures uniqueness across instances.
+ */
+const EVENT_BULK_ID_PREFIX = randomToken(10);
+let eventBulkCounter = 0;
+function nextEventBulkId(): string {
+    return EVENT_BULK_ID_PREFIX + (++eventBulkCounter);
+}
+
+/**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
  * and which events must be emitted and which documents cause a conflict
@@ -188,7 +198,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: RxStorageWriteError<RxDocType>[] = [];
-    const eventBulkId = randomToken(10);
+    const eventBulkId = nextEventBulkId();
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: eventBulkId,
         events: [],
@@ -561,21 +571,33 @@ export function getWrappedStorageInstance<
              * is too costly.
              */
             const time = now();
+            /**
+             * Pre-compute the first revision string for inserts (no previous document).
+             * This avoids repeated string concatenation and getHeightOfRevision() calls
+             * inside the hot loop.
+             */
+            const firstRevision = '1-' + databaseToken;
             for (let index = 0; index < rows.length; index++) {
                 const writeRow = rows[index];
-                const document = flatCloneDocWithMeta(writeRow.document);
-                document._meta.lwt = time;
-
-                /**
-                 * Yes we really want to set the revision here.
-                 * If you make a plugin that relies on having its own revision
-                 * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
-                 */
                 const previous = writeRow.previous;
-                document._rev = createRevision(
-                    databaseToken,
-                    previous
-                );
+                let document;
+                if (previous) {
+                    document = flatCloneDocWithMeta(writeRow.document);
+                    document._meta.lwt = time;
+                    document._rev = createRevision(
+                        databaseToken,
+                        previous
+                    );
+                } else {
+                    /**
+                     * Optimized insert path:
+                     * - Skip cloning _meta since we overwrite it entirely with { lwt: time }
+                     * - Use pre-computed firstRevision instead of calling createRevision()
+                     */
+                    document = flatClone(writeRow.document);
+                    document._meta = { lwt: time };
+                    document._rev = firstRevision;
+                }
                 toStorageWriteRows[index] = {
                     document,
                     previous
