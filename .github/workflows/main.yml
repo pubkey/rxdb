@@ -934,7 +934,7 @@ jobs:
 
   test-others:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - name: Set node version
@@ -990,7 +990,32 @@ jobs:
           bun-version: '1.3.10'
       - run: npm run test:bun:memory
 
-      # deno (must be last because it messes up with file permissions)
+  test-deno-dexie:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set node version
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-npm-others-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-others-x4-
+
+      - name: prepare RxDB core
+        run: |
+          npm install
+          npm run build
+
       - name: Reuse deno cache folder
         uses: actions/cache@v5
         env:
@@ -1014,6 +1039,51 @@ jobs:
           sudo npm i -g cross-env
           deno info
           timeout 30m bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+
+  test-deno-denokv:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set node version
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-npm-others-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-others-x4-
+
+      - name: prepare RxDB core
+        run: |
+          npm install
+          npm run build
+
+      - name: Reuse deno cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-deno-modules
+        with:
+          path: |
+            /home/runner/.cache/deno
+          # do not cache based on package.json because deno install randomly fails
+          # and it would then never succeed on the first run on dependency updateds
+          key: ${{ runner.os }}-deno-x4-
+
+      - name: clear denoKV storage files
+        run: rm -rf /home/runner/.cache/deno/location_data/*
+
+      - uses: denoland/setup-deno@v1
+        with:
+          # https://github.com/denoland/deno/releases
+          deno-version: "2.7.5"
       - name: run deno tests:denokv
         run: |
           sudo npm i -g cross-env
