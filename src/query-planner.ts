@@ -51,15 +51,17 @@ export function getQueryPlan<RxDocType>(
      * Some fields can be part of the selector while not being relevant for sorting
      * because their selector operators specify that in all cases all matching docs
      * would have the same value.
-     * For example the boolean field _deleted.
-     * TODO similar thing could be done for enums.
+     * For example the boolean field _deleted or enum fields.
      */
     const sortIrrelevevantFields = new Set();
     Object.keys(selector).forEach(fieldName => {
         const schemaPart = getSchemaByObjectPath(schema, fieldName);
         if (
             schemaPart &&
-            schemaPart.type === 'boolean' &&
+            (
+                schemaPart.type === 'boolean' ||
+                schemaPart.enum
+            ) &&
             Object.prototype.hasOwnProperty.call((selector as any)[fieldName], '$eq')
         ) {
             sortIrrelevevantFields.add(fieldName);
