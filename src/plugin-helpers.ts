@@ -282,9 +282,9 @@ export function wrapRxStorageInstance<RxDocType>(
         changeStream: () => {
             return instance.changeStream().pipe(
                 tap(() => processingChangesCount$.next(processingChangesCount$.getValue() + 1)),
-                mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>) => {
+                mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, any>) => {
                     const useEvents = await Promise.all(
-                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocumentData<RxDocType>>) => {
+                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocType>) => {
                             const [
                                 documentData,
                                 previousDocumentData

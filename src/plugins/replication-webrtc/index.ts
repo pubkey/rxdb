@@ -268,7 +268,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         }
     }
     removePeer(peer: PeerType) {
-        const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
+        const peerState: WebRTCPeerState<RxDocType, PeerType> = getFromMapOrThrow(this.peerStates$.getValue(), peer) as WebRTCPeerState<RxDocType, PeerType>;
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
         peerState.subs.forEach((sub: Subscription) => sub.unsubscribe());
@@ -292,7 +292,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         }
         this.canceled = true;
         this.subs.forEach((sub: Subscription) => sub.unsubscribe());
-        Array.from(this.peerStates$.getValue().keys()).forEach((peer: PeerType) => {
+        (Array.from(this.peerStates$.getValue().keys()) as PeerType[]).forEach((peer: PeerType) => {
             this.removePeer(peer);
         });
         await this.connectionHandler.close();

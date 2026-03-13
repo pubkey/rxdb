@@ -89,7 +89,7 @@ export class RxPipeline<RxDocType> {
         this.subs.push(
             this.destination.database.internalStore
                 .changeStream()
-                .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<InternalStoreDocType>>, any>) => {
+                .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<InternalStoreDocType>, any>) => {
                     const events = eventBulk.events;
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];

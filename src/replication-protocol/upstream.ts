@@ -93,7 +93,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
     };
 
     const sub = state.input.forkInstance.changeStream()
-        .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>) => {
+        .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, any>) => {
             if (state.events.paused.getValue()) {
                 return;
             }

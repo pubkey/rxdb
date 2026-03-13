@@ -71,7 +71,7 @@ export async function writeToFile(
             location,
             data as string,
             'utf-8',
-            (err: NodeJS.ErrnoException | null) => {
+            (err: Error | null) => {
                 if (err) {
                     rej(err);
                 } else {
@@ -102,7 +102,7 @@ export function metaFileLocation(options: BackupOptions): string {
 export function getMeta(options: BackupOptions): Promise<BackupMetaFileContent> {
     const loc = metaFileLocation(options);
     return new Promise((res, rej) => {
-        fs.readFile(loc, 'utf-8', (err: NodeJS.ErrnoException | null, data: string) => {
+        fs.readFile(loc, 'utf-8', (err: Error | null, data: string) => {
             if (err) {
                 rej(err);
             } else {

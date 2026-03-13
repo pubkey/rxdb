@@ -15,6 +15,7 @@ import {
     Subscription
 } from 'rxjs';
 import type {
+    BulkWriteRow,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -397,7 +398,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
-            ]).subscribe(([down, up]) => {
+            ]).subscribe(([down, up]: [boolean, boolean]) => {
                 const isActive = down || up;
                 this.subjects.active.next(isActive);
             })

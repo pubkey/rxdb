@@ -94,12 +94,12 @@ const RxLocalDocumentPrototype: any = {
         const id = this.primary;
         return _this.parent.eventBulks$.pipe(
             filter((bulk: RxChangeEventBulk<any>) => !!bulk.isLocal),
-            map((bulk: RxChangeEventBulk<any>) => bulk.events.find((ev: RxChangeEvent<RxLocalDocumentData>) => ev.documentId === id)),
-            filter((event: RxChangeEvent<RxLocalDocumentData> | undefined) => !!event),
-            map((changeEvent: RxChangeEvent<RxLocalDocumentData> | undefined) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            map((bulk: RxChangeEventBulk<any>) => bulk.events.find((ev: RxStorageChangeEvent<any>) => ev.documentId === id)),
+            filter((event: RxStorageChangeEvent<any> | undefined) => !!event),
+            map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
             startWith(state.docCache.getLatestDocumentData(this.primary)),
-            distinctUntilChanged((prev: RxDocumentData<RxLocalDocumentData>, curr: RxDocumentData<RxLocalDocumentData>) => prev._rev === curr._rev),
-            map((docData: RxDocumentData<RxLocalDocumentData>) => state.docCache.getCachedRxDocument(docData)),
+            distinctUntilChanged((prev: any, curr: any) => prev._rev === curr._rev),
+            map((docData: any) => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         ) as Observable<any>;;
     },
@@ -159,8 +159,8 @@ const RxLocalDocumentPrototype: any = {
         }
         return this.$
             .pipe(
-                map((localDocument: RxLocalDocument<any, any>) => localDocument._data),
-                map((data: RxDocumentData<RxLocalDocumentData>) => getProperty(data, objPath)),
+                map((localDocument: any) => localDocument._data),
+                map((data: any) => getProperty(data, objPath)),
                 distinctUntilChanged()
             );
     },

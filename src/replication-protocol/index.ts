@@ -198,11 +198,11 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
-            mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, MasterCheckpointType>) => {
+            mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocType>, MasterCheckpointType>) => {
                 const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
                     documents: await Promise.all(
-                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocumentData<RxDocType>>) => {
+                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocType>) => {
                             let docData = writeDocToDocState(event.documentData, hasAttachments, keepMeta);
                             if (hasAttachments) {
                                 docData = await fillWriteDataForAttachmentsChange(
