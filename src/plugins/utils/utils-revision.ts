@@ -30,6 +30,8 @@ export function getHeightOfRevision(revision: string): number {
      * @performance
      * Single-digit revision heights (1-9) are by far the most common case.
      * Use direct char code arithmetic to avoid parseInt overhead.
+     * 48 is the char code of '0', so charCodeAt(0) - 48 converts
+     * a single ASCII digit character to its numeric value.
      */
     if (dashIndex === 1) {
         return revision.charCodeAt(0) - 48;
