@@ -429,7 +429,10 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
         it('reusing exec should execOverDatabase when change happened that cannot be optimized', async () => {
-            const col = await humansCollection.create(2);
+            const col = await humansCollection.create(0);
+            const doc1 = schemaObjects.humanData('0-aaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            const doc2 = schemaObjects.humanData('2-aaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            await col.bulkInsert([doc1, doc2]);
 
             // it is assumed that this query can never handled by event-reduce
             const q = col.find()
