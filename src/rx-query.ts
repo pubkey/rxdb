@@ -390,7 +390,7 @@ export class RxQueryBase<
             const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
             // slice() is needed because sort() mutates the array in-place
             const sortedIds = ids.slice().sort();
-            value = '|findByIds|' + sortedIds.join(',');
+            value = '|findByIds|' + JSON.stringify(sortedIds);
         } else {
             const stringObj = sortObject({
                 op: this.op,
