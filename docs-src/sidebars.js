@@ -107,7 +107,7 @@ const sidebars = {
         },
         {
           type: 'doc',
-          id: 'rx-storage-expo-filesystem',
+          id: 'rx-storage-filesystem-expo',
           label: 'Expo Filesystem 👑 (React Native, Expo)'
         },
         {

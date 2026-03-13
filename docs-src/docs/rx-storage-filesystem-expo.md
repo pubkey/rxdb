@@ -1,8 +1,8 @@
 ---
 title: Expo Filesystem RxStorage for React Native
-slug: rx-storage-expo-filesystem.html
+slug: rx-storage-filesystem-expo.html
 description: A high-performance RxStorage for React Native and Expo apps based on the expo-opfs library.
-image: /headers/rx-storage-expo-filesystem.jpg
+image: /headers/rx-storage-filesystem-expo.jpg
 ---
 
 import PerformanceNode from '@site/src/components/performance-node';
