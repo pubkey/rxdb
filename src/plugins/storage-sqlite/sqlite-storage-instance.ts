@@ -405,7 +405,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             return this.closed;
         }
         this.closed = (async () => {
-            await firstValueFrom(this.openWriteCount$.pipe(filter(v => v === 0)));
+            await firstValueFrom(this.openWriteCount$.pipe(filter((v: number) => v === 0)));
             const database = await this.internals.databasePromise;
 
             /**

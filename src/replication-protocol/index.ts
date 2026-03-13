@@ -20,10 +20,12 @@ import type {
     BulkWriteRow,
     ById,
     DocumentsWithCheckpoint,
+    EventBulk,
     RxConflictHandler,
     RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
+    RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
@@ -134,10 +136,10 @@ export function awaitRxStorageReplicationFirstInSync(
     return firstValueFrom(
         combineLatest([
             state.firstSyncDone.down.pipe(
-                filter(v => !!v)
+                filter((v: boolean) => !!v)
             ),
             state.firstSyncDone.up.pipe(
-                filter(v => !!v)
+                filter((v: boolean) => !!v)
             )
         ])
     ).then(() => { });
@@ -196,11 +198,11 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
-            mergeMap(async (eventBulk) => {
+            mergeMap(async (eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, MasterCheckpointType>) => {
                 const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
                     documents: await Promise.all(
-                        eventBulk.events.map(async (event) => {
+                        eventBulk.events.map(async (event: RxStorageChangeEvent<RxDocumentData<RxDocType>>) => {
                             let docData = writeDocToDocState(event.documentData, hasAttachments, keepMeta);
                             if (hasAttachments) {
                                 docData = await fillWriteDataForAttachmentsChange(

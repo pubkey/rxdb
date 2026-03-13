@@ -4,7 +4,8 @@ import type {
 import type {
     WebRTCConnectionHandler,
     WebRTCMessage,
-    WebRTCResponse
+    WebRTCResponse,
+    PeerWithResponse
 } from './webrtc-types.ts';
 import { filter, firstValueFrom, map } from 'rxjs';
 
@@ -44,9 +45,9 @@ export function sendMessageAndAwaitAnswer<PeerType>(
     const requestId = message.id;
     const answerPromise = firstValueFrom(
         handler.response$.pipe(
-            filter(d => d.peer === peer),
-            filter(d => d.response.id === requestId),
-            map(d => d.response)
+            filter((d: PeerWithResponse<PeerType>) => d.peer === peer),
+            filter((d: PeerWithResponse<PeerType>) => d.response.id === requestId),
+            map((d: PeerWithResponse<PeerType>) => d.response)
         )
     );
     handler.send(peer, message);

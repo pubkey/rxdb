@@ -102,13 +102,13 @@ export const basePrototype = {
         const id = this.primary;
 
         return _this.collection.eventBulks$.pipe(
-            filter(bulk => !bulk.isLocal),
-            map(bulk => bulk.events.find(ev => ev.documentId === id)),
-            filter(event => !!event),
-            map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            filter((bulk: any) => !bulk.isLocal),
+            map((bulk: any) => bulk.events.find((ev: any) => ev.documentId === id)),
+            filter((event: any) => !!event),
+            map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
             startWith(_this.collection._docCache.getLatestDocumentData(id)),
-            distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
-            map(docData => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
+            distinctUntilChanged((prev: RxDocumentData<any>, curr: RxDocumentData<any>) => prev._rev === curr._rev),
+            map((docData: RxDocumentData<any>) => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     },
@@ -158,7 +158,7 @@ export const basePrototype = {
 
         return this.$
             .pipe(
-                map(data => getProperty(data, path)),
+                map((data: any) => getProperty(data, path)),
                 distinctUntilChanged()
             );
     },

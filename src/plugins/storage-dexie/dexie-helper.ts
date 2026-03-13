@@ -267,7 +267,7 @@ export async function getDocsInDb<RxDocType>(
 ): Promise<RxDocumentData<RxDocType>[]> {
     const state = await internals;
     const docsInDb = await state.dexieTable.bulkGet(docIds);
-    return docsInDb.map(d => fromDexieToStorage(state.booleanIndexes, d));
+    return docsInDb.map((d: any) => fromDexieToStorage(state.booleanIndexes, d));
 }
 
 

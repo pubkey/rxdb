@@ -126,7 +126,7 @@ export function startRxStorageRemoteWebsocketServer(
     };
     const exposeState = exposeRxStorageRemote(exposeSettings);
 
-    serverState.onConnection$.subscribe(ws => {
+    serverState.onConnection$.subscribe((ws: WebSocket) => {
         const onCloseHandlers: Function[] = [];
         const connectionIds = new Set<string>();
         ws.onclose = () => {
@@ -187,7 +187,7 @@ export function getRxStorageRemoteWebsocket(
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();
             const websocketClient = await createWebSocketClient(options as any);
-            websocketClient.message$.subscribe(msg => {
+            websocketClient.message$.subscribe((msg: any) => {
                 void deserializeBlobsFromWs(msg)
                     .then(deserialized => {
                         messages$.next(deserialized);

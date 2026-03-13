@@ -120,7 +120,7 @@ export class RxQueryBase<
                  * Performance shortcut.
                  * Changes to local documents are not relevant for the query.
                  */
-                filter(bulk => !bulk.isLocal),
+                filter((bulk: any) => !bulk.isLocal),
                 /**
                  * Start once to ensure the querying also starts
                  * when there where no changes.
@@ -133,19 +133,19 @@ export class RxQueryBase<
                 // do not run stuff above for each new subscriber, only once.
                 shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
                 // do not proceed if result set has not changed.
-                distinctUntilChanged((prev, curr) => {
+                distinctUntilChanged((prev: RxQuerySingleResult<RxDocType> | null, curr: RxQuerySingleResult<RxDocType> | null) => {
                     if (prev && prev.time === ensureNotFalsy(curr).time) {
                         return true;
                     } else {
                         return false;
                     }
                 }),
-                filter(result => !!result),
+                filter((result: RxQuerySingleResult<RxDocType> | null) => !!result),
                 /**
                  * Map the result set to a single RxDocument or an array,
                  * depending on query type
                  */
-                map((result) => {
+                map((result: RxQuerySingleResult<RxDocType> | null) => {
                     return ensureNotFalsy(result).getValue();
                 })
             );
