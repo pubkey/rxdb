@@ -99,9 +99,10 @@ export interface RxCollectionGenerated<RxDocumentType = any, OrmMethods = {}, Re
 }
 
 /**
- * Properties are possibly encrypted so type them as any. TODO this is no longer needed.
+ * Previously all properties were typed as any because they could be encrypted.
+ * This is no longer needed so the type now preserves the original property types.
  */
-export type RxDumpCollectionAsAny<T> = { [P in keyof T]: any };
+export type RxDumpCollectionAsAny<T> = T;
 
 interface RxDumpCollectionBase {
     name: string;
@@ -111,9 +112,6 @@ interface RxDumpCollectionBase {
 export interface RxDumpCollection<RxDocumentType> extends RxDumpCollectionBase {
     docs: RxDocumentType[];
 }
-/**
- * All base properties are typed as any because they can be encrypted.
- */
 export interface RxDumpCollectionAny<RxDocumentType> extends RxDumpCollectionBase {
     docs: RxDumpCollectionAsAny<RxDocumentType>[];
 }

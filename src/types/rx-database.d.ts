@@ -17,7 +17,7 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
-    password?: string | any;
+    password?: string;
     multiInstance?: boolean;
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;
@@ -96,9 +96,6 @@ interface RxDumpDatabaseBase {
 export interface RxDumpDatabase<Col> extends RxDumpDatabaseBase {
     collections: RxDumpCollection<ExtractDTcol<Col[keyof Col]>>[];
 }
-/**
- * All base properties are typed as any because they can be encrypted.
- */
 export interface RxDumpDatabaseAny<Col> extends RxDumpDatabaseBase {
     collections: RxDumpCollection<RxDumpCollectionAsAny<ExtractDTcol<Col[keyof Col]>>>[];
 }
