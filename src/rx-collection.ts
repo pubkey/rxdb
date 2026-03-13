@@ -892,7 +892,7 @@ export class RxCollectionBase<
         const mangoQuery: MangoQuery<RxDocumentType> = {
             selector: {
                 [this.schema.primaryPath]: {
-                    $in: ids
+                    $in: ids.slice(0)
                 }
             } as any
         };

@@ -2312,6 +2312,22 @@ describe('rx-collection.test.ts', () => {
 
                 c.database.close();
             });
+            it('should not be affected by mutating the input ids array', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map(d => d.primary);
+                const query = c.findByIds(ids);
+
+                // mutate the input array after creating the query
+                const originalLength = ids.length;
+                ids.push('non-existent-id');
+                ids.splice(0, 1);
+
+                const res = await query.exec();
+                assert.strictEqual(res.size, originalLength);
+
+                c.database.close();
+            });
         });
     });
     describeParallel('.findByIds.$()', () => {
