@@ -13,7 +13,7 @@ export function setFlutterRxDatabaseConnector(
     }
     (process as any).init = async (databaseName: string) => {
         const db = await createDB(databaseName);
-        db.eventBulks$.subscribe((eventBulk: RxChangeEventBulk<any>) => {
+        const eventSub = db.eventBulks$.subscribe((eventBulk: RxChangeEventBulk<any>) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             sendRxDBEvent(JSON.stringify(eventBulk));
