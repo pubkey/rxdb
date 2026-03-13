@@ -576,10 +576,19 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
+ *
+ * @performance
+ * Avoid async wrapper when awaitBeforeReads is empty (common case).
+ * This eliminates one unnecessary Promise allocation per query execution.
  */
-async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
-        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+        return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()))
+            .then(() => {
+                rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
+                    .then(() => __ensureEqual(rxQuery));
+                return rxQuery._ensureEqualQueue;
+            });
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
