@@ -580,6 +580,10 @@ export function getWrappedStorageInstance<
              * Share a single _meta object for all insert rows in this batch.
              * All inserts in the same bulkWrite share the same timestamp,
              * so we avoid creating a new { lwt: time } object per row.
+             * This shared reference is safe because:
+             * - All documents in one batch receive identical metadata values.
+             * - When a document is later updated, flatCloneDocWithMeta() creates
+             *   a new _meta object, so the shared reference is never mutated.
              */
             const insertMeta = { lwt: time };
 
