@@ -237,16 +237,21 @@ export class RxQueryBase<
 
         /**
          * @performance
-         * For findByIds queries, skip the eventBulks$ subscription because:
-         * 1. Results depend only on specific document IDs, not query predicates
-         * 2. The _latestChangeEvent counter mechanism handles concurrent write detection
-         * 3. Subscribing/unsubscribing to an RxJS Subject has significant overhead
-         *    that dominates the cost of in-memory key lookups
+         * Instead of subscribing to eventBulks$ to detect concurrent writes,
+         * we snapshot the change event counter before and after the query.
+         * If the counter changed, a write happened during execution and
+         * we must re-run the query to ensure correct results.
+         * This avoids the overhead of RxJS Subject subscribe/unsubscribe per query.
          *
-         * Also return RxDocumentData[] directly instead of Map<string, RxDocument>
-         * to avoid double-processing through the doc cache and Map-to-Array-to-Map conversion.
+         * @link https://github.com/pubkey/rxdb/issues/7067
          */
+        const counterBefore = this.collection._changeEventBuffer.getCounter();
+
         if (this.op === 'findByIds') {
+            /**
+             * Return RxDocumentData[] directly instead of Map<string, RxDocument>
+             * to avoid double-processing through the doc cache and Map-to-Array-to-Map conversion.
+             */
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
             const docsData: RxDocumentData<RxDocType>[] = [];
             const mustBeQueried: string[] = [];
@@ -269,32 +274,14 @@ export class RxQueryBase<
                     docsData.push(docs[i]);
                 }
             }
-            return {
+            result = {
                 result: docsData,
                 counter: this.collection._changeEventBuffer.getCounter()
             };
-        }
-
-        /**
-         * If a change happens during the query-run,
-         * we do not know for 100% if that change is already included
-         * into the query results or not. The storage itself does not give that information.
-         * This lead to cases where the query results where outdated but RxDB thought
-         * that the changeevents must not be processed.
-         * To fix this we re-run the query if a change happens directly during the query run.
-         *
-         * @link https://github.com/pubkey/rxdb/issues/7067
-         */
-        let eventsDuringQueryRun = 0;
-        const sub = this.collection.eventBulks$.subscribe(() => {
-            eventsDuringQueryRun++;
-        });
-
-        if (this.op === 'count') {
+        } else if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const countResult = await this.collection.storageInstance.count(preparedQuery);
             if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
-                sub.unsubscribe();
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
@@ -313,8 +300,7 @@ export class RxQueryBase<
             };
         }
 
-        sub.unsubscribe();
-        if (eventsDuringQueryRun > 0) {
+        if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
             await promiseWait(rerunCount * 20);
             return this._execOverDatabase(rerunCount + 1);
         }
