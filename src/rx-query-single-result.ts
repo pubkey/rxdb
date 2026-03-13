@@ -1,11 +1,18 @@
 import { mapDocumentsDataToCacheDocs } from './doc-cache.ts';
-import { now, overwriteGetterForCaching } from './plugins/utils/index.ts';
+import { overwriteGetterForCaching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
 import { RxQueryBase } from './rx-query.ts';
 import type {
     RxDocument,
     RxDocumentData
 } from './types';
+
+/**
+ * Counter to create unique result IDs cheaply.
+ * Used instead of now() to avoid expensive timestamp computation
+ * when we only need uniqueness for change detection.
+ */
+let _resultIdCounter = 0;
 
 /**
  * RxDB needs the query results in multiple formats.
@@ -16,11 +23,11 @@ import type {
  */
 export class RxQuerySingleResult<RxDocType> {
     /**
-     * Time at which the current _result state was created.
+     * Unique identifier for this result state.
      * Used to determine if the result set has changed since X
      * so that we do not emit the same result multiple times on subscription.
      */
-    public readonly time = now();
+    public readonly time = ++_resultIdCounter;
     public readonly documents: RxDocument<RxDocType>[];
     constructor(
         public readonly query: RxQueryBase<RxDocType, unknown>,

@@ -16,7 +16,6 @@ import {
     pluginMissing,
     overwriteGetterForCaching,
     clone,
-    now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
@@ -593,7 +592,7 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
-    rxQuery._lastEnsureEqual = now();
+    rxQuery._lastEnsureEqual = Date.now();
 
     /**
      * Optimisation shortcuts
