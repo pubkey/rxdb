@@ -265,6 +265,11 @@ const sidebars = {
         },
         {
           type: 'doc',
+          id: 'replication-electric-sql',
+          label: 'Electric-SQL Replication'
+        },
+        {
+          type: 'doc',
           id: 'replication-appwrite',
           label: 'Appwrite Replication'
         },

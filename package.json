@@ -330,6 +330,12 @@
       "import": "./dist/esm/plugins/replication-couchdb/index.js",
       "default": "./dist/esm/plugins/replication-couchdb/index.js"
     },
+    "./plugins/replication-electric-sql": {
+      "types": "./dist/types/plugins/replication-electric-sql/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-electric-sql/index.js",
+      "import": "./dist/esm/plugins/replication-electric-sql/index.js",
+      "default": "./dist/esm/plugins/replication-electric-sql/index.js"
+    },
     "./plugins/replication-nats": {
       "types": "./dist/types/plugins/replication-nats/index.d.ts",
       "require": "./dist/cjs/plugins/replication-nats/index.js",
@@ -468,6 +474,7 @@
     "test:replication-supabase": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-supabase.test.js",
     "test:replication-google-drive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-google-drive.test.ts",
     "test:replication-microsoft-onedrive": "npm run transpile && cross-env DEFAULT_STORAGE=dexie tsx ./node_modules/mocha/bin/mocha --config ./config/.mocharc.cjs ./test/replication-microsoft-onedrive.test.ts",
+    "test:replication-electric-sql": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/replication-electric-sql.test.js",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --skipLibCheck --lib \"ES2022,DOM\" ./test/typings.test.ts",
