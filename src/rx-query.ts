@@ -236,6 +236,46 @@ export class RxQueryBase<
         };
 
         /**
+         * @performance
+         * For findByIds queries, skip the eventBulks$ subscription because:
+         * 1. Results depend only on specific document IDs, not query predicates
+         * 2. The _latestChangeEvent counter mechanism handles concurrent write detection
+         * 3. Subscribing/unsubscribing to an RxJS Subject has significant overhead
+         *    that dominates the cost of in-memory key lookups
+         *
+         * Also return RxDocumentData[] directly instead of Map<string, RxDocument>
+         * to avoid double-processing through the doc cache and Map-to-Array-to-Map conversion.
+         */
+        if (this.op === 'findByIds') {
+            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            const docsData: RxDocumentData<RxDocType>[] = [];
+            const mustBeQueried: string[] = [];
+            // first try to fill from docCache
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+                if (docData) {
+                    if (!docData._deleted) {
+                        docsData.push(docData);
+                    }
+                } else {
+                    mustBeQueried.push(id);
+                }
+            }
+            // everything which was not in docCache must be fetched from the storage
+            if (mustBeQueried.length > 0) {
+                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                for (let i = 0; i < docs.length; i++) {
+                    docsData.push(docs[i]);
+                }
+            }
+            return {
+                result: docsData,
+                counter: this.collection._changeEventBuffer.getCounter()
+            };
+        }
+
+        /**
          * If a change happens during the query-run,
          * we do not know for 100% if that change is already included
          * into the query results or not. The storage itself does not give that information.
@@ -265,34 +305,6 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        } else if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const ret = new Map<string, RxDocument<RxDocType>>();
-            const mustBeQueried: string[] = [];
-            // first try to fill from docCache
-            ids.forEach(id => {
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
-                    if (!docData._deleted) {
-                        const doc = this.collection._docCache.getCachedRxDocument(docData);
-                        ret.set(id, doc);
-                    }
-                } else {
-                    mustBeQueried.push(id);
-                }
-            });
-            // everything which was not in docCache must be fetched from the storage
-            if (mustBeQueried.length > 0) {
-                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                docs.forEach(docData => {
-                    const doc = this.collection._docCache.getCachedRxDocument(docData);
-                    ret.set(doc.primary, doc);
-                });
-            }
-            result = {
-                result: ret as any,
-                counter: this.collection._changeEventBuffer.getCounter()
-            };
         } else {
             const queryResult = await queryCollection<RxDocType>(this as any);
             result = {
