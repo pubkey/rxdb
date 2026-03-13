@@ -125,12 +125,14 @@ Future<RxDatabase> getRxDatabase(String jsFilePath, String databaseName) async {
 
 class RxChangeEvent<RxDocType> {
   String operation;
+  dynamic documentData;
   dynamic previousDocumentData;
   String documentId;
   String? collectionName;
   bool isLocal;
   RxChangeEvent(
       this.operation,
+      this.documentData,
       this.previousDocumentData,
       this.documentId,
       this.collectionName,
@@ -140,6 +142,7 @@ class RxChangeEvent<RxDocType> {
   static RxChangeEvent<RxDocType> fromJSON<RxDocType>(dynamic json) {
     RxChangeEvent<RxDocType> ret = RxChangeEvent<RxDocType>(
         json['operation'],
+        json['documentData'],
         json['previousDocumentData'],
         json['documentId'],
         json['collectionName'],
@@ -159,6 +162,8 @@ class RxChangeEventBulk<RxDocType> {
   List<RxChangeEvent<RxDocType>> events;
   dynamic checkpoint;
   String context;
+  int startTime;
+  int endTime;
 
   RxChangeEventBulk(
       this.collectionName,
@@ -168,7 +173,9 @@ class RxChangeEventBulk<RxDocType> {
       this.internal,
       this.events,
       this.checkpoint,
-      this.context);
+      this.context,
+      this.startTime,
+      this.endTime);
 
   static RxChangeEventBulk<RxDocType> fromJSON<RxDocType>(dynamic json) {
     List<dynamic> eventsJson = json['events'];
@@ -185,7 +192,9 @@ class RxChangeEventBulk<RxDocType> {
         json['internal'],
         events,
         json['checkpoint'],
-        json['context']);
+        json['context'],
+        json['startTime'] ?? 0,
+        json['endTime'] ?? 0);
     return ret;
   }
 }
@@ -196,7 +205,11 @@ class RxDatabase<CollectionsOfDatabase> {
   List<dynamic> collectionMeta;
   Map<String, RxCollection<dynamic>> collections = {};
   ReplaySubject<RxChangeEventBulk<dynamic>> eventBulks$;
+  bool closed = false;
   RxDatabase(this.name, this.engine, this.eventBulks$, this.collectionMeta);
+
+  String get _jsDbRef =>
+      "process.databases[" + jsonEncode(name) + "].db";
 
   RxCollection<RxDocType> getCollection<RxDocType>(String name) {
     var meta = collectionMeta.firstWhere((meta) => meta['name'] == name);
@@ -214,6 +227,14 @@ class RxDatabase<CollectionsOfDatabase> {
       return collections[name] as RxCollection<RxDocType>;
     }
   }
+
+  Future<void> close() async {
+    if (closed) return;
+    await engine.evaluate('process.close(' + jsonEncode(name) + ');');
+    closed = true;
+    await eventBulks$.close();
+    engine.close();
+  }
 }
 
 class RxCollection<RxDocType> {
@@ -229,19 +250,69 @@ class RxCollection<RxDocType> {
     docCache = DocCache<RxDocType>(this);
   }
 
+  String get _jsCollRef =>
+      database._jsDbRef + "[" + jsonEncode(name) + "]";
+
   RxQuery<RxDocType> find(dynamic query) {
     var rxQuery = RxQuery<RxDocType>(query, this);
     return rxQuery;
   }
 
+  RxQuerySingle<RxDocType> findOne([dynamic queryOrPrimaryKey]) {
+    var rxQuery = RxQuerySingle<RxDocType>(queryOrPrimaryKey, this);
+    return rxQuery;
+  }
+
   Future<RxDocument<RxDocType>> insert(data) async {
-    dynamic result = await database.engine.evaluate("process.db['" +
-        name +
-        "'].insert(" +
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".insert(" +
         jsonEncode(data) +
         ").then(d => d.toJSON(true));");
     var document = docCache.getByDocData(result);
     return document;
+  }
+
+  Future<List<RxDocument<RxDocType>>> bulkInsert(List<dynamic> docs) async {
+    List<dynamic> result = await database.engine.evaluate(_jsCollRef +
+        ".bulkInsert(" +
+        jsonEncode(docs) +
+        ").then(r => r.success.map(d => d.toJSON(true)));");
+    return result.map((docData) {
+      return docCache.getByDocData(docData);
+    }).toList();
+  }
+
+  Future<List<RxDocument<RxDocType>>> bulkRemove(List<String> ids) async {
+    List<dynamic> result = await database.engine.evaluate(_jsCollRef +
+        ".bulkRemove(" +
+        jsonEncode(ids) +
+        ").then(r => r.success.map(d => d.toJSON(true)));");
+    return result.map((docData) {
+      return docCache.getByDocData(docData);
+    }).toList();
+  }
+
+  Future<RxDocument<RxDocType>> upsert(dynamic data) async {
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".upsert(" +
+        jsonEncode(data) +
+        ").then(d => d.toJSON(true));");
+    var document = docCache.getByDocData(result);
+    return document;
+  }
+
+  Future<int> count([dynamic query]) async {
+    String queryStr = query != null ? jsonEncode(query) : '{}';
+    dynamic result = await database.engine.evaluate(_jsCollRef +
+        ".count(" +
+        queryStr +
+        ").exec();");
+    return (result as num).toInt();
+  }
+
+  Future<void> remove() async {
+    await database.engine.evaluate(_jsCollRef +
+        ".remove();");
   }
 }
 
@@ -250,13 +321,71 @@ class RxDocument<RxDocType> {
   dynamic data;
   RxDocument(this.collection, this.data);
 
+  String get primary => data[collection.primaryKey].toString();
+
+  bool get deleted => data['_deleted'] == true;
+
+  Map<String, dynamic> toJSON() {
+    return Map<String, dynamic>.from(data);
+  }
+
+  dynamic get(String fieldName) {
+    return data[fieldName];
+  }
+
+  /// Sets the value of a field in the local document data.
+  /// This does not persist the change to the database.
+  /// Use [patch] or [incrementalPatch] to persist changes.
+  void set(String fieldName, dynamic value) {
+    data[fieldName] = value;
+  }
+
+  Future<RxDocument<RxDocType>> patch(Map<String, dynamic> patchData) async {
+    String id = primary;
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
+        jsonEncode(id) +
+        ").exec().then(d => d.patch(" +
+        jsonEncode(patchData) +
+        ")).then(d => d.toJSON(true));");
+    data = result;
+    collection.docCache.updateDocData(id, data);
+    return this;
+  }
+
+  Future<RxDocument<RxDocType>> incrementalPatch(
+      Map<String, dynamic> patchData) async {
+    String id = primary;
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
+        jsonEncode(id) +
+        ").exec().then(d => d.incrementalPatch(" +
+        jsonEncode(patchData) +
+        ")).then(d => d.toJSON(true));");
+    data = result;
+    collection.docCache.updateDocData(id, data);
+    return this;
+  }
+
   Future<RxDocument<RxDocType>> remove() async {
-    String id = data[collection.primaryKey];
-    await collection.database.engine.evaluate("process.db['" +
-        collection.name +
-        "'].findOne('" +
-        id +
-        "').exec().then(d => d.remove());");
+    String id = primary;
+    await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
+        jsonEncode(id) +
+        ").exec().then(d => d.remove());");
+    return this;
+  }
+
+  Future<RxDocument<RxDocType>> incrementalRemove() async {
+    String id = primary;
+    await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
+        jsonEncode(id) +
+        ").exec().then(d => d.incrementalRemove());");
     return this;
   }
 }
@@ -271,9 +400,8 @@ class RxQuery<RxDocType> {
   RxQuery(this.query, this.collection);
   Future<List<RxDocument<RxDocType>>> exec() async {
     List<dynamic> result = await collection.database.engine.evaluate(
-        "process.db['" +
-            collection.name +
-            "'].find(" +
+        collection._jsCollRef +
+            ".find(" +
             jsonEncode(query) +
             ").exec().then(docs => docs.map(d => d.toJSON(true)));");
 
@@ -300,6 +428,48 @@ class RxQuery<RxDocType> {
   }
 }
 
+class RxQuerySingle<RxDocType> {
+  dynamic queryOrPrimaryKey;
+  RxCollection<RxDocType> collection;
+
+  Stream<RxDocument<RxDocType>?> results$ = ReplaySubject();
+  bool subscribed = false;
+
+  RxQuerySingle(this.queryOrPrimaryKey, this.collection);
+
+  Future<RxDocument<RxDocType>?> exec() async {
+    String queryArg;
+    if (queryOrPrimaryKey == null) {
+      queryArg = '';
+    } else {
+      queryArg = jsonEncode(queryOrPrimaryKey);
+    }
+    dynamic result = await collection.database.engine.evaluate(
+        collection._jsCollRef +
+        ".findOne(" +
+        queryArg +
+        ").exec().then(d => d ? d.toJSON(true) : null);");
+    if (result == null) {
+      return null;
+    }
+    return collection.docCache.getByDocData(result);
+  }
+
+  Stream<RxDocument<RxDocType>?> $() {
+    if (subscribed == false) {
+      subscribed = true;
+      results$ = MergeStream<dynamic>([
+        collection.eventBulks$,
+        Stream.fromIterable([1])
+      ]).asyncMap((event) async {
+        var newResult = await exec();
+        return newResult;
+      });
+    }
+    return results$;
+  }
+}
+
 class DocCache<RxDocType> {
   RxCollection<RxDocType> collection;
   Map<String, RxDocument<RxDocType>> map = {};
@@ -310,11 +480,19 @@ class DocCache<RxDocType> {
     String id = data[collection.primaryKey];
     var docInCache = map[id];
     if (docInCache != null) {
+      docInCache.data = data;
       return docInCache;
     } else {
       var doc = RxDocument<RxDocType>(collection, data);
       map[id] = doc;
       return doc;
+    }
+  }
+
+  void updateDocData(String id, dynamic data) {
+    var docInCache = map[id];
+    if (docInCache != null) {
+      docInCache.data = data;
     }
   }
 }
