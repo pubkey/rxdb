@@ -2323,8 +2323,17 @@ describe('rx-collection.test.ts', () => {
                 ids.push('non-existent-id');
                 ids.splice(0, 1);
 
+                // update a document to invalidate any cached results
+                const docToUpdate = docs[0];
+                await docToUpdate.incrementalPatch({ firstName: 'mutation-test' });
+
                 const res = await query.exec();
                 assert.strictEqual(res.size, originalLength);
+
+                // verify the updated document is returned with fresh data
+                const updatedDoc = res.get(docToUpdate.primary);
+                assert.ok(updatedDoc);
+                assert.strictEqual(updatedDoc.firstName, 'mutation-test');
 
                 c.database.close();
             });
