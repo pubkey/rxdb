@@ -5,7 +5,8 @@ description: Learn how RxDB simplifies IndexedDB in Vue, offering reactive queri
 image: /headers/vue-indexeddb.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # IndexedDB Database in Vue Apps - The Power of RxDB
 
@@ -238,7 +239,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 
-<PerformanceBrowser />
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

@@ -5,7 +5,8 @@ description: Get up and running quickly with RxDB's Filesystem Node RxStorage. S
 image: /headers/rx-storage-filesystem-node.jpg
 ---
 
-import PerformanceNode from '@site/src/components/performance-node';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # Filesystem Node RxStorage
 
@@ -22,7 +23,7 @@ Using the same database folder in parallel with multiple Node.js processes is su
 
 - It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
 
-<PerformanceNode />
+<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## Usage
 

@@ -5,7 +5,8 @@ description: Discover how RxDB brings flexible, reactive NoSQL to Node.js. Scale
 image: /headers/nodejs-database.jpg
 ---
 
-import PerformanceNode from '@site/src/components/performance-node';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # Node.js Database
 
@@ -85,7 +86,7 @@ const myRxDatabase = await createRxDatabase({
 
 Here is a performance comparison chart of the different storages (lower is better):
 
-<PerformanceNode />
+<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB as Node.js In-Memory Database
 

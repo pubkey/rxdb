@@ -5,7 +5,8 @@ description: Experience a powerful JSON database with RxDB, built for JavaScript
 image: /headers/json-database.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # RxDB - JSON Database for JavaScript
 
@@ -95,7 +96,7 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
 
-<PerformanceBrowser />
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## RxDB in Node.js
 Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON db to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).

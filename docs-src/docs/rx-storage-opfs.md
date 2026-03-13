@@ -5,7 +5,8 @@ description: Discover how to harness the Origin Private File System with RxDB's 
 image: /headers/rx-storage-opfs.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 
@@ -84,7 +85,7 @@ Because the Origin Private File System API provides low-level access to binary f
 
 A good comparison about real world scenarios, are the [performance results](./rx-storage-performance.md) of the various RxDB storages. Here it shows that reads are up to 4x faster compared to IndexedDB, even with complex queries:
 
-<PerformanceBrowser />
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Using OPFS as RxStorage in RxDB
 

@@ -5,7 +5,8 @@ description: Compare LocalStorage, IndexedDB, Cookies, OPFS, and WASM-SQLite for
 image: /headers/localstorage-indexeddb-cookies-opfs-sqlite-wasm.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
 
 <!-- 
 
@@ -327,7 +328,7 @@ There is a wide range of possible improvements and performance hacks to speed up
 Here you can see the [performance comparison](../rx-storage-performance.md) of various RxDB storage implementations which gives a better view of real world performance:
 
 <center>
-  <PerformanceBrowser />
+  <PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 </center>
 
 ## Future Improvements

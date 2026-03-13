@@ -5,8 +5,8 @@ description: Explore real-world benchmarks comparing RxDB's persistent and semi-
 image: /headers/rx-storage-performance.jpg
 ---
 
-import PerformanceBrowser from '@site/src/components/performance-browser';
-import PerformanceNode from '@site/src/components/performance-node';
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_NODE, PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER } from '@site/src/components/performance-data';
 
 ## RxStorage Performance comparison
 
@@ -41,11 +41,11 @@ Here the following metrics are measured:
 
 The performance patterns of the browser based storages are very diverse. The [IndexedDB storage](./rx-storage-indexeddb.md) is recommended for mostly all use cases so you should start with that one. Later you can do performance testings and switch to another storage like [OPFS](./rx-storage-opfs.md) or [memory-mapped](./rx-storage-memory-mapped.md).
 
-<PerformanceBrowser />
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Node/Native based Storages Performance Comparison
 
 For most client-side native applications ([react-native](./react-native-database.md), [electron](./electron-database.md), [capacitor](./capacitor-database.md)), using the [SQLite RxStorage](./rx-storage-sqlite.md) is recommended. For non-client side applications like a server, use the [MongoDB storage](./rx-storage-mongodb.md) instead.
 
-<PerformanceNode />
+<PerformanceChart data={PERFORMANCE_DATA_NODE} metrics={PERFORMANCE_METRICS} />
 
