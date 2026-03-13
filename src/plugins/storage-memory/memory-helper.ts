@@ -142,10 +142,14 @@ export function bulkInsertToState<RxDocType>(
 ) {
     const docsLength = docs.length;
 
-    // Store all documents in the Map
+    // Extract documents and docIds once, store in Map
+    const documents: RxDocumentData<RxDocType>[] = new Array(docsLength);
+    const docIds: string[] = new Array(docsLength);
     for (let i = 0; i < docsLength; ++i) {
         const doc = docs[i].document;
         const docId: string = (doc as any)[primaryPath];
+        documents[i] = doc;
+        docIds[i] = docId;
         state.documents.set(docId, doc as any);
     }
 
@@ -158,12 +162,11 @@ export function bulkInsertToState<RxDocType>(
         // Build new entries
         const newEntries: DocWithIndexString<RxDocType>[] = new Array(docsLength);
         for (let i = 0; i < docsLength; ++i) {
-            const doc = docs[i].document;
-            const docId: string = (doc as any)[primaryPath];
+            const doc = documents[i];
             newEntries[i] = [
                 getIndexableString(doc as any),
                 doc,
-                docId
+                docIds[i]
             ];
         }
 
