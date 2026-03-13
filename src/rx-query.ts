@@ -76,10 +76,11 @@ export class RxQueryBase<
      * Some stats then are used for debugging and cache replacement policies
      */
     public _execOverDatabaseCount: number = 0;
-    public _creationTime = Date.now();
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
-    public _lastEnsureEqual = 0;
+    // Initialized to Date.now() so it doubles as creation time for cache eviction
+    // of never-executed queries.
+    public _lastEnsureEqual = Date.now();
 
     public uncached = false;
 

@@ -86,8 +86,8 @@ export const defaultCacheReplacementPolicyMonad: (
                 if (countRxQuerySubscribers(rxQuery) > 0) {
                     continue;
                 }
-                // directly uncache queries that never executed and are older than unExecutedLifetime
-                if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+                // directly uncache queries whose last activity is older than unExecutedLifetime
+                if (rxQuery._lastEnsureEqual < minUnExecutedLifetime) {
                     uncacheRxQuery(queryCache, rxQuery);
                     continue;
                 }
