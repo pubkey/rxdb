@@ -380,10 +380,13 @@ export class RxQueryBase<
         /**
          * For findByIds queries, build the cache key directly from the IDs
          * to avoid the expensive normalizeMangoQuery + sortObject + JSON.stringify.
+         * The selector structure is guaranteed by findByIds() which always creates
+         * { [primaryPath]: { $in: ids } }
          */
         let value: string;
         if (this.op === 'findByIds') {
             const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            // slice() is needed because sort() mutates the array in-place
             const sortedIds = ids.slice().sort();
             value = '|findByIds|' + sortedIds.join(',');
         } else {
