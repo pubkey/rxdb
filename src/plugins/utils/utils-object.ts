@@ -128,7 +128,7 @@ export function sortObject(obj: any, noArraySort = false): any {
         return obj
             .sort((a, b) => {
                 if (typeof a === 'string' && typeof b === 'string')
-                    return a.localeCompare(b);
+                    return a < b ? -1 : (a > b ? 1 : 0);
 
                 if (typeof a === 'object') return 1;
                 else return -1;
@@ -141,7 +141,7 @@ export function sortObject(obj: any, noArraySort = false): any {
     if (typeof obj === 'object' && !Array.isArray(obj)) {
         const out: any = {};
         Object.keys(obj)
-            .sort((a, b) => a.localeCompare(b))
+            .sort()
             .forEach(key => {
                 out[key] = sortObject(obj[key], noArraySort);
             });
