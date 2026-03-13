@@ -61,6 +61,7 @@ import type {
     RxStorageMemorySettings
 } from './memory-types.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Used in tests to ensure everything
@@ -420,7 +421,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const indexName = getMemoryIndexName(index);
 
             if (!this.internals.byIndex[indexName]) {
-                throw new Error('index does not exist ' + indexName);
+                throw newRxError('SNH', { args: { indexName } });
             }
             const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
