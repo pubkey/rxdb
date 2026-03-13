@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { filter } from 'rxjs';
 
-import type { RxCollection, RxDatabase } from '../../../types/index.d.ts';
+import type { RxCollection, RxCollectionEvent, RxDatabase } from '../../../types/index.d.ts';
 import { useRxDatabase } from './use-rx-database.ts';
 
 /**
@@ -51,8 +51,8 @@ export function useRxCollection<
             setCollection(dbCollection);
         }
         database.collections$
-            .pipe(filter((evt) => evt.collection.name === name))
-            .subscribe((evt) => {
+            .pipe(filter((evt: RxCollectionEvent) => evt.collection.name === name))
+            .subscribe((evt: RxCollectionEvent) => {
                 if (evt.type == 'ADDED') {
                     setCollection(
                         evt.collection as RxCollection<

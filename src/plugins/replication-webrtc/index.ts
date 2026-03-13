@@ -27,6 +27,8 @@ import {
     sendMessageAndAwaitAnswer
 } from './webrtc-helper.ts';
 import type {
+    PeerWithMessage,
+    PeerWithResponse,
     WebRTCConnectionHandler,
     WebRTCPeerState,
     WebRTCReplicationCheckpoint,
@@ -76,8 +78,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
 
 
     pool.subs.push(
-        pool.connectionHandler.error$.subscribe(err => pool.error$.next(err)),
-        pool.connectionHandler.disconnect$.subscribe(peer => pool.removePeer(peer))
+        pool.connectionHandler.error$.subscribe((err: RxError | RxTypeError) => pool.error$.next(err)),
+        pool.connectionHandler.disconnect$.subscribe((peer: PeerType) => pool.removePeer(peer))
     );
 
     /**
@@ -85,8 +87,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
      */
     pool.subs.push(
         pool.connectionHandler.message$.pipe(
-            filter(data => data.message.method === 'token')
-        ).subscribe(data => {
+            filter((data: PeerWithMessage<PeerType>) => data.message.method === 'token')
+        ).subscribe((data: PeerWithMessage<PeerType>) => {
             pool.connectionHandler.send(data.peer, {
                 id: data.message.id,
                 result: storageToken
@@ -98,7 +100,7 @@ export async function replicateWebRTC<RxDocType, PeerType>(
         .pipe(
             filter(() => !pool.canceled)
         )
-        .subscribe(async (peer) => {
+        .subscribe(async (peer: PeerType) => {
             if (options.isPeerValid) {
                 const isValid = await options.isPeerValid(peer);
                 if (!isValid) {
@@ -133,7 +135,7 @@ export async function replicateWebRTC<RxDocType, PeerType>(
             let replicationState: RxWebRTCReplicationState<RxDocType> | undefined;
             if (isMaster) {
                 const masterHandler = pool.masterReplicationHandler;
-                const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(ev => {
+                const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe((ev: any) => {
                     const streamResponse: WebRTCResponse = {
                         id: 'masterChangeStream$',
                         result: ev
@@ -145,16 +147,16 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                 pool.subs.push(
                     masterChangeStreamSub,
                     pool.connectionHandler.disconnect$.pipe(
-                        filter(p => p === peer)
+                        filter((p: PeerType) => p === peer)
                     ).subscribe(() => masterChangeStreamSub.unsubscribe())
                 );
 
                 const messageSub = pool.connectionHandler.message$
                     .pipe(
-                        filter(data => data.peer === peer),
-                        filter(data => data.message.method !== 'token')
+                        filter((data: PeerWithMessage<PeerType>) => data.peer === peer),
+                        filter((data: PeerWithMessage<PeerType>) => data.message.method !== 'token')
                     )
-                    .subscribe(async (data) => {
+                    .subscribe(async (data: PeerWithMessage<PeerType>) => {
                         const { peer: msgPeer, message } = data;
                         /**
                          * If it is not a function,
@@ -195,8 +197,8 @@ export async function replicateWebRTC<RxDocType, PeerType>(
                             return answer.result;
                         },
                         stream$: pool.connectionHandler.response$.pipe(
-                            filter(m => m.response.id === 'masterChangeStream$'),
-                            map(m => m.response.result)
+                            filter((m: PeerWithResponse<PeerType>) => m.response.id === 'masterChangeStream$'),
+                            map((m: PeerWithResponse<PeerType>) => m.response.result)
                         )
 
                     }) : undefined,
@@ -261,7 +263,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
         if (replicationState) {
             peerState.subs.push(
-                replicationState.error$.subscribe(ev => this.error$.next(ev))
+                replicationState.error$.subscribe((ev: RxError | RxTypeError) => this.error$.next(ev))
             );
         }
     }
@@ -269,7 +271,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
         const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
-        peerState.subs.forEach(sub => sub.unsubscribe());
+        peerState.subs.forEach((sub: Subscription) => sub.unsubscribe());
         if (peerState.replicationState) {
             peerState.replicationState.cancel();
         }
@@ -279,7 +281,7 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
     awaitFirstPeer() {
         return firstValueFrom(
             this.peerStates$.pipe(
-                filter(peerStates => peerStates.size > 0)
+                filter((peerStates: Map<PeerType, WebRTCPeerState<RxDocType, PeerType>>) => peerStates.size > 0)
             )
         );
     }
@@ -289,8 +291,8 @@ export class RxWebRTCReplicationPool<RxDocType, PeerType> {
             return;
         }
         this.canceled = true;
-        this.subs.forEach(sub => sub.unsubscribe());
-        Array.from(this.peerStates$.getValue().keys()).forEach(peer => {
+        this.subs.forEach((sub: Subscription) => sub.unsubscribe());
+        Array.from(this.peerStates$.getValue().keys()).forEach((peer: PeerType) => {
             this.removePeer(peer);
         });
         await this.connectionHandler.close();

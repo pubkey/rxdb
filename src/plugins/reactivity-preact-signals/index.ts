@@ -61,7 +61,7 @@ export const PreactSignalsRxReactivityFactory: RxReactivityFactory<PreactSignalR
     ): PreactSignal<Data | InitData> {
         const mySignal = signal<Data | InitData>(initialValue);
         const sigRef: WeakRef = new WeakRef(mySignal);
-        const sub = obs.subscribe(value => {
+        const sub = obs.subscribe((value: Data) => {
             const sig = PREACT_SIGNAL_STATE.signalBySubscription.get(sub);
             if (sig && sigRef.deref()) {
                 sig.value = value;

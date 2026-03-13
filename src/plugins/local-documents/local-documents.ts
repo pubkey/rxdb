@@ -117,7 +117,7 @@ export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollectio
                 };
             }
         }),
-        mergeMap(async (changeEventOrDoc) => {
+        mergeMap(async (changeEventOrDoc: { changeEvent?: RxChangeEvent<RxLocalDocumentData>; doc?: RxLocalDocument<DocData, any, Reactivity> | null }) => {
             if (changeEventOrDoc.changeEvent) {
                 const cE = changeEventOrDoc.changeEvent;
                 if (!cE.isLocal || cE.documentId !== id) {
@@ -138,8 +138,8 @@ export function getLocal$<DocData = any, Reactivity = unknown>(this: RxCollectio
                 };
             }
         }),
-        filter(filterFlagged => filterFlagged.use),
-        map(filterFlagged => {
+        filter((filterFlagged: { use: boolean; doc?: RxLocalDocument<DocData, any, Reactivity> | null }) => filterFlagged.use),
+        map((filterFlagged: { use: boolean; doc?: RxLocalDocument<DocData, any, Reactivity> | null }) => {
             return filterFlagged.doc as any;
         })
     );

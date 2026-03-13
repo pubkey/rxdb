@@ -6,6 +6,7 @@ import {
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import type {
+    RxChangeEventBulk,
     RxCollection,
     RxStorageChangeEvent
 } from './types/index.d.ts';
@@ -48,8 +49,8 @@ export class ChangeEventBuffer<RxDocType> {
     ) {
         this.subs.push(
             this.collection.eventBulks$.pipe(
-                filter(bulk => !bulk.isLocal)
-            ).subscribe(eventBulk => {
+                filter((bulk: RxChangeEventBulk<RxDocType>) => !bulk.isLocal)
+            ).subscribe((eventBulk: RxChangeEventBulk<RxDocType>) => {
                 this.tasks.add(() => this._handleChangeEvents(eventBulk.events));
                 if (this.tasks.size <= 1) {
                     requestIdlePromiseNoQueue().then(() => {

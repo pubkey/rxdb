@@ -7,10 +7,13 @@ import {
     race
 } from 'rxjs';
 import type {
+    EventBulk,
     InternalStoreDocType,
+    RxChangeEventBulk,
     RxCollection,
     RxDocument,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageChangeEvent
 } from '../../types';
 import type {
     CheckpointDocData,
@@ -77,8 +80,8 @@ export class RxPipeline<RxDocType> {
         this.destination.awaitBeforeReads.add(this.waitBeforeWriteFn);
         this.subs.push(
             this.source.eventBulks$.pipe(
-                filter(bulk => !this.stopped && !bulk.isLocal)
-            ).subscribe((bulk) => {
+                filter((bulk: RxChangeEventBulk<RxDocType>) => !this.stopped && !bulk.isLocal)
+            ).subscribe((bulk: RxChangeEventBulk<RxDocType>) => {
                 this.lastSourceDocTime.next(bulk.events[0].documentData._meta.lwt);
                 this.somethingChanged.next({});
             })
@@ -86,7 +89,7 @@ export class RxPipeline<RxDocType> {
         this.subs.push(
             this.destination.database.internalStore
                 .changeStream()
-                .subscribe(eventBulk => {
+                .subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<InternalStoreDocType>>, any>) => {
                     const events = eventBulk.events;
                     for (let index = 0; index < events.length; index++) {
                         const event = events[index];
@@ -286,7 +289,7 @@ export async function addPipeline<RxDocType>(
         pipeline.trigger();
         pipeline.subs.push(
             this.eventBulks$.pipe(
-                filter(bulk => {
+                filter((bulk: RxChangeEventBulk<RxDocType>) => {
                     if (pipeline.stopped) {
                         return false;
                     }

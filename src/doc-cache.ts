@@ -111,7 +111,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
          */
         public documentCreator: (docData: RxDocumentData<RxDocType>) => RxDocument<RxDocType, OrmMethods>
     ) {
-        changes$.subscribe(events => {
+        changes$.subscribe((events: RxStorageChangeEvent<RxDocType>[]) => {
             this.tasks.add(() => {
                 const cacheItemByDocId = this.cacheItemByDocId;
                 for (let index = 0; index < events.length; index++) {
