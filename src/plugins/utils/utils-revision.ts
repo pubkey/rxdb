@@ -1,6 +1,7 @@
 import type {
     RxDocumentData
 } from '../../types/index.d.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Parses the full revision.
@@ -28,7 +29,7 @@ export function parseRevision(revision: string): { height: number; hash: string;
 export function getHeightOfRevision(revision: string): number {
     const dashIndex = revision.indexOf('-');
     if (dashIndex === -1) {
-        throw new Error('malformatted revision: ' + revision);
+        throw newRxError('SNH', { args: { revision } });
     }
     // Fast path for single-digit revision heights (most common case)
     if (dashIndex === 1) {
