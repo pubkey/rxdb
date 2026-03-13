@@ -17,7 +17,11 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
     storage: RxStorage<Internals, InstanceCreationOptions>;
     instanceCreationOptions?: InstanceCreationOptions;
     name: string;
-    password?: string;
+    /**
+     * Typed as `any` because different encryption plugins
+     * may use passwords that are not strings.
+     */
+    password?: string | any;
     multiInstance?: boolean;
     eventReduce?: boolean;
     ignoreDuplicate?: boolean;

@@ -124,7 +124,7 @@ export class RxDatabaseBase<
         public readonly token: string,
         public readonly storage: RxStorage<Internals, InstanceCreationOptions>,
         public readonly instanceCreationOptions: InstanceCreationOptions,
-        public readonly password: string | undefined,
+        public readonly password: any,
         public readonly multiInstance: boolean,
         public readonly eventReduce: boolean = false,
         public options: any = {},
