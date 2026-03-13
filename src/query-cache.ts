@@ -47,6 +47,9 @@ export function uncacheRxQuery(queryCache: QueryCache, rxQuery: RxQuery) {
 
 
 export function countRxQuerySubscribers(rxQuery: RxQuery): number {
+    if (!(rxQuery as any)._refCount$) {
+        return 0;
+    }
     return rxQuery.refCount$.observers.length;
 }
 
