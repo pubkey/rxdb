@@ -127,6 +127,94 @@ export function putWriteRowToState<RxDocType>(
 }
 
 
+/**
+ * @hotPath
+ * Efficiently inserts multiple documents into the state at once.
+ * Instead of inserting one-by-one with Array.splice() (O(n) per insert),
+ * this pre-computes all index entries, sorts them, and merges them into
+ * the existing sorted arrays in a single pass (O(n log n + n + m)).
+ */
+export function bulkInsertToState<RxDocType>(
+    primaryPath: string,
+    state: MemoryStorageInternals<RxDocType>,
+    stateByIndex: MemoryStorageInternalsByIndex<RxDocType>[],
+    docs: { document: RxDocumentData<RxDocType> }[]
+) {
+    const docsLength = docs.length;
+
+    // Store all documents in the Map
+    for (let i = 0; i < docsLength; ++i) {
+        const doc = docs[i].document;
+        const docId: string = (doc as any)[primaryPath];
+        state.documents.set(docId, doc as any);
+    }
+
+    // For each index, batch-compute entries, sort, and merge
+    for (let indexI = 0; indexI < stateByIndex.length; ++indexI) {
+        const byIndex = stateByIndex[indexI];
+        const docsWithIndex = byIndex.docsWithIndex;
+        const getIndexableString = byIndex.getIndexableString;
+
+        // Build new entries
+        const newEntries: DocWithIndexString<RxDocType>[] = new Array(docsLength);
+        for (let i = 0; i < docsLength; ++i) {
+            const doc = docs[i].document;
+            const docId: string = (doc as any)[primaryPath];
+            newEntries[i] = [
+                getIndexableString(doc as any),
+                doc,
+                docId
+            ];
+        }
+
+        // Sort by index string
+        newEntries.sort(sortByIndexStringComparator);
+
+        if (docsWithIndex.length === 0) {
+            // Index is empty, just assign sorted entries
+            byIndex.docsWithIndex = newEntries;
+        } else {
+            // Merge sorted arrays
+            byIndex.docsWithIndex = mergeSortedArrays(docsWithIndex, newEntries, sortByIndexStringComparator);
+        }
+    }
+}
+
+
+/**
+ * Merges two sorted arrays into a single sorted array.
+ * Runs in O(n + m) where n and m are the lengths of the input arrays.
+ */
+function mergeSortedArrays<T>(
+    a: T[],
+    b: T[],
+    comparator: (x: T, y: T) => number
+): T[] {
+    const aLen = a.length;
+    const bLen = b.length;
+    const result: T[] = new Array(aLen + bLen);
+    let ai = 0;
+    let bi = 0;
+    let ri = 0;
+
+    while (ai < aLen && bi < bLen) {
+        if (comparator(a[ai], b[bi]) <= 0) {
+            result[ri++] = a[ai++];
+        } else {
+            result[ri++] = b[bi++];
+        }
+    }
+
+    while (ai < aLen) {
+        result[ri++] = a[ai++];
+    }
+    while (bi < bLen) {
+        result[ri++] = b[bi++];
+    }
+
+    return result;
+}
+
 export function removeDocFromState<RxDocType>(
     primaryPath: string,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
