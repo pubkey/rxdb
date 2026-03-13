@@ -236,25 +236,52 @@ export class RxQueryBase<
         };
 
         /**
-         * If a change happens during the query-run,
-         * we do not know for 100% if that change is already included
-         * into the query results or not. The storage itself does not give that information.
-         * This lead to cases where the query results where outdated but RxDB thought
-         * that the changeevents must not be processed.
-         * To fix this we re-run the query if a change happens directly during the query run.
+         * @performance
+         * Instead of subscribing to eventBulks$ to detect concurrent writes,
+         * we snapshot the change event counter before and after the query.
+         * If the counter changed, a write happened during execution and
+         * we must re-run the query to ensure correct results.
+         * This avoids the overhead of RxJS Subject subscribe/unsubscribe per query.
          *
          * @link https://github.com/pubkey/rxdb/issues/7067
          */
-        let eventsDuringQueryRun = 0;
-        const sub = this.collection.eventBulks$.subscribe(() => {
-            eventsDuringQueryRun++;
-        });
+        const counterBefore = this.collection._changeEventBuffer.getCounter();
 
-        if (this.op === 'count') {
+        if (this.op === 'findByIds') {
+            /**
+             * Return RxDocumentData[] directly instead of Map<string, RxDocument>
+             * to avoid double-processing through the doc cache and Map-to-Array-to-Map conversion.
+             */
+            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            const docsData: RxDocumentData<RxDocType>[] = [];
+            const mustBeQueried: string[] = [];
+            // first try to fill from docCache
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+                if (docData) {
+                    if (!docData._deleted) {
+                        docsData.push(docData);
+                    }
+                } else {
+                    mustBeQueried.push(id);
+                }
+            }
+            // everything which was not in docCache must be fetched from the storage
+            if (mustBeQueried.length > 0) {
+                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                for (let i = 0; i < docs.length; i++) {
+                    docsData.push(docs[i]);
+                }
+            }
+            result = {
+                result: docsData,
+                counter: this.collection._changeEventBuffer.getCounter()
+            };
+        } else if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
             const countResult = await this.collection.storageInstance.count(preparedQuery);
             if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
-                sub.unsubscribe();
                 throw newRxError('QU14', {
                     collection: this.collection,
                     queryObj: this.mangoQuery
@@ -265,34 +292,6 @@ export class RxQueryBase<
                     counter: this.collection._changeEventBuffer.getCounter()
                 };
             }
-        } else if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const ret = new Map<string, RxDocument<RxDocType>>();
-            const mustBeQueried: string[] = [];
-            // first try to fill from docCache
-            ids.forEach(id => {
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
-                    if (!docData._deleted) {
-                        const doc = this.collection._docCache.getCachedRxDocument(docData);
-                        ret.set(id, doc);
-                    }
-                } else {
-                    mustBeQueried.push(id);
-                }
-            });
-            // everything which was not in docCache must be fetched from the storage
-            if (mustBeQueried.length > 0) {
-                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                docs.forEach(docData => {
-                    const doc = this.collection._docCache.getCachedRxDocument(docData);
-                    ret.set(doc.primary, doc);
-                });
-            }
-            result = {
-                result: ret as any,
-                counter: this.collection._changeEventBuffer.getCounter()
-            };
         } else {
             const queryResult = await queryCollection<RxDocType>(this as any);
             result = {
@@ -301,8 +300,7 @@ export class RxQueryBase<
             };
         }
 
-        sub.unsubscribe();
-        if (eventsDuringQueryRun > 0) {
+        if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
             await promiseWait(rerunCount * 20);
             return this._execOverDatabase(rerunCount + 1);
         }
