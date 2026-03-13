@@ -32,7 +32,10 @@ export function getHeightOfRevision(revision: string): number {
     }
     // Fast path for single-digit revision heights (most common case)
     if (dashIndex === 1) {
-        return revision.charCodeAt(0) - 48; // 48 is ASCII code for '0'
+        const code = revision.charCodeAt(0);
+        if (code >= 48 && code <= 57) { // '0'-'9'
+            return code - 48;
+        }
     }
     return parseInt(revision.substring(0, dashIndex), 10);
 }

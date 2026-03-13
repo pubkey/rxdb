@@ -69,7 +69,7 @@ export function getQueryParams<RxDocType>(
              * Avoid creating intermediate wrapper objects on every comparison call.
              * The sortComparator and queryMatcher are called directly.
              */
-            const useSortComparator: DeterministicSortComparator<RxDocType> = getSortComparator(
+            const useSortComparator = getSortComparator(
                 collection.schema.jsonSchema,
                 normalizedMangoQuery
             );
@@ -79,7 +79,7 @@ export function getQueryParams<RxDocType>(
              * that uses the hooks to ensure
              * we send for example compressed documents to match compressed queries.
              */
-            const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = getQueryMatcher(
+            const useQueryMatcher = getQueryMatcher(
                 collection.schema.jsonSchema,
                 normalizedMangoQuery
             );

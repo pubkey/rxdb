@@ -423,7 +423,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
          * since many documents (e.g. from query results) may never
          * have their properties accessed via the cache.
          */
-        this._propertyCache = undefined as any;
+        this._propertyCache = undefined;
 
         /**
          * because of the prototype-merge,
