@@ -502,34 +502,7 @@ export class RxDatabaseBase<
      * runs the given function between idleQueue-locking
      */
     lockedRun<T>(fn: (...args: any[]) => T): T extends Promise<any> ? T : Promise<T> {
-        const idleQueue = this.idleQueue;
-        idleQueue.lock();
-        let result: any;
-        try {
-            result = fn();
-        } catch (err) {
-            idleQueue.unlock();
-            throw err;
-        }
-        if (typeof result?.then === 'function') {
-            /**
-             * Use a single .then(onFulfilled, onRejected) instead of .then().catch()
-             * to save one Promise allocation per async call.
-             */
-            return result.then(
-                (ret: any) => {
-                    idleQueue.unlock();
-                    return ret;
-                },
-                (err: any) => {
-                    idleQueue.unlock();
-                    throw err;
-                }
-            );
-        } else {
-            idleQueue.unlock();
-            return result;
-        }
+        return this.idleQueue.wrapCall(fn) as any;
     }
 
     requestIdlePromise() {
