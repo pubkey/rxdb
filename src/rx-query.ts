@@ -15,7 +15,6 @@ import {
     sortObject,
     pluginMissing,
     overwriteGetterForCaching,
-    clone,
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
@@ -224,16 +223,15 @@ export class RxQueryBase<
     /**
      * executes the query on the database
      * @return results-array with document-data
+     *
+     * @performance Uses .then() instead of async/await for the common query path
+     * to reduce microtask overhead when running multiple queries in parallel.
      */
-    async _execOverDatabase(rerunCount = 0): Promise<{
+    _execOverDatabase(rerunCount = 0): Promise<{
         result: RxDocumentData<RxDocType>[] | number;
         counter: number;
     }> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        let result: {
-            result: RxDocumentData<RxDocType>[] | number;
-            counter: number;
-        };
 
         /**
          * @performance
@@ -247,61 +245,85 @@ export class RxQueryBase<
          */
         const counterBefore = this.collection._changeEventBuffer.getCounter();
 
+        let resultPromise: Promise<{
+            result: RxDocumentData<RxDocType>[] | number;
+            counter: number;
+        }>;
+
         if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const docsData: RxDocumentData<RxDocType>[] = [];
-            const mustBeQueried: string[] = [];
-            // first try to fill from docCache
-            for (let i = 0; i < ids.length; i++) {
-                const id = ids[i];
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
-                    if (!docData._deleted) {
-                        docsData.push(docData);
-                    }
-                } else {
-                    mustBeQueried.push(id);
-                }
-            }
-            // everything which was not in docCache must be fetched from the storage
-            if (mustBeQueried.length > 0) {
-                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                for (let i = 0; i < docs.length; i++) {
-                    docsData.push(docs[i]);
-                }
-            }
-            result = {
-                result: docsData,
-                counter: this.collection._changeEventBuffer.getCounter()
-            };
+            resultPromise = this._execOverDatabaseFindByIds();
         } else if (this.op === 'count') {
-            const preparedQuery = this.getPreparedQuery();
-            const countResult = await this.collection.storageInstance.count(preparedQuery);
-            if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
-                throw newRxError('QU14', {
-                    collection: this.collection,
-                    queryObj: this.mangoQuery
-                });
-            } else {
-                result = {
-                    result: countResult.count,
-                    counter: this.collection._changeEventBuffer.getCounter()
-                };
-            }
+            resultPromise = this._execOverDatabaseCountOp();
         } else {
-            const queryResult = await queryCollection<RxDocType>(this as any);
-            result = {
+            resultPromise = queryCollection<RxDocType>(this as any).then(queryResult => ({
                 result: queryResult.docs,
                 counter: queryResult.counter
+            }));
+        }
+
+        return resultPromise.then(result => {
+            if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
+                return promiseWait(rerunCount * 20).then(() => this._execOverDatabase(rerunCount + 1));
+            }
+            return result;
+        });
+    }
+
+    /**
+     * @internal
+     */
+    private async _execOverDatabaseFindByIds(): Promise<{
+        result: RxDocumentData<RxDocType>[];
+        counter: number;
+    }> {
+        const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+        const docsData: RxDocumentData<RxDocType>[] = [];
+        const mustBeQueried: string[] = [];
+        // first try to fill from docCache
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+            if (docData) {
+                if (!docData._deleted) {
+                    docsData.push(docData);
+                }
+            } else {
+                mustBeQueried.push(id);
+            }
+        }
+        // everything which was not in docCache must be fetched from the storage
+        if (mustBeQueried.length > 0) {
+            const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+            for (let i = 0; i < docs.length; i++) {
+                docsData.push(docs[i]);
+            }
+        }
+        return {
+            result: docsData,
+            counter: this.collection._changeEventBuffer.getCounter()
+        };
+    }
+
+    /**
+     * @internal
+     */
+    private async _execOverDatabaseCountOp(): Promise<{
+        result: number;
+        counter: number;
+    }> {
+        const preparedQuery = this.getPreparedQuery();
+        const countResult = await this.collection.storageInstance.count(preparedQuery);
+        if (countResult.mode === 'slow' && !this.collection.database.allowSlowCount) {
+            throw newRxError('QU14', {
+                collection: this.collection,
+                queryObj: this.mangoQuery
+            });
+        } else {
+            return {
+                result: countResult.count,
+                counter: this.collection._changeEventBuffer.getCounter()
             };
         }
-
-        if (this.collection._changeEventBuffer.getCounter() !== counterBefore) {
-            await promiseWait(rerunCount * 20);
-            return this._execOverDatabase(rerunCount + 1);
-        }
-
-        return result;
     }
 
     /**
@@ -311,7 +333,7 @@ export class RxQueryBase<
      */
     public exec(throwIfMissing: true): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     public exec(): Promise<RxQueryResult>;
-    public async exec(throwIfMissing?: boolean): Promise<any> {
+    public exec(throwIfMissing?: boolean): Promise<any> {
         if (throwIfMissing && this.op !== 'findOne') {
             throw newRxError('QU9', {
                 collection: this.collection.name,
@@ -324,10 +346,14 @@ export class RxQueryBase<
          * run _ensureEqual() here,
          * this will make sure that errors in the query which throw inside of the RxStorage,
          * will be thrown at this execution context and not in the background.
+         *
+         * @performance Use .then() instead of async/await to avoid
+         * an extra microtask from the async wrapper.
          */
-        await _ensureEqual(this as any);
-        const useResult = ensureNotFalsy(this._result);
-        return useResult.getValue(throwIfMissing);
+        return _ensureEqual(this as any).then(() => {
+            const useResult = ensureNotFalsy(this._result);
+            return useResult.getValue(throwIfMissing);
+        });
     }
 
 
@@ -387,15 +413,27 @@ export class RxQueryBase<
      * @overwrites itself with the actual value.
      */
     getPreparedQuery(): PreparedQuery<RxDocType> {
+        const normalizedQuery = this.normalizedQuery;
+        /**
+         * @performance Use shallow clone instead of deep clone.
+         * We only need to clone the objects we mutate (the query itself and its selector).
+         * The sort array and other nested objects are not mutated here,
+         * so they can be shared by reference.
+         */
+        const mangoQuery: FilledMangoQuery<RxDocType> = {
+            ...normalizedQuery,
+            selector: {
+                ...normalizedQuery.selector,
+                _deleted: { $eq: false }
+            }
+        } as any;
+        if (mangoQuery.index) {
+            mangoQuery.index = ['_deleted' as any, ...mangoQuery.index];
+        }
         const hookInput = {
             rxQuery: this,
-            // can be mutated by the hooks so we have to deep clone first.
-            mangoQuery: clone(this.normalizedQuery) as FilledMangoQuery<RxDocType>
+            mangoQuery
         };
-        (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
-        if (hookInput.mangoQuery.index) {
-            hookInput.mangoQuery.index.unshift('_deleted');
-        }
         runPluginHooks('prePrepareQuery', hookInput);
 
         const value = prepareQuery(
@@ -559,10 +597,17 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
+ *
+ * @performance Uses explicit .then() instead of async/await to avoid
+ * extra microtask from the async wrapper.
  */
-async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
-        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+        return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn())).then(() => {
+            rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
+                .then(() => __ensureEqual(rxQuery));
+            return rxQuery._ensureEqualQueue;
+        });
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
@@ -694,8 +739,11 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise
  * of the collection.
  * Does some optimizations to ensure findById is used
  * when specific queries are used.
+ *
+ * @performance Uses .then() instead of async/await for the common query path
+ * to reduce microtask overhead when running multiple queries in parallel.
  */
-export async function queryCollection<RxDocType>(
+export function queryCollection<RxDocType>(
     rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>
 ): Promise<{
     docs: RxDocumentData<RxDocType>[];
@@ -706,7 +754,6 @@ export async function queryCollection<RxDocType>(
      */
     counter: number;
 }> {
-    let docs: RxDocumentData<RxDocType>[] = [];
     const collection = rxQuery.collection;
 
     /**
@@ -716,80 +763,99 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const selector = rxQuery.mangoQuery.selector;
-        const primaryPath = collection.schema.primaryPath as string;
-        // isFindOneByIdQuery guarantees the primary key is in the selector
-        const primarySelectorValue = selector ? (selector as any)[primaryPath] : undefined;
-
-        // Check if there are extra operators on the primary key selector (e.g. $ne alongside $in)
-        const hasExtraOperators = typeof primarySelectorValue === 'object' &&
-            primarySelectorValue !== null &&
-            Object.keys(primarySelectorValue).length > 1;
-
-        // Check if there are selectors OTHER than the primary key
-        const hasOtherSelectors = selector ? Object.keys(selector).length > 1 : false;
-
-        // Normalize single ID to array and de-duplicate to avoid returning the same document multiple times
-        const docIdArray = Array.isArray(rxQuery.isFindOneByIdQuery)
-            ? rxQuery.isFindOneByIdQuery
-            : [rxQuery.isFindOneByIdQuery];
-        const docIds = Array.from(new Set(docIdArray));
-
-        // Separate cache hits from storage misses
-        const cacheMisses: string[] = [];
-        docIds.forEach(docId => {
-            const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-            if (docData && !docData._deleted) {
-                docs.push(docData);
-            } else if (!docData) {
-                // Only fetch from storage if not in cache
-                cacheMisses.push(docId);
-            }
-            // If found but deleted, skip entirely (no refetch)
-        });
-
-        // Fetch only cache misses from storage
-        if (cacheMisses.length > 0) {
-            const docsFromStorage = await collection.storageInstance.findDocumentsById(cacheMisses, false);
-            docs = docs.concat(docsFromStorage);
-        }
-
-        // Apply query matcher if there are extra operators or other selectors
-        if (hasExtraOperators || hasOtherSelectors) {
-            docs = docs.filter(doc => rxQuery.queryMatcher(doc));
-        }
-
-        /**
-         * The findDocumentsById() fast-path also does not apply `skip`/`limit`/`sort`.
-         * To keep behavior consistent with storageInstance.query(), we must
-         * apply them after queryMatcher for both find() and findOne() queries.
-         */
-        // Apply sorting for both find and findOne
-        if (docs.length > 1) {
-            const preparedQuery = rxQuery.getPreparedQuery();
-            const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
-            docs = docs.sort(sortComparator);
-        }
-
-        // Apply skip for both find and findOne
-        const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
-            ? rxQuery.mangoQuery.skip
-            : 0;
-        if (skip > 0) {
-            docs = docs.slice(skip);
-        }
-
-        // Apply limit for both find and findOne
-        const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
-        if (limitIsNumber) {
-            const limit = rxQuery.mangoQuery.limit as number;
-            docs = docs.slice(0, limit);
-        }
-
+        return queryCollectionByIds(rxQuery, collection);
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
-        const queryResult = await collection.storageInstance.query(preparedQuery);
-        docs = queryResult.documents;
+        return collection.storageInstance.query(preparedQuery).then(queryResult => {
+            return {
+                docs: queryResult.documents,
+                counter: collection._changeEventBuffer.getCounter()
+            };
+        });
+    }
+}
+
+/**
+ * Handles the findOneById optimization path for queryCollection.
+ * Separated to keep the common non-findById path as lean as possible.
+ */
+async function queryCollectionByIds<RxDocType>(
+    rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType, any>,
+    collection: RxCollection<RxDocType>
+): Promise<{
+    docs: RxDocumentData<RxDocType>[];
+    counter: number;
+}> {
+    let docs: RxDocumentData<RxDocType>[] = [];
+    const selector = rxQuery.mangoQuery.selector;
+    const primaryPath = collection.schema.primaryPath as string;
+    // isFindOneByIdQuery guarantees the primary key is in the selector
+    const primarySelectorValue = selector ? (selector as any)[primaryPath] : undefined;
+
+    // Check if there are extra operators on the primary key selector (e.g. $ne alongside $in)
+    const hasExtraOperators = typeof primarySelectorValue === 'object' &&
+        primarySelectorValue !== null &&
+        Object.keys(primarySelectorValue).length > 1;
+
+    // Check if there are selectors OTHER than the primary key
+    const hasOtherSelectors = selector ? Object.keys(selector).length > 1 : false;
+
+    // Normalize single ID to array and de-duplicate to avoid returning the same document multiple times
+    const findByIdValue = rxQuery.isFindOneByIdQuery as string | string[];
+    const docIdArray = Array.isArray(findByIdValue)
+        ? findByIdValue
+        : [findByIdValue];
+    const docIds = Array.from(new Set(docIdArray));
+
+    // Separate cache hits from storage misses
+    const cacheMisses: string[] = [];
+    docIds.forEach(docId => {
+        const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId as string);
+        if (docData && !docData._deleted) {
+            docs.push(docData);
+        } else if (!docData) {
+            // Only fetch from storage if not in cache
+            cacheMisses.push(docId);
+        }
+        // If found but deleted, skip entirely (no refetch)
+    });
+
+    // Fetch only cache misses from storage
+    if (cacheMisses.length > 0) {
+        const docsFromStorage = await collection.storageInstance.findDocumentsById(cacheMisses, false);
+        docs = docs.concat(docsFromStorage);
+    }
+
+    // Apply query matcher if there are extra operators or other selectors
+    if (hasExtraOperators || hasOtherSelectors) {
+        docs = docs.filter(doc => rxQuery.queryMatcher(doc));
+    }
+
+    /**
+     * The findDocumentsById() fast-path also does not apply `skip`/`limit`/`sort`.
+     * To keep behavior consistent with storageInstance.query(), we must
+     * apply them after queryMatcher for both find() and findOne() queries.
+     */
+    // Apply sorting for both find and findOne
+    if (docs.length > 1) {
+        const preparedQuery = rxQuery.getPreparedQuery();
+        const sortComparator = getSortComparator(collection.schema.jsonSchema, preparedQuery.query);
+        docs = docs.sort(sortComparator);
+    }
+
+    // Apply skip for both find and findOne
+    const skip = typeof rxQuery.mangoQuery.skip === 'number' && rxQuery.mangoQuery.skip > 0
+        ? rxQuery.mangoQuery.skip
+        : 0;
+    if (skip > 0) {
+        docs = docs.slice(skip);
+    }
+
+    // Apply limit for both find and findOne
+    const limitIsNumber = typeof rxQuery.mangoQuery.limit === 'number' && rxQuery.mangoQuery.limit > 0;
+    if (limitIsNumber) {
+        const limit = rxQuery.mangoQuery.limit as number;
+        docs = docs.slice(0, limit);
     }
 
     return {
