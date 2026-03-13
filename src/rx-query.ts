@@ -248,10 +248,6 @@ export class RxQueryBase<
         const counterBefore = this.collection._changeEventBuffer.getCounter();
 
         if (this.op === 'findByIds') {
-            /**
-             * Return RxDocumentData[] directly instead of Map<string, RxDocument>
-             * to avoid double-processing through the doc cache and Map-to-Array-to-Map conversion.
-             */
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
             const docsData: RxDocumentData<RxDocType>[] = [];
             const mustBeQueried: string[] = [];
