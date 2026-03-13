@@ -44,6 +44,7 @@ import {
 } from './binary-search-bounds.ts';
 import {
     attachmentMapKey,
+    bulkInsertToState,
     compareDocsWithIndex,
     ensureNotRemoved,
     getMemoryCollectionKey,
@@ -180,17 +181,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
          */
         const stateByIndex = Object.values(this.internals.byIndex);
 
+        /**
+         * @performance Use batch insert for bulk inserts to avoid
+         * repeated Array.splice() calls which are O(n) each.
+         * Instead, batch-compute index entries, sort them,
+         * and merge into existing sorted arrays.
+         */
         const bulkInsertDocs = categorized.bulkInsertDocs;
-        for (let i = 0; i < bulkInsertDocs.length; ++i) {
-            const writeRow = bulkInsertDocs[i];
-            const doc = writeRow.document;
-            const docId = doc[primaryPath];
-            putWriteRowToState(
-                docId as any,
+        if (bulkInsertDocs.length > 0) {
+            bulkInsertToState(
+                primaryPath as any,
                 internals,
                 stateByIndex,
-                doc,
-                undefined
+                bulkInsertDocs
             );
         }
 
