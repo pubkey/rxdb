@@ -429,12 +429,13 @@ export class RxDatabaseBase<
         );
 
         /**
-         * If the ensureNoStartupErrors or the bulkWrite error handling throws,
-         * we must close any pre-created storage instances to avoid resource leaks.
+         * Overlap internal store writes with collection creation.
+         * Collection creation (createRxCollection + prepare) does not depend on
+         * the internal store metadata write, so we run them in parallel.
+         * If errors occur in the internal store write, we clean up created collections.
          */
-        let putDocsResult;
-        try {
-            [putDocsResult] = await Promise.all([
+        const internalStoreWritePromise = (async () => {
+            const [putDocsResult] = await Promise.all([
                 this.internalStore.bulkWrite(
                     bulkPutDocs,
                     'rx-database-add-collection'
@@ -466,29 +467,43 @@ export class RxDatabaseBase<
                     }
                 })
             );
+        })();
+
+        const collectionCreationPromises: { [key: string]: Promise<RxCollection<any, {}, {}, {}, Reactivity>>; } = {};
+        Object.keys(collectionCreators).forEach((collectionName) => {
+            const useArgs = useArgsByCollectionName[collectionName];
+            const promise = (async () => {
+                const storageInstance = await collectionStorageInstancePromises[collectionName];
+                return createRxCollection({
+                    ...useArgs,
+                    storageInstance
+                });
+            })();
+            promise.catch(() => { }); // prevent unhandled rejection
+            collectionCreationPromises[collectionName] = promise;
+        });
+
+        try {
+            await internalStoreWritePromise;
         } catch (err) {
             /**
-             * Close any pre-created storage instances on error.
-             * Some instances might have failed to create (rejected promise),
-             * so we catch and ignore errors during cleanup.
+             * Close any pre-created storage instances and collections on error.
              */
-            await Promise.all(
-                Object.values(collectionStorageInstancePromises).map(
+            await Promise.all([
+                ...Object.values(collectionStorageInstancePromises).map(
                     p => p.then(instance => instance.close()).catch(() => { })
+                ),
+                ...Object.values(collectionCreationPromises).map(
+                    p => p.then(collection => collection.close()).catch(() => { })
                 )
-            );
+            ]);
             throw err;
         }
 
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
-                const useArgs = useArgsByCollectionName[collectionName];
-                const storageInstance = await collectionStorageInstancePromises[collectionName];
-                const collection = await createRxCollection({
-                    ...useArgs,
-                    storageInstance
-                });
+                const collection = await collectionCreationPromises[collectionName];
                 (ret as any)[collectionName] = collection;
 
                 // set as getter to the database
