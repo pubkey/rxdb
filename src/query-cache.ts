@@ -10,7 +10,6 @@ import type {
 import {
     getFromMapOrCreate,
     nextTick,
-    now,
     requestIdlePromise
 } from './plugins/utils/index.ts';
 
@@ -68,7 +67,7 @@ export const defaultCacheReplacementPolicyMonad: (
     unExecutedLifetime: number
 ) => RxCacheReplacementPolicy = (
     tryToKeepMax,
-    unExecutedLifetime
+    _unExecutedLifetime
 ) => (
     _collection: RxCollection,
     queryCache: QueryCache
@@ -77,7 +76,6 @@ export const defaultCacheReplacementPolicyMonad: (
                 return;
             }
 
-            const minUnExecutedLifetime = now() - unExecutedLifetime;
             const maybeUncache: RxQuery[] = [];
 
             const queriesInCache = Array.from(queryCache._map.values());
@@ -86,8 +84,8 @@ export const defaultCacheReplacementPolicyMonad: (
                 if (countRxQuerySubscribers(rxQuery) > 0) {
                     continue;
                 }
-                // directly uncache queries whose last activity is older than unExecutedLifetime
-                if (rxQuery._lastEnsureEqual < minUnExecutedLifetime) {
+                // directly uncache queries that have never been executed
+                if (rxQuery._lastEnsureEqual === 0) {
                     uncacheRxQuery(queryCache, rxQuery);
                     continue;
                 }

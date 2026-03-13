@@ -63,6 +63,8 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
+let _ensureEqualCount = 0;
+
 export class RxQueryBase<
     RxDocType,
     RxQueryResult,
@@ -78,9 +80,8 @@ export class RxQueryBase<
     public _execOverDatabaseCount: number = 0;
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
-    // Initialized to Date.now() so it doubles as creation time for cache eviction
-    // of never-executed queries.
-    public _lastEnsureEqual = Date.now();
+    // 0 means never executed. Updated to an incrementing counter on each _ensureEqual call.
+    public _lastEnsureEqual = 0;
 
     public uncached = false;
 
@@ -596,7 +597,7 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
-    rxQuery._lastEnsureEqual = Date.now();
+    rxQuery._lastEnsureEqual = ++_ensureEqualCount;
 
     /**
      * Optimisation shortcuts
