@@ -1,6 +1,7 @@
 ---
 title: Testing
 slug: testing.html
+description: Strategies and patterns for testing RxDB applications, including using the memory RxStorage, resource management with the using keyword, and test helpers.
 image: /headers/testing.jpg
 ---
 

@@ -22,15 +22,18 @@ import {
     writeSingle
 } from '../../rx-storage-helper.ts';
 import type {
+    EventBulk,
     LocalDocumentModifyFunction,
     LocalDocumentParent,
+    RxChangeEvent,
     RxChangeEventBulk,
     RxCollection,
     RxDatabase,
     RxDocument,
     RxDocumentData,
     RxLocalDocument,
-    RxLocalDocumentData
+    RxLocalDocumentData,
+    RxStorageChangeEvent
 } from '../../types/';
 import {
     ensureNotFalsy,
@@ -90,13 +93,13 @@ const RxLocalDocumentPrototype: any = {
 
         const id = this.primary;
         return _this.parent.eventBulks$.pipe(
-            filter(bulk => !!bulk.isLocal),
-            map(bulk => bulk.events.find(ev => ev.documentId === id)),
-            filter(event => !!event),
-            map(changeEvent => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
+            filter((bulk: RxChangeEventBulk<any>) => !!bulk.isLocal),
+            map((bulk: RxChangeEventBulk<any>) => bulk.events.find((ev: RxStorageChangeEvent<any>) => ev.documentId === id)),
+            filter((event: RxStorageChangeEvent<any> | undefined) => !!event),
+            map((changeEvent: any) => getDocumentDataOfRxChangeEvent(ensureNotFalsy(changeEvent))),
             startWith(state.docCache.getLatestDocumentData(this.primary)),
-            distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
-            map(docData => state.docCache.getCachedRxDocument(docData)),
+            distinctUntilChanged((prev: any, curr: any) => prev._rev === curr._rev),
+            map((docData: any) => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         ) as Observable<any>;;
     },
@@ -156,8 +159,8 @@ const RxLocalDocumentPrototype: any = {
         }
         return this.$
             .pipe(
-                map(localDocument => localDocument._data),
-                map(data => getProperty(data, objPath)),
+                map((localDocument: any) => localDocument._data),
+                map((data: any) => getProperty(data, objPath)),
                 distinctUntilChanged()
             );
     },
@@ -306,7 +309,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
         const docCache = new DocumentCache<RxLocalDocumentData, {}>(
             'id',
             database.eventBulks$.pipe(
-                filter(changeEventBulk => {
+                filter((changeEventBulk: RxChangeEventBulk<any>) => {
                     let ret = false;
                     if (
                         // parent is database
@@ -324,7 +327,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
                     }
                     return ret && changeEventBulk.isLocal;
                 }),
-                map(b => b.events)
+                map((b: RxChangeEventBulk<any>) => b.events)
             ),
             docData => createRxLocalDocument(docData, parent) as any
         );
@@ -340,7 +343,7 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
          * Emit the changestream into the collections change stream
          */
         const databaseStorageToken = await database.storageToken;
-        const subLocalDocs = storageInstance.changeStream().subscribe(eventBulk => {
+        const subLocalDocs = storageInstance.changeStream().subscribe((eventBulk: EventBulk<RxStorageChangeEvent<RxLocalDocumentData>, any>) => {
             const events = new Array(eventBulk.events.length);
             const rawEvents = eventBulk.events;
             const collectionName = parent.database ? parent.name : undefined;

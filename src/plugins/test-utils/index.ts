@@ -12,6 +12,7 @@ export * from './test-util.ts';
 export * from './schema-objects.ts';
 export * from './schemas.ts';
 export * from './replication.ts';
+export * from './replication-base-test-suite.ts';
 export * from './performance.ts';
 
 import * as humansCollectionConst from './humans-collection.ts';

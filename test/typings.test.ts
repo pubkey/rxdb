@@ -22,7 +22,9 @@ import {
     RxAttachment,
     RxPlugin,
     addRxPlugin,
-    createBlob
+    createBlob,
+    ReactivityLambda,
+    Reactified
 } from '../plugins/core/index.mjs';
 import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
 
@@ -425,6 +427,81 @@ describe('typings.test.ts', function () {
 
             // @ts-expect-error should be invalid because MyCustomReactivity is not a number
             const dataWrong: number = db.smth.find().$$;
+        });
+        it('should correctly type reactivity with ReactivityLambda HKT pattern', () => {
+            /**
+             * Define a ReactivityLambda that maps T to Set<T>.
+             * This demonstrates the HKT pattern for custom reactivity.
+             */
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+
+            // RxQuery.$$ should return Set<...> not a bare type
+            const querySignal = db.smth.find().$$;
+
+            // @ts-expect-error query.$$ should not be assignable to number
+            const querySignalWrong: number = db.smth.find().$$;
+        });
+        it('should correctly type document property $$ with ReactivityLambda', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            type DbCollections = {
+                smth: RxCollection<DocType, unknown, unknown, unknown, SetReactivityLambda>;
+            };
+            type Db = RxDatabase<DbCollections, unknown, unknown, SetReactivityLambda>;
+            const db: Db = {} as any;
+            const doc: RxDocument<DocType, unknown, SetReactivityLambda> = {} as any;
+
+            // doc.age$$ should be Set<number>
+            const ageSignal: Set<number> = doc.age$$;
+
+            // doc.firstName$$ should be Set<string>
+            const nameSignal: Set<string> = doc.firstName$$;
+
+            // @ts-expect-error age$$ should not be assignable to Set<string>
+            const ageWrong: Set<string> = doc.age$$;
+        });
+        it('should correctly type document.$$ and deleted$$ with ReactivityLambda', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            const doc: RxDocument<DocType, unknown, SetReactivityLambda> = {} as any;
+
+            // doc.$$ should be Set<RxDocument<DocType>>
+            const docSignal: Set<RxDocument<DocType, unknown, SetReactivityLambda>> = doc.$$;
+
+            // doc.deleted$$ should be Set<boolean>
+            const deletedSignal: Set<boolean> = doc.deleted$$;
+
+            // @ts-expect-error deleted$$ should not be assignable to Set<string>
+            const deletedWrong: Set<string> = doc.deleted$$;
+        });
+        it('Reactified should return the type unchanged for non-lambda reactivity (backwards compat)', () => {
+            // When Reactivity is not a ReactivityLambda, Reactified returns it as-is
+            type Result = Reactified<MyCustomReactivity<unknown>, number>;
+            const data: Result = {} as MyCustomReactivity<unknown>;
+
+            // @ts-expect-error should not be assignable to number
+            const wrong: number = {} as Result;
+        });
+        it('should correctly type get$$ with ReactivityLambda', () => {
+            interface SetReactivityLambda extends ReactivityLambda {
+                readonly _result: Set<this['_data']>;
+            }
+            const doc: RxDocument<DocType, unknown, SetReactivityLambda> = {} as any;
+
+            // doc.get$$() should return Set<any>
+            const signal: Set<any> = doc.get$$('age');
+
+            // @ts-expect-error get$$ should not be assignable to number
+            const wrong: number = doc.get$$('age');
         });
     });
 });

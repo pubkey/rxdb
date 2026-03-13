@@ -169,24 +169,24 @@ export class RxCollectionBase<
 
         if (database) { // might be falsy on pseudoInstance
             this.eventBulks$ = database.eventBulks$.pipe(
-                filter(changeEventBulk => changeEventBulk.collectionName === this.name)
+                filter((changeEventBulk: RxChangeEventBulk<any>) => changeEventBulk.collectionName === this.name)
             );
         } else { }
     }
 
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.operation === 'INSERT')
+            filter((cE: RxChangeEvent<RxDocumentType>) => cE.operation === 'INSERT')
         ) as any;
     }
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.operation === 'UPDATE')
+            filter((cE: RxChangeEvent<RxDocumentType>) => cE.operation === 'UPDATE')
         ) as any;
     }
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>> {
         return this.$.pipe(
-            filter(cE => cE.operation === 'DELETE')
+            filter((cE: RxChangeEvent<RxDocumentType>) => cE.operation === 'DELETE')
         ) as any;
     }
 
@@ -282,10 +282,10 @@ export class RxCollectionBase<
         );
 
         this.$ = this.eventBulks$.pipe(
-            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk)),
+            mergeMap((changeEventBulk: RxChangeEventBulk<any>) => rxChangeEventBulkToRxChangeEvents(changeEventBulk)),
         );
         this.checkpoint$ = this.eventBulks$.pipe(
-            map(changeEventBulk => changeEventBulk.checkpoint),
+            map((changeEventBulk: RxChangeEventBulk<any>) => changeEventBulk.checkpoint),
         );
 
         this._changeEventBuffer = createChangeEventBuffer<RxDocumentType>(this.asRxCollection);
@@ -293,8 +293,8 @@ export class RxCollectionBase<
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
             this.eventBulks$.pipe(
-                filter(bulk => !bulk.isLocal),
-                map(bulk => bulk.events)
+                filter((bulk: RxChangeEventBulk<any>) => !bulk.isLocal),
+                map((bulk: RxChangeEventBulk<any>) => bulk.events)
             ),
             docData => {
                 if (!documentConstructor) {
@@ -306,9 +306,9 @@ export class RxCollectionBase<
 
 
         const listenToRemoveSub = this.database.internalStore.changeStream().pipe(
-            filter(bulk => {
+            filter((bulk: any) => {
                 const key = this.name + '-' + this.schema.version;
-                const found = bulk.events.find(event => {
+                const found = bulk.events.find((event: any) => {
                     return (
                         event.documentData.context === 'collection' &&
                         event.documentData.key === key &&
@@ -325,7 +325,7 @@ export class RxCollectionBase<
 
 
         const databaseStorageToken = await this.database.storageToken;
-        const subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+        const subDocs = this.storageInstance.changeStream().subscribe((eventBulk: any) => {
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
                 isLocal: false,
@@ -1208,29 +1208,32 @@ export async function createRxCollection(
         options = {},
         localDocuments = false,
         cacheReplacementPolicy = defaultCacheReplacementPolicy,
-        conflictHandler = defaultConflictHandler
+        conflictHandler = defaultConflictHandler,
+        storageInstance
     }: any
 ): Promise<RxCollection> {
-    const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
-        databaseInstanceToken: database.token,
-        databaseName: database.name,
-        collectionName: name,
-        schema: schema.jsonSchema,
-        options: instanceCreationOptions,
-        multiInstance: database.multiInstance,
-        password: database.password,
-        devMode: overwritable.isDevMode()
-    };
+    if (!storageInstance) {
+        const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+            databaseInstanceToken: database.token,
+            databaseName: database.name,
+            collectionName: name,
+            schema: schema.jsonSchema,
+            options: instanceCreationOptions,
+            multiInstance: database.multiInstance,
+            password: database.password,
+            devMode: overwritable.isDevMode()
+        };
 
-    runPluginHooks(
-        'preCreateRxStorageInstance',
-        storageInstanceCreationParams
-    );
+        runPluginHooks(
+            'preCreateRxStorageInstance',
+            storageInstanceCreationParams
+        );
 
-    const storageInstance = await createRxCollectionStorageInstance(
-        database,
-        storageInstanceCreationParams
-    );
+        storageInstance = await createRxCollectionStorageInstance(
+            database,
+            storageInstanceCreationParams
+        );
+    }
 
     const collection = new RxCollectionBase(
         database,

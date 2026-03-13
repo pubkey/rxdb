@@ -331,7 +331,7 @@ import {
 import {
     getRxStorageSQLite,
     getSQLiteBasicsTauri
-} from 'rxdb/plugins/storage-sqlite';
+} from 'rxdb-premium/plugins/storage-sqlite';
 import sqlite3 from '@tauri-apps/plugin-sql';
 
 const myRxDatabase = await createRxDatabase({

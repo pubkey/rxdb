@@ -201,8 +201,8 @@ export function Slider({ items, width = 300, initialOffsetPx = -30 }: SliderProp
         left center,
         right center,
         color-stop(0, rgba(0, 0, 0, 0)),
-        color-stop(0.3, rgba(0, 0, 0, 1)),
-        color-stop(0.7, rgba(0, 0, 0, 1)),
+        color-stop(0.15, rgba(0, 0, 0, 1)),
+        color-stop(0.85, rgba(0, 0, 0, 1)),
         color-stop(1, rgba(0, 0, 0, 0))
       )`
     } as CSSProperties,

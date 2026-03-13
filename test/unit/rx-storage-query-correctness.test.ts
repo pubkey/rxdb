@@ -378,7 +378,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
-                info: 'compare more then one field',
+                info: 'compare more than one field',
                 query: {
                     selector: {
                         age: {
@@ -489,7 +489,7 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
-                info: 'compare more then one field',
+                info: 'compare more than one field',
                 query: {
                     selector: {
                         age: {
@@ -1840,5 +1840,179 @@ describeParallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: []
             },
         ],
+    });
+
+    /**
+     * Edge cases for number comparison operators specifically
+     * at exact boundary values — verifying that `$gt` with the
+     * exact value of a stored document never returns that document,
+     * and `$gte` always does. Tests minimum and maximum stored values.
+     */
+        testCorrectQueries<{
+            id: string;
+            score: number;
+        }>({
+            testTitle: 'number comparison at exact boundary values including min/max',
+            data: [
+                { id: 'aa', score: 0 },
+                { id: 'bb', score: 1 },
+                { id: 'cc', score: 50 },
+                { id: 'dd', score: 99 },
+                { id: 'ee', score: 100 }
+            ],
+            schema: {
+                primaryKey: 'id',
+                type: 'object',
+                version: 0,
+                properties: {
+                    id: { type: 'string', maxLength: 20 },
+                    score: { type: 'number', minimum: 0, maximum: 100, multipleOf: 1 }
+                },
+                required: ['id', 'score'],
+                indexes: ['score']
+            },
+            queries: [
+                {
+                    info: '$gt at the minimum stored value excludes it',
+                    query: {
+                        selector: { score: { $gt: 0 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['bb', 'cc', 'dd', 'ee']
+                },
+                {
+                    info: '$gte at the minimum stored value includes it',
+                    query: {
+                        selector: { score: { $gte: 0 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+                },
+                {
+                    info: '$lt at the maximum stored value excludes it',
+                    query: {
+                        selector: { score: { $lt: 100 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['aa', 'bb', 'cc', 'dd']
+                },
+                {
+                    info: '$lte at the maximum stored value includes it',
+                    query: {
+                        selector: { score: { $lte: 100 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['aa', 'bb', 'cc', 'dd', 'ee']
+                },
+                {
+                    info: '$gt at an intermediate value excludes it',
+                    query: {
+                        selector: { score: { $gt: 50 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['dd', 'ee']
+                },
+                {
+                    info: '$lt at an intermediate value excludes it',
+                    query: {
+                        selector: { score: { $lt: 50 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: ['aa', 'bb']
+                },
+                {
+                    info: 'single document range with $gte + $lte at same value',
+                    query: {
+                        selector: { score: { $gte: 50, $lte: 50 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    expectedResultDocIds: ['cc']
+                },
+                {
+                    info: 'empty range with $gt + $lt at same value',
+                    query: {
+                        selector: { score: { $gt: 50, $lt: 50 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    expectedResultDocIds: []
+                },
+                {
+                    info: '$gt at the maximum stored value returns empty',
+                    query: {
+                        selector: { score: { $gt: 100 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: []
+                },
+                {
+                    info: '$lt at the minimum stored value returns empty',
+                    query: {
+                        selector: { score: { $lt: 0 } },
+                        sort: [{ score: 'asc' }]
+                    },
+                    selectorSatisfiedByIndex: true,
+                    expectedResultDocIds: []
+                }
+            ]
+        });
+
+    testCorrectQueries<{
+        id: string;
+        status: string;
+        age: number;
+    }>({
+        testTitle: 'enum field with $eq should be sort-irrelevant and return correct results',
+        data: [
+            { id: '1', status: 'active', age: 30 },
+            { id: '2', status: 'inactive', age: 10 },
+            { id: '3', status: 'active', age: 10 },
+            { id: '4', status: 'active', age: 50 },
+            { id: '5', status: 'pending', age: 20 },
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                status: {
+                    type: 'string',
+                    enum: ['active', 'inactive', 'pending'],
+                    maxLength: 20
+                },
+                age: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                ['status', 'age']
+            ],
+            required: ['id', 'status', 'age']
+        },
+        queries: [
+            {
+                info: 'enum $eq with sort on next index field returns correct results in order',
+                query: {
+                    selector: {
+                        status: { $eq: 'active' }
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: ['3', '1', '4']
+            }
+        ]
     });
 });

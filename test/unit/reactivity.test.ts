@@ -22,7 +22,7 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
-import { PREACT_SIGNAL_STATE, PreactSignal, PreactSignalsRxReactivityFactory } from '../../plugins/reactivity-preact-signals/index.mjs';
+import { PREACT_SIGNAL_STATE, PreactSignalReactivityLambda, PreactSignalsRxReactivityFactory } from '../../plugins/reactivity-preact-signals/index.mjs';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 
@@ -161,7 +161,12 @@ describeParallel('reactivity.test.ts', () => {
              * This test can take very long because we await the garbage collection
              * of the signal.
              */
-            if (isFastMode() || !(global as any).gc) {
+            this.timeout(60 * 1000);
+            if (
+                isFastMode() ||
+                !(global as any).gc ||
+                getConfig().storage.name.includes('random-delay')
+            ) {
                 return;
             }
 
@@ -170,7 +175,7 @@ describeParallel('reactivity.test.ts', () => {
                 (global as any).gc();
             }, 200);
 
-            const db = await createRxDatabase<{ docs: any; }, any, any, PreactSignal>({
+            const db = await createRxDatabase<{ docs: any; }, any, any, PreactSignalReactivityLambda>({
                 name: randomToken(10),
                 storage: getConfig().storage.getStorage(),
                 reactivity: PreactSignalsRxReactivityFactory

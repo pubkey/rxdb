@@ -34,8 +34,8 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
 
 
     settings.messages$.pipe(
-        filter(msg => msg.method === 'custom')
-    ).subscribe(async (msg) => {
+        filter((msg: MessageToRemote) => msg.method === 'custom')
+    ).subscribe(async (msg: MessageToRemote) => {
         if (!settings.customRequestHandler) {
             settings.send(createErrorAnswer(
                 msg,
@@ -83,8 +83,8 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
 
     const mustBeRxDBVersion = settings.fakeVersion ? settings.fakeVersion : RXDB_VERSION;
     settings.messages$.pipe(
-        filter(msg => msg.method === 'create')
-    ).subscribe(async (msg) => {
+        filter((msg: MessageToRemote) => msg.method === 'create')
+    ).subscribe(async (msg: MessageToRemote) => {
         if (msg.version !== mustBeRxDBVersion) {
             settings.send(createErrorAnswer(msg, newRxError('RM1', {
                 args: {
@@ -161,14 +161,18 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
          * because we always need them.
          */
         subs.push(
-            storageInstance.changeStream().subscribe(changes => {
+            storageInstance.changeStream().subscribe((changes: any) => {
                 const message: MessageFromRemote = {
                     connectionId,
                     answerTo: 'changestream',
                     method: 'changeStream',
                     return: changes
                 };
-                settings.send(message);
+                try {
+                    settings.send(message);
+                } catch (err) {
+                    // Connection might have been closed, ignore send errors for changeStream events
+                }
             })
         );
 
@@ -199,8 +203,8 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
 
         subs.push(
             settings.messages$.pipe(
-                filter(subMsg => (subMsg as MessageToRemote).connectionId === connectionId)
-            ).subscribe(async (plainMessage) => {
+                filter((subMsg: MessageToRemote) => (subMsg as MessageToRemote).connectionId === connectionId)
+            ).subscribe(async (plainMessage: MessageToRemote) => {
                 const message: MessageToRemote = plainMessage as any;
                 if (
                     message.method === 'create' ||
@@ -263,7 +267,11 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     }
                     settings.send(createAnswer(message, result));
                 } catch (err: any) {
-                    settings.send(createErrorAnswer(message, err));
+                    try {
+                        settings.send(createErrorAnswer(message, err));
+                    } catch (innerErr) {
+                        // Connection might have been closed, ignore send errors
+                    }
                 }
             })
         );

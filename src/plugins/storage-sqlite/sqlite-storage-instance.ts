@@ -303,7 +303,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
         const database = await this.internals.databasePromise;
 
         if (this.closed) {
-            throw new Error('SQLite.findDocumentsById() already closed ' + this.tableName + ' context: ' + context);
+            throw new Error('SQLite.findDocumentsById() already closed ' + this.tableName);
         }
 
         const result = await this.all(
@@ -405,7 +405,7 @@ export class RxStorageInstanceSQLite<RxDocType> implements RxStorageInstance<
             return this.closed;
         }
         this.closed = (async () => {
-            await firstValueFrom(this.openWriteCount$.pipe(filter(v => v === 0)));
+            await firstValueFrom(this.openWriteCount$.pipe(filter((v: number) => v === 0)));
             const database = await this.internals.databasePromise;
 
             /**

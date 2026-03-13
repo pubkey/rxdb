@@ -57,7 +57,7 @@ Setting up RxDB with React is straightforward. It abstracts IndexedDB complexiti
 First, install RxDB and RxJS from npm:
 
 ```bash
-npm install rxdb rxjs --save```
+npm install rxdb rxjs --save
 ```
 
 ### Create a Database and Collections

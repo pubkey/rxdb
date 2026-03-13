@@ -53,7 +53,7 @@ export class RxError extends Error {
     public message: string;
     public url: string;
     public parameters: RxErrorParameters;
-    // always true, use this to detect if its an rxdb-error
+    // always true, use this to detect if it's an rxdb-error
     public rxdb: true;
     constructor(
         code: RxErrorKey,
@@ -84,7 +84,7 @@ export class RxTypeError extends TypeError {
     public message: string;
     public url: string;
     public parameters: RxErrorParameters;
-    // always true, use this to detect if its an rxdb-error
+    // always true, use this to detect if it's an rxdb-error
     public rxdb: true;
     constructor(
         code: RxErrorKey,

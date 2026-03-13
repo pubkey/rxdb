@@ -15,6 +15,7 @@ import type { RxChangeEvent } from './rx-change-event.d.ts';
 import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
 import type { UpdateQuery } from './plugins/update.d.ts';
 import type { CRDTEntry } from './plugins/crdt.d.ts';
+import type { Reactified } from './plugins/reactivity.d.ts';
 
 
 
@@ -36,7 +37,7 @@ type ExtendObservables<RxDocumentType> = {
 };
 
 type ExtendReactivity<RxDocumentType, Reactivity> = {
-    [P in keyof RxDocumentType as `${string & P}$$`]: Reactivity;
+    [P in keyof RxDocumentType as `${string & P}$$`]: Reactified<Reactivity, RxDocumentType[P]>;
 };
 
 /**
@@ -83,9 +84,9 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
     readonly deleted: boolean;
 
     readonly $: Observable<RxDocument<RxDocType, OrmMethods, Reactivity>>;
-    readonly $$: Reactivity;
+    readonly $$: Reactified<Reactivity, RxDocument<RxDocType, OrmMethods, Reactivity>>;
     readonly deleted$: Observable<boolean>;
-    readonly deleted$$: Reactivity;
+    readonly deleted$$: Reactified<Reactivity, boolean>;
 
     readonly primary: string;
     readonly allAttachments$: Observable<RxAttachment<RxDocType, OrmMethods, Reactivity>[]>;
@@ -100,7 +101,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
      */
     _propertyCache: Map<string, any>;
     $emit(cE: RxChangeEvent<RxDocType>): void;
-    _saveData(newData: any, oldData: any): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
+    _saveData(newData: any, oldData: RxDocumentData<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods, Reactivity>>;
     // /internal things
 
     // Returns the latest state of the document
@@ -108,7 +109,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}, Reactivity =
 
 
     get$(path: string): Observable<any>;
-    get$$(path: string): Reactivity;
+    get$$(path: string): Reactified<Reactivity, any>;
     get(objPath: string): DeepReadonly<any>;
     populate(objPath: string): Promise<RxDocument<RxDocType, OrmMethods, Reactivity> | any | null>;
 

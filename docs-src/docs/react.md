@@ -1,6 +1,7 @@
 ---
 title: React
 slug: react.html
+description: Integrate RxDB with React and React Native using dedicated hooks and context providers for reactive, real-time data binding in functional components.
 image: /headers/react.jpg
 ---
 

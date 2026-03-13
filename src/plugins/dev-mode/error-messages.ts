@@ -1212,7 +1212,7 @@ export const ERROR_MESSAGES = {
 
     // plugins/react
     R1: {
-        message: 'You must provide a valid RxDatabase to the the RxDatabaseProvider',
+        message: 'You must provide a valid RxDatabase to the RxDatabaseProvider',
         cause: 'The database provided to the provider is invalid.',
         fix: 'Ensure you pass a valid RxDatabase instance.',
         docs: 'https://rxdb.info/react.html?console=errors&code=R1'

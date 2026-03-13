@@ -23,7 +23,7 @@ import {
 
 import { 
     getRxStorageIndexedDB
-} from 'rxdb-premium/plugins/indexeddb';
+} from 'rxdb-premium/plugins/storage-indexeddb';
 
 const bestIndexes = await findBestIndex({
     schema: myRxJsonSchema, // see Schema Validation

@@ -15,7 +15,6 @@ To ensure there are not multiple people working on the same task, before you sta
 
 ## Open Tasks (pick one and work on it)
 
-- Change the docusuaurs config to use server rendered codeblocks instead of loading the big prismjs into the main.js javascript bundle (use sth like Shiki instead).
 - Find a way to correctly type [custom-reactivity adapters](https://rxdb.info/reactivity.html) (aka signals) so that they know the correct document type:
     ```ts
     const signal = myRxDocument.get$$('foobar'); // <- This has the type Signal<any> but should have Signal<MyDocumentType>

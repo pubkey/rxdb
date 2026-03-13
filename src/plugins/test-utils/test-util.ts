@@ -74,7 +74,7 @@ export function ensureReplicationHasNoErrors(replicationState: RxReplicationStat
     /**
      * We do not have to unsubscribe because the observable will cancel anyway.
      */
-    replicationState.error$.subscribe(err => {
+    replicationState.error$.subscribe((err: any) => {
         console.error('ensureReplicationHasNoErrors() has error:');
         console.log(err);
         if (err?.parameters?.errors) {

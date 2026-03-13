@@ -35,6 +35,9 @@ import {
     RxJsonSchema,
     RxDocument,
 } from 'rxdb/plugins/core';
+import {
+    getRxStorageLocalstorage
+} from 'rxdb/plugins/storage-localstorage';
 ```
 
 
@@ -180,7 +183,8 @@ const heroSchema: RxJsonSchema<HeroDocType> = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         firstName: {
             type: 'string'

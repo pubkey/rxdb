@@ -4,6 +4,7 @@ import {
 } from '../replication/index.ts';
 import {
     WebsocketClientOptions,
+    WebsocketMessageResponseType,
     WebsocketMessageType
 } from './websocket-types.ts';
 
@@ -46,7 +47,7 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
     const connected$ = new BehaviorSubject<boolean>(false);
     const message$ = new Subject<any>();
     const error$ = new Subject<any>();
-    wsClient.onerror = (err) => {
+    wsClient.onerror = (err: any) => {
 
         console.log('--- WAS CLIENT GOT ERROR:');
         console.log(err.error.message);
@@ -78,7 +79,7 @@ export async function createWebSocketClient<RxDocType>(options: WebsocketClientO
         connected$.next(false);
     };
 
-    wsClient.onmessage = (messageObj) => {
+    wsClient.onmessage = (messageObj: any) => {
         const message = JSON.parse(messageObj.data);
         message$.next(message);
     };
@@ -113,8 +114,8 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         pull: {
             batchSize: options.batchSize,
             stream$: messages$.pipe(
-                filter(msg => msg.id === 'stream' && msg.collection === options.collection.name),
-                map(msg => msg.result)
+                filter((msg: WebsocketMessageResponseType) => msg.id === 'stream' && msg.collection === options.collection.name),
+                map((msg: WebsocketMessageResponseType) => msg.result)
             ),
             async handler(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) {
                 const requestId = getRequestId();
@@ -127,8 +128,8 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 wsClient.send(JSON.stringify(request));
                 const result = await firstValueFrom(
                     messages$.pipe(
-                        filter(msg => msg.id === requestId),
-                        map(msg => msg.result)
+                        filter((msg: WebsocketMessageResponseType) => msg.id === requestId),
+                        map((msg: WebsocketMessageResponseType) => msg.result)
                     )
                 );
                 return result;
@@ -147,17 +148,17 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 wsClient.send(JSON.stringify(request));
                 return firstValueFrom(
                     messages$.pipe(
-                        filter(msg => msg.id === requestId),
-                        map(msg => msg.result)
+                        filter((msg: WebsocketMessageResponseType) => msg.id === requestId),
+                        map((msg: WebsocketMessageResponseType) => msg.result)
                     )
                 );
             }
         }
     });
 
-    websocketClient.error$.subscribe(err => replicationState.subjects.error.next(err));
+    websocketClient.error$.subscribe((err: RxError) => replicationState.subjects.error.next(err));
 
-    websocketClient.connected$.subscribe(isConnected => {
+    websocketClient.connected$.subscribe((isConnected: boolean) => {
         if (isConnected) {
             /**
              * When the client goes offline and online again,

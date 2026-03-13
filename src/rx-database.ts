@@ -14,6 +14,7 @@ import type {
     BackupOptions,
     RxStorage,
     RxStorageInstance,
+    RxStorageInstanceCreationParams,
     BulkWriteRow,
     RxChangeEvent,
     RxDatabaseCreator,
@@ -82,7 +83,7 @@ import {
     INTERNAL_STORE_SCHEMA,
     _collectionNamePrimary
 } from './rx-database-internal-store.ts';
-import { removeCollectionStorages } from './rx-collection-helper.ts';
+import { createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
 import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import type { RxReactivityFactory } from './types/plugins/reactivity.d.ts';
@@ -90,7 +91,7 @@ import { rxChangeEventBulkToRxChangeEvents } from './rx-change-event.ts';
 
 /**
  * stores the used database names+storage names
- * so we can throw when the same database is created more then once.
+ * so we can throw when the same database is created more than once.
  */
 const USED_DATABASE_NAMES: Set<string> = new Set();
 const DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP = new Map<string, Set<Promise<RxDatabase>>>();
@@ -237,7 +238,7 @@ export class RxDatabaseBase<
     public collectionsSubject$ = new Subject<RxCollectionEvent>();
     private observable$: Observable<RxChangeEvent<any>> = this.eventBulks$
         .pipe(
-            mergeMap(changeEventBulk => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
+            mergeMap((changeEventBulk: RxChangeEventBulk<any>) => rxChangeEventBulkToRxChangeEvents(changeEventBulk))
         );
 
     /**
@@ -382,43 +383,102 @@ export class RxDatabaseBase<
         );
 
 
-        const putDocsResult = await this.internalStore.bulkWrite(
-            bulkPutDocs,
-            'rx-database-add-collection'
-        );
+        /**
+         * Optimization: Start creating collection storage instances
+         * in parallel with the internal store bulkWrite and startup error check.
+         * Storage instance creation is independent of the internal store write,
+         * so we can overlap these I/O operations to reduce time-to-first-insert.
+         */
+        const collectionStorageInstancePromises: { [key: string]: Promise<RxStorageInstance<any, any, any>>; } = {};
+        Object.keys(collectionCreators).forEach((collectionName) => {
+            const useArgs = useArgsByCollectionName[collectionName];
+            const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+                databaseInstanceToken: this.token,
+                databaseName: this.name,
+                collectionName: collectionName,
+                schema: useArgs.schema.jsonSchema,
+                options: useArgs.instanceCreationOptions || {},
+                multiInstance: this.multiInstance,
+                password: this.password,
+                devMode: overwritable.isDevMode()
+            };
+            runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
+            const promise = createRxCollectionStorageInstance(
+                this.asRxDatabase,
+                storageInstanceCreationParams
+            );
+            /**
+             * Prevent unhandled promise rejection warnings.
+             * If ensureNoStartupErrors() or the bulkWrite error handling throws
+             * (e.g. password mismatch, schema mismatch), these promises might
+             * never be awaited. The actual errors are still propagated when
+             * the promises are awaited in Phase 5 below.
+             */
+            promise.catch(() => { });
+            collectionStorageInstancePromises[collectionName] = promise;
+        });
 
-        await ensureNoStartupErrors(this);
+        /**
+         * If the ensureNoStartupErrors or the bulkWrite error handling throws,
+         * we must close any pre-created storage instances to avoid resource leaks.
+         */
+        let putDocsResult;
+        try {
+            [putDocsResult] = await Promise.all([
+                this.internalStore.bulkWrite(
+                    bulkPutDocs,
+                    'rx-database-add-collection'
+                ),
+                ensureNoStartupErrors(this)
+            ]);
 
-        await Promise.all(
-            putDocsResult.error.map(async (error) => {
-                if (error.status !== 409) {
-                    throw newRxError('DB12', {
-                        database: this.name,
-                        writeError: error
-                    });
-                }
-                const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
-                const collectionName = docInDb.data.name;
-                const schema = (schemas as any)[collectionName];
-                // collection already exists but has different schema
-                if (docInDb.data.schemaHash !== await schema.hash) {
-                    throw newRxError('DB6', {
-                        database: this.name,
-                        collection: collectionName,
-                        previousSchemaHash: docInDb.data.schemaHash,
-                        schemaHash: await schema.hash,
-                        previousSchema: docInDb.data.schema,
-                        schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
-                    });
-                }
-            })
-        );
+            await Promise.all(
+                putDocsResult.error.map(async (error) => {
+                    if (error.status !== 409) {
+                        throw newRxError('DB12', {
+                            database: this.name,
+                            writeError: error
+                        });
+                    }
+                    const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
+                    const collectionName = docInDb.data.name;
+                    const schema = (schemas as any)[collectionName];
+                    // collection already exists but has different schema
+                    if (docInDb.data.schemaHash !== await schema.hash) {
+                        throw newRxError('DB6', {
+                            database: this.name,
+                            collection: collectionName,
+                            previousSchemaHash: docInDb.data.schemaHash,
+                            schemaHash: await schema.hash,
+                            previousSchema: docInDb.data.schema,
+                            schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
+                        });
+                    }
+                })
+            );
+        } catch (err) {
+            /**
+             * Close any pre-created storage instances on error.
+             * Some instances might have failed to create (rejected promise),
+             * so we catch and ignore errors during cleanup.
+             */
+            await Promise.all(
+                Object.values(collectionStorageInstancePromises).map(
+                    p => p.then(instance => instance.close()).catch(() => { })
+                )
+            );
+            throw err;
+        }
 
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
                 const useArgs = useArgsByCollectionName[collectionName];
-                const collection = await createRxCollection(useArgs);
+                const storageInstance = await collectionStorageInstancePromises[collectionName];
+                const collection = await createRxCollection({
+                    ...useArgs,
+                    storageInstance
+                });
                 (ret as any)[collectionName] = collection;
 
                 // set as getter to the database

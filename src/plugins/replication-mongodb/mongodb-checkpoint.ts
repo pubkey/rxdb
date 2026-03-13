@@ -76,7 +76,7 @@ export async function getDocsSinceChangestreamCheckpoint<MongoDocType>(
                     change.operationType === 'update' ||
                     change.operationType === 'replace'
                 ) {
-                    resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }).then(doc => {
+                    resultByDocId.set(docId, mongoCollection.findOne({ _id: docId }).then((doc: any) => {
                         if (doc) {
                             return mongodbDocToRxDB(primaryPath, doc);
                         } else {
@@ -118,7 +118,7 @@ export async function getDocsSinceDocumentCheckpoint<MongoDocType>(
         .limit(limit)
         .toArray();
 
-    return docs.map(d => mongodbDocToRxDB(primaryPath, d as any));
+    return docs.map((d: any) => mongodbDocToRxDB(primaryPath, d as any));
 }
 
 

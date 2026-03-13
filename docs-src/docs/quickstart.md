@@ -115,6 +115,18 @@ sqliteBasics: getSQLiteBasicsNodeNative(DatabaseSync)
 });
 ```
 
+#### Expo Filesystem 👑
+
+For React Native and Expo applications, the [Expo Filesystem storage](./rx-storage-filesystem-expo.md) offers superior performance compared to SQLite and Async Storage by utilizing OPFS JSI bindings.
+
+```ts
+import {
+    getRxStorageExpoAsync
+} from 'rxdb-premium/plugins/storage-filesystem-expo';
+
+let storage = getRxStorageExpoAsync();
+```
+
 #### And more...
 
 There are many more storages such as [MongoDB](./rx-storage-mongodb.md), [DenoKV](./rx-storage-denokv.md), [Filesystem](./rx-storage-filesystem-node.md), [Memory](./rx-storage-memory.md), [Memory-Mapped](./rx-storage-memory-mapped.md), [FoundationDB](./rx-storage-foundationdb.md) and more. [Browse the full list of storages](/rx-storage.html).

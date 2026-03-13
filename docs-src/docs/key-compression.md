@@ -1,6 +1,7 @@
 ---
 title: Key Compression
 slug: key-compression.html
+description: Use the RxDB key compression plugin to store documents in a compressed format, saving up to 40% disc space through JSON schema-based property name shortening.
 image: /headers/key-compression.jpg
 ---
 
@@ -54,7 +55,7 @@ const mySchema = {
       id: {
           type: 'string',
           maxLength: 100 // <- the primary key must have set maxLength
-      }
+      },
       /* ... */
   }
 };

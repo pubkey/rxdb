@@ -127,7 +127,7 @@ describe('replication.test.ts', () => {
     });
     describeParallel('non-live replication', () => {
         it('should replicate both sides', async () => {
-            const docsPerSide = 15;
+            const docsPerSide = isFastMode() ? 5 : 15;
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: docsPerSide,
                 remote: docsPerSide
@@ -384,7 +384,7 @@ describe('replication.test.ts', () => {
             remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on erroring replication', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
+            const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 3 : 10, remote: isFastMode() ? 3 : 10 });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -416,7 +416,7 @@ describe('replication.test.ts', () => {
             await remoteCollection.database.close();
         });
         it('should never resolve awaitInitialReplication() on canceled replication', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
+            const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 3 : 10, remote: isFastMode() ? 3 : 10 });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
@@ -631,7 +631,7 @@ describe('replication.test.ts', () => {
         });
         describe('.awaitInSync()', () => {
             it('should resolve after some time', async () => {
-                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+                const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 2 : 5, remote: isFastMode() ? 2 : 5 });
 
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
@@ -650,7 +650,7 @@ describe('replication.test.ts', () => {
                 remoteCollection.database.close();
             });
             it('should never resolve when offline', async () => {
-                const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+                const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 2 : 5, remote: isFastMode() ? 2 : 5 });
 
                 const replicationState = replicateRxCollection({
                     collection: localCollection,
@@ -678,7 +678,7 @@ describe('replication.test.ts', () => {
             });
         });
         it('should clean up the replication meta storage when the get collection gets removed', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
+            const { localCollection, remoteCollection } = await getTestCollections({ local: isFastMode() ? 2 : 5, remote: isFastMode() ? 2 : 5 });
             const localDbName = localCollection.database.name;
 
             const replicationState1 = replicateRxCollection({
@@ -1973,7 +1973,7 @@ describe('replication.test.ts', () => {
         it('upstreamInitialSync() running on all data instead of continuing from checkpoint', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({
                 local: 0,
-                remote: 30
+                remote: isFastMode() ? 10 : 30
             });
 
             let replicationState = replicateRxCollection({

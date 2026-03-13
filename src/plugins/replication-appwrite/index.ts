@@ -95,12 +95,12 @@ export function replicateAppwrite<RxDocType>(
                 options.collectionId,
                 queries
             );
-            const lastDoc = lastOfArray(result.documents);
+            const lastDoc: any = lastOfArray(result.documents);
             const newCheckpoint: AppwriteCheckpointType | undefined = lastDoc ? {
                 id: lastDoc.$id,
                 updatedAt: lastDoc.$updatedAt
             } : undefined;
-            const resultDocs: WithDeleted<RxDocType>[] = result.documents.map(doc => {
+            const resultDocs: WithDeleted<RxDocType>[] = result.documents.map((doc: any) => {
                 return appwriteDocToRxDB<RxDocType>(
                     doc,
                     primaryKey,
@@ -141,7 +141,7 @@ export function replicateAppwrite<RxDocType>(
                     options.collectionId,
                     [query]
                 );
-                updateDocsOnServer.documents.forEach(doc => {
+                updateDocsOnServer.documents.forEach((doc: any) => {
                     const docDataInDb = appwriteDocToRxDB<RxDocType>(doc, primaryKey, options.deletedField);
                     const docId: string = doc.$id;
                     (docDataInDb as any)[primaryKey] = docId;
@@ -244,7 +244,7 @@ export function replicateAppwrite<RxDocType>(
             const channel = 'databases.' + options.databaseId + '.collections.' + options.collectionId + '.documents';
             const unsubscribe = options.client.subscribe(
                 channel,
-                (response) => {
+                (response: any) => {
                     const docData = appwriteDocToRxDB<RxDocType>(response.payload, primaryKey, options.deletedField);
                     pullStream$.next({
                         checkpoint: {

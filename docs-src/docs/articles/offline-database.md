@@ -94,7 +94,7 @@ async function initDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           title: { type: 'string' },
           done: { type: 'boolean' }
         }
@@ -174,7 +174,7 @@ async function initSecureDB() {
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           secretData: { type: 'string' }
         },
         required: ['id'],

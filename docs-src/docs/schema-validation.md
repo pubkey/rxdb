@@ -1,6 +1,7 @@
 ---
 title: Schema Validation
 slug: schema-validation.html
+description: Validate RxDB document data against JSON schemas using pluggable validation wrappers like ajv, zod, or is-my-json-valid for development and production use.
 image: /headers/schema-validation.jpg
 ---
 

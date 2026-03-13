@@ -62,6 +62,11 @@ export async function queryDenoKV<RxDocType>(
         upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
     }
 
+    if (lowerBoundString > upperBoundString) {
+        return {
+            documents: []
+        };
+    }
 
     let result: RxDocumentData<RxDocType>[] = [];
 
@@ -79,8 +84,8 @@ export async function queryDenoKV<RxDocType>(
         if (singleDocResult.value) {
             const docId: string = singleDocResult.value;
             const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
-            const docData = ensureNotFalsy(docDataResult.value);
-            if (!queryMatcher || queryMatcher(docData)) {
+            const docData = docDataResult.value;
+            if (docData && (!queryMatcher || queryMatcher(docData))) {
                 result.push(docData);
             }
         }
@@ -101,7 +106,10 @@ export async function queryDenoKV<RxDocType>(
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
         const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
-        const docData = ensureNotFalsy(docDataResult.value);
+        const docData = docDataResult.value;
+        if (!docData) {
+            continue;
+        }
         if (!queryMatcher || queryMatcher(docData)) {
             result.push(docData);
         }

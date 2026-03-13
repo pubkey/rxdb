@@ -5,7 +5,8 @@ import {
     schemaObjects,
     schemas,
     humansCollection,
-    isNode
+    isNode,
+    isFastMode
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
@@ -767,7 +768,7 @@ describeParallel('local-documents.test.ts', () => {
             assert.ok(doc);
 
             let t = 0;
-            while (t < 50) {
+            while (t < (isFastMode() ? 10 : 50)) {
                 await db.upsertLocal(key, {
                     foo: randomString(10)
                 });

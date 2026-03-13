@@ -548,7 +548,7 @@ export function webSQLExecuteQuery(
 /**
  * The wa-sqlite module has problems
  * when running prepared statements with params
- * in parallel. So we de-parrallel the runs here.
+ * in parallel. So we de-parallel the runs here.
  * This is bad for performance and should be fixed at the
  * wa-sqlite repo.
  */

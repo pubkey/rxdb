@@ -2572,7 +2572,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection = collections.humans;
 
                 // insert data to slow down the db
-                const amount = 30;
+                const amount = isFastMode() ? 5 : 30;
                 await Promise.all(
                     new Array(amount).fill(0)
                         .map(() => schemaObjects.humanWithTimestampData())
@@ -2623,7 +2623,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const collection = collections.humans;
 
-                const amount = 50;
+                const amount = isFastMode() ? 10 : 50;
                 const testData = getTestData(amount);
                 const server = await SpawnServer.spawn(testData);
 
@@ -2929,7 +2929,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection: RxCollection<HumanWithTimestampDocumentType> = collections.humans;
 
                 // insert data to slow down the db
-                const amount = 30;
+                const amount = isFastMode() ? 5 : 30;
                 await Promise.all(
                     new Array(amount).fill(0)
                         .map(() => schemaObjects.humanWithTimestampData())

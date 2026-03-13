@@ -1,6 +1,7 @@
 ---
 title: RxDB Server Replication
 slug: replication-server.html
+description: Connect to an RxDB Server replication endpoint and sync data between client and server using the Server Replication Plugin.
 image: /headers/replication-server.jpg
 ---
 

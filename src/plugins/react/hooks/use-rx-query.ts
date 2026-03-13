@@ -115,8 +115,8 @@ export function useRxQueryBase<
         const rxQuery = dbCollection.find(query);
         if (live) {
             const subscription = rxQuery.$.subscribe({
-                next: (res) => emitResults(res),
-                error: (err) => emitError(err),
+                next: (res: RxDocument<RxDocumentType, OrmMethods>[]) => emitResults(res),
+                error: (err: Error) => emitError(err),
             });
 
             return () => {

@@ -11,7 +11,7 @@ With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured 
 
 ## What is OPFS
 
-The **Origin Private File System (OPFS)** is a native browser storage API that allows web applications to manage files in a private, sandboxed, **origin-specific virtual filesystem**. Unlike [IndexedDB](./rx-storage-indexeddb.md) and [LocalStorage](./articles/localstorage.md), which are optimized as object/key-value storage, OPFS provides more granular control for file operations, enabling byte-by-byte access, file streaming, and even low-level manipulations. 
+The **Origin Private File System (OPFS)** is a native browser storage API that allows web applications to manage files in a private, sandboxed, **origin-specific virtual filesystem**. Unlike [IndexedDB](./rx-storage-indexeddb.md) and [LocalStorage](./articles/localstorage.md), which are optimized as object/key-value storage, OPFS provides more granular control for file operations, enabling byte-by-byte access, file streaming, and even low-level manipulations.
 OPFS is ideal for applications requiring **high-performance** file operations (**3x-4x faster compared to IndexedDB**) inside of a client-side application, offering advantages like improved speed, more efficient use of resources, and enhanced security and privacy features.
 
 ### OPFS limitations
@@ -116,9 +116,9 @@ const database = await createRxDatabase({
 
 ## Using OPFS in the main thread instead of a worker
 
-The `createSyncAccessHandle` method from the Filesystem API is only available inside of a Webworker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. But there is a slightly slower way to access the virtual filesystem from the main thread. RxDB support the `getRxStorageOPFSMainThread()` for that. Notice that this uses the [createWritable](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable) function which is not supported in safari.
+The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood. Because it cannot use the synchronous access handle, this main-thread variant is slightly slower for heavy write workloads than the worker-based storage.
 
-Using OPFS from the main thread can have benefits because not having to cross the worker bridge can reduce latence in reads and writes.
+Using OPFS from the main thread can still have benefits, because avoiding the worker bridge can reduce latency for some read and write patterns and may simplify your application architecture.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -178,7 +178,7 @@ Origin Private File System is a browser API that is only accessible in browsers.
 Often developers are confused with the differences between the `File System Access API` and the `Origin Private File System (OPFS)`.
 
 - The `File System Access API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the File System API, the user has to actively select the files from a filepicker.
-- `Origin Private File System (OPFS)` is a sub-part of the `File System Standard` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. 
+- `Origin Private File System (OPFS)` is a sub-part of the `File System Standard` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access.
 
 ## Learn more about OPFS:
 

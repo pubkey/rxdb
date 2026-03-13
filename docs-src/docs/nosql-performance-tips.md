@@ -43,10 +43,10 @@ const orQuery = {
                 time: { $gt: 1234 },
             },
             {
-                time: { $eg: 1234 },
+                time: { $eq: 1234 },
                 user: { $gt: 'foobar' }
             },
-        ]
+        ],
         time: { $gte: 1234 } // <- add restrictive operator
     }
 }
@@ -78,10 +78,10 @@ const enumQuery = {
          * so our restrictive operator can exclude all documents with 'done' as status.
          */
         status: {
-            $in: {
+            $in: [
                 'idle',
                 'in-progress',
-            },
+            ],
             $gt: 'done' // <- add restrictive operator on status
         }
     }

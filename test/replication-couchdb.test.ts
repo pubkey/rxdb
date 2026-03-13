@@ -7,7 +7,8 @@ import {
     ENV_VARIABLES,
     ensureCollectionsHaveEqualState,
     isNode,
-    ensureReplicationHasNoErrors
+    ensureReplicationHasNoErrors,
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -101,6 +102,51 @@ describe('replication-couchdb.test.ts', () => {
                 }
             }, undefined, 500);
         });
+    });
+
+    /**
+     * Run the base test suite that is shared
+     * across all replication plugins.
+     */
+    let baseServer: { dbName: string; url: string; close: () => Promise<void>; };
+    runReplicationBaseTestSuite({
+        startReplication(collection) {
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: randomToken(10),
+                collection,
+                url: baseServer.url,
+                fetch: fetchWithCouchDBAuth,
+                live: true,
+                pull: {},
+                push: {}
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            return replicationState;
+        },
+        async syncOnce(collection) {
+            const replicationState = replicateCouchDB({
+                replicationIdentifier: 'sync-once' + baseServer.url,
+                collection,
+                url: baseServer.url,
+                fetch: fetchWithCouchDBAuth,
+                live: false,
+                pull: {},
+                push: {}
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+        },
+        getAllServerDocs() {
+            return getAllServerDocs(baseServer.url);
+        },
+        async cleanUpServer() {
+            if (baseServer) {
+                await baseServer.close();
+            }
+            baseServer = await SpawnServer.spawn();
+        },
+        softDeletes: false,
+        getPrimaryOfServerDoc: (doc) => doc._id,
     });
 
     describe('live:false', () => {
@@ -210,36 +256,6 @@ describe('replication-couchdb.test.ts', () => {
             server.close();
         });
         describe('conflict handling', () => {
-            it('should keep the master state as default conflict handler', async () => {
-                const server = await SpawnServer.spawn();
-                const c1 = await humansCollection.create(1);
-                const c2 = await humansCollection.create(0);
-
-                await syncAll(c1, c2, server);
-
-                const doc1 = await c1.findOne().exec(true);
-                const doc2 = await c2.findOne().exec(true);
-
-                // make update on both sides
-                await Promise.all([
-                    doc1.incrementalPatch({ firstName: 'c1' }),
-                    doc2.incrementalPatch({ firstName: 'c2' })
-                ]);
-
-                await syncOnce(c2, server);
-
-                // cause conflict
-                await syncOnce(c1, server);
-
-                /**
-                 * Must have kept the master state c2
-                 */
-                assert.strictEqual(doc1.getLatest().firstName, 'c2');
-
-                c1.database.close();
-                c2.database.close();
-                server.close();
-            });
             it('should correctly handle a conflict where the same doc is inserted on two sides', async () => {
 
 
