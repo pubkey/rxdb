@@ -25,15 +25,16 @@ export function parseRevision(revision: string): { height: number; hash: string;
  * only fetching the start-number chars is faster.
  */
 export function getHeightOfRevision(revision: string): number {
-    let useChars = '';
-    for (let index = 0; index < revision.length; index++) {
-        const char = revision[index];
-        if (char === '-') {
-            return parseInt(useChars, 10);
-        }
-        useChars += char;
+    const dashIndex = revision.indexOf('-');
+    /**
+     * @performance
+     * Single-digit revision heights (1-9) are by far the most common case.
+     * Use direct char code arithmetic to avoid parseInt overhead.
+     */
+    if (dashIndex === 1) {
+        return revision.charCodeAt(0) - 48;
     }
-    throw new Error('malformatted revision: ' + revision);
+    return parseInt(revision.substring(0, dashIndex), 10);
 }
 
 

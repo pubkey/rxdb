@@ -108,10 +108,20 @@ export class RxQueryBase<
             this.mangoQuery = _getDefaultQuery();
         }
 
-        this.isFindOneByIdQuery = isFindOneByIdQuery(
-            this.collection.schema.primaryPath as string,
-            mangoQuery
-        );
+        /**
+         * @performance
+         * For findByIds queries, we know the selector is always { primaryPath: { $in: ids } }
+         * so we can skip the full isFindOneByIdQuery check that iterates all IDs
+         * to verify they are strings.
+         */
+        if (op === 'findByIds') {
+            this.isFindOneByIdQuery = (mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+        } else {
+            this.isFindOneByIdQuery = isFindOneByIdQuery(
+                this.collection.schema.primaryPath as string,
+                mangoQuery
+            );
+        }
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
@@ -249,13 +259,22 @@ export class RxQueryBase<
 
         if (this.op === 'findByIds') {
             const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
-            const docsData: RxDocumentData<RxDocType>[] = [];
+            let docsData: RxDocumentData<RxDocType>[] = [];
             const mustBeQueried: string[] = [];
-            // first try to fill from docCache
+            /**
+             * @performance
+             * Process pending tasks once before the loop instead of
+             * calling processTasks() inside getLatestDocumentDataIfExists() for each id.
+             * Then access the cache map directly to avoid function call overhead.
+             */
+            const docCache = this.collection._docCache;
+            docCache.processTasks();
+            const cacheItemByDocId = docCache.cacheItemByDocId;
             for (let i = 0; i < ids.length; i++) {
                 const id = ids[i];
-                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
-                if (docData) {
+                const cacheItem = cacheItemByDocId.get(id);
+                if (cacheItem) {
+                    const docData = cacheItem[1];
                     if (!docData._deleted) {
                         docsData.push(docData);
                     }
@@ -266,8 +285,17 @@ export class RxQueryBase<
             // everything which was not in docCache must be fetched from the storage
             if (mustBeQueried.length > 0) {
                 const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                for (let i = 0; i < docs.length; i++) {
-                    docsData.push(docs[i]);
+                /**
+                 * @performance
+                 * When all docs were cache misses, use the storage result directly
+                 * instead of pushing 3000+ items one by one into an empty array.
+                 */
+                if (docsData.length === 0) {
+                    docsData = docs;
+                } else {
+                    for (let i = 0; i < docs.length; i++) {
+                        docsData.push(docs[i]);
+                    }
                 }
             }
             result = {
@@ -371,12 +399,24 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
-        const stringObj = sortObject({
-            op: this.op,
-            query: this.normalizedQuery,
-            other: this.other
-        }, true);
-        const value = JSON.stringify(stringObj);
+        /**
+         * @performance
+         * For findByIds queries, skip the expensive normalizeMangoQuery + sortObject
+         * because the query is always just { selector: { primaryPath: { $in: ids } } }.
+         * The ids array fully determines the query, so we use a simpler representation.
+         */
+        let value: string;
+        if (this.op === 'findByIds') {
+            const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            value = 'findByIds|' + JSON.stringify(ids);
+        } else {
+            const stringObj = sortObject({
+                op: this.op,
+                query: this.normalizedQuery,
+                other: this.other
+            }, true);
+            value = JSON.stringify(stringObj);
+        }
         this.toString = () => value;
         return value;
     }
