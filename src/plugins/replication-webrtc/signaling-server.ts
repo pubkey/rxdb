@@ -74,7 +74,7 @@ export async function startSignalingServerSimplePeer(
         peerById.delete(peerId);
     }
 
-    wss.on('connection', function (ws) {
+    wss.on('connection', function (ws: WebSocket) {
         /**
          * PeerID is created by the server to prevent malicious
          * actors from falsy claiming other peoples ids.
@@ -91,7 +91,7 @@ export async function startSignalingServerSimplePeer(
         sendMessage(ws, { type: 'init', yourPeerId: peerId });
 
 
-        ws.on('error', err => {
+        ws.on('error', (err: Error) => {
             console.error('SERVER ERROR:');
             console.dir(err);
             disconnectSocket(peerId, 'socket errored');
@@ -100,7 +100,7 @@ export async function startSignalingServerSimplePeer(
             disconnectSocket(peerId, 'socket disconnected');
         });
 
-        ws.on('message', msgEvent => {
+        ws.on('message', (msgEvent: any) => {
             peer.lastPing = Date.now();
             const message = JSON.parse(msgEvent.toString());
             const type = message.type;

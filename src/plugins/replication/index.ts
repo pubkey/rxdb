@@ -15,6 +15,7 @@ import {
     Subscription
 } from 'rxjs';
 import type {
+    BulkWriteRow,
     ReplicationOptions,
     ReplicationPullHandlerResult,
     ReplicationPullOptions,
@@ -236,15 +237,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             waitBeforePersist: this.push ? this.push.waitBeforePersist : undefined,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
-                    filter(_v => !!this.pull),
-                    mergeMap(async (ev) => {
+                    filter((_v: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => !!this.pull),
+                    mergeMap(async (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
                         if (ev === 'RESYNC') {
                             return ev;
                         }
                         const useEv = flatClone(ev);
                         useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
                         useEv.documents = await Promise.all(
-                            useEv.documents.map(d => pullModifier(d))
+                            useEv.documents.map((d: WithDeleted<RxDocType>) => pullModifier(d))
                         );
                         return useEv;
                     })
@@ -385,19 +386,19 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         });
 
         this.subs.push(
-            this.internalReplicationState.events.error.subscribe(err => {
+            this.internalReplicationState.events.error.subscribe((err: RxError | RxTypeError) => {
                 this.subjects.error.next(err);
             }),
             this.internalReplicationState.events.processed.down
-                .subscribe(row => this.subjects.received.next(row.document as any)),
+                .subscribe((row: BulkWriteRow<RxDocType>) => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
-                .subscribe(writeToMasterRow => {
+                .subscribe((writeToMasterRow: RxReplicationWriteToMasterRow<RxDocType>) => {
                     this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
                 this.internalReplicationState.events.active.up
-            ]).subscribe(([down, up]) => {
+            ]).subscribe(([down, up]: [boolean, boolean]) => {
                 const isActive = down || up;
                 this.subjects.active.next(isActive);
             })
@@ -410,12 +411,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         ) {
             this.subs.push(
                 this.pull.stream$.subscribe({
-                    next: ev => {
+                    next: (ev: RxReplicationPullStreamItem<RxDocType, CheckpointType>) => {
                         if (!this.isStoppedOrPaused()) {
                             this.remoteEvents$.next(ev);
                         }
                     },
-                    error: err => {
+                    error: (err: any) => {
                         this.subjects.error.next(err);
                     }
                 })

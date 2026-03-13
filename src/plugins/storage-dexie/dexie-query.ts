@@ -113,7 +113,7 @@ export async function dexieQuery<RxDocType>(
     await state.dexieDb.transaction(
         'r',
         state.dexieTable,
-        async (dexieTx) => {
+        async (dexieTx: any) => {
             /**
              * Here we use the native IndexedDB transaction
              * to get the cursor.
@@ -228,7 +228,7 @@ export async function dexieCount<RxDocType>(
     await state.dexieDb.transaction(
         'r',
         state.dexieTable,
-        async (dexieTx) => {
+        async (dexieTx: any) => {
             const tx = (dexieTx as any).idbtrans;
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;

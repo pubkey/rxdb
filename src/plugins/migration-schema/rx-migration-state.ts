@@ -114,8 +114,8 @@ export class RxMigrationState {
             this.database.internalStore,
             this.statusDocId
         ).pipe(
-            filter(d => !!d),
-            map(d => ensureNotFalsy(d).data),
+            filter((d: RxMigrationStatusDocument | null) => !!d),
+            map((d: RxMigrationStatusDocument | null) => ensureNotFalsy(d).data),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
@@ -467,7 +467,7 @@ export class RxMigrationState {
         this.replicationStates.add(replicationState);
 
         let hasError: RxError | RxTypeError | false = false;
-        replicationState.events.error.subscribe(err => hasError = err);
+        replicationState.events.error.subscribe((err: RxError | RxTypeError) => hasError = err);
 
         // update replication status on each change
         replicationState.events.processed.up.subscribe(() => {
@@ -609,12 +609,12 @@ export class RxMigrationState {
         const result = await Promise.race([
             firstValueFrom(
                 this.$.pipe(
-                    filter(d => d.status === 'DONE')
+                    filter((d: RxMigrationStatus) => d.status === 'DONE')
                 )
             ),
             firstValueFrom(
                 this.$.pipe(
-                    filter(d => d.status === 'ERROR')
+                    filter((d: RxMigrationStatus) => d.status === 'ERROR')
                 )
             )
         ]);

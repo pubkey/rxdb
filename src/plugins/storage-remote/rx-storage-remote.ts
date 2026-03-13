@@ -84,7 +84,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
 
         const requestId = this.getRequestId();
         const waitForOkPromise = firstValueFrom(messageChannel.messages$.pipe(
-            filter(msg => msg.answerTo === requestId)
+            filter((msg: MessageFromRemote) => msg.answerTo === requestId)
         ));
         messageChannel.send({
             connectionId,
@@ -119,7 +119,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
         const requestId = this.getRequestId();
         const connectionId = 'custom|request|' + requestId;
         const waitForAnswerPromise = firstValueFrom(messageChannel.messages$.pipe(
-            filter(msg => msg.answerTo === requestId)
+            filter((msg: MessageFromRemote) => msg.answerTo === requestId)
         ));
         messageChannel.send({
             connectionId,
@@ -180,10 +180,10 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         public readonly options: Readonly<any>
     ) {
         this.messages$ = this.internals.messageChannel.messages$.pipe(
-            filter(msg => msg.connectionId === this.internals.connectionId)
+            filter((msg: MessageFromRemote) => msg.connectionId === this.internals.connectionId)
         );
         this.subs.push(
-            this.messages$.subscribe(msg => {
+            this.messages$.subscribe((msg: MessageFromRemote) => {
                 if (msg.method === 'changeStream') {
                     this.changes$.next(getMessageReturn(msg));
                 }
@@ -198,7 +198,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         const requestId = this.storage.getRequestId();
         const responsePromise = firstValueFrom(
             this.messages$.pipe(
-                filter(msg => msg.answerTo === requestId)
+                filter((msg: MessageFromRemote) => msg.answerTo === requestId)
             )
         );
         const message: MessageToRemote = {

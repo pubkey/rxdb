@@ -217,7 +217,7 @@ export function getConnectionHandlerSimplePeer({
                                     }
                                 });
 
-                                newSimplePeer.on('error', (error) => {
+                                newSimplePeer.on('error', (error: Error) => {
                                     error$.next(newRxError('RC_WEBRTC_PEER', {
                                         error
                                     }));

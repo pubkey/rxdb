@@ -31,7 +31,7 @@ export const VueRxReactivityFactory: RxReactivityFactory<VueRefReactivityLambda>
         initialValue: InitData
     ): VueRef<Data | InitData> {
         const ref = shallowRef(initialValue);
-        const sub = obs.subscribe(value => {
+        const sub = obs.subscribe((value: Data) => {
             ref.value = value;
             triggerRef(ref);
         });

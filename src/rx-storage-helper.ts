@@ -100,12 +100,12 @@ export function observeSingle<RxDocType>(
     const ret = storageInstance
         .changeStream()
         .pipe(
-            map(evBulk => evBulk.events.find(ev => ev.documentId === documentId)),
-            filter(ev => !!ev),
-            map(ev => Promise.resolve(ensureNotFalsy(ev).documentData)),
+            map((evBulk: any) => evBulk.events.find((ev: any) => ev.documentId === documentId)),
+            filter((ev: any) => !!ev),
+            map((ev: any) => Promise.resolve(ensureNotFalsy(ev).documentData)),
             startWith(firstFindPromise),
-            switchMap(v => v),
-            filter(v => !!v)
+            switchMap((v: any) => v),
+            filter((v: any) => !!v)
         ) as any;
     return ret;
 }
