@@ -16,7 +16,6 @@ import {
     pluginMissing,
     overwriteGetterForCaching,
     clone,
-    now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
@@ -77,7 +76,14 @@ export class RxQueryBase<
      * Some stats then are used for debugging and cache replacement policies
      */
     public _execOverDatabaseCount: number = 0;
-    public _creationTime = now();
+    /**
+     * @performance
+     * Use Date.now() instead of now() for creation time.
+     * The monotonic uniqueness guarantee of now() is not needed here
+     * since _creationTime is only used by the cache replacement policy
+     * for rough lifetime comparisons.
+     */
+    public _creationTime = Date.now();
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
     public _lastEnsureEqual = 0;
@@ -108,10 +114,20 @@ export class RxQueryBase<
             this.mangoQuery = _getDefaultQuery();
         }
 
-        this.isFindOneByIdQuery = isFindOneByIdQuery(
-            this.collection.schema.primaryPath as string,
-            mangoQuery
-        );
+        /**
+         * @performance
+         * isFindOneByIdQuery is only used by queryCollection()
+         * which is not called for 'count' queries.
+         * Skip the check for count queries to avoid unnecessary work.
+         */
+        if (op === 'count') {
+            this.isFindOneByIdQuery = false;
+        } else {
+            this.isFindOneByIdQuery = isFindOneByIdQuery(
+                this.collection.schema.primaryPath as string,
+                mangoQuery
+            );
+        }
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
@@ -345,7 +361,8 @@ export class RxQueryBase<
             'normalizedQuery',
             normalizeMangoQuery<RxDocType>(
                 this.collection.schema.jsonSchema,
-                this.mangoQuery
+                this.mangoQuery,
+                this.op === 'count'
             )
         );
     }
@@ -575,7 +592,13 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
-    rxQuery._lastEnsureEqual = now();
+    /**
+     * @performance
+     * Use Date.now() instead of now() since _lastEnsureEqual
+     * is only used by the cache replacement policy for sorting queries
+     * by last usage, not for monotonic ordering.
+     */
+    rxQuery._lastEnsureEqual = Date.now();
 
     /**
      * Optimisation shortcuts
