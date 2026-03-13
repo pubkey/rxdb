@@ -500,7 +500,7 @@ export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWrite
     // Use for..in loop to check for any keys without creating an array via Object.keys()
     let hasAnyAttachment = false;
     for (const key in atts) {
-        if (key) {
+        if (Object.prototype.hasOwnProperty.call(atts, key)) {
             hasAnyAttachment = true;
             break;
         }
@@ -654,6 +654,8 @@ export function getWrappedStorageInstance<
             };
             BULK_WRITE_ROWS_BY_RESPONSE.set(useWriteResult, toStorageWriteRows);
 
+            // No need to check writeResult.error.length === 0 here because
+            // the fast path above already returns early when there are no errors.
             const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error
                     .filter((error) => {
                         if (
