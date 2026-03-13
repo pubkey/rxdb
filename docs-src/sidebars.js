@@ -106,6 +106,11 @@ const sidebars = {
           label: 'SQLite (Capacitor, React-Native, Expo, Tauri, Electron, Node.js)'
         },
         {
+          type: 'doc',
+          id: 'rx-storage-filesystem-expo',
+          label: 'Expo Filesystem 👑 (React Native, Expo)'
+        },
+        {
           type: 'category',
           label: 'Third Party Storages',
           items: [
