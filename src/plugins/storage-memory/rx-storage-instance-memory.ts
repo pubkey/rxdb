@@ -61,6 +61,7 @@ import type {
     RxStorageMemorySettings
 } from './memory-types.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Used in tests to ensure everything
@@ -296,8 +297,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             lowerBound
         );
 
-        let upperBound: any[] = queryPlan.endKeys;
-        upperBound = upperBound;
+        const upperBound: any[] = queryPlan.endKeys;
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
             index,
@@ -329,28 +329,50 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
 
         let rows: RxDocumentData<RxDocType>[] = [];
-        let done = false;
-        while (!done) {
-            const currentRow = docsWithIndex[indexOfLower];
-            if (
-                !currentRow ||
-                indexOfLower > indexOfUpper
-            ) {
-                break;
-            }
-            const currentDoc = currentRow[1];
 
-            if (!queryMatcher || queryMatcher(currentDoc)) {
-                rows.push(currentDoc);
+        /**
+         * @performance
+         * If the selector is satisfied by the index,
+         * we can extract all documents in the range without
+         * running a per-document queryMatcher check.
+         * This is a common case for queries like find-by-query
+         * where the selector is empty or fully covered by the index.
+         */
+        if (!queryMatcher) {
+            const rangeLength = indexOfUpper - indexOfLower + 1;
+            if (rangeLength > 0) {
+                const extractLength = mustManuallyResort
+                    ? rangeLength
+                    : Math.min(rangeLength, skipPlusLimit);
+                rows = new Array(extractLength);
+                for (let i = 0; i < extractLength; i++) {
+                    rows[i] = docsWithIndex[indexOfLower + i][1];
+                }
             }
+        } else {
+            let done = false;
+            while (!done) {
+                const currentRow = docsWithIndex[indexOfLower];
+                if (
+                    !currentRow ||
+                    indexOfLower > indexOfUpper
+                ) {
+                    break;
+                }
+                const currentDoc = currentRow[1];
 
-            if (
-                (rows.length >= skipPlusLimit && !mustManuallyResort)
-            ) {
-                done = true;
+                if (queryMatcher(currentDoc)) {
+                    rows.push(currentDoc);
+                }
+
+                if (
+                    (rows.length >= skipPlusLimit && !mustManuallyResort)
+                ) {
+                    done = true;
+                }
+
+                indexOfLower++;
             }
-
-            indexOfLower++;
         }
 
         if (mustManuallyResort) {
@@ -359,22 +381,73 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         // apply skip and limit boundaries.
-        rows = rows.slice(skip, skipPlusLimit);
+        if (skip !== 0 || rows.length > skipPlusLimit) {
+            rows = rows.slice(skip, skipPlusLimit);
+        }
 
         return Promise.resolve({
             documents: rows
         });
     }
 
-    async count(
+    count(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         this.ensurePersistence();
-        const result = await this.query(preparedQuery);
-        return {
+
+        const queryPlan = preparedQuery.queryPlan;
+
+        /**
+         * @performance
+         * If the selector is satisfied by the index,
+         * we can compute the count directly from the index range
+         * without extracting document data into an array.
+         */
+        if (queryPlan.selectorSatisfiedByIndex) {
+            const queryPlanFields: string[] = queryPlan.index;
+            const index: string[] = queryPlanFields;
+            const lowerBound: any[] = queryPlan.startKeys;
+            const lowerBoundString = getStartIndexStringFromLowerBound(
+                this.schema,
+                index,
+                lowerBound
+            );
+            const upperBound: any[] = queryPlan.endKeys;
+            const upperBoundString = getStartIndexStringFromUpperBound(
+                this.schema,
+                index,
+                upperBound
+            );
+            const indexName = getMemoryIndexName(index);
+
+            if (!this.internals.byIndex[indexName]) {
+                throw newRxError('SNH', { args: { indexName } });
+            }
+            const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+            const indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
+                docsWithIndex,
+                [lowerBoundString] as any,
+                compareDocsWithIndex
+            );
+
+            const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
+                docsWithIndex,
+                [upperBoundString] as any,
+                compareDocsWithIndex
+            );
+
+            const count = Math.max(0, indexOfUpper - indexOfLower + 1);
+            return Promise.resolve({
+                count,
+                mode: 'fast'
+            });
+        }
+
+        return this.query(preparedQuery).then(result => ({
             count: result.documents.length,
-            mode: 'fast'
-        };
+            mode: 'fast' as const
+        }));
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {
