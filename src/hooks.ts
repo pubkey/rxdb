@@ -1,4 +1,6 @@
 
+import { PROMISE_RESOLVE_VOID } from './plugins/utils/index.ts';
+
 /**
  * hook-functions that can be extended by the plugin
  */
@@ -114,8 +116,16 @@ export function runPluginHooks(hookKey: keyof typeof HOOKS, obj: any) {
  * because that makes stuff unpredictable and we use runAsyncPluginHooks()
  * only in places that are not that relevant for performance.
  */
-export async function runAsyncPluginHooks(hookKey: keyof typeof HOOKS, obj: any): Promise<any> {
-    for (const fn of HOOKS[hookKey]) {
+export function runAsyncPluginHooks(hookKey: keyof typeof HOOKS, obj: any): Promise<any> {
+    const hooks = HOOKS[hookKey];
+    if (hooks.length === 0) {
+        return PROMISE_RESOLVE_VOID;
+    }
+    return _runAsyncPluginHooksSerial(hooks, obj);
+}
+
+async function _runAsyncPluginHooksSerial(hooks: Function[], obj: any): Promise<any> {
+    for (const fn of hooks) {
         await (fn as any)(obj);
     }
 }
