@@ -564,7 +564,6 @@ export function getWrappedStorageInstance<
             context: string
         ) {
             const databaseToken = database.token;
-            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = new Array(rows.length);
             /**
              * Use the same timestamp for all docs of this rows-set.
              * This improves performance because calling Date.now() inside of the now() function
@@ -577,31 +576,52 @@ export function getWrappedStorageInstance<
              * inside the hot loop.
              */
             const firstRevision = '1-' + databaseToken;
-            for (let index = 0; index < rows.length; index++) {
-                const writeRow = rows[index];
-                const previous = writeRow.previous;
-                let document;
-                if (previous) {
-                    document = flatCloneDocWithMeta(writeRow.document);
-                    document._meta.lwt = time;
-                    document._rev = createRevision(
-                        databaseToken,
-                        previous
-                    );
-                } else {
-                    /**
-                     * Optimized insert path:
-                     * - Skip cloning _meta since we overwrite it entirely with { lwt: time }
-                     * - Use pre-computed firstRevision instead of calling createRevision()
-                     */
-                    document = flatClone(writeRow.document);
-                    document._meta = { lwt: time };
+            /**
+             * Share a single _meta object for all insert rows in this batch.
+             * All inserts in the same bulkWrite share the same timestamp,
+             * so we avoid creating a new { lwt: time } object per row.
+             */
+            const insertMeta = { lwt: time };
+
+            let toStorageWriteRows: BulkWriteRow<RxDocType>[];
+            /**
+             * Optimized fast path for pure-insert batches from bulkInsert():
+             * When documents come from bulkInsert, they are already cloned
+             * by fillObjectDataBeforeInsert(), so we can safely set _meta and _rev
+             * directly on the document without cloning again.
+             * This avoids 500+ Object.assign() calls and wrapper object allocations
+             * on the hot insert path.
+             */
+            if (context === 'rx-collection-bulk-insert') {
+                for (let index = 0; index < rows.length; index++) {
+                    const document = rows[index].document;
+                    document._meta = insertMeta;
                     document._rev = firstRevision;
                 }
-                toStorageWriteRows[index] = {
-                    document,
-                    previous
-                };
+                toStorageWriteRows = rows;
+            } else {
+                toStorageWriteRows = new Array(rows.length);
+                for (let index = 0; index < rows.length; index++) {
+                    const writeRow = rows[index];
+                    const previous = writeRow.previous;
+                    let document;
+                    if (previous) {
+                        document = flatCloneDocWithMeta(writeRow.document);
+                        document._meta.lwt = time;
+                        document._rev = createRevision(
+                            databaseToken,
+                            previous
+                        );
+                    } else {
+                        document = flatClone(writeRow.document);
+                        document._meta = insertMeta;
+                        document._rev = firstRevision;
+                    }
+                    toStorageWriteRows[index] = {
+                        document,
+                        previous
+                    };
+                }
             }
 
             runPluginHooks('preStorageWrite', {
