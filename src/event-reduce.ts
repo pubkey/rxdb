@@ -3,8 +3,6 @@ import {
     calculateActionName,
     runAction,
     QueryParams,
-    QueryMatcher,
-    DeterministicSortComparator,
     StateResolveFunctionInput,
     ChangeEvent
 } from 'event-reduce-js';
@@ -66,37 +64,25 @@ export function getQueryParams<RxDocType>(
              * Create a custom sort comparator
              * that uses the hooks to ensure
              * we send for example compressed documents to be sorted by compressed queries.
+             *
+             * @performance
+             * Avoid creating intermediate wrapper objects on every comparison call.
+             * The sortComparator and queryMatcher are called directly.
              */
-            const sortComparator = getSortComparator(
+            const useSortComparator: DeterministicSortComparator<RxDocType> = getSortComparator(
                 collection.schema.jsonSchema,
                 normalizedMangoQuery
             );
-
-            const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
-                const sortComparatorData = {
-                    docA,
-                    docB,
-                    rxQuery
-                };
-                return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
-            };
 
             /**
              * Create a custom query matcher
              * that uses the hooks to ensure
              * we send for example compressed documents to match compressed queries.
              */
-            const queryMatcher = getQueryMatcher(
+            const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = getQueryMatcher(
                 collection.schema.jsonSchema,
                 normalizedMangoQuery
             );
-            const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
-                const queryMatcherData = {
-                    doc,
-                    rxQuery
-                };
-                return queryMatcher(queryMatcherData.doc);
-            };
 
             const ret: QueryParams<any> = {
                 primaryKey: rxQuery.collection.schema.primaryPath as any,

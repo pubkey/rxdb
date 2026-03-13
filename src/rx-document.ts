@@ -415,7 +415,15 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._data = docData;
-        this._propertyCache = new Map<string, any>();
+
+        /**
+         * @performance
+         * Lazy-initialize _propertyCache only when first needed
+         * instead of creating a new Map for every RxDocument,
+         * since many documents (e.g. from query results) may never
+         * have their properties accessed via the cache.
+         */
+        this._propertyCache = undefined as any;
 
         /**
          * because of the prototype-merge,
@@ -470,6 +478,13 @@ export function beforeDocumentUpdateWrite<RxDocType>(
 
 
 function getDocumentProperty(doc: RxDocument, objPath: string): any | null {
+    /**
+     * @performance Lazy-initialize _propertyCache on first access
+     * to avoid creating a Map for documents that never use it.
+     */
+    if (!doc._propertyCache) {
+        doc._propertyCache = new Map<string, any>();
+    }
     return getFromMapOrCreate(
         doc._propertyCache,
         objPath,

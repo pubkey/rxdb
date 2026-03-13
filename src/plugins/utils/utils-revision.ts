@@ -21,19 +21,20 @@ export function parseRevision(revision: string): { height: number; hash: string;
 /**
  * @hotPath Performance is very important here
  * because we need to parse the revision height very often.
- * Do not use `parseInt(revision.split('-')[0], 10)` because
- * only fetching the start-number chars is faster.
+ * Uses indexOf + charCodeAt for maximum performance.
+ * Single-digit heights (most common) use a fast path
+ * that avoids parseInt entirely.
  */
 export function getHeightOfRevision(revision: string): number {
-    let useChars = '';
-    for (let index = 0; index < revision.length; index++) {
-        const char = revision[index];
-        if (char === '-') {
-            return parseInt(useChars, 10);
-        }
-        useChars += char;
+    const dashIndex = revision.indexOf('-');
+    if (dashIndex === -1) {
+        throw new Error('malformatted revision: ' + revision);
     }
-    throw new Error('malformatted revision: ' + revision);
+    // Fast path for single-digit revision heights (most common case)
+    if (dashIndex === 1) {
+        return revision.charCodeAt(0) - 48; // 48 is ASCII code for '0'
+    }
+    return parseInt(revision.substring(0, dashIndex), 10);
 }
 
 
