@@ -29,7 +29,15 @@ export class RxQuerySingleResult<RxDocType> {
         // can be overwritten for count-queries
         public readonly count: number,
     ) {
-        this.documents = mapDocumentsDataToCacheDocs<RxDocType, any>(this.query.collection._docCache, docsDataFromStorageInstance);
+        /**
+         * @performance Skip document mapping for count queries
+         * since they only need the count number and pass an empty array.
+         */
+        if (query.op === 'count') {
+            this.documents = [];
+        } else {
+            this.documents = mapDocumentsDataToCacheDocs<RxDocType, any>(this.query.collection._docCache, docsDataFromStorageInstance);
+        }
     }
 
 
