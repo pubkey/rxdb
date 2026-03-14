@@ -63,6 +63,13 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
+/**
+ * Counter for _lastEnsureEqual.
+ * We only need ordering and zero-check for cache replacement,
+ * so a counter is cheaper than Date.now().
+ */
+let _ensureEqualCount = 0;
+
 export class RxQueryBase<
     RxDocType,
     RxQueryResult,
@@ -603,11 +610,11 @@ function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
     /**
      * @performance
-     * Use Date.now() instead of now() since _lastEnsureEqual
+     * Use a counter instead of Date.now() since _lastEnsureEqual
      * is only used by the cache replacement policy for sorting queries
-     * by last usage, not for monotonic ordering.
+     * by last usage and zero-check, not for time-based comparison.
      */
-    rxQuery._lastEnsureEqual = Date.now();
+    rxQuery._lastEnsureEqual = ++_ensureEqualCount;
 
     /**
      * Optimisation shortcuts
