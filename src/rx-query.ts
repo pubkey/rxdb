@@ -15,8 +15,6 @@ import {
     sortObject,
     pluginMissing,
     overwriteGetterForCaching,
-    now,
-    clone,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
