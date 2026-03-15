@@ -93,12 +93,20 @@ export class RxQueryBase<
     public _creationTime = Date.now();
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
+    // 0 means never executed. Updated to an incrementing counter on each _ensureEqual call.
     public _lastEnsureEqual = 0;
 
     public uncached = false;
 
     // used to count the subscribers to the query
-    public refCount$ = new BehaviorSubject(null);
+    // Lazy-initialized to avoid BehaviorSubject overhead for .exec()-only queries
+    public _refCount$: BehaviorSubject<null> | null = null;
+    public get refCount$(): BehaviorSubject<null> {
+        if (!this._refCount$) {
+            this._refCount$ = new BehaviorSubject<null>(null);
+        }
+        return this._refCount$;
+    }
 
     public isFindOneByIdQuery: false | string | string[];
 
@@ -395,12 +403,26 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
-        const stringObj = sortObject({
-            op: this.op,
-            query: this.normalizedQuery,
-            other: this.other
-        }, true);
-        const value = JSON.stringify(stringObj);
+        /**
+         * For findByIds queries, build the cache key directly from the IDs
+         * to avoid the expensive normalizeMangoQuery + sortObject + JSON.stringify.
+         * The selector structure is guaranteed by findByIds() which always creates
+         * { [primaryPath]: { $in: ids } }
+         */
+        let value: string;
+        if (this.op === 'findByIds') {
+            const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            // slice() is needed because sort() mutates the array in-place
+            const sortedIds = ids.slice().sort();
+            value = '|findByIds|' + JSON.stringify(sortedIds);
+        } else {
+            const stringObj = sortObject({
+                op: this.op,
+                query: this.normalizedQuery,
+                other: this.other
+            }, true);
+            value = JSON.stringify(stringObj);
+        }
         this.toString = () => value;
         return value;
     }
