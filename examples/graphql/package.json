@@ -56,7 +56,7 @@
     "testcafe": "3.7.4",
     "testcafe-hammerhead": "31.7.7",
     "webpack": "5.105.4",
-    "webpack-cli": "6.0.1",
+    "webpack-cli": "7.0.0",
     "webpack-dev-server": "5.2.3"
   }
 }
