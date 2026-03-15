@@ -577,7 +577,6 @@ export function getWrappedStorageInstance<
             context: string
         ) {
             const databaseToken = database.token;
-            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = new Array(rows.length);
             /**
              * Use the same timestamp for all docs of this rows-set.
              * This improves performance because calling Date.now() inside of the now() function
@@ -590,6 +589,18 @@ export function getWrappedStorageInstance<
              * inside the hot loop.
              */
             const firstRevision = '1-' + databaseToken;
+            /**
+             * Share a single _meta object for all insert rows in this batch.
+             * All inserts in the same bulkWrite share the same timestamp,
+             * so we avoid creating a new { lwt: time } object per row.
+             * This shared reference is safe because:
+             * - All documents in one batch receive identical metadata values.
+             * - When a document is later updated, flatCloneDocWithMeta() creates
+             *   a new _meta object, so the shared reference is never mutated.
+             */
+            const insertMeta = { lwt: time };
+
+            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = new Array(rows.length);
             for (let index = 0; index < rows.length; index++) {
                 const writeRow = rows[index];
                 const previous = writeRow.previous;
@@ -603,12 +614,16 @@ export function getWrappedStorageInstance<
                     );
                 } else {
                     /**
-                     * Optimized insert path:
-                     * - Skip cloning _meta since we overwrite it entirely with { lwt: time }
-                     * - Use pre-computed firstRevision instead of calling createRevision()
+                     * Insert path: flatClone is required because the input document
+                     * may be a direct reference to another storage's internal data
+                     * (e.g., during migration, query results from the old storage are
+                     * passed directly as insert rows to the new storage).
+                     *
+                     * Use a shared insertMeta object instead of allocating { lwt: time }
+                     * per row, since all inserts in the same batch share the same timestamp.
                      */
                     document = flatClone(writeRow.document);
-                    document._meta = { lwt: time };
+                    document._meta = insertMeta;
                     document._rev = firstRevision;
                 }
                 toStorageWriteRows[index] = {

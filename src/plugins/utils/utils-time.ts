@@ -28,7 +28,8 @@ export function now(): number {
      * In theory we would not need this but
      * in practice JavaScript has no such good number precision
      * so rounding errors could add another decimal place.
-     * Use Math.round instead of toFixed(2)+parseFloat for better performance.
+     * Use Math.round instead of parseFloat(toFixed(2)) to avoid
+     * expensive string conversion.
      */
     const twoDecimals = Math.round(ret * 100) / 100;
 
