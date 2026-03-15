@@ -450,7 +450,7 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/transactions-conflicts-revisions.html?console=errors&code=CONFLICT'
     },
     COL22: {
-        message: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
+        message: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key. Conflicting primary key(s) are in the error parameters (duplicateIds)',
         cause: 'You provided multiple documents with the same primary key in a bulk write.',
         fix: 'Ensure all documents in a bulk write have unique primary keys.',
         docs: ''
