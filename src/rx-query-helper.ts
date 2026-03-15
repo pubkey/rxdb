@@ -220,6 +220,18 @@ export function getSortComparator<RxDocType>(
             const valueA = sortPart.getValueFn(a);
             const valueB = sortPart.getValueFn(b);
             if (valueA !== valueB) {
+                /**
+                 * @performance
+                 * Use a fast inline comparison for common types (string, number)
+                 * instead of the more general mingoSortComparator.
+                 * Mingo's compare does extra type checks that are unnecessary
+                 * when both values share the same primitive type.
+                 */
+                const dirMultiplier = sortPart.direction === 'asc' ? 1 : -1;
+                const typeA = typeof valueA;
+                if (typeA === typeof valueB && (typeA === 'string' || typeA === 'number')) {
+                    return ((valueA < valueB ? -1 : 1) * dirMultiplier) as any;
+                }
                 const ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
                 return ret as any;
             }
