@@ -46,7 +46,7 @@ import {
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 import { normalizeMangoQuery, prepareQuery } from './rx-query-helper.ts';
-import { runPluginHooks } from './hooks.ts';
+import { HOOKS, runPluginHooks } from './hooks.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -492,7 +492,20 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
 }
 
 export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType> {
-    if (!doc._attachments || Object.keys(doc._attachments).length === 0) {
+    const atts = doc._attachments;
+    if (!atts) {
+        return doc;
+    }
+
+    // Use for..in loop to check for any keys without creating an array via Object.keys()
+    let hasAnyAttachment = false;
+    for (const key in atts) {
+        if (Object.prototype.hasOwnProperty.call(atts, key)) {
+            hasAnyAttachment = true;
+            break;
+        }
+    }
+    if (!hasAnyAttachment) {
         return doc;
     }
 
@@ -619,10 +632,12 @@ export function getWrappedStorageInstance<
                 };
             }
 
-            runPluginHooks('preStorageWrite', {
-                storageInstance: this.originalStorageInstance,
-                rows: toStorageWriteRows
-            });
+            if (HOOKS.preStorageWrite.length > 0) {
+                runPluginHooks('preStorageWrite', {
+                    storageInstance: this.originalStorageInstance,
+                    rows: toStorageWriteRows
+                });
+            }
 
             const writeResult = await database.lockedRun(
                 () => storageInstance.bulkWrite(
@@ -639,14 +654,24 @@ export function getWrappedStorageInstance<
              * by running another bulkWrite() and merging the results.
              * @link https://github.com/pubkey/rxdb/pull/3839
             */
+
+            /**
+             * Fast path: when there are no errors, skip the wrapper object creation
+             * and error filtering to reduce allocations.
+             */
+            if (writeResult.error.length === 0) {
+                BULK_WRITE_ROWS_BY_RESPONSE.set(writeResult, toStorageWriteRows);
+                return writeResult;
+            }
+
             const useWriteResult: typeof writeResult = {
                 error: []
             };
             BULK_WRITE_ROWS_BY_RESPONSE.set(useWriteResult, toStorageWriteRows);
 
-            const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error.length === 0
-                ? []
-                : writeResult.error
+            // No need to check writeResult.error.length === 0 here because
+            // the fast path above already returns early when there are no errors.
+            const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = writeResult.error
                     .filter((error) => {
                         if (
                             error.status === 409 &&

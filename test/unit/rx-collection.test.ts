@@ -2312,6 +2312,31 @@ describe('rx-collection.test.ts', () => {
 
                 c.database.close();
             });
+            it('should not be affected by mutating the input ids array', async () => {
+                const c = await humansCollection.create(5);
+                const docs = await c.find().exec();
+                const ids = docs.map(d => d.primary);
+                const query = c.findByIds(ids);
+
+                // mutate the input array after creating the query
+                const originalLength = ids.length;
+                ids.push('non-existent-id');
+                ids.splice(0, 1);
+
+                // update a document to invalidate any cached results
+                const docToUpdate = docs[0];
+                await docToUpdate.incrementalPatch({ firstName: 'mutation-test' });
+
+                const res = await query.exec();
+                assert.strictEqual(res.size, originalLength);
+
+                // verify the updated document is returned with fresh data
+                const updatedDoc = res.get(docToUpdate.primary);
+                assert.ok(updatedDoc);
+                assert.strictEqual(updatedDoc.firstName, 'mutation-test');
+
+                c.database.close();
+            });
         });
     });
     describeParallel('.findByIds.$()', () => {

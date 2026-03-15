@@ -16,7 +16,6 @@ import {
     pluginMissing,
     overwriteGetterForCaching,
     clone,
-    now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
@@ -64,6 +63,13 @@ const newQueryID = function (): number {
     return ++_queryCount;
 };
 
+/**
+ * Counter for _lastEnsureEqual.
+ * We only need ordering and zero-check for cache replacement,
+ * so a counter is cheaper than Date.now().
+ */
+let _ensureEqualCount = 0;
+
 export class RxQueryBase<
     RxDocType,
     RxQueryResult,
@@ -77,15 +83,30 @@ export class RxQueryBase<
      * Some stats then are used for debugging and cache replacement policies
      */
     public _execOverDatabaseCount: number = 0;
-    public _creationTime = now();
+    /**
+     * @performance
+     * Use Date.now() instead of now() for creation time.
+     * The monotonic uniqueness guarantee of now() is not needed here
+     * since _creationTime is only used by the cache replacement policy
+     * for rough lifetime comparisons.
+     */
+    public _creationTime = Date.now();
 
     // used in the query-cache to determine if the RxQuery can be cleaned up.
+    // 0 means never executed. Updated to an incrementing counter on each _ensureEqual call.
     public _lastEnsureEqual = 0;
 
     public uncached = false;
 
     // used to count the subscribers to the query
-    public refCount$ = new BehaviorSubject(null);
+    // Lazy-initialized to avoid BehaviorSubject overhead for .exec()-only queries
+    public _refCount$: BehaviorSubject<null> | null = null;
+    public get refCount$(): BehaviorSubject<null> {
+        if (!this._refCount$) {
+            this._refCount$ = new BehaviorSubject<null>(null);
+        }
+        return this._refCount$;
+    }
 
     public isFindOneByIdQuery: false | string | string[];
 
@@ -108,10 +129,20 @@ export class RxQueryBase<
             this.mangoQuery = _getDefaultQuery();
         }
 
-        this.isFindOneByIdQuery = isFindOneByIdQuery(
-            this.collection.schema.primaryPath as string,
-            mangoQuery
-        );
+        /**
+         * @performance
+         * isFindOneByIdQuery is only used by queryCollection()
+         * which is not called for 'count' queries.
+         * Skip the check for count queries to avoid unnecessary work.
+         */
+        if (op === 'count') {
+            this.isFindOneByIdQuery = false;
+        } else {
+            this.isFindOneByIdQuery = isFindOneByIdQuery(
+                this.collection.schema.primaryPath as string,
+                mangoQuery
+            );
+        }
     }
     get $(): Observable<RxQueryResult> {
         if (!this._$) {
@@ -345,7 +376,8 @@ export class RxQueryBase<
             'normalizedQuery',
             normalizeMangoQuery<RxDocType>(
                 this.collection.schema.jsonSchema,
-                this.mangoQuery
+                this.mangoQuery,
+                this.op === 'count'
             )
         );
     }
@@ -371,12 +403,26 @@ export class RxQueryBase<
      * @overwrites itself with the actual value
      */
     toString(): string {
-        const stringObj = sortObject({
-            op: this.op,
-            query: this.normalizedQuery,
-            other: this.other
-        }, true);
-        const value = JSON.stringify(stringObj);
+        /**
+         * For findByIds queries, build the cache key directly from the IDs
+         * to avoid the expensive normalizeMangoQuery + sortObject + JSON.stringify.
+         * The selector structure is guaranteed by findByIds() which always creates
+         * { [primaryPath]: { $in: ids } }
+         */
+        let value: string;
+        if (this.op === 'findByIds') {
+            const ids: string[] = (this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
+            // slice() is needed because sort() mutates the array in-place
+            const sortedIds = ids.slice().sort();
+            value = '|findByIds|' + JSON.stringify(sortedIds);
+        } else {
+            const stringObj = sortObject({
+                op: this.op,
+                query: this.normalizedQuery,
+                other: this.other
+            }, true);
+            value = JSON.stringify(stringObj);
+        }
         this.toString = () => value;
         return value;
     }
@@ -559,10 +605,19 @@ function _isResultsInSync(rxQuery: RxQueryBase<any, any>): boolean {
  * wraps __ensureEqual()
  * to ensure it does not run in parallel
  * @return true if has changed, false if not
+ *
+ * @performance
+ * Avoid async wrapper when awaitBeforeReads is empty (common case).
+ * This eliminates one unnecessary Promise allocation per query execution.
  */
-async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
+function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
     if (rxQuery.collection.awaitBeforeReads.size > 0) {
-        await Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()));
+        return Promise.all(Array.from(rxQuery.collection.awaitBeforeReads).map(fn => fn()))
+            .then(() => {
+                rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
+                    .then(() => __ensureEqual(rxQuery));
+                return rxQuery._ensureEqualQueue;
+            });
     }
 
     rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue
@@ -575,7 +630,13 @@ async function _ensureEqual(rxQuery: RxQueryBase<any, any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType, any>): Promise<boolean> {
-    rxQuery._lastEnsureEqual = now();
+    /**
+     * @performance
+     * Use a counter instead of Date.now() since _lastEnsureEqual
+     * is only used by the cache replacement policy for sorting queries
+     * by last usage and zero-check, not for time-based comparison.
+     */
+    rxQuery._lastEnsureEqual = ++_ensureEqualCount;
 
     /**
      * Optimisation shortcuts
