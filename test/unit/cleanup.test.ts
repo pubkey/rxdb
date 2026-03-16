@@ -6,8 +6,7 @@ import {
     schemaObjects,
     schemas,
     isFastMode,
-    HumanDocumentType,
-    humansCollection
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
