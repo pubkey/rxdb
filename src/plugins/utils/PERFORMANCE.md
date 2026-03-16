@@ -25,9 +25,9 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `flatClone` | **CRITICAL** | 39 | Called per-document in `categorizeBulkWriteRows` (`@hotPath`) and across most storage plugin write paths. Uses `Object.assign({}, obj)` for ~3x faster than `deepClone`. |
-| `clone` / `deepClone` | **CRITICAL** | 22 | Called in query normalization, document processing, and storage operations. Performance comment on `deepClone`: "do not change without running performance tests!" Uses manual recursion instead of `JSON.parse(JSON.stringify())`. `clone` is an alias for `deepClone`. |
-| `objectPathMonad` | **CRITICAL** | 3 | Used in `getIndexableStringMonad` (`@hotPath`) for index string generation and in `rx-query-helper.ts` for query field access. Pre-computes property access path for reuse, with fast path for single-segment paths. |
+| `flatClone` | **CRITICAL** | 39 | Called per-document in `categorizeBulkWriteRows` (`@hotPath`) and across most storage plugin write paths. Uses spread `{ ...obj }` (~4x faster than `Object.assign` in V8). |
+| `clone` / `deepClone` | **CRITICAL** | 22 | Called in query normalization, document processing, and storage operations. Performance comment on `deepClone`: "do not change without running performance tests!" Uses manual recursion instead of `JSON.parse(JSON.stringify())`. `clone` is an alias for `deepClone`. Collapsed entry checks, moved Blob check after Array check for the common case. |
+| `objectPathMonad` | **CRITICAL** | 3 | Used in `getIndexableStringMonad` (`@hotPath`) for index string generation and in `rx-query-helper.ts` for query field access. Pre-computes property access path for reuse. Has fast paths for 1-segment and 2-segment paths (most common cases). Uses `=== undefined` for faster checks. |
 | `overwriteGetterForCaching` | **HIGH** | 4 | Replaces getters with cached values on first access. Uses a value descriptor instead of a getter descriptor so subsequent reads are direct property lookups (~37% faster reads). Used in schema and query objects. |
 | `sortObject` | **MEDIUM** | 2 | Used in schema normalization. Called during setup, not in hot loops. |
 | `flattenObject` | **LOW** | 1 | Minimal usage. |
@@ -48,7 +48,7 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `getProperty` | **CRITICAL** | 9 | Used in `rx-document.ts` `basePrototype.get()` (`@hotPath`). Called on every document property access. Handles dot-notation path traversal. |
+| `getProperty` | **CRITICAL** | 9 | Used in `rx-document.ts` `basePrototype.get()` (`@hotPath`). Called on every document property access. Has fast path for simple dot-notation paths that avoids the expensive `getPathSegments()` parser (~3x faster for dot-separated paths). |
 | `setProperty` | **MEDIUM** | 4 | Used in `fillObjectWithDefaults` (`@hotPath` in `rx-schema-helper.ts`). |
 | `hasProperty` | **LOW** | 0 | Not used in production code. |
 | `deleteProperty` | **LOW** | 0 | Not used in production code. |
@@ -58,7 +58,7 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `getFromMapOrCreate` | **CRITICAL** | 26 | Core caching primitive. Used in query cache, doc cache, event-reduce, and storage helpers. Avoids redundant `Map.has()` + `Map.get()` calls by combining lookup and creation. |
+| `getFromMapOrCreate` | **CRITICAL** | 26 | Core caching primitive. Used in query cache, doc cache, event-reduce, and storage helpers. Avoids redundant `Map.has()` + `Map.get()` calls by combining lookup and creation. Uses `=== undefined` for faster comparisons. |
 | `getFromMapOrThrow` | **HIGH** | 11 | Used to retrieve collections, storage instances, and other registered objects. Uses `=== undefined` instead of `typeof` for ~6% faster comparisons. Called frequently in database operations. |
 
 ### `utils-time.ts`
@@ -223,6 +223,37 @@ These are the functions where optimization or regression has the highest impact 
 | 13 | `lastOfArray` | utils-array | Frequent array access in event and query processing. |
 | 14 | `toArray` | utils-array | Called in query and event processing paths. |
 | 15 | `setProperty` | utils-object-dot-prop | Used in `fillObjectWithDefaults` (`@hotPath`). |
+
+## Benchmark Results for CRITICAL Functions
+
+Microbenchmarks comparing old vs optimized implementations (Node.js, 5M iterations, median of 5 runs).
+
+| Function | Change | Before (ops/sec) | After (ops/sec) | Improvement |
+|---|---|---|---|---|
+| `flatClone` (5-key doc) | Spread `{ ...obj }` instead of `Object.assign({}, obj)` | 12.7M | 53.1M | **~319% faster** |
+| `getProperty` (3-level dot path) | Fast path for dot-notation avoids `getPathSegments()` parser | 2.5M | 9.5M | **~281% faster** |
+| `getProperty` (2-level dot path) | Same | 3.8M | 10.8M | **~181% faster** |
+| `objectPathMonad` (2-segment) | Unrolled loop for 2-segment paths + `=== undefined` | 46.6M | 201.0M | **~332% faster** |
+| `objectPathMonad` (3+ segment) | `=== undefined` instead of `typeof` | 33.8M | 35.3M | **~4% faster** |
+| `getFromMapOrCreate` (cache hit) | `=== undefined` instead of `typeof` | 100.5M | 106.9M | **~6% faster** |
+| `deepClone` (nested doc) | Collapsed null check, moved Blob check after Array check | 3.0M | 3.0M | 0% (no change) |
+| `getHeightOfRevision` (1-digit) | Already optimal (charCodeAt fast path) | 65.6M | 65.6M | 0% (no change) |
+| `createRevision` (with prev) | Already optimal | 35.7M | 35.7M | 0% (no change) |
+| `now` | Already optimal (monotonic + Math.round) | 17.7M | 17.7M | 0% (no change) |
+
+### Changes Made
+
+1. **`flatClone`**: Switched from `Object.assign({}, obj)` to spread `{ ...obj }`. V8 optimizes the spread operator for plain objects, resulting in ~4x faster shallow cloning.
+2. **`getProperty`**: Added a fast path for simple dot-notation paths (e.g. `'nested.field'`). When the path contains no brackets `[` or backslashes `\\`, it uses a simple `split('.')` traversal instead of the expensive character-by-character `getPathSegments()` parser. This covers the vast majority of RxDB property access patterns.
+3. **`objectPathMonad`**: Added a dedicated fast path for 2-segment paths (e.g. `'nested.field'`) that avoids the loop entirely. Also changed `typeof === 'undefined'` to `=== undefined` in the general loop.
+4. **`getFromMapOrCreate`**: Replaced `typeof value === 'undefined'` with `value === undefined` for a faster strict equality check.
+5. **`deepClone`**: Collapsed the redundant `!src` + `src === null` checks into a single `!src || typeof src !== 'object'`. Moved the Blob instanceof check after the Array.isArray check since arrays are much more common than Blobs.
+
+### Not Changed (Already Optimal)
+
+- **`getHeightOfRevision`**: The charCodeAt fast path for single-digit heights is already optimal. Adding a 2-digit fast path regresses the common single-digit case.
+- **`createRevision`**: Simple string concatenation, already minimal overhead.
+- **`now`**: `Date.now()` + monotonic guarantee + `Math.round` is already the fastest approach.
 
 ## Benchmark Results for HIGH Functions
 

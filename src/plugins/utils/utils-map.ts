@@ -13,7 +13,7 @@ export function getFromMapOrCreate<MapIndex, MapValue>(
     ifWasThere?: (value: MapValue) => void
 ): MapValue {
     let value = map.get(index);
-    if (typeof value === 'undefined') {
+    if (value === undefined) {
         value = creator();
         map.set(index, value);
     } else if (ifWasThere) {
