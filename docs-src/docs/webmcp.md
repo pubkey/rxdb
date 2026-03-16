@@ -9,6 +9,7 @@ import {Steps} from '@site/src/components/steps';
 import {VideoBox} from '@site/src/components/video-box';
 import {Tabs} from '@site/src/components/tabs';
 import {QuoteBlock} from '@site/src/components/quoteblock';
+import {BetaBlock} from '@site/src/components/beta-block';
 
 # How Local-First and WebMCP make your app accessible to agents
 
@@ -314,10 +315,9 @@ Architecturally, WebMCP turns the browser into a "capability surface" with expli
 However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
 
 
-:::note Beta Status
-
-The WebMCP plugin is currently in **Beta**. APIs and behaviors are subject to change as the official [W3C WebMCP specification](https://webmachinelearning.github.io/webmcp/) and browser implementations evolve.
-:::
+<BetaBlock>
+APIs and behaviors are subject to change as the official <a href="https://webmachinelearning.github.io/webmcp/">W3C WebMCP specification</a> and browser implementations evolve.
+</BetaBlock>
 
 
 ## FAQ
