@@ -1163,6 +1163,12 @@ export const ERROR_MESSAGES = {
         fix: 'Remove the custom conflict handler.',
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT3'
     },
+    CRDT4: {
+        message: 'RxDocument.modify() cannot be used when CRDTs are activated.',
+        cause: 'modify() takes an arbitrary function that cannot be converted to a CRDT operation.',
+        fix: 'Use updateCRDT() instead of modify().',
+        docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
+    },
 
     // plugins/storage-dexie/
     DXE1: {
