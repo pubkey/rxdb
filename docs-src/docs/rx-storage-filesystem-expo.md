@@ -10,7 +10,7 @@ import {BetaBlock} from '@site/src/components/beta-block';
 
 # Expo Filesystem RxStorage
 
-<BetaBlock />
+<BetaBlock since="17.0.0" />
 
 The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-opfs](https://www.npmjs.com/package/expo-opfs) library, bringing blazing-fast Origin Private File System (OPFS) capabilities to React Native and Expo applications.
 It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.

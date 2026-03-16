@@ -315,7 +315,7 @@ Architecturally, WebMCP turns the browser into a "capability surface" with expli
 However, be aware that WebMCP **does not completely eliminate prompt injection risks**. It significantly narrows the surface compared to DOM-level automation, but an Agent mimicking a well-behaved query against your schema can still produce corrupted behavior if the prompt itself contains malicious instructions. Ensure your application logic (and RxDB schema validation) assumes agent-provided payloads are untrusted.
 
 
-<BetaBlock>
+<BetaBlock since="17.0.0">
 APIs and behaviors are subject to change as the official <a href="https://webmachinelearning.github.io/webmcp/">W3C WebMCP specification</a> and browser implementations evolve.
 </BetaBlock>
 
