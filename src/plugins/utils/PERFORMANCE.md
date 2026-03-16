@@ -17,7 +17,7 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `getHeightOfRevision` | **CRITICAL** | 5 | Annotated `@hotPath`. Called per-document in `doc-cache.ts` (`getCachedRxDocumentMonad`) and `categorizeBulkWriteRows`. Uses `indexOf` + `charCodeAt` fast path for single-digit heights to avoid `parseInt`. |
+| `getHeightOfRevision` | **CRITICAL** | 5 | Annotated `@hotPath`. Called per-document in `getCachedRxDocumentMonad` (`doc-cache.ts`) and `categorizeBulkWriteRows` (`rx-storage-helper.ts`). Uses `indexOf` + `charCodeAt` fast path for single-digit heights to avoid `parseInt`. |
 | `createRevision` | **CRITICAL** | 10 | Called per-document during every write operation in `categorizeBulkWriteRows`. Internally calls `getHeightOfRevision`. |
 | `parseRevision` | **LOW** | 0 | Not used in production code. Kept for external consumers. Use `getHeightOfRevision` instead when only height is needed. |
 
@@ -26,7 +26,7 @@ Functions are categorized by their performance impact based on how frequently th
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
 | `flatClone` | **CRITICAL** | 39 | Called per-document in `categorizeBulkWriteRows` (`@hotPath`) and across most storage plugin write paths. Uses `Object.assign({}, obj)` for ~3x faster than `deepClone`. |
-| `clone` / `deepClone` | **CRITICAL** | 22 | Called in query normalization, document processing, and storage operations. Performance comment in source: "do not change without running performance tests!" Uses manual recursion instead of `JSON.parse(JSON.stringify())`. |
+| `clone` / `deepClone` | **CRITICAL** | 22 | Called in query normalization, document processing, and storage operations. Performance comment on `deepClone`: "do not change without running performance tests!" Uses manual recursion instead of `JSON.parse(JSON.stringify())`. `clone` is an alias for `deepClone`. |
 | `objectPathMonad` | **CRITICAL** | 3 | Used in `getIndexableStringMonad` (`@hotPath`) for index string generation and in `rx-query-helper.ts` for query field access. Pre-computes property access path for reuse, with fast path for single-segment paths. |
 | `overwriteGetterForCaching` | **HIGH** | 4 | Replaces getters with cached values on first access. Used in schema and query objects to avoid repeated computation. |
 | `sortObject` | **MEDIUM** | 2 | Used in schema normalization. Called during setup, not in hot loops. |
@@ -71,7 +71,7 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `PROMISE_RESOLVE_TRUE` | **HIGH** | 35 (combined) | Reused resolved promise constants avoid creating new `Promise.resolve()` each time. Used across many core operations. |
+| `PROMISE_RESOLVE_TRUE` | **HIGH** | ~35 (combined) | Reused resolved promise constants avoid creating new `Promise.resolve()` each time. Used across many core operations. |
 | `PROMISE_RESOLVE_FALSE` | **HIGH** | (see above) | Same as above. Combined count of ~35 files across all four constants. |
 | `PROMISE_RESOLVE_NULL` | **HIGH** | (see above) | Same as above. |
 | `PROMISE_RESOLVE_VOID` | **HIGH** | (see above) | Same as above. |
