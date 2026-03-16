@@ -597,11 +597,13 @@ describe('rx-collection.test.ts', () => {
                     const human1 = schemaObjects.humanData('same-id');
                     const human2 = schemaObjects.humanData('same-id');
 
-                    await assertThrows(
+                    const err: RxError = await assertThrows(
                         () => collections.human.bulkInsert([human1, human2]),
                         'RxError',
                         'COL22'
-                    );
+                    ) as any;
+                    assert.ok(err.parameters.duplicateIds);
+                    assert.deepStrictEqual(err.parameters.duplicateIds, ['same-id']);
 
                     db.close();
                 });

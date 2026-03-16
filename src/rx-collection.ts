@@ -450,8 +450,19 @@ export class RxCollectionBase<
 
 
         if (ids.size !== docsData.length) {
+            const duplicateIdSet = new Set<string>();
+            const seenIds = new Set<string>();
+            for (const row of insertRows) {
+                const id = (row.document as any)[primaryPath];
+                if (seenIds.has(id)) {
+                    duplicateIdSet.add(id);
+                } else {
+                    seenIds.add(id);
+                }
+            }
             throw newRxError('COL22', {
                 collection: this.name,
+                duplicateIds: Array.from(duplicateIdSet),
                 args: {
                     documents: docsData
                 }

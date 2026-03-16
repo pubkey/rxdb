@@ -352,6 +352,43 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 });
             };
 
+            const oldincrementalRemove = proto.incrementalRemove;
+            proto.incrementalRemove = function (this: RxDocument) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldincrementalRemove.call(this);
+                }
+                return this.updateCRDT({
+                    ifMatch: {
+                        $set: {
+                            _deleted: true
+                        }
+                    }
+                });
+            };
+
+            const oldModify = proto.modify;
+            proto.modify = function (this: RxDocument, fn: any, context?: string) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldModify.call(this, fn, context);
+                }
+                throw newRxError('CRDT4', {
+                    id: this.primary,
+                    args: { method: 'modify' }
+                });
+            };
+
+            const oldPatch = proto.patch;
+            proto.patch = function (this: RxDocument, patch: any) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldPatch.call(this, patch);
+                }
+                return this.updateCRDT({
+                    ifMatch: {
+                        $set: patch
+                    }
+                });
+            };
+
             const oldincrementalPatch = proto.incrementalPatch;
             proto.incrementalPatch = function (this: RxDocument, patch: any) {
                 if (!this.collection.schema.jsonSchema.crdt) {
@@ -376,6 +413,16 @@ export const RxDBcrdtPlugin: RxPlugin = {
                         args: { context }
                     });
                 }
+            };
+
+            const oldUpdate = proto.update;
+            proto.update = function (this: RxDocument, updateObj: any) {
+                if (!this.collection.schema.jsonSchema.crdt) {
+                    return oldUpdate.call(this, updateObj);
+                }
+                return this.updateCRDT({
+                    ifMatch: updateObj
+                });
             };
         },
         RxCollection: (proto: any) => {
