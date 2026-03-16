@@ -29,7 +29,7 @@ export async function getDocumentFiles(
     const params = new URLSearchParams({
         q,
         pageSize: MAX_DRIVE_PAGE_SIZE + '',
-        fields: "nextPageToken, files(id,name,mimeType,parents,modifiedTime,size)",
+        fields: "nextPageToken, files(id,name,mimeType,parents,modifiedTime,size,etag)",
         // Shared drives support (safe to include always)
         includeItemsFromAllDrives: "true",
         supportsAllDrives: "true",
@@ -109,7 +109,7 @@ export async function updateDocumentFiles<DocType>(
     googleDriveOptions: GoogleDriveOptionsWithDefaults,
     primaryPath: keyof DocType,
     docs: DocType[],
-    fileIdByDocId: Record<string, string>,
+    fileMetaByDocId: Record<string, { fileId: string; etag: string }>,
     concurrency = 5
 ) {
     const queue = docs.slice(0);
@@ -119,21 +119,33 @@ export async function updateDocumentFiles<DocType>(
         while (queue.length) {
             const doc = queue.shift()!;
             const docId = (doc as any)[primaryPath] as string;
-            const fileId = ensureNotFalsy(fileIdByDocId[docId]);
+            const meta = ensureNotFalsy(fileMetaByDocId[docId]);
+            const fileId = meta.fileId;
+            const etag = meta.etag;
 
             const url =
                 googleDriveOptions.apiEndpoint +
-                `/upload/drive/v3/files/${encodeURIComponent(fileId)}` +
+                `/upload/drive/v2/files/${encodeURIComponent(fileId)}` +
                 `?uploadType=media&supportsAllDrives=true&fields=id`;
 
             const res = await fetch(url, {
-                method: "PATCH",
+                method: "PUT",
                 headers: {
                     Authorization: `Bearer ${googleDriveOptions.authToken}`,
                     "Content-Type": "application/json; charset=UTF-8",
+                    "If-Match": etag,
                 },
                 body: JSON.stringify(doc),
             });
+
+            if (res.status === 412) {
+                throw newRxError('GDR20', {
+                    args: {
+                        docId,
+                        fileId
+                    }
+                });
+            }
 
             if (!res.ok) {
                 throw await newRxFetchError(res, {
