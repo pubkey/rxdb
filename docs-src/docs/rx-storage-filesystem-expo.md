@@ -5,7 +5,6 @@ description: A high-performance RxStorage for React Native and Expo apps based o
 image: /headers/rx-storage-filesystem-expo.jpg
 ---
 
-import PerformanceNode from '@site/src/components/performance-node';
 import {BetaBlock} from '@site/src/components/beta-block';
 
 # Expo Filesystem RxStorage
@@ -24,8 +23,6 @@ It stores data in plain files and achieves vastly superior performance compared 
 ### Cons
 
 - It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
-
-<PerformanceNode />
 
 ## Installation
 
