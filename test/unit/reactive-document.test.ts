@@ -68,13 +68,14 @@ describeParallel('reactive-document.test.js', () => {
                 const valueObj = {
                     v: doc.get('firstName')
                 };
-                doc.get$('firstName').subscribe((newVal: any) => {
+                const sub = doc.get$('firstName').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
                 const setName = randomToken(10);
                 await doc.incrementalPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
+                sub.unsubscribe();
                 c.database.close();
             });
             it('should observe a nested field', async () => {
@@ -83,7 +84,7 @@ describeParallel('reactive-document.test.js', () => {
                 const valueObj = {
                     v: doc.get('mainSkill.name')
                 };
-                doc.get$('mainSkill.name').subscribe((newVal: any) => {
+                const sub = doc.get$('mainSkill.name').subscribe((newVal: any) => {
                     valueObj.v = newVal;
                 });
                 const setName = randomToken(10);
@@ -93,8 +94,9 @@ describeParallel('reactive-document.test.js', () => {
                         level: 10
                     }
                 });
-                promiseWait(5);
+                await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
+                sub.unsubscribe();
                 c.database.close();
             });
             it('get equal values when subscribing again later', async () => {
@@ -134,12 +136,13 @@ describeParallel('reactive-document.test.js', () => {
                 const c = await humansCollection.create();
                 const doc: any = await c.findOne().exec();
                 let deleted = null;
-                doc.deleted$.subscribe((v: any) => deleted = v);
-                promiseWait(5);
+                const sub = doc.deleted$.subscribe((v: any) => deleted = v);
+                await promiseWait(5);
                 assert.deepStrictEqual(deleted, false);
                 await doc.remove();
-                promiseWait(5);
+                await promiseWait(5);
                 assert.deepStrictEqual(deleted, true);
+                sub.unsubscribe();
                 c.database.close();
             });
         });
