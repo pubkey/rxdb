@@ -1,6 +1,6 @@
 export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V {
     const val = map.get(key);
-    if (typeof val === 'undefined') {
+    if (val === undefined) {
         throw new Error('missing value from map ' + key);
     }
     return val;

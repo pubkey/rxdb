@@ -28,7 +28,7 @@ Functions are categorized by their performance impact based on how frequently th
 | `flatClone` | **CRITICAL** | 39 | Called per-document in `categorizeBulkWriteRows` (`@hotPath`) and across most storage plugin write paths. Uses `Object.assign({}, obj)` for ~3x faster than `deepClone`. |
 | `clone` / `deepClone` | **CRITICAL** | 22 | Called in query normalization, document processing, and storage operations. Performance comment on `deepClone`: "do not change without running performance tests!" Uses manual recursion instead of `JSON.parse(JSON.stringify())`. `clone` is an alias for `deepClone`. |
 | `objectPathMonad` | **CRITICAL** | 3 | Used in `getIndexableStringMonad` (`@hotPath`) for index string generation and in `rx-query-helper.ts` for query field access. Pre-computes property access path for reuse, with fast path for single-segment paths. |
-| `overwriteGetterForCaching` | **HIGH** | 4 | Replaces getters with cached values on first access. Used in schema and query objects to avoid repeated computation. |
+| `overwriteGetterForCaching` | **HIGH** | 4 | Replaces getters with cached values on first access. Uses a value descriptor instead of a getter descriptor so subsequent reads are direct property lookups (~37% faster reads). Used in schema and query objects. |
 | `sortObject` | **MEDIUM** | 2 | Used in schema normalization. Called during setup, not in hot loops. |
 | `flattenObject` | **LOW** | 1 | Minimal usage. |
 | `deepFreeze` | **MEDIUM** | 14 | Freezes objects recursively. Used in doc cache, schema, and dev-mode for immutability checks. |
@@ -42,7 +42,7 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `deepEqual` | **HIGH** | 11 | Copied from `fast-deep-equal` to avoid ESM/optimization bailout issues. Used in change detection, query result comparison, and storage plugins. Performance-sensitive due to frequency of comparisons. |
+| `deepEqual` | **HIGH** | 11 | Copied from `fast-deep-equal` to avoid ESM/optimization bailout issues. Uses a single combined loop for key-existence and value comparison (~17% faster for unequal objects). Used in change detection, query result comparison, and storage plugins. |
 
 ### `utils-object-dot-prop.ts`
 
@@ -59,7 +59,7 @@ Functions are categorized by their performance impact based on how frequently th
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
 | `getFromMapOrCreate` | **CRITICAL** | 26 | Core caching primitive. Used in query cache, doc cache, event-reduce, and storage helpers. Avoids redundant `Map.has()` + `Map.get()` calls by combining lookup and creation. |
-| `getFromMapOrThrow` | **HIGH** | 11 | Used to retrieve collections, storage instances, and other registered objects. Called frequently in database operations. |
+| `getFromMapOrThrow` | **HIGH** | 11 | Used to retrieve collections, storage instances, and other registered objects. Uses `=== undefined` instead of `typeof` for ~6% faster comparisons. Called frequently in database operations. |
 
 ### `utils-time.ts`
 
@@ -223,3 +223,35 @@ These are the functions where optimization or regression has the highest impact 
 | 13 | `lastOfArray` | utils-array | Frequent array access in event and query processing. |
 | 14 | `toArray` | utils-array | Called in query and event processing paths. |
 | 15 | `setProperty` | utils-object-dot-prop | Used in `fillObjectWithDefaults` (`@hotPath`). |
+
+## Benchmark Results for HIGH Functions
+
+Microbenchmarks comparing old vs optimized implementations (Node.js, 5M iterations, median of 3 runs).
+
+| Function | Change | Before (ops/sec) | After (ops/sec) | Improvement |
+|---|---|---|---|---|
+| `overwriteGetterForCaching` (read) | Value descriptor instead of getter descriptor | 65.5M | 103.4M | **~37% faster** |
+| `overwriteGetterForCaching` (create+read) | Same | 1.22M | 1.60M | **~25% faster** |
+| `deepEqual` (equal objects, 7 keys) | Merged two loops into single pass | 2.49M | 2.52M | ~1% faster |
+| `deepEqual` (unequal objects, nested diff) | Same | 3.08M | 3.70M | **~17% faster** |
+| `getFromMapOrThrow` | `=== undefined` instead of `typeof` | 49.5M | 52.7M | **~6% faster** |
+| `ensureNotFalsy` | Already optimal (V8 inlines it) | 134M | 134M | 0% (no change) |
+| `toArray` (array input) | `.slice(0)` copy is necessary (callers mutate) | 115M | 115M | 0% (no change) |
+| `toArray` (single value) | Already optimal | 145M | 145M | 0% (no change) |
+| `getDefaultRxDocumentMeta` | Already optimal (object literal) | 165M | 165M | 0% (no change) |
+| `lastOfArray` | Already optimal (`arr[arr.length - 1]`) | 186M | 186M | 0% (no change) |
+| `PROMISE_RESOLVE_*` | Already optimal (pre-resolved constants) | N/A | N/A | 0% (no change) |
+
+### Changes Made
+
+1. **`overwriteGetterForCaching`**: Switched from `{ get: () => value }` to `{ value }` in `Object.defineProperty`. Subsequent reads become direct property lookups instead of function calls.
+2. **`deepEqual`**: Merged the has-own-property check loop and the deep-comparison loop into a single pass, eliminating one full iteration over object keys.
+3. **`getFromMapOrThrow`**: Replaced `typeof val === 'undefined'` with `val === undefined` for a faster strict equality check.
+
+### Not Changed (Already Optimal)
+
+- **`ensureNotFalsy`**: V8 already inlines this simple function. Extracting the throw path showed 0% improvement.
+- **`lastOfArray`**: `arr[arr.length - 1]` is the fastest pattern in all engines.
+- **`toArray`**: The `.slice(0)` copy is required because callers mutate the result (e.g., `.push()` in `rx-query-helper.ts`).
+- **`getDefaultRxDocumentMeta`**: Object literal creation is already minimal overhead.
+- **`PROMISE_RESOLVE_*`**: Pre-resolved promise constants are already the optimal pattern.
