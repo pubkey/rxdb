@@ -13,8 +13,7 @@ import type {
 import {
     createRevision,
     flatClone,
-    now,
-    RX_META_LWT_MINIMUM
+    now
 } from './plugins/utils/index.ts';
 import {
     fillObjectWithDefaults,
@@ -45,15 +44,22 @@ export function fillObjectDataBeforeInsert<RxDocType>(
             data
         );
     }
-    data._meta = { lwt: RX_META_LWT_MINIMUM };
+    /**
+     * _meta and _rev are not set here because
+     * they are always overwritten by the wrapped storage instance
+     * in getWrappedStorageInstance() before the actual write.
+     * Skipping them here avoids unnecessary object allocations on the hot path.
+     *
+     * _deleted and _attachments still need to be initialized here because
+     * the wrapped storage does NOT set them, and they are required
+     * for the document to be valid before the storage write
+     * (e.g. _attachments is checked during attachment normalization in bulkInsert).
+     */
     if (!('_deleted' in data)) {
         data._deleted = false;
     }
     if (!('_attachments' in data)) {
         data._attachments = {};
-    }
-    if (!('_rev' in data)) {
-        data._rev = '';
     }
     return data;
 }

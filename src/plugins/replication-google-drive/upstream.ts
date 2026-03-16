@@ -213,18 +213,21 @@ export async function processWalFile<RxDocType>(
         init,
         docIds as string[]
     );
-    const fileIdByDocId: Record<string, string> = {};
+    const fileMetaByDocId: Record<string, { fileId: string; etag: string }> = {};
 
     docFiles.files.forEach(file => {
         const docId = file.name.split('.')[0] as any;
-        fileIdByDocId[docId] = file.id;
+        fileMetaByDocId[docId] = {
+            fileId: file.id,
+            etag: ensureNotFalsy(file.etag),
+        };
     });
 
     const toInsert: WithDeletedAndAttachments<RxDocType>[] = [];
     const toUpdate: WithDeletedAndAttachments<RxDocType>[] = [];
     content.rows.filter(row => {
         const docId = row.newDocumentState[primaryPath];
-        const fileExists = fileIdByDocId[docId as any];
+        const fileExists = fileMetaByDocId[docId as any];
         if (!fileExists) {
             toInsert.push(row.newDocumentState);
         } else {
@@ -243,7 +246,7 @@ export async function processWalFile<RxDocType>(
             googleDriveOptions,
             primaryPath,
             toUpdate,
-            fileIdByDocId,
+            fileMetaByDocId,
         )
     ]);
 
