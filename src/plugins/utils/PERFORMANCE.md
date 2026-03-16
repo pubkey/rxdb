@@ -31,12 +31,12 @@ Functions are categorized by their performance impact based on how frequently th
 | `overwriteGetterForCaching` | **HIGH** | 4 | Replaces getters with cached values on first access. Used in schema and query objects to avoid repeated computation. |
 | `sortObject` | **MEDIUM** | 2 | Used in schema normalization. Called during setup, not in hot loops. |
 | `flattenObject` | **LOW** | 1 | Minimal usage. |
-| `deepFreeze` | **MEDIUM** | Used in dev mode | Freezes objects recursively. Only active in development mode for immutability checks. |
+| `deepFreeze` | **MEDIUM** | 14 | Freezes objects recursively. Used in doc cache, schema, and dev-mode for immutability checks. |
 | `firstPropertyNameOfObject` | **LOW** | 1 | Minimal usage. |
 | `firstPropertyValueOfObject` | **LOW** | 1 | Minimal usage. |
-| `getFromObjectOrThrow` | **LOW** | Low | Error-path utility. |
-| `hasDeepProperty` | **LOW** | Low | Used in schema validation. |
-| `findUndefinedPath` | **LOW** | Low | Used in schema validation. |
+| `getFromObjectOrThrow` | **LOW** | 0 | Not used in production code. |
+| `hasDeepProperty` | **LOW** | 0 | Not used in production code. |
+| `findUndefinedPath` | **LOW** | 1 | Used in dev-mode query checks only. |
 
 ### `utils-object-deep-equal.ts`
 
@@ -50,9 +50,9 @@ Functions are categorized by their performance impact based on how frequently th
 |---|---|---|---|
 | `getProperty` | **CRITICAL** | 9 | Used in `rx-document.ts` `basePrototype.get()` (`@hotPath`). Called on every document property access. Handles dot-notation path traversal. |
 | `setProperty` | **MEDIUM** | 4 | Used in `fillObjectWithDefaults` (`@hotPath` in `rx-schema-helper.ts`). |
-| `hasProperty` | **LOW** | Low | Not in hot paths. |
-| `deleteProperty` | **LOW** | Low | Not in hot paths. |
-| `deepKeys` | **LOW** | Low | Not in hot paths. |
+| `hasProperty` | **LOW** | 0 | Not used in production code. |
+| `deleteProperty` | **LOW** | 0 | Not used in production code. |
+| `deepKeys` | **LOW** | 0 | Not used in production code. |
 
 ### `utils-map.ts`
 
@@ -71,17 +71,17 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `PROMISE_RESOLVE_TRUE` | **HIGH** | ~35 (all constants) | Reused resolved promise constants avoid creating new `Promise.resolve()` each time. Used across many core operations. |
-| `PROMISE_RESOLVE_FALSE` | **HIGH** | (shared count) | Same as above. |
-| `PROMISE_RESOLVE_NULL` | **HIGH** | (shared count) | Same as above. |
-| `PROMISE_RESOLVE_VOID` | **HIGH** | (shared count) | Same as above. |
+| `PROMISE_RESOLVE_TRUE` | **HIGH** | 35 (combined) | Reused resolved promise constants avoid creating new `Promise.resolve()` each time. Used across many core operations. |
+| `PROMISE_RESOLVE_FALSE` | **HIGH** | (see above) | Same as above. Combined count of ~35 files across all four constants. |
+| `PROMISE_RESOLVE_NULL` | **HIGH** | (see above) | Same as above. |
+| `PROMISE_RESOLVE_VOID` | **HIGH** | (see above) | Same as above. |
 | `requestIdlePromise` | **MEDIUM** | 13 | Queued idle callback scheduling. Used for background cleanup and non-urgent tasks. |
-| `requestIdleCallbackIfAvailable` | **MEDIUM** | Low | Fire-and-forget idle scheduling. |
+| `requestIdleCallbackIfAvailable` | **MEDIUM** | 1 | Fire-and-forget idle scheduling. |
 | `nextTick` | **MEDIUM** | 3 | Used for microtask scheduling. |
-| `toPromise` | **MEDIUM** | Low | Used to normalize sync/async return values. |
-| `isPromise` | **LOW** | Low | Type-checking utility. |
-| `promiseWait` | **LOW** | Low | Delay utility, mostly for tests. |
-| `promiseSeries` | **LOW** | Low | Serial promise execution. |
+| `toPromise` | **MEDIUM** | 2 | Used to normalize sync/async return values. |
+| `isPromise` | **LOW** | 1 | Type-checking utility. |
+| `promiseWait` | **MEDIUM** | 21 | Delay utility. Used in cleanup, replication, storage plugins, and retry logic. |
+| `promiseSeries` | **LOW** | 1 | Serial promise execution. |
 
 ### `utils-document.ts`
 
@@ -90,10 +90,10 @@ Functions are categorized by their performance impact based on how frequently th
 | `getDefaultRxDocumentMeta` | **HIGH** | 5 | Called during document creation to generate default `_meta` fields. |
 | `stripMetaDataFromDocument` | **MEDIUM** | 1 | Removes internal fields. Low usage count. |
 | `areRxDocumentArraysEqual` | **MEDIUM** | 1 | Optimized array comparison using only ids/revisions (faster than deep equal). |
-| `sortDocumentsByLastWriteTime` | **LOW** | Low | Sorting utility. |
-| `getSortDocumentsByLastWriteTimeComparator` | **LOW** | Low | Comparator factory. |
-| `toWithDeleted` | **LOW** | 0 | Not used in production code currently. |
-| `getDefaultRevision` | **LOW** | Low | Returns static string. |
+| `sortDocumentsByLastWriteTime` | **LOW** | 0 | Not used in production code. |
+| `getSortDocumentsByLastWriteTimeComparator` | **LOW** | 0 | Not used in production code. |
+| `toWithDeleted` | **LOW** | 0 | Not used in production code. |
+| `getDefaultRevision` | **MEDIUM** | 10 | Returns static string `1-`. Used in document initialization across database and replication code. |
 
 ### `utils-hash.ts`
 
@@ -107,11 +107,11 @@ Functions are categorized by their performance impact based on how frequently th
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
 | `ensureNotFalsy` | **HIGH** | 63 | Most-used utility function. Runtime assertion that throws on falsy values. Inlined by most JS engines due to simplicity. Used across all core modules. |
-| `RXJS_SHARE_REPLAY_DEFAULTS` | **MEDIUM** | Low | Configuration constant for RxJS operators. |
-| `ensureInteger` | **LOW** | Low | Validation utility. |
-| `runXTimes` | **LOW** | Low | Iteration utility, mostly for tests. |
+| `RXJS_SHARE_REPLAY_DEFAULTS` | **MEDIUM** | 6 | Configuration constant for RxJS operators. |
+| `ensureInteger` | **LOW** | 0 | Not used in production code. |
+| `runXTimes` | **LOW** | 0 | Not used in production code. |
 | `nameFunction` | **LOW** | 1 | Debugging utility for stack traces. |
-| `customFetchWithFixedHeaders` | **LOW** | Low | HTTP utility. |
+| `customFetchWithFixedHeaders` | **LOW** | 0 | Not used in production code. |
 
 ### `utils-array.ts`
 
@@ -120,18 +120,18 @@ Functions are categorized by their performance impact based on how frequently th
 | `lastOfArray` | **HIGH** | 12 | Frequently used to get the last element. Simple `arr[arr.length - 1]` access. |
 | `toArray` | **HIGH** | 16 | Normalizes single values to arrays. Used in query processing and event handling. |
 | `isMaybeReadonlyArray` | **MEDIUM** | 6 | Array type check used in schema and query processing. |
-| `countUntilNotMatching` | **MEDIUM** | Low | Used in index-related computations. |
+| `countUntilNotMatching` | **MEDIUM** | 1 | Used in query planner for index-related computations. |
 | `batchArray` | **MEDIUM** | 3 | Used for chunking bulk operations. |
 | `uniqueArray` | **LOW** | 1 | Deduplication utility. |
 | `arrayFilterNotEmpty` | **LOW** | 1 | Type guard for filtering. |
-| `sumNumberArray` | **LOW** | Low | Aggregation utility. |
-| `maxOfNumbers` | **LOW** | Low | Aggregation utility. |
-| `shuffleArray` | **LOW** | Low | Randomization, not in hot paths. |
-| `randomOfArray` | **LOW** | Low | Randomization, not in hot paths. |
-| `removeOneFromArrayIfMatches` | **LOW** | Low | Conditional removal. |
-| `isOneItemOfArrayInOtherArray` | **LOW** | Low | Set intersection check. |
-| `asyncFilter` | **LOW** | Low | Async array filtering. |
-| `sortByObjectNumberProperty` | **LOW** | Low | Comparator factory. |
+| `sumNumberArray` | **LOW** | 1 | Aggregation utility. |
+| `maxOfNumbers` | **LOW** | 1 | Aggregation utility. |
+| `shuffleArray` | **LOW** | 0 | Not used in production code. |
+| `randomOfArray` | **LOW** | 0 | Not used in production code. |
+| `removeOneFromArrayIfMatches` | **LOW** | 1 | Conditional removal. |
+| `isOneItemOfArrayInOtherArray` | **LOW** | 1 | Set intersection check. |
+| `asyncFilter` | **LOW** | 1 | Async array filtering. |
+| `sortByObjectNumberProperty` | **LOW** | 1 | Comparator factory. |
 
 ### `utils-string.ts`
 
@@ -139,12 +139,12 @@ Functions are categorized by their performance impact based on how frequently th
 |---|---|---|---|
 | `randomToken` | **MEDIUM** | 24 | Used for generating database/collection instance tokens. Called during setup, not in hot loops. |
 | `trimDots` | **LOW** | 3 | String cleanup utility. |
-| `lastCharOfString` | **LOW** | Low | Single character access. |
-| `ucfirst` | **LOW** | Low | Capitalization utility. |
-| `isFolderPath` | **LOW** | Low | Path detection. |
-| `arrayBufferToString` | **LOW** | Low | Encoding utility. |
-| `stringToArrayBuffer` | **LOW** | Low | Encoding utility. |
-| `normalizeString` | **LOW** | Low | Whitespace normalization. |
+| `lastCharOfString` | **LOW** | 1 | Single character access. |
+| `ucfirst` | **LOW** | 1 | Capitalization utility. |
+| `isFolderPath` | **LOW** | 1 | Path detection. |
+| `arrayBufferToString` | **LOW** | 1 | Encoding utility. |
+| `stringToArrayBuffer` | **LOW** | 1 | Encoding utility. |
+| `normalizeString` | **LOW** | 1 | Whitespace normalization. |
 
 ### `utils-base64.ts`
 
@@ -152,24 +152,24 @@ Functions are categorized by their performance impact based on how frequently th
 |---|---|---|---|
 | `b64EncodeUnicode` | **LOW** | 1 | Base64 encoding. Minimal usage. |
 | `b64DecodeUnicode` | **LOW** | 1 | Base64 decoding. Minimal usage. |
-| `arrayBufferToBase64` | **LOW** | Low | Binary encoding. |
-| `base64ToArrayBuffer` | **LOW** | Low | Binary decoding. |
+| `arrayBufferToBase64` | **LOW** | 1 | Binary encoding. |
+| `base64ToArrayBuffer` | **LOW** | 1 | Binary decoding. |
 
 ### `utils-blob.ts`
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `createBlob` | **LOW** | Low | Blob construction. |
-| `createBlobFromBase64` | **LOW** | Low | Blob construction. |
-| `blobToString` | **LOW** | Low | Blob reading. |
-| `blobToBase64String` | **LOW** | Low | Blob reading. |
+| `createBlob` | **LOW** | 1 | Blob construction. |
+| `createBlobFromBase64` | **LOW** | 1 | Blob construction. |
+| `blobToString` | **LOW** | 1 | Blob reading. |
+| `blobToBase64String` | **LOW** | 1 | Blob reading. |
 
 ### `utils-regex.ts`
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `REGEX_ALL_DOTS` | **LOW** | Low | Pre-compiled regex constant. |
-| `REGEX_ALL_PIPES` | **LOW** | Low | Pre-compiled regex constant. |
+| `REGEX_ALL_DOTS` | **LOW** | 2 | Pre-compiled regex constant. |
+| `REGEX_ALL_PIPES` | **LOW** | 1 | Pre-compiled regex constant. |
 
 ### `utils-error.ts`
 
@@ -182,19 +182,19 @@ Functions are categorized by their performance impact based on how frequently th
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `randomNumber` | **LOW** | Low | Random generation. Not in hot paths. |
+| `randomNumber` | **LOW** | 0 | Not used in production code. |
 
 ### `utils-global.ts`
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `RXDB_UTILS_GLOBAL` | **LOW** | Low | Global mutable state object for plugins. |
+| `RXDB_UTILS_GLOBAL` | **LOW** | 2 | Global mutable state object for plugins. |
 
 ### `utils-premium.ts`
 
 | Function | Performance | Usage Count (src/) | Notes |
 |---|---|---|---|
-| `hasPremiumFlag` | **LOW** | Low | One-time check. |
+| `hasPremiumFlag` | **LOW** | 1 | One-time check during collection creation. |
 
 ### `utils-rxdb-version.ts`
 
