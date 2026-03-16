@@ -54,8 +54,15 @@ module.exports = async function (config) {
                     return [process.argv[indexOfBrowsers + 1]];
                 }
 
-                // return ['Chrome'];
-                // return ['Firefox'];
+                /**
+                 * By default, only run Chrome for faster local development.
+                 * In GitHub CI, run all available browsers.
+                 */
+                if (!process.env.CI) {
+                    console.log('# Karma browsers (local):');
+                    console.dir(['Chrome']);
+                    return ['Chrome'];
+                }
 
                 const doNotUseTheseBrowsers = [
                     'PhantomJS',
@@ -74,7 +81,7 @@ module.exports = async function (config) {
                 const browsers = availableBrowser
                     .filter(b => !doNotUseTheseBrowsers.includes(b));
 
-                console.log('# Karma browsers:');
+                console.log('# Karma browsers (CI):');
                 console.dir(browsers);
 
                 return browsers;
