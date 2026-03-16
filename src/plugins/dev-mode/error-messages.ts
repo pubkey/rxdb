@@ -1267,6 +1267,12 @@ export const ERROR_MESSAGES = {
         fix: 'Try to reproduce the error in a unit test and make a PR with a test case.',
         docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR19'
     },
+    GDR20: {
+        message: 'Document file update conflict',
+        cause: 'Another client modified the document file during the transaction. This indicates a transaction timeout overlap.',
+        fix: 'Increase the transactionTimeout or investigate why two clients are writing to the same document concurrently.',
+        docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR20'
+    },
 
 
 

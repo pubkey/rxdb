@@ -489,16 +489,16 @@ describe('replication-google-drive.test.ts', function () {
                 options.initData,
                 ids
             );
-            const fileIdByDocId: any = {};
+            const fileMetaByDocId: any = {};
             found.files.forEach((file, i) => {
                 const docId = docs[i][PRIMARY_PATH];
-                fileIdByDocId[docId] = file.id;
+                fileMetaByDocId[docId] = { fileId: file.id, etag: ensureNotFalsy(file.etag) };
             });
             await updateDocumentFiles(
                 options,
                 PRIMARY_PATH,
                 docs,
-                fileIdByDocId
+                fileMetaByDocId
             );
             const fileIds: string[] = found.files.map((f: any) => ensureNotFalsy(f.id));
             const batchResult = await fetchDocumentContents<any>(
@@ -624,7 +624,7 @@ describe('replication-google-drive.test.ts', function () {
                     options,
                     PRIMARY_PATH,
                     [firstDoc],
-                    { [firstDoc.passportId]: docFiles.files[0].id }
+                    { [firstDoc.passportId]: { fileId: docFiles.files[0].id, etag: ensureNotFalsy(docFiles.files[0].etag) } }
                 );
 
                 const changesAfterUpdate = await fetchChanges<HumanDocumentType>(

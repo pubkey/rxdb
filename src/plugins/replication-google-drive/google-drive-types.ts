@@ -26,6 +26,7 @@ export interface DriveFileMetadata {
     modifiedTime?: string;
     size?: string; // Drive returns size as string
     fileSize?: string; // v2
+    etag?: string;
 }
 
 export type GoogleDriveOptions = {
