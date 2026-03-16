@@ -102,7 +102,8 @@ import {
     getWrappedStorageInstance,
     getWrittenDocumentsFromBulkWriteResponse,
     throwIfIsStorageWriteError,
-    WrappedRxStorageInstance
+    WrappedRxStorageInstance,
+    RX_COLLECTION_BULK_INSERT_CONTEXT
 } from './rx-storage-helper.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
@@ -496,7 +497,7 @@ export class RxCollectionBase<
 
         const results = await this.storageInstance.bulkWrite(
             insertRows,
-            'rx-collection-bulk-insert'
+            RX_COLLECTION_BULK_INSERT_CONTEXT
         );
 
 

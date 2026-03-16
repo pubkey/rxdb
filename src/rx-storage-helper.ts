@@ -51,6 +51,37 @@ import { HOOKS, runPluginHooks } from './hooks.ts';
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 
+/**
+ * Context string used by RxCollection.bulkInsert().
+ * Documents written with this context are already cloned
+ * by fillObjectDataBeforeInsert(), so the wrapped storage
+ * can safely mutate them in place instead of cloning again.
+ */
+export const RX_COLLECTION_BULK_INSERT_CONTEXT = 'rx-collection-bulk-insert';
+
+/**
+ * Set of bulkWrite context strings whose documents
+ * are already cloned by the caller and can be safely
+ * mutated in place (skip flatClone in the insert path).
+ *
+ * Plugins can register additional contexts via
+ * registerMutableWriteContext().
+ */
+const MUTABLE_DOCUMENT_WRITE_CONTEXTS: Set<string> = new Set([
+    RX_COLLECTION_BULK_INSERT_CONTEXT
+]);
+
+/**
+ * Register a bulkWrite context string as "mutable",
+ * meaning the caller guarantees that insert documents
+ * are already cloned and safe to mutate in place.
+ * This allows the wrapped storage to skip a redundant
+ * flatClone() call on the insert hot path.
+ */
+export function registerMutableWriteContext(context: string): void {
+    MUTABLE_DOCUMENT_WRITE_CONTEXTS.add(context);
+}
+
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
     documentId: string
@@ -577,7 +608,6 @@ export function getWrappedStorageInstance<
             context: string
         ) {
             const databaseToken = database.token;
-            const toStorageWriteRows: BulkWriteRow<RxDocType>[] = new Array(rows.length);
             /**
              * Use the same timestamp for all docs of this rows-set.
              * This improves performance because calling Date.now() inside of the now() function
@@ -590,31 +620,70 @@ export function getWrappedStorageInstance<
              * inside the hot loop.
              */
             const firstRevision = '1-' + databaseToken;
-            for (let index = 0; index < rows.length; index++) {
-                const writeRow = rows[index];
-                const previous = writeRow.previous;
-                let document;
-                if (previous) {
-                    document = flatCloneDocWithMeta(writeRow.document);
-                    document._meta.lwt = time;
-                    document._rev = createRevision(
-                        databaseToken,
-                        previous
-                    );
-                } else {
-                    /**
-                     * Optimized insert path:
-                     * - Skip cloning _meta since we overwrite it entirely with { lwt: time }
-                     * - Use pre-computed firstRevision instead of calling createRevision()
-                     */
-                    document = flatClone(writeRow.document);
-                    document._meta = { lwt: time };
+            /**
+             * Share a single _meta object for all insert rows in this batch.
+             * All inserts in the same bulkWrite share the same timestamp,
+             * so we avoid creating a new { lwt: time } object per row.
+             * This shared reference is safe because:
+             * - All documents in one batch receive identical metadata values.
+             * - When a document is later updated, flatCloneDocWithMeta() creates
+             *   a new _meta object, so the shared reference is never mutated.
+             */
+            const insertMeta = { lwt: time };
+
+            /**
+             * When the caller has already cloned the documents (registered
+             * via MUTABLE_DOCUMENT_WRITE_CONTEXTS), we can mutate them
+             * in place and reuse the input array, avoiding redundant
+             * flatClone() and wrapper-object allocations on every insert row.
+             */
+            const isMutableContext = MUTABLE_DOCUMENT_WRITE_CONTEXTS.has(context);
+            let toStorageWriteRows: BulkWriteRow<RxDocType>[];
+
+            if (isMutableContext) {
+                /**
+                 * Fast path: documents are already cloned by the caller.
+                 * Set _meta/_rev directly on the document and reuse the
+                 * input rows array without allocating wrapper objects.
+                 */
+                for (let index = 0; index < rows.length; index++) {
+                    const document = rows[index].document;
+                    document._meta = insertMeta;
                     document._rev = firstRevision;
                 }
-                toStorageWriteRows[index] = {
-                    document,
-                    previous
-                };
+                toStorageWriteRows = rows;
+            } else {
+                toStorageWriteRows = new Array(rows.length);
+                for (let index = 0; index < rows.length; index++) {
+                    const writeRow = rows[index];
+                    const previous = writeRow.previous;
+                    let document;
+                    if (previous) {
+                        document = flatCloneDocWithMeta(writeRow.document);
+                        document._meta.lwt = time;
+                        document._rev = createRevision(
+                            databaseToken,
+                            previous
+                        );
+                    } else {
+                        /**
+                         * Insert path: flatClone is required because the input document
+                         * may be a direct reference to another storage's internal data
+                         * (e.g., during migration, query results from the old storage are
+                         * passed directly as insert rows to the new storage).
+                         *
+                         * Use a shared insertMeta object instead of allocating { lwt: time }
+                         * per row, since all inserts in the same batch share the same timestamp.
+                         */
+                        document = flatClone(writeRow.document);
+                        document._meta = insertMeta;
+                        document._rev = firstRevision;
+                    }
+                    toStorageWriteRows[index] = {
+                        document,
+                        previous
+                    };
+                }
             }
 
             if (HOOKS.preStorageWrite.length > 0) {
