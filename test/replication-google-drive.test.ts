@@ -1047,6 +1047,18 @@ describe('replication-google-drive.test.ts', function () {
 
             await awaitCollectionsHaveEqualState(collectionA, collectionB, 'initial', 1000);
 
+            /**
+             * Wait for WebRTC peers to be connected before starting
+             * mutation operations. Without this, notifyPeers() calls
+             * might not reach the other peer because the WebRTC connection
+             * has not been established yet.
+             */
+            await waitUntil(() => {
+                return replicationStateA.signalingState?.peerBySenderId.size === 1;
+            });
+            await waitUntil(() => {
+                return replicationStateB.signalingState?.peerBySenderId.size === 1;
+            });
 
             // insert one
             await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
