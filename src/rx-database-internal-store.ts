@@ -246,21 +246,15 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
 
 
 /**
- * Prepares the storage token document data without writing it.
- * This allows the token document to be included in a batch bulkWrite
- * together with other documents (like collection metadata) to reduce
- * the number of storage transactions during database initialization.
+ * Builds storage token document data without writing it,
+ * so it can be included in a combined bulkWrite.
  */
-export async function prepareStorageTokenDocumentData<Collections extends CollectionsOfDatabase = any>(
-    rxDatabase: RxDatabase<Collections>
-): Promise<RxDocumentData<InternalStoreStorageTokenDocType>> {
+export function buildStorageTokenDocumentData<Collections extends CollectionsOfDatabase = any>(
+    rxDatabase: RxDatabase<Collections>,
+    passwordHash: string | undefined
+): RxDocumentData<InternalStoreStorageTokenDocType> {
     const storageToken = randomToken(10);
-
-    const passwordHash = rxDatabase.password ?
-        await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
-        undefined;
-
-    const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
+    return {
         id: STORAGE_TOKEN_DOCUMENT_ID,
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
         key: STORAGE_TOKEN_DOCUMENT_KEY,
@@ -275,18 +269,14 @@ export async function prepareStorageTokenDocumentData<Collections extends Collec
         _rev: getDefaultRevision(),
         _attachments: {}
     };
-
-    return docData;
 }
 
 
 /**
- * Processes the storage token result from a bulkWrite
+ * Processes the storage token result from a combined bulkWrite
  * that included the token document alongside other documents.
- * Handles conflict resolution (409 errors) the same way as
- * ensureStorageTokenDocumentExists.
  */
-export function processStorageTokenBulkWriteResult<Collections extends CollectionsOfDatabase = any>(
+export function processStorageTokenResult<Collections extends CollectionsOfDatabase = any>(
     rxDatabase: RxDatabase<Collections>,
     tokenDocData: RxDocumentData<InternalStoreStorageTokenDocType>,
     writeResult: RxStorageBulkWriteResponse<InternalStoreDocType<any>>
@@ -296,15 +286,9 @@ export function processStorageTokenBulkWriteResult<Collections extends Collectio
     );
 
     if (!tokenError) {
-        // Token written successfully
         return tokenDocData;
     }
 
-    /**
-     * If we get a 409 error,
-     * it means another instance already inserted the storage token.
-     * So we get that token from the database and return that one.
-     */
     if (
         tokenError.isError &&
         isBulkWriteConflictError(tokenError)
@@ -336,8 +320,7 @@ export function processStorageTokenBulkWriteResult<Collections extends Collectio
             });
         }
 
-        const storageTokenDocInDb = conflictError.documentInDb;
-        return ensureNotFalsy(storageTokenDocInDb);
+        return ensureNotFalsy(conflictError.documentInDb);
     }
     throw tokenError;
 }

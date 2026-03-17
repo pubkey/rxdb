@@ -77,8 +77,8 @@ import {
 import type { RxBackupState } from './plugins/backup/index.ts';
 import {
     ensureStorageTokenDocumentExists,
-    prepareStorageTokenDocumentData,
-    processStorageTokenBulkWriteResult,
+    buildStorageTokenDocumentData,
+    processStorageTokenResult,
     STORAGE_TOKEN_DOCUMENT_ID,
     getAllCollectionDocuments,
     getPrimaryKeyOfInternalDocument,
@@ -166,17 +166,23 @@ export class RxDatabaseBase<
             );
 
             /**
-             * Prepare the storage token document data but do not write it yet.
-             * By deferring the write, addCollections() can include the token document
-             * in the same bulkWrite as the collection metadata, reducing the number
-             * of IndexedDB transactions from 2 to 1 during the critical startup path.
-             *
-             * A fallback write is scheduled to handle the case where addCollections()
-             * is never called or storageToken is accessed before addCollections().
+             * Start computing the password hash early (async).
+             * The hash is needed for the storage token document.
+             * By starting it here, it runs in parallel with
+             * any work the caller does before calling addCollections().
+             */
+            this._passwordHashPromise = this.password
+                ? this.hashFunction(JSON.stringify(this.password))
+                : undefined;
+
+            /**
+             * Defer writing the storage token.
+             * addCollections() will include the token document in its
+             * bulkWrite to save one IndexedDB transaction. If addCollections()
+             * is never called, a fallback writes the token separately.
              */
             const tokenDocResolvers = createPromiseWithResolvers<RxDocumentData<InternalStoreStorageTokenDocType>>();
             this._tokenDocResolvers = tokenDocResolvers;
-            this._pendingStorageTokenDocData = prepareStorageTokenDocumentData(this.asRxDatabase);
             this._storageTokenWriteStarted = false;
 
             this.storageTokenDocument = tokenDocResolvers.promise
@@ -186,19 +192,15 @@ export class RxDatabaseBase<
                 .catch(err => this.startupErrors.push(err) as any);
 
             /**
-             * Fallback: if addCollections() has not started the token write,
-             * write it separately. setTimeout(0) fires after the current
-             * microtask queue, giving addCollections() (which is typically
-             * called synchronously after createRxDatabase resolves) a chance
-             * to include the token in its own bulkWrite.
+             * Fallback: write the token separately if addCollections()
+             * has not been called. setTimeout(0) runs after the current
+             * microtask queue, giving addCollections() a chance to batch it.
              */
-            this._pendingStorageTokenDocData
-                .then(() => setTimeout(() => {
-                    if (!this._storageTokenWriteStarted) {
-                        this._ensureStorageTokenWritten();
-                    }
-                }, 0))
-                .catch(() => { });
+            setTimeout(() => {
+                if (!this._storageTokenWriteStarted) {
+                    this._writeStorageTokenFallback();
+                }
+            }, 0);
         }
     }
 
@@ -283,32 +285,29 @@ export class RxDatabaseBase<
 
     /**
      * Internal state for deferred storage token writing.
-     * The token document data is prepared in the constructor but not written immediately.
-     * addCollections() can include it in its own bulkWrite to save one storage transaction.
+     * The token document is prepared in the constructor
+     * and written together with collection metadata in addCollections().
      */
+    public _passwordHashPromise: Promise<string> | undefined = undefined;
     public _tokenDocResolvers: {
         promise: Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
         resolve: (value: RxDocumentData<InternalStoreStorageTokenDocType>) => void;
         reject: (reason?: any) => void;
     } = undefined as any;
-    public _pendingStorageTokenDocData: Promise<RxDocumentData<InternalStoreStorageTokenDocType>> = PROMISE_RESOLVE_FALSE as any;
     public _storageTokenWriteStarted: boolean = false;
 
     /**
-     * Fallback method to write the storage token separately
-     * if addCollections() has not included it in its bulkWrite.
+     * Fallback: write the token separately if addCollections()
+     * was not called to batch the write.
      */
-    public async _ensureStorageTokenWritten(): Promise<void> {
+    public _writeStorageTokenFallback(): void {
         if (this._storageTokenWriteStarted) {
             return;
         }
         this._storageTokenWriteStarted = true;
-        try {
-            const result = await ensureStorageTokenDocumentExists(this.asRxDatabase);
-            this._tokenDocResolvers.resolve(result);
-        } catch (err: any) {
-            this._tokenDocResolvers.reject(err);
-        }
+        ensureStorageTokenDocumentExists(this.asRxDatabase)
+            .then(result => this._tokenDocResolvers.resolve(result))
+            .catch(err => this._tokenDocResolvers.reject(err));
     }
 
     /**
@@ -377,8 +376,9 @@ export class RxDatabaseBase<
         const useArgsByCollectionName: any = {};
 
         /**
-         * Phase 1a: Synchronous setup — create schemas, check for duplicates,
-         * prepare useArgs — so we can start storage instance creation as early as possible.
+         * Phase 1: Synchronous setup — create schemas, check duplicates,
+         * prepare useArgs, and kick off storage instance creation.
+         * All sync work is done first so that async I/O can overlap.
          */
         Object.entries(collectionCreators).forEach(([name, args]) => {
             const collectionName: keyof CreatedCollections = name as any;
@@ -387,7 +387,6 @@ export class RxDatabaseBase<
             const schema = createRxSchema(rxJsonSchema, this.hashFunction);
             schemas[collectionName] = schema;
 
-            // collection already exists
             if ((this.collections as any)[name]) {
                 throw newRxError('DB3', {
                     name
@@ -404,7 +403,6 @@ export class RxDatabaseBase<
                 }
             );
 
-            // run hooks
             const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
             (hookData as any).database = this;
             hookData.name = name;
@@ -416,12 +414,11 @@ export class RxDatabaseBase<
 
 
         /**
-         * Phase 1b: Start creating collection storage instances EARLY,
-         * in parallel with schema hash computation (Phase 1c) and the
-         * internal store bulkWrite (Phase 2). Storage instance creation
-         * opens new IndexedDB databases which is independent of the
-         * internal store, so overlapping these I/O operations reduces
-         * time-to-first-insert.
+         * Phase 2: Start all async I/O in parallel:
+         *  - collection storage instance creation (opens IndexedDB databases)
+         *  - schema hash computation (crypto.subtle.digest)
+         *  - password hash (if not already computed, for token doc)
+         * All of these are independent and can overlap.
          */
         const collectionStorageInstancePromises: { [key: string]: Promise<RxStorageInstance<any, any, any>>; } = {};
         Object.keys(collectionCreators).forEach((collectionName) => {
@@ -441,27 +438,43 @@ export class RxDatabaseBase<
                 this.asRxDatabase,
                 storageInstanceCreationParams
             );
-            /**
-             * Prevent unhandled promise rejection warnings.
-             * If the bulkWrite error handling throws
-             * (e.g. password mismatch, schema mismatch), these promises might
-             * never be awaited. The actual errors are still propagated when
-             * the promises are awaited in Phase 3 below.
-             */
             promise.catch(() => { });
             collectionStorageInstancePromises[collectionName] = promise;
         });
 
+        // Kick off all schema hashes in parallel (non-awaited promises)
+        const hashPromises: { [key: string]: Promise<string>; } = {};
+        Object.keys(collectionCreators).forEach((name) => {
+            const collectionName: keyof CreatedCollections = name as any;
+            hashPromises[name] = schemas[collectionName].hash;
+        });
 
         /**
-         * Phase 1c: Compute schema hashes (async) and build collection metadata
-         * documents. This runs in parallel with the storage instance creations above.
+         * Phase 3: Build collection metadata documents once hashes resolve,
+         * and include the storage token document to save one transaction.
          */
+
+        // Include storage token in the same bulkWrite if not yet written
+        let includesTokenDoc = false;
+        let tokenDocData: RxDocumentData<InternalStoreStorageTokenDocType> | undefined;
+        if (!this._storageTokenWriteStarted) {
+            this._storageTokenWriteStarted = true;
+            includesTokenDoc = true;
+            const passwordHash = this._passwordHashPromise
+                ? await this._passwordHashPromise
+                : undefined;
+            tokenDocData = buildStorageTokenDocumentData(this.asRxDatabase, passwordHash);
+            bulkPutDocs.push({
+                document: tokenDocData
+            } as any);
+        }
+
+        // Build collection metadata docs (await hashes computed in Phase 2)
         await Promise.all(
             Object.entries(collectionCreators).map(async ([name]) => {
                 const collectionName: keyof CreatedCollections = name as any;
                 const rxJsonSchema = jsonSchemas[collectionName];
-                const schema = schemas[collectionName];
+                const schemaHash = await hashPromises[name];
 
                 const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
                 const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
@@ -473,9 +486,9 @@ export class RxDatabaseBase<
                     context: INTERNAL_CONTEXT_COLLECTION,
                     data: {
                         name: collectionName as any,
-                        schemaHash: await schema.hash,
-                        schema: schema.jsonSchema,
-                        version: schema.version,
+                        schemaHash,
+                        schema: (schemas[collectionName] as any).jsonSchema,
+                        version: (schemas[collectionName] as any).version,
                         connectedStorages: []
                     },
                     _deleted: false,
@@ -491,23 +504,8 @@ export class RxDatabaseBase<
 
 
         /**
-         * Phase 2: Combine the storage token document with the collection
-         * metadata documents in a single bulkWrite to save one IndexedDB
-         * transaction during the critical startup path.
-         */
-        let includesTokenDoc = false;
-        if (!this._storageTokenWriteStarted) {
-            this._storageTokenWriteStarted = true;
-            includesTokenDoc = true;
-            const tokenDocData = await this._pendingStorageTokenDocData;
-            bulkPutDocs.unshift({
-                document: tokenDocData
-            } as any);
-        }
-
-        /**
-         * If the bulkWrite error handling throws,
-         * we must close any pre-created storage instances to avoid resource leaks.
+         * Phase 4: Single combined bulkWrite for token + collection metadata.
+         * If the token was already written, ensure no startup errors instead.
          */
         let putDocsResult;
         try {
@@ -516,65 +514,49 @@ export class RxDatabaseBase<
                 'rx-database-add-collection'
             );
 
-            /**
-             * Process the storage token result if it was included in this write.
-             */
             if (includesTokenDoc) {
                 try {
-                    const tokenDoc = processStorageTokenBulkWriteResult(
+                    const resolvedTokenDoc = processStorageTokenResult(
                         this.asRxDatabase,
-                        await this._pendingStorageTokenDocData,
+                        ensureNotFalsy(tokenDocData),
                         putDocsResult
                     );
-                    this._tokenDocResolvers.resolve(tokenDoc);
+                    this._tokenDocResolvers.resolve(resolvedTokenDoc);
                 } catch (tokenErr: any) {
                     this._tokenDocResolvers.reject(tokenErr);
                     throw tokenErr;
                 }
             } else {
-                /**
-                 * If the token was not included, ensure it has been written
-                 * and check for startup errors (version mismatch, password mismatch).
-                 */
                 await ensureNoStartupErrors(this);
             }
 
-            /**
-             * Handle collection metadata write errors (409 conflicts for schema mismatches).
-             * Filter out the storage token error since it was already handled above.
-             */
+            // Handle collection metadata write errors
             await Promise.all(
                 putDocsResult.error
                     .filter(error => error.documentId !== STORAGE_TOKEN_DOCUMENT_ID)
                     .map(async (error) => {
-                    if (error.status !== 409) {
-                        throw newRxError('DB12', {
-                            database: this.name,
-                            writeError: error
-                        });
-                    }
-                    const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
-                    const collectionName = docInDb.data.name;
-                    const schema = (schemas as any)[collectionName];
-                    // collection already exists but has different schema
-                    if (docInDb.data.schemaHash !== await schema.hash) {
-                        throw newRxError('DB6', {
-                            database: this.name,
-                            collection: collectionName,
-                            previousSchemaHash: docInDb.data.schemaHash,
-                            schemaHash: await schema.hash,
-                            previousSchema: docInDb.data.schema,
-                            schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
-                        });
-                    }
-                })
+                        if (error.status !== 409) {
+                            throw newRxError('DB12', {
+                                database: this.name,
+                                writeError: error
+                            });
+                        }
+                        const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
+                        const collectionName = docInDb.data.name;
+                        const schema = (schemas as any)[collectionName];
+                        if (docInDb.data.schemaHash !== await schema.hash) {
+                            throw newRxError('DB6', {
+                                database: this.name,
+                                collection: collectionName,
+                                previousSchemaHash: docInDb.data.schemaHash,
+                                schemaHash: await schema.hash,
+                                previousSchema: docInDb.data.schema,
+                                schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
+                            });
+                        }
+                    })
             );
         } catch (err) {
-            /**
-             * Close any pre-created storage instances on error.
-             * Some instances might have failed to create (rejected promise),
-             * so we catch and ignore errors during cleanup.
-             */
             await Promise.all(
                 Object.values(collectionStorageInstancePromises).map(
                     p => p.then(instance => instance.close()).catch(() => { })
@@ -1025,9 +1007,8 @@ export async function isRxDatabaseFirstTimeInstantiated(
 export async function ensureNoStartupErrors(
     rxDatabase: RxDatabaseBase<any, any, any, any>
 ) {
-    // Trigger the fallback token write if not already started
     if (!rxDatabase._storageTokenWriteStarted) {
-        await rxDatabase._ensureStorageTokenWritten();
+        rxDatabase._writeStorageTokenFallback();
     }
     await rxDatabase.storageToken;
     if (rxDatabase.startupErrors[0]) {
