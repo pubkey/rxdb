@@ -16,6 +16,7 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
+    RxStorageBulkWriteResponse,
     RxStorageInstance,
     RxStorageWriteErrorConflict
 } from './types/index.d.ts';
@@ -241,6 +242,104 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return ensureNotFalsy(storageTokenDocInDb);
     }
     throw error;
+}
+
+
+/**
+ * Prepares the storage token document data without writing it.
+ * This allows the token document to be included in a batch bulkWrite
+ * together with other documents (like collection metadata) to reduce
+ * the number of storage transactions during database initialization.
+ */
+export async function prepareStorageTokenDocumentData<Collections extends CollectionsOfDatabase = any>(
+    rxDatabase: RxDatabase<Collections>
+): Promise<RxDocumentData<InternalStoreStorageTokenDocType>> {
+    const storageToken = randomToken(10);
+
+    const passwordHash = rxDatabase.password ?
+        await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
+        undefined;
+
+    const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
+        id: STORAGE_TOKEN_DOCUMENT_ID,
+        context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+        key: STORAGE_TOKEN_DOCUMENT_KEY,
+        data: {
+            rxdbVersion: rxDatabase.rxdbVersion,
+            token: storageToken,
+            instanceToken: rxDatabase.token,
+            passwordHash
+        },
+        _deleted: false,
+        _meta: getDefaultRxDocumentMeta(),
+        _rev: getDefaultRevision(),
+        _attachments: {}
+    };
+
+    return docData;
+}
+
+
+/**
+ * Processes the storage token result from a bulkWrite
+ * that included the token document alongside other documents.
+ * Handles conflict resolution (409 errors) the same way as
+ * ensureStorageTokenDocumentExists.
+ */
+export function processStorageTokenBulkWriteResult<Collections extends CollectionsOfDatabase = any>(
+    rxDatabase: RxDatabase<Collections>,
+    tokenDocData: RxDocumentData<InternalStoreStorageTokenDocType>,
+    writeResult: RxStorageBulkWriteResponse<InternalStoreDocType<any>>
+): RxDocumentData<InternalStoreStorageTokenDocType> {
+    const tokenError = writeResult.error.find(
+        err => err.documentId === STORAGE_TOKEN_DOCUMENT_ID
+    );
+
+    if (!tokenError) {
+        // Token written successfully
+        return tokenDocData;
+    }
+
+    /**
+     * If we get a 409 error,
+     * it means another instance already inserted the storage token.
+     * So we get that token from the database and return that one.
+     */
+    if (
+        tokenError.isError &&
+        isBulkWriteConflictError(tokenError)
+    ) {
+        const conflictError = (tokenError as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
+
+        if (
+            !isDatabaseStateVersionCompatibleWithDatabaseCode(
+                conflictError.documentInDb.data.rxdbVersion,
+                rxDatabase.rxdbVersion
+            )
+        ) {
+            throw newRxError('DM5', {
+                args: {
+                    database: rxDatabase.name,
+                    databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
+                    codeVersion: rxDatabase.rxdbVersion
+                }
+            });
+        }
+
+        if (
+            tokenDocData.data.passwordHash &&
+            tokenDocData.data.passwordHash !== conflictError.documentInDb.data.passwordHash
+        ) {
+            throw newRxError('DB1', {
+                passwordHash: tokenDocData.data.passwordHash,
+                existingPasswordHash: conflictError.documentInDb.data.passwordHash
+            });
+        }
+
+        const storageTokenDocInDb = conflictError.documentInDb;
+        return ensureNotFalsy(storageTokenDocInDb);
+    }
+    throw tokenError;
 }
 
 
