@@ -6,6 +6,7 @@ image: /headers/rx-storage-filesystem-expo.jpg
 ---
 
 import {BetaBlock} from '@site/src/components/beta-block';
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Expo Filesystem RxStorage
 
@@ -20,9 +21,7 @@ It stores data in plain files and achieves vastly superior performance compared 
 - **Easy Integration**: Drops right into any Expo or React Native project.
 - Uses native C++ JSI bindings via `expo-opfs` for minimal bridging overhead.
 
-### Cons
-
-- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
+<PremiumBlock />
 
 ## Installation
 

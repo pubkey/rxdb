@@ -5,6 +5,8 @@ description: Choose IndexedDB RxStorage for unmatched speed and minimal build si
 image: /headers/rx-storage-indexeddb.jpg
 ---
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # IndexedDB RxStorage
 
 The IndexedDB [RxStorage](./rx-storage.md) is based on plain IndexedDB and can be used in browsers, [electron](./electron-database.md) or [hybrid apps](./articles/mobile-database.md).
@@ -21,6 +23,10 @@ Here is some performance comparison with other storages. Compared to the non-mem
 <p align="center">
   <img src="./files/rx-storage-performance-browser.png" alt="IndexedDB performance" width="700" />
 </p>
+
+
+<PremiumBlock />
+
 
 ## Using the IndexedDB RxStorage
 

@@ -1,5 +1,5 @@
 ---
-title: Fulltext Search 👑
+title: Fulltext Search
 slug: fulltext-search.html
 description: Master local fulltext search with RxDB's FlexSearch plugin. Enjoy real-time indexing, efficient queries, and offline-first support made easy.
 image: /headers/fulltext-search.jpg
