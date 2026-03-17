@@ -564,7 +564,7 @@
     }
   },
   "dependencies": {
-    "@babel/runtime": "7.28.6",
+    "@babel/runtime": "7.29.2",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
@@ -611,7 +611,7 @@
     "@babel/plugin-transform-template-literals": "7.27.1",
     "@babel/plugin-transform-typescript": "7.28.6",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.29.0",
+    "@babel/preset-env": "7.29.2",
     "@babel/preset-typescript": "7.28.5",
     "@babel/types": "7.29.0",
     "@eslint/compat": "2.0.3",
