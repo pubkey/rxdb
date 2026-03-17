@@ -248,9 +248,16 @@ export function fillWithDefaultSettings<T = any>(
     // primaryKey is always required
     (schemaObj.required as any).push(primaryPath);
 
-    schemaObj.required = schemaObj.required
-        .filter((field: string) => !field.includes('.'))
-        .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
+    // unique and filter out dotted paths
+    const requiredSet = new Set<string>();
+    schemaObj.required = (schemaObj.required as string[])
+        .filter((field: string) => {
+            if (field.includes('.') || requiredSet.has(field)) {
+                return false;
+            }
+            requiredSet.add(field);
+            return true;
+        }) as typeof schemaObj.required;
 
 
     // version is 0 by default

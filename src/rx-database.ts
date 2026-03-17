@@ -43,7 +43,8 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256,
-    RXDB_VERSION
+    RXDB_VERSION,
+    hasPremiumFlag
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -319,24 +320,88 @@ export class RxDatabaseBase<
     }): Promise<{ [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> }> {
         const jsonSchemas: { [key in keyof CreatedCollections]: RxJsonSchema<any> } = {} as any;
         const schemas: { [key in keyof CreatedCollections]: RxSchema<any> } = {} as any;
-        const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
         const useArgsByCollectionName: any = {};
 
-        await Promise.all(
-            Object.entries(collectionCreators).map(async ([name, args]) => {
-                const collectionName: keyof CreatedCollections = name as any;
-                const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
-                jsonSchemas[collectionName] = rxJsonSchema;
-                const schema = createRxSchema(rxJsonSchema, this.hashFunction);
-                schemas[collectionName] = schema;
+        /**
+         * Optimization: Split the setup into synchronous and async phases.
+         * First, create schemas and start storage instance creation (both need only jsonSchema).
+         * Storage instance creation does not need the schema hash,
+         * so we start it immediately and compute hashes in parallel.
+         * This overlaps storage I/O with hash computation to reduce time-to-first-insert.
+         */
+        const collectionStorageInstancePromises: { [key: string]: Promise<RxStorageInstance<any, any, any>>; } = {};
+        const collectionEntries = Object.entries(collectionCreators);
 
-                // collection already exists
-                if ((this.collections as any)[name]) {
-                    throw newRxError('DB3', {
-                        name
-                    });
+        for (const [name, args] of collectionEntries) {
+            const collectionName: keyof CreatedCollections = name as any;
+            const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
+            jsonSchemas[collectionName] = rxJsonSchema;
+            const schema = createRxSchema(rxJsonSchema, this.hashFunction);
+            schemas[collectionName] = schema;
+
+            // collection already exists
+            if ((this.collections as any)[name]) {
+                throw newRxError('DB3', {
+                    name
+                });
+            }
+
+            const useArgs: any = Object.assign(
+                {},
+                args,
+                {
+                    name: collectionName,
+                    schema,
+                    database: this
                 }
+            );
 
+            // run hooks
+            const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
+            (hookData as any).database = this;
+            hookData.name = name;
+            runPluginHooks('preCreateRxCollection', hookData);
+            useArgs.conflictHandler = hookData.conflictHandler;
+
+            useArgsByCollectionName[collectionName] = useArgs;
+
+            // Start storage instance creation immediately (does not need schema hash)
+            const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
+                databaseInstanceToken: this.token,
+                databaseName: this.name,
+                collectionName: name,
+                schema: schema.jsonSchema,
+                options: useArgs.instanceCreationOptions || {},
+                multiInstance: this.multiInstance,
+                password: this.password,
+                devMode: overwritable.isDevMode()
+            };
+            runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
+            const promise = createRxCollectionStorageInstance(
+                this.asRxDatabase,
+                storageInstanceCreationParams
+            );
+            /**
+             * Prevent unhandled promise rejection warnings.
+             * If ensureNoStartupErrors() or the bulkWrite error handling throws
+             * (e.g. password mismatch, schema mismatch), these promises might
+             * never be awaited. The actual errors are still propagated when
+             * the promises are awaited below.
+             */
+            promise.catch(() => { });
+            collectionStorageInstancePromises[name] = promise;
+        }
+
+        /**
+         * Compute schema hashes and prepare internal store documents.
+         * This runs in parallel with the already-started storage instance creation.
+         */
+        const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
+        await Promise.all(
+            collectionEntries.map(async ([name, _args]) => {
+                const collectionName: keyof CreatedCollections = name as any;
+                const rxJsonSchema = jsonSchemas[collectionName];
+                const schema = schemas[collectionName];
                 const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
                 const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
                     id: getPrimaryKeyOfInternalDocument(
@@ -360,67 +425,15 @@ export class RxDatabaseBase<
                 bulkPutDocs.push({
                     document: collectionDocData
                 });
-
-                const useArgs: any = Object.assign(
-                    {},
-                    args,
-                    {
-                        name: collectionName,
-                        schema,
-                        database: this
-                    }
-                );
-
-                // run hooks
-                const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
-                (hookData as any).database = this;
-                hookData.name = name;
-                runPluginHooks('preCreateRxCollection', hookData);
-                useArgs.conflictHandler = hookData.conflictHandler;
-
-                useArgsByCollectionName[collectionName] = useArgs;
             })
         );
 
-
         /**
-         * Optimization: Start creating collection storage instances
-         * in parallel with the internal store bulkWrite and startup error check.
+         * Overlap internal store writes with storage instance creation.
          * Storage instance creation is independent of the internal store write,
          * so we can overlap these I/O operations to reduce time-to-first-insert.
-         */
-        const collectionStorageInstancePromises: { [key: string]: Promise<RxStorageInstance<any, any, any>>; } = {};
-        Object.keys(collectionCreators).forEach((collectionName) => {
-            const useArgs = useArgsByCollectionName[collectionName];
-            const storageInstanceCreationParams: RxStorageInstanceCreationParams<any, any> = {
-                databaseInstanceToken: this.token,
-                databaseName: this.name,
-                collectionName: collectionName,
-                schema: useArgs.schema.jsonSchema,
-                options: useArgs.instanceCreationOptions || {},
-                multiInstance: this.multiInstance,
-                password: this.password,
-                devMode: overwritable.isDevMode()
-            };
-            runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
-            const promise = createRxCollectionStorageInstance(
-                this.asRxDatabase,
-                storageInstanceCreationParams
-            );
-            /**
-             * Prevent unhandled promise rejection warnings.
-             * If ensureNoStartupErrors() or the bulkWrite error handling throws
-             * (e.g. password mismatch, schema mismatch), these promises might
-             * never be awaited. The actual errors are still propagated when
-             * the promises are awaited in Phase 5 below.
-             */
-            promise.catch(() => { });
-            collectionStorageInstancePromises[collectionName] = promise;
-        });
-
-        /**
-         * If the ensureNoStartupErrors or the bulkWrite error handling throws,
-         * we must close any pre-created storage instances to avoid resource leaks.
+         * Collection creation (createRxCollection + prepare) is done after the
+         * internal store write to avoid race conditions with plugin hooks like cleanup.
          */
         let putDocsResult;
         try {
@@ -738,6 +751,13 @@ export function createRxDatabase<
         options,
         localDocuments
     });
+
+    /**
+     * Pre-trigger the premium flag check so that the async hash computation
+     * runs in the background. By the time collection.prepare() needs it,
+     * the promise will already be resolved.
+     */
+    hasPremiumFlag();
 
     const databaseNameKey = getDatabaseNameKey(name, storage);
     const databaseNameKeyUnclosedInstancesSet = DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP.get(databaseNameKey) || new Set();

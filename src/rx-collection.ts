@@ -325,7 +325,15 @@ export class RxCollectionBase<
         this._subs.push(listenToRemoveSub);
 
 
-        const databaseStorageToken = await this.database.storageToken;
+        /**
+         * Defer the storageToken resolution to avoid blocking prepare().
+         * The token will be resolved before any actual events fire,
+         * since events require write operations which happen after prepare() returns.
+         */
+        let databaseStorageToken: string;
+        this.database.storageToken.then(token => {
+            databaseStorageToken = token;
+        });
         const subDocs = this.storageInstance.changeStream().subscribe((eventBulk: any) => {
             const changeEventBulk: RxChangeEventBulk<RxDocumentType | RxLocalDocumentData> = {
                 id: eventBulk.id,
