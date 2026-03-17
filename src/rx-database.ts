@@ -475,6 +475,7 @@ export class RxDatabaseBase<
             includesTokenDoc = true;
         }
 
+        const collectionDocs: BulkWriteRow<InternalStoreDocType<any>>[] = [];
         const buildPromises: Promise<void>[] = Object.entries(collectionCreators).map(async ([name]) => {
             const collectionName: keyof CreatedCollections = name as any;
             const rxJsonSchema = jsonSchemas[collectionName];
@@ -501,7 +502,7 @@ export class RxDatabaseBase<
                 _rev: getDefaultRevision(),
                 _attachments: {}
             };
-            bulkPutDocs.push({
+            collectionDocs.push({
                 document: collectionDocData
             } as any);
         });
@@ -514,14 +515,19 @@ export class RxDatabaseBase<
                         ? await this._passwordHashPromise
                         : undefined;
                     tokenDocData = buildStorageTokenDocumentData(this.asRxDatabase, passwordHash);
-                    bulkPutDocs.unshift({
-                        document: tokenDocData
-                    } as any);
                 })()
             );
         }
 
         await Promise.all(buildPromises);
+
+        // Assemble final bulkWrite array: token doc first (if included), then collection docs
+        if (includesTokenDoc && tokenDocData) {
+            bulkPutDocs.push({ document: tokenDocData } as any);
+        }
+        for (let i = 0; i < collectionDocs.length; i++) {
+            bulkPutDocs.push(collectionDocs[i]);
+        }
 
 
         /**
