@@ -35,8 +35,7 @@ describe('performance.test.ts', () => {
          * The SQLite trial storage has a 300-document cap per collection,
          * so we reduce the bulk insert count to stay within the limit.
          */
-        const isSQLiteTrial = perfStorage.description.includes('sqlite') &&
-            config.storage.name === 'sqlite-trial';
+        const isSQLiteTrial = config.storage.name === 'sqlite-trial';
         await runPerformanceTests(
             perfStorage.storage,
             perfStorage.description,
