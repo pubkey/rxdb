@@ -707,7 +707,7 @@
     "source-map-support": "0.5.21",
     "stream": "0.0.3",
     "supabase": "2.78.1",
-    "terser": "5.46.0",
+    "terser": "5.46.1",
     "terser-webpack-plugin": "5.4.0",
     "ts-loader": "9.5.4",
     "tsx": "4.21.0",
