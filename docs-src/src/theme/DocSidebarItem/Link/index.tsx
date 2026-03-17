@@ -15,11 +15,12 @@ import { SidebarIcon } from '../../../components/icons/sidebar-icon';
 
 import styles from './styles.module.css';
 
-function LinkLabel({label, icon}) {
+function LinkLabel({label, icon, iconAfter}) {
   return (
     <span title={label} className={styles.linkLabel}>
       {icon && <SidebarIcon iconName={icon} />}
       {label}
+      {iconAfter && <SidebarIcon iconName={iconAfter} position="after" />}
     </span>
   );
 }
@@ -34,6 +35,7 @@ export default function DocSidebarItemLink({
 }) {
   const {href, label, className, autoAddBaseUrl, customProps} = item;
   const icon = customProps?.icon;
+  const iconAfter = customProps?.iconAfter;
   const isActive = isActiveSidebarItem(item, activePath);
   const isInternalLink = isInternalUrl(href);
   return (
@@ -60,7 +62,7 @@ export default function DocSidebarItemLink({
           onClick: onItemClick ? () => onItemClick(item) : undefined,
         })}
         {...props}>
-        <LinkLabel label={label} icon={icon} />
+        <LinkLabel label={label} icon={icon} iconAfter={iconAfter} />
         {!isInternalLink && <IconExternalLink />}
       </Link>
     </li>

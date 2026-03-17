@@ -97,11 +97,12 @@ function CollapseButton({collapsed, categoryLabel, onClick}) {
   );
 }
 
-function CategoryLinkLabel({label, icon}) {
+function CategoryLinkLabel({label, icon, iconAfter}) {
   return (
     <span title={label} className={styles.categoryLinkLabel}>
       {icon && <SidebarIcon iconName={icon} />}
       {label}
+      {iconAfter && <SidebarIcon iconName={iconAfter} position="after" />}
     </span>
   );
 }
@@ -145,6 +146,7 @@ function DocSidebarItemCategoryCollapsible({
 }) {
   const {items, label, collapsible, className, href, customProps} = item;
   const icon = customProps?.icon;
+  const iconAfter = customProps?.iconAfter;
   const {
     docs: {
       sidebar: {autoCollapseCategories},
@@ -225,7 +227,7 @@ function DocSidebarItemCategoryCollapsible({
           aria-expanded={collapsible && !href ? !collapsed : undefined}
           href={collapsible ? hrefWithSSRFallback ?? '#' : hrefWithSSRFallback}
           {...props}>
-          <CategoryLinkLabel label={label} icon={icon} />
+          <CategoryLinkLabel label={label} icon={icon} iconAfter={iconAfter} />
         </Link>
         {href && collapsible && (
           <CollapseButton

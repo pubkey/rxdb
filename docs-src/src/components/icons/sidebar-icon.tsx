@@ -3,15 +3,17 @@ import { IconStorage } from './storage';
 import { IconReplication } from './replication';
 import { IconGear } from './gear';
 import { IconQuickstart } from './quickstart';
+import { IconPremium } from './premium';
 
 const SIDEBAR_ICON_MAP: Record<string, React.ComponentType> = {
     storage: IconStorage,
     replication: IconReplication,
     gear: IconGear,
     quickstart: IconQuickstart,
+    premium: IconPremium,
 };
 
-export function SidebarIcon({ iconName }: { iconName: string; }) {
+export function SidebarIcon({ iconName, position = 'before' }: { iconName: string; position?: 'before' | 'after'; }) {
     const IconComponent = SIDEBAR_ICON_MAP[iconName];
     if (!IconComponent) {
         return null;
@@ -20,7 +22,8 @@ export function SidebarIcon({ iconName }: { iconName: string; }) {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 6,
+        marginRight: position === 'before' ? 6 : 0,
+        marginLeft: position === 'after' ? 6 : 0,
         verticalAlign: 'middle',
         width: 18,
         height: 18,

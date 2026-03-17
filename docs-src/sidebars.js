@@ -93,12 +93,18 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-indexeddb',
-          label: 'IndexedDB 👑 (Browser, Capacitor)'
+          label: 'IndexedDB (Browser, Capacitor)',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
           id: 'rx-storage-opfs',
-          label: 'OPFS 👑 (Browser)'
+          label: 'OPFS (Browser)',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
@@ -108,7 +114,10 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-filesystem-node',
-          label: 'Filesystem Node 👑 (Node.js)'
+          label: 'Filesystem Node (Node.js)',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
@@ -118,7 +127,10 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-filesystem-expo',
-          label: 'Expo Filesystem 👑 (React Native, Expo)'
+          label: 'Expo Filesystem (React Native, Expo)',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'category',
@@ -170,7 +182,10 @@ const sidebars = {
         {
           type: 'doc',
           id: 'logger',
-          label: 'Logger 👑'
+          label: 'Logger',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
@@ -180,27 +195,42 @@ const sidebars = {
         {
           type: 'doc',
           id: 'rx-storage-worker',
-          label: 'Worker RxStorage 👑'
+          label: 'Worker RxStorage',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
           id: 'rx-storage-shared-worker',
-          label: 'SharedWorker RxStorage 👑'
+          label: 'SharedWorker RxStorage',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
           id: 'rx-storage-memory-mapped',
-          label: 'Memory Mapped RxStorage 👑'
+          label: 'Memory Mapped RxStorage',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
           id: 'rx-storage-sharding',
-          label: 'Sharding 👑'
+          label: 'Sharding',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
           id: 'rx-storage-localstorage-meta-optimizer',
-          label: 'Localstorage Meta Optimizer 👑'
+          label: 'Localstorage Meta Optimizer',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
@@ -434,7 +464,10 @@ const sidebars = {
         {
           type: 'doc',
           id: 'fulltext-search',
-          label: 'Fulltext Search 👑'
+          label: 'Fulltext Search',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
@@ -444,7 +477,10 @@ const sidebars = {
         {
           type: 'doc',
           id: 'query-optimizer',
-          label: 'Query Optimizer 👑'
+          label: 'Query Optimizer',
+          customProps: {
+            iconAfter: 'premium'
+          }
         },
         {
           type: 'doc',
