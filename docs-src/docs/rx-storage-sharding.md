@@ -5,6 +5,8 @@ description: Improve RxDB read and write performance by splitting data across mu
 image: /headers/rx-storage-sharding.jpg
 ---
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Sharding RxStorage
 
 With the sharding plugin, you can improve the write and query times of **some** `RxStorage` implementations.
@@ -12,9 +14,7 @@ For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30
 
 The sharding plugin works as a wrapper around any other `RxStorage`. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.
 
-:::note Premium
-The sharding plugin is part of [RxDB Premium 👑](/premium/). It is not part of the default RxDB module.
-:::
+<PremiumBlock />
 
 ## Using the sharding plugin
 
