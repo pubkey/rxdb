@@ -531,12 +531,43 @@ export class RxDatabaseBase<
 
 
         /**
-         * Phase 4: Single combined bulkWrite for token + collection metadata.
-         * If the token was already written, ensure no startup errors instead.
+         * Phase 4: Run the internal store bulkWrite AND collection creation + prepare()
+         * in parallel. Collection prepare() only needs the storage instance (from Phase 2),
+         * not the internal store write result. This overlaps the IDB transaction for
+         * metadata with the collection setup work (wrapping storage, creating caches,
+         * subscribing to change streams).
          */
-        let putDocsResult;
-        try {
-            putDocsResult = await this.internalStore.bulkWrite(
+        const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
+
+        // Start collection creation immediately (doesn't need bulkWrite result)
+        const collectionCreationPromise = Promise.all(
+            Object.keys(collectionCreators).map(async (collectionName) => {
+                const useArgs = useArgsByCollectionName[collectionName];
+                const storageInstance = await collectionStorageInstancePromises[collectionName];
+                const collection = await createRxCollection({
+                    ...useArgs,
+                    storageInstance
+                });
+                (ret as any)[collectionName] = collection;
+
+                // set as getter to the database
+                (this.collections as any)[collectionName] = collection;
+                this.collectionsSubject$.next({
+                    collection,
+                    type: 'ADDED'
+                });
+                if (!(this as any)[collectionName]) {
+                    Object.defineProperty(this, collectionName, {
+                        get: () => (this.collections as any)[collectionName]
+                    });
+                }
+            })
+        );
+        collectionCreationPromise.catch(() => { });
+
+        // Run bulkWrite in parallel with collection creation
+        const bulkWritePromise = (async () => {
+            const putDocsResult = await this.internalStore.bulkWrite(
                 bulkPutDocs as any,
                 'rx-database-add-collection'
             );
@@ -583,6 +614,21 @@ export class RxDatabaseBase<
                         }
                     })
             );
+        })();
+
+        try {
+            /**
+             * Use allSettled so we can check both results.
+             * The bulkWrite error (e.g. DB6 schema mismatch) takes priority
+             * over storage instance errors (plain Error from storage).
+             */
+            const [bulkWriteResult, collectionResult] = await Promise.allSettled([bulkWritePromise, collectionCreationPromise]);
+            if (bulkWriteResult.status === 'rejected') {
+                throw bulkWriteResult.reason;
+            }
+            if (collectionResult.status === 'rejected') {
+                throw collectionResult.reason;
+            }
         } catch (err) {
             await Promise.all(
                 Object.values(collectionStorageInstancePromises).map(
@@ -591,31 +637,6 @@ export class RxDatabaseBase<
             );
             throw err;
         }
-
-        const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
-        await Promise.all(
-            Object.keys(collectionCreators).map(async (collectionName) => {
-                const useArgs = useArgsByCollectionName[collectionName];
-                const storageInstance = await collectionStorageInstancePromises[collectionName];
-                const collection = await createRxCollection({
-                    ...useArgs,
-                    storageInstance
-                });
-                (ret as any)[collectionName] = collection;
-
-                // set as getter to the database
-                (this.collections as any)[collectionName] = collection;
-                this.collectionsSubject$.next({
-                    collection,
-                    type: 'ADDED'
-                });
-                if (!(this as any)[collectionName]) {
-                    Object.defineProperty(this, collectionName, {
-                        get: () => (this.collections as any)[collectionName]
-                    });
-                }
-            })
-        );
 
         return ret;
     }

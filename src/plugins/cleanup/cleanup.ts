@@ -44,10 +44,28 @@ export async function startCleanupForRxCollection(
 
 export async function initialCleanupWait(collection: RxCollection, cleanupPolicy: RxCleanupPolicy) {
     /**
+     * Always wait for the database storage token to be resolved first.
+     * When collection creation runs in parallel with the internal store bulkWrite,
+     * the cleanup hook can fire before addCollections() has returned to the caller.
+     * Waiting for the storage token ensures the database startup is complete.
+     */
+    await collection.database.storageToken;
+
+    /**
+     * Yield the event loop to let addCollections() return to the caller
+     * before cleanup begins. This ensures the caller has a chance to set up
+     * replications (which block cleanup via awaitReplicationsInSync)
+     * before the first cleanup run.
+     */
+    await new Promise(res => setTimeout(res, 0));
+
+    /**
      * Wait until minimumDatabaseInstanceAge is reached
      * or collection is closed.
      */
-    await collection.promiseWait(cleanupPolicy.minimumCollectionAge);
+    if (cleanupPolicy.minimumCollectionAge) {
+        await collection.promiseWait(cleanupPolicy.minimumCollectionAge);
+    }
     if (collection.closed) {
         return;
     }
