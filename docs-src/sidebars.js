@@ -28,7 +28,14 @@ const sidebars = {
           id: 'overview',
           label: 'Overview'
         },
-        'quickstart',
+        {
+          type: 'doc',
+          id: 'quickstart',
+          label: 'Quickstart',
+          customProps: {
+            icon: 'quickstart'
+          }
+        },
         'install',
         'dev-mode',
         'tutorials/typescript',
@@ -68,7 +75,10 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: '💾 Storages',
+      label: 'Storages',
+      customProps: {
+        icon: 'storage'
+      },
       items: [
         {
           type: 'doc',
@@ -201,12 +211,18 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: '🔄 Replication',
+      label: 'Replication',
+      customProps: {
+        icon: 'replication'
+      },
       items: [
         {
           type: 'doc',
           id: 'replication',
-          label: '⚙️ Sync Engine'
+          label: 'Sync Engine',
+          customProps: {
+            icon: 'gear'
+          }
         },
         {
           type: 'doc',
