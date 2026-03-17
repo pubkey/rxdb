@@ -10,7 +10,7 @@ export function PremiumBlock(props: {
     return (
         <div
             style={{
-                borderLeft: '3px solid #9370DB',
+                borderLeft: '3px solid var(--color-middle)',
                 padding: '10px 16px',
                 borderRadius: '0 4px 4px 0',
                 marginTop: 16,
@@ -20,9 +20,13 @@ export function PremiumBlock(props: {
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{
+                    paddingRight: 10
+                }}>
                 <IconPremium />
+                </div>
                 <span>
-                    This plugin is part of <a href="/premium/">RxDB Premium 👑</a>. It is not part of the default RxDB module.
+                    This plugin is part of <a href="/premium/">RxDB Premium</a>. It is not part of the default RxDB module.
                 </span>
             </div>
             {props.children && <div style={{ marginTop: 6 }}>{props.children}</div>}
