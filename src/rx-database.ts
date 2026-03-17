@@ -429,81 +429,67 @@ export class RxDatabaseBase<
         );
 
         /**
-         * Overlap internal store writes with collection creation.
-         * Collection creation (createRxCollection + prepare) does not depend on
-         * the internal store metadata write, so we run them in parallel.
-         * If errors occur in the internal store write, we clean up created collections.
+         * Run the internal store writes and startup error check.
+         * Storage instance creation already started in parallel above
+         * and will be awaited when creating collections below.
          */
-        const internalStoreWritePromise = (async () => {
-            const [putDocsResult] = await Promise.all([
+        let putDocsResult;
+        try {
+            [putDocsResult] = await Promise.all([
                 this.internalStore.bulkWrite(
                     bulkPutDocs,
                     'rx-database-add-collection'
                 ),
                 ensureNoStartupErrors(this)
             ]);
-
-            await Promise.all(
-                putDocsResult.error.map(async (error) => {
-                    if (error.status !== 409) {
-                        throw newRxError('DB12', {
-                            database: this.name,
-                            writeError: error
-                        });
-                    }
-                    const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
-                    const collectionName = docInDb.data.name;
-                    const schema = (schemas as any)[collectionName];
-                    // collection already exists but has different schema
-                    if (docInDb.data.schemaHash !== await schema.hash) {
-                        throw newRxError('DB6', {
-                            database: this.name,
-                            collection: collectionName,
-                            previousSchemaHash: docInDb.data.schemaHash,
-                            schemaHash: await schema.hash,
-                            previousSchema: docInDb.data.schema,
-                            schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
-                        });
-                    }
-                })
-            );
-        })();
-
-        const collectionCreationPromises: { [key: string]: Promise<RxCollection>; } = {};
-        Object.keys(collectionCreators).forEach((collectionName) => {
-            const useArgs = useArgsByCollectionName[collectionName];
-            const promise = (async () => {
-                const storageInstance = await collectionStorageInstancePromises[collectionName];
-                return createRxCollection({
-                    ...useArgs,
-                    storageInstance
-                });
-            })();
-            promise.catch(() => { }); // prevent unhandled rejection
-            collectionCreationPromises[collectionName] = promise;
-        });
-
-        try {
-            await internalStoreWritePromise;
         } catch (err) {
             /**
-             * Close any pre-created storage instances and collections on error.
+             * Close any pre-created storage instances on error.
+             * Some instances might have failed to create (rejected promise),
+             * so we catch and ignore errors during cleanup.
              */
-            await Promise.all([
-                ...Object.values(collectionStorageInstancePromises).map(
+            await Promise.all(
+                Object.values(collectionStorageInstancePromises).map(
                     p => p.then(instance => instance.close()).catch(() => { })
-                ),
-                ...Object.values(collectionCreationPromises).map(
-                    p => p.then(collection => collection.close()).catch(() => { })
                 )
-            ]);
+            );
             throw err;
         }
+
+        await Promise.all(
+            putDocsResult.error.map(async (error) => {
+                if (error.status !== 409) {
+                    throw newRxError('DB12', {
+                        database: this.name,
+                        writeError: error
+                    });
+                }
+                const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
+                const collectionName = docInDb.data.name;
+                const schema = (schemas as any)[collectionName];
+                // collection already exists but has different schema
+                if (docInDb.data.schemaHash !== await schema.hash) {
+                    throw newRxError('DB6', {
+                        database: this.name,
+                        collection: collectionName,
+                        previousSchemaHash: docInDb.data.schemaHash,
+                        schemaHash: await schema.hash,
+                        previousSchema: docInDb.data.schema,
+                        schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
+                    });
+                }
+            })
+        );
 
         const ret: { [key in keyof CreatedCollections]: RxCollection<any, {}, {}, {}, Reactivity> } = {} as any;
         await Promise.all(
             Object.keys(collectionCreators).map(async (collectionName) => {
-                const collection = await collectionCreationPromises[collectionName];
+                const useArgs = useArgsByCollectionName[collectionName];
+                const storageInstance = await collectionStorageInstancePromises[collectionName];
+                const collection = await createRxCollection({
+                    ...useArgs,
+                    storageInstance
+                });
                 (ret as any)[collectionName] = collection;
 
                 // set as getter to the database
