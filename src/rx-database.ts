@@ -474,6 +474,7 @@ export class RxDatabaseBase<
             Object.entries(collectionCreators).map(async ([name]) => {
                 const collectionName: keyof CreatedCollections = name as any;
                 const rxJsonSchema = jsonSchemas[collectionName];
+                const schema = schemas[collectionName];
                 const schemaHash = await hashPromises[name];
 
                 const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
@@ -487,8 +488,8 @@ export class RxDatabaseBase<
                     data: {
                         name: collectionName as any,
                         schemaHash,
-                        schema: (schemas[collectionName] as any).jsonSchema,
-                        version: (schemas[collectionName] as any).version,
+                        schema: schema.jsonSchema,
+                        version: schema.version,
                         connectedStorages: []
                     },
                     _deleted: false,
