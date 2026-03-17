@@ -43,8 +43,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256,
-    RXDB_VERSION,
-    hasPremiumFlag
+    RXDB_VERSION
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -749,13 +748,6 @@ export function createRxDatabase<
         options,
         localDocuments
     });
-
-    /**
-     * Pre-trigger the premium flag check so that the async hash computation
-     * runs in the background. By the time collection.prepare() needs it,
-     * the promise will already be resolved.
-     */
-    hasPremiumFlag();
 
     const databaseNameKey = getDatabaseNameKey(name, storage);
     const databaseNameKeyUnclosedInstancesSet = DATABASE_UNCLOSED_INSTANCE_PROMISE_MAP.get(databaseNameKey) || new Set();
