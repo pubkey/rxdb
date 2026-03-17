@@ -31,10 +31,19 @@ describe('performance.test.ts', () => {
         this.timeout(500 * 1000);
         const runs = isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
+        /**
+         * The SQLite trial storage has a 300-document cap per collection,
+         * so we reduce the bulk insert count to stay within the limit.
+         */
+        const isSQLiteTrial = perfStorage.description.includes('sqlite') &&
+            config.storage.name === 'sqlite-trial';
         await runPerformanceTests(
             perfStorage.storage,
             perfStorage.description,
-            { runs }
+            {
+                runs,
+                ...(isSQLiteTrial ? { docsAmount: 120, serialDocsAmount: 10 } : {})
+            }
         );
     });
     /**
