@@ -43,7 +43,8 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256,
-    RXDB_VERSION
+    RXDB_VERSION,
+    hasPremiumFlag
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -174,6 +175,14 @@ export class RxDatabaseBase<
             this._passwordHashPromise = this.password
                 ? this.hashFunction(JSON.stringify(this.password))
                 : undefined;
+
+            /**
+             * Pre-trigger the premium flag check so it's cached
+             * before collection.prepare() is called. This avoids
+             * a crypto.subtle.digest call on the critical path
+             * for each collection during prepare().
+             */
+            hasPremiumFlag();
 
             /**
              * Defer writing the storage token.
@@ -377,15 +386,26 @@ export class RxDatabaseBase<
 
         /**
          * Phase 1: Synchronous setup — create schemas, check duplicates,
-         * prepare useArgs, and kick off storage instance creation.
-         * All sync work is done first so that async I/O can overlap.
+         * prepare useArgs, and eagerly trigger schema hash computation.
+         * Accessing schema.hash starts the crypto.subtle.digest call
+         * immediately (non-blocking), so it runs in parallel with
+         * the storage instance creation in Phase 2.
          */
+        const hashPromises: { [key: string]: Promise<string>; } = {};
         Object.entries(collectionCreators).forEach(([name, args]) => {
             const collectionName: keyof CreatedCollections = name as any;
             const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
             jsonSchemas[collectionName] = rxJsonSchema;
             const schema = createRxSchema(rxJsonSchema, this.hashFunction);
             schemas[collectionName] = schema;
+
+            /**
+             * Eagerly trigger schema hash computation.
+             * The getter calls JSON.stringify (sync) + hashFunction (async crypto.subtle.digest).
+             * Starting it here lets the digest run in parallel with the rest of
+             * Phase 1 work and all of Phase 2's storage instance creation.
+             */
+            hashPromises[name] = schema.hash;
 
             if ((this.collections as any)[name]) {
                 throw newRxError('DB3', {
@@ -442,66 +462,66 @@ export class RxDatabaseBase<
             collectionStorageInstancePromises[collectionName] = promise;
         });
 
-        // Kick off all schema hashes in parallel (non-awaited promises)
-        const hashPromises: { [key: string]: Promise<string>; } = {};
-        Object.keys(collectionCreators).forEach((name) => {
-            const collectionName: keyof CreatedCollections = name as any;
-            hashPromises[name] = schemas[collectionName].hash;
-        });
-
         /**
-         * Phase 3: Build collection metadata documents once hashes resolve,
-         * and include the storage token document to save one transaction.
+         * Phase 3: Build all bulkWrite documents in a single Promise.all so that
+         * password hash + schema hashes resolve in parallel. The storage token
+         * document is included to combine both writes into one IDB transaction.
          */
-
-        // Include storage token in the same bulkWrite if not yet written
         let includesTokenDoc = false;
         let tokenDocData: RxDocumentData<InternalStoreStorageTokenDocType> | undefined;
-        if (!this._storageTokenWriteStarted) {
+        const shouldIncludeToken = !this._storageTokenWriteStarted;
+        if (shouldIncludeToken) {
             this._storageTokenWriteStarted = true;
             includesTokenDoc = true;
-            const passwordHash = this._passwordHashPromise
-                ? await this._passwordHashPromise
-                : undefined;
-            tokenDocData = buildStorageTokenDocumentData(this.asRxDatabase, passwordHash);
-            bulkPutDocs.push({
-                document: tokenDocData
-            } as any);
         }
 
-        // Build collection metadata docs (await hashes computed in Phase 2)
-        await Promise.all(
-            Object.entries(collectionCreators).map(async ([name]) => {
-                const collectionName: keyof CreatedCollections = name as any;
-                const rxJsonSchema = jsonSchemas[collectionName];
-                const schema = schemas[collectionName];
-                const schemaHash = await hashPromises[name];
+        const buildPromises: Promise<void>[] = Object.entries(collectionCreators).map(async ([name]) => {
+            const collectionName: keyof CreatedCollections = name as any;
+            const rxJsonSchema = jsonSchemas[collectionName];
+            const schema = schemas[collectionName];
+            const schemaHash = await hashPromises[name];
 
-                const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
-                const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
-                    id: getPrimaryKeyOfInternalDocument(
-                        collectionNameWithVersion,
-                        INTERNAL_CONTEXT_COLLECTION
-                    ),
-                    key: collectionNameWithVersion,
-                    context: INTERNAL_CONTEXT_COLLECTION,
-                    data: {
-                        name: collectionName as any,
-                        schemaHash,
-                        schema: schema.jsonSchema,
-                        version: schema.version,
-                        connectedStorages: []
-                    },
-                    _deleted: false,
-                    _meta: getDefaultRxDocumentMeta(),
-                    _rev: getDefaultRevision(),
-                    _attachments: {}
-                };
-                bulkPutDocs.push({
-                    document: collectionDocData
-                } as any);
-            })
-        );
+            const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
+            const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
+                id: getPrimaryKeyOfInternalDocument(
+                    collectionNameWithVersion,
+                    INTERNAL_CONTEXT_COLLECTION
+                ),
+                key: collectionNameWithVersion,
+                context: INTERNAL_CONTEXT_COLLECTION,
+                data: {
+                    name: collectionName as any,
+                    schemaHash,
+                    schema: schema.jsonSchema,
+                    version: schema.version,
+                    connectedStorages: []
+                },
+                _deleted: false,
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision(),
+                _attachments: {}
+            };
+            bulkPutDocs.push({
+                document: collectionDocData
+            } as any);
+        });
+
+        // Build token doc in parallel with schema hash computation
+        if (shouldIncludeToken) {
+            buildPromises.push(
+                (async () => {
+                    const passwordHash = this._passwordHashPromise
+                        ? await this._passwordHashPromise
+                        : undefined;
+                    tokenDocData = buildStorageTokenDocumentData(this.asRxDatabase, passwordHash);
+                    bulkPutDocs.unshift({
+                        document: tokenDocData
+                    } as any);
+                })()
+            );
+        }
+
+        await Promise.all(buildPromises);
 
 
         /**
