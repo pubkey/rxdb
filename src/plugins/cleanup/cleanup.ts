@@ -57,7 +57,7 @@ export async function initialCleanupWait(collection: RxCollection, cleanupPolicy
      * replications (which block cleanup via awaitReplicationsInSync)
      * before the first cleanup run.
      */
-    await new Promise(res => setTimeout(res, 0));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     /**
      * Wait until minimumDatabaseInstanceAge is reached
