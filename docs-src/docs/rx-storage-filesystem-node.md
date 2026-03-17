@@ -5,6 +5,8 @@ description: Get up and running quickly with RxDB's Filesystem Node RxStorage. S
 image: /headers/rx-storage-filesystem-node.jpg
 ---
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Filesystem Node RxStorage
 
 The Filesystem Node [RxStorage](./rx-storage.md) for RxDB is built on top of the [Node.js Filesystem API](https://nodejs.org/api/fs.html).
@@ -17,9 +19,7 @@ Using the same database folder in parallel with multiple Node.js processes is su
 - Easier setup compared to [SQLite](./rx-storage-sqlite.md)
 - [Fast](./rx-storage-performance.md)
 
-### Cons
-
-- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
+<PremiumBlock />
 
 <p align="center">
   <img src="./files/rx-storage-performance-node.png" alt="RxStorage performance - Node.js" width="700" />

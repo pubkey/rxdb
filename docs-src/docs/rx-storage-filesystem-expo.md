@@ -5,13 +5,12 @@ description: A high-performance RxStorage for React Native and Expo apps based o
 image: /headers/rx-storage-filesystem-expo.jpg
 ---
 
-import PerformanceNode from '@site/src/components/performance-node';
+import {BetaBlock} from '@site/src/components/beta-block';
+import {PremiumBlock} from '@site/src/components/premium-block';
 
 # Expo Filesystem RxStorage
 
-:::note Beta Status
-This RxStorage is currently in **beta**.
-:::
+<BetaBlock since="17.0.0" />
 
 The Expo Filesystem [RxStorage](./rx-storage.md) for RxDB is built on top of the [expo-opfs](https://www.npmjs.com/package/expo-opfs) library, bringing blazing-fast Origin Private File System (OPFS) capabilities to React Native and Expo applications.
 It stores data in plain files and achieves vastly superior performance compared to traditional React Native storage solutions like Async Storage or SQLite.
@@ -22,11 +21,7 @@ It stores data in plain files and achieves vastly superior performance compared 
 - **Easy Integration**: Drops right into any Expo or React Native project.
 - Uses native C++ JSI bindings via `expo-opfs` for minimal bridging overhead.
 
-### Cons
-
-- It is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
-
-<PerformanceNode />
+<PremiumBlock />
 
 ## Installation
 

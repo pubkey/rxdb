@@ -5,6 +5,8 @@ description: Discover how to harness the Origin Private File System with RxDB's 
 image: /headers/rx-storage-opfs.jpg
 ---
 
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 
 With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured database on top of the [Origin Private File System](https://web.dev/opfs) (OPFS) browser API. Compared to other storage solutions, it has a way better performance.
@@ -91,7 +93,7 @@ A good comparison about real world scenarios, are the [performance results](./rx
 
 The OPFS [RxStorage](./rx-storage.md) itself must run inside a WebWorker. Therefore we use the [Worker RxStorage](./rx-storage-worker.md) and let it point to the prebuild `opfs.worker.js` file that comes shipped with RxDB Premium 👑.
 
-Notice that the OPFS RxStorage is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
+<PremiumBlock />
 
 ```ts
 import {

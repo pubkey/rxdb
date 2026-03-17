@@ -102,7 +102,8 @@ import {
     getWrappedStorageInstance,
     getWrittenDocumentsFromBulkWriteResponse,
     throwIfIsStorageWriteError,
-    WrappedRxStorageInstance
+    WrappedRxStorageInstance,
+    RX_COLLECTION_BULK_INSERT_CONTEXT
 } from './rx-storage-helper.ts';
 import { IncrementalWriteQueue } from './incremental-write.ts';
 import { beforeDocumentUpdateWrite } from './rx-document.ts';
@@ -450,8 +451,19 @@ export class RxCollectionBase<
 
 
         if (ids.size !== docsData.length) {
+            const duplicateIdSet = new Set<string>();
+            const seenIds = new Set<string>();
+            for (const row of insertRows) {
+                const id = (row.document as any)[primaryPath];
+                if (seenIds.has(id)) {
+                    duplicateIdSet.add(id);
+                } else {
+                    seenIds.add(id);
+                }
+            }
             throw newRxError('COL22', {
                 collection: this.name,
+                duplicateIds: Array.from(duplicateIdSet),
                 args: {
                     documents: docsData
                 }
@@ -485,7 +497,7 @@ export class RxCollectionBase<
 
         const results = await this.storageInstance.bulkWrite(
             insertRows,
-            'rx-collection-bulk-insert'
+            RX_COLLECTION_BULK_INSERT_CONTEXT
         );
 
 
