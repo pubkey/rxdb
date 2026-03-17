@@ -41,6 +41,7 @@ describe('performance.test.ts', () => {
             perfStorage.description,
             {
                 runs,
+                collectionsAmount: 10,
                 ...(isSQLiteTrial ? { docsAmount: 120, serialDocsAmount: 10 } : {})
             }
         );
