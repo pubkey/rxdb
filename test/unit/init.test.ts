@@ -24,6 +24,48 @@ if (!isNode) {
     console.dir = (d: any) => {
         console.log(JSON.stringify(d));
     };
+
+    /**
+     * In the browser, we must log uncaught errors and unhandled rejections
+     * to the console so that Karma forwards them to the terminal.
+     * Otherwise these errors are only visible in the browser devtools
+     * and CI tests will just time out without showing what went wrong.
+     */
+    if (typeof window !== 'undefined') {
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('init.test.ts: browser unhandledrejection:');
+            const reason = event.reason;
+            if (reason instanceof Error) {
+                console.error(reason.message);
+                console.error(reason.stack);
+            } else {
+                try {
+                    console.error(JSON.stringify(reason));
+                } catch (_err) {
+                    console.error(String(reason));
+                }
+            }
+        });
+
+        window.addEventListener('error', (event) => {
+            console.error('init.test.ts: browser uncaught error:');
+            console.error(event.message);
+            if (event.error) {
+                if (event.error instanceof Error) {
+                    console.error(event.error.stack);
+                } else {
+                    try {
+                        console.error(JSON.stringify(event.error));
+                    } catch (_err) {
+                        console.error(String(event.error));
+                    }
+                }
+            }
+            if (event.filename) {
+                console.error('at ' + event.filename + ':' + event.lineno + ':' + event.colno);
+            }
+        });
+    }
 } else {
     /**
      * exit with non-zero on unhandledRejection
