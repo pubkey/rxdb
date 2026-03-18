@@ -116,7 +116,7 @@ describeParallel('cache-replacement-policy.test.js', () => {
                 }),
                 /**
                  * This shareReplay made
-                 * having countRxQuerySubscribers() return more then 0
+                 * having countRxQuerySubscribers() return more than 0
                  * we have to set refCount: true so it will unsubscribe from the root
                  * when has no longer any subscribing children.
                  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95

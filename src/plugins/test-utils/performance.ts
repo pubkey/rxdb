@@ -89,6 +89,11 @@ export async function runPerformanceTests(
 
     const totalTimes: { [k: string]: number[]; } = {};
 
+    // Generate dbName outside the loop to reuse the exact same MongoDB database.
+    // This allows `.remove()` to drop the old collections and the next run to cleanly reuse the same 
+    // namespace, avoiding creating thousands of collections on the DB server causing file exhaustion.
+    const dbName = 'test-db-performance-' + randomToken(10);
+
     let runsDone = 0;
     while (runsDone < runs) {
         if (log) {
@@ -115,7 +120,6 @@ export async function runPerformanceTests(
         updateTime();
 
         // create database
-        const dbName = 'test-db-performance-' + randomToken(10);
         const schema = averageSchema();
         let collection: RxCollection<AverageSchemaDocumentType>;
         async function createDbWithCollections() {
@@ -302,7 +306,7 @@ export async function runPerformanceTests(
         docsAmount
     };
     Object.entries(totalTimes).forEach(([key, times]) => {
-        result[key] = roundToThree(averageOfTimeValues(times, 95));
+        result[key] = roundToTwo(averageOfTimeValues(times, 95));
     });
 
     if (log) {
@@ -330,8 +334,8 @@ export function averageOfTimeValues(
     return total / useNumbers.length;
 }
 
-function roundToThree(num: number) {
-    return Math.round(num * 1000) / 1000;
+function roundToTwo(num: number) {
+    return Math.round(num * 100) / 100;
 }
 
 async function awaitBetweenTest(waitMs: number) {

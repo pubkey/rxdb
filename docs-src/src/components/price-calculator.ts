@@ -48,7 +48,7 @@ export function calculatePrice(input: PriceCalculationInput) {
     let totalPrice = baseFee + ((developerSalary) * (aimInPercent / 100));
 
     /**
-     * Discount if more then one package
+     * Discount if more than one package
      */
     if (input.packages.length === 2) {
         totalPrice = totalPrice * 0.95;

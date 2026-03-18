@@ -228,7 +228,7 @@ export class RxBackupState {
     public awaitInitialBackup(): Promise<boolean> {
         return firstValueFrom(
             this.initialReplicationDone$.pipe(
-                filter(v => !!v),
+                filter((v: boolean) => !!v),
                 map(() => true)
             )
         );

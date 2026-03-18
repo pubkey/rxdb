@@ -261,14 +261,14 @@ While all modern browsers support the WebRTC and WebSocket APIs, they is missing
 For the Websocket API use the `ws` package that is included into RxDB.
 
 ```ts
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import PERFORMANCE_DATA_NODEchannelPolyfill from 'node-datachannel/polyfill';
 import { WebSocket } from 'ws';
 const replicationPool = await replicateWebRTC(
     {
         /* ... */
         connectionHandlerCreator: getConnectionHandlerSimplePeer({
             signalingServerUrl: 'wss://example.com:8080',
-            wrtc: nodeDatachannelPolyfill,
+            wrtc: PERFORMANCE_DATA_NODEchannelPolyfill,
             webSocketConstructor: WebSocket
         }),
         pull: {},

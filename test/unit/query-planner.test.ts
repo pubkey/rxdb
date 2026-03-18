@@ -339,6 +339,58 @@ describeParallel('query-planner.test.js', () => {
             );
             assert.deepStrictEqual(queryPlan.index, ['_deleted', 'firstName', 'age', 'passportId']);
         });
+        it('should treat enum fields with $eq as sort-irrelevant', () => {
+            const schema: RxJsonSchema<RxDocumentData<any>> = fillWithDefaultSettings({
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    status: {
+                        type: 'string',
+                        enum: ['active', 'inactive', 'pending'],
+                        maxLength: 20
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150,
+                        multipleOf: 1
+                    }
+                },
+                indexes: [
+                    ['status', 'age']
+                ],
+                required: ['id', 'status', 'age']
+            });
+            const query = normalizeMangoQuery<RxDocumentData<any>>(
+                schema,
+                {
+                    selector: {
+                        status: {
+                            $eq: 'active'
+                        },
+                        _deleted: false
+                    },
+                    sort: [
+                        { age: 'asc' }
+                    ]
+                }
+            );
+            const queryPlan = getQueryPlan(
+                schema,
+                query
+            );
+            /**
+             * The enum field 'status' with $eq should be treated as sort-irrelevant,
+             * so sortSatisfiedByIndex should be true when the remaining sort
+             * fields match the index order.
+             */
+            assert.ok(queryPlan.sortSatisfiedByIndex);
+        });
         it('should have set sortSatisfiedByIndex=false when order is desc', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],

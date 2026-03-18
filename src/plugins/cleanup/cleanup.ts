@@ -93,6 +93,9 @@ export async function cleanupRxCollection(
                     return true;
                 }
                 await rxDatabase.requestIdlePromise();
+                if (rxCollection.closed) {
+                    return true;
+                }
                 const allDone: Promise<boolean>[] = [];
                 allDone.push(storageInstance.cleanup(cleanupPolicy.minimumDeletedTime));
                 const replicationStates = getFromMapOrCreate(
@@ -102,7 +105,7 @@ export async function cleanupRxCollection(
                 );
                 for (const replicationState of replicationStates) {
                     const meta = replicationState.metaInstance;
-                    if (meta) {
+                    if (meta && !replicationState.isStopped()) {
                         allDone.push(meta.cleanup(cleanupPolicy.minimumDeletedTime));
                     }
                 }

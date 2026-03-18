@@ -23,7 +23,8 @@ export const refHuman = {
     primaryKey: 'name',
     properties: {
         name: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         bestFriend: {
             ref: 'human',     // refers to collection human
@@ -42,7 +43,8 @@ export const schemaWithOneToManyReference = {
   type: 'object',
   properties: {
     name: {
-      type: 'string'
+      type: 'string',
+      maxLength: 100
     },
     friends: {
       type: 'array',

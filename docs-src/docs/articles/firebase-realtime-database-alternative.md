@@ -162,9 +162,7 @@ const db = await createRxDatabase({
   name: 'myLocalDB',
   storage: getRxStorageLocalstorage()
 });
-Add a Collection
-ts
-Kopieren
+
 await db.addCollections({
   notes: {
     schema: {
@@ -173,7 +171,7 @@ await db.addCollections({
       primaryKey: 'id',
       type: 'object',
       properties: {
-        id: { type: 'string', maxLenght: 100 },
+        id: { type: 'string', maxLength: 100 },
         content: { type: 'string' }
       }
     }

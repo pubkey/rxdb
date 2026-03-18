@@ -30,12 +30,10 @@ export function deepEqual(a: any, b: any): boolean {
         length = keys.length;
         if (length !== Object.keys(b).length) return false;
 
-        for (i = length; i-- !== 0;)
-            if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
-
+        // Single combined loop: check key existence AND deep-compare in one pass.
         for (i = length; i-- !== 0;) {
             const key = keys[i];
-            if (!deepEqual(a[key], b[key])) return false;
+            if (!Object.prototype.hasOwnProperty.call(b, key) || !deepEqual(a[key], b[key])) return false;
         }
 
         return true;

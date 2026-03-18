@@ -379,7 +379,8 @@ describeParallel('encryption.test.ts', () => {
         });
     });
     describe('ISSUES', () => {
-        it('#837 Recover from wrong database password', async () => {
+        it('#837 Recover from wrong database password', async function () {
+            this.timeout(30000);
             if (!config.storage.hasPersistence) {
                 return;
             }

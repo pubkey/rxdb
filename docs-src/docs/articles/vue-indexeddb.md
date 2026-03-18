@@ -5,10 +5,12 @@ description: Learn how RxDB simplifies IndexedDB in Vue, offering reactive queri
 image: /headers/vue-indexeddb.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 # IndexedDB Database in Vue Apps - The Power of RxDB
 
 Building robust, [offline-capable](../offline-first.md) Vue applications often involves leveraging browser storage solutions to manage data. IndexedDB is one such powerful tool, but its raw API can be challenging to work with directly. RxDB abstracts away much of IndexedDB's complexity, providing a more developer-friendly experience. In this article, we'll explore what IndexedDB is, why it's beneficial in Vue applications, the challenges of using plain IndexedDB, and how [RxDB](https://rxdb.info/) can simplify your development process while adding advanced features.
-
 
 ## What is IndexedDB?
 
@@ -18,7 +20,6 @@ Building robust, [offline-capable](../offline-first.md) Vue applications often i
   <img src="/files/icons/vuejs.svg" alt="Vue IndexedDB" width="120" />
 </center>
 
-
 ## Why Use IndexedDB in Vue
 
 When building Vue applications, IndexedDB can play a crucial role in enhancing both performance and user experience. Here are some reasons to consider using IndexedDB:
@@ -27,7 +28,6 @@ When building Vue applications, IndexedDB can play a crucial role in enhancing b
 - **Performance**: Using local data means [zero latency](./zero-latency-local-first.md) and no loading spinners, as data doesn't need to be fetched over a network.
 - **Easier Implementation**: Replicating all data to the client once is often simpler than implementing multiple endpoints for each user interaction.
 - **Scalability**: Local data reduces server load because queries run on the client side, decreasing server bandwidth and processing requirements.
-
 
 ## Why To Not Use Plain IndexedDB
 
@@ -41,7 +41,6 @@ While IndexedDB itself is powerful, its native API comes with several drawbacks 
 - **Cross-Tab Communication**: Managing cross-tab updates in plain IndexedDB is difficult. RxDB handles this seamlessly - changes in one tab automatically affect observed data in others.
 - **Missing Advanced Features**: Features like [encryption](../encryption.md) or [compression](../key-compression.md) aren't built into IndexedDB, but they are available via RxDB.
 - **Limited Platform Support**: IndexedDB is browser-only. RxDB offers [swappable storages](../rx-storage.md) so you can reuse the same data layer code in mobile or desktop environments.
-
 
 <center>
   <a href="https://rxdb.info/">
@@ -60,7 +59,6 @@ First, install RxDB (and RxJS) from npm:
 ```bash
 npm install rxdb rxjs --save
 ```
-
 
 ### Create a Database and Collections
 
@@ -148,7 +146,6 @@ RxDB excels in providing reactive data capabilities, ideal for [real-time applic
 
 <p align="center"> <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700" /> </p>
 
-
 ### Using RxJS Observables with Vue 3 Composition API
 
 Here's an example of a Vue component that subscribes to live data updates:
@@ -186,11 +183,9 @@ onMounted(async () => {
 
 This component subscribes to the collection's changes, [updating the UI](./optimistic-ui.md) automatically whenever the underlying data changes in any browser tab.
 
-
 ### Using Vue Signals
 
 If you're exploring Vue's reactivity transforms or signals, RxDB also offers [custom reactivity factories](../reactivity.md) ([premium plugins](/premium/) are required). This allows queries to emit data as signals instead of traditional Observables.
-
 
 ```ts
 const heroesSignal = db.heroes.find().$$; // $$ indicates a reactive result
@@ -212,7 +207,6 @@ With this, in your Vue template or script, you can directly read from heroesSign
 </template>
 ```
 
-
 ## Vue IndexedDB Example with RxDB
 
 A comprehensive example of using RxDB within a Vue application can be found in the [RxDB GitHub repository](https://github.com/pubkey/rxdb/tree/master/examples/vue). This repository contains sample applications, showcasing best practices and demonstrating how to integrate RxDB for various use cases.
@@ -227,7 +221,6 @@ RxDB offers many advanced features that extend beyond basic data storage:
 - [Encryption](../encryption.md): Secure your data with built-in encryption capabilities.
 
 - [Compression](../key-compression.md): Optimize storage using key compression.
-
 
 ## Limitations of IndexedDB
 
@@ -246,7 +239,7 @@ Depending on your application's requirements, there are [alternative storage sol
 ## Performance Comparison with Other Browser Storages
 Here is a performance overview of the various browser-based storage implementations of RxDB:
 
-<p align="center"> <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" /> </p>
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 - Learn how to use RxDB with the [RxDB Quickstart](../quickstart.md) for a guided introduction.

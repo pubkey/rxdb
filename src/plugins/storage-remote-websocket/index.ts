@@ -6,8 +6,7 @@ import {
     PROMISE_RESOLVE_VOID,
     blobToBase64String,
     clone,
-    createBlobFromBase64,
-    getFromMapOrThrow
+    createBlobFromBase64
 } from '../../plugins/utils/index.ts';
 import {
     createWebSocketClient,
@@ -105,19 +104,34 @@ export function startRxStorageRemoteWebsocketServer(
         storage: options.storage as any,
         database: options.database as any,
         customRequestHandler: options.customRequestHandler,
-        async send(msg) {
-            const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
-            const serialized = await serializeBlobsForWs(msg);
-            ws.send(serialized);
+        send(msg) {
+            const ws = websocketByConnectionId.get(msg.connectionId);
+            if (!ws) {
+                // client disconnected, silently drop the message
+                return;
+            }
+            serializeBlobsForWs(msg)
+                .then(serialized => {
+                    try {
+                        ws.send(serialized);
+                    } catch (err) {
+                        // WebSocket might have transitioned to CLOSING or CLOSED state
+                    }
+                })
+                .catch(() => {
+                    // serialization error, silently drop
+                });
         },
         fakeVersion: options.fakeVersion
     };
     const exposeState = exposeRxStorageRemote(exposeSettings);
 
-    serverState.onConnection$.subscribe(ws => {
+    serverState.onConnection$.subscribe((ws: WebSocket) => {
         const onCloseHandlers: Function[] = [];
+        const connectionIds = new Set<string>();
         ws.onclose = () => {
             onCloseHandlers.map(fn => fn());
+            connectionIds.forEach(id => websocketByConnectionId.delete(id));
         };
         ws.on('message', (messageString: string) => {
             void (async () => {
@@ -135,14 +149,19 @@ export function startRxStorageRemoteWebsocketServer(
                         message.method !== 'create' &&
                         message.method !== 'custom'
                     ) {
-                        ws.send(
-                            JSON.stringify(
-                                createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))
-                            )
-                        );
+                        try {
+                            ws.send(
+                                JSON.stringify(
+                                    createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))
+                                )
+                            );
+                        } catch (err) {
+                            // WebSocket might be in CLOSING or CLOSED state
+                        }
                         return;
                     }
                     websocketByConnectionId.set(connectionId, ws);
+                    connectionIds.add(connectionId);
                 }
                 messages$.next(message);
             })();
@@ -168,7 +187,7 @@ export function getRxStorageRemoteWebsocket(
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();
             const websocketClient = await createWebSocketClient(options as any);
-            websocketClient.message$.subscribe(msg => {
+            websocketClient.message$.subscribe((msg: any) => {
                 void deserializeBlobsFromWs(msg)
                     .then(deserialized => {
                         messages$.next(deserialized);

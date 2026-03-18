@@ -5,6 +5,9 @@ description: Discover how to harness IndexedDB in Angular with RxDB for robust o
 image: /headers/angular-indexeddb.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 import {Tabs} from '@site/src/components/tabs';
 import {Steps} from '@site/src/components/steps';
 
@@ -81,7 +84,6 @@ import 'zone.js/plugins/zone-patch-rxjs';
 
 ### Create a Database and Collections
 
-
 RxDB supports multiple storage options. The free and simple approach is using the [localstorage-based](../rx-storage-localstorage.md) storage. For higher performance, there's a premium plain [IndexedDB storage](../rx-storage-indexeddb.md).
 
 ```ts
@@ -109,7 +111,6 @@ const heroSchema = {
   required: ['id', 'name']
 };
 ```
-
 
 <Tabs>
 
@@ -157,9 +158,7 @@ export async function initDB() {
 }
 ```
 
-
 </Tabs>
-
 
 It's recommended to encapsulate database creation logic in an Angular service, such as in a DatabaseService. A full example is available in [RxDB's Angular example](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/app/services/database.service.ts).
 
@@ -223,7 +222,6 @@ constructor(private dbService: DatabaseService) {
 
 Angular Signals are a newer approach for reactivity. RxDB supports them via a [custom reactivity](../reactivity.md) factory. You can convert RxJS Observables to Signals using Angular's `toSignal`:
 
-
 ```ts
 import { RxReactivityFactory } from 'rxdb/plugins/core';
 import { Signal, untracked, Injector } from '@angular/core';
@@ -276,7 +274,6 @@ const heroesSignal = database.heroes.find().$$;
 
 A comprehensive example of RxDB in an Angular application is available in the [RxDB GitHub repository](https://github.com/pubkey/rxdb/tree/master/examples/angular). It demonstrates [database](./angular-database.md) creation, queries, and Angular integration using best practices.
 
-
 ## Advanced RxDB Features
 
 Beyond simple CRUD and local data storage, RxDB supports:
@@ -289,7 +286,6 @@ Beyond simple CRUD and local data storage, RxDB supports:
 
 - **Compression**: Reduce storage and bandwidth usage using key compression. Learn more at [RxDB Key Compression](https://rxdb.info/key-compression.html).
 
-
 ## Limitations of IndexedDB
 
 While IndexedDB works well for many use cases, it does have a few constraints:
@@ -297,8 +293,6 @@ While IndexedDB works well for many use cases, it does have a few constraints:
 - **Potentially Slow**: While adequate for most use cases, IndexedDB performance can degrade for very large datasets. More details at RxDB [Slow IndexedDB](../slow-indexeddb.md).
 
 - **Storage Limits**: Browsers may cap the amount of data you can store in IndexedDB. For more info, see [Local Storage Limits of IndexedDB](./indexeddb-max-storage-limit.md).
-
-
 
 ## Alternatives to IndexedDB
 
@@ -308,14 +302,10 @@ Depending on your needs, you might explore:
 
 - **SQLite**: When building a mobile or hybrid app (e.g., with [Capacitor](../capacitor-database.md) or [Ionic](./ionic-database.md)), you can use SQLite locally. See [RxDB with SQLite](../rx-storage-sqlite.md).
 
-
 ## Performance comparison with other browser storages
 Here is a [performance overview](../rx-storage-performance.md) of the various browser based storage implementation of RxDB:
 
-<p align="center">
-  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
-</p>
-
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Follow Up
 

@@ -190,7 +190,7 @@ jobs:
         with:
           run: npm run test:browser:memory
 
-      - run: timeout 1h bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
+      - run: timeout 30m bash -lc "until npm run test:fast:memory-random-delay; do sleep 5; done"
 
       - name: node example
         working-directory: ./examples/node
@@ -261,9 +261,12 @@ jobs:
         run: |
           docker pull foundationdb/foundationdb:7.3.59
 
-      - name: install FoundationDB client and server
+      - name: install FoundationDB client
         working-directory: ./scripts
         run: sh install-foundationdb.sh
+
+      - name: Start FoundationDB Docker container
+        run: sh ./scripts/start-foundationdb-docker.sh
 
       - name: install npm dependencies
         run: npm install
@@ -341,7 +344,7 @@ jobs:
       - run: node ./config/mongodb-connection-tester.js
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
-      - run: timeout 1h bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
+      - run: timeout 30m bash -c 'until npm run test:replication-mongodb; do sleep 15; done'
 
   example-angular:
     runs-on: ubuntu-22.04
@@ -693,7 +696,7 @@ jobs:
         with:
           working-directory: ./examples/vue
           # retry because of random CI failures on slow servers
-          run: timeout 1h bash -lc "until npm run test; do sleep 5; done"
+          run: timeout 30m bash -lc "until npm run test; do sleep 5; done"
 
   example-svelte:
     runs-on: ubuntu-22.04
@@ -868,7 +871,7 @@ jobs:
   # TODO this fails randomly because it will not always know about the project after running the import
   # appwrite:
   #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 60
+  #   timeout-minutes: 30
   #   steps:
   #     - uses: actions/checkout@v4
   #     - name: Set node version
@@ -932,9 +935,9 @@ jobs:
   #       with:
   #         run: npm run test:replication-appwrite
 
-  test-others:
+  test-others-replications:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - name: Set node version
@@ -949,9 +952,9 @@ jobs:
         with:
           path: |
             ~/.npm
-          key: ${{ runner.os }}-npm-others-x4-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-others-replications-x4-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-others-x4-
+            ${{ runner.os }}-npm-others-replications-x4-
 
       - name: prepare RxDB core
         run: |
@@ -963,19 +966,16 @@ jobs:
       - run: npm run test:replication-microsoft-onedrive
       - run: npm run test:replication-electric-sql
 
-
-
       # supabase
       - run: npm run supabase:start
-      - run: timeout 1h bash -c 'until npm run test:replication-supabase; do sleep 5; done'
+      - run: timeout 30m bash -c 'until npm run test:replication-supabase; do sleep 5; done'
       - run: npm run supabase:stop
-
 
       - run: npm run test:replication-couchdb
 
       - name: firestore replication
         run: |
-          timeout 1h bash -c 'until npm run test:replication-firestore; do sleep 15; done'
+          timeout 30m bash -c 'until npm run test:replication-firestore; do sleep 15; done'
 
       - name: nats replication
         # first start/stop the container once to ensure it
@@ -984,11 +984,36 @@ jobs:
           docker pull nats:2.9.17
           npm run test:replication-nats
 
+  test-others-runtimes:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set node version
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+          key: ${{ runner.os }}-npm-others-runtimes-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-others-runtimes-x4-
+
+      - name: prepare RxDB core
+        run: |
+          npm install
+          npm run build
 
       # bun
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: '1.3.10'
+          bun-version: '1.3.11'
       - run: npm run test:bun:memory
 
       # deno (must be last because it messes up with file permissions)
@@ -1014,9 +1039,9 @@ jobs:
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 1h bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+          timeout 30m bash -c 'until npm run test:deno:dexie; do sleep 5; done'
       - name: run deno tests:denokv
         run: |
           sudo npm i -g cross-env
           deno info
-          timeout 1h bash -c 'until npm run test:deno:denokv; do sleep 5; done'
+          timeout 30m bash -c 'until npm run test:deno:denokv; do sleep 5; done'

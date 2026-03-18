@@ -20,10 +20,10 @@ import {
     humansCollection,
     ensureReplicationHasNoErrors,
     HumanDocumentType,
-    ensureCollectionsHaveEqualState,
     HumanWithTimestampDocumentType,
     humanSchemaLiteral,
-    HumanWithOwnershipDocumentType
+    HumanWithOwnershipDocumentType,
+    runReplicationBaseTestSuite
 } from '../plugins/test-utils/index.mjs';
 
 import { RxDBDevModePlugin } from '../plugins/dev-mode/index.mjs';
@@ -47,7 +47,6 @@ import {
 import {
     FirestoreOptions,
     replicateFirestore,
-    RxFirestoreReplicationState,
     SyncOptionsFirestore
 } from '../plugins/replication-firestore/index.mjs';
 import config from './unit/config.ts';
@@ -108,24 +107,6 @@ describe('replication-firestore.test.ts', function () {
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
     }
-    function syncFirestore<RxDocType = TestDocType>(
-        collection: RxCollection<RxDocType>,
-        firestoreState: FirestoreOptions<RxDocType>
-    ): RxFirestoreReplicationState<RxDocType> {
-        const replicationState = replicateFirestore({
-            replicationIdentifier: randomToken(10),
-            collection,
-            firestore: firestoreState,
-            pull: {
-                batchSize
-            },
-            push: {
-                batchSize
-            }
-        });
-        ensureReplicationHasNoErrors(replicationState);
-        return replicationState;
-    }
 
     function makeFirestoreHumanDocument(human: HumanDocumentType) {
         const firestoreHuman: any = { ...human };
@@ -166,132 +147,50 @@ describe('replication-firestore.test.ts', function () {
             );
         });
     });
-    describe('live replication', () => {
-        it('push replication to client-server', async () => {
-            const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
-            const firestoreState = await getFirestoreState();
-
-            const replicationState = syncFirestore(collection, firestoreState);
+    /**
+     * Run the base test suite that is shared
+     * across all replication plugins.
+     */
+    const baseFirestoreState = getFirestoreState();
+    runReplicationBaseTestSuite({
+        startReplication(collection) {
+            const replicationState = replicateFirestore({
+                replicationIdentifier: randomToken(10),
+                collection,
+                firestore: baseFirestoreState,
+                pull: {
+                    batchSize
+                },
+                push: {
+                    batchSize
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            return replicationState;
+        },
+        async syncOnce(collection) {
+            const replicationState = replicateFirestore({
+                replicationIdentifier: baseFirestoreState.projectId,
+                collection,
+                firestore: baseFirestoreState,
+                live: false,
+                pull: {},
+                push: {},
+            });
             ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
-
-            let docsOnServer = await getAllDocsOfFirestore(firestoreState);
-            assert.strictEqual(docsOnServer.length, 2);
-
-            // insert another one
-            await collection.insert(schemaObjects.humanWithTimestampData());
-            await replicationState.awaitInSync();
-
-            docsOnServer = await getAllDocsOfFirestore(firestoreState);
-            assert.strictEqual(docsOnServer.length, 3);
-
-            // update one
-            const doc = await collection.findOne().exec(true);
-            await doc.incrementalPatch({ age: 100 });
-            await replicationState.awaitInSync();
-            docsOnServer = await getAllDocsOfFirestore(firestoreState);
-            assert.strictEqual(docsOnServer.length, 3);
-            const serverDoc = ensureNotFalsy(docsOnServer.find(d => d.id === doc.primary));
-            assert.strictEqual(serverDoc.age, 100);
-
-            // delete one
-            await doc.getLatest().remove();
-            await replicationState.awaitInSync();
-            docsOnServer = await getAllDocsOfFirestore(firestoreState);
-            // must still have 3 because there are no hard deletes
-            assert.strictEqual(docsOnServer.length, 3);
-            assert.ok(docsOnServer.find(d => (d as any)._deleted));
-
-            collection.database.close();
-        });
-        it('two collections', async () => {
-            const collectionA = await humansCollection.createHumanWithTimestamp(1, undefined, false);
-            const collectionB = await humansCollection.createHumanWithTimestamp(1, undefined, false);
-
-            const firestoreState = await getFirestoreState();
-            const replicationStateA = syncFirestore(collectionA, firestoreState);
-
-            ensureReplicationHasNoErrors(replicationStateA);
-            await replicationStateA.awaitInitialReplication();
-
-
-            const replicationStateB = syncFirestore(collectionB, firestoreState);
-            ensureReplicationHasNoErrors(replicationStateB);
-            await replicationStateB.awaitInitialReplication();
-
-            await replicationStateA.awaitInSync();
-
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-            // insert one
-            await collectionA.insert(schemaObjects.humanWithTimestampData({ id: 'insert', name: 'InsertName' }));
-            await replicationStateA.awaitInSync();
-
-            await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-            // delete one
-            await collectionB.findOne().remove();
-            await replicationStateB.awaitInSync();
-            await replicationStateA.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-            // insert many
-            await collectionA.bulkInsert(
-                new Array(10)
-                    .fill(0)
-                    .map(() => schemaObjects.humanWithTimestampData({ name: 'insert-many' }))
-            );
-            await replicationStateA.awaitInSync();
-
-            await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-            // insert at both collections at the same time
-            await Promise.all([
-                collectionA.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-A' })),
-                collectionB.insert(schemaObjects.humanWithTimestampData({ name: 'insert-parallel-B' }))
-            ]);
-            await replicationStateA.awaitInSync();
-            await replicationStateB.awaitInSync();
-            await replicationStateA.awaitInSync();
-            await replicationStateB.awaitInSync();
-            await ensureCollectionsHaveEqualState(collectionA, collectionB);
-
-            collectionA.database.close();
-            collectionB.database.close();
-        });
-    });
-    describe('conflict handling', () => {
-        it('should keep the master state as default conflict handler', async () => {
-            const firestoreState = await getFirestoreState();
-            const c1 = await humansCollection.create(1);
-            const c2 = await humansCollection.create(0);
-
-            await syncOnce(c1, firestoreState);
-            await syncOnce(c2, firestoreState);
-
-            const doc1 = await c1.findOne().exec(true);
-            const doc2 = await c2.findOne().exec(true);
-
-            // make update on both sides
-            await doc1.incrementalPatch({ firstName: 'c1' });
-            await doc2.incrementalPatch({ firstName: 'c2' });
-
-            await syncOnce(c2, firestoreState);
-
-            // cause conflict
-            await syncOnce(c1, firestoreState);
-
-            /**
-             * Must have kept the master state c2
-             */
-            assert.strictEqual(doc1.getLatest().firstName, 'c2');
-
-            c1.database.close();
-            c2.database.close();
-        });
+        },
+        getAllServerDocs() {
+            return getAllDocsOfFirestore(baseFirestoreState);
+        },
+        async cleanUpServer() {
+            // Firestore uses a fresh collection per base suite run,
+            // and the collection is empty by default.
+        },
+        softDeletes: true,
+        isDeleted: (doc) => !!(doc as any)._deleted,
+        getPrimaryOfServerDoc: (doc) => doc.id,
     });
 
     describe('filtered replication', () => {

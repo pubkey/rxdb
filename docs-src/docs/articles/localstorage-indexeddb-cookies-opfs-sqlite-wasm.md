@@ -5,6 +5,9 @@ description: Compare LocalStorage, IndexedDB, Cookies, OPFS, and WASM-SQLite for
 image: /headers/localstorage-indexeddb-cookies-opfs-sqlite-wasm.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+
 <!-- 
 
 GOALS:
@@ -45,7 +48,6 @@ You are reading this in the [RxDB](/) docs. RxDB is a JavaScript database that h
 </center>
 :::
 
-
 ## The available Storage APIs in a modern Browser
 
 First lets have a brief overview of the different APIs, their intentional use case and history:
@@ -65,7 +67,6 @@ The API is not asynchronous which means if fully blocks your JavaScript process 
 
 > There is also the **SessionStorage** API. The key difference is that localStorage data persists indefinitely until explicitly cleared, while sessionStorage data is cleared when the browser tab or window is closed.
 
-
 ### What is IndexedDB
 
 IndexedDB was first introduced as "Indexed Database API" [in 2015](https://www.w3.org/TR/IndexedDB/#sotd).
@@ -75,7 +76,6 @@ IndexedDB was first introduced as "Indexed Database API" [in 2015](https://www.w
 In 2018, IndexedDB version 2.0 [was introduced](https://hacks.mozilla.org/2016/10/whats-new-in-indexeddb-2-0/). This added some major improvements. Most noticeable the `getAll()` method which improves performance dramatically when fetching bulks of JSON documents. 
 
 IndexedDB [version 3.0](https://w3c.github.io/IndexedDB/) is in the workings which contains many improvements. Most important the addition of `Promise` based calls that makes modern JS features like `async/await` more useful.
-
 
 ### What is OPFS
 
@@ -93,9 +93,8 @@ Because only binary data can be processed, OPFS is made to be a base filesystem 
         <img src="../files/icons/sqlite.svg" alt="WASM SQLite" width="140" class="img-padding" />
 </center>
 
-
 [WebAssembly](https://webassembly.org/) (Wasm) is a binary format that allows high-performance code execution on the web.
-Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower then native](https://www.usenix.org/conference/atc19/presentation/jangda).
+Wasm was added to major browsers over the course of 2017 which opened a wide range of opportunities on what to run inside of a browser. You can compile native libraries to WebAssembly and just run them on the client with just a few adjustments. WASM code can be shipped to browser apps and generally runs much faster compared to JavaScript, but still about [10% slower than native](https://www.usenix.org/conference/atc19/presentation/jangda).
 
 Many people started to use compiled SQLite as a database inside of the browser which is why it makes sense to also compare this setup to the native APIs.
 
@@ -111,7 +110,6 @@ WebSQL has been **removed from browsers** in the current years for multiple good
 - Major browsers like firefox never supported WebSQL.
 
 Therefore in the following we will **just ignore WebSQL** even if it would be possible to run tests on in by setting specific browser flags or using old versions of chromium.
-
 
 -------------
 
@@ -171,7 +169,6 @@ const result = await new Promise((res, rej) => {
 
 Notice that IndexedDB has the limitation of [not having indexes on boolean values](https://github.com/w3c/IndexedDB/issues/76). You can only index strings and numbers. To workaround that you have to transform boolean to numbers and backwards when storing the data.
 
-
 ### WebWorker Support
 
 When running heavy data operations, you might want to move the processing away from the JavaScript main thread. This ensures that our app keeps being responsive and fast while the processing can run in parallel in the background. In a browser you can either use the [WebWorker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API), [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker) or the [ServiceWorker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) API to do that. In RxDB you can use the [WebWorker](../rx-storage-worker.md) or [SharedWorker](../rx-storage-shared-worker.md) plugins to move your storage inside of a worker.
@@ -185,10 +182,7 @@ The fast version of OPFS with the `createSyncAccessHandle` method can **only** [
 
 -------------
 
-
 ## Storage Size Limits
-
-
 
 - **Cookies** are limited to about `4 KB` of data in [RFC-6265](https://datatracker.ietf.org/doc/html/rfc6265#section-6.1). Because the stored cookies are send to the server with every HTTP request, this limitation is reasonable. You can test your browsers cookie limits [here](http://www.ruslog.com/tools/cookies.html). Notice that you should never fill up the full `4 KB` of your cookies because your web server will not accept too long headers and reject the requests with `HTTP ERROR 431 - Request header fields too large`. Once you have reached that point you can not even serve updated JavaScript to your user to clean up the cookies and you will have locked out that user until the cookies get cleaned up manually.
 
@@ -200,7 +194,6 @@ The fast version of OPFS with the `createSyncAccessHandle` method can **only** [
 - **IndexedDB** does not have a specific fixed size limitation like localStorage. The maximum storage size for IndexedDB depends on the browser implementation. The upper limit is typically based on the available disc space on the user's device. In chromium browsers it can use up to 80% of total disk space. You can get an estimation about the storage size limit by calling `await navigator.storage.estimate()`. Typically you can store gigabytes of data which can be tried out [here](https://demo.agektmr.com/storage/). Notice that we have a full article about [storage max size limits of IndexedDB](./indexeddb-max-storage-limit.md) that covers this topic.
 
 - **OPFS** has the same storage size limitation as IndexedDB. Its limit depends on the available disc space. This can also be tested [here](https://demo.agektmr.com/storage/).
-
 
 -------------
 
@@ -232,7 +225,6 @@ Here we can notice a few things:
 - The latency overhead of sending data from the main thread to a WebWorker OPFS is about 4 milliseconds. Here we only send minimal data to init the OPFS file handler. It will be interesting if that latency increases when more data is processed.
 - Downloading and parsing WASM SQLite and creating a single table takes about half a second. Using also the IndexedDB VFS to store data persistently adds additional 31 milliseconds. Reloading the page with enabled caching and already prepared tables is a bit faster with 420 milliseconds (memory).
 
-
 ### Latency of small Writes
 
 Next lets test the latency of small writes. This is important when you do many small data changes that happen independent from each other. Like when you stream data from a websocket or persist pseudo randomly happening events like mouse movements.
@@ -247,7 +239,6 @@ Next lets test the latency of small writes. This is important when you do many s
 | WASM SQLite (memory)    | 0.17                 |
 | WASM SQLite (IndexedDB) | 3.17                 |
 
-
 Here we can notice a few things:
 
 - LocalStorage has the lowest write latency with only 0.017 milliseconds per write.
@@ -261,7 +252,6 @@ If we would not create on OPFS file per document but instead append everything t
 
 Now that we have stored some documents, lets measure how long it takes to read single documents by their `id`.
 
-
 | Technology              | Time in Milliseconds |
 | ----------------------- | -------------------- |
 | Cookies                 | 0.132                |
@@ -271,7 +261,6 @@ Now that we have stored some documents, lets measure how long it takes to read s
 | OPFS WebWorker          | 1.41                 |
 | WASM SQLite (memory)    | 0.45                 |
 | WASM SQLite (IndexedDB) | 2.93                 |
-
 
 Here we can notice a few things:
 
@@ -292,12 +281,10 @@ As next step, lets do some big bulk operations with 200 documents at once.
 | WASM SQLite (memory)    | 19.1                 |
 | WASM SQLite (IndexedDB) | 37.12                |
 
-
 Here we can notice a few things:
 
 - Sending the data to a WebWorker and running it via the faster OPFS API is about twice as fast.
 - WASM SQLite performs better on bulk operations compared to its single write latency. This is because sending the data to WASM and backwards is faster if it is done all at once instead of once per document.
-
 
 ### Big Bulk Reads
 
@@ -318,7 +305,6 @@ Here we can notice a few things:
 - Reading many files in the OPFS webworker is about **twice as fast** compared to the slower main thread mode.
 - WASM SQLite is surprisingly fast. Further inspection has shown that the WASM SQLite process keeps the documents in memory cached which improves the latency when we do reads directly after writes on the same data. When the browser tab is reloaded between the writes and the reads, finding the 100 documents takes about **35 milliseconds** instead.
 
-
 ## Performance Conclusions
 
 - LocalStorage is really fast but remember that is has some downsides:
@@ -326,7 +312,6 @@ Here we can notice a few things:
   - Only Key-Value assignments are possible, you cannot use it efficiently when you need to do index based range queries on your data.
 - OPFS is way faster when used in the WebWorker with the `createSyncAccessHandle()` method compare to using it directly in the main thread.
 - SQLite WASM can be fast but you have to initially download the full binary and start it up which takes about half a second. This might not be relevant at all if your app is started up once and the used for a very long time. But for web-apps that are opened and closed in many browser tabs many times, this might be a problem.
-
 
 -------------
 
@@ -343,9 +328,8 @@ There is a wide range of possible improvements and performance hacks to speed up
 Here you can see the [performance comparison](../rx-storage-performance.md) of various RxDB storage implementations which gives a better view of real world performance:
 
 <center>
-  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
+  <PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 </center>
-
 
 ## Future Improvements
 

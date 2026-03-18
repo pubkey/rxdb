@@ -429,7 +429,10 @@ describe('rx-query.test.ts', () => {
             col.database.close();
         });
         it('reusing exec should execOverDatabase when change happened that cannot be optimized', async () => {
-            const col = await humansCollection.create(2);
+            const col = await humansCollection.create(0);
+            const doc1 = schemaObjects.humanData('0-aaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            const doc2 = schemaObjects.humanData('2-aaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            await col.bulkInsert([doc1, doc2]);
 
             // it is assumed that this query can never handled by event-reduce
             const q = col.find()
@@ -492,7 +495,7 @@ describe('rx-query.test.ts', () => {
         it('querying after insert should always return the correct amount', async () => {
             const col = await humansCollection.create(0);
 
-            const amount = 50;
+            const amount = isFastMode() ? 10 : 50;
             const query = col.find({
                 selector: {
                     age: {
@@ -1378,7 +1381,10 @@ describe('rx-query.test.ts', () => {
                     pendingQueryResolve = null;
                     resolveStalledQuery(undefined);
 
-                    await promiseWait(500);
+                    await waitUntil(() => {
+                        const last = emissions[emissions.length - 1];
+                        return last && last.length === 1;
+                    }, 10000, 10);
                     const lastEmission = emissions[emissions.length - 1];
                     assert.strictEqual(
                         lastEmission.length,

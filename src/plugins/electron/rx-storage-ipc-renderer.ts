@@ -14,7 +14,7 @@ export type RxStorageIpcRendererSettings = {
     /**
      * Set the same key on both sides
      * to ensure that messages do not get mixed
-     * up when you use more then one storage.
+     * up when you use more than one storage.
      */
     key: string;
     ipcRenderer: any;

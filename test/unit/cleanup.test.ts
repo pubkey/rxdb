@@ -6,8 +6,7 @@ import {
     schemaObjects,
     schemas,
     isFastMode,
-    HumanDocumentType,
-    humansCollection
+    HumanDocumentType
 } from '../../plugins/test-utils/index.mjs';
 import {
     createRxDatabase,
@@ -15,7 +14,8 @@ import {
     addRxPlugin,
     RxCollection,
     RxJsonSchema,
-    ensureNotFalsy
+    ensureNotFalsy,
+    removeRxDatabase
 } from '../../plugins/core/index.mjs';
 
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
@@ -50,6 +50,7 @@ describeParallel('cleanup.test.js', () => {
             await doc.remove();
 
             await waitUntil(async () => {
+                await collection.cleanup(0);
                 const deletedDocInStorage = await collection.storageInstance.findDocumentsById(
                     [
                         doc.primary,
@@ -62,7 +63,7 @@ describeParallel('cleanup.test.js', () => {
                 return !deletedDocStillInStorage;
             });
 
-            db.close();
+            await db.close();
         });
         it('should work by manually calling RxCollection.cleanup()', async () => {
             const db = await createRxDatabase({
@@ -90,7 +91,7 @@ describeParallel('cleanup.test.js', () => {
             );
             assert.ok(deletedDocInStorage.length >= 1);
 
-            db.close();
+            await db.close();
         });
     });
     describe('cleanup and replication', () => {
@@ -116,7 +117,7 @@ describeParallel('cleanup.test.js', () => {
             });
 
             const collection: RxCollection<HumanDocumentType> = cols.humans;
-            replicateRxCollection({
+            const replicationState = replicateRxCollection({
                 collection,
                 replicationIdentifier: 'my-rep',
                 deletedField: '_deleted',
@@ -144,7 +145,8 @@ describeParallel('cleanup.test.js', () => {
             );
             assert.ok(deletedDocInStorage[0]);
 
-            db.remove();
+            await replicationState.cancel();
+            await db.remove();
         });
         /**
          * While the metadata of a replication is append-only
@@ -198,12 +200,28 @@ describeParallel('cleanup.test.js', () => {
             await collection.cleanup(0);
             assert.ok(cleanupCalls > 0, 'cleanup call count must be greater zero');
 
-            db.remove();
+            await replicationState.cancel();
+            await db.remove();
         });
     });
     describe('issues', () => {
         it('minimumDeletedTime not respected', async () => {
-            const col = await humansCollection.create(0);
+            const dbName = 'test-cleanup-' + Date.now() + '-' + randomToken(10);
+            try {
+                await removeRxDatabase(dbName, config.storage.getStorage());
+            } catch (err) { }
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                multiInstance: false
+            });
+            const cols = await db.addCollections({
+                human: {
+                    schema: schemas.human
+                }
+            });
+            const col = cols.human;
 
             const storageInstance = col.storageInstance.originalStorageInstance;
             const cleanupBefore = storageInstance.cleanup.bind(storageInstance);
@@ -223,7 +241,7 @@ describeParallel('cleanup.test.js', () => {
             assert.strictEqual(calls[1], 5);
             assert.strictEqual(calls[2], DEFAULT_CLEANUP_POLICY.minimumDeletedTime);
 
-            col.database.remove();
+            await col.database.remove();
         });
         it('fields with umlauts and emojis could break the state after cleanup in some storages', async () => {
             type DocType = {

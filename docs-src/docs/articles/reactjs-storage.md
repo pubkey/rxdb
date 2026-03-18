@@ -108,7 +108,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
     type: 'object',
     primaryKey: 'id',
     properties: {
-      id: { type: 'string' },
+      id: { type: 'string', maxLength: 100 },
       name: { type: 'string' },
       power: { type: 'string' }
     },
@@ -218,7 +218,7 @@ import { getRxStorageLocalstorage } from 'rxdb/plugins/storage-localstorage';
         type: 'object',
         primaryKey: 'id',
         properties: {
-          id: { type: 'string' },
+          id: { type: 'string', maxLength: 100 },
           secretInfo: { type: 'string' }
         },
         required: ['id'],

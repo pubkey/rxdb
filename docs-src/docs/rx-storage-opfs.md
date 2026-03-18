@@ -5,13 +5,17 @@ description: Discover how to harness the Origin Private File System with RxDB's 
 image: /headers/rx-storage-opfs.jpg
 ---
 
+import PerformanceChart from '@site/src/components/performance-chart';
+import { PERFORMANCE_DATA_BROWSER, PERFORMANCE_METRICS } from '@site/src/components/performance-data';
+import {PremiumBlock} from '@site/src/components/premium-block';
+
 # Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 
 With the [RxDB](https://rxdb.info/) OPFS storage you can build a fully featured database on top of the [Origin Private File System](https://web.dev/opfs) (OPFS) browser API. Compared to other storage solutions, it has a way better performance.
 
 ## What is OPFS
 
-The **Origin Private File System (OPFS)** is a native browser storage API that allows web applications to manage files in a private, sandboxed, **origin-specific virtual filesystem**. Unlike [IndexedDB](./rx-storage-indexeddb.md) and [LocalStorage](./articles/localstorage.md), which are optimized as object/key-value storage, OPFS provides more granular control for file operations, enabling byte-by-byte access, file streaming, and even low-level manipulations. 
+The **Origin Private File System (OPFS)** is a native browser storage API that allows web applications to manage files in a private, sandboxed, **origin-specific virtual filesystem**. Unlike [IndexedDB](./rx-storage-indexeddb.md) and [LocalStorage](./articles/localstorage.md), which are optimized as object/key-value storage, OPFS provides more granular control for file operations, enabling byte-by-byte access, file streaming, and even low-level manipulations.
 OPFS is ideal for applications requiring **high-performance** file operations (**3x-4x faster compared to IndexedDB**) inside of a client-side application, offering advantages like improved speed, more efficient use of resources, and enhanced security and privacy features.
 
 ### OPFS limitations
@@ -30,7 +34,6 @@ If no more data can be written, a `QuotaExceededError` is thrown which should be
 The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directories on that. Notice that whenever you _synchronously_ write to, or read from a file, an `ArrayBuffer` must be used that contains the data. It is not possible to synchronously write plain strings or objects into the file. Therefore the `TextEncoder` and `TextDecoder` API must be used.
 
 Also notice that some of the methods of `FileSystemSyncAccessHandle` [have been asynchronous](https://developer.chrome.com/blog/sync-methods-for-accesshandles) in the past, but are synchronous since Chromium 108. To make it less confusing, we just use `await` in front of them, so it will work in both cases.
-
 
 ```ts
 // Access the root directory of the origin's private file system.
@@ -83,15 +86,13 @@ Because the Origin Private File System API provides low-level access to binary f
 
 A good comparison about real world scenarios, are the [performance results](./rx-storage-performance.md) of the various RxDB storages. Here it shows that reads are up to 4x faster compared to IndexedDB, even with complex queries:
 
-<p align="center">
-  <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
-</p>
+<PerformanceChart data={PERFORMANCE_DATA_BROWSER} metrics={PERFORMANCE_METRICS} />
 
 ## Using OPFS as RxStorage in RxDB
 
 The OPFS [RxStorage](./rx-storage.md) itself must run inside a WebWorker. Therefore we use the [Worker RxStorage](./rx-storage-worker.md) and let it point to the prebuild `opfs.worker.js` file that comes shipped with RxDB Premium 👑.
 
-Notice that the OPFS RxStorage is part of the [RxDB Premium 👑](/premium/) plugin that must be purchased.
+<PremiumBlock />
 
 ```ts
 import {
@@ -116,9 +117,9 @@ const database = await createRxDatabase({
 
 ## Using OPFS in the main thread instead of a worker
 
-The `createSyncAccessHandle` method from the Filesystem API is only available inside of a Webworker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. But there is a slightly slower way to access the virtual filesystem from the main thread. RxDB support the `getRxStorageOPFSMainThread()` for that. Notice that this uses the [createWritable](https://developer.mozilla.org/en-US/docs/Web/API/FileSystemFileHandle/createWritable) function which is not supported in safari.
+The `createSyncAccessHandle()` method from the OPFS File System Access API is only available inside of a WebWorker. Therefore you cannot use `getRxStorageOPFS()` in the main thread. Instead, RxDB provides `getRxStorageOPFSMainThread()`, which uses the asynchronous OPFS APIs (such as `FileSystemFileHandle.createWritable()`) under the hood. Because it cannot use the synchronous access handle, this main-thread variant is slightly slower for heavy write workloads than the worker-based storage.
 
-Using OPFS from the main thread can have benefits because not having to cross the worker bridge can reduce latence in reads and writes.
+Using OPFS from the main thread can still have benefits, because avoiding the worker bridge can reduce latency for some read and write patterns and may simplify your application architecture.
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -178,7 +179,7 @@ Origin Private File System is a browser API that is only accessible in browsers.
 Often developers are confused with the differences between the `File System Access API` and the `Origin Private File System (OPFS)`.
 
 - The `File System Access API` provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the File System API, the user has to actively select the files from a filepicker.
-- `Origin Private File System (OPFS)` is a sub-part of the `File System Standard` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. 
+- `Origin Private File System (OPFS)` is a sub-part of the `File System Standard` and it only describes the things you can do with the filesystem root from `navigator.storage.getDirectory()`. OPFS writes to a **sandboxed** filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access.
 
 ## Learn more about OPFS:
 

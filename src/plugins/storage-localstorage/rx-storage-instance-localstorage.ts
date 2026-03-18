@@ -63,8 +63,8 @@ export type ChangeStreamStoredData<RxDocType> = {
 
 
 /**
- * StorageEvents are not send to the same
- * browser tab where they where created.
+ * StorageEvents are not sent to the same
+ * browser tab where they were created.
  * This makes it hard to write unit tests
  * so we redistribute the events here instead.
  */
@@ -137,7 +137,12 @@ export class RxStorageInstanceLocalstorage<RxDocType> implements RxStorageInstan
         this.indexesKey = 'RxDB-ls-idx-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
         this.attachmentsKey = 'RxDB-ls-attachment-' + this.databaseName + '--' + this.collectionName + '--' + this.schema.version;
 
-        this.changeStreamSub = getStorageEventStream().subscribe((ev) => {
+        this.changeStreamSub = getStorageEventStream().subscribe((ev: {
+            fromStorageEvent: boolean;
+            key: string;
+            newValue: string | null;
+            databaseInstanceToken?: string;
+        }) => {
             if (
                 ev.key !== this.changestreamStorageKey ||
                 !ev.newValue ||

@@ -10,6 +10,25 @@ const {
  */
 async function run() {
     console.log('MongoDB Tester: start');
+
+    let retries = 0;
+    while (true) {
+        try {
+            await tryRun();
+            console.log('MongoDB Tester: DONE');
+            process.exit(0);
+        } catch (err) {
+            retries++;
+            console.log('MongoDB Tester: attempt ' + retries + ' failed:', err.message);
+            if (retries >= 5) {
+                throw err;
+            }
+            await new Promise(res => setTimeout(res, 2000));
+        }
+    }
+}
+
+async function tryRun() {
     const dbName = 'mydb' + new Date().getTime();
     const mongoClient = new MongoClient('mongodb://localhost:27017/?directConnection=true');
     console.log('MongoDB Tester: created client');
@@ -30,11 +49,16 @@ async function run() {
         }
     }
 
-
     const start = Date.now();
     while (true) {
-        const status = await admin.command({ replSetGetStatus: 1 });
-        if (status.myState === 1) { // 1 = PRIMARY
+        let status;
+        try {
+            status = await admin.command({ replSetGetStatus: 1 });
+        } catch (err) {
+            // May throw if replica set is still initializing
+        }
+
+        if (status && status.myState === 1) { // 1 = PRIMARY
             console.log('Node is PRIMARY');
             break;
         }
@@ -46,16 +70,13 @@ async function run() {
     }
     console.log('MongoDB Tester: replica set is now primary');
 
-
-
     const mongoDatabase = mongoClient.db(dbName);
     console.log('MongoDB Tester: db connected');
     const mongoCollection = await mongoDatabase.createCollection('mycollection');
     console.log('MongoDB Tester: created collection');
     await mongoCollection.insertOne({ foo: 'bar' });
 
-    console.log('MongoDB Tester: DONE');
-
     await mongoClient.close();
 }
+
 run();

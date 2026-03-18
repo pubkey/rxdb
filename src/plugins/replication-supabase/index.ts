@@ -141,13 +141,13 @@ export function replicateSupabase<RxDocType>(
                     throw error;
                 }
 
-                const lastDoc = lastOfArray(data);
+                const lastDoc: any = lastOfArray(data);
                 const newCheckpoint: SupabaseCheckpoint | undefined = lastDoc ? {
                     id: lastDoc[primaryPath],
                     modified: lastDoc[modifiedField]
                 } : undefined;
 
-                const docs = data.map(row => rowToDoc(row))
+                const docs = data.map((row: any) => rowToDoc(row))
                 return {
                     documents: docs,
                     checkpoint: newCheckpoint
@@ -263,7 +263,7 @@ export function replicateSupabase<RxDocType>(
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: options.tableName },
-                    (payload) => {
+                    (payload: any) => {
                         /**
                          * We assume soft-deletes in supabase
                          * and therefore cleanup-hard-deletes

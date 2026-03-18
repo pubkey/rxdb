@@ -450,7 +450,7 @@ export const ERROR_MESSAGES = {
         docs: 'https://rxdb.info/transactions-conflicts-revisions.html?console=errors&code=CONFLICT'
     },
     COL22: {
-        message: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key',
+        message: '.bulkInsert() and .bulkUpsert() cannot be run with multiple documents that have the same primary key. Conflicting primary key(s) are in the error parameters (duplicateIds)',
         cause: 'You provided multiple documents with the same primary key in a bulk write.',
         fix: 'Ensure all documents in a bulk write have unique primary keys.',
         docs: ''
@@ -1163,6 +1163,12 @@ export const ERROR_MESSAGES = {
         fix: 'Remove the custom conflict handler.',
         docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT3'
     },
+    CRDT4: {
+        message: 'RxDocument.modify() cannot be used when CRDTs are activated.',
+        cause: 'modify() takes an arbitrary function that cannot be converted to a CRDT operation.',
+        fix: 'Use updateCRDT() instead of modify().',
+        docs: 'https://rxdb.info/crdt.html?console=errors&code=CRDT4'
+    },
 
     // plugins/storage-dexie/
     DXE1: {
@@ -1212,7 +1218,7 @@ export const ERROR_MESSAGES = {
 
     // plugins/react
     R1: {
-        message: 'You must provide a valid RxDatabase to the the RxDatabaseProvider',
+        message: 'You must provide a valid RxDatabase to the RxDatabaseProvider',
         cause: 'The database provided to the provider is invalid.',
         fix: 'Ensure you pass a valid RxDatabase instance.',
         docs: 'https://rxdb.info/react.html?console=errors&code=R1'
@@ -1267,6 +1273,12 @@ export const ERROR_MESSAGES = {
         fix: 'Try to reproduce the error in a unit test and make a PR with a test case.',
         docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR19'
     },
+    GDR20: {
+        message: 'Document file update conflict',
+        cause: 'Another client modified the document file during the transaction. This indicates a transaction timeout overlap.',
+        fix: 'Increase the transactionTimeout or investigate why two clients are writing to the same document concurrently.',
+        docs: 'https://rxdb.info/replication-google-drive.html?console=errors&code=GDR20'
+    },
 
 
 
@@ -1316,6 +1328,28 @@ export const ERROR_MESSAGES = {
         docs: ''
     },
 
+    // custom-index errors
+    CI1: {
+        message: 'Field not in schema',
+        cause: 'The given field is not defined in the RxJsonSchema.',
+        fix: 'Make sure the field name is spelled correctly and exists in the schema.',
+        docs: ''
+    },
+    CI2: {
+        message: 'Unknown index type',
+        cause: 'The schema field type is not supported for indexing.',
+        fix: 'Use a supported type (string, boolean, number, integer) for the indexed field.',
+        docs: ''
+    },
+
+    // change-event-buffer errors
+    COB1: {
+        message: 'ChangeEventBuffer out of bounds',
+        cause: 'The requested pointer is out of the change event buffer bounds.',
+        fix: 'This means something in RxDB itself behaves wrong because any access to the api should not make an out of bounds request.',
+        docs: ''
+    },
+
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the
@@ -1323,9 +1357,9 @@ export const ERROR_MESSAGES = {
      */
     SNH: {
         message: 'This should never happen',
-        cause: '',
-        fix: '',
-        docs: ''
+        cause: 'Should never be thrown. This error code is used for internal things like null-checks etc.',
+        fix: 'If this throws, you likely found a bug and should make a PR with a test case to the RxDB repo, so we can reproduce it.',
+        docs: 'https://rxdb.info/contribution.html'
     },
 };
 

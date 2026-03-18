@@ -1,6 +1,6 @@
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
- * if you use the same mango-query more then once, it will reuse the first RxQuery
+ * if you use the same mango-query more than once, it will reuse the first RxQuery
  */
 import type {
     RxQuery,
@@ -10,7 +10,6 @@ import type {
 import {
     getFromMapOrCreate,
     nextTick,
-    now,
     requestIdlePromise
 } from './plugins/utils/index.ts';
 
@@ -47,6 +46,9 @@ export function uncacheRxQuery(queryCache: QueryCache, rxQuery: RxQuery) {
 
 
 export function countRxQuerySubscribers(rxQuery: RxQuery): number {
+    if (!(rxQuery as any)._refCount$) {
+        return 0;
+    }
     return rxQuery.refCount$.observers.length;
 }
 
@@ -65,7 +67,7 @@ export const defaultCacheReplacementPolicyMonad: (
     unExecutedLifetime: number
 ) => RxCacheReplacementPolicy = (
     tryToKeepMax,
-    unExecutedLifetime
+    _unExecutedLifetime
 ) => (
     _collection: RxCollection,
     queryCache: QueryCache
@@ -74,7 +76,6 @@ export const defaultCacheReplacementPolicyMonad: (
                 return;
             }
 
-            const minUnExecutedLifetime = now() - unExecutedLifetime;
             const maybeUncache: RxQuery[] = [];
 
             const queriesInCache = Array.from(queryCache._map.values());
@@ -83,8 +84,8 @@ export const defaultCacheReplacementPolicyMonad: (
                 if (countRxQuerySubscribers(rxQuery) > 0) {
                     continue;
                 }
-                // directly uncache queries that never executed and are older than unExecutedLifetime
-                if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+                // directly uncache queries that have never been executed
+                if (rxQuery._lastEnsureEqual === 0) {
                     uncacheRxQuery(queryCache, rxQuery);
                     continue;
                 }
