@@ -6,14 +6,14 @@ import { browserMetrics, PerformanceData } from './performance-browser';
 const nodeData: PerformanceData[] = [
     {
         name: 'MongoDB',
-        "time-to-first-insert": 276.906,
-        "insert-documents-500": 47.497,
-        "find-by-ids-3000": 57.31,
-        "serial-inserts-50": 209.467,
-        "serial-find-by-id-50": 23.09,
-        "find-by-query": 42.315,
-        "find-by-query-parallel-4": 38.854,
-        "4x-count": 6.898
+        'time-to-first-insert': 276.906,
+        'insert-documents-500': 47.497,
+        'find-by-ids-3000': 57.31,
+        'serial-inserts-50': 209.467,
+        'serial-find-by-id-50': 23.09,
+        'find-by-query': 42.315,
+        'find-by-query-parallel-4': 38.854,
+        '4x-count': 6.898
     },
     {
         name: 'Memory',
