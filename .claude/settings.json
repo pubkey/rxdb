@@ -6,7 +6,12 @@
         "allow": [
             "Bash(npm run lint*)",
             "Bash(npm run test*)",
-            "Bash(npm install:*)"
+            "Bash(npm install:*)",
+            "Bash(npm run build:*)",
+            "Bash(npm run check-types:*)",
+            "Bash(npm run generate:*)",
+            "Bash(npx:*)",
+            "Bash(node:*)"
         ],
         "deny": [
             "Write(plugins/**)",
