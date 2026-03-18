@@ -14,6 +14,7 @@ export * from './schemas.ts';
 export * from './replication.ts';
 export * from './replication-base-test-suite.ts';
 export * from './performance.ts';
+export * from './performance-crypto.ts';
 
 import * as humansCollectionConst from './humans-collection.ts';
 export const humansCollection = humansCollectionConst;
