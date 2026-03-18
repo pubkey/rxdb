@@ -8,13 +8,8 @@ import {
     startRxDBViewer,
     VIEWER_DEFAULT_SIGNALING_SERVER,
 } from '../../plugins/viewer/index.mjs';
-import type {
-    ViewerConnectionParams,
-    ViewerState
-} from '../../plugins/viewer/index.mjs';
 import config from './config.ts';
 import {
-    schemaObjects,
     schemas,
     isNode,
     isDeno

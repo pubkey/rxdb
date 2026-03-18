@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
-import { PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_NODE } from './performance-data';
+// performance-data exports available: PERFORMANCE_METRICS, PERFORMANCE_DATA_BROWSER, PERFORMANCE_DATA_NODE
 
 // Lazy load the chart implementation so recharts isn't in the main bundle
 const PerformanceChartImpl = React.lazy(() => import('./performance-chart-impl'));
@@ -12,7 +12,7 @@ type PerformanceDataPoint = {
 
 type PerformanceChartProps = {
     data: PerformanceDataPoint[];
-    metrics?: { key: string; name: string; color: string }[];
+    metrics?: { key: string; name: string; color: string; }[];
     title?: string;
 };
 

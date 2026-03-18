@@ -849,6 +849,37 @@ jobs:
   #           flutter config --enable-linux-desktop
   #           flutter test integration_test/basics_test.dart -d linux
 
+  test-viewer:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set node version
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-viewer-x4-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-viewer-x4-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - name: test viewer plugin
+        run: npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/unit/viewer.test.js --timeout 20000
+
   test-tutorials:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
