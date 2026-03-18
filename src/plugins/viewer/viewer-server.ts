@@ -4,7 +4,6 @@ import {
     ensureNotFalsy,
     randomToken
 } from '../../plugins/utils/index.ts';
-import { newRxError } from '../../rx-error.ts';
 import type {
     ViewerConnectionParams,
     ViewerRequest,
@@ -187,10 +186,10 @@ async function handleViewerRequest(
     }
 }
 
-export async function startRxDBViewer(
+function startViewerServer(
     database: RxDatabase,
     options: ViewerServerOptions = {}
-): Promise<ViewerState> {
+): ViewerState {
     const topic = options.topic || 'rxdb-viewer-' + randomToken(12);
     const signalingServerUrl = options.signalingServerUrl || VIEWER_DEFAULT_SIGNALING_SERVER;
     const WebSocketConstructor = options.webSocketConstructor || WebSocket;
@@ -332,17 +331,42 @@ export async function startRxDBViewer(
     };
 
     VIEWER_STATE_BY_DATABASE.set(database, state);
+
+    // Auto-close when the database closes
+    database.onClose.push(() => state.close());
+
     return state;
 }
 
+/**
+ * Get the connection parameters for a database's viewer server.
+ * Lazily starts the viewer server on first call and caches it.
+ * The server is automatically closed when the database is closed.
+ */
 export function getDatabaseConnectionParams(
-    database: RxDatabase
+    database: RxDatabase,
+    options?: ViewerServerOptions
 ): ViewerConnectionParams {
-    const state = VIEWER_STATE_BY_DATABASE.get(database);
+    let state = VIEWER_STATE_BY_DATABASE.get(database);
     if (!state) {
-        throw newRxError('VW1', {
-            database: database.name
-        });
+        state = startViewerServer(database, options);
     }
     return state.connectionParams;
+}
+
+/**
+ * Start the viewer server explicitly.
+ * Prefer using getDatabaseConnectionParams() which handles
+ * lazy initialization and caching automatically.
+ */
+export async function startRxDBViewer(
+    database: RxDatabase,
+    options: ViewerServerOptions = {}
+): Promise<ViewerState> {
+    let state = VIEWER_STATE_BY_DATABASE.get(database);
+    if (state) {
+        return state;
+    }
+    state = startViewerServer(database, options);
+    return state;
 }
